@@ -74,7 +74,11 @@ export default function DashboardClient() {
     });
 
     const data = await res.json().catch(() => ({}));
-    if (!res.ok) throw new Error(data.error || "Request failed");
+
+    if (!res.ok) {
+      throw new Error(data.error || "Request failed");
+    }
+
     return data;
   }
 
@@ -86,8 +90,14 @@ export default function DashboardClient() {
   async function loadMatches() {
     const data = await api("/api/matches");
     setMatches(data);
+
     if (!selectedMatchId && data.length > 0) {
       setSelectedMatchId(String(data[0].id));
+    } else if (
+      selectedMatchId &&
+      !data.some((m) => String(m.id) === String(selectedMatchId))
+    ) {
+      setSelectedMatchId(data[0] ? String(data[0].id) : "");
     }
   }
 
@@ -110,6 +120,13 @@ export default function DashboardClient() {
     setStats(statData);
   }
 
+  async function refreshAll(matchId = selectedMatchId) {
+    await Promise.all([loadTeams(), loadMatches()]);
+    if (matchId) {
+      await loadSelectedMatch(matchId);
+    }
+  }
+
   useEffect(() => {
     (async () => {
       try {
@@ -123,12 +140,19 @@ export default function DashboardClient() {
   useEffect(() => {
     if (selectedMatchId) {
       loadSelectedMatch(selectedMatchId).catch((err) => setError(err.message));
+    } else {
+      setMatchDetail(null);
+      setScoreboard(null);
+      setStats({ batting: [], bowling: [] });
     }
   }, [selectedMatchId]);
 
   useEffect(() => {
     if (scoreboard?.currentInnings) {
-      setBallForm((prev) => ({ ...prev, inningsNo: String(scoreboard.currentInnings) }));
+      setBallForm((prev) => ({
+        ...prev,
+        inningsNo: String(scoreboard.currentInnings)
+      }));
     }
   }, [scoreboard?.currentInnings]);
 
@@ -167,7 +191,9 @@ export default function DashboardClient() {
     if (!battingTeam || !bowlingTeam) return;
 
     const firstStriker = battingTeam.players[0]?.id ? String(battingTeam.players[0].id) : "";
-    const secondPlayer = battingTeam.players.find((p) => String(p.id) !== firstStriker);
+    const secondPlayer = battingTeam.players.find(
+      (p) => String(p.id) !== firstStriker
+    );
     const firstNonStriker = secondPlayer?.id ? String(secondPlayer.id) : "";
     const firstBowler = bowlingTeam.players[0]?.id ? String(bowlingTeam.players[0].id) : "";
 
@@ -207,6 +233,7 @@ export default function DashboardClient() {
     e.preventDefault();
     setMessage("");
     setError("");
+
     try {
       await api("/api/teams", {
         method: "POST",
@@ -220,10 +247,28 @@ export default function DashboardClient() {
     }
   }
 
+  async function handleDeleteTeam(teamId, teamName) {
+    if (!confirm(`Delete team "${teamName}"?`)) return;
+
+    setMessage("");
+    setError("");
+
+    try {
+      await api(`/api/teams/${teamId}`, {
+        method: "DELETE"
+      });
+      setMessage("🗑️ Team deleted");
+      await refreshAll();
+    } catch (err) {
+      setError(err.message);
+    }
+  }
+
   async function handleAddPlayer(e) {
     e.preventDefault();
     setMessage("");
     setError("");
+
     try {
       await api("/api/players", {
         method: "POST",
@@ -232,10 +277,27 @@ export default function DashboardClient() {
           name: playerForm.name.trim()
         })
       });
+
       setPlayerForm({ teamId: "", name: "" });
       setMessage("✅ Player added");
-      await loadTeams();
-      if (selectedMatchId) await loadSelectedMatch(selectedMatchId);
+      await refreshAll();
+    } catch (err) {
+      setError(err.message);
+    }
+  }
+
+  async function handleDeletePlayer(playerId, playerName) {
+    if (!confirm(`Delete player "${playerName}"?`)) return;
+
+    setMessage("");
+    setError("");
+
+    try {
+      await api(`/api/players/${playerId}`, {
+        method: "DELETE"
+      });
+      setMessage("🗑️ Player deleted");
+      await refreshAll();
     } catch (err) {
       setError(err.message);
     }
@@ -245,6 +307,7 @@ export default function DashboardClient() {
     e.preventDefault();
     setMessage("");
     setError("");
+
     try {
       const match = await api("/api/matches", {
         method: "POST",
@@ -268,6 +331,23 @@ export default function DashboardClient() {
       setMessage("✅ Match created");
       await loadMatches();
       setSelectedMatchId(String(match.id));
+    } catch (err) {
+      setError(err.message);
+    }
+  }
+
+  async function handleDeleteMatch(matchId) {
+    if (!confirm("Delete this match and all its scoring data?")) return;
+
+    setMessage("");
+    setError("");
+
+    try {
+      await api(`/api/matches/${matchId}`, {
+        method: "DELETE"
+      });
+      setMessage("🗑️ Match deleted");
+      await refreshAll();
     } catch (err) {
       setError(err.message);
     }
@@ -309,6 +389,7 @@ export default function DashboardClient() {
       });
 
       setMessage("✅ Ball added");
+
       setBallForm((prev) => ({
         ...prev,
         extraType: "NONE",
@@ -321,6 +402,7 @@ export default function DashboardClient() {
       }));
 
       await loadSelectedMatch(selectedMatchId);
+      await loadTeams();
     } catch (err) {
       setError(err.message);
     }
@@ -329,6 +411,7 @@ export default function DashboardClient() {
   async function handleUndoBall() {
     setMessage("");
     setError("");
+
     if (!selectedMatchId) {
       setError("Please select a match");
       return;
@@ -833,11 +916,45 @@ export default function DashboardClient() {
             <button type="submit" className="btn">Add Team</button>
           </form>
 
-          <div className="tags">
+          <div style={{ marginTop: 12, display: "grid", gap: 12 }}>
             {teams.map((team) => (
-              <span key={team.id} className="tag">
-                {team.name} ({team.players.length})
-              </span>
+              <div key={team.id} className="card" style={{ padding: 12 }}>
+                <div className="card-head">
+                  <h4>{team.name}</h4>
+                  <button
+                    type="button"
+                    className="btn btn-outline"
+                    onClick={() => handleDeleteTeam(team.id, team.name)}
+                  >
+                    Delete
+                  </button>
+                </div>
+
+                <div className="tags">
+                  {team.players.length === 0 ? (
+                    <span className="muted">No players</span>
+                  ) : (
+                    team.players.map((player) => (
+                      <span key={player.id} className="tag">
+                        {player.name}
+                        <button
+                          type="button"
+                          style={{
+                            marginLeft: 8,
+                            background: "transparent",
+                            color: "inherit",
+                            border: "none",
+                            cursor: "pointer"
+                          }}
+                          onClick={() => handleDeletePlayer(player.id, player.name)}
+                        >
+                          ✖
+                        </button>
+                      </span>
+                    ))
+                  )}
+                </div>
+              </div>
             ))}
           </div>
         </Card>
@@ -973,23 +1090,44 @@ export default function DashboardClient() {
           ) : (
             <div className="match-list">
               {matches.map((match) => (
-                <button
+                <div
                   key={match.id}
-                  type="button"
                   className={`match-item ${String(match.id) === String(selectedMatchId) ? "active" : ""}`}
-                  onClick={() => setSelectedMatchId(String(match.id))}
                 >
-                  <div>
-                    <strong>
-                      #{match.id} • {match.teamAName} vs {match.teamBName}
-                    </strong>
-                    <div className="muted small">
-                      Bat first: {match.battingFirstTeamName} • {match.oversPerInnings} overs
+                  <button
+                    type="button"
+                    onClick={() => setSelectedMatchId(String(match.id))}
+                    style={{
+                      flex: 1,
+                      background: "transparent",
+                      border: "none",
+                      color: "inherit",
+                      textAlign: "left",
+                      cursor: "pointer"
+                    }}
+                  >
+                    <div>
+                      <strong>
+                        #{match.id} • {match.teamAName} vs {match.teamBName}
+                      </strong>
+                      <div className="muted small">
+                        Bat first: {match.battingFirstTeamName} • {match.oversPerInnings} overs
+                      </div>
+                      <div className="muted small">{formatDate(match.createdAt)}</div>
                     </div>
-                    <div className="muted small">{formatDate(match.createdAt)}</div>
+                  </button>
+
+                  <div style={{ display: "flex", flexDirection: "column", gap: 8 }}>
+                    <span className="pill">{match.status}</span>
+                    <button
+                      type="button"
+                      className="btn btn-outline"
+                      onClick={() => handleDeleteMatch(match.id)}
+                    >
+                      Delete
+                    </button>
                   </div>
-                  <span className="pill">{match.status}</span>
-                </button>
+                </div>
               ))}
             </div>
           )}

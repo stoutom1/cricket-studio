@@ -13,14 +13,22 @@ export const runtime = "nodejs";
 
 export async function GET(request, { params }) {
   const session = await getServerSession(authOptions);
+
   if (!session) {
-    return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
+    return NextResponse.json(
+      { error: "Unauthorized" },
+      { status: 401 }
+    );
   }
 
-  const { id } = await params;
-  const matchId = Number({id});
-  if (!matchId) {
-    return NextResponse.json({ error: "Invalid match id" }, { status: 400 });
+  const { matchId: matchIdParam } = await params;
+  const matchId = Number(matchIdParam);
+
+  if (Number.isNaN(matchId) || matchId <= 0) {
+    return NextResponse.json(
+      { error: "Invalid match id why??" },
+      { status: 400 }
+    );
   }
 
   const match = await prisma.match.findUnique({
@@ -30,7 +38,10 @@ export async function GET(request, { params }) {
       teamB: { include: { players: true } },
       battingFirstTeam: true,
       balls: {
-        orderBy: [{ inningsNo: "asc" }, { sequence: "asc" }]
+        orderBy: [
+          { inningsNo: "asc" },
+          { sequence: "asc" }
+        ]
       }
     }
   });

@@ -182,11 +182,11 @@ export function summarizeInningsDetailed(balls, playerMap, oversPerInnings) {
 
   const legalBalls = sorted.filter((b) => b.legalDelivery).length;
   const runs = sorted.reduce((sum, b) => sum + b.totalRuns, 0);
-  const wickets = sorted.reduce((sum, b) => sum + b.isWicket, 0);
+  const wickets = sorted.reduce((sum, b) => sum + (b.isWicket ? 1 : 0),0);
 
   const powerplayBalls = sorted.filter((b) => b.isPowerPlay);
   const powerplayRuns = powerplayBalls.reduce((sum, b) => sum + b.totalRuns, 0);
-  const powerplayWickets = powerplayBalls.reduce((sum, b) => sum + b.isWicket, 0);
+  const powerplayWickets = powerplayBalls.reduce((sum, b) => sum + (b.isWicket ? 1 : 0),0);
 
   const partnerships = [];
   const fallOfWickets = [];
@@ -214,7 +214,7 @@ export function summarizeInningsDetailed(balls, playerMap, oversPerInnings) {
       cumulativeLegalBalls += 1;
       currentPartnershipBalls += 1;
     }
-
+    currentPair = applyBallOutcome(ball);
     if (ball.isWicket) {
       cumulativeWickets += 1;
 
@@ -261,8 +261,9 @@ export function summarizeInningsDetailed(balls, playerMap, oversPerInnings) {
     currentState = {
       strikerId: nextPair.strikerId,
       nonStrikerId: nextPair.nonStrikerId,
-      strikerName: getPlayerName(playerMap, nextPair.strikerId),
-      nonStrikerName: getPlayerName(playerMap, nextPair.nonStrikerId),
+      strikerName: nextPair.strikerId? getPlayerName(playerMap, nextPair.strikerId): "Yet to bat",
+      nonStrikerName: nextPair.nonStrikerId? getPlayerName(playerMap, nextPair.nonStrikerId): "Yet to bat",
+      //nonStrikerName: getPlayerName(playerMap, nextPair.nonStrikerId),
       nextOverNo: Math.floor(legalBalls / 6) + 1,
       nextBallInOver: (legalBalls % 6) + 1
     };
@@ -310,7 +311,7 @@ export function buildMatchStats(match) {
     batting.set(player.id, {
       playerId: player.id,
       playerName: player.name,
-      teamName: player.team.name,
+      teamName: player.team?.name || "",
       runs: 0,
       balls: 0,
       fours: 0,
@@ -322,7 +323,7 @@ export function buildMatchStats(match) {
     bowling.set(player.id, {
       playerId: player.id,
       playerName: player.name,
-      teamName: player.team.name,
+      teamName: player.team?.name || "",
       balls: 0,
       dots: 0,
       runs: 0,
@@ -346,7 +347,7 @@ export function buildMatchStats(match) {
     if (ball.dismissedPlayerId && batting.has(ball.dismissedPlayerId)) {
       const row = batting.get(ball.dismissedPlayerId);
       row.outs += 1;
-      row.dismissal = (ball.wicketType || "OUT").replaceAll("_", " ").toLowerCase();
+      row.dismissal = (ball.wicketType || "OUT").replace(/_/g, " ").toLowerCase();
     }
 
     if (ball.bowlerId && bowling.has(ball.bowlerId)) {

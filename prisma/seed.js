@@ -1,9 +1,22 @@
-const { PrismaClient } = require("@prisma/client");
-const bcrypt = require("bcryptjs");
-
-const prisma = new PrismaClient();
-
+//import { withAccelerate } from '@prisma/extension-accelerate';
+//import { PrismaClient } from '@prisma/client';
+import { PrismaClient } from "@prisma/client";
+import { PrismaPg } from "@prisma/adapter-pg";
+import pkg from 'bcryptjs';
+const { bcrypt } = pkg;
+//const { PrismaClient } = require("@prisma/client");
+//const bcrypt = require("bcryptjs");
+//const prisma = new PrismaClient();
+const adapter = new PrismaPg({
+  connectionString: process.env["DATABASE_URL"],
+});
+export const prisma = new PrismaClient({ adapter });
+/*const prisma = new PrismaClient({
+   accelerateUrl: process.env["DATABASE_URL"],
+}).$extends(withAccelerate())
+*/
 async function upsertTeamWithPlayers(teamName, players) {
+  if (!teamName) throw new Error("teamName is required");
   let team = await prisma.team.findUnique({
     where: { name: teamName }
   });
@@ -16,6 +29,7 @@ async function upsertTeamWithPlayers(teamName, players) {
   }
 
   for (const name of players) {
+     //if (!team.id) throw new Error("team.id is required");
     const existing = await prisma.player.findFirst({
       where: { teamId: team.id, name }
     });
@@ -31,6 +45,7 @@ async function upsertTeamWithPlayers(teamName, players) {
 
 async function main() {
   const email = "demo@example.com";
+  if (!email) throw new Error("email is required");
   const existingUser = await prisma.user.findUnique({
     where: { email }
   });

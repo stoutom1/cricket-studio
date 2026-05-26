@@ -12,7 +12,7 @@ export async function GET(request, { params }) {
   }
 
   const { id } = await params;
-  const matchId = Number({id});
+  const matchId = Number(id);
   if (!id) {
     return NextResponse.json({ error: "Invalid match id" }, { status: 400 });
   }
@@ -39,4 +39,34 @@ export async function GET(request, { params }) {
   }
 
   return NextResponse.json(match);
+}
+
+export async function DELETE(request, { params }) {
+  const session = await getServerSession(authOptions);
+  if (!session) {
+    return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
+  }
+
+  const { id } = await params;
+  const matchId = Number(id);
+  if (!id) {
+    return NextResponse.json({ error: "Invalid match id" }, { status: 400 });
+  }
+
+  const match = await prisma.match.findUnique({
+    where: { id: matchId }
+  });
+
+  if (!match) {
+    return NextResponse.json({ error: "Match not found" }, { status: 404 });
+  }
+
+  await prisma.match.delete({
+    where: { id: matchId }
+  });
+
+  return NextResponse.json({
+    success: true,
+    message: "Match deleted successfully"
+  });
 }
