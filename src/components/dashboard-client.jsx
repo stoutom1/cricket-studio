@@ -85,7 +85,7 @@ export default function DashboardClient() {
       async function handleShareMatch() {
       if (!scoreboard) return;
 
-      const shareUrl = `${window.location.origin}/scoreboard/${selectedMatchId}`;
+      const shareUrl = `${window.location.origin}/api/liveview/${selectedMatchId}`;
 
       const innings =
         scoreboard.innings?.[scoreboard.innings.length - 1];
