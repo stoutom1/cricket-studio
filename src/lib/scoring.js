@@ -9,6 +9,7 @@ export const WICKET_TYPES = [
   "STUMPED",
   "HIT_WICKET",
   "RETIRED_OUT",
+  "RETIRED_HURT",
   "OTHER"
 ];
 
@@ -105,7 +106,14 @@ export function validateBallInput(payload) {
       errors.push("Dismissed player is required when wicket is selected");
     }
   }
-
+  if (
+    payload.wicketType === "RETIRED_HURT" &&
+    !payload.newBatterId
+  ) {
+    errors.push(
+      "Replacement batter required for retired hurt"
+    );
+  }
   if (!Number(payload.isWicket) && payload.wicketType && payload.wicketType !== "NONE") {
     errors.push("Wicket type must be NONE when no wicket is selected");
   }
@@ -155,6 +163,33 @@ export function getPlayerName(playerMap, id) {
   return playerMap.get(id)?.name || "-";
 }
 
+export function getNextAvailableBatter(
+  teamPlayers,
+  currentStrikerId,
+  currentNonStrikerId,
+  balls
+) {
+  const unavailable = new Set([
+    currentStrikerId,
+    currentNonStrikerId
+  ]);
+
+  balls.forEach((ball) => {
+    if (
+      ball.dismissedPlayerId &&
+      ball.wicketType !== "RETIRED_HURT"
+    ) {
+      unavailable.add(ball.dismissedPlayerId);
+    }
+  });
+
+  return (
+    teamPlayers.find(
+      (p) => !unavailable.has(p.id)
+    ) || null
+  );
+}
+
 export function applyBallOutcome(ball) {
   let strikerId = ball.strikerId || null;
   let nonStrikerId = ball.nonStrikerId || null;
@@ -183,7 +218,7 @@ export function summarizeInningsDetailed(balls, playerMap, oversPerInnings) {
 
   const legalBalls = sorted.filter((b) => b.legalDelivery).length;
   const runs = sorted.reduce((sum, b) => sum + b.totalRuns, 0);
-  const wickets = sorted.reduce((sum, b) => sum + (b.isWicket ? 1 : 0),0);
+  const wickets = sorted.reduce((sum, b) =>sum +(b.isWicket && b.wicketType !== "RETIRED_HURT" ? 1 : 0),0);
 
   const powerplayBalls = sorted.filter((b) => b.isPowerPlay);
   const powerplayRuns = powerplayBalls.reduce((sum, b) => sum + b.totalRuns, 0);
@@ -216,15 +251,16 @@ export function summarizeInningsDetailed(balls, playerMap, oversPerInnings) {
       currentPartnershipBalls += 1;
     }
     currentPair = applyBallOutcome(ball);
-    if (ball.isWicket) {
-      cumulativeWickets += 1;
+    const countsAsWicket = ball.isWicket && ball.wicketType !== "RETIRED_HURT";      
+    if (countsAsWicket) {
+          cumulativeWickets += 1;
 
-      fallOfWickets.push({
-        wicketNumber: cumulativeWickets,
-        score: `${cumulativeRuns}/${cumulativeWickets}`,
-        playerOut: getPlayerName(playerMap, ball.dismissedPlayerId),
-        over: formatOversFromBalls(cumulativeLegalBalls)
-      });
+          fallOfWickets.push({
+            wicketNumber: cumulativeWickets,
+            score: `${cumulativeRuns}/${cumulativeWickets}`,
+            playerOut: getPlayerName(playerMap, ball.dismissedPlayerId),
+            over: formatOversFromBalls(cumulativeLegalBalls)
+          });
 
       partnerships.push({
         wicketNumber: cumulativeWickets,
@@ -240,7 +276,6 @@ export function summarizeInningsDetailed(balls, playerMap, oversPerInnings) {
       currentPair = applyBallOutcome(ball);
     }
   }
-
   if (sorted.length > 0 && currentPair && (currentPartnershipRuns > 0 || currentPartnershipBalls > 0)) {
     partnerships.push({
       wicketNumber: null,
@@ -251,7 +286,6 @@ export function summarizeInningsDetailed(balls, playerMap, oversPerInnings) {
       ongoing: true
     });
   }
-
   let currentState = null;
   const maxLegalBalls = oversPerInnings * 6;
 
@@ -289,7 +323,8 @@ export function summarizeInningsDetailed(balls, playerMap, oversPerInnings) {
 
 function wicketsForBowler(ball) {
   if (!ball.isWicket) return 0;
-  if (["RUN_OUT", "RETIRED_OUT"].includes(ball.wicketType)) return 0;
+  if (
+  ["RUN_OUT", "RETIRED_OUT", "RETIRED_HURT"].includes(ball.wicketType)) return 0;
   if (ball.extraType === "NOBALL") return 0;
   return 1;
 }
@@ -345,11 +380,20 @@ export function buildMatchStats(match) {
       if (ball.runsOffBat === 6) row.sixes += 1;
     }
 
-    if (ball.dismissedPlayerId && batting.has(ball.dismissedPlayerId)) {
-      const row = batting.get(ball.dismissedPlayerId);
-      row.outs += 1;
-      row.dismissal = (ball.wicketType || "OUT").replace(/_/g, " ").toLowerCase();
-    }
+      if (
+        ball.dismissedPlayerId &&
+        batting.has(ball.dismissedPlayerId)
+      ) {
+        const row = batting.get(ball.dismissedPlayerId);
+
+        if (ball.wicketType !== "RETIRED_HURT") {
+          row.outs += 1;
+        }
+
+        row.dismissal = (ball.wicketType || "OUT")
+          .replace(/_/g, " ")
+          .toLowerCase();
+      }
 
     if (ball.bowlerId && bowling.has(ball.bowlerId)) {
       const row = bowling.get(ball.bowlerId);

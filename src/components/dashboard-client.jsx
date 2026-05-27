@@ -512,7 +512,24 @@ export default function DashboardClient() {
       dismissedPlayerId: prev.strikerId
     }));
   }
+function quickRetiredHurt() {
+  const nextBatter = getNextAvailableBatter(
+    battingTeam.players,
+    Number(ballForm.strikerId),
+    Number(ballForm.nonStrikerId),
+    matchDetail.balls
+  );
 
+  setBallForm(prev => ({
+    ...prev,
+    isWicket: true,
+    wicketType: "RETIRED_HURT",
+    dismissedPlayerId: prev.strikerId,
+    newBatterId: nextBatter?.id
+      ? String(nextBatter.id)
+      : ""
+  }));
+}
   const activeInnings =
     scoreboard?.innings?.find((x) => x.number === scoreboard.currentInnings) ||
     scoreboard?.innings?.[0];
@@ -715,6 +732,7 @@ return (
                 <button type="button" className="chip" onClick={() => quickExtra("BYE")}>B</button>
                 <button type="button" className="chip" onClick={() => quickExtra("LEGBYE")}>LB</button>
                 <button type="button" className="chip chip-danger" onClick={() => quickWicket("BOWLED")}>W</button>
+                <button type="button" className="chip" onClick={quickRetiredHurt}>Retired Hurt</button>
               </div>
 
               <form className="form grid-2" onSubmit={handleAddBall}>
