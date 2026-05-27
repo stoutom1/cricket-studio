@@ -2,6 +2,7 @@
 
 import { useEffect, useMemo, useState } from "react";
 import { EXTRA_TYPES, WICKET_TYPES } from "@/lib/scoring";
+import "@/app/globals.css";
 
 function Card({ title, children, right }) {
   return (
@@ -24,6 +25,7 @@ function formatDate(value) {
 }
 
 export default function DashboardClient() {
+  const [activeTab, setActiveTab] = useState("scoring");
   const [teams, setTeams] = useState([]);
   const [matches, setMatches] = useState([]);
   const [selectedMatchId, setSelectedMatchId] = useState("");
@@ -514,10 +516,26 @@ export default function DashboardClient() {
   const activeInnings =
     scoreboard?.innings?.find((x) => x.number === scoreboard.currentInnings) ||
     scoreboard?.innings?.[0];
+return (
+  <>
+  <div className="tabs">
+    <button
+      className={`tab-btn ${activeTab === "scoring" ? "active" : ""}`}
+      onClick={() => setActiveTab("scoring")}
+    >
+      🏏 Live Scoring
+    </button>
 
-  return (
-    <div className="page-grid">
-      <div className="grid-main">
+    <button
+      className={`tab-btn ${activeTab === "management" ? "active" : ""}`}
+      onClick={() => setActiveTab("management")}
+    >
+      ⚙️ Team Management
+    </button>
+  </div>
+  {activeTab === "scoring" && (
+  <div className="page-grid">
+    <div className="grid-main">
           <Card
             title="🏏 Live Scoreboard"
             right={
@@ -966,9 +984,74 @@ export default function DashboardClient() {
             </div>
           )}
         </Card>
-      </div>
-      <div className="grid-side">
-        <Card title="👥 Teams">
+
+    </div>
+
+    <div className="grid-side">
+        <Card title="📋 Matches">
+          {matches.length === 0 ? (
+            <p className="muted">No matches yet</p>
+          ) : (
+            <div className="match-list">
+              {matches.map((match) => (
+                <div
+                  key={match.id}
+                  className={`match-item ${String(match.id) === String(selectedMatchId) ? "active" : ""}`}
+                >
+                  <button
+                    type="button"
+                    onClick={() => setSelectedMatchId(String(match.id))}
+                    style={{
+                      flex: 1,
+                      background: "transparent",
+                      border: "none",
+                      color: "inherit",
+                      textAlign: "left",
+                      cursor: "pointer"
+                    }}
+                  >
+                    <div>
+                      <strong>
+                        #{match.id} • {match.teamAName} vs {match.teamBName}
+                      </strong>
+                      <div className="muted small">
+                        Bat first: {match.battingFirstTeamName} • {match.oversPerInnings} overs
+                      </div>
+                      <div className="muted small">{formatDate(match.createdAt)}</div>
+                    </div>
+                  </button>
+
+                  <div style={{ display: "flex", flexDirection: "column", gap: 8 }}>
+                    <span className="pill">{match.status}</span>
+                    <button
+                      type="button"
+                      className="btn btn-outline"
+                      onClick={() => handleDeleteMatch(match.id)}
+                    >
+                      Delete
+                    </button>
+                  </div>
+                </div>
+              ))}
+            </div>
+          )}
+        </Card>
+
+        {(message || error) && (
+          <Card title="ℹ️ Notifications">
+            {message ? <p className="success">{message}</p> : null}
+            {error ? <p className="error">{error}</p> : null}
+          </Card>
+        )}
+    </div>
+  </div>
+)}
+{activeTab === "management" && (
+  <div className="page-grid">
+
+    <div className="grid-main">
+
+         <Card title="👥 Teams">
           <form className="form stack" onSubmit={handleAddTeam}>
             <label>
               <span>Team name</span>
@@ -1025,8 +1108,11 @@ export default function DashboardClient() {
             ))}
           </div>
         </Card>
+    </div>
 
-        <Card title="🧍 Add Player">
+    <div className="grid-side">
+
+ <Card title="🧍 Add Player">
           <form className="form stack" onSubmit={handleAddPlayer}>
             <label>
               <span>Team</span>
@@ -1150,7 +1236,6 @@ export default function DashboardClient() {
             <button type="submit" className="btn">Create Match</button>
           </form>
         </Card>
-
         <Card title="📋 Matches">
           {matches.length === 0 ? (
             <p className="muted">No matches yet</p>
@@ -1206,7 +1291,10 @@ export default function DashboardClient() {
             {error ? <p className="error">{error}</p> : null}
           </Card>
         )}
-      </div>
     </div>
-  );
+
+  </div>
+)}
+  </>
+);
 }
