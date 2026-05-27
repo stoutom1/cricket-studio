@@ -194,14 +194,29 @@ export function applyBallOutcome(ball) {
   let strikerId = ball.strikerId || null;
   let nonStrikerId = ball.nonStrikerId || null;
 
-  if (ball.isWicket) {
+  /*if (ball.isWicket) {
     if (!ball.dismissedPlayerId || ball.dismissedPlayerId === ball.strikerId) {
       strikerId = ball.newBatterId || null;
     } else if (ball.dismissedPlayerId === ball.nonStrikerId) {
       nonStrikerId = ball.newBatterId || null;
     }
+  }*/
+if (ball.isWicket) {
+  if (!ball.newBatterId) {
+    throw new Error("Replacement batter required");
   }
 
+  if (
+    !ball.dismissedPlayerId ||
+    ball.dismissedPlayerId === ball.strikerId
+  ) {
+    strikerId = ball.newBatterId;
+  } else if (
+    ball.dismissedPlayerId === ball.nonStrikerId
+  ) {
+    nonStrikerId = ball.newBatterId;
+  }
+}
   if (ball.totalRuns % 2 === 1) {
     [strikerId, nonStrikerId] = [nonStrikerId, strikerId];
   }
