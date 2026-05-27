@@ -126,27 +126,28 @@ export function validateBallInput(payload) {
 }
 
 export function ballShortText(ball) {
-  const parts = [];
-  const ballLabel = `${ball.overNo}.${ball.ballInOver}`;
-
-  if (ball.extraType === "WIDE") {
-    parts.push(`Wd+${ball.extras}`);
-  } else if (ball.extraType === "NOBALL") {
-    parts.push(`Nb+${ball.extras}`);
-    if (ball.runsOffBat > 0) parts.push(`${ball.runsOffBat}bat`);
-  } else if (ball.extraType === "BYE") {
-    parts.push(`B+${ball.extras}`);
-  } else if (ball.extraType === "LEGBYE") {
-    parts.push(`LB+${ball.extras}`);
-  } else {
-    parts.push(String(ball.runsOffBat));
-  }
+  const label = `${ball.overNo}.${ball.ballInOver}`;
 
   if (ball.isWicket) {
-    parts.push(`W-${ball.wicketType}`);
+    return `${label} W`;
   }
 
-  return `${ballLabel} ${parts.join(" ")}`;
+  switch (ball.extraType) {
+    case "WIDE":
+      return `${label} Wd${ball.extras === 0 ? "" : " (" +ball.extras+")"}`;
+
+    case "NOBALL":
+      return `${label} Nb${ball.extras === 0 ? "" : " (" +ball.extras+")"}`;
+
+    case "BYE":
+      return `${label} B${ball.extras}`;
+
+    case "LEGBYE":
+      return `${label} LB${ball.extras}`;
+
+    default:
+      return `${label} ${ball.runsOffBat === 0 ? "(0)" : "("+ball.runsOffBat+")"}`;
+  }
 }
 
 export function getPlayerName(playerMap, id) {

@@ -82,6 +82,46 @@ export default function DashboardClient() {
     return data;
   }
 
+      async function handleShareMatch() {
+      if (!scoreboard) return;
+
+      const shareUrl = `${window.location.origin}/scoreboard/${selectedMatchId}`;
+
+      const innings =
+        scoreboard.innings?.[scoreboard.innings.length - 1];
+
+      const shareText = `
+    🏏 ${scoreboard.match.teamAName} vs ${scoreboard.match.teamBName}
+
+    Score:
+    ${innings?.teamName || ""} ${innings?.runs}/${innings?.wickets}
+    Overs: ${innings?.oversDisplay}
+
+    ${scoreboard.summary.statusText}
+
+    Live Score:
+    ${shareUrl}
+      `.trim();
+
+      try {
+        if (navigator.share) {
+          await navigator.share({
+            title: `${scoreboard.match.teamAName} vs ${scoreboard.match.teamBName}`,
+            text: shareText,
+            url: shareUrl,
+          });
+        } else {
+          await navigator.clipboard.writeText(
+            `${shareText}\n\n${shareUrl}`
+          );
+
+          alert("Share link copied to clipboard");
+        }
+      } catch (err) {
+        console.error(err);
+      }
+    }
+
   async function loadTeams() {
     const data = await api("/api/teams");
     setTeams(data);
@@ -112,7 +152,8 @@ export default function DashboardClient() {
     const [detail, board, statData] = await Promise.all([
       api(`/api/matches/${matchId}`),
       api(`/api/scoreboard/${matchId}`),
-      api(`/api/stats/${matchId}`)
+      api(`/api/stats/${matchId}`),
+      api(`/api/liveview/${matchId}`)
     ]);
 
     setMatchDetail(detail);
@@ -428,6 +469,18 @@ export default function DashboardClient() {
       setError(err.message);
     }
   }
+  
+  const battingByTeam = stats?.batting.reduce((acc, row) => {
+    if (!acc[row.teamName]) acc[row.teamName] = [];
+    acc[row.teamName].push(row);
+    return acc;
+  }, {});
+
+  const bowlingByTeam = stats?.bowling.reduce((acc, row) => {
+    if (!acc[row.teamName]) acc[row.teamName] = [];
+    acc[row.teamName].push(row);
+    return acc;
+  }, {});
 
   function quickNormalBall(runs) {
     setBallForm((prev) => ({
@@ -465,7 +518,20 @@ export default function DashboardClient() {
   return (
     <div className="page-grid">
       <div className="grid-main">
-        <Card title="🏏 Live Scoreboard">
+          <Card
+            title="🏏 Live Scoreboard"
+            right={
+              selectedMatchId ? (
+                <button
+                  type="button"
+                  className="btn btn-outline"
+                  onClick={handleShareMatch}
+                >
+                  📤 Share
+                </button>
+              ) : null
+            }
+          >
           {!scoreboard ? (
             <p className="muted">Select a match to view scoreboard.</p>
           ) : (
@@ -827,79 +893,80 @@ export default function DashboardClient() {
           ) : (
             <div className="stats-grid">
               <div>
-                <h4>Batting</h4>
-                <table className="score-table">
-                  <thead>
-                    <tr>
-                      <th>Player</th>
-                      <th>Team</th>
-                      <th>R</th>
-                      <th>B</th>
-                      <th>4s</th>
-                      <th>6s</th>
-                      <th>SR</th>
-                      <th>Out</th>
-                    </tr>
-                  </thead>
-                  <tbody>
-                    {stats.batting.length === 0 ? (
-                      <tr><td colSpan="8">No batting stats yet</td></tr>
-                    ) : (
-                      stats.batting.map((row) => (
-                        <tr key={row.playerId}>
-                          <td>{row.playerName}</td>
-                          <td>{row.teamName}</td>
-                          <td>{row.runs}</td>
-                          <td>{row.balls}</td>
-                          <td>{row.fours}</td>
-                          <td>{row.sixes}</td>
-                          <td>{row.strikeRate}</td>
-                          <td>{row.outs ? row.dismissal : "not out"}</td>
-                        </tr>
-                      ))
-                    )}
-                  </tbody>
-                </table>
-              </div>
+                  <h4>Batting</h4>
 
+                  {Object.entries(battingByTeam || {}).map(([teamName, players]) => (
+                    <div key={teamName} style={{ marginBottom: 24 }}>
+                      <h5>{teamName}</h5>
+
+                      <table className="score-table">
+                        <thead>
+                          <tr>
+                            <th>Player</th>
+                            <th>R</th>
+                            <th>B</th>
+                            <th>4s</th>
+                            <th>6s</th>
+                            <th>SR</th>
+                            <th>Out</th>
+                          </tr>
+                        </thead>
+
+                        <tbody>
+                          {players.map((row) => (
+                            <tr key={row.playerId}>
+                              <td>{row.playerName}</td>
+                              <td>{row.runs}</td>
+                              <td>{row.balls}</td>
+                              <td>{row.fours}</td>
+                              <td>{row.sixes}</td>
+                              <td>{row.strikeRate}</td>
+                              <td>{row.outs ? row.dismissal : "not out"}</td>
+                            </tr>
+                          ))}
+                        </tbody>
+                      </table>
+                    </div>
+                  ))}
+                </div>
               <div>
-                <h4>Bowling</h4>
-                <table className="score-table">
-                  <thead>
-                    <tr>
-                      <th>Player</th>
-                      <th>Team</th>
-                      <th>O</th>
-                      <th>R</th>
-                      <th>W</th>
-                      <th>Dots</th>
-                      <th>Eco</th>
-                    </tr>
-                  </thead>
-                  <tbody>
-                    {stats.bowling.length === 0 ? (
-                      <tr><td colSpan="7">No bowling stats yet</td></tr>
-                    ) : (
-                      stats.bowling.map((row) => (
-                        <tr key={row.playerId}>
-                          <td>{row.playerName}</td>
-                          <td>{row.teamName}</td>
-                          <td>{row.overs}</td>
-                          <td>{row.runs}</td>
-                          <td>{row.wickets}</td>
-                          <td>{row.dots}</td>
-                          <td>{row.economy}</td>
-                        </tr>
-                      ))
-                    )}
-                  </tbody>
-                </table>
-              </div>
+                        <h4>Bowling</h4>
+                        {Object.entries(bowlingByTeam || {}).map(([teamName, players]) => (
+                          <div key={teamName} style={{ marginBottom: 24 }}>
+                            <h5>{teamName}</h5>
+
+                            <table className="score-table">
+                              <thead>
+                                <tr>
+                                  <th>Player</th>
+                                  <th>O</th>
+                                  <th>R</th>
+                                  <th>W</th>
+                                  <th>Dots</th>
+                                  <th>Eco</th>
+                                </tr>
+                              </thead>
+
+                              <tbody>
+                                {players.map((row) => (
+                                  <tr key={row.playerId}>
+                                    <td>{row.playerName}</td>
+                                    <td>{row.overs}</td>
+                                    <td>{row.runs}</td>
+                                    <td>{row.wickets}</td>
+                                    <td>{row.dots}</td>
+                                    <td>{row.economy}</td>
+                                  </tr>
+                                ))}
+                              </tbody>
+                            </table>
+                          </div>
+                        ))}
+                      </div>
             </div>
           )}
         </Card>
       </div>
-
       <div className="grid-side">
         <Card title="👥 Teams">
           <form className="form stack" onSubmit={handleAddTeam}>

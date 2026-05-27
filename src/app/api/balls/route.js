@@ -62,7 +62,13 @@ if (
     { status: 400 }
   );
 }
+if (payload.extraType === "WIDE" && payload.extras < 1) {
+  payload.extras = 1;
+}
 
+if (payload.extraType === "NOBALL" && payload.extras < 1) {
+  payload.extras = 1;
+}
   const validationErrors = validateBallInput(payload);
   if (validationErrors.length) {
     return NextResponse.json({ error: validationErrors[0] }, { status: 400 });
@@ -195,6 +201,38 @@ if (
     }
   });
 
+  const isNewOver =
+  legalBallsCount > 0 &&
+  legalBallsCount % 6 === 0;
+
+  if (isNewOver) {
+    const previousOverBowler = await prisma.ball.findFirst({
+      where: {
+        matchId: payload.matchId,
+        inningsNo: payload.inningsNo,
+        legalDelivery: true
+      },
+      orderBy: [
+        { overNo: "desc" },
+        { ballInOver: "desc" }
+      ],
+      select: {
+        bowlerId: true
+      }
+    });
+
+    if (
+      previousOverBowler &&
+      previousOverBowler.bowlerId === payload.bowlerId
+    ) {
+      return NextResponse.json(
+        {
+          error: "Bowler cannot bowl consecutive overs"
+        },
+        { status: 400 }
+      );
+    }
+  }
   const totalBallsCount = await prisma.ball.count({
     where: {
       matchId: payload.matchId,
