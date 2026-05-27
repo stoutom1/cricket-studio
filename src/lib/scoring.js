@@ -264,7 +264,7 @@ export function summarizeInningsDetailed(balls, playerMap, oversPerInnings) {
       strikerName: nextPair.strikerId? getPlayerName(playerMap, nextPair.strikerId): "Yet to bat",
       nonStrikerName: nextPair.nonStrikerId? getPlayerName(playerMap, nextPair.nonStrikerId): "Yet to bat",
       //nonStrikerName: getPlayerName(playerMap, nextPair.nonStrikerId),
-      nextOverNo: Math.floor(legalBalls / 6) + 1,
+      nextOverNo: Math.floor(legalBalls / 6),
       nextBallInOver: (legalBalls % 6) + 1
     };
   }

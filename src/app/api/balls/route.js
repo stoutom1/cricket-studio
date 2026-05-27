@@ -18,7 +18,7 @@ export async function POST(request) {
   }
 
   const body = await request.json();
-
+/*
   const payload = {
     matchId: Number(body.matchId),
     inningsNo: Number(body.inningsNo),
@@ -32,10 +32,36 @@ export async function POST(request) {
     dismissedPlayerId: body.dismissedPlayerId ? Number(body.dismissedPlayerId) : null,
     note: body.note ? String(body.note).trim() : null
   };
+*/
+  const payload = {
+    matchId: Number(body.matchId),
+    inningsNo: Number(body.inningsNo),
+    strikerId: Number(body.strikerId),
+    nonStrikerId: Number(body.nonStrikerId),
+    bowlerId: Number(body.bowlerId),
+    extraType: String(body.extraType || "NONE"),
+    runsOffBat: Number(body.runsOffBat || 0),
+    extras: Number(body.extras || 0),
+    isWicket: body.isWicket ? 1 : 0,
+    wicketType: String(body.wicketType || "NONE"),
+    dismissedPlayerId: body.dismissedPlayerId
+      ? Number(body.dismissedPlayerId)
+      : null,
+    newBatterId: body.newBatterId
+      ? Number(body.newBatterId)
+      : null,
+    note: body.note?.trim() || null,
+  };
 
-  if (!payload.matchId) {
-    return NextResponse.json({ error: "Match is required" }, { status: 400 });
-  }
+if (
+  Number.isNaN(payload.matchId) ||
+  payload.matchId <= 0
+) {
+  return NextResponse.json(
+    { error: "Match is required" },
+    { status: 400 }
+  );
+}
 
   const validationErrors = validateBallInput(payload);
   if (validationErrors.length) {
@@ -54,39 +80,109 @@ export async function POST(request) {
   const bowlingTeamId = getBowlingTeamId(match, payload.inningsNo);
 
   const playerIds = [
-    payload.batterId,
+    payload.strikerId,
+    payload.nonStrikerId,
     payload.bowlerId,
-    payload.dismissedPlayerId
+    payload.dismissedPlayerId,
+    payload.newBatterId,
   ].filter(Boolean);
 
   const players = await prisma.player.findMany({
     where: {
-      id: { in: playerIds }
-    }
+      id: { in: playerIds },
+    },
   });
 
-  const playerMap = new Map(players.map((p) => [p.id, p]));
+  const playerMap = new Map(
+    players.map((p) => [p.id, p])
+  );
 
-  if (!playerMap.has(payload.batterId) || playerMap.get(payload.batterId).teamId !== battingTeamId) {
-    return NextResponse.json({ error: "Batter must belong to batting team" }, { status: 400 });
+  // striker validation
+  if (
+    !playerMap.has(payload.strikerId) ||
+    playerMap.get(payload.strikerId).teamId !== battingTeamId
+  ) {
+    return NextResponse.json(
+      { error: "Striker must belong to batting team" },
+      { status: 400 }
+    );
   }
 
-  if (!playerMap.has(payload.bowlerId) || playerMap.get(payload.bowlerId).teamId !== bowlingTeamId) {
-    return NextResponse.json({ error: "Bowler must belong to bowling team" }, { status: 400 });
+  // non-striker validation
+  if (
+    !playerMap.has(payload.nonStrikerId) ||
+    playerMap.get(payload.nonStrikerId).teamId !== battingTeamId
+  ) {
+    return NextResponse.json(
+      { error: "Non-striker must belong to batting team" },
+      { status: 400 }
+    );
+  }
+
+  // bowler validation
+  if (
+    !playerMap.has(payload.bowlerId) ||
+    playerMap.get(payload.bowlerId).teamId !== bowlingTeamId
+  ) {
+    return NextResponse.json(
+      { error: "Bowler must belong to bowling team" },
+      { status: 400 }
+    );
   }
 
   const dismissedPlayerId = payload.isWicket
-    ? payload.dismissedPlayerId || payload.batterId
+    ? payload.dismissedPlayerId
     : null;
 
   if (dismissedPlayerId) {
-    const dismissedPlayer = await prisma.player.findUnique({
-      where: { id: dismissedPlayerId }
-    });
+    const dismissedPlayer = playerMap.get(dismissedPlayerId);
 
-    if (!dismissedPlayer || dismissedPlayer.teamId !== battingTeamId) {
-      return NextResponse.json({ error: "Dismissed player must belong to batting team" }, { status: 400 });
+    if (
+      !dismissedPlayer ||
+      dismissedPlayer.teamId !== battingTeamId
+    ) {
+      return NextResponse.json(
+        { error: "Dismissed player must belong to batting team" },
+        { status: 400 }
+      );
     }
+  }
+
+  if (payload.newBatterId) {
+    const newBatter = playerMap.get(payload.newBatterId);
+
+    if (
+      !newBatter ||
+      newBatter.teamId !== battingTeamId
+    ) {
+      return NextResponse.json(
+        { error: "New batter must belong to batting team" },
+        { status: 400 }
+      );
+    }
+  }
+    if (
+    payload.isWicket &&
+    ["BOWLED", "CAUGHT", "LBW", "STUMPED", "HIT_WICKET", "OTHER"]
+      .includes(payload.wicketType) &&
+    !payload.newBatterId
+  ) {
+    return NextResponse.json(
+      { error: "New batter is required after wicket" },
+      { status: 400 }
+    );
+  }
+    if (
+    payload.newBatterId &&
+    [
+      payload.strikerId,
+      payload.nonStrikerId,
+    ].includes(payload.newBatterId)
+  ) {
+    return NextResponse.json(
+      { error: "New batter must not already be at the crease" },
+      { status: 400 }
+    );
   }
 
   const legalDelivery = isLegalDelivery(payload.extraType);
@@ -115,10 +211,8 @@ export async function POST(request) {
     );
   }
 
-  const overNo = Math.floor(legalBallsCount / 6) + 1;
-  const ballInOver = legalDelivery
-    ? (legalBallsCount % 6) + 1
-    : legalBallsCount % 6;
+  const overNo = Math.floor(legalBallsCount / 6);
+  const ballInOver = (legalBallsCount % 6) + 1;
 
   const isPowerPlay = overNo <= match.powerplayOversInnings;
   const totalRuns = payload.runsOffBat + payload.extras;
@@ -131,19 +225,22 @@ export async function POST(request) {
       overNo,
       ballInOver,
       legalDelivery,
-      batterId: payload.batterId,
+      strikerId: payload.strikerId,
+      nonStrikerId: payload.nonStrikerId,
       bowlerId: payload.bowlerId,
       dismissedPlayerId,
+      newBatterId: payload.newBatterId,
       runsOffBat: payload.runsOffBat,
       extras: payload.extras,
       extraType: payload.extraType,
       totalRuns,
       isWicket: payload.isWicket,
-      wicketType: payload.isWicket ? payload.wicketType : "NONE",
+      wicketType: payload.isWicket
+        ? payload.wicketType
+        : "NONE",
       isPowerPlay,
-      note: payload.note || null
-    }
+      note: payload.note,
+    },
   });
-
   return NextResponse.json(ball, { status: 201 });
 }
