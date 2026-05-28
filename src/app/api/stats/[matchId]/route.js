@@ -22,7 +22,7 @@ export async function GET(request, { params }) {
 
   if (Number.isNaN(matchId) || matchId <= 0) {
     return NextResponse.json(
-      { error: "Invalid match id" },
+      { error: "Invalid match id 5" },
       { status: 400 }
     );
   }

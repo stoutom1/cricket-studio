@@ -11,6 +11,34 @@ import {
 
 export const runtime = "nodejs";
 
+export function isMatchCompleted(
+  inningsNo,
+  legalBalls,
+  oversPerInnings,
+  wickets,
+  target,
+  runs
+) {
+  const maxBalls = oversPerInnings * 6;
+
+  // Chase successful
+  if (inningsNo === 2 && target && runs >= target) {
+    return true;
+  }
+
+  // Overs completed
+  if (legalBalls >= maxBalls) {
+    return true;
+  }
+
+  // All out
+  /*if (wickets >= 10) {
+    return true;
+  }*/
+
+  return false;
+}
+
 export async function GET(request, { params }) {
   const session = await getServerSession(authOptions);
 
@@ -26,7 +54,7 @@ export async function GET(request, { params }) {
 
   if (Number.isNaN(matchId) || matchId <= 0) {
     return NextResponse.json(
-      { error: "Invalid match id why??" },
+      { error: "Invalid match id 4" },
       { status: 400 }
     );
   }

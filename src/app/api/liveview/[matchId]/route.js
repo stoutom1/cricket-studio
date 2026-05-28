@@ -7,12 +7,12 @@ import {
 } from "@/lib/scoring";
 
 export async function GET(request, { params }) {
-  const { id } = await params;
-  const matchId = Number(id);
+  const { matchId: matchIdParam } = await params;
+  const matchId = Number(matchIdParam);
 
   if (Number.isNaN(matchId)) {
     return NextResponse.json(
-      { error: "Invalid match id" },
+      { error: "Invalid match id 1" },
       { status: 400 }
     );
   }

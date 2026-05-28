@@ -20,7 +20,7 @@ export async function POST(request, { params }) {
 
   if (Number.isNaN(matchId) || matchId <= 0) {
     return NextResponse.json(
-      { error: "Invalid match id" },
+      { error: "Invalid match id 3" },
       { status: 400 }
     );
   }

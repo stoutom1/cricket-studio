@@ -87,8 +87,7 @@ export default function DashboardClient() {
       async function handleShareMatch() {
       if (!scoreboard) return;
 
-      const shareUrl = `${window.location.origin}/api/liveview/${selectedMatchId}`;
-
+      const shareUrl = `${window.location.origin}/live/${selectedMatchId}`;
       const innings =
         scoreboard.innings?.[scoreboard.innings.length - 1];
 
@@ -99,7 +98,7 @@ export default function DashboardClient() {
     ${innings?.teamName || ""} ${innings?.runs}/${innings?.wickets}
     Overs: ${innings?.oversDisplay}
 
-    ${scoreboard.summary.statusText}
+    ${scoreboard.summary?.statusText || "Loading scorecard..."}
 
     Live Score:
     ${shareUrl}
@@ -155,7 +154,8 @@ export default function DashboardClient() {
       api(`/api/matches/${matchId}`),
       api(`/api/scoreboard/${matchId}`),
       api(`/api/stats/${matchId}`),
-      api(`/api/liveview/${matchId}`)
+      api(`/api/liveview/${matchId}`),
+      //api(`/api/live/${matchId}`)
     ]);
 
     setMatchDetail(detail);

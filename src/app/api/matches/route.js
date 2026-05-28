@@ -5,20 +5,109 @@ import { authOptions } from "@/lib/auth";
 
 export const runtime = "nodejs";
 
+/*function formatOvers(legalBalls) {
+  return `${Math.floor(legalBalls / 6)}.${legalBalls % 6}`;
+}*/
+export function formatOversFromBalls(legalBalls) {
+  const overs = Math.floor(legalBalls / 6);
+  const balls = legalBalls % 6;
+  return `${overs}.${balls}`;
+}
+
+function countsAsWicket(ball) {
+  return (
+    ball.isWicket &&
+    ball.wicketType !== "RETIRED_HURT"
+  );
+}
+
 export async function GET() {
   const session = await getServerSession(authOptions);
+
   if (!session) {
-    return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
+    return NextResponse.json(
+      { error: "Unauthorized" },
+      { status: 401 }
+    );
   }
 
   const matches = await prisma.match.findMany({
     orderBy: { createdAt: "desc" },
+
     include: {
       teamA: true,
       teamB: true,
-      battingFirstTeam: true
+      battingFirstTeam: true,
+
+      balls: {
+        orderBy: {
+          sequence: "asc"
+        }
+      }
     }
   });
+
+  // AUTO UPDATE MATCH STATUS
+  for (const match of matches) {
+    const innings1Balls = match.balls.filter(
+      (b) => b.inningsNo === 1
+    );
+
+    const innings2Balls = match.balls.filter(
+      (b) => b.inningsNo === 2
+    );
+
+    const innings1Runs = innings1Balls.reduce(
+      (sum, b) => sum + b.totalRuns,
+      0
+    );
+
+    const innings2Runs = innings2Balls.reduce(
+      (sum, b) => sum + b.totalRuns,
+      0
+    );
+
+    const innings1LegalBalls = innings1Balls.filter(
+      (b) => b.legalDelivery
+    ).length;
+
+    const innings2LegalBalls = innings2Balls.filter(
+      (b) => b.legalDelivery
+    ).length;
+
+    const innings2Wickets = innings2Balls.reduce(
+      (sum, b) =>
+        sum + (countsAsWicket(b) ? 1 : 0),
+      0
+    );
+
+    const target = innings1Runs + 1;
+
+    const innings2Completed =
+      innings2Runs >= target ||
+      innings2LegalBalls >=
+        match.oversPerInnings * 6
+//         || innings2Wickets >= 10;
+
+    const shouldComplete =
+      innings1LegalBalls > 0 &&
+      innings2Completed;
+
+    if (
+      shouldComplete &&
+      match.status !== "completed"
+    ) {
+      await prisma.match.update({
+        where: { id: match.id },
+
+        data: {
+          status: "completed"
+        }
+      });
+
+      match.status = "completed";
+    }
+  }
 
   const formatted = matches.map((m) => ({
     id: m.id,
@@ -29,7 +118,8 @@ export async function GET() {
     battingFirstTeamId: m.battingFirstTeamId,
     battingFirstTeamName: m.battingFirstTeam.name,
     oversPerInnings: m.oversPerInnings,
-    powerplayOversInnings: m.powerplayOversInnings,
+    powerplayOversInnings:
+      m.powerplayOversInnings,
     status: m.status,
     createdAt: m.createdAt
   }));
