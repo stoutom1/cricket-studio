@@ -100,64 +100,111 @@ export default function LiveScoreClient({ matchId }) {
           style={{
             fontSize: 32,
             fontWeight: 800,
-            marginBottom: 8
+            marginBottom: 10
           }}
         >
           {scoreboard?.match?.teamAName} vs{" "}
           {scoreboard?.match?.teamBName}
         </h1>
 
-        <p
+        {/* MATCH STATUS */}
+        <div
           style={{
-            fontSize: 18,
-            color: "#d1d5db"
+            background: "#1f2937",
+            padding: 16,
+            borderRadius: 12,
+            marginBottom: 20
           }}
         >
-          {scoreboard?.summary?.statusText || "Match in progress"}
-        </p>
+          <div
+            style={{
+              fontSize: 18,
+              fontWeight: 700,
+              marginBottom: 8
+            }}
+          >
+            Match Status
+          </div>
+
+          <div style={{ color: "#d1d5db" }}>
+            {scoreboard?.summary?.statusText ||
+              "Match in progress"}
+          </div>
+        </div>
 
         <div
           style={{
-            marginTop: 20,
             display: "flex",
             gap: 16,
             flexWrap: "wrap"
           }}
         >
-          <div
-            style={{
-              background: "#1f2937",
-              padding: "12px 18px",
-              borderRadius: 12
-            }}
-          >
-            <strong>Current Score:</strong>{" "}
-            {latestInnings?.runs}/{latestInnings?.wickets}
-          </div>
+          <InfoPill
+            label="Current Score"
+            value={`${latestInnings?.runs}/${latestInnings?.wickets}`}
+          />
 
-          <div
-            style={{
-              background: "#1f2937",
-              padding: "12px 18px",
-              borderRadius: 12
-            }}
-          >
-            <strong>Overs:</strong>{" "}
-            {latestInnings?.oversDisplay}
-          </div>
+          <InfoPill
+            label="Overs"
+            value={latestInnings?.oversDisplay}
+          />
 
-          <div
-            style={{
-              background: "#1f2937",
-              padding: "12px 18px",
-              borderRadius: 12
-            }}
-          >
-            <strong>Run Rate:</strong>{" "}
-            {latestInnings?.runRate}
-          </div>
+          <InfoPill
+            label="Run Rate"
+            value={latestInnings?.runRate}
+          />
+
+          <InfoPill
+            label="Target"
+            value={
+  scoreboard?.summary?.target ?? "-"
+}
+          />
+
+          <InfoPill
+            label="Balls Left"
+            value={
+  scoreboard?.summary?.remainingBalls !== null &&
+  scoreboard?.summary?.remainingBalls !== undefined
+    ? scoreboard.summary.remainingBalls
+    : "-"
+}
+          />
         </div>
       </div>
+
+      {/* CURRENT PLAYERS */}
+      <StatCard title="Current Players">
+        <table style={tableStyle}>
+          <tbody>
+            <tr>
+              <td style={thStyle}>Striker</td>
+              <td style={tdStyle}>
+                {scoreboard?.currentState?.strikerName ||
+                  "Yet to bat"}
+              </td>
+            </tr>
+
+            <tr>
+              <td style={thStyle}>Non Striker</td>
+              <td style={tdStyle}>
+                {scoreboard?.currentState
+                  ?.nonStrikerName || "Yet to bat"}
+              </td>
+            </tr>
+
+            <tr>
+              <td style={thStyle}>Next Ball</td>
+              <td style={tdStyle}>
+                {scoreboard?.currentState?.nextOverNo !==
+                undefined
+                  ? `${scoreboard?.currentState?.nextOverNo}.${scoreboard?.currentState?.nextBallInOver}`
+                  : "-"}
+              </td>
+            </tr>
+          </tbody>
+        </table>
+      </StatCard>
 
       {/* INNINGS */}
       {scoreboard?.innings?.map((innings) => (
@@ -165,165 +212,219 @@ export default function LiveScoreClient({ matchId }) {
           key={innings.number}
           title={`Innings ${innings.number} - ${innings.teamName}`}
         >
-          <div
+          {/* INNINGS SUMMARY */}
+          <table
             style={{
-              display: "grid",
-              gridTemplateColumns: "repeat(auto-fit, minmax(180px, 1fr))",
-              gap: 16,
+              ...tableStyle,
               marginBottom: 24
             }}
           >
-            <div>
-              <h4>Score</h4>
-              <p style={{ fontSize: 28, fontWeight: 700 }}>
-                {innings.runs}/{innings.wickets}
-              </p>
-            </div>
+            <tbody>
+              <tr>
+                <td style={thStyle}>Score</td>
+                <td style={tdStyle}>
+                  {innings.runs}/{innings.wickets}
+                </td>
+              </tr>
 
-            <div>
-              <h4>Overs</h4>
-              <p>{innings.oversDisplay}</p>
-            </div>
+              <tr>
+                <td style={thStyle}>Overs</td>
+                <td style={tdStyle}>
+                  {innings.oversDisplay}
+                </td>
+              </tr>
 
-            <div>
-              <h4>Run Rate</h4>
-              <p>{innings.runRate}</p>
-            </div>
+              <tr>
+                <td style={thStyle}>Run Rate</td>
+                <td style={tdStyle}>
+                  {innings.runRate}
+                </td>
+              </tr>
 
-            <div>
-              <h4>Powerplay</h4>
-              <p>
-                {innings.powerplay?.runs}/
-                {innings.powerplay?.wickets}
-              </p>
-            </div>
-          </div>
+              <tr>
+                <td style={thStyle}>Powerplay</td>
+                <td style={tdStyle}>
+                  {innings.powerplay?.runs}/
+                  {innings.powerplay?.wickets}
+                </td>
+              </tr>
+            </tbody>
+          </table>
+
+          {/* BATTING STATS */}
+          <h3 style={sectionTitle}>
+            Batting Statistics
+          </h3>
+
+          <table style={tableStyle}>
+            <thead>
+              <tr>
+                <th style={thStyle}>Player</th>
+                <th style={thStyle}>R</th>
+                <th style={thStyle}>B</th>
+                <th style={thStyle}>4s</th>
+                <th style={thStyle}>6s</th>
+                <th style={thStyle}>SR</th>
+                <th style={thStyle}>Dismissal</th>
+              </tr>
+            </thead>
+
+            <tbody>
+              {innings?.battingStats?.map((batter) => (
+                <tr key={batter.playerId}>
+                  <td style={tdStyle}>
+                    {batter.playerName}
+                  </td>
+
+                  <td style={tdStyle}>
+                    {batter.runs}
+                  </td>
+
+                  <td style={tdStyle}>
+                    {batter.balls}
+                  </td>
+
+                  <td style={tdStyle}>
+                    {batter.fours}
+                  </td>
+
+                  <td style={tdStyle}>
+                    {batter.sixes}
+                  </td>
+
+                  <td style={tdStyle}>
+                    {batter.strikeRate}
+                  </td>
+
+                  <td style={tdStyle}>
+                    {batter.dismissal}
+                  </td>
+                </tr>
+              ))}
+            </tbody>
+          </table>
+
+          {/* BOWLING STATS */}
+          <h3 style={sectionTitle}>
+            Bowling Statistics
+          </h3>
+
+          <table style={tableStyle}>
+            <thead>
+              <tr>
+                <th style={thStyle}>Bowler</th>
+                <th style={thStyle}>Overs</th>
+                <th style={thStyle}>Runs</th>
+                <th style={thStyle}>Wickets</th>
+                <th style={thStyle}>Dots</th>
+                <th style={thStyle}>Economy</th>
+              </tr>
+            </thead>
+
+            <tbody>
+              {innings?.bowlingStats?.map((bowler) => (
+                <tr key={bowler.playerId}>
+                  <td style={tdStyle}>
+                    {bowler.playerName}
+                  </td>
+
+                  <td style={tdStyle}>
+                    {bowler.overs}
+                  </td>
+
+                  <td style={tdStyle}>
+                    {bowler.runs}
+                  </td>
+
+                  <td style={tdStyle}>
+                    {bowler.wickets}
+                  </td>
+
+                  <td style={tdStyle}>
+                    {bowler.dots}
+                  </td>
+
+                  <td style={tdStyle}>
+                    {bowler.economy}
+                  </td>
+                </tr>
+              ))}
+            </tbody>
+          </table>
 
           {/* PARTNERSHIPS */}
-          <div style={{ marginBottom: 32 }}>
-            <h3 style={{ marginBottom: 12 }}>
-              Partnerships
-            </h3>
+          <h3 style={sectionTitle}>Partnerships</h3>
 
-            {innings.partnerships?.length === 0 ? (
-              <p>No partnerships yet</p>
-            ) : (
-              <table style={tableStyle}>
-                <thead>
-                  <tr>
-                    <th style={thStyle}>Batters</th>
-                    <th style={thStyle}>Runs</th>
-                    <th style={thStyle}>Balls</th>
-                    <th style={thStyle}>Status</th>
-                  </tr>
-                </thead>
+          <table style={tableStyle}>
+            <thead>
+              <tr>
+                <th style={thStyle}>Batters</th>
+                <th style={thStyle}>Runs</th>
+                <th style={thStyle}>Balls</th>
+                <th style={thStyle}>Status</th>
+              </tr>
+            </thead>
 
-                <tbody>
-                  {innings.partnerships?.map((p, index) => (
-                    <tr key={index}>
-                      <td style={tdStyle}>
-                        {p.batter1} & {p.batter2}
-                      </td>
+            <tbody>
+              {innings.partnerships?.map((p, index) => (
+                <tr key={index}>
+                  <td style={tdStyle}>
+                    {p.batter1} & {p.batter2}
+                  </td>
 
-                      <td style={tdStyle}>{p.runs}</td>
+                  <td style={tdStyle}>{p.runs}</td>
 
-                      <td style={tdStyle}>{p.balls}</td>
+                  <td style={tdStyle}>{p.balls}</td>
 
-                      <td style={tdStyle}>
-                        {p.ongoing
-                          ? "Current"
-                          : `Ended at wicket ${p.wicketNumber}`}
-                      </td>
-                    </tr>
-                  ))}
-                </tbody>
-              </table>
-            )}
-          </div>
+                  <td style={tdStyle}>
+                    {p.ongoing
+                      ? "Current"
+                      : `W${p.wicketNumber}`}
+                  </td>
+                </tr>
+              ))}
+            </tbody>
+          </table>
 
           {/* FALL OF WICKETS */}
-          <div style={{ marginBottom: 32 }}>
-            <h3 style={{ marginBottom: 12 }}>
-              Fall Of Wickets
-            </h3>
+          <h3 style={sectionTitle}>
+            Fall Of Wickets
+          </h3>
 
-            {innings.fallOfWickets?.length === 0 ? (
-              <p>No wickets yet</p>
-            ) : (
-              <table style={tableStyle}>
-                <thead>
-                  <tr>
-                    <th style={thStyle}>Wicket</th>
-                    <th style={thStyle}>Score</th>
-                    <th style={thStyle}>Player</th>
-                    <th style={thStyle}>Over</th>
-                  </tr>
-                </thead>
+          <table style={tableStyle}>
+            <thead>
+              <tr>
+                <th style={thStyle}>Wicket</th>
+                <th style={thStyle}>Score</th>
+                <th style={thStyle}>Player</th>
+                <th style={thStyle}>Over</th>
+              </tr>
+            </thead>
 
-                <tbody>
-                  {innings.fallOfWickets?.map((w, index) => (
-                    <tr key={index}>
-                      <td style={tdStyle}>
-                        {w.wicketNumber}
-                      </td>
+            <tbody>
+              {innings.fallOfWickets?.map((w, index) => (
+                <tr key={index}>
+                  <td style={tdStyle}>
+                    {w.wicketNumber}
+                  </td>
 
-                      <td style={tdStyle}>
-                        {w.score}
-                      </td>
+                  <td style={tdStyle}>
+                    {w.score}
+                  </td>
 
-                      <td style={tdStyle}>
-                        {w.playerOut}
-                      </td>
+                  <td style={tdStyle}>
+                    {w.playerOut}
+                  </td>
 
-                      <td style={tdStyle}>
-                        {w.over}
-                      </td>
-                    </tr>
-                  ))}
-                </tbody>
-              </table>
-            )}
-          </div>
+                  <td style={tdStyle}>
+                    {w.over}
+                  </td>
+                </tr>
+              ))}
+            </tbody>
+          </table>
         </StatCard>
       ))}
-
-      {/* CURRENT BATTERS */}
-      <StatCard title="Current Players">
-        <div
-          style={{
-            display: "flex",
-            gap: 40,
-            flexWrap: "wrap"
-          }}
-        >
-          <div>
-            <h4>🏏 Striker</h4>
-
-            <p>
-              {scoreboard?.currentState?.strikerName ||
-                "Yet to bat"}
-            </p>
-          </div>
-
-          <div>
-            <h4>🏃 Non Striker</h4>
-
-            <p>
-              {scoreboard?.currentState
-                ?.nonStrikerName || "Yet to bat"}
-            </p>
-          </div>
-
-          <div>
-            <h4>⏭ Next Ball</h4>
-
-            <p>
-              {scoreboard?.currentState?.nextOverNo}.
-              {scoreboard?.currentState?.nextBallInOver}
-            </p>
-          </div>
-        </div>
-      </StatCard>
 
       {/* RECENT BALLS */}
       <StatCard title="Recent Balls">
@@ -340,7 +441,8 @@ export default function LiveScoreClient({ matchId }) {
               style={{
                 background: "#2563eb",
                 padding: "10px 14px",
-                borderRadius: 999
+                borderRadius: 999,
+                fontWeight: 600
               }}
             >
               {ball.label}
@@ -352,19 +454,59 @@ export default function LiveScoreClient({ matchId }) {
   );
 }
 
+function InfoPill({ label, value }) {
+  return (
+    <div
+      style={{
+        background: "#1f2937",
+        padding: "12px 18px",
+        borderRadius: 12,
+        minWidth: 140
+      }}
+    >
+      <div
+        style={{
+          fontSize: 12,
+          color: "#9ca3af",
+          marginBottom: 6
+        }}
+      >
+        {label}
+      </div>
+
+      <div
+        style={{
+          fontSize: 18,
+          fontWeight: 700
+        }}
+      >
+        {value}
+      </div>
+    </div>
+  );
+}
+
+const sectionTitle = {
+  marginTop: 30,
+  marginBottom: 12,
+  fontSize: 18,
+  fontWeight: 700
+};
+
 const tableStyle = {
   width: "100%",
-  borderCollapse: "collapse"
+  borderCollapse: "collapse",
+  marginBottom: 24
 };
 
 const thStyle = {
   textAlign: "left",
   padding: 12,
   background: "#1f2937",
-  borderBottom: "1px solid #374151"
+  border: "1px solid #374151"
 };
 
 const tdStyle = {
   padding: 12,
-  borderBottom: "1px solid #1f2937"
+  border: "1px solid #374151"
 };

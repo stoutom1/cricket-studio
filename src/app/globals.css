@@ -342,3 +342,175 @@ select:focus {
   transform: translateY(-1px);
 }
 }
+.live-page {
+  background: #0b1220;
+  min-height: 100vh;
+  color: white;
+  padding: 16px;
+  max-width: 1200px;
+  margin: auto;
+  font-family: Inter, sans-serif;
+}
+
+.live-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 16px;
+  gap: 16px;
+}
+
+.live-header h1 {
+  margin: 0;
+  font-size: 28px;
+}
+
+.status-text {
+  color: #9ca3af;
+  margin-top: 6px;
+  font-size: 14px;
+}
+
+.score-pill {
+  background: #2563eb;
+  padding: 14px 18px;
+  border-radius: 14px;
+  font-size: 28px;
+  font-weight: 700;
+  min-width: 160px;
+  text-align: center;
+}
+
+.score-pill span {
+  display: block;
+  font-size: 13px;
+  margin-top: 4px;
+  opacity: 0.8;
+}
+
+.quick-grid {
+  display: grid;
+  grid-template-columns: repeat(4, 1fr);
+  gap: 12px;
+  margin-bottom: 16px;
+}
+
+.mini-card {
+  background: #111827;
+  padding: 14px;
+  border-radius: 12px;
+}
+
+.mini-card span {
+  display: block;
+  color: #9ca3af;
+  font-size: 12px;
+  margin-bottom: 6px;
+}
+
+.mini-card strong {
+  font-size: 18px;
+}
+
+.compact-card {
+  background: #111827;
+  border-radius: 14px;
+  padding: 16px;
+  margin-bottom: 16px;
+}
+
+.section-title,
+.sub-title {
+  font-size: 15px;
+  font-weight: 700;
+  margin-bottom: 12px;
+}
+
+.players-row {
+  display: flex;
+  gap: 40px;
+  flex-wrap: wrap;
+}
+
+.players-row small {
+  display: block;
+  color: #9ca3af;
+  margin-bottom: 4px;
+}
+
+.innings-head {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 14px;
+}
+
+.innings-score {
+  font-size: 22px;
+  font-weight: 700;
+}
+
+.table-wrap {
+  overflow-x: auto;
+  margin-top: 14px;
+}
+
+.compact-table {
+  width: 100%;
+  border-collapse: collapse;
+  font-size: 14px;
+}
+
+.compact-table th {
+  text-align: left;
+  background: #1f2937;
+  padding: 10px;
+}
+
+.compact-table td {
+  padding: 10px;
+  border-bottom: 1px solid #1f2937;
+}
+
+.balls-row {
+  display: flex;
+  gap: 10px;
+  flex-wrap: wrap;
+}
+
+.ball-chip {
+  background: #2563eb;
+  padding: 8px 12px;
+  border-radius: 999px;
+  font-size: 13px;
+  font-weight: 600;
+}
+
+@media (max-width: 900px) {
+  .quick-grid {
+    grid-template-columns: repeat(2, 1fr);
+  }
+
+  .live-header {
+    flex-direction: column;
+    align-items: flex-start;
+  }
+
+  .score-pill {
+    width: 100%;
+  }
+}
+
+@media (max-width: 640px) {
+  .quick-grid {
+    grid-template-columns: 1fr;
+  }
+
+  .players-row {
+    gap: 18px;
+  }
+
+  .live-header h1 {
+    font-size: 22px;
+  }
+}

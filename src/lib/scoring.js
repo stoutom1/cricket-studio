@@ -301,39 +301,67 @@ export function summarizeInningsDetailed(balls, playerMap, oversPerInnings) {
       ongoing: true
     });
   }
-  let currentState = null;
-  const maxLegalBalls = oversPerInnings * 6;
+let currentState = null;
 
-  if (sorted.length > 0 && legalBalls < maxLegalBalls) {
-    const lastBall = sorted[sorted.length - 1];
-    const nextPair = applyBallOutcome(lastBall);
+const maxLegalBalls = oversPerInnings * 6;
 
-    currentState = {
-      strikerId: nextPair.strikerId,
-      nonStrikerId: nextPair.nonStrikerId,
-      strikerName: nextPair.strikerId? getPlayerName(playerMap, nextPair.strikerId): "Yet to bat",
-      nonStrikerName: nextPair.nonStrikerId? getPlayerName(playerMap, nextPair.nonStrikerId): "Yet to bat",
-      //nonStrikerName: getPlayerName(playerMap, nextPair.nonStrikerId),
-      nextOverNo: Math.floor(legalBalls / 6),
-      nextBallInOver: (legalBalls % 6) + 1
-    };
-  }
+if (
+  sorted.length > 0 &&
+  legalBalls < maxLegalBalls
+) {
+  currentState = {
+    strikerId: currentPair?.strikerId || null,
 
-  return {
-    runs,
-    wickets,
-    balls: sorted.length,
-    legalBalls,
-    oversDisplay: formatOversFromBalls(legalBalls),
-    runRate: legalBalls ? ((runs / legalBalls) * 6).toFixed(2) : "0.00",
-    powerplay: {
-      runs: powerplayRuns,
-      wickets: powerplayWickets
-    },
-    partnerships,
-    fallOfWickets,
-    currentState
+    nonStrikerId:
+      currentPair?.nonStrikerId || null,
+
+    strikerName:
+      currentPair?.strikerId
+        ? getPlayerName(
+            playerMap,
+            currentPair.strikerId
+          )
+        : null,
+
+    nonStrikerName:
+      currentPair?.nonStrikerId
+        ? getPlayerName(
+            playerMap,
+            currentPair.nonStrikerId
+          )
+        : null,
+
+    nextOverNo: Math.floor(legalBalls / 6),
+
+    nextBallInOver:
+      (legalBalls % 6) + 1
   };
+}
+
+return {
+  runs,
+  wickets,
+  balls: sorted.length,
+  legalBalls,
+
+  oversDisplay:
+    formatOversFromBalls(legalBalls),
+
+  runRate: legalBalls
+    ? ((runs / legalBalls) * 6).toFixed(2)
+    : "0.00",
+
+  powerplay: {
+    runs: powerplayRuns,
+    wickets: powerplayWickets
+  },
+
+  partnerships,
+
+  fallOfWickets,
+
+  currentState
+};
 }
 
 function wicketsForBowler(ball) {

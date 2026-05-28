@@ -25,17 +25,17 @@ model Team {
 }
 
 model Player {
-  id               Int      @id @default(autoincrement())
-  name             String
-  teamId           Int
-  createdAt        DateTime @default(now())
+  id        Int      @id @default(autoincrement())
+  name      String
+  teamId    Int
+  createdAt DateTime @default(now())
 
-  team             Team     @relation(fields: [teamId], references: [id], onDelete: Cascade)
-  strikerBalls     Ball[]   @relation("Striker")
-  nonStrikerBalls  Ball[]   @relation("NonStriker")
-  bowlerBalls      Ball[]   @relation("Bowler")
-  dismissedBalls   Ball[]   @relation("DismissedPlayer")
-  newBatterBalls   Ball[]   @relation("NewBatter")
+  team            Team   @relation(fields: [teamId], references: [id], onDelete: Cascade)
+  strikerBalls    Ball[] @relation("Striker")
+  nonStrikerBalls Ball[] @relation("NonStriker")
+  bowlerBalls     Ball[] @relation("Bowler")
+  dismissedBalls  Ball[] @relation("DismissedPlayer")
+  newBatterBalls  Ball[] @relation("NewBatter")
 
   @@unique([teamId, name])
   @@index([teamId])
@@ -49,6 +49,7 @@ model Match {
   oversPerInnings       Int
   powerplayOversInnings Int      @default(0)
   status                String   @default("in_progress")
+  statusText            String?  @default("LIVE")
   createdAt             DateTime @default(now())
 
   teamA            Team @relation("TeamA", fields: [teamAId], references: [id])
@@ -59,13 +60,13 @@ model Match {
 }
 
 model Ball {
-  id                Int      @id @default(autoincrement())
-  matchId           Int
-  inningsNo         Int
-  sequence          Int
-  overNo            Int
-  ballInOver        Int
-  legalDelivery     Boolean
+  id            Int     @id @default(autoincrement())
+  matchId       Int
+  inningsNo     Int
+  sequence      Int
+  overNo        Int
+  ballInOver    Int
+  legalDelivery Boolean
 
   strikerId         Int?
   nonStrikerId      Int?
@@ -73,17 +74,17 @@ model Ball {
   dismissedPlayerId Int?
   newBatterId       Int?
 
-  runsOffBat        Int      @default(0)
-  extras            Int      @default(0)
-  extraType         String   @default("NONE")
-  totalRuns         Int      @default(0)
+  runsOffBat Int    @default(0)
+  extras     Int    @default(0)
+  extraType  String @default("NONE")
+  totalRuns  Int    @default(0)
 
-  isWicket          Int      @default(0)
-  wicketType        String   @default("NONE")
+  isWicket   Int    @default(0)
+  wicketType String @default("NONE")
 
-  isPowerPlay       Boolean  @default(false)
-  note              String?
-  createdAt         DateTime @default(now())
+  isPowerPlay Boolean  @default(false)
+  note        String?
+  createdAt   DateTime @default(now())
 
   match           Match   @relation(fields: [matchId], references: [id], onDelete: Cascade)
   striker         Player? @relation("Striker", fields: [strikerId], references: [id])

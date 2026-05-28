@@ -1,9 +1,10 @@
 import { NextResponse } from "next/server";
 import prisma from "@/lib/prisma";
 import {
-  summarizeInningsDetailed,
-  buildMatchStats,
   ballShortText,
+  getBattingTeamId,
+  summarizeInningsDetailed,
+  buildMatchStats
 } from "@/lib/scoring";
 
 export async function GET(request, { params }) {
@@ -62,68 +63,172 @@ export async function GET(request, { params }) {
     (b) => b.inningsNo === 2
   );
 
-  const innings1 = summarizeInningsDetailed(
-    innings1Balls,
-    playerMap,
-    match.oversPerInnings
-  );
+const innings1Summary = summarizeInningsDetailed(
+  innings1Balls,
+  playerMap,
+  match.oversPerInnings
+);
 
-  const innings2 = summarizeInningsDetailed(
-    innings2Balls,
-    playerMap,
-    match.oversPerInnings
-  );
+const innings2Summary = summarizeInningsDetailed(
+  innings2Balls,
+  playerMap,
+  match.oversPerInnings
+);
 
-  const recentBalls = match.balls
+const innings1MatchStats = buildMatchStats({
+  ...match,
+  balls: innings1Balls
+});
+
+const innings2MatchStats = buildMatchStats({
+  ...match,
+  balls: innings2Balls
+});
+const innings1TeamId = getBattingTeamId(match, 1);
+const innings2TeamId = getBattingTeamId(match, 2);
+
+const innings1TeamName =
+  innings1TeamId === match.teamAId
+    ? match.teamA.name
+    : match.teamB.name;
+
+const innings2TeamName =
+  innings2TeamId === match.teamAId
+    ? match.teamA.name
+    : match.teamB.name;
+
+const inningsData = [
+  {
+    number: 1,
+    teamName: innings1TeamName,
+    ...innings1Summary,
+    battingStats: innings1MatchStats.batting,
+    bowlingStats: innings1MatchStats.bowling
+  },
+  {
+    number: 2,
+    teamName: innings2TeamName,
+    ...innings2Summary,
+    battingStats: innings2MatchStats.batting,
+    bowlingStats: innings2MatchStats.bowling
+  }
+];
+ const currentInningsNo =
+  innings2Summary.legalBalls > 0 ||
+  match.status === "COMPLETED"
+    ? 2
+    : 1;
+
+const currentInningsBalls = match.balls.filter(
+  (b) => b.inningsNo === currentInningsNo
+);
+
+  const recentBalls = currentInningsBalls
     .slice(-12)
     .reverse()
     .map((ball) => ({
       id: ball.id,
-      label: ballShortText(ball),
-    }));
+      label: ballShortText(ball)
+  }));
 
-  return NextResponse.json({
-    match: {
-      id: match.id,
-      teamAName: match.teamA.name,
-      teamBName: match.teamB.name,
-      battingFirstTeamId: match.battingFirstTeamId,
-      oversPerInnings: match.oversPerInnings,
-      powerplayOversInnings: match.powerplayOversInnings,
-      status: match.status,
-    },
+  const maxLegalBalls = match.oversPerInnings * 6;
 
-    innings: [
-      {
-        number: 1,
-        teamName:
-          match.battingFirstTeamId === match.teamA.id
-            ? match.teamA.name
-            : match.teamB.name,
-        ...innings1,
-      },
-      {
-        number: 2,
-        teamName:
-          match.battingFirstTeamId === match.teamA.id
-            ? match.teamB.name
-            : match.teamA.name,
-        ...innings2,
-      },
-    ],
+  const innings1Complete =
+    innings1Summary.legalBalls >= maxLegalBalls ||
+    innings2Balls.length > 0;
 
-    currentInnings:
-      innings2.legalBalls > 0 || match.status === "COMPLETED"
-        ? 2
-        : 1,
+  const target = innings1Complete
+    ? innings1Summary.runs + 1
+    : null;
 
-    currentState:
-      innings2.legalBalls > 0
-        ? innings2.currentState
-        : innings1.currentState,
+  const remainingBalls =
+  innings1Complete
+    ? Math.max(
+        maxLegalBalls - innings2Summary.legalBalls,
+        0
+      )
+    : null;
 
-    recentBalls,
+      const innings2Complete =
+        innings2Summary.legalBalls >= maxLegalBalls;
 
-    stats: buildMatchStats(match),
-  });
+      const chaseCompleted =
+        target &&
+        innings2Summary.runs >= target;
+
+      const allOut =
+        innings2Summary.wickets >= 10;
+
+      const isCompleted =
+        innings1Complete &&
+        (
+          innings2Complete ||
+          chaseCompleted ||
+          allOut
+        );
+
+      let statusText = "Match in progress";
+
+      if (isCompleted) {
+        if (innings2Summary.runs >= target) {
+          const wicketsRemaining =
+            10 - innings2Summary.wickets;
+
+          statusText = `${innings2TeamName} won by ${wicketsRemaining} wickets`;
+        } else if (
+          innings2Summary.runs === innings1Summary.runs
+        ) {
+          statusText = "Match tied";
+        } else {
+          const margin =
+            innings1Summary.runs -
+            innings2Summary.runs;
+
+          statusText = `${innings1TeamName} won by ${margin} runs`;
+        }
+
+        // UPDATE MATCH STATUS
+        await prisma.match.update({
+          where: { id: match.id },
+          data: {
+            status: "COMPLETED",
+            statusText
+          }
+        });
+
+        match.status = "COMPLETED";
+      } else {
+        match.status = "LIVE";
+      }
+
+return NextResponse.json({
+  match: {
+    id: match.id,
+    teamAName: match.teamA.name,
+    teamBName: match.teamB.name,
+    battingFirstTeamId: match.battingFirstTeamId,
+    oversPerInnings: match.oversPerInnings,
+    powerplayOversInnings: match.powerplayOversInnings,
+    status: match.status,
+  },
+
+  summary: {
+    target,
+    remainingBalls,
+    statusText
+  },
+
+  innings: inningsData,
+
+  currentInnings: currentInningsNo,
+
+  currentState:
+    innings2Summary.legalBalls > 0
+      ? innings2Summary.currentState
+      : innings1Summary.currentState,
+
+  recentBalls,
+
+  stats: buildMatchStats(match),
+});
 }
