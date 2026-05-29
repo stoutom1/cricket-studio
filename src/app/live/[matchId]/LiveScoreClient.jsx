@@ -268,30 +268,99 @@ export default function LiveScoreClient({ matchId }) {
             <tr>
               <td style={thStyle}>Recent Balls</td>
               <td style={tdStyle}>
-                 {/* RECENT BALLS */}
-                  <StatCard title="">
-                    <div
-                      style={{
-                        display: "flex",
-                        gap: 12,
-                        flexWrap: "wrap"
-                      }}
-                    >
-                      {scoreboard?.recentBalls?.map((ball) => (
-                        <div
-                          key={ball.id}
-                          style={{
-                            background: "#2563eb",
-                            padding: "10px 14px",
-                            borderRadius: 999,
-                            fontWeight: 600
-                          }}
-                        >
-                          {ball.label}
-                        </div>
-                      ))}
-                    </div>
-                  </StatCard>
+
+{/* RECENT BALLS */}
+<div
+  style={{
+    display: "flex",
+    alignItems: "center",
+    gap: 10,
+    flexWrap: "wrap",
+    padding: "6px 0"
+  }}
+>
+  {scoreboard?.recentBalls
+    ?.slice(-20)
+    ?.map((ball, index, arr) => {
+
+      // Example label:
+      // "12.3 4"
+
+      const label = ball.label || "";
+
+      // Over number
+      const currentOver =
+        label.split(".")[0];
+
+      const prevOver =
+        index > 0
+          ? arr[index - 1]?.label
+              ?.split(".")[0]
+          : currentOver;
+
+      // Ball result only
+      const result =
+        label
+          .split(" ")
+          .slice(1)
+          .join(" ") || label;
+
+      const clean =
+        result.replace(/[()]/g, "");
+
+      let color = "#d1d5db";
+
+      if (clean === "4") {
+        color = "#22c55e";
+      } else if (clean === "6") {
+        color = "#22c55e";
+      } else if (
+        clean === "Wd" ||
+        clean === "Nb"
+      ) {
+        color = "#c5f838";
+      } else if (
+        clean.toUpperCase().includes("W")
+      ) {
+        color = "#ef4444";
+      }
+
+      return (
+        <div
+          key={ball.id}
+          style={{
+            display: "flex",
+            alignItems: "center",
+            gap: 10
+          }}
+        >
+          {/* OVER SEPARATOR */}
+          {index > 0 &&
+            currentOver !== prevOver && (
+              <span
+                style={{
+                  color: "#6b7280",
+                  fontWeight: 700
+                }}
+              >
+                |
+              </span>
+          )}
+
+          <span
+            style={{
+              fontWeight: 200,
+              fontSize: 6,
+              color,
+              letterSpacing: 0.5
+            }}
+          >
+            {clean}
+          </span>
+        </div>
+      );
+    })}
+</div>
               </td>    
             </tr>
 
