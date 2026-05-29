@@ -18,21 +18,8 @@ export async function POST(request) {
   }
 
   const body = await request.json();
-/*
-  const payload = {
-    matchId: Number(body.matchId),
-    inningsNo: Number(body.inningsNo),
-    batterId: Number(body.batterId),
-    bowlerId: Number(body.bowlerId),
-    extraType: String(body.extraType || "NONE"),
-    runsOffBat: Number(body.runsOffBat),
-    extras: Number(body.extras),
-    isWicket: Number(body.isWicket ? 1 : 0),
-    wicketType: String(body.wicketType || "NONE"),
-    dismissedPlayerId: body.dismissedPlayerId ? Number(body.dismissedPlayerId) : null,
-    note: body.note ? String(body.note).trim() : null
-  };
-*/
+  const { matchId, inningsNo } = body;
+
   const payload = {
     matchId: Number(body.matchId),
     inningsNo: Number(body.inningsNo),
@@ -254,6 +241,61 @@ if (payload.extraType === "NOBALL" && payload.extras < 1) {
 
   const isPowerPlay = overNo <= match.powerplayOversInnings;
   const totalRuns = payload.runsOffBat + payload.extras;
+
+  // CURRENT INNINGS
+//const innings = scoreboard.innings.find(
+//  (x) => x.number === inningsNo
+//);
+const balls = await prisma.ball.findMany({
+  where: {
+    matchId: Number(matchId)
+  }
+});
+const inningsBalls = balls.filter(
+  (b) => b.inningsNo === inningsNo
+);
+const wicketCount = inningsBalls.filter(
+  (b) => b.isWicket && b.wicketType !== "RETIRED_HURT"
+).length;
+
+const maxWickets =
+  match.maxWicketsPerInnings;
+
+if (wicketCount >= maxWickets) {
+  return Response.json(
+    {
+      error: "Maximum wickets reached for this innings"
+    },
+    { status: 400 }
+  );
+}
+const bowlerBalls = inningsBalls.filter(
+  (b) =>
+    b.bowlerId === Number(body.bowlerId) &&
+    b.extraType !== "WIDE" &&
+    b.extraType !== "NOBALL"
+);
+
+const legalBalls = bowlerBalls.length;
+
+if (match.maxOversPerBowler) {
+  const maxBallsPerBowler =
+    match.maxOversPerBowler * 6;
+
+  if (legalBalls >= maxBallsPerBowler) {
+    return Response.json(
+      {
+        error: `Bowler exceeded max overs limit of ${match.maxOversPerBowler}`
+      },
+      { status: 400 }
+    );
+  }
+}
+
+const innings = {
+  legalBalls,
+  wickets: wicketCount
+};
 
   const ball = await prisma.ball.create({
     data: {

@@ -136,7 +136,7 @@ export function validateBallInput(payload) {
 export function ballShortText(ball) {
   const label = `${ball.overNo}.${ball.ballInOver}`;
 
-  if (ball.isWicket) {
+  if (ball.isWicket && ball.wicketType !== "RETIRED_HURT") {
     return `${label} W`;
   }
 
@@ -194,13 +194,6 @@ export function applyBallOutcome(ball) {
   let strikerId = ball.strikerId || null;
   let nonStrikerId = ball.nonStrikerId || null;
 
-  /*if (ball.isWicket) {
-    if (!ball.dismissedPlayerId || ball.dismissedPlayerId === ball.strikerId) {
-      strikerId = ball.newBatterId || null;
-    } else if (ball.dismissedPlayerId === ball.nonStrikerId) {
-      nonStrikerId = ball.newBatterId || null;
-    }
-  }*/
 if (ball.isWicket) {
   if (!ball.newBatterId) {
     throw new Error("Replacement batter required");

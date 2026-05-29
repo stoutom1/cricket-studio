@@ -47,6 +47,8 @@ model Match {
   teamBId               Int
   battingFirstTeamId    Int
   oversPerInnings       Int
+  maxWicketsPerInnings  Int?
+  maxOversPerBowler     Int?
   powerplayOversInnings Int      @default(0)
   status                String   @default("in_progress")
   statusText            String?  @default("LIVE")

@@ -132,12 +132,14 @@ export default function DashboardClient() {
   });
 
   const [matchForm, setMatchForm] = useState({
-    teamAId: "",
-    teamBId: "",
-    battingFirstTeamId: "",
-    oversPerInnings: "20",
-    powerplayOversInnings: "6"
-  });
+  teamAId: "",
+  teamBId: "",
+  battingFirstTeamId: "",
+  oversPerInnings: "20",
+  powerplayOversInnings: "6",
+  maxWicketsPerInnings: "",
+  maxOversPerBowler: ""
+});
 
   const [ballForm, setBallForm] = useState({
     inningsNo: "1",
@@ -345,20 +347,31 @@ export default function DashboardClient() {
   useEffect(() => {
     if (!scoreboard?.currentState) return;
 
-    setBallForm((prev) => ({
-      ...prev,
-      inningsNo: String(scoreboard.currentInnings || prev.inningsNo),
-      strikerId: scoreboard.currentState.strikerId
-        ? String(scoreboard.currentState.strikerId)
-        : prev.strikerId,
-      nonStrikerId: scoreboard.currentState.nonStrikerId
-        ? String(scoreboard.currentState.nonStrikerId)
-        : prev.nonStrikerId,
-      dismissedPlayerId: scoreboard.currentState.strikerId
-        ? String(scoreboard.currentState.strikerId)
-        : prev.dismissedPlayerId,
-      newBatterId: ""
-    }));
+setBallForm((prev) => ({
+  ...prev,
+
+  inningsNo:
+    scoreboard?.currentInnings != null
+      ? String(scoreboard.currentInnings)
+      : "",
+
+  strikerId:
+    scoreboard?.currentState?.strikerId != null
+      ? String(scoreboard.currentState.strikerId)
+      : "",
+
+  nonStrikerId:
+    scoreboard?.currentState?.nonStrikerId != null
+      ? String(scoreboard.currentState.nonStrikerId)
+      : "",
+
+  dismissedPlayerId:
+    scoreboard?.currentState?.strikerId != null
+      ? String(scoreboard.currentState.strikerId)
+      : "",
+
+  newBatterId: ""
+}));
   }, [
     scoreboard?.currentState?.strikerId,
     scoreboard?.currentState?.nonStrikerId,
@@ -449,13 +462,27 @@ export default function DashboardClient() {
     try {
       const match = await api("/api/matches", {
         method: "POST",
-        body: JSON.stringify({
-          teamAId: Number(matchForm.teamAId),
-          teamBId: Number(matchForm.teamBId),
-          battingFirstTeamId: Number(matchForm.battingFirstTeamId),
-          oversPerInnings: Number(matchForm.oversPerInnings),
-          powerplayOversInnings: Number(matchForm.powerplayOversInnings)
-        })
+ body: JSON.stringify({
+  teamAId: Number(matchForm.teamAId),
+  teamBId: Number(matchForm.teamBId),
+  battingFirstTeamId: Number(matchForm.battingFirstTeamId),
+
+  oversPerInnings: Number(matchForm.oversPerInnings),
+
+  powerplayOversInnings: Number(
+    matchForm.powerplayOversInnings
+  ),
+
+  maxWicketsPerInnings:
+    matchForm.maxWicketsPerInnings
+      ? Number(matchForm.maxWicketsPerInnings)
+      : null,
+
+  maxOversPerBowler:
+    matchForm.maxOversPerBowler
+      ? Number(matchForm.maxOversPerBowler)
+      : null
+})
       });
 
       setMatchForm({
@@ -463,7 +490,9 @@ export default function DashboardClient() {
         teamBId: "",
         battingFirstTeamId: "",
         oversPerInnings: "20",
-        powerplayOversInnings: "6"
+        powerplayOversInnings: "6",
+        maxWicketsPerInnings: "",
+        maxOversPerBowler: ""
       });
 
       setMessage("✅ Match created");
@@ -985,10 +1014,10 @@ return (
   </div>
 
 <div className="recent-balls-row">
-  <span className="recent-label">Recent:</span>
+  <span className="recent-label">Recent: </span>
 
   {scoreboard?.recentBalls?.length ? (
-    scoreboard.recentBalls.slice(-12).map((ball, index) => {
+    scoreboard.recentBalls.slice(-20).map((ball, index) => {
       const label = ball.label || "";
 
       // Detect over change
@@ -1051,7 +1080,7 @@ return (
                 <label>
                   <span>Innings</span>
                   <select
-                    value={ballForm.inningsNo}
+                    value={ballForm.inningsNo || ""}
                     onChange={(e) =>
                       setBallForm((prev) => ({ ...prev, inningsNo: e.target.value }))
                     }
@@ -1064,7 +1093,7 @@ return (
                 <label>
                   <span>Striker</span>
                   <select
-                    value={ballForm.strikerId}
+                    value={ballForm.strikerId || ""}
                     onChange={(e) =>
                       setBallForm((prev) => ({
                         ...prev,
@@ -1084,7 +1113,7 @@ return (
                 <label>
                   <span>Non-striker</span>
                   <select
-                    value={ballForm.nonStrikerId}
+                    value={ballForm.nonStrikerId || ""}
                     onChange={(e) =>
                       setBallForm((prev) => ({ ...prev, nonStrikerId: e.target.value }))
                     }
@@ -1100,7 +1129,7 @@ return (
                 <label>
                   <span>Bowler</span>
                   <select
-                    value={ballForm.bowlerId}
+                    value={ballForm.bowlerId || ""}
                     onChange={(e) =>
                       setBallForm((prev) => ({ ...prev, bowlerId: e.target.value }))
                     }
@@ -1116,7 +1145,7 @@ return (
                 <label>
                   <span>Extra Type</span>
                   <select
-                    value={ballForm.extraType}
+                    value={ballForm.extraType || ""}
                     onChange={(e) =>
                       setBallForm((prev) => ({ ...prev, extraType: e.target.value }))
                     }
@@ -1132,7 +1161,7 @@ return (
                   <input
                     type="number"
                     min="0"
-                    value={ballForm.runsOffBat}
+                    value={ballForm.runsOffBat || ""}
                     onChange={(e) =>
                       setBallForm((prev) => ({ ...prev, runsOffBat: e.target.value }))
                     }
@@ -1145,7 +1174,7 @@ return (
                   <input
                     type="number"
                     min="0"
-                    value={ballForm.extras}
+                    value={ballForm.extras || ""}
                     onChange={(e) =>
                       setBallForm((prev) => ({ ...prev, extras: e.target.value }))
                     }
@@ -1171,7 +1200,7 @@ return (
                 <label>
                   <span>Wicket Type</span>
                   <select
-                    value={ballForm.wicketType}
+                    value={ballForm.wicketType || ""}
                     onChange={(e) =>
                       setBallForm((prev) => ({ ...prev, wicketType: e.target.value }))
                     }
@@ -1186,7 +1215,7 @@ return (
                 <label>
                   <span>Dismissed Player</span>
                   <select
-                    value={ballForm.dismissedPlayerId}
+                    value={ballForm.dismissedPlayerId || ""}
                     onChange={(e) =>
                       setBallForm((prev) => ({ ...prev, dismissedPlayerId: e.target.value }))
                     }
@@ -1202,7 +1231,7 @@ return (
                 <label>
                   <span>New Batter</span>
                   <select
-                    value={ballForm.newBatterId}
+                    value={ballForm.newBatterId || ""}
                     onChange={(e) =>
                       setBallForm((prev) => ({ ...prev, newBatterId: e.target.value }))
                     }
@@ -1219,7 +1248,7 @@ return (
                   <span>Note</span>
                   <input
                     type="text"
-                    value={ballForm.note}
+                    value={ballForm.note || ""}
                     onChange={(e) =>
                       setBallForm((prev) => ({ ...prev, note: e.target.value }))
                     }
@@ -1341,7 +1370,10 @@ return (
                         #{match.id} • {match.teamAName} vs {match.teamBName}
                       </strong>
                       <div className="muted small">
-                        Bat first: {match.battingFirstTeamName} • {match.oversPerInnings} overs
+                        Bat first: {match.battingFirstTeamName}
+                                • {match.oversPerInnings} overs
+                                • Max wkts: {match.maxWicketsPerInnings || "∞"}
+                                • Bowler limit: {match.maxOversPerBowler || "∞"}
                       </div>
                       <div className="muted small">{formatDate(match.createdAt)}</div>
                     </div>
@@ -1543,6 +1575,46 @@ return (
                 required
               />
             </label>
+            <label>
+  <span>Maximum wickets per innings</span>
+
+  <input
+    type="number"
+    min="1"
+    max="10"
+    value={matchForm.maxWicketsPerInnings}
+    onChange={(e) =>
+      setMatchForm((prev) => ({
+        ...prev,
+        maxWicketsPerInnings: e.target.value
+      }))
+    }
+  />
+
+  <small className="muted">
+    Leave empty for unlimited
+  </small>
+</label>
+
+<label>
+  <span>Maximum overs per bowler</span>
+
+  <input
+    type="number"
+    min="1"
+    value={matchForm.maxOversPerBowler}
+    onChange={(e) =>
+      setMatchForm((prev) => ({
+        ...prev,
+        maxOversPerBowler: e.target.value
+      }))
+    }
+  />
+
+  <small className="muted">
+    Example: 4 in T20
+  </small>
+</label>
 
             <label>
               <span>Powerplay overs</span>
@@ -1589,7 +1661,10 @@ return (
                         #{match.id} • {match.teamAName} vs {match.teamBName}
                       </strong>
                       <div className="muted small">
-                        Bat first: {match.battingFirstTeamName} • {match.oversPerInnings} overs
+                        Bat first: {match.battingFirstTeamName}
+                                • {match.oversPerInnings} overs
+                                • Max wkts: {match.maxWicketsPerInnings != null? match.maxWicketsPerInnings: "∞"}
+                                • Bowler limit: {match.maxOversPerBowler != null? match.maxOversPerBowler: "∞"}
                       </div>
                       <div className="muted small">{formatDate(match.createdAt)}</div>
                     </div>

@@ -350,7 +350,7 @@ export default function LiveScoreClient({ matchId }) {
           <span
             style={{
               fontWeight: 200,
-              fontSize: 6,
+              fontSize: 14,
               color,
               letterSpacing: 0.5
             }}

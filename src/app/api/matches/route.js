@@ -46,6 +46,7 @@ export async function GET() {
       }
     }
   });
+  console.log(matches);
 
   // AUTO UPDATE MATCH STATUS
   for (const match of matches) {
@@ -118,8 +119,9 @@ export async function GET() {
     battingFirstTeamId: m.battingFirstTeamId,
     battingFirstTeamName: m.battingFirstTeam.name,
     oversPerInnings: m.oversPerInnings,
-    powerplayOversInnings:
-      m.powerplayOversInnings,
+    powerplayOversInnings: m.powerplayOversInnings,
+    maxWicketsPerInnings: m.maxWicketsPerInnings,
+    maxOversPerBowler: m.maxOversPerBowler,
     status: m.status,
     createdAt: m.createdAt
   }));
@@ -195,7 +197,20 @@ export async function POST(request) {
       teamBId,
       battingFirstTeamId,
       oversPerInnings,
-      powerplayOversInnings,
+      powerplayOversInnings: Number(
+      body.powerplayOversInnings
+    ),
+
+    maxWicketsPerInnings:
+      body.maxWicketsPerInnings
+        ? Number(body.maxWicketsPerInnings)
+        : null,
+
+    maxOversPerBowler:
+      body.maxOversPerBowler
+        ? Number(body.maxOversPerBowler)
+        : null,
+        
       status: "in_progress"
     }
   });
