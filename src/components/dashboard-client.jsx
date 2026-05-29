@@ -37,6 +37,9 @@ export default function DashboardClient() {
   const [message, setMessage] = useState("");
   const [error, setError] = useState("");
 
+  const [showRetiredHurtModal, setShowRetiredHurtModal] = useState(false);
+  const [retiredHurtBatterId, setRetiredHurtBatterId] = useState("");
+
   const [teamName, setTeamName] = useState("");
   const [playerForm, setPlayerForm] = useState({
     teamId: "",
@@ -418,8 +421,8 @@ export default function DashboardClient() {
           extraType: ballForm.extraType,
           runsOffBat: Number(ballForm.runsOffBat),
           extras: Number(ballForm.extras),
-          isWicket: ballForm.isWicket ? 1 : 0,
-          wicketType: ballForm.isWicket ? ballForm.wicketType : "NONE",
+          isWicket: ballForm.isWicket && ballForm.wicketType !== "RETIRED_HURT"? 1 : 0,
+          wicketType: ballForm.isWicket? ballForm.wicketType: "NONE",
           dismissedPlayerId: ballForm.isWicket
             ? Number(ballForm.dismissedPlayerId || ballForm.strikerId)
             : null,
@@ -441,7 +444,8 @@ export default function DashboardClient() {
         isWicket: false,
         wicketType: "NONE",
         newBatterId: "",
-        note: ""
+        note: "",
+        dismissal: ""
       }));
 
       await loadSelectedMatch(selectedMatchId);
@@ -512,24 +516,123 @@ export default function DashboardClient() {
       dismissedPlayerId: prev.strikerId
     }));
   }
-function quickRetiredHurt() {
-  const nextBatter = getNextAvailableBatter(
-    battingTeam.players,
-    Number(ballForm.strikerId),
-    Number(ballForm.nonStrikerId),
-    matchDetail.balls
+
+  function getNextAvailableBatter(players, strikerId, nonStrikerId, balls = []) {
+  if (!players?.length) return null;
+
+  // Players already dismissed
+  const dismissedIds = new Set(
+    balls
+      ?.filter((b) => b.dismissedPlayerId)
+      .map((b) => Number(b.dismissedPlayerId))
   );
 
-  setBallForm(prev => ({
-    ...prev,
-    isWicket: true,
-    wicketType: "RETIRED_HURT",
-    dismissedPlayerId: prev.strikerId,
-    newBatterId: nextBatter?.id
-      ? String(nextBatter.id)
-      : ""
-  }));
+  // Find next available batter
+  return players.find(
+    (p) =>
+      Number(p.id) !== Number(strikerId) &&
+      Number(p.id) !== Number(nonStrikerId) &&
+      !dismissedIds.has(Number(p.id))
+  );
 }
+
+function quickRetiredHurt() {
+  if (!selectedMatchId) {
+    setError("Please select a match");
+    return;
+  }
+
+  if (!battingTeam) {
+    setError("Batting team not found");
+    return;
+  }
+
+  const striker = battingTeam.players.find(
+    (p) => String(p.id) === String(ballForm.strikerId)
+  );
+
+  if (!striker) {
+    setError("Current striker not found");
+    return;
+  }
+
+  setRetiredHurtBatterId("");
+  setShowRetiredHurtModal(true);
+}
+
+async function confirmRetiredHurt() {
+  if (!retiredHurtBatterId) {
+    setError("Please select a new batter");
+    return;
+  }
+
+  const striker = battingTeam.players.find(
+    (p) => String(p.id) === String(ballForm.strikerId)
+  );
+
+  const selectedBatter = battingTeam.players.find(
+    (p) => String(p.id) === String(retiredHurtBatterId)
+  );
+
+  if (!selectedBatter) {
+    setError("Invalid batter selected");
+    return;
+  }
+
+  try {
+    setMessage("");
+    setError("");
+
+    await api("/api/balls", {
+      method: "POST",
+      body: JSON.stringify({
+        matchId: Number(selectedMatchId),
+        inningsNo: Number(ballForm.inningsNo),
+
+        strikerId: Number(ballForm.strikerId),
+        nonStrikerId: Number(ballForm.nonStrikerId),
+        bowlerId: Number(ballForm.bowlerId),
+
+        extraType: "NONE",
+        runsOffBat: 0,
+        extras: 0,
+
+        isWicket: 1,
+        wicketType: "RETIRED_HURT",
+
+        dismissedPlayerId: Number(ballForm.strikerId),
+
+        newBatterId: Number(retiredHurtBatterId),
+
+        note: "Retired Hurt",
+        dismissal: "Retired Hurt"
+      })
+    });
+
+    setBallForm((prev) => ({
+      ...prev,
+      strikerId: String(selectedBatter.id),
+      dismissedPlayerId: "",
+      newBatterId: "",
+      isWicket: false,
+      wicketType: "NONE",
+      runsOffBat: "0",
+      extras: "0"
+    }));
+
+    setShowRetiredHurtModal(false);
+
+    setMessage(
+      `${striker.name} retired hurt. ${selectedBatter.name} came in to bat.`
+    );
+
+    await loadSelectedMatch(selectedMatchId);
+
+  } catch (err) {
+    setError(err.message);
+  }
+}
+
   const activeInnings =
     scoreboard?.innings?.find((x) => x.number === scoreboard.currentInnings) ||
     scoreboard?.innings?.[0];
@@ -708,14 +811,24 @@ return (
           )}
         </Card>
 
-        <Card
-          title="🎯 Advanced Scoring"
-          right={
-            <button type="button" className="btn btn-outline" onClick={handleUndoBall}>
-              Undo last ball
-            </button>
-          }
-        >
+            <Card
+              title="🎯 Advanced Scoring" 
+              right={
+                <div style={{ display: "flex", gap: 8 }}>
+                  <button type="submit" form="add-ball-form" className="btn">
+                    Add Delivery
+                  </button>
+
+                  <button
+                    type="button"
+                    className="btn btn-outline"
+                    onClick={handleUndoBall}
+                  >
+                    Undo last ball
+                  </button>
+                </div>
+              }
+            >
           {!matchDetail ? (
             <p className="muted">Select a match first.</p>
           ) : (
@@ -735,7 +848,7 @@ return (
                 <button type="button" className="chip" onClick={quickRetiredHurt}>Retired Hurt</button>
               </div>
 
-              <form className="form grid-2" onSubmit={handleAddBall}>
+              <form id="add-ball-form" className="form grid-2" onSubmit={handleAddBall}>
                 <label>
                   <span>Innings</span>
                   <select
@@ -914,10 +1027,6 @@ return (
                     placeholder="Optional note"
                   />
                 </label>
-
-                <div className="full-span">
-                  <button type="submit" className="btn">Add Delivery</button>
-                </div>
               </form>
             </>
           )}
@@ -1311,6 +1420,56 @@ return (
         )}
     </div>
 
+  </div>
+)}
+{showRetiredHurtModal && (
+  <div className="modal-backdrop">
+    <div className="modal-card">
+      <h3>Retired Hurt</h3>
+
+      <p>Select incoming batter</p>
+
+      <select
+        value={retiredHurtBatterId}
+        onChange={(e) => setRetiredHurtBatterId(e.target.value)}
+      >
+        <option value="">Select batter</option>
+
+        {battingTeam?.players
+          ?.filter(
+            (p) =>
+              String(p.id) !== String(ballForm.strikerId) &&
+              String(p.id) !== String(ballForm.nonStrikerId)
+          )
+          .map((p) => (
+            <option key={p.id} value={p.id}>
+              {p.name}
+            </option>
+          ))}
+      </select>
+
+      <div
+        style={{
+          display: "flex",
+          gap: 12,
+          marginTop: 16
+        }}
+      >
+        <button
+          className="btn"
+          onClick={confirmRetiredHurt}
+        >
+          Confirm
+        </button>
+
+        <button
+          className="btn btn-outline"
+          onClick={() => setShowRetiredHurtModal(false)}
+        >
+          Cancel
+        </button>
+      </div>
+    </div>
   </div>
 )}
   </>

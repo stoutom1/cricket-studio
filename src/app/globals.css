@@ -307,7 +307,7 @@ select:focus {
 
   .tabs {
   display: flex;
-  gap: 20px;                 /* spacing between tabs */
+  gap: 10px;                 /* spacing between tabs */
   margin-bottom: 32px;
   padding: 8px;
   background: #111827;
@@ -513,4 +513,64 @@ select:focus {
   .live-header h1 {
     font-size: 22px;
   }
+}
+
+.page-grid {
+  display: grid;
+  grid-template-columns: 1fr 320px;
+  gap: 20px;
+}
+
+.grid-main {
+  display: flex;
+  flex-direction: column;
+  gap: 20px;
+}
+
+.grid-side {
+  display: flex;
+  flex-direction: column;
+  gap: 20px;
+}
+
+.live-scoring-grid {
+  display: grid;
+  grid-template-columns: 1.2fr 1fr;
+  gap: 20px;
+  align-items: start;
+}
+
+@media (max-width: 1100px) {
+  .page-grid {
+    grid-template-columns: 1fr;
+  }
+}
+
+@media (max-width: 900px) {
+  .live-scoring-grid {
+    grid-template-columns: 1fr;
+  }
+}
+.modal-backdrop {
+  position: fixed;
+  inset: 0;
+  background: rgba(0,0,0,0.5);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  z-index: 9999;
+}
+
+.modal-card {
+  background: #111827;
+  padding: 24px;
+  border-radius: 12px;
+  width: 400px;
+  max-width: 90%;
+  border: 1px solid #374151;
+}
+
+.modal-card select {
+  width: 100%;
+  margin-top: 12px;
 }

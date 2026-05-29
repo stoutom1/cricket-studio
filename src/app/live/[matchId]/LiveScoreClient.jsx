@@ -74,7 +74,9 @@ export default function LiveScoreClient({ matchId }) {
   }
 
   const latestInnings =
-    scoreboard?.innings?.[scoreboard.innings.length - 1];
+  scoreboard?.innings?.find(
+    (inn) => inn.number === scoreboard.currentInnings
+  ) || scoreboard?.innings?.[0];
 
   return (
     <div
@@ -140,35 +142,33 @@ export default function LiveScoreClient({ matchId }) {
           }}
         >
           <InfoPill
-            label="Current Score"
-            value={`${latestInnings?.runs}/${latestInnings?.wickets}`}
+                  label="Current Score"
+                          value={latestInnings? `${latestInnings.runs}/${latestInnings.wickets}`: "-"}
           />
 
           <InfoPill
             label="Overs"
-            value={latestInnings?.oversDisplay}
+            value={latestInnings?.oversDisplay || "0.0"}
           />
 
           <InfoPill
             label="Run Rate"
-            value={latestInnings?.runRate}
+            value={latestInnings?.runRate || "0.00"}
           />
 
           <InfoPill
             label="Target"
-            value={
-  scoreboard?.summary?.target ?? "-"
-}
+            value={scoreboard?.summary?.target ?? "-"}
           />
 
           <InfoPill
             label="Balls Left"
             value={
-  scoreboard?.summary?.remainingBalls !== null &&
-  scoreboard?.summary?.remainingBalls !== undefined
-    ? scoreboard.summary.remainingBalls
-    : "-"
-}
+                    scoreboard?.summary?.remainingBalls !== null &&
+                    scoreboard?.summary?.remainingBalls !== undefined
+                      ? scoreboard.summary.remainingBalls
+                      : "-"
+                  }
           />
         </div>
       </div>
@@ -180,16 +180,72 @@ export default function LiveScoreClient({ matchId }) {
             <tr>
               <td style={thStyle}>Striker</td>
               <td style={tdStyle}>
-                {scoreboard?.currentState?.strikerName ||
-                  "Yet to bat"}
+                {scoreboard?.currentState?.strikerName || "Yet to bat"}
+
+                {scoreboard?.currentState?.strikerStats && (
+                  <span
+                    style={{
+                      color: "#9ca3af",
+                      marginLeft: 8,
+                      fontSize: 14
+                    }}
+                  >
+                    ({scoreboard.currentState.strikerStats.runs}
+                    {" "}
+                    off
+                    {" "}
+                    {scoreboard.currentState.strikerStats.balls})
+                  </span>
+                )}
               </td>
             </tr>
 
             <tr>
               <td style={thStyle}>Non Striker</td>
               <td style={tdStyle}>
-                {scoreboard?.currentState
-                  ?.nonStrikerName || "Yet to bat"}
+                {scoreboard?.currentState?.nonStrikerName || "Yet to bat"}
+
+                {scoreboard?.currentState?.nonStrikerStats && (
+                  <span
+                    style={{
+                      color: "#9ca3af",
+                      marginLeft: 8,
+                      fontSize: 14
+                    }}
+                  >
+                    ({scoreboard.currentState.nonStrikerStats.runs}
+                    {" "}
+                    off
+                    {" "}
+                    {scoreboard.currentState.nonStrikerStats.balls})
+                  </span>
+                )}
+              </td>
+            </tr>
+
+            <tr>
+              <td style={thStyle}>Bowler</td>
+              <td style={tdStyle}>
+                {scoreboard?.currentState?.bowlerName || "Yet to bowl"}
+
+                {scoreboard?.currentState?.bowlerStats && (
+                  <span
+                    style={{
+                      color: "#9ca3af",
+                      marginLeft: 8,
+                      fontSize: 14
+                    }}
+                  >
+                    ({scoreboard.currentState.bowlerStats.wickets}/
+                    {scoreboard.currentState.bowlerStats.runs}
+                    {" "}
+                    in
+                    {" "}
+                    {scoreboard.currentState.bowlerStats.overs}
+                    {" "}
+                    overs)
+                  </span>
+                )}
               </td>
             </tr>
 
@@ -202,6 +258,36 @@ export default function LiveScoreClient({ matchId }) {
                   : "-"}
               </td>
             </tr>
+            <tr>
+              <td style={thStyle}>Recent Balls</td>
+              <td style={tdStyle}>
+                 {/* RECENT BALLS */}
+                  <StatCard title="">
+                    <div
+                      style={{
+                        display: "flex",
+                        gap: 12,
+                        flexWrap: "wrap"
+                      }}
+                    >
+                      {scoreboard?.recentBalls?.map((ball) => (
+                        <div
+                          key={ball.id}
+                          style={{
+                            background: "#2563eb",
+                            padding: "10px 14px",
+                            borderRadius: 999,
+                            fontWeight: 600
+                          }}
+                        >
+                          {ball.label}
+                        </div>
+                      ))}
+                    </div>
+                  </StatCard>
+              </td>    
+            </tr>
+
           </tbody>
         </table>
       </StatCard>
@@ -425,31 +511,6 @@ export default function LiveScoreClient({ matchId }) {
           </table>
         </StatCard>
       ))}
-
-      {/* RECENT BALLS */}
-      <StatCard title="Recent Balls">
-        <div
-          style={{
-            display: "flex",
-            gap: 12,
-            flexWrap: "wrap"
-          }}
-        >
-          {scoreboard?.recentBalls?.map((ball) => (
-            <div
-              key={ball.id}
-              style={{
-                background: "#2563eb",
-                padding: "10px 14px",
-                borderRadius: 999,
-                fontWeight: 600
-              }}
-            >
-              {ball.label}
-            </div>
-          ))}
-        </div>
-      </StatCard>
     </div>
   );
 }

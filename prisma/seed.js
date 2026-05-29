@@ -51,7 +51,7 @@ async function main() {
   });
 
   if (!existingUser) {
-    const hashedPassword = await bcrypt.hash("demo123", 10);
+    const hashedPassword = await bcrypt.hash("demo12345", 10);
     await prisma.user.create({
       data: {
         email,
@@ -59,7 +59,7 @@ async function main() {
         name: "Demo User"
       }
     });
-    console.log("✅ Demo user created: demo@example.com / demo123");
+    console.log("✅ Demo user created: demo@example.com / demo12345");
   }
 
   await upsertTeamWithPlayers("Lions", [
