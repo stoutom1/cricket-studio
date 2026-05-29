@@ -113,6 +113,7 @@ export default function DashboardClient() {
   const [teams, setTeams] = useState([]);
   const [matches, setMatches] = useState([]);
   const [selectedMatchId, setSelectedMatchId] = useState("");
+  const [toast, setToast] = useState(null);
 
   const [matchDetail, setMatchDetail] = useState(null);
   const [scoreboard, setScoreboard] = useState(null);
@@ -161,7 +162,6 @@ export default function DashboardClient() {
         ...(options.headers || {})
       }
     });
-
     const data = await res.json().catch(() => ({}));
 
     if (!res.ok) {
@@ -170,7 +170,13 @@ export default function DashboardClient() {
 
     return data;
   }
+    function showToast(type, text) {
+      setToast({ type, text });
 
+      setTimeout(() => {
+        setToast(null);
+      }, 3000);
+    }
       async function handleShareMatch() {
       if (!scoreboard) return;
 
@@ -388,6 +394,7 @@ export default function DashboardClient() {
         method: "DELETE"
       });
       setMessage("🗑️ Team deleted");
+      showToast("success", "🗑️ Team deleted");
       await refreshAll();
     } catch (err) {
       setError(err.message);
@@ -427,6 +434,7 @@ export default function DashboardClient() {
         method: "DELETE"
       });
       setMessage("🗑️ Player deleted");
+      showToast("success", "✅ Player deleted");
       await refreshAll();
     } catch (err) {
       setError(err.message);
@@ -477,6 +485,7 @@ export default function DashboardClient() {
         method: "DELETE"
       });
       setMessage("🗑️ Match deleted");
+      showToast("success", "🗑️ Match deleted");
       await refreshAll();
     } catch (err) {
       setError(err.message);
@@ -536,6 +545,7 @@ export default function DashboardClient() {
       await loadTeams();
     } catch (err) {
       setError(err.message);
+      showToast(error, err.message);
     }
   }
 
@@ -1659,6 +1669,15 @@ return (
         </button>
       </div>
     </div>
+  </div>
+)}
+{toast && (
+  <div
+    className={`toast-popup ${
+      toast.type === "error" ? "toast-error" : "toast-success"
+    }`}
+  >
+    {toast.text}
   </div>
 )}
   </>

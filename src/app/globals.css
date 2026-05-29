@@ -701,3 +701,46 @@ select:focus {
   font-weight: 700;
   margin: 0 4px;
 }
+.toast-popup {
+  position: fixed;
+  top: 24px;
+  right: 24px;
+
+  z-index: 99999;
+
+  min-width: 260px;
+  max-width: 420px;
+
+  padding: 14px 18px;
+
+  border-radius: 12px;
+
+  font-size: 14px;
+  font-weight: 700;
+
+  color: white;
+
+  box-shadow: 0 10px 30px rgba(0,0,0,0.35);
+
+  animation: toast-slide-in 0.25s ease;
+}
+
+.toast-success {
+  background: #16a34a;
+}
+
+.toast-error {
+  background: #dc2626;
+}
+
+@keyframes toast-slide-in {
+  from {
+    opacity: 0;
+    transform: translateY(-12px) translateX(20px);
+  }
+
+  to {
+    opacity: 1;
+    transform: translateY(0) translateX(0);
+  }
+}
