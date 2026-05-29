@@ -1,18 +1,102 @@
 "use client";
 
-import { useEffect, useMemo, useState } from "react";
+import React, { useEffect, useMemo, useState } from "react";
 import { EXTRA_TYPES, WICKET_TYPES } from "@/lib/scoring";
 import "@/app/globals.css";
 
-function Card({ title, children, right }) {
+function Card({
+  title,
+  children,
+  right,
+  defaultCollapsed = false
+}) {
+  const [collapsed, setCollapsed] = useState(defaultCollapsed);
+
   return (
     <section className="card">
-      <div className="card-head">
-        <h2>{title}</h2>
-        {right || null}
+      <div
+        className="card-head"
+        style={{
+          display: "flex",
+          alignItems: "center",
+          justifyContent: "space-between",
+          cursor: "pointer"
+        }}
+        onClick={() => setCollapsed((prev) => !prev)}
+      >
+        <div
+          style={{
+            display: "flex",
+            alignItems: "center",
+            gap: 10
+          }}
+        >
+          <button
+            type="button"
+            className="btn btn-outline"
+            style={{
+              padding: "2px 10px",
+              minWidth: 36
+            }}
+            onClick={(e) => {
+              e.stopPropagation();
+              setCollapsed((prev) => !prev);
+            }}
+          >
+            {collapsed ? "＋" : "－"}
+          </button>
+
+          <h2 style={{ margin: 0 }}>{title}</h2>
+        </div>
+
+        <div
+          onClick={(e) => e.stopPropagation()}
+        >
+          {right || null}
+        </div>
       </div>
-      {children}
+
+      {!collapsed && (
+        <div style={{ marginTop: 16 }}>
+          {children}
+        </div>
+      )}
     </section>
+  );
+}
+
+function CollapsibleSection({
+  title,
+  children,
+  defaultOpen = true
+}) {
+  const [open, setOpen] = useState(defaultOpen);
+
+  return (
+    <div className="collapsible-section">
+      <button
+        type="button"
+        className="collapsible-toggle"
+        onClick={() => setOpen(!open)}
+      >
+        <span>{title}</span>
+
+        <span
+          style={{
+            fontSize: 18,
+            fontWeight: 700
+          }}
+        >
+          {open ? "−" : "+"}
+        </span>
+      </button>
+
+      {open && (
+        <div className="collapsible-content">
+          {children}
+        </div>
+      )}
+    </div>
   );
 }
 
@@ -657,7 +741,7 @@ return (
   <div className="page-grid">
     <div className="grid-main">
           <Card
-            title="🏏 Live Scoreboard"
+            title="🏏 Live Scoreboard" defaultCollapsed={false}
             right={
               selectedMatchId ? (
                 <button
@@ -737,61 +821,71 @@ return (
                 ) : null}
               </div>
 
-              <div>
-                <h4>🤝 Partnerships</h4>
-                {!activeInnings?.partnerships?.length ? (
-                  <p className="muted">No partnerships yet</p>
-                ) : (
-                  <table className="score-table">
-                    <thead>
-                      <tr>
-                        <th>Batters</th>
-                        <th>Runs</th>
-                        <th>Balls</th>
-                        <th>Status</th>
-                      </tr>
-                    </thead>
-                    <tbody>
-                      {activeInnings.partnerships.map((p, idx) => (
-                        <tr key={idx}>
-                          <td>{p.batter1} & {p.batter2}</td>
-                          <td>{p.runs}</td>
-                          <td>{p.balls}</td>
-                          <td>{p.ongoing ? "Current" : `Ended at wicket ${p.wicketNumber}`}</td>
-                        </tr>
-                      ))}
-                    </tbody>
-                  </table>
-                )}
-              </div>
+<CollapsibleSection
+  title="🤝 Partnerships"
+  defaultOpen={true}
+>
+  {!activeInnings?.partnerships?.length ? (
+    <p className="muted">No partnerships yet</p>
+  ) : (
+    <table className="score-table">
+      <thead>
+        <tr>
+          <th>Batters</th>
+          <th>Runs</th>
+          <th>Balls</th>
+          <th>Status</th>
+        </tr>
+      </thead>
 
-              <div>
-                <h4>💥 Fall of Wickets</h4>
-                {!activeInnings?.fallOfWickets?.length ? (
-                  <p className="muted">No wickets yet</p>
-                ) : (
-                  <table className="score-table">
-                    <thead>
-                      <tr>
-                        <th>Wkt</th>
-                        <th>Score</th>
-                        <th>Player Out</th>
-                        <th>Over</th>
-                      </tr>
-                    </thead>
-                    <tbody>
-                      {activeInnings.fallOfWickets.map((w, idx) => (
-                        <tr key={idx}>
-                          <td>{w.wicketNumber}</td>
-                          <td>{w.score}</td>
-                          <td>{w.playerOut}</td>
-                          <td>{w.over}</td>
-                        </tr>
-                      ))}
-                    </tbody>
-                  </table>
-                )}
-              </div>
+      <tbody>
+        {activeInnings.partnerships.map((p, idx) => (
+          <tr key={idx}>
+            <td>{p.batter1} & {p.batter2}</td>
+            <td>{p.runs}</td>
+            <td>{p.balls}</td>
+            <td>
+              {p.ongoing
+                ? "Current"
+                : `Ended at wicket ${p.wicketNumber}`}
+            </td>
+          </tr>
+        ))}
+      </tbody>
+    </table>
+  )}
+</CollapsibleSection>
+
+<CollapsibleSection
+  title="💥 Fall of Wickets"
+  defaultOpen={false}
+>
+  {!activeInnings?.fallOfWickets?.length ? (
+    <p className="muted">No wickets yet</p>
+  ) : (
+    <table className="score-table">
+      <thead>
+        <tr>
+          <th>Wkt</th>
+          <th>Score</th>
+          <th>Player Out</th>
+          <th>Over</th>
+        </tr>
+      </thead>
+
+      <tbody>
+        {activeInnings.fallOfWickets.map((w, idx) => (
+          <tr key={idx}>
+            <td>{w.wicketNumber}</td>
+            <td>{w.score}</td>
+            <td>{w.playerOut}</td>
+            <td>{w.over}</td>
+          </tr>
+        ))}
+      </tbody>
+    </table>
+  )}
+</CollapsibleSection>
 
               <div>
                 <h4>🕘 Recent Balls</h4>
@@ -812,7 +906,7 @@ return (
         </Card>
 
             <Card
-              title="🎯 Advanced Scoring" 
+              title="🎯 Advanced Scoring" defaultCollapsed={false}
               right={
                 <div style={{ display: "flex", gap: 8 }}>
                   <button type="submit" form="add-ball-form" className="btn">
@@ -833,6 +927,101 @@ return (
             <p className="muted">Select a match first.</p>
           ) : (
             <>
+<div className="score-summary-panel">
+
+  {/* TOP ROW */}
+  <div className="single-line-scoreboard">
+    <span>
+      <strong>Score:</strong>{" "}
+      {activeInnings
+        ? `${activeInnings.runs}/${activeInnings.wickets}`
+        : "-"}
+    </span>
+
+    <span>
+      <strong>Overs:</strong>{" "}
+      {activeInnings?.oversDisplay || "0.0"}
+    </span>
+
+    <span>
+      <strong>Striker:</strong>{" "}
+      {scoreboard?.currentState?.strikerName || "-"}{" "}
+      (
+      {scoreboard?.currentState?.strikerStats
+        ? `${scoreboard.currentState.strikerStats.runs} (${scoreboard.currentState.strikerStats.balls})`
+        : "0 (0)"}
+      )
+    </span>
+
+    <span>
+      <strong>Non-Striker:</strong>{" "}
+      {scoreboard?.currentState?.nonStrikerName || "-"}{" "}
+      (
+      {scoreboard?.currentState?.nonStrikerStats
+        ? `${scoreboard.currentState.nonStrikerStats.runs} (${scoreboard.currentState.nonStrikerStats.balls})`
+        : "0 (0)"}
+      )
+    </span>
+
+    <span>
+      <strong>Bowler:</strong>{" "}
+      {scoreboard?.currentState?.bowlerName || "-"}{" "}
+      (
+      {scoreboard?.currentState?.bowlerStats
+        ? `${scoreboard.currentState.bowlerStats.wickets}/${scoreboard.currentState.bowlerStats.runs} in ${scoreboard.currentState.bowlerStats.overs} ov`
+        : "0/0"}
+      )
+    </span>
+  </div>
+
+<div className="recent-balls-row">
+  <span className="recent-label">Recent:</span>
+
+  {scoreboard?.recentBalls?.length ? (
+    scoreboard.recentBalls.slice(-12).map((ball, index) => {
+      const label = ball.label || "";
+
+      // Detect over change
+      const currentOver = label.split(".")[0];
+      const prevOver =
+        index > 0
+          ? scoreboard.recentBalls
+              .slice(-12)
+              [index - 1]?.label?.split(".")[0]
+          : currentOver;
+
+      // Extract only result after over.ball
+      // Example:
+      // "12.3 4" => "4"
+      // "14.5 W" => "W"
+      const ballResult = (label.split(" ").slice(1).join(" ") || label).replace(/[()]/g, "");
+
+      return (
+        <React.Fragment key={ball.id}>
+          {index > 0 && currentOver !== prevOver && (
+            <span className="over-separator">|</span>
+          )}
+
+          <span
+            className={`ball-chip ${
+              ballResult === "W"
+                ? "ball-wicket"
+                : ballResult === "4" || ballResult === "6"
+                ? "ball-boundary"
+                : ""
+            }`}
+          >
+            {ballResult}
+          </span>
+        </React.Fragment>
+      );
+    })
+  ) : (
+    <span className="muted">No recent balls</span>
+  )}
+</div>
+
+</div>
               <div className="quick-actions">
                 <button type="button" className="chip" onClick={() => quickNormalBall(0)}>0</button>
                 <button type="button" className="chip" onClick={() => quickNormalBall(1)}>1</button>
@@ -1032,7 +1221,7 @@ return (
           )}
         </Card>
 
-        <Card title="📊 Player Statistics">
+        <Card title="📊 Player Statistics" defaultCollapsed={false}>
           {!stats ? (
             <p className="muted">Select a match.</p>
           ) : (
@@ -1115,7 +1304,7 @@ return (
     </div>
 
     <div className="grid-side">
-        <Card title="📋 Matches">
+        <Card title="📋 Matches" defaultCollapsed={false}>
           {matches.length === 0 ? (
             <p className="muted">No matches yet</p>
           ) : (
@@ -1165,7 +1354,7 @@ return (
         </Card>
 
         {(message || error) && (
-          <Card title="ℹ️ Notifications">
+          <Card title="ℹ️ Notifications" defaultCollapsed={false}>
             {message ? <p className="success">{message}</p> : null}
             {error ? <p className="error">{error}</p> : null}
           </Card>
@@ -1178,7 +1367,7 @@ return (
 
     <div className="grid-main">
 
-         <Card title="👥 Teams">
+         <Card title="👥 Teams" defaultCollapsed={false}>
           <form className="form stack" onSubmit={handleAddTeam}>
             <label>
               <span>Team name</span>
@@ -1239,7 +1428,7 @@ return (
 
     <div className="grid-side">
 
- <Card title="🧍 Add Player">
+ <Card title="🧍 Add Player" defaultCollapsed={false}>
           <form className="form stack" onSubmit={handleAddPlayer}>
             <label>
               <span>Team</span>
@@ -1274,7 +1463,7 @@ return (
           </form>
         </Card>
 
-        <Card title="🗓️ Create Match">
+        <Card title="🗓️ Create Match" defaultCollapsed={false}>
           <form className="form stack" onSubmit={handleCreateMatch}>
             <label>
               <span>Team A</span>
@@ -1363,7 +1552,7 @@ return (
             <button type="submit" className="btn">Create Match</button>
           </form>
         </Card>
-        <Card title="📋 Matches">
+        <Card title="📋 Matches" defaultCollapsed={false}>
           {matches.length === 0 ? (
             <p className="muted">No matches yet</p>
           ) : (
@@ -1413,7 +1602,7 @@ return (
         </Card>
 
         {(message || error) && (
-          <Card title="ℹ️ Notifications">
+          <Card title="ℹ️ Notifications" defaultCollapsed={false}>
             {message ? <p className="success">{message}</p> : null}
             {error ? <p className="error">{error}</p> : null}
           </Card>

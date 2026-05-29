@@ -478,14 +478,6 @@ select:focus {
   flex-wrap: wrap;
 }
 
-.ball-chip {
-  background: #2563eb;
-  padding: 8px 12px;
-  border-radius: 999px;
-  font-size: 13px;
-  font-weight: 600;
-}
-
 @media (max-width: 900px) {
   .quick-grid {
     grid-template-columns: repeat(2, 1fr);
@@ -573,4 +565,139 @@ select:focus {
 .modal-card select {
   width: 100%;
   margin-top: 12px;
+}
+.collapsible-section {
+  margin-top: 20px;
+}
+
+.collapsible-toggle {
+  width: 100%;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+
+  background: #111827;
+  border: 1px solid #374151;
+  color: white;
+
+  padding: 14px 16px;
+  border-radius: 12px;
+
+  cursor: pointer;
+  font-size: 16px;
+  font-weight: 700;
+
+  transition: all 0.2s ease;
+}
+
+.collapsible-toggle:hover {
+  background: #1f2937;
+}
+
+.collapsible-content {
+  margin-top: 14px;
+}
+.single-line-scoreboard {
+  display: flex;
+  align-items: center;
+  gap: 24px;
+
+  flex-wrap: wrap;
+
+  background: #0f172a;
+  border: 1px solid #374151;
+
+  border-radius: 12px;
+
+  padding: 14px 18px;
+  margin-bottom: 18px;
+
+  font-size: 14px;
+  color: #e5e7eb;
+}
+
+.single-line-scoreboard span {
+  white-space: nowrap;
+}
+
+.single-line-scoreboard strong {
+  color: white;
+}
+.score-summary-panel {
+  background: #0f172a;
+  border: 1px solid #374151;
+  border-radius: 14px;
+
+  margin-bottom: 18px;
+
+  overflow: hidden;
+}
+
+.single-line-scoreboard {
+  display: flex;
+  align-items: center;
+  gap: 24px;
+
+  flex-wrap: wrap;
+
+  padding: 14px 18px;
+
+  font-size: 14px;
+  color: #e5e7eb;
+
+  border-bottom: 1px solid #374151;
+}
+
+.single-line-scoreboard span {
+  white-space: nowrap;
+}
+
+.single-line-scoreboard strong {
+  color: white;
+}
+
+.recent-balls-row {
+  display: flex;
+  align-items: center;
+  flex-wrap: wrap;
+
+  gap: 10px;
+
+  padding: 12px 18px;
+
+  background: #111827;
+}
+
+.recent-label {
+  font-size: 13px;
+  font-weight: 600;
+  color: #9ca3af;
+
+  margin-right: 4px;
+}
+
+.ball-chip {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+
+  font-size: 14px;
+  font-weight: 700;
+
+  color: #e5e7eb;
+}
+
+.ball-boundary {
+  color: #22c55e;
+  background: rgba(34, 197, 94, 0.12);
+}
+
+.ball-wicket {
+  color: #ef4444;
+  background: rgba(239, 68, 68, 0.12);
+}
+.over-separator {
+  color: #6b7280;
+  font-weight: 700;
+  margin: 0 4px;
 }

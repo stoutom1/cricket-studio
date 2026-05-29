@@ -31,7 +31,14 @@ function StatCard({ title, children }) {
 export default function LiveScoreClient({ matchId }) {
   const [scoreboard, setScoreboard] = useState(null);
   const [error, setError] = useState("");
+  const [collapsedInnings, setCollapsedInnings] = useState({});
 
+  function toggleInnings(inningsNo) {
+        setCollapsedInnings((prev) => ({
+        ...prev,
+        [inningsNo]: !prev[inningsNo]
+        }));
+      }
   useEffect(() => {
     async function loadScorecard() {
       try {
@@ -293,11 +300,61 @@ export default function LiveScoreClient({ matchId }) {
       </StatCard>
 
       {/* INNINGS */}
-      {scoreboard?.innings?.map((innings) => (
-        <StatCard
-          key={innings.number}
-          title={`Innings ${innings.number} - ${innings.teamName}`}
+      {scoreboard?.innings?.map((innings) => {
+  const isCollapsed =
+    collapsedInnings[innings.number];
+
+  return (
+    <div
+      key={innings.number}
+      style={{
+        background: "#111827",
+        borderRadius: 16,
+        marginBottom: 20,
+        border: "1px solid #1f2937",
+        overflow: "hidden"
+      }}
+    >
+      {/* COLLAPSIBLE HEADER */}
+      <div
+        onClick={() =>
+          toggleInnings(innings.number)
+        }
+        style={{
+          padding: 20,
+          cursor: "pointer",
+          display: "flex",
+          justifyContent: "space-between",
+          alignItems: "center",
+          background: "#111827",
+          userSelect: "none"
+        }}
+      >
+        <h3
+          style={{
+            margin: 0,
+            fontSize: 18,
+            fontWeight: 700
+          }}
         >
+          Innings {innings.number} -{" "}
+          {innings.teamName}
+        </h3>
+
+        <span
+          style={{
+            fontSize: 20,
+            fontWeight: 700,
+            color: "#9ca3af"
+          }}
+        >
+          {isCollapsed ? "+" : "−"}
+        </span>
+      </div>
+
+      {!isCollapsed && (
+        <div style={{ padding: 20 }}>
+
           {/* INNINGS SUMMARY */}
           <table
             style={{
@@ -509,8 +566,11 @@ export default function LiveScoreClient({ matchId }) {
               ))}
             </tbody>
           </table>
-        </StatCard>
-      ))}
+         </div>
+      )}
+    </div>
+  );
+})}
     </div>
   );
 }
