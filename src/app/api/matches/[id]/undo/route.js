@@ -25,14 +25,17 @@ export async function POST(request, { params }) {
     );
   }
 
-  const lastBall = await prisma.ball.findFirst({
-    where: { matchId },
-    orderBy: [
-      { inningsNo: "desc" },
-      { sequence: "desc" },
-      { id: "desc" },
-    ],
-  });
+const lastBall = await prisma.ball.findFirst({
+  where: {
+    matchId,
+  },
+  orderBy: [
+    { inningsNo: "desc" },
+    { sequence: "desc" },
+  ],
+});
+
+const nextSequence = (lastBall?.sequence ?? 0) + 1;
 
   if (!lastBall) {
     return NextResponse.json(

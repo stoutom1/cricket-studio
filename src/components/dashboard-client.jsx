@@ -154,7 +154,14 @@ export default function DashboardClient() {
     dismissedPlayerId: "",
     newBatterId: "",
     note: ""
-  });
+  }, [
+  scoreboard?.currentState?.strikerId,
+  scoreboard?.currentState?.nonStrikerId,
+  scoreboard?.currentState?.bowlerId,
+  scoreboard?.currentState?.dismissedPlayerId,
+  scoreboard?.currentState?.inningsNo,
+  scoreboard?.currentInnings
+]);
 
   async function api(url, options = {}) {
     const res = await fetch(url, {
@@ -1025,7 +1032,7 @@ return (
       const prevOver =
         index > 0
           ? scoreboard.recentBalls
-              .slice(-12)
+              .slice(-20)
               [index - 1]?.label?.split(".")[0]
           : currentOver;
 

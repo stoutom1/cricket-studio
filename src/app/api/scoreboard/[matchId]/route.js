@@ -97,7 +97,15 @@ export async function GET(request, { params }) {
   const innings1Started = innings1Balls.length > 0;
   const maxLegalBalls = match.oversPerInnings * 6;
   //const innings2Started = innings2Balls.length > 0;
-  const innings2Started = innings2Balls.length > 0 || innings1.wickets >= match.maxWicketsPerInnings || innings1.legalBalls >= maxLegalBalls;
+  //const innings2Started = innings2Balls.length > 0 || innings1.wickets >= match.maxWicketsPerInnings || innings1.legalBalls >= maxLegalBalls;
+  const innings2Started =
+  innings2Balls.length > 0 ||
+  (
+    match.maxWicketsPerInnings != null &&
+    innings1.wickets >= match.maxWicketsPerInnings
+  ) ||
+  innings1.legalBalls >= maxLegalBalls;
+
   const innings1Complete = innings2Started;
 
   const target = innings1Complete ? innings1.runs + 1 : null;

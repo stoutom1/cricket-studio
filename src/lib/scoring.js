@@ -14,7 +14,8 @@ export const WICKET_TYPES = [
 ];
 
 export function isLegalDelivery(extraType) {
-  return !["WIDE", "NOBALL"].includes(extraType);
+  //console.log(extraType);
+  return !["WIDE", "NOBALL", "RETIRED_HURT"].includes(extraType);
 }
 
 export function formatOversFromBalls(legalBalls) {

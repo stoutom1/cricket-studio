@@ -46,7 +46,6 @@ export async function GET() {
       }
     }
   });
-  console.log(matches);
 
   // AUTO UPDATE MATCH STATUS
   for (const match of matches) {

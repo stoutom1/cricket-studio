@@ -228,7 +228,12 @@ if (payload.extraType === "NOBALL" && payload.extras < 1) {
   });
 
   const maxLegalBalls = match.oversPerInnings * 6;
-
+console.log({
+  matchId: payload.matchId,
+  inningsNo: payload.inningsNo,
+  legalBallsCount,
+  maxLegalBalls
+});
   if (legalBallsCount >= maxLegalBalls) {
     return NextResponse.json(
       { error: "This innings has already completed its overs" },
@@ -261,7 +266,11 @@ const wicketCount = inningsBalls.filter(
 const maxWickets =
   match.maxWicketsPerInnings;
 
-if (wicketCount >= maxWickets) {
+if (
+  maxWickets !== null &&
+  maxWickets !== undefined &&
+  wicketCount >= maxWickets
+) {
   return Response.json(
     {
       error: "Maximum wickets reached for this innings"
@@ -296,12 +305,25 @@ const innings = {
   legalBalls,
   wickets: wicketCount
 };
+const lastBall = await prisma.ball.findFirst({
+  where: {
+    matchId: payload.matchId,
+    inningsNo: payload.inningsNo,
+  },
+  orderBy: {
+    sequence: "desc",
+  },
+  select: {
+    sequence: true,
+  },
+});
 
+const nextSequence = (lastBall?.sequence ?? 0) + 1;
   const ball = await prisma.ball.create({
     data: {
       matchId: payload.matchId,
       inningsNo: payload.inningsNo,
-      sequence: totalBallsCount + 1,
+      sequence: nextSequence,
       overNo,
       ballInOver,
       legalDelivery,
