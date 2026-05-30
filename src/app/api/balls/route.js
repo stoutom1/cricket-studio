@@ -228,12 +228,7 @@ if (payload.extraType === "NOBALL" && payload.extras < 1) {
   });
 
   const maxLegalBalls = match.oversPerInnings * 6;
-console.log({
-  matchId: payload.matchId,
-  inningsNo: payload.inningsNo,
-  legalBallsCount,
-  maxLegalBalls
-});
+
   if (legalBallsCount >= maxLegalBalls) {
     return NextResponse.json(
       { error: "This innings has already completed its overs" },

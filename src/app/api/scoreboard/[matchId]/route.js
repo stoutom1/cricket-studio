@@ -140,7 +140,31 @@ export async function GET(request, { params }) {
 
   const currentInnings = innings2Started ? 2 : 1;
   const currentState = currentInnings === 1 ? innings1.currentState : innings2.currentState;
+const response = {
+  match: {
+    id: match.id,
+    teamAName: match.teamA.name,
+    teamBName: match.teamB.name,
+    battingFirstTeamName: match.battingFirstTeam.name,
+    oversPerInnings: match.oversPerInnings,
+    powerplayOversInnings: match.powerplayOversInnings,
+    status: match.status
+  },
+  innings: [
+    { number: 1, teamName: innings1TeamName, ...innings1 },
+    { number: 2, teamName: innings2TeamName, ...innings2 }
+  ],
+  currentInnings,
+  currentState,
+  summary: {
+    target,
+    remainingBalls,
+    statusText
+  },
+  recentBalls
+};
 
+return NextResponse.json(response);
   return NextResponse.json({
     match: {
       id: match.id,

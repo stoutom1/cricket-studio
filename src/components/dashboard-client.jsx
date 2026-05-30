@@ -115,6 +115,10 @@ export default function DashboardClient() {
   const [selectedMatchId, setSelectedMatchId] = useState("");
   const [toast, setToast] = useState(null);
 
+const [expandedTeamId, setExpandedTeamId] = useState(null);
+const [selectedPlayerId, setSelectedPlayerId] = useState("");
+//const [selectedPlayers, setSelectedPlayers] = useState({});
+
   const [matchDetail, setMatchDetail] = useState(null);
   const [scoreboard, setScoreboard] = useState(null);
   const [stats, setStats] = useState({ batting: [], bowling: [] });
@@ -261,6 +265,10 @@ export default function DashboardClient() {
     ]);
 
     setMatchDetail(detail);
+    console.log(
+  "SCOREBOARD API RESPONSE:",
+  JSON.stringify(board, null, 2)
+);
     setScoreboard(board);
     setStats(statData);
   }
@@ -766,6 +774,23 @@ async function confirmRetiredHurt() {
   const activeInnings =
     scoreboard?.innings?.find((x) => x.number === scoreboard.currentInnings) ||
     scoreboard?.innings?.[0];
+ console.log("===== DASHBOARD RENDER =====");
+console.log("currentInnings:", scoreboard?.currentInnings);
+
+console.log(
+  "scoreboard.innings:",
+  JSON.stringify(scoreboard?.innings, null, 2)
+);
+
+console.log(
+  "activeInnings:",
+  JSON.stringify(activeInnings, null, 2)
+);
+
+console.log(
+  "activeInnings.fallOfWickets:",
+  JSON.stringify(activeInnings?.fallOfWickets, null, 2)
+);   
 return (
   <>
   <div className="tabs">
@@ -906,6 +931,10 @@ return (
   title="💥 Fall of Wickets"
   defaultOpen={false}
 >
+  {console.log(
+    "RENDERING FOW:",
+    activeInnings?.fallOfWickets
+  )}
   {!activeInnings?.fallOfWickets?.length ? (
     <p className="muted">No wickets yet</p>
   ) : (
@@ -1019,7 +1048,15 @@ return (
       )
     </span>
   </div>
-
+  {(message || error) && (
+    <div
+      className={`notification-banner ${
+        error ? "notification-error" : "notification-success"
+      }`}
+    >
+      {error || message}
+    </div>
+  )}
 <div className="recent-balls-row">
   <span className="recent-label">Recent: </span>
 
@@ -1445,30 +1482,75 @@ return (
                   </button>
                 </div>
 
-                <div className="tags">
-                  {team.players.length === 0 ? (
-                    <span className="muted">No players</span>
-                  ) : (
-                    team.players.map((player) => (
-                      <span key={player.id} className="tag">
-                        {player.name}
-                        <button
-                          type="button"
-                          style={{
-                            marginLeft: 8,
-                            background: "transparent",
-                            color: "inherit",
-                            border: "none",
-                            cursor: "pointer"
-                          }}
-                          onClick={() => handleDeletePlayer(player.id, player.name)}
-                        >
-                          ✖
-                        </button>
-                      </span>
-                    ))
-                  )}
-                </div>
+<div style={{ marginTop: 12 }}>
+  <button
+    type="button"
+    className="btn btn-outline"
+    onClick={() =>
+      setExpandedTeamId(
+        expandedTeamId === team.id ? null : team.id
+      )
+    }
+  >
+    {expandedTeamId === team.id
+      ? "Hide Players"
+      : `Players (${team.players.length})`}
+  </button>
+
+  {expandedTeamId === team.id && (
+    <div style={{ marginTop: 12 }}>
+      {team.players.length === 0 ? (
+        <span className="muted">No players</span>
+      ) : (
+        <>
+          <select
+            value={selectedPlayerId}
+            onChange={(e) =>
+              setSelectedPlayerId(e.target.value)
+            }
+            style={{ width: "100%", marginBottom: 10 }}
+          >
+            <option value="">
+              Select a player
+            </option>
+
+            {team.players.map((player) => (
+              <option
+                key={player.id}
+                value={player.id}
+              >
+                {player.name}
+              </option>
+            ))}
+          </select>
+
+          {selectedPlayerId && (
+            <button
+              type="button"
+              className="btn btn-outline"
+              onClick={() => {
+                const player = team.players.find(
+                  (p) =>
+                    String(p.id) ===
+                    String(selectedPlayerId)
+                );
+
+                if (player) {
+                  handleDeletePlayer(
+                    player.id,
+                    player.name
+                  );
+                }
+              }}
+            >
+              Delete Selected Player
+            </button>
+          )}
+        </>
+      )}
+    </div>
+  )}
+</div>
               </div>
             ))}
           </div>

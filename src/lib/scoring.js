@@ -14,7 +14,6 @@ export const WICKET_TYPES = [
 ];
 
 export function isLegalDelivery(extraType) {
-  //console.log(extraType);
   return !["WIDE", "NOBALL", "RETIRED_HURT"].includes(extraType);
 }
 
@@ -271,7 +270,7 @@ export function summarizeInningsDetailed(balls, playerMap, oversPerInnings) {
   const nextPair = applyBallOutcome(ball);
 
   const countsAsWicket =
-    ball.isWicket &&
+    Boolean(ball.isWicket) &&
     ball.wicketType !== "RETIRED_HURT";
 
   if (countsAsWicket) {
