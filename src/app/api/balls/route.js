@@ -239,7 +239,7 @@ if (payload.extraType === "NOBALL" && payload.extras < 1) {
   const overNo = Math.floor(legalBallsCount / 6);
   const ballInOver = (legalBallsCount % 6) + 1;
 
-  const isPowerPlay = overNo <= match.powerplayOversInnings;
+  const isPowerPlay = overNo < match.powerplayOversInnings;
   const totalRuns = payload.runsOffBat + payload.extras;
 
   // CURRENT INNINGS

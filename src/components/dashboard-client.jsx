@@ -674,6 +674,28 @@ function quickWicket(type = "BOWLED") {
   setShowWicketModal(true);
 }
 
+
+async function swapBatters() {
+  if (!selectedMatchId) return;
+
+  try {
+ await fetch(
+  `/api/matches/${selectedMatchId}/swap-strike`,
+  {
+    method: "POST"
+  }
+);
+
+    await loadSelectedMatch(selectedMatchId);
+
+    showToast(
+      "success",
+      "🔄 Striker swapped successfully"
+    );
+  } catch (err) {
+    setError(err.message);
+  }
+}
   function getNextAvailableBatter(players, strikerId, nonStrikerId, balls = []) {
   if (!players?.length) return null;
 
@@ -1033,7 +1055,6 @@ return (
         : "0 (0)"}
       )
     </span>
-
     <span>
       <strong>Bowler:</strong>{" "}
       {scoreboard?.currentState?.bowlerName || "-"}{" "}
@@ -1118,7 +1139,13 @@ return (
   <button type="button" className={`chip ${activeQuickAction === "LB" ? "chip-active" : ""}`} onClick={() => triggerQuickAction("LB", () => quickExtra("LEGBYE"))}>LB</button>
 
   <button type="button" className={`chip ${activeQuickAction === "W" ? "chip-active" : ""}`} onClick={() => triggerQuickAction("W", () => quickWicket("BOWLED"))}>W</button>
-
+ <button
+    type="button"
+    className="btn btn-outline"
+    onClick={swapBatters}
+  >
+    ⇄ Swap
+  </button>
   <button type="button" className="chip" onClick={quickRetiredHurt}>
     Retired Hurt
   </button>
@@ -1156,41 +1183,63 @@ return (
                   </select>
                 </label>
 
-                <label>
-                  <span>Striker</span>
-                  <select
-                    value={ballForm.strikerId || ""}
-                    onChange={(e) =>
-                      setBallForm((prev) => ({
-                        ...prev,
-                        strikerId: e.target.value,
-                        dismissedPlayerId: e.target.value
-                      }))
-                    }
-                    required
-                  >
-                    <option value="">Select striker</option>
-                    {(battingTeam?.players || []).map((p) => (
-                      <option key={p.id} value={p.id}>{p.name}</option>
-                    ))}
-                  </select>
-                </label>
+<div
+  style={{
+    display: "grid",
+    gridTemplateColumns: "1fr auto 1fr",
+    gap: 12,
+    alignItems: "end"
+  }}
+>
+  {/* Striker */}
+  <label>
+    <span>Striker</span>
 
-                <label>
-                  <span>Non-striker</span>
-                  <select
-                    value={ballForm.nonStrikerId || ""}
-                    onChange={(e) =>
-                      setBallForm((prev) => ({ ...prev, nonStrikerId: e.target.value }))
-                    }
-                    required
-                  >
-                    <option value="">Select non-striker</option>
-                    {(battingTeam?.players || []).map((p) => (
-                      <option key={p.id} value={p.id}>{p.name}</option>
-                    ))}
-                  </select>
-                </label>
+    <select
+      value={ballForm.strikerId || ""}
+      onChange={(e) =>
+        setBallForm((prev) => ({
+          ...prev,
+          strikerId: e.target.value,
+          dismissedPlayerId: e.target.value
+        }))
+      }
+      required
+    >
+      <option value="">Select striker</option>
+
+      {(battingTeam?.players || []).map((p) => (
+        <option key={p.id} value={p.id}>
+          {p.name}
+        </option>
+      ))}
+    </select>
+  </label>
+
+  {/* Non Striker */}
+  <label>
+    <span>Non-striker</span>
+
+    <select
+      value={ballForm.nonStrikerId || ""}
+      onChange={(e) =>
+        setBallForm((prev) => ({
+          ...prev,
+          nonStrikerId: e.target.value
+        }))
+      }
+      required
+    >
+      <option value="">Select non-striker</option>
+
+      {(battingTeam?.players || []).map((p) => (
+        <option key={p.id} value={p.id}>
+          {p.name}
+        </option>
+      ))}
+    </select>
+  </label>
+</div>
 
                 <label>
                   <span>Bowler</span>

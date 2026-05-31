@@ -1,4 +1,4 @@
-export const EXTRA_TYPES = ["NONE", "WIDE", "NOBALL", "BYE", "LEGBYE"];
+export const EXTRA_TYPES = ["NONE", "WIDE", "NOBALL", "BYE", "LEGBYE", "SWAP_STRIKE"];
 
 export const WICKET_TYPES = [
   "NONE",
@@ -206,8 +206,14 @@ function runsCompleted(ball) {
   }
 }
 export function applyBallOutcome(ball) {
+ if (ball.extraType === "SWAP_STRIKE") {
+  return {
+    strikerId: ball.strikerId,
+    nonStrikerId: ball.nonStrikerId
+  };
+}
   let strikerId = ball.strikerId || null;
-  let nonStrikerId = ball.nonStrikerId || null;
+  let nonStrikerId = ball.nonStrikerId || null;  
 
 if (ball.isWicket) {
   if (!ball.newBatterId) {
