@@ -824,7 +824,7 @@ function triggerQuickAction(actionKey, callback) {
   const activeInnings =
     scoreboard?.innings?.find((x) => x.number === scoreboard.currentInnings) ||
     scoreboard?.innings?.[0];
-    
+
 return (
   <>
 <div className="tabs">
@@ -846,7 +846,7 @@ return (
     className={`tab-btn ${activeTab === "management" ? "active" : ""}`}
     onClick={() => setActiveTab("management")}
   >
-    ⚙️ <span>Team Management</span>
+    ⚙️ <span>Teams</span>
   </button>
 </div>
   {activeTab === "scoring" && (
