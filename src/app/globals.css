@@ -153,13 +153,6 @@ select:focus {
   cursor: not-allowed;
 }
 
-.quick-actions {
-  display: flex;
-  flex-wrap: wrap;
-  gap: 8px;
-  margin-bottom: 14px;
-}
-
 .chip {
   padding: 8px 14px;
   border-radius: 999px;
@@ -646,7 +639,7 @@ select:focus {
 }
 
 .recent-label {
-  font-size: 13px;
+  font-size: 16px;
   font-weight: 600;
   color: #9ca3af;
 
@@ -752,32 +745,21 @@ select:focus {
     transform: translateY(0);
   }
 }
-.quick-actions {
-  display: flex;
-  flex-wrap: wrap;
-  gap: 10px;
-}
-
-.quick-actions {
-  display: flex;
-  flex-wrap: wrap;
-  gap: 6px;
-}
 
 .quick-actions .chip {
-  min-width: 46px;
-  height: 40px;
-  padding: 6px 10px;
-  font-size: 13px;
+  min-width: 56px;
+  height: 48px;
+  padding: 8px 14px;
+  font-size: 15px;
   font-weight: 600;
-  border-radius: 10px;
+  border-radius: 12px;
   display: flex;
   align-items: center;
   justify-content: center;
 }
 
 .quick-actions .chip:last-child {
-  min-width: 120px; /* Retired Hurt button */
+  min-width: 130px; /* Retired Hurt button */
 }
 
 .chip:hover {
@@ -835,3 +817,14 @@ select:focus {
     gap: 4px;
   }
 }  
+.quick-actions .chip-primary {
+  min-width: 120px;
+  font-weight: 700;
+}
+
+.quick-actions {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 10px;
+  align-items: center;
+}

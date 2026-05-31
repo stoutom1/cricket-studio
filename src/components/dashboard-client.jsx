@@ -968,25 +968,10 @@ return (
             </div>
           )}
         </Card>
-
-            <Card
-              title="🎯 Advanced Scoring" defaultCollapsed={false}
-              right={
-                <div style={{ display: "flex", gap: 8 }}>
-                  <button type="submit" form="add-ball-form" className="btn">
-                    Add Delivery
-                  </button>
-
-                  <button
-                    type="button"
-                    className="btn btn-outline"
-                    onClick={handleUndoBall}
-                  >
-                    Undo last ball
-                  </button>
-                </div>
-              }
-            >
+<Card
+  title="🎯 Advanced Scoring"
+  defaultCollapsed={false}
+>
           {!matchDetail ? (
             <p className="muted">Select a match first.</p>
           ) : (
@@ -1110,7 +1095,9 @@ return (
                 <button type="button" className={`chip ${activeQuickAction === "B" ? "chip-active" : ""}`} onClick={() => triggerQuickAction("B", () => quickExtra("BYE"))}>B</button>
                 <button type="button" className={`chip ${activeQuickAction === "LB" ? "chip-active" : ""}`} onClick={() => triggerQuickAction("LB", () => quickExtra("LEGBYE"))}>LB</button>
                 <button type="button" className={`chip ${activeQuickAction === "W" ? "chip-active" : ""}`} onClick={() => triggerQuickAction("W", () => quickWicket("BOWLED"))}>W</button>
-                <button type="button" className="chip" onClick={quickRetiredHurt}>Retired Hurt</button>
+                <button type="button" className="chip" onClick={quickRetiredHurt}> Retired Hurt</button>
+                <button type="button" className="chip" onClick={handleUndoBall}> Undo Ball</button>
+                <button type="submit" form="add-ball-form" className="chip chip-primary"> Add Delivery</button>
               </div>
 
               <form id="add-ball-form" className="form grid-2" onSubmit={handleAddBall}>
