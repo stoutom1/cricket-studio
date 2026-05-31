@@ -180,10 +180,21 @@ gap: 12
             value={latestInnings?.runRate || "0.00"}
           />
 
-          <InfoPill
-            label="Target"
-            value={scoreboard?.summary?.target ?? "-"}
-          />
+<InfoPill
+  label="Target"
+  value={
+    scoreboard?.currentInnings === 2 &&
+    scoreboard?.summary?.target
+      ? `${scoreboard.summary.target} • ${
+          Math.max(
+            scoreboard.summary.target -
+              (latestInnings?.runs || 0),
+            0
+          )
+        } needed`
+      : scoreboard?.summary?.target ?? "-"
+  }
+/>
 
           <InfoPill
             label="Balls Left"
