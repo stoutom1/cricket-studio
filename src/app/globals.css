@@ -867,7 +867,7 @@ select:focus {
   }
 
   .scoring-btn {
-    height: 72px;
-    font-size: 20px;
+    height: 36px;
+    font-size: 12px;
   }
 }
