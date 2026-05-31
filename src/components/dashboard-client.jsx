@@ -982,7 +982,6 @@ return (
     📌 {scoreboard?.summary?.statusText}
   </span>
 </div>
-  {/* TOP ROW */}
   <div className="single-line-scoreboard">
     <span>
       <strong>Score:</strong>{" "}
@@ -1104,9 +1103,6 @@ return (
   <button type="button" className="chip" onClick={quickRetiredHurt}>
     Retired Hurt
   </button>
-</div>
-
-<div className="scoring-action-bar">
   <button
     type="button"
     className="btn btn-danger scoring-btn"
@@ -1114,7 +1110,9 @@ return (
   >
     ↩ Undo Ball
   </button>
+</div>
 
+<div className="scoring-action-bar">
   <button
     type="submit"
     form="add-ball-form"
