@@ -185,13 +185,13 @@ gap: 12
   value={
     scoreboard?.currentInnings === 2 &&
     scoreboard?.summary?.target
-      ? `${scoreboard.summary.target} • ${
+      ? `${scoreboard.summary.target} (${
           Math.max(
             scoreboard.summary.target -
               (latestInnings?.runs || 0),
             0
           )
-        } needed`
+        } needed to win)`
       : scoreboard?.summary?.target ?? "-"
   }
 />
