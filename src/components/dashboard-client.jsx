@@ -824,30 +824,27 @@ function triggerQuickAction(actionKey, callback) {
   const activeInnings =
     scoreboard?.innings?.find((x) => x.number === scoreboard.currentInnings) ||
     scoreboard?.innings?.[0];
-   
+  
 return (
   <>
   <div className="tabs">
-  <button
-    className={`tab-btn ${activeTab === "scoring" ? "active" : ""}`}
-    onClick={() => setActiveTab("scoring")}
-  >
+ <button>
+  <span className="sm:hidden">Score</span>
+  <span className="hidden sm:inline">
     🏏 Live Scoring
-  </button>
+  </span>
+</button>
 
-  <button
-    className={`tab-btn ${activeTab === "matches" ? "active" : ""}`}
-    onClick={() => setActiveTab("matches")}
-  >
-    📋 Matches
-  </button>
+<button>
+  📋 Matches
+</button>
 
-  <button
-    className={`tab-btn ${activeTab === "management" ? "active" : ""}`}
-    onClick={() => setActiveTab("management")}
-  >
+<button>
+  <span className="sm:hidden">Teams</span>
+  <span className="hidden sm:inline">
     ⚙️ Team Management
-  </button>
+  </span>
+</button>
 </div>
   {activeTab === "scoring" && (
   <div className="page-grid">
