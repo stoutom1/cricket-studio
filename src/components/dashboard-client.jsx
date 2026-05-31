@@ -992,22 +992,10 @@ return (
           ) : (
             <>
 <div className="score-summary-panel">
-<div className="match-status-banner">
-  <span className="status-text">
+<div className="single-line-scoreboard">
+  <span className="status-chip">
     📌 {scoreboard?.summary?.statusText}
   </span>
-
-  {scoreboard?.summary?.target ? (
-    <span className="status-chip">
-      🎯 Target: {scoreboard.summary.target}
-    </span>
-  ) : null}
-
-  {scoreboard?.summary?.remainingBalls !== null ? (
-    <span className="status-chip">
-      ⏳ {scoreboard.summary.remainingBalls} balls left
-    </span>
-  ) : null}
 </div>
   {/* TOP ROW */}
   <div className="single-line-scoreboard">

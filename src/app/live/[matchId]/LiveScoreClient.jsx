@@ -196,22 +196,10 @@ gap: 12
           />
         </div>
       </div>
-      <div className="match-status-banner">
+      <div className="single-line-scoreboard">
   <span className="status-text">
     📌 {scoreboard?.summary?.statusText}
   </span>
-
-  {scoreboard?.summary?.target ? (
-    <span className="status-chip">
-      🎯 Target: {scoreboard.summary.target}
-    </span>
-  ) : null}
-
-  {scoreboard?.summary?.remainingBalls !== null ? (
-    <span className="status-chip">
-      ⏳ {scoreboard.summary.remainingBalls} balls left
-    </span>
-  ) : null}
 </div>
       {/* CURRENT PLAYERS */}
       <StatCard title="Current Players">
