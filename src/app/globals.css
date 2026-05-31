@@ -300,39 +300,43 @@ select:focus {
 
   .tabs {
   display: flex;
-  gap: 10px;                 /* spacing between tabs */
-  margin-bottom: 32px;
-  padding: 8px;
-  background: #111827;
-  border-radius: 16px;
-  width: fit-content;
+  width: 100%;
+  gap: 4px;
+  margin-bottom: 1rem;
 }
 
 .tab-btn {
-  min-width: 220px;
-  padding: 16px 24px;
-  border: none;
-  border-radius: 14px;
-  background: transparent;
-  color: #cbd5e1;
-  font-size: 16px;
-  font-weight: 700;
-  cursor: pointer;
-  transition: all 0.2s ease;
-}
+  flex: 1;
+  min-width: 0;
+  padding: 10px 6px;
+  font-size: 0.9rem;
+  font-weight: 600;
 
-.tab-btn:hover {
-  background: rgba(255, 255, 255, 0.08);
-  color: white;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 4px;
+
+  border: 1px solid #ddd;
+  border-radius: 8px;
+  background: white;
+
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+
+  cursor: pointer;
 }
 
 .tab-btn.active {
   background: #2563eb;
   color: white;
-  box-shadow:
-    0 4px 12px rgba(37, 99, 235, 0.35),
-    inset 0 1px 0 rgba(255, 255, 255, 0.2);
-  transform: translateY(-1px);
+  border-color: #2563eb;
+}
+
+.tab-btn:hover {
+  background: rgba(255, 255, 255, 0.08);
+  color: white;
 }
 }
 .live-page {
