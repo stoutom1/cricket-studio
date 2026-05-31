@@ -96,11 +96,15 @@ useEffect(() => {
     );
   }
 
-  const latestInnings =
+ const latestInnings =
   scoreboard?.innings?.find(
-    (inn) => inn.number === scoreboard.currentInnings
-  ) || scoreboard?.innings?.[0];
-
+    (inn) => inn.number === scoreboard?.currentInnings
+  ) ??
+  scoreboard?.innings?.[scoreboard?.innings?.length - 1] ??
+  null;
+  
+  const ballsLeft = scoreboard?.summary?.remainingBalls
+  
   return (
     <div
       style={{
@@ -118,20 +122,21 @@ useEffect(() => {
   style={{
     position: "sticky",
     top: 0,
-    zIndex: 100,
-    paddingBottom: 12
+    zIndex: 9999,
+    background: "#030712",
+    paddingBottom: 12,
+    isolation: "isolate"
   }}
 >
-  <div
-    style={{
-      background: "#111827ee",
-      backdropFilter: "blur(12px)",
-      WebkitBackdropFilter: "blur(12px)",
-      padding: isMobile ? 14 : 24,
-      borderRadius: isMobile ? 14 : 20,
-      border: "1px solid #1f2937"
-    }}
-  >
+<div
+  style={{
+    background: "#111827", // remove transparency
+    padding: isMobile ? 14 : 24,
+    borderRadius: isMobile ? 14 : 20,
+    border: "1px solid #1f2937",
+    boxShadow: "0 10px 25px rgba(0,0,0,0.45)"
+  }}
+>
     {/* entire header content */}
           <h1
           style={{
@@ -202,17 +207,17 @@ useEffect(() => {
 
           <InfoPill
             label="Target"
-            value={
-              scoreboard?.currentInnings === 2
-                ? `${scoreboard.summary.target}
-          Need ${Math.max(
-          scoreboard.summary.target -
-          (latestInnings?.runs || 0),
-          0
-          )}`
-                : scoreboard?.summary?.target ?? "-"
-            }
-          />
+                  value={
+                    scoreboard?.currentInnings === 2 &&
+                    scoreboard?.summary?.target
+                      ? `${scoreboard.summary.target}
+                  Need: ${Math.max(
+                    scoreboard.summary.target -
+                      (latestInnings?.runs || 0),
+                    0
+                  )}`
+                      : "Yet to be set"
+                  }          />
           <InfoPill
             label="Balls Left"
             value={
@@ -244,7 +249,14 @@ useEffect(() => {
             <tr>
               <td style={thStyle}>Striker</td>
               <td style={tdStyle}>
-                {scoreboard?.currentState?.strikerName || "Yet to bat"}
+                {
+                  scoreboard?.currentState?.strikerName
+                    ? scoreboard.currentState.strikerName
+                    : scoreboard?.currentState?.nextOverNo === undefined &&
+                      scoreboard?.currentState?.inningsNo === 2
+                    ? ("-")
+                    : (ballsLeft === 0 ? "-" : "Yet to bat")
+                }
 
                 {scoreboard?.currentState?.strikerStats && (
                   <span
@@ -267,7 +279,14 @@ useEffect(() => {
             <tr>
               <td style={thStyle}>Non Striker</td>
               <td style={tdStyle}>
-                {scoreboard?.currentState?.nonStrikerName || "Yet to bat"}
+                {
+                  scoreboard?.currentState?.nonStrikerName
+                    ? scoreboard.currentState.nonStrikerName
+                  : scoreboard?.currentState?.nextOverNo === undefined &&
+                    scoreboard?.currentState?.inningsNo === 2
+                  ? ("-")
+                  : (ballsLeft === 0 ? "-" : "Yet to bat")
+                }
 
                 {scoreboard?.currentState?.nonStrikerStats && (
                   <span
@@ -290,7 +309,14 @@ useEffect(() => {
             <tr>
               <td style={thStyle}>Bowler</td>
               <td style={tdStyle}>
-                {scoreboard?.currentState?.bowlerName || "Yet to bowl"}
+                {
+                  scoreboard?.currentState?.bowlerName
+                    ? scoreboard.currentState.bowlerName
+                  : scoreboard?.currentState?.nextOverNo === undefined &&
+                    scoreboard?.currentState?.inningsNo === 2
+                  ? ("-")
+                  : (ballsLeft === 0 ? "-" : "Yet to bat")
+                }
 
                 {scoreboard?.currentState?.bowlerStats && (
                   <span
