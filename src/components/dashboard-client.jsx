@@ -794,20 +794,27 @@ console.log(
 return (
   <>
   <div className="tabs">
-    <button
-      className={`tab-btn ${activeTab === "scoring" ? "active" : ""}`}
-      onClick={() => setActiveTab("scoring")}
-    >
-      🏏 Live Scoring
-    </button>
+  <button
+    className={`tab-btn ${activeTab === "scoring" ? "active" : ""}`}
+    onClick={() => setActiveTab("scoring")}
+  >
+    🏏 Live Scoring
+  </button>
 
-    <button
-      className={`tab-btn ${activeTab === "management" ? "active" : ""}`}
-      onClick={() => setActiveTab("management")}
-    >
-      ⚙️ Team Management
-    </button>
-  </div>
+  <button
+    className={`tab-btn ${activeTab === "matches" ? "active" : ""}`}
+    onClick={() => setActiveTab("matches")}
+  >
+    📋 Matches
+  </button>
+
+  <button
+    className={`tab-btn ${activeTab === "management" ? "active" : ""}`}
+    onClick={() => setActiveTab("management")}
+  >
+    ⚙️ Team Management
+  </button>
+</div>
   {activeTab === "scoring" && (
   <div className="page-grid">
     <div className="grid-main">
@@ -1387,57 +1394,84 @@ return (
     </div>
 
     <div className="grid-side">
-        <Card title="📋 Matches" defaultCollapsed={false}>
-          {matches.length === 0 ? (
-            <p className="muted">No matches yet</p>
-          ) : (
-            <div className="match-list">
-              {matches.map((match) => (
-                <div
-                  key={match.id}
-                  className={`match-item ${String(match.id) === String(selectedMatchId) ? "active" : ""}`}
+            <Card title="📋 Matches" defaultCollapsed={false}>
+        {matches.length === 0 ? (
+          <p className="muted">No matches yet</p>
+        ) : (
+          <div className="match-list">
+            {matches.map((match) => (
+              <div
+                key={match.id}
+                className={`match-item ${
+                  String(match.id) === String(selectedMatchId)
+                    ? "active"
+                    : ""
+                }`}
+              >
+                <button
+                  type="button"
+                  onClick={() =>
+                    setSelectedMatchId(String(match.id))
+                  }
+                  style={{
+                    flex: 1,
+                    background: "transparent",
+                    border: "none",
+                    color: "inherit",
+                    textAlign: "left",
+                    cursor: "pointer"
+                  }}
                 >
+                  <div>
+                    <strong>
+                      #{match.id} • {match.teamAName} vs{" "}
+                      {match.teamBName}
+                    </strong>
+
+                    <div className="muted small">
+                      Bat first: {match.battingFirstTeamName}
+                      {" • "}
+                      {match.oversPerInnings} overs
+                      {" • "}
+                      Max wkts:{" "}
+                      {match.maxWicketsPerInnings ?? "∞"}
+                      {" • "}
+                      Bowler limit:{" "}
+                      {match.maxOversPerBowler ?? "∞"}
+                    </div>
+
+                    <div className="muted small">
+                      {formatDate(match.createdAt)}
+                    </div>
+                  </div>
+                </button>
+
+                <div
+                  style={{
+                    display: "flex",
+                    flexDirection: "column",
+                    gap: 8
+                  }}
+                >
+                  <span className="pill">
+                    {match.status}
+                  </span>
+
                   <button
                     type="button"
-                    onClick={() => setSelectedMatchId(String(match.id))}
-                    style={{
-                      flex: 1,
-                      background: "transparent",
-                      border: "none",
-                      color: "inherit",
-                      textAlign: "left",
-                      cursor: "pointer"
-                    }}
+                    className="btn btn-outline"
+                    onClick={() =>
+                      handleDeleteMatch(match.id)
+                    }
                   >
-                    <div>
-                      <strong>
-                        #{match.id} • {match.teamAName} vs {match.teamBName}
-                      </strong>
-                      <div className="muted small">
-                        Bat first: {match.battingFirstTeamName}
-                                • {match.oversPerInnings} overs
-                                • Max wkts: {match.maxWicketsPerInnings || "∞"}
-                                • Bowler limit: {match.maxOversPerBowler || "∞"}
-                      </div>
-                      <div className="muted small">{formatDate(match.createdAt)}</div>
-                    </div>
+                    Delete
                   </button>
-
-                  <div style={{ display: "flex", flexDirection: "column", gap: 8 }}>
-                    <span className="pill">{match.status}</span>
-                    <button
-                      type="button"
-                      className="btn btn-outline"
-                      onClick={() => handleDeleteMatch(match.id)}
-                    >
-                      Delete
-                    </button>
-                  </div>
                 </div>
-              ))}
-            </div>
-          )}
-        </Card>
+              </div>
+            ))}
+          </div>
+        )}
+      </Card>
 
         {(message || error) && (
           <Card title="ℹ️ Notifications" defaultCollapsed={false}>
@@ -1445,6 +1479,237 @@ return (
             {error ? <p className="error">{error}</p> : null}
           </Card>
         )}
+    </div>
+  </div>
+)}
+{activeTab === "matches" && (
+  <div className="page-grid">
+    <div className="grid-main">
+
+      <Card title="🗓️ Create Match" defaultCollapsed={false}>
+        <form className="form stack" onSubmit={handleCreateMatch}>
+            <label>
+              <span>Team A</span>
+              <select
+                value={matchForm.teamAId}
+                onChange={(e) =>
+                  setMatchForm((prev) => ({ ...prev, teamAId: e.target.value }))
+                }
+                required
+              >
+                <option value="">Select Team A</option>
+                {teams.map((team) => (
+                  <option key={team.id} value={team.id}>{team.name}</option>
+                ))}
+              </select>
+            </label>
+
+            <label>
+              <span>Team B</span>
+              <select
+                value={matchForm.teamBId}
+                onChange={(e) =>
+                  setMatchForm((prev) => ({ ...prev, teamBId: e.target.value }))
+                }
+                required
+              >
+                <option value="">Select Team B</option>
+                {teams.map((team) => (
+                  <option key={team.id} value={team.id}>{team.name}</option>
+                ))}
+              </select>
+            </label>
+
+            <label>
+              <span>Batting First</span>
+              <select
+                value={matchForm.battingFirstTeamId}
+                onChange={(e) =>
+                  setMatchForm((prev) => ({
+                    ...prev,
+                    battingFirstTeamId: e.target.value
+                  }))
+                }
+                required
+              >
+                <option value="">Select batting first team</option>
+                {teams
+                  .filter((t) => [matchForm.teamAId, matchForm.teamBId].includes(String(t.id)))
+                  .map((team) => (
+                    <option key={team.id} value={team.id}>{team.name}</option>
+                  ))}
+              </select>
+            </label>
+
+            <label>
+              <span>Overs per innings</span>
+              <input
+                type="number"
+                min="1"
+                value={matchForm.oversPerInnings}
+                onChange={(e) =>
+                  setMatchForm((prev) => ({
+                    ...prev,
+                    oversPerInnings: e.target.value
+                  }))
+                }
+                required
+              />
+            </label>
+            <label>
+  <span>Maximum wickets per innings</span>
+
+  <input
+    type="number"
+    min=""
+    max=""
+    value={matchForm.maxWicketsPerInnings}
+    onChange={(e) =>
+      setMatchForm((prev) => ({
+        ...prev,
+        maxWicketsPerInnings: e.target.value
+      }))
+    }
+  />
+
+  <small className="muted">
+    Leave empty for unlimited
+  </small>
+</label>
+
+<label>
+  <span>Maximum overs per bowler</span>
+
+  <input
+    type="number"
+    min="1"
+    value={matchForm.maxOversPerBowler}
+    onChange={(e) =>
+      setMatchForm((prev) => ({
+        ...prev,
+        maxOversPerBowler: e.target.value
+      }))
+    }
+  />
+
+  <small className="muted">
+    Example: 4 in T20
+  </small>
+</label>
+
+            <label>
+              <span>Powerplay overs</span>
+              <input
+                type="number"
+                min="0"
+                value={matchForm.powerplayOversInnings}
+                onChange={(e) =>
+                  setMatchForm((prev) => ({
+                    ...prev,
+                    powerplayOversInnings: e.target.value
+                  }))
+                }
+              />
+            </label>
+
+            <button type="submit" className="btn">Create Match</button>
+        </form>
+      </Card>
+
+    </div>
+
+    <div className="grid-side">
+
+      <Card title="📋 Matches" defaultCollapsed={false}>
+        {matches.length === 0 ? (
+          <p className="muted">No matches yet</p>
+        ) : (
+          <div className="match-list">
+            {matches.map((match) => (
+              <div
+                key={match.id}
+                className={`match-item ${
+                  String(match.id) === String(selectedMatchId)
+                    ? "active"
+                    : ""
+                }`}
+              >
+                <button
+                  type="button"
+                  onClick={() =>
+                    setSelectedMatchId(String(match.id))
+                  }
+                  style={{
+                    flex: 1,
+                    background: "transparent",
+                    border: "none",
+                    color: "inherit",
+                    textAlign: "left",
+                    cursor: "pointer"
+                  }}
+                >
+                  <div>
+                    <strong>
+                      #{match.id} • {match.teamAName} vs{" "}
+                      {match.teamBName}
+                    </strong>
+
+                    <div className="muted small">
+                      Bat first: {match.battingFirstTeamName}
+                      {" • "}
+                      {match.oversPerInnings} overs
+                      {" • "}
+                      Max wkts:{" "}
+                      {match.maxWicketsPerInnings ?? "∞"}
+                      {" • "}
+                      Bowler limit:{" "}
+                      {match.maxOversPerBowler ?? "∞"}
+                    </div>
+
+                    <div className="muted small">
+                      {formatDate(match.createdAt)}
+                    </div>
+                  </div>
+                </button>
+
+                <div
+                  style={{
+                    display: "flex",
+                    flexDirection: "column",
+                    gap: 8
+                  }}
+                >
+                  <span className="pill">
+                    {match.status}
+                  </span>
+
+                  <button
+                    type="button"
+                    className="btn btn-outline"
+                    onClick={() =>
+                      handleDeleteMatch(match.id)
+                    }
+                  >
+                    Delete
+                  </button>
+                </div>
+              </div>
+            ))}
+          </div>
+        )}
+      </Card>
+
+      {(message || error) && (
+        <Card title="ℹ️ Notifications">
+          {message && (
+            <p className="success">{message}</p>
+          )}
+          {error && (
+            <p className="error">{error}</p>
+          )}
+        </Card>
+      )}
+
     </div>
   </div>
 )}
@@ -1593,188 +1858,6 @@ return (
             <button type="submit" className="btn">Add Player</button>
           </form>
         </Card>
-
-        <Card title="🗓️ Create Match" defaultCollapsed={false}>
-          <form className="form stack" onSubmit={handleCreateMatch}>
-            <label>
-              <span>Team A</span>
-              <select
-                value={matchForm.teamAId}
-                onChange={(e) =>
-                  setMatchForm((prev) => ({ ...prev, teamAId: e.target.value }))
-                }
-                required
-              >
-                <option value="">Select Team A</option>
-                {teams.map((team) => (
-                  <option key={team.id} value={team.id}>{team.name}</option>
-                ))}
-              </select>
-            </label>
-
-            <label>
-              <span>Team B</span>
-              <select
-                value={matchForm.teamBId}
-                onChange={(e) =>
-                  setMatchForm((prev) => ({ ...prev, teamBId: e.target.value }))
-                }
-                required
-              >
-                <option value="">Select Team B</option>
-                {teams.map((team) => (
-                  <option key={team.id} value={team.id}>{team.name}</option>
-                ))}
-              </select>
-            </label>
-
-            <label>
-              <span>Batting First</span>
-              <select
-                value={matchForm.battingFirstTeamId}
-                onChange={(e) =>
-                  setMatchForm((prev) => ({
-                    ...prev,
-                    battingFirstTeamId: e.target.value
-                  }))
-                }
-                required
-              >
-                <option value="">Select batting first team</option>
-                {teams
-                  .filter((t) => [matchForm.teamAId, matchForm.teamBId].includes(String(t.id)))
-                  .map((team) => (
-                    <option key={team.id} value={team.id}>{team.name}</option>
-                  ))}
-              </select>
-            </label>
-
-            <label>
-              <span>Overs per innings</span>
-              <input
-                type="number"
-                min="1"
-                value={matchForm.oversPerInnings}
-                onChange={(e) =>
-                  setMatchForm((prev) => ({
-                    ...prev,
-                    oversPerInnings: e.target.value
-                  }))
-                }
-                required
-              />
-            </label>
-            <label>
-  <span>Maximum wickets per innings</span>
-
-  <input
-    type="number"
-    min="1"
-    max="10"
-    value={matchForm.maxWicketsPerInnings}
-    onChange={(e) =>
-      setMatchForm((prev) => ({
-        ...prev,
-        maxWicketsPerInnings: e.target.value
-      }))
-    }
-  />
-
-  <small className="muted">
-    Leave empty for unlimited
-  </small>
-</label>
-
-<label>
-  <span>Maximum overs per bowler</span>
-
-  <input
-    type="number"
-    min="1"
-    value={matchForm.maxOversPerBowler}
-    onChange={(e) =>
-      setMatchForm((prev) => ({
-        ...prev,
-        maxOversPerBowler: e.target.value
-      }))
-    }
-  />
-
-  <small className="muted">
-    Example: 4 in T20
-  </small>
-</label>
-
-            <label>
-              <span>Powerplay overs</span>
-              <input
-                type="number"
-                min="0"
-                value={matchForm.powerplayOversInnings}
-                onChange={(e) =>
-                  setMatchForm((prev) => ({
-                    ...prev,
-                    powerplayOversInnings: e.target.value
-                  }))
-                }
-              />
-            </label>
-
-            <button type="submit" className="btn">Create Match</button>
-          </form>
-        </Card>
-        <Card title="📋 Matches" defaultCollapsed={false}>
-          {matches.length === 0 ? (
-            <p className="muted">No matches yet</p>
-          ) : (
-            <div className="match-list">
-              {matches.map((match) => (
-                <div
-                  key={match.id}
-                  className={`match-item ${String(match.id) === String(selectedMatchId) ? "active" : ""}`}
-                >
-                  <button
-                    type="button"
-                    onClick={() => setSelectedMatchId(String(match.id))}
-                    style={{
-                      flex: 1,
-                      background: "transparent",
-                      border: "none",
-                      color: "inherit",
-                      textAlign: "left",
-                      cursor: "pointer"
-                    }}
-                  >
-                    <div>
-                      <strong>
-                        #{match.id} • {match.teamAName} vs {match.teamBName}
-                      </strong>
-                      <div className="muted small">
-                        Bat first: {match.battingFirstTeamName}
-                                • {match.oversPerInnings} overs
-                                • Max wkts: {match.maxWicketsPerInnings != null? match.maxWicketsPerInnings: "∞"}
-                                • Bowler limit: {match.maxOversPerBowler != null? match.maxOversPerBowler: "∞"}
-                      </div>
-                      <div className="muted small">{formatDate(match.createdAt)}</div>
-                    </div>
-                  </button>
-
-                  <div style={{ display: "flex", flexDirection: "column", gap: 8 }}>
-                    <span className="pill">{match.status}</span>
-                    <button
-                      type="button"
-                      className="btn btn-outline"
-                      onClick={() => handleDeleteMatch(match.id)}
-                    >
-                      Delete
-                    </button>
-                  </div>
-                </div>
-              ))}
-            </div>
-          )}
-        </Card>
-
         {(message || error) && (
           <Card title="ℹ️ Notifications" defaultCollapsed={false}>
             {message ? <p className="success">{message}</p> : null}
