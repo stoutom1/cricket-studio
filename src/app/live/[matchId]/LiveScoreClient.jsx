@@ -224,11 +224,7 @@ useEffect(() => {
           />
         </div>
       </div>
-      <div className="single-line-scoreboard">
-  <span className="status-text">
-    📌 {scoreboard?.summary?.statusText}
-  </span>
-</div>
+
       {/* CURRENT PLAYERS */}
       <StatCard title="Current Players">
         <div
