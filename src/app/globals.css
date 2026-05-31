@@ -828,3 +828,46 @@ select:focus {
   gap: 10px;
   align-items: center;
 }
+.scoring-action-bar {
+  display: grid;
+  grid-template-columns: 1fr 2fr;
+  gap: 12px;
+  margin-top: 16px;
+  margin-bottom: 20px;
+}
+
+.scoring-btn {
+  height: 64px;
+  font-size: 18px;
+  font-weight: 700;
+  border-radius: 12px;
+}
+
+.scoring-btn-primary {
+  font-size: 20px;
+}
+
+.btn-danger {
+  background: #dc2626;
+  color: white;
+  border: none;
+}
+
+.btn-danger:hover {
+  opacity: 0.9;
+}
+@media (max-width: 768px) {
+  .scoring-action-bar {
+    position: sticky;
+    bottom: 0;
+    background: var(--card-bg);
+    padding: 12px;
+    z-index: 100;
+    grid-template-columns: 1fr 2fr;
+  }
+
+  .scoring-btn {
+    height: 72px;
+    font-size: 20px;
+  }
+}
