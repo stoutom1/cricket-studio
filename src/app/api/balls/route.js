@@ -277,7 +277,8 @@ const bowlerBalls = inningsBalls.filter(
   (b) =>
     b.bowlerId === Number(body.bowlerId) &&
     b.extraType !== "WIDE" &&
-    b.extraType !== "NOBALL"
+    b.extraType !== "NOBALL" &&
+    b.extraType !== "RETIRED_HURT"
 );
 
 const legalBalls = bowlerBalls.length;

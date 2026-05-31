@@ -881,17 +881,6 @@ return (
                   </p>
                 </div>
               ) : null}
-
-              <div className="result-box">
-                <p><strong>📌 Status:</strong> {scoreboard.summary.statusText}</p>
-                {scoreboard.summary.target ? (
-                  <p><strong>🎯 Target:</strong> {scoreboard.summary.target}</p>
-                ) : null}
-                {scoreboard.summary.remainingBalls !== null ? (
-                  <p><strong>⏳ Remaining balls:</strong> {scoreboard.summary.remainingBalls}</p>
-                ) : null}
-              </div>
-
 <CollapsibleSection
   title="🤝 Partnerships"
   defaultOpen={true}
@@ -1003,7 +992,23 @@ return (
           ) : (
             <>
 <div className="score-summary-panel">
+<div className="match-status-banner">
+  <span className="status-text">
+    📌 {scoreboard?.summary?.statusText}
+  </span>
 
+  {scoreboard?.summary?.target ? (
+    <span className="status-chip">
+      🎯 Target: {scoreboard.summary.target}
+    </span>
+  ) : null}
+
+  {scoreboard?.summary?.remainingBalls !== null ? (
+    <span className="status-chip">
+      ⏳ {scoreboard.summary.remainingBalls} balls left
+    </span>
+  ) : null}
+</div>
   {/* TOP ROW */}
   <div className="single-line-scoreboard">
     <span>

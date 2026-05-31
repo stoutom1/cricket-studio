@@ -781,22 +781,28 @@ select:focus {
   gap: 10px;
 }
 
-.chip {
-  min-width: 56px;
-  height: 56px;
-  border-radius: 14px;
-  font-size: 16px;
-  font-weight: 700;
-  cursor: pointer;
-
-  transition:
-    transform 0.15s ease,
-    background 0.15s ease,
-    color 0.15s ease,
-    box-shadow 0.15s ease;
-
-  user-select: none;
+.quick-actions {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 6px;
 }
+
+/*
+.quick-actions .chip {
+  min-width: 38px;
+  height: 34px;
+  padding: 4px 8px;
+  font-size: 12px;
+  font-weight: 600;
+  border-radius: 8px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.quick-actions .chip:last-child {
+  min-width: 90px;  //Retired Hurt button 
+}*/
 
 .chip:hover {
   transform: translateY(-2px);
@@ -846,5 +852,27 @@ select:focus {
 
   100% {
     transform: scale(1.18);
+  }
+}
+@media (max-width: 768px) {
+  .quick-actions {
+    gap: 4px;
+  }
+
+.quick-actions .chip {
+  background: #030712;
+  color: white;
+  border: 1px solid #374151;
+
+  min-width: 38px;
+  height: 34px;
+  padding: 4px 8px;
+  font-size: 12px;
+  border-radius: 8px;
+}
+
+  .quick-actions .chip:last-child {
+    min-width: 75px;
+    font-size: 10px;
   }
 }

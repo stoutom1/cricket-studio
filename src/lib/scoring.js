@@ -142,10 +142,10 @@ export function ballShortText(ball) {
 
   switch (ball.extraType) {
     case "WIDE":
-      return `${label} Wd${ball.extras === 0 ? "" : " (" +ball.extras+")"}`;
+      return `${label} Wd${ball.extras === 0 ? "" : "(" +ball.extras+")"}`;
 
     case "NOBALL":
-      return `${label} Nb${ball.extras === 0 ? "" : " (" +ball.extras+")"}`;
+      return `${label} Nb${ball.extras === 0 ? "" : "(" +ball.extras+")"}`;
 
     case "BYE":
       return `${label} B${ball.extras}`;
@@ -189,7 +189,22 @@ export function getNextAvailableBatter(
     ) || null
   );
 }
+function runsCompleted(ball) {
+  switch (ball.extraType) {
+    case "WIDE":
+      return Math.max(0, ball.extras - 1);
 
+    case "NOBALL":
+      return ball.runsOffBat;
+
+    case "BYE":
+    case "LEGBYE":
+      return ball.extras;
+
+    default:
+      return ball.runsOffBat;
+  }
+}
 export function applyBallOutcome(ball) {
   let strikerId = ball.strikerId || null;
   let nonStrikerId = ball.nonStrikerId || null;
@@ -210,9 +225,11 @@ if (ball.isWicket) {
     nonStrikerId = ball.newBatterId;
   }
 }
-  if (ball.totalRuns % 2 === 1) {
-    [strikerId, nonStrikerId] = [nonStrikerId, strikerId];
-  }
+const completedRuns = runsCompleted(ball);
+
+if (completedRuns % 2 === 1) {
+  [strikerId, nonStrikerId] = [nonStrikerId, strikerId];
+}
 
   if (ball.legalDelivery && ball.ballInOver === 6) {
     [strikerId, nonStrikerId] = [nonStrikerId, strikerId];
@@ -261,7 +278,8 @@ export function summarizeInningsDetailed(balls, playerMap, oversPerInnings) {
     ball.legalDelivery &&
     !isRetiredHurt &&
     ball.extraType !== "WIDE" &&
-    ball.extraType !== "NOBALL"
+    ball.extraType !== "NOBALL" &&
+    ball.extraType !== "RETIRED_HURT"
   ) {
     cumulativeLegalBalls += 1;
     currentPartnershipBalls += 1;
@@ -516,7 +534,7 @@ export function buildMatchStats(match) {
       const row = batting.get(ball.strikerId);
       row.runs += ball.runsOffBat;
 
-      if (!isRetiredHurt && ball.extraType !== "WIDE" && ball.extraType !== "NOBALL") {
+      if (!isRetiredHurt && ball.extraType !== "WIDE" && ball.extraType !== "NOBALL" && ball.extraType !== "RETIRED_HURT") {
         row.balls += 1;
       }
 
@@ -548,8 +566,8 @@ export function buildMatchStats(match) {
     if (ball.bowlerId && bowling.has(ball.bowlerId)) {
       const row = bowling.get(ball.bowlerId);
 
-      if (ball.legalDelivery && !isRetiredHurt && ball.extraType !== "WIDE" && ball.extraType !== "NOBALL") row.balls += 1;
-      if (ball.legalDelivery && !isRetiredHurt && ball.extraType !== "WIDE" && ball.extraType !== "NOBALL" && ball.totalRuns === 0) row.dots += 1;
+      if (ball.legalDelivery && !isRetiredHurt && ball.extraType !== "WIDE" && ball.extraType !== "NOBALL" && ball.extraType !== "RETIRED_HURT") row.balls += 1;
+      if (ball.legalDelivery && !isRetiredHurt && ball.extraType !== "WIDE" && ball.extraType !== "NOBALL" && ball.extraType !== "RETIRED_HURT" && ball.totalRuns === 0) row.dots += 1;
 
       row.runs += runsChargedToBowler(ball);
       row.wickets += wicketsForBowler(ball);

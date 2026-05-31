@@ -8,15 +8,15 @@ function StatCard({ title, children }) {
       style={{
         background: "#111827",
         borderRadius: 16,
-        padding: 20,
-        marginBottom: 20,
+        padding: 16,
+        marginBottom: 16,
         border: "1px solid #1f2937"
       }}
     >
       <h3
         style={{
-          marginBottom: 16,
-          fontSize: 18,
+          marginBottom: 12,
+          fontSize: 16,
           fontWeight: 700
         }}
       >
@@ -39,6 +39,20 @@ export default function LiveScoreClient({ matchId }) {
         [inningsNo]: !prev[inningsNo]
         }));
       }
+      const [isMobile, setIsMobile] = useState(false);
+
+useEffect(() => {
+  const checkMobile = () => {
+    setIsMobile(window.innerWidth < 768);
+  };
+
+  checkMobile();
+
+  window.addEventListener("resize", checkMobile);
+
+  return () =>
+    window.removeEventListener("resize", checkMobile);
+}, []);
   useEffect(() => {
     async function loadScorecard() {
       try {
@@ -91,7 +105,7 @@ export default function LiveScoreClient({ matchId }) {
         minHeight: "100vh",
         background: "#030712",
         color: "white",
-        padding: 24,
+        padding: isMobile ? 12 : 24,
         fontFamily: "sans-serif"
       }}
     >
@@ -99,15 +113,16 @@ export default function LiveScoreClient({ matchId }) {
       <div
         style={{
           background: "#111827",
-          borderRadius: 20,
-          padding: 24,
+padding: isMobile ? 14 : 24,
+borderRadius: isMobile ? 14 : 20,
           marginBottom: 24,
           border: "1px solid #1f2937"
         }}
       >
         <h1
           style={{
-            fontSize: 32,
+fontSize: isMobile ? 22 : 32,
+lineHeight: 1.3,
             fontWeight: 800,
             marginBottom: 10
           }}
@@ -143,9 +158,11 @@ export default function LiveScoreClient({ matchId }) {
 
         <div
           style={{
-            display: "flex",
-            gap: 16,
-            flexWrap: "wrap"
+display: "grid",
+gridTemplateColumns: isMobile
+  ? "repeat(2,1fr)"
+  : "repeat(auto-fit,minmax(140px,1fr))",
+gap: 12
           }}
         >
           <InfoPill
@@ -179,9 +196,37 @@ export default function LiveScoreClient({ matchId }) {
           />
         </div>
       </div>
+      <div className="match-status-banner">
+  <span className="status-text">
+    📌 {scoreboard?.summary?.statusText}
+  </span>
 
+  {scoreboard?.summary?.target ? (
+    <span className="status-chip">
+      🎯 Target: {scoreboard.summary.target}
+    </span>
+  ) : null}
+
+  {scoreboard?.summary?.remainingBalls !== null ? (
+    <span className="status-chip">
+      ⏳ {scoreboard.summary.remainingBalls} balls left
+    </span>
+  ) : null}
+</div>
       {/* CURRENT PLAYERS */}
       <StatCard title="Current Players">
+        <div
+  style={{
+    overflowX: "auto",
+    WebkitOverflowScrolling: "touch"
+  }}
+></div>
+<div
+  style={{
+    overflowX: "auto",
+    WebkitOverflowScrolling: "touch"
+  }}
+>
         <table style={tableStyle}>
           <tbody>
             <tr>
@@ -366,6 +411,7 @@ export default function LiveScoreClient({ matchId }) {
 
           </tbody>
         </table>
+        </div>
       </StatCard>
 
       {/* INNINGS */}
@@ -425,6 +471,12 @@ export default function LiveScoreClient({ matchId }) {
         <div style={{ padding: 20 }}>
 
           {/* INNINGS SUMMARY */}
+          <div
+  style={{
+    overflowX: "auto",
+    WebkitOverflowScrolling: "touch"
+  }}
+>
           <table
             style={{
               ...tableStyle,
@@ -462,12 +514,17 @@ export default function LiveScoreClient({ matchId }) {
               </tr>
             </tbody>
           </table>
-
+</div>
           {/* BATTING STATS */}
           <h3 style={sectionTitle}>
             Batting Statistics
           </h3>
-
+<div
+  style={{
+    overflowX: "auto",
+    WebkitOverflowScrolling: "touch"
+  }}
+>
           <table style={tableStyle}>
             <thead>
               <tr>
@@ -515,12 +572,17 @@ export default function LiveScoreClient({ matchId }) {
               ))}
             </tbody>
           </table>
-
+</div>
           {/* BOWLING STATS */}
           <h3 style={sectionTitle}>
             Bowling Statistics
           </h3>
-
+<div
+  style={{
+    overflowX: "auto",
+    WebkitOverflowScrolling: "touch"
+  }}
+>
           <table style={tableStyle}>
             <thead>
               <tr>
@@ -563,10 +625,15 @@ export default function LiveScoreClient({ matchId }) {
               ))}
             </tbody>
           </table>
-
+</div>
           {/* PARTNERSHIPS */}
           <h3 style={sectionTitle}>Partnerships</h3>
-
+<div
+  style={{
+    overflowX: "auto",
+    WebkitOverflowScrolling: "touch"
+  }}
+>
           <table style={tableStyle}>
             <thead>
               <tr>
@@ -597,12 +664,17 @@ export default function LiveScoreClient({ matchId }) {
               ))}
             </tbody>
           </table>
-
+</div>
           {/* FALL OF WICKETS */}
           <h3 style={sectionTitle}>
             Fall Of Wickets
           </h3>
-
+<div
+  style={{
+    overflowX: "auto",
+    WebkitOverflowScrolling: "touch"
+  }}
+>
           <table style={tableStyle}>
             <thead>
               <tr>
@@ -635,6 +707,7 @@ export default function LiveScoreClient({ matchId }) {
               ))}
             </tbody>
           </table>
+          </div>
          </div>
       )}
     </div>
@@ -649,16 +722,16 @@ function InfoPill({ label, value }) {
     <div
       style={{
         background: "#1f2937",
-        padding: "12px 18px",
+        padding: "10px 12px",
         borderRadius: 12,
-        minWidth: 140
+        width: "100%"
       }}
     >
       <div
         style={{
-          fontSize: 12,
+          fontSize: 11,
           color: "#9ca3af",
-          marginBottom: 6
+          marginBottom: 4
         }}
       >
         {label}
@@ -666,7 +739,7 @@ function InfoPill({ label, value }) {
 
       <div
         style={{
-          fontSize: 18,
+          fontSize: 16,
           fontWeight: 700
         }}
       >
