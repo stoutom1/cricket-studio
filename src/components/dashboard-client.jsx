@@ -1110,16 +1110,17 @@ return (
   >
     ↩ Undo Ball
   </button>
-</div>
-
-<div className="scoring-action-bar">
-  <button
+    <button
     type="submit"
     form="add-ball-form"
     className="btn scoring-btn scoring-btn-primary"
   >
     ✅ Add Delivery
   </button>
+</div>
+
+<div className="scoring-action-bar">
+
 </div>
 
               <form id="add-ball-form" className="form grid-2" onSubmit={handleAddBall}>
