@@ -362,26 +362,33 @@ useEffect(() => {
           .slice(1)
           .join(" ") || label;
 
-      const clean =
-        result.replace(/[()]/g, "");
+const clean =
+  result.replace(/[()]/g, "");
 
-      let color = "#d1d5db";
+const isBoundary =
+  clean === "4" || clean === "6";
 
-      if (clean === "4") {
-        color = "#22c55e";
-      } else if (clean === "6") {
-        color = "#22c55e";
-      } else if (
-        clean === "Wd" ||
-        clean === "Nb"
-      ) {
-        color = "#c5f838";
-      } else if (
-        clean.toUpperCase().includes("W")
-      ) {
-        color = "#ef4444";
-      }
+const isWicket =
+  (clean && !clean.includes("Wd") && clean.toUpperCase().includes("W"))
+  
 
+const isExtra =
+  clean.includes("Wd") ||
+  clean.includes("Nb") ||
+  clean.includes("B") ||
+  clean.includes("LB");
+
+let color = "#d1d5db";
+
+if (isBoundary) {
+  color = "#22c55e";
+}
+else if (isExtra) {
+  color = "#facc15";
+}
+else if (isWicket) {
+  color = "#ef4444";
+}
       return (
         <div
           key={ball.id}
@@ -403,18 +410,35 @@ useEffect(() => {
                 |
               </span>
           )}
-
 <span
   style={{
-    width: 32,
-    height: 32,
+    width: isMobile ? 26 : 30,
+    height: isMobile ? 26 : 30,
     borderRadius: "50%",
     display: "flex",
     alignItems: "center",
     justifyContent: "center",
     fontWeight: 700,
-    background: "#111827",
-    border: "1px solid #374151"
+    fontSize: isMobile ? 11 : 12,
+
+    background: isBoundary
+      ? "rgba(34,197,94,0.15)"
+      : isWicket
+      ? "rgba(239,68,68,0.15)"
+      : isExtra
+      ? "rgba(250,204,21,0.15)"
+      : "#111827",
+
+    border: isBoundary
+      ? "1px solid #22c55e"
+      : isWicket
+      ? "1px solid #ef4444"
+      : isExtra
+      ? "1px solid #facc15"
+      : "1px solid #374151",
+
+    color: color,
+    flexShrink: 0
   }}
 >
   {clean}
