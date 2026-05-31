@@ -114,7 +114,7 @@ export default function DashboardClient() {
   const [matches, setMatches] = useState([]);
   const [selectedMatchId, setSelectedMatchId] = useState("");
   const [toast, setToast] = useState(null);
-
+const [activeQuickAction, setActiveQuickAction] = useState(null);
 const [expandedTeamId, setExpandedTeamId] = useState(null);
 const [selectedPlayerId, setSelectedPlayerId] = useState("");
 //const [selectedPlayers, setSelectedPlayers] = useState({});
@@ -771,26 +771,19 @@ async function confirmRetiredHurt() {
   }
 }
 
+function triggerQuickAction(actionKey, callback) {
+  setActiveQuickAction(actionKey);
+
+  callback();
+
+  setTimeout(() => {
+    setActiveQuickAction(null);
+  }, 600); // was 400
+}
   const activeInnings =
     scoreboard?.innings?.find((x) => x.number === scoreboard.currentInnings) ||
     scoreboard?.innings?.[0];
- console.log("===== DASHBOARD RENDER =====");
-console.log("currentInnings:", scoreboard?.currentInnings);
-
-console.log(
-  "scoreboard.innings:",
-  JSON.stringify(scoreboard?.innings, null, 2)
-);
-
-console.log(
-  "activeInnings:",
-  JSON.stringify(activeInnings, null, 2)
-);
-
-console.log(
-  "activeInnings.fallOfWickets:",
-  JSON.stringify(activeInnings?.fallOfWickets, null, 2)
-);   
+   
 return (
   <>
   <div className="tabs">
@@ -1113,17 +1106,17 @@ return (
 
 </div>
               <div className="quick-actions">
-                <button type="button" className="chip" onClick={() => quickNormalBall(0)}>0</button>
-                <button type="button" className="chip" onClick={() => quickNormalBall(1)}>1</button>
-                <button type="button" className="chip" onClick={() => quickNormalBall(2)}>2</button>
-                <button type="button" className="chip" onClick={() => quickNormalBall(3)}>3</button>
-                <button type="button" className="chip" onClick={() => quickNormalBall(4)}>4</button>
-                <button type="button" className="chip" onClick={() => quickNormalBall(6)}>6</button>
-                <button type="button" className="chip" onClick={() => quickExtra("WIDE")}>Wd</button>
-                <button type="button" className="chip" onClick={() => quickExtra("NOBALL")}>Nb</button>
-                <button type="button" className="chip" onClick={() => quickExtra("BYE")}>B</button>
-                <button type="button" className="chip" onClick={() => quickExtra("LEGBYE")}>LB</button>
-                <button type="button" className="chip chip-danger" onClick={() => quickWicket("BOWLED")}>W</button>
+                <button type="button" className={`chip ${activeQuickAction === "0" ? "chip-active" : ""}`} onClick={() => triggerQuickAction("0", () => quickNormalBall(0))}>0</button>
+                <button type="button" className={`chip ${activeQuickAction === "1" ? "chip-active" : ""}`} onClick={() => triggerQuickAction("1", () => quickNormalBall(1))}>1</button>
+                <button type="button" className={`chip ${activeQuickAction === "2" ? "chip-active" : ""}`} onClick={() => triggerQuickAction("2", () => quickNormalBall(2))}>2</button>
+                <button type="button" className={`chip ${activeQuickAction === "3" ? "chip-active" : ""}`} onClick={() => triggerQuickAction("3", () => quickNormalBall(3))}>3</button>
+                <button type="button" className={`chip ${activeQuickAction === "4" ? "chip-active" : ""}`} onClick={() => triggerQuickAction("4", () => quickNormalBall(4))}>4</button>
+                <button type="button" className={`chip ${activeQuickAction === "6" ? "chip-active" : ""}`} onClick={() => triggerQuickAction("6", () => quickNormalBall(6))}>6</button>
+                <button type="button" className={`chip ${activeQuickAction === "Wd" ? "chip-active" : ""}`} onClick={() => triggerQuickAction("Wd", () => quickExtra("WIDE"))}>Wd</button>
+                <button type="button" className={`chip ${activeQuickAction === "Nb" ? "chip-active" : ""}`} onClick={() => triggerQuickAction("Nb", () => quickExtra("NOBALL"))}>Nb</button>
+                <button type="button" className={`chip ${activeQuickAction === "B" ? "chip-active" : ""}`} onClick={() => triggerQuickAction("B", () => quickExtra("BYE"))}>B</button>
+                <button type="button" className={`chip ${activeQuickAction === "LB" ? "chip-active" : ""}`} onClick={() => triggerQuickAction("LB", () => quickExtra("LEGBYE"))}>LB</button>
+                <button type="button" className={`chip ${activeQuickAction === "W" ? "chip-active" : ""}`} onClick={() => triggerQuickAction("W", () => quickWicket("BOWLED"))}>W</button>
                 <button type="button" className="chip" onClick={quickRetiredHurt}>Retired Hurt</button>
               </div>
 

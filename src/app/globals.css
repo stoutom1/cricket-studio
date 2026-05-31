@@ -775,3 +775,76 @@ select:focus {
     transform: translateY(0);
   }
 }
+.quick-actions {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 10px;
+}
+
+.chip {
+  min-width: 56px;
+  height: 56px;
+  border-radius: 14px;
+  font-size: 16px;
+  font-weight: 700;
+  cursor: pointer;
+
+  transition:
+    transform 0.15s ease,
+    background 0.15s ease,
+    color 0.15s ease,
+    box-shadow 0.15s ease;
+
+  user-select: none;
+}
+
+.chip:hover {
+  transform: translateY(-2px);
+}
+
+/* Normal action selected */
+.chip-active {
+  background: #2563eb !important;
+  color: #fff !important;
+
+  transform: scale(1.18);
+
+  box-shadow:
+    0 0 0 4px rgba(37, 99, 235, 0.45),
+    0 0 18px rgba(37, 99, 235, 0.7);
+
+  animation: chipPulse 0.4s ease;
+}
+
+/* Wicket button selected */
+.chip-active-danger {
+  background: #dc2626 !important;
+  color: #fff !important;
+
+  transform: scale(1.18);
+
+  box-shadow:
+    0 0 0 4px rgba(220, 38, 38, 0.45),
+    0 0 18px rgba(220, 38, 38, 0.7);
+
+  animation: chipPulse 0.4s ease;
+}
+.chip-active::after,
+.chip-active-danger::after {
+  content: "✓";
+  margin-left: 6px;
+  font-size: 14px;
+}
+@keyframes chipPulse {
+  0% {
+    transform: scale(1);
+  }
+
+  50% {
+    transform: scale(1.25);
+  }
+
+  100% {
+    transform: scale(1.18);
+  }
+}
