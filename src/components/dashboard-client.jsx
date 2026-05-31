@@ -1139,15 +1139,15 @@ return (
   <button type="button" className={`chip ${activeQuickAction === "LB" ? "chip-active" : ""}`} onClick={() => triggerQuickAction("LB", () => quickExtra("LEGBYE"))}>LB</button>
 
   <button type="button" className={`chip ${activeQuickAction === "W" ? "chip-active" : ""}`} onClick={() => triggerQuickAction("W", () => quickWicket("BOWLED"))}>W</button>
+   <button type="button" className="chip" onClick={quickRetiredHurt}>
+    RH
+  </button>
  <button
     type="button"
     className="btn btn-outline"
     onClick={swapBatters}
   >
     ⇄ Swap
-  </button>
-  <button type="button" className="chip" onClick={quickRetiredHurt}>
-    Retired Hurt
   </button>
   <button
     type="button"
