@@ -18,7 +18,7 @@ export default function RootLayout({ children }) {
                 <div>
                   <div className="brand-title">🏏 Cricket Studio</div>
                   <div className="brand-sub">
-                    Advanced scoring • custom overs • unlimited wickets • player stats
+                    Advanced scoring • custom overs • custom wickets • custom powerplay overs • player stats
                   </div>
                 </div>
                 <AuthNav />
