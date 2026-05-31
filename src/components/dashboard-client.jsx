@@ -1101,13 +1101,12 @@ return (
 
   <button type="button" className={`chip ${activeQuickAction === "W" ? "chip-active" : ""}`} onClick={() => triggerQuickAction("W", () => quickWicket("BOWLED"))}>W</button>
 
-</div>
-
-<div className="scoring-action-bar">
   <button type="button" className="chip" onClick={quickRetiredHurt}>
     Retired Hurt
   </button>
-  
+</div>
+
+<div className="scoring-action-bar">
   <button
     type="button"
     className="btn btn-danger scoring-btn"
