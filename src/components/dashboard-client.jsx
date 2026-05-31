@@ -118,6 +118,11 @@ const [activeQuickAction, setActiveQuickAction] = useState(null);
 const [expandedTeamId, setExpandedTeamId] = useState(null);
 const [selectedPlayerId, setSelectedPlayerId] = useState("");
 //const [selectedPlayers, setSelectedPlayers] = useState({});
+const [showWicketModal, setShowWicketModal] = useState(false);
+const [selectedWicketType, setSelectedWicketType] = useState("BOWLED");
+const [selectedNewBatter, setSelectedNewBatter] = useState("");
+const [showExtrasModal, setShowExtrasModal] = useState(false);
+const [selectedExtraType, setSelectedExtraType] = useState("WIDE");
 
   const [matchDetail, setMatchDetail] = useState(null);
   const [scoreboard, setScoreboard] = useState(null);
@@ -637,23 +642,37 @@ setBallForm((prev) => ({
     }));
   }
 
-  function quickExtra(type) {
-    setBallForm((prev) => ({
-      ...prev,
-      extraType: type,
-      runsOffBat: "0",
-      extras: "1"
-    }));
-  }
+function quickExtra(type) {
+  setSelectedExtraType(type);
 
-  function quickWicket(type = "BOWLED") {
-    setBallForm((prev) => ({
-      ...prev,
-      isWicket: true,
-      wicketType: type,
-      dismissedPlayerId: prev.strikerId
-    }));
-  }
+  setBallForm((prev) => ({
+    ...prev,
+    extraType: type,
+    runsOffBat: "0",
+    extras: "1"
+  }));
+
+  setShowExtrasModal(true);
+}
+function confirmExtra(extraRuns) {
+  setBallForm((prev) => ({
+    ...prev,
+    extraType: selectedExtraType,
+    extras: String(extraRuns)
+  }));
+
+  setShowExtrasModal(false);
+}
+function quickWicket(type = "BOWLED") {
+  setBallForm((prev) => ({
+    ...prev,
+    isWicket: true,
+    wicketType: type,
+    dismissedPlayerId: prev.strikerId
+  }));
+
+  setShowWicketModal(true);
+}
 
   function getNextAvailableBatter(players, strikerId, nonStrikerId, balls = []) {
   if (!players?.length) return null;
@@ -1862,6 +1881,130 @@ return (
         )}
     </div>
 
+  </div>
+)}
+{showWicketModal && (
+  <div className="modal-backdrop">
+    <div className="modal-card">
+      <h3>🏏 Wicket Details</h3>
+
+      <label>
+        <span>Wicket Type</span>
+        <select
+          value={ballForm.wicketType}
+          onChange={(e) =>
+            setBallForm((prev) => ({
+              ...prev,
+              wicketType: e.target.value
+            }))
+          }
+        >
+          {WICKET_TYPES
+            .filter((x) => x !== "NONE")
+            .map((type) => (
+              <option key={type} value={type}>
+                {type}
+              </option>
+            ))}
+        </select>
+      </label>
+
+      <label style={{ marginTop: 12 }}>
+        <span>New Batter</span>
+
+        <select
+          value={ballForm.newBatterId}
+          onChange={(e) =>
+            setBallForm((prev) => ({
+              ...prev,
+              newBatterId: e.target.value
+            }))
+          }
+        >
+          <option value="">
+            Select New Batter
+          </option>
+
+          {availableNewBatters.map((p) => (
+            <option key={p.id} value={p.id}>
+              {p.name}
+            </option>
+          ))}
+        </select>
+      </label>
+
+      <div
+        style={{
+          display: "flex",
+          gap: 12,
+          marginTop: 20
+        }}
+      >
+        <button
+          className="btn"
+          onClick={() => setShowWicketModal(false)}
+        >
+          Confirm
+        </button>
+
+        <button
+          className="btn btn-outline"
+          onClick={() => {
+            setShowWicketModal(false);
+
+            setBallForm((prev) => ({
+              ...prev,
+              isWicket: false,
+              wicketType: "NONE",
+              newBatterId: ""
+            }));
+          }}
+        >
+          Cancel
+        </button>
+      </div>
+    </div>
+  </div>
+)}
+{showExtrasModal && (
+  <div className="modal-backdrop">
+    <div className="modal-card">
+      <h3>
+        {selectedExtraType === "WIDE" && "Wide"}
+        {selectedExtraType === "NOBALL" && "No Ball"}
+        {selectedExtraType === "BYE" && "Bye"}
+        {selectedExtraType === "LEGBYE" && "Leg Bye"}
+      </h3>
+
+      <p>Select total extra runs</p>
+
+      <div
+        style={{
+          display: "grid",
+          gridTemplateColumns: "repeat(6, 1fr)",
+          gap: 8,
+          marginTop: 12
+        }}
+      >
+        {[1, 2, 3, 4, 5, 6].map((runs) => (
+          <button
+            key={runs}
+            className="btn"
+            onClick={() => confirmExtra(runs)}
+          >
+            {runs}
+          </button>
+        ))}
+      </div>
+
+      <button
+        className="btn btn-outline"
+        style={{ marginTop: 16 }}
+        onClick={() => setShowExtrasModal(false)}
+      >
+        Cancel
+      </button>
+    </div>
   </div>
 )}
 {showRetiredHurtModal && (
