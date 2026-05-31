@@ -687,7 +687,7 @@ async function swapBatters() {
 );
 
     await loadSelectedMatch(selectedMatchId);
-
+setMessage("🔄 Striker swapped successfully");
     showToast(
       "success",
       "🔄 Striker swapped successfully"
@@ -1138,7 +1138,7 @@ return (
 
   <button type="button" className={`chip ${activeQuickAction === "LB" ? "chip-active" : ""}`} onClick={() => triggerQuickAction("LB", () => quickExtra("LEGBYE"))}>LB</button>
 
-  <button type="button" className={`chip ${activeQuickAction === "W" ? "chip-active" : ""}`} onClick={() => triggerQuickAction("W", () => quickWicket("BOWLED"))}>W</button>
+  <button type="button" className={`chip ${activeQuickAction === "W" ? "chip-active" : ""}`} onClick={() => triggerQuickAction("W", () => quickWicket("BOWLED"))}>Wkt</button>
    <button type="button" className="chip" onClick={quickRetiredHurt}>
     RH
   </button>
