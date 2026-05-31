@@ -765,19 +765,19 @@ select:focus {
 }
 
 .quick-actions .chip {
-  min-width: 38px;
-  height: 34px;
-  padding: 4px 8px;
-  font-size: 12px;
+  min-width: 46px;
+  height: 40px;
+  padding: 6px 10px;
+  font-size: 13px;
   font-weight: 600;
-  border-radius: 8px;
+  border-radius: 10px;
   display: flex;
   align-items: center;
   justify-content: center;
 }
 
 .quick-actions .chip:last-child {
-  min-width: 90px; /* Retired Hurt button */
+  min-width: 120px; /* Retired Hurt button */
 }
 
 .chip:hover {
