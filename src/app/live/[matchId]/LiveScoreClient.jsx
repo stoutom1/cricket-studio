@@ -6,7 +6,9 @@ function StatCard({ title, children }) {
   return (
     <div
       style={{
-        background: "#111827",
+        background:"linear-gradient(180deg,#111827,#0f172a)",
+        boxShadow:"0 4px 12px rgba(0,0,0,0.25)",
+        borderRadius: 18,
         borderRadius: 16,
         padding: 16,
         marginBottom: 16,
@@ -105,37 +107,53 @@ useEffect(() => {
         minHeight: "100vh",
         background: "#030712",
         color: "white",
-        padding: isMobile ? 12 : 24,
+        padding: isMobile ? 8 : 24,
+        maxWidth: 1400,
+        margin: "0 auto",
         fontFamily: "sans-serif"
       }}
     >
       {/* HEADER */}
-      <div
-        style={{
-          background: "#111827",
-padding: isMobile ? 14 : 24,
-borderRadius: isMobile ? 14 : 20,
-          marginBottom: 24,
-          border: "1px solid #1f2937"
-        }}
-      >
-        <h1
+<div
+  style={{
+    position: "sticky",
+    top: 0,
+    zIndex: 100,
+    paddingBottom: 12
+  }}
+>
+  <div
+    style={{
+      background: "#111827ee",
+      backdropFilter: "blur(12px)",
+      WebkitBackdropFilter: "blur(12px)",
+      padding: isMobile ? 14 : 24,
+      borderRadius: isMobile ? 14 : 20,
+      border: "1px solid #1f2937"
+    }}
+  >
+    {/* entire header content */}
+          <h1
           style={{
-fontSize: isMobile ? 22 : 32,
-lineHeight: 1.3,
-            fontWeight: 800,
-            marginBottom: 10
+          fontSize: isMobile ? 18 : 32,
+          lineHeight: 1.25,
+          fontWeight: 800,
+          marginBottom: 10,
+          wordBreak: "break-word"
           }}
         >
           {scoreboard?.match?.teamAName} vs{" "}
           {scoreboard?.match?.teamBName}
         </h1>
-
+  </div>
         {/* MATCH STATUS */}
         <div
           style={{
             background: "#1f2937",
-            padding: 16,
+            padding: isMobile ? 12 : 16,
+            border: "1px solid #374151",
+            fontSize: 18,
+            fontSize: isMobile ? 15 : 18,
             borderRadius: 12,
             marginBottom: 20
           }}
@@ -158,11 +176,13 @@ lineHeight: 1.3,
 
         <div
           style={{
-display: "grid",
-gridTemplateColumns: isMobile
-  ? "repeat(2,1fr)"
-  : "repeat(auto-fit,minmax(140px,1fr))",
-gap: 12
+          display: "grid",
+          gridTemplateColumns:
+            isMobile
+              ? "repeat(2,1fr)"
+              : "repeat(auto-fit,minmax(140px,1fr))",
+          gap: 12,
+          whiteSpace: "pre-line"
           }}
         >
           <InfoPill
@@ -180,22 +200,19 @@ gap: 12
             value={latestInnings?.runRate || "0.00"}
           />
 
-<InfoPill
-  label="Target"
-  value={
-    scoreboard?.currentInnings === 2 &&
-    scoreboard?.summary?.target
-      ? `${scoreboard.summary.target} (${
-          Math.max(
-            scoreboard.summary.target -
-              (latestInnings?.runs || 0),
-            0
-          )
-        } needed to win)`
-      : scoreboard?.summary?.target ?? "-"
-  }
-/>
-
+          <InfoPill
+            label="Target"
+            value={
+              scoreboard?.currentInnings === 2
+                ? `${scoreboard.summary.target}
+          Need ${Math.max(
+          scoreboard.summary.target -
+          (latestInnings?.runs || 0),
+          0
+          )}`
+                : scoreboard?.summary?.target ?? "-"
+            }
+          />
           <InfoPill
             label="Balls Left"
             value={
@@ -391,16 +408,21 @@ gap: 12
               </span>
           )}
 
-          <span
-            style={{
-              fontWeight: 200,
-              fontSize: 14,
-              color,
-              letterSpacing: 0.5
-            }}
-          >
-            {clean}
-          </span>
+<span
+  style={{
+    width: 32,
+    height: 32,
+    borderRadius: "50%",
+    display: "flex",
+    alignItems: "center",
+    justifyContent: "center",
+    fontWeight: 700,
+    background: "#111827",
+    border: "1px solid #374151"
+  }}
+>
+  {clean}
+</span>
         </div>
       );
     })}
@@ -435,7 +457,7 @@ gap: 12
           toggleInnings(innings.number)
         }
         style={{
-          padding: 20,
+          padding: isMobile ? 12 : 20,
           cursor: "pointer",
           display: "flex",
           justifyContent: "space-between",
@@ -447,7 +469,7 @@ gap: 12
         <h3
           style={{
             margin: 0,
-            fontSize: 18,
+            fontSize: isMobile ? 15 : 18,
             fontWeight: 700
           }}
         >
@@ -721,16 +743,18 @@ function InfoPill({ label, value }) {
     <div
       style={{
         background: "#1f2937",
-        padding: "10px 12px",
-        borderRadius: 12,
-        width: "100%"
+        padding: "12px",
+        borderRadius: 14,
+        width: "100%",
+        border: "1px solid #374151"
       }}
     >
       <div
         style={{
-          fontSize: 11,
+          fontSize: 10,
           color: "#9ca3af",
-          marginBottom: 4
+          textTransform: "uppercase",
+          letterSpacing: 0.5
         }}
       >
         {label}
@@ -738,8 +762,10 @@ function InfoPill({ label, value }) {
 
       <div
         style={{
-          fontSize: 16,
-          fontWeight: 700
+          fontSize: 15,
+          fontWeight: 700,
+          marginTop: 4,
+          overflowWrap: "break-word"
         }}
       >
         {value}
@@ -763,12 +789,16 @@ const tableStyle = {
 
 const thStyle = {
   textAlign: "left",
-  padding: 12,
+  padding: "8px",
+  fontSize: 12,
   background: "#1f2937",
-  border: "1px solid #374151"
+  border: "1px solid #374151",
+  whiteSpace: "nowrap"
 };
 
 const tdStyle = {
-  padding: 12,
-  border: "1px solid #374151"
+  padding: "8px",
+  fontSize: 12,
+  border: "1px solid #374151",
+  whiteSpace: "nowrap"
 };
