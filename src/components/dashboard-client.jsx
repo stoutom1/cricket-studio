@@ -1,7 +1,7 @@
 "use client";
 
 import React, { useEffect, useMemo, useState } from "react";
-import { EXTRA_TYPES, WICKET_TYPES } from "@/lib/scoring";
+import { EXTRA_TYPES, getPlayerName, WICKET_TYPES } from "@/lib/scoring";
 import "@/app/globals.css";
 
 function Card({
@@ -139,6 +139,7 @@ const [expandedLeagueId, setExpandedLeagueId] = useState(null);
 
   const [showRetiredHurtModal, setShowRetiredHurtModal] = useState(false);
   const [retiredHurtBatterId, setRetiredHurtBatterId] = useState("");
+  const [selectedPlayers, setSelectedPlayers] = useState({});
 
   const [teamForm, setTeamForm] = useState({leagueId: "", name: ""});
   const [playerForm, setPlayerForm] = useState({teamId: "", names: ""});
@@ -1985,7 +1986,7 @@ return (
       )
     }
   >
-    Delete
+    Delete League
   </button>
       </div>
 
@@ -2023,30 +2024,65 @@ onChange={(e) =>
 
           {/* TEAM LIST */}
           {league.teams?.map((team) => (
-            <div
-              key={team.id}
-              style={{
-                padding: 10,
-                borderBottom:
-                  "1px solid rgba(255,255,255,.1)"
-              }}
-            >
-              <strong>{team.name}</strong>
+   <div
+    key={team.id}
+    style={{
+      display: "flex",
+      alignItems: "center",
+      gap: 12,
+      marginBottom: 12
+    }}
+  >
+    <span style={{ minWidth: 150 }}>
+      {team.name}
+    </span>
 
-              <button
-                type="button"
-                className="btn btn-outline"
-                style={{ marginLeft: 12 }}
-                onClick={() =>
-                  handleDeleteTeam(
-                    team.id,
-                    team.name
-                  )
-                }
-              >
-                Delete
-              </button>
-            </div>
+    <select
+      value={selectedPlayers[team.id] || ""}
+      onChange={(e) =>
+        setSelectedPlayers((prev) => ({
+          ...prev,
+          [team.id]: e.target.value
+        }))
+      }
+    >
+      <option value="">
+        Select Player
+      </option>
+
+      {team.players?.map((player) => (
+        <option
+          key={player.id}
+          value={player.id}
+        >
+          {player.name}
+        </option>
+      ))}
+    </select>
+
+<button
+  disabled={!selectedPlayers[team.id]}
+  onClick={() => {
+    const player = team.players.find(
+      (p) =>
+        p.id === Number(selectedPlayers[team.id])
+    );
+
+    handleDeletePlayer(
+      player.id,
+      player.name
+    );
+  }}
+>
+  Delete Player
+</button>
+
+    <button
+      onClick={() => deleteTeam(team.id)}
+    >
+      Delete Team
+    </button>
+  </div>
           ))}
         </>
       )}
