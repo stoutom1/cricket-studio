@@ -1,4 +1,4 @@
-export const EXTRA_TYPES = ["NONE", "WIDE", "NOBALL", "BYE", "LEGBYE", "SWAP_STRIKE"];
+export const EXTRA_TYPES = ["NONE", "WIDE", "NOBALL", "BYE", "LEGBYE"];
 
 export const WICKET_TYPES = [
   "NONE",
@@ -195,7 +195,10 @@ function runsCompleted(ball) {
       return Math.max(0, ball.extras - 1);
 
     case "NOBALL":
-      return ball.runsOffBat;
+      return Math.max(0, ball.extras - 1);
+    
+    case "SWAP_STRIKE":
+      return Math.max(0, ball.extras - 1);  
 
     case "BYE":
     case "LEGBYE":
