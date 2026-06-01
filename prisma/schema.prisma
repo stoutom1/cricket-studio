@@ -1,114 +1,157 @@
-datasource db {
-  provider = "postgresql"
-}
-
 generator client {
   provider = "prisma-client-js"
 }
 
+datasource db {
+  provider = "postgresql"
+}
+
 model User {
-  id        String   @id @default(uuid())
-  email     String   @unique
-  name      String?
-  password  String
-  createdAt DateTime @default(now())
+  id                  String               @id @default(uuid())
+  email               String               @unique
+  name                String?
+  password            String
+  ownedLeagues        League[]
+  leagueMemberships   LeagueMember[]
+  leagueRegistrations LeagueRegistration[]
+  createdAt           DateTime             @default(now())
 }
 
 model Team {
   id                  Int      @id @default(autoincrement())
   name                String   @unique
   createdAt           DateTime @default(now())
-  players             Player[]
+  battingFirstMatches Match[]  @relation("BattingFirstTeam")
   matchesA            Match[]  @relation("TeamA")
   matchesB            Match[]  @relation("TeamB")
-  battingFirstMatches Match[]  @relation("BattingFirstTeam")
+  players             Player[]
+  leagueId            Int
+  league              League   @relation(fields: [leagueId], references: [id])
+
+  @@unique([leagueId, name])
 }
 
 model Player {
-  id        Int      @id @default(autoincrement())
-  name      String
-  teamId    Int
-  createdAt DateTime @default(now())
-
-  team            Team   @relation(fields: [teamId], references: [id], onDelete: Cascade)
-  strikerBalls    Ball[] @relation("Striker")
-  nonStrikerBalls Ball[] @relation("NonStriker")
-  bowlerBalls     Ball[] @relation("Bowler")
-  dismissedBalls  Ball[] @relation("DismissedPlayer")
-  newBatterBalls  Ball[] @relation("NewBatter")
+  id              Int      @id @default(autoincrement())
+  name            String
+  teamId          Int
+  createdAt       DateTime @default(now())
+  bowlerBalls     Ball[]   @relation("Bowler")
+  dismissedBalls  Ball[]   @relation("DismissedPlayer")
+  newBatterBalls  Ball[]   @relation("NewBatter")
+  nonStrikerBalls Ball[]   @relation("NonStriker")
+  strikerBalls    Ball[]   @relation("Striker")
+  team            Team     @relation(fields: [teamId], references: [id], onDelete: Cascade)
 
   @@unique([teamId, name])
   @@index([teamId])
 }
 
 model Match {
-  id                    Int      @id @default(autoincrement())
+  id                    Int         @id @default(autoincrement())
   teamAId               Int
   teamBId               Int
   battingFirstTeamId    Int
   oversPerInnings       Int
-  maxWicketsPerInnings  Int?
+  powerplayOversInnings Int         @default(0)
+  status                String      @default("in_progress")
+  createdAt             DateTime    @default(now())
+  statusText            String?     @default("LIVE")
   maxOversPerBowler     Int?
-  powerplayOversInnings Int      @default(0)
-  status                String   @default("in_progress")
-  statusText            String?  @default("LIVE")
-  createdAt             DateTime @default(now())
-
-  teamA            Team @relation("TeamA", fields: [teamAId], references: [id])
-  teamB            Team @relation("TeamB", fields: [teamBId], references: [id])
-  battingFirstTeam Team @relation("BattingFirstTeam", fields: [battingFirstTeamId], references: [id])
-
-  balls Ball[]
-
-  state MatchState?
+  maxWicketsPerInnings  Int?
+  balls                 Ball[]
+  battingFirstTeam      Team        @relation("BattingFirstTeam", fields: [battingFirstTeamId], references: [id])
+  teamA                 Team        @relation("TeamA", fields: [teamAId], references: [id])
+  teamB                 Team        @relation("TeamB", fields: [teamBId], references: [id])
+  state                 MatchState?
 }
 
 model Ball {
-  id            Int     @id @default(autoincrement())
-  matchId       Int
-  inningsNo     Int
-  sequence      Int
-  overNo        Int
-  ballInOver    Int
-  legalDelivery Boolean
-
+  id                Int      @id @default(autoincrement())
+  matchId           Int
+  inningsNo         Int
+  sequence          Int
+  overNo            Int
+  ballInOver        Int
+  legalDelivery     Boolean
   strikerId         Int?
   nonStrikerId      Int?
   bowlerId          Int?
   dismissedPlayerId Int?
   newBatterId       Int?
-
-  runsOffBat Int    @default(0)
-  extras     Int    @default(0)
-  extraType  String @default("NONE")
-  totalRuns  Int    @default(0)
-
-  isWicket   Int    @default(0)
-  wicketType String @default("NONE")
-
-  isPowerPlay Boolean  @default(false)
-  note        String?
-  createdAt   DateTime @default(now())
-
-  match           Match   @relation(fields: [matchId], references: [id], onDelete: Cascade)
-  striker         Player? @relation("Striker", fields: [strikerId], references: [id])
-  nonStriker      Player? @relation("NonStriker", fields: [nonStrikerId], references: [id])
-  bowler          Player? @relation("Bowler", fields: [bowlerId], references: [id])
-  dismissedPlayer Player? @relation("DismissedPlayer", fields: [dismissedPlayerId], references: [id])
-  newBatter       Player? @relation("NewBatter", fields: [newBatterId], references: [id])
+  runsOffBat        Int      @default(0)
+  extras            Int      @default(0)
+  extraType         String   @default("NONE")
+  totalRuns         Int      @default(0)
+  isWicket          Int      @default(0)
+  wicketType        String   @default("NONE")
+  isPowerPlay       Boolean  @default(false)
+  note              String?
+  createdAt         DateTime @default(now())
+  bowler            Player?  @relation("Bowler", fields: [bowlerId], references: [id])
+  dismissedPlayer   Player?  @relation("DismissedPlayer", fields: [dismissedPlayerId], references: [id])
+  match             Match    @relation(fields: [matchId], references: [id], onDelete: Cascade)
+  newBatter         Player?  @relation("NewBatter", fields: [newBatterId], references: [id])
+  nonStriker        Player?  @relation("NonStriker", fields: [nonStrikerId], references: [id])
+  striker           Player?  @relation("Striker", fields: [strikerId], references: [id])
 
   @@unique([matchId, inningsNo, sequence])
   @@index([matchId, inningsNo, sequence])
 }
 
 model MatchState {
-  matchId Int @id
-
-  inningsNo Int
-
+  matchId      Int   @id
+  inningsNo    Int
   strikerId    Int?
   nonStrikerId Int?
   bowlerId     Int?
+  match        Match @relation(fields: [matchId], references: [id])
+}
 
-  match Match @relation(fields: [matchId], references: [id])
+model League {
+  id            Int                  @id @default(autoincrement())
+  name          String               @unique
+  createdAt     DateTime             @default(now())
+  ownerId       String?
+  owner         User?                @relation(fields: [ownerId], references: [id])
+  teams         Team[]
+  registrations LeagueRegistration[]
+  members       LeagueMember[]
+  invites       LeagueInvite[]
+}
+
+model LeagueRegistration {
+  id        Int       @id @default(autoincrement())
+  token     String    @unique
+  leagueId  Int
+  expiresAt DateTime?
+  createdAt DateTime  @default(now())
+
+  league League  @relation(fields: [leagueId], references: [id], onDelete: Cascade)
+  user   User?   @relation(fields: [userId], references: [id])
+  userId String?
+
+  @@unique([leagueId, userId])
+}
+
+model LeagueMember {
+  id Int @id @default(autoincrement())
+
+  userId   String
+  leagueId Int
+
+  joinedAt DateTime @default(now())
+
+  league League @relation(fields: [leagueId], references: [id], onDelete: Cascade)
+  user   User   @relation(fields: [userId], references: [id])
+
+  @@unique([userId, leagueId])
+}
+
+model LeagueInvite {
+  id        Int      @id @default(autoincrement())
+  token     String   @unique
+  leagueId  Int
+  league    League   @relation(fields: [leagueId], references: [id])
+  createdAt DateTime @default(now())
 }

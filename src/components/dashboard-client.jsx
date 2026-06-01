@@ -123,6 +123,12 @@ const [selectedWicketType, setSelectedWicketType] = useState("BOWLED");
 const [selectedNewBatter, setSelectedNewBatter] = useState("");
 const [showExtrasModal, setShowExtrasModal] = useState(false);
 const [selectedExtraType, setSelectedExtraType] = useState("WIDE");
+const [leagues, setLeagues] = useState([]);
+const [leagueForm, setLeagueForm] = useState({
+  name: ""
+});
+const [selectedLeagueId, setSelectedLeagueId] = useState("");
+const [expandedLeagueId, setExpandedLeagueId] = useState(null);
 
   const [matchDetail, setMatchDetail] = useState(null);
   const [scoreboard, setScoreboard] = useState(null);
@@ -134,11 +140,17 @@ const [selectedExtraType, setSelectedExtraType] = useState("WIDE");
   const [showRetiredHurtModal, setShowRetiredHurtModal] = useState(false);
   const [retiredHurtBatterId, setRetiredHurtBatterId] = useState("");
 
-  const [teamName, setTeamName] = useState("");
-  const [playerForm, setPlayerForm] = useState({
-    teamId: "",
-    name: ""
-  });
+  const [teamForm, setTeamForm] = useState({leagueId: "", name: ""});
+  const [playerForm, setPlayerForm] = useState({teamId: "", names: ""});
+const filteredTeams = teams.filter(
+  (team) =>
+    String(team.leagueId) ===
+    String(selectedLeagueId)
+);
+const teamsForMatch =
+  selectedLeagueId
+    ? filteredTeams
+    : teams;
 
   const [matchForm, setMatchForm] = useState({
   teamAId: "",
@@ -233,7 +245,10 @@ const [selectedExtraType, setSelectedExtraType] = useState("WIDE");
         console.error(err);
       }
     }
-
+async function loadLeagues() {
+  const data = await api("/api/leagues");
+  setLeagues(data);
+}
   async function loadTeams() {
     const data = await api("/api/teams");
     setTeams(data);
@@ -277,9 +292,69 @@ const [selectedExtraType, setSelectedExtraType] = useState("WIDE");
     setScoreboard(board);
     setStats(statData);
   }
+async function handleAddLeague(e) {
+  e.preventDefault();
 
+  setMessage("");
+  setError("");
+
+  try {
+const league = await api("/api/leagues", {
+  method: "POST",
+  body: JSON.stringify({
+    name: leagueForm.name.trim()
+  })
+});
+
+    setLeagueForm({
+      name: ""
+    });
+setSelectedLeagueId(
+  String(league.id)
+);
+    showToast(
+      "success",
+      "🏆 League created"
+    );
+
+    await loadLeagues();
+  } catch (err) {
+    setError(err.message);
+  }
+}
+
+async function handleDeleteLeague(
+  leagueId,
+  leagueName
+) {
+  if (
+    !confirm(
+      `Delete league "${leagueName}"?`
+    )
+  ) {
+    return;
+  }
+
+  try {
+    await api(
+      `/api/leagues/${leagueId}`,
+      {
+        method: "DELETE"
+      }
+    );
+
+    showToast(
+      "success",
+      "🗑️ League deleted"
+    );
+
+    await refreshAll();
+  } catch (err) {
+    setError(err.message);
+  }
+}
   async function refreshAll(matchId = selectedMatchId) {
-    await Promise.all([loadTeams(), loadMatches()]);
+    await Promise.all([loadLeagues(), loadTeams(), loadMatches()]);
     if (matchId) {
       await loadSelectedMatch(matchId);
     }
@@ -288,7 +363,7 @@ const [selectedExtraType, setSelectedExtraType] = useState("WIDE");
   useEffect(() => {
     (async () => {
       try {
-        await Promise.all([loadTeams(), loadMatches()]);
+        await Promise.all([loadLeagues(), loadTeams(), loadMatches()]);
       } catch (err) {
         setError(err.message);
       }
@@ -404,13 +479,20 @@ setBallForm((prev) => ({
     setError("");
 
     try {
-      await api("/api/teams", {
-        method: "POST",
-        body: JSON.stringify({ name: teamName.trim() })
-      });
-      setTeamName("");
+await api("/api/teams", {
+  method: "POST",
+  body: JSON.stringify({
+    leagueId: Number(teamForm.leagueId),
+    name: teamForm.name.trim()
+  })
+});
+
+setTeamForm({
+  leagueId: "",
+  name: ""
+});
       setMessage("✅ Team added");
-      await loadTeams();
+      await refreshAll();
     } catch (err) {
       setError(err.message);
     }
@@ -440,15 +522,20 @@ setBallForm((prev) => ({
     setError("");
 
     try {
-      await api("/api/players", {
-        method: "POST",
-        body: JSON.stringify({
-          teamId: Number(playerForm.teamId),
-          name: playerForm.name.trim()
-        })
-      });
+const names = playerForm.names
+  .split(/\r?\n|,/)
+  .map((x) => x.trim())
+  .filter(Boolean);
 
-      setPlayerForm({ teamId: "", name: "" });
+await api("/api/players/bulk", {
+  method: "POST",
+  body: JSON.stringify({
+    teamId: Number(playerForm.teamId),
+    names
+  })
+});
+
+      setPlayerForm({ teamId: "", names: "" });
       setMessage("✅ Player added");
       await refreshAll();
     } catch (err) {
@@ -738,7 +825,27 @@ function quickRetiredHurt() {
   setRetiredHurtBatterId("");
   setShowRetiredHurtModal(true);
 }
+async function generateInviteLink(leagueId) {
+  const res = await api(
+    `/api/leagues/${leagueId}/invite`,
+    {
+      method: "POST"
+    }
+  );
+  const data = res;
 
+  await navigator.clipboard.writeText(
+    data.inviteLink)
+
+/*  await navigator.clipboard.writeText(
+    res.url
+  );
+*/
+  showToast(
+    "success",
+    "Registration link copied"
+  );
+}
 async function confirmRetiredHurt() {
   if (!retiredHurtBatterId) {
     setError("Please select a new batter");
@@ -846,7 +953,7 @@ return (
     className={`tab-btn ${activeTab === "management" ? "active" : ""}`}
     onClick={() => setActiveTab("management")}
   >
-    ⚙️ <span>Teams</span>
+    ⚙️ <span>Leagues</span>
   </button>
 </div>
   {activeTab === "scoring" && (
@@ -1549,7 +1656,27 @@ return (
 {activeTab === "matches" && (
   <div className="page-grid">
     <div className="grid-main">
+<Card title="🎯 Active League">
+  <select
+    value={selectedLeagueId}
+    onChange={(e) =>
+      setSelectedLeagueId(e.target.value)
+    }
+  >
+    <option value="">
+      Select League
+    </option>
 
+    {leagues.map((league) => (
+      <option
+        key={league.id}
+        value={league.id}
+      >
+        {league.name}
+      </option>
+    ))}
+  </select>
+</Card>
       <Card title="🗓️ Create Match" defaultCollapsed={false}>
         <form className="form stack" onSubmit={handleCreateMatch}>
             <label>
@@ -1562,9 +1689,14 @@ return (
                 required
               >
                 <option value="">Select Team A</option>
-                {teams.map((team) => (
-                  <option key={team.id} value={team.id}>{team.name}</option>
-                ))}
+{teamsForMatch.map(team => (
+  <option
+    key={team.id}
+    value={team.id}
+  >
+    {team.name}
+  </option>
+))}
               </select>
             </label>
 
@@ -1578,9 +1710,14 @@ return (
                 required
               >
                 <option value="">Select Team B</option>
-                {teams.map((team) => (
-                  <option key={team.id} value={team.id}>{team.name}</option>
-                ))}
+ {teamsForMatch.map(team => (
+  <option
+    key={team.id}
+    value={team.id}
+  >
+    {team.name}
+  </option>
+))}
               </select>
             </label>
 
@@ -1781,113 +1918,165 @@ return (
   <div className="page-grid">
 
     <div className="grid-main">
+<Card title="🏆 Create League" defaultCollapsed={false}>
+  <form className="form stack" onSubmit={handleAddLeague}>
+    <label>
+      <span>League Name</span>
 
-         <Card title="👥 Teams" defaultCollapsed={false}>
-          <form className="form stack" onSubmit={handleAddTeam}>
-            <label>
-              <span>Team name</span>
-              <input
-                type="text"
-                value={teamName}
-                onChange={(e) => setTeamName(e.target.value)}
-                placeholder="Enter team name"
-                required
-              />
-            </label>
-            <button type="submit" className="btn">Add Team</button>
-          </form>
+      <input
+        type="text"
+        value={leagueForm.name}
+        onChange={(e) =>
+          setLeagueForm({
+            name: e.target.value
+          })
+        }
+        placeholder="Premier League"
+        required
+      />
+    </label>
 
-          <div style={{ marginTop: 12, display: "grid", gap: 12 }}>
-            {teams.map((team) => (
-              <div key={team.id} className="card" style={{ padding: 12 }}>
-                <div className="card-head">
-                  <h4>{team.name}</h4>
-                  <button
-                    type="button"
-                    className="btn btn-outline"
-                    onClick={() => handleDeleteTeam(team.id, team.name)}
-                  >
-                    Delete
-                  </button>
-                </div>
+    <button
+      type="submit"
+      className="btn"
+    >
+      Create League
+    </button>
+  </form>
+</Card>
+<Card title="🏆 Leagues" defaultCollapsed={false}>
+  {leagues.map((league) => (
+    <div
+      key={league.id}
+      className="card"
+      style={{ marginBottom: 16 }}
+    >
+      <div className="card-head">
+        <h4>{league.name}</h4>
 
-<div style={{ marginTop: 12 }}>
-  <button
+        <button
+          type="button"
+          className="btn btn-outline"
+          onClick={() =>
+            setExpandedLeagueId(
+              expandedLeagueId === league.id
+                ? null
+                : league.id
+            )
+          }
+        >
+          {expandedLeagueId === league.id
+            ? "Hide Teams"
+            : `Add/Delete Teams (${league.teams?.length || 0})`}
+        </button>
+        <button
+  className="btn btn-outline"
+  onClick={() => generateInviteLink(league.id)}
+>
+  🔗 Registration Link
+</button>
+        <button
     type="button"
-    className="btn btn-outline"
+    className="btn btn-danger"
     onClick={() =>
-      setExpandedTeamId(
-        expandedTeamId === team.id ? null : team.id
+      handleDeleteLeague(
+        league.id,
+        league.name
       )
     }
   >
-    {expandedTeamId === team.id
-      ? "Hide Players"
-      : `Players (${team.players.length})`}
+    Delete
   </button>
+      </div>
 
-  {expandedTeamId === team.id && (
-    <div style={{ marginTop: 12 }}>
-      {team.players.length === 0 ? (
-        <span className="muted">No players</span>
-      ) : (
+      {expandedLeagueId === league.id && (
         <>
-          <select
-            value={selectedPlayerId}
-            onChange={(e) =>
-              setSelectedPlayerId(e.target.value)
-            }
-            style={{ width: "100%", marginBottom: 10 }}
+          {/* ADD TEAM FORM */}
+          <form
+            onSubmit={handleAddTeam}
+            style={{
+              marginTop: 12,
+              marginBottom: 12
+            }}
           >
-            <option value="">
-              Select a player
-            </option>
+            <input
+              type="text"
+              value={teamForm.name}
+              placeholder="Team name"
+onChange={(e) =>
+  setTeamForm((prev) => ({
+    ...prev,
+    leagueId: league.id,
+    name: e.target.value
+  }))
+}
+              required
+            />
 
-            {team.players.map((player) => (
-              <option
-                key={player.id}
-                value={player.id}
-              >
-                {player.name}
-              </option>
-            ))}
-          </select>
-
-          {selectedPlayerId && (
             <button
-              type="button"
-              className="btn btn-outline"
-              onClick={() => {
-                const player = team.players.find(
-                  (p) =>
-                    String(p.id) ===
-                    String(selectedPlayerId)
-                );
+              type="submit"
+              className="btn"
+            >
+              Add Team
+            </button>
+          </form>
 
-                if (player) {
-                  handleDeletePlayer(
-                    player.id,
-                    player.name
-                  );
-                }
+          {/* TEAM LIST */}
+          {league.teams?.map((team) => (
+            <div
+              key={team.id}
+              style={{
+                padding: 10,
+                borderBottom:
+                  "1px solid rgba(255,255,255,.1)"
               }}
             >
-              Delete Selected Player
-            </button>
-          )}
+              <strong>{team.name}</strong>
+
+              <button
+                type="button"
+                className="btn btn-outline"
+                style={{ marginLeft: 12 }}
+                onClick={() =>
+                  handleDeleteTeam(
+                    team.id,
+                    team.name
+                  )
+                }
+              >
+                Delete
+              </button>
+            </div>
+          ))}
         </>
       )}
     </div>
-  )}
-</div>
-              </div>
-            ))}
-          </div>
-        </Card>
+  ))}
+</Card>
     </div>
 
     <div className="grid-side">
+<Card title="🎯 Active League">
+  <select
+    value={selectedLeagueId}
+    onChange={(e) =>
+      setSelectedLeagueId(e.target.value)
+    }
+  >
+    <option value="">
+      Select League
+    </option>
 
+    {leagues.map((league) => (
+      <option
+        key={league.id}
+        value={league.id}
+      >
+        {league.name}
+      </option>
+    ))}
+  </select>
+</Card>
  <Card title="🧍 Add Player" defaultCollapsed={false}>
           <form className="form stack" onSubmit={handleAddPlayer}>
             <label>
@@ -1900,24 +2089,40 @@ return (
                 required
               >
                 <option value="">Select team</option>
-                {teams.map((team) => (
-                  <option key={team.id} value={team.id}>{team.name}</option>
-                ))}
+                {teamsForMatch.map(team => (
+  <option
+    key={team.id}
+    value={team.id}
+  >
+    {team.name}
+  </option>
+))}
               </select>
             </label>
 
-            <label>
-              <span>Player name</span>
-              <input
-                type="text"
-                value={playerForm.name}
-                onChange={(e) =>
-                  setPlayerForm((prev) => ({ ...prev, name: e.target.value }))
-                }
-                placeholder="Enter player name"
-                required
-              />
-            </label>
+<label>
+  <span>Player Names</span>
+
+  <textarea
+    rows={8}
+    value={playerForm.names}
+    onChange={(e) =>
+      setPlayerForm((prev) => ({
+        ...prev,
+        names: e.target.value
+      }))
+    }
+    placeholder={`Sachin Tendulkar
+Virat Kohli
+MS Dhoni
+Rohit Sharma`}
+    required
+  />
+
+  <small className="muted">
+    Enter one player per line
+  </small>
+</label>
 
             <button type="submit" className="btn">Add Player</button>
           </form>

@@ -21,14 +21,20 @@ export async function GET(request, { params }) {
     where: { id: matchId },
     include: {
       teamA: {
-        include: {
-          players: { orderBy: { name: "asc" } }
-        }
+include: {
+  league: true,
+  players: {
+    orderBy: { name: "asc" }
+  }
+}
       },
       teamB: {
-        include: {
-          players: { orderBy: { name: "asc" } }
-        }
+include: {
+  league: true,
+  players: {
+    orderBy: { name: "asc" }
+  }
+}
       },
       battingFirstTeam: true
     }

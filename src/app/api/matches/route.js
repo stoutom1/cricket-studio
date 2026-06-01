@@ -189,7 +189,41 @@ export async function POST(request) {
       );
     }
   }
+const user = await prisma.user.findUnique({
+  where: {
+    email: session.user.email
+  }
+});
 
+const league = await prisma.league.findUnique({
+  where: {
+    id: Number(leagueId)
+  }
+});
+
+if (!league) {
+  return NextResponse.json(
+    { error: "League not found" },
+    { status: 404 }
+  );
+}
+
+const membership = await prisma.leagueMember.findFirst({
+  where: {
+    userId: user.id,
+    leagueId: league.id
+  }
+});
+
+const isMember =
+  league.ownerId === user.id || membership;
+
+if (!isMember) {
+  return NextResponse.json(
+    { error: "Forbidden" },
+    { status: 403 }
+  );
+}
   const match = await prisma.match.create({
     data: {
       teamAId,
