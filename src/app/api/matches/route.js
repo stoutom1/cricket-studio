@@ -38,13 +38,13 @@ export async function GET() {
   });
 
 const activeLeagueId = user?.activeLeagueId;
-console.log("matchesGet:"+activeLeagueId)
 
 const matches = await prisma.match.findMany({
   where: {
     leagueId: user.activeLeagueId
   },
   include: {
+    league:true,
     teamA: true,
     teamB: true,
     battingFirstTeam: true,
@@ -120,6 +120,8 @@ const matches = await prisma.match.findMany({
 
   const formatted = matches.map((m) => ({
     id: m.id,
+    leagueId: m.leagueId,
+    leagueName: m.league?.name,
     teamAId: m.teamAId,
     teamBId: m.teamBId,
     teamAName: m.teamA.name,
@@ -154,7 +156,7 @@ export async function POST(request) {
   });
 
 const activeLeagueId = user?.activeLeagueId;
-console.log("matchesPost:"+activeLeagueId);
+
   const body = await request.json();
 
   const teamAId = Number(body.teamAId);
@@ -273,6 +275,6 @@ const leagueId = user.activeLeagueId;
       status: "in_progress"
     }
   });
-
+console.log("Match",match);
   return NextResponse.json(match, { status: 201 });
 }

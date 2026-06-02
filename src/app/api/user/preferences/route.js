@@ -29,9 +29,7 @@ const activeMatchId =
   body.activeMatchId == null
     ? null
     : Number(body.activeMatchId);
-console.log(activeLeagueId);
-console.log(activeMatchId);
-console.log("preferences", body);
+
 const user = await prisma.user.update({
   where: {
     email: session.user.email

@@ -19,11 +19,13 @@ export default function AuthNav() {
           >
             Sign out
           </button>
+      <Link href="/about">About Us</Link>
+      <Link href="/contact">Contact Us</Link>
         </>
       ) : (
-        <Link href="/login" className="btn btn-outline">
-          Sign in
-        </Link>
+        <Link href="/login" className="btn btn-outline"> Sign in </Link>,
+        <Link href="/about">About Us</Link>,
+        <Link href="/contact">Contact Us</Link>
       )}
     </div>
   );

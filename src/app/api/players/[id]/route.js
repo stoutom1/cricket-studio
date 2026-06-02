@@ -24,7 +24,22 @@ export async function DELETE(request, { params }) {
   if (!player) {
     return NextResponse.json({ error: "Player not found" }, { status: 404 });
   }
-
+/*if (
+  player.team.league.name ===
+    "Surprise Cricket League" &&
+  session.user.email !==
+    "surprisecricket11@gmail.com"
+) {
+  return NextResponse.json(
+    {
+      error:
+        "Only the league owner can delete players"
+    },
+    {
+      status: 403
+    }
+  );
+}*/
   const ballUsageCount = await prisma.ball.count({
     where: {
       OR: [

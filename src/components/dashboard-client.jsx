@@ -1,5 +1,5 @@
 "use client";
-
+import { useSession } from "next-auth/react";
 import React, { useEffect, useMemo, useState } from "react";
 import { EXTRA_TYPES, getPlayerName, WICKET_TYPES } from "@/lib/scoring";
 import "@/app/globals.css";
@@ -110,6 +110,7 @@ function formatDate(value) {
 }
 
 export default function DashboardClient() {
+  const { data: session } = useSession();
   //const [activeTab, setActiveTab] = useState("management");
   const [teams, setTeams] = useState([]);
   const [matches, setMatches] = useState([]);
@@ -316,7 +317,7 @@ const [ballForm, setBallForm] = useState({
             `${shareText}\n\n${shareUrl}`
           );
 
-          alert("Share link copied to clipboard");
+          //alert("Share link copied to clipboard");
         }
       } catch (err) {
         console.error(err);
@@ -373,10 +374,6 @@ async function loadLeagues() {
     ]);
 
     setMatchDetail(detail);
-    console.log(
-  "SCOREBOARD API RESPONSE:",
-  JSON.stringify(board, null, 2)
-);
     setScoreboard(board);
     setStats(statData);
   }
@@ -954,6 +951,7 @@ async function handleMatchSelect(matchId) {
   );
 }
 
+
 function quickRetiredHurt() {
   if (!selectedMatchId) {
     setError("Please select a match");
@@ -1083,7 +1081,6 @@ function triggerQuickAction(actionKey, callback) {
   const activeInnings =
     scoreboard?.innings?.find((x) => x.number === scoreboard.currentInnings) ||
     scoreboard?.innings?.[0];
-
 return (
   <>
 <div className="tabs">
@@ -1218,10 +1215,6 @@ return (
   title="💥 Fall of Wickets"
   defaultOpen={false}
 >
-  {console.log(
-    "RENDERING FOW:",
-    activeInnings?.fallOfWickets
-  )}
   {!activeInnings?.fallOfWickets?.length ? (
     <p className="muted">No wickets yet</p>
   ) : (
@@ -1720,7 +1713,12 @@ return (
           <p className="muted">No matches yet</p>
         ) : (
           <div className="match-list">
-            {matches.map((match) => (
+            {matches.map((match) => {
+                  const isProtectedLeague = match.leagueName === "Surprise Cricket League";
+                  //const PROTECTED_LEAGUE_ID = 2;
+                  //const isProtectedLeague = Number(match.leagueId) === PROTECTED_LEAGUE_ID;
+                  const canDeleteProtectedLeague = session?.user?.email === "surprisecricket11@gmail.com";
+    return (
               <div
                 key={match.id}
                 className={`match-item ${
@@ -1775,11 +1773,13 @@ return (
                     gap: 8
                   }}
                 >
+                  
                   <span className="pill">
                     {match.status}
                   </span>
-
-                  <button
+  {(!isProtectedLeague ||
+  canDeleteProtectedLeague) && (                 
+                  <button 
                     type="button"
                     className="btn btn-outline"
                     onClick={() =>
@@ -1788,9 +1788,12 @@ return (
                   >
                     Delete
                   </button>
+                  
+                  )}
                 </div>
               </div>
-            ))}
+    ); 
+          })}
           </div>
         )}
       </Card>
@@ -2000,7 +2003,12 @@ return (
           <p className="muted">No matches yet</p>
         ) : (
           <div className="match-list">
-            {matches.map((match) => (
+            {matches.map((match) => {
+                                const isProtectedLeague = match.leagueName === "Surprise Cricket League";
+                  //const PROTECTED_LEAGUE_ID = 2;
+                  //const isProtectedLeague = Number(match.leagueId) === PROTECTED_LEAGUE_ID;
+                  const canDeleteProtectedLeague = session?.user?.email === "surprisecricket11@gmail.com";
+    return (
               <div
                 key={match.id}
                 className={`match-item ${
@@ -2058,7 +2066,8 @@ return (
                   <span className="pill">
                     {match.status}
                   </span>
-
+  {(!isProtectedLeague ||
+  canDeleteProtectedLeague) && (     
                   <button
                     type="button"
                     className="btn btn-outline"
@@ -2068,9 +2077,11 @@ return (
                   >
                     Delete
                   </button>
+  )}
                 </div>
               </div>
-            ))}
+    );  
+})}
           </div>
         )}
       </Card>
@@ -2120,7 +2131,14 @@ return (
   </form>
 </Card>
 <Card title="🏆 Leagues" defaultCollapsed={false}>
-  {leagues.map((league) => (
+  {leagues.map((league) => {
+    const isProtectedLeague =
+    league.name === "Surprise Cricket League";
+
+  const canDeleteProtectedLeague =
+    session?.user?.email ===
+    "surprisecricket11@gmail.com";
+return(
     <div
       key={league.id}
       className="card"
@@ -2167,8 +2185,9 @@ return (
 >
   🔗 Registration Link
 </button>
-        <button
-    type="button"
+ {(!isProtectedLeague ||
+  canDeleteProtectedLeague) && (
+  <button
     className="btn btn-danger"
     onClick={() =>
       handleDeleteLeague(
@@ -2179,6 +2198,7 @@ return (
   >
     Delete League
   </button>
+)}
       </div>
 
       {expandedLeagueId === league.id && (
@@ -2250,7 +2270,8 @@ onChange={(e) =>
         </option>
       ))}
     </select>
-
+{(!isProtectedLeague ||
+  canDeleteProtectedLeague) && (
 <button
   disabled={!selectedPlayers[team.id]}
   onClick={() => {
@@ -2267,18 +2288,23 @@ onChange={(e) =>
 >
   Delete Player
 </button>
+  )}
 
+  {(!isProtectedLeague ||
+  canDeleteProtectedLeague) && (
     <button
       onClick={() => handleDeleteTeam(team.id,team.name)}
     >
       Delete Team
     </button>
+  )}   
   </div>
           ))}
         </>
       )}
     </div>
-  ))}
+);    
+})}
 </Card>
     </div>
 
