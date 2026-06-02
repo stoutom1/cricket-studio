@@ -63,12 +63,14 @@ if (!league) {
     { status: 404 }
   );
 }
+/*
 if (league.ownerId !== user.id) {
   return NextResponse.json(
     { error: "Only league owner can perform this action" },
     { status: 403 }
   );
 }
+  
 const membership = await prisma.leagueMember.findFirst({
   where: {
     userId: user.id,
@@ -85,7 +87,7 @@ if (!isMember) {
     { status: 403 }
   );
 }
-        
+*/        
     const team = await prisma.team.create({
         data: {
           name,

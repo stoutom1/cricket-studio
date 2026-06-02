@@ -99,6 +99,7 @@ function CollapsibleSection({
     </div>
   );
 }
+ 
 
 function formatDate(value) {
   try {
@@ -109,7 +110,7 @@ function formatDate(value) {
 }
 
 export default function DashboardClient() {
-  const [activeTab, setActiveTab] = useState("scoring");
+  //const [activeTab, setActiveTab] = useState("management");
   const [teams, setTeams] = useState([]);
   const [matches, setMatches] = useState([]);
   const [selectedMatchId, setSelectedMatchId] = useState("");
@@ -129,6 +130,8 @@ const [leagueForm, setLeagueForm] = useState({
 });
 const [selectedLeagueId, setSelectedLeagueId] = useState("");
 const [expandedLeagueId, setExpandedLeagueId] = useState(null);
+const [activeLeagueId, setActiveLeagueId] = useState(null);
+const [activeTab, setActiveTab] = useState("management");
 
   const [matchDetail, setMatchDetail] = useState(null);
   const [scoreboard, setScoreboard] = useState(null);
@@ -143,13 +146,72 @@ const [expandedLeagueId, setExpandedLeagueId] = useState(null);
 
   const [teamForm, setTeamForm] = useState({leagueId: "", name: ""});
   const [playerForm, setPlayerForm] = useState({teamId: "", names: ""});
+const [preferencesLoaded, setPreferencesLoaded] = useState(false);
+
+
+useEffect(() => {
+    async function loadUserPreferences() {
+      const res = await fetch("/api/me");
+
+      if (!res.ok) {
+        setPreferencesLoaded(true);
+        return;
+      }
+
+      const data = await res.json();
+
+      setActiveLeagueId(data.activeLeagueId ?? null);
+
+      setSelectedMatchId(
+        data.activeMatchId
+          ? String(data.activeMatchId)
+          : ""
+      );
+
+      setPreferencesLoaded(true);
+    }
+
+    loadUserPreferences();
+  }, []);
+useEffect(() => {
+  if (!preferencesLoaded) return;
+
+  fetch("/api/user/preferences", {
+    method: "POST",
+    headers: {
+      "Content-Type": "application/json"
+    },
+    body: JSON.stringify({
+      activeLeagueId,
+      activeMatchId: selectedMatchId || null
+    })
+  });
+}, [
+  activeLeagueId,
+  selectedMatchId,
+  preferencesLoaded
+]);
+useEffect(() => {
+  if (!activeLeagueId) {
+    setMatches([]);
+    return;
+  }
+
+  setMatches([]);
+  loadMatches();
+}, [activeLeagueId]);
 const filteredTeams = teams.filter(
   (team) =>
     String(team.leagueId) ===
-    String(selectedLeagueId)
+    String(activeLeagueId)
+);
+const filteredMatches = matches.filter(
+  (match) =>
+    String(match.leagueId) ===
+    String(activeLeagueId)
 );
 const teamsForMatch =
-  selectedLeagueId
+  activeLeagueId
     ? filteredTeams
     : teams;
 
@@ -163,7 +225,7 @@ const teamsForMatch =
   maxOversPerBowler: ""
 });
 
-  const [ballForm, setBallForm] = useState({
+ /* const [ballForm, setBallForm] = useState({
     inningsNo: "1",
     strikerId: "",
     nonStrikerId: "",
@@ -184,7 +246,21 @@ const teamsForMatch =
   scoreboard?.currentState?.inningsNo,
   scoreboard?.currentInnings
 ]);
-
+*/
+const [ballForm, setBallForm] = useState({
+  inningsNo: "1",
+  strikerId: "",
+  nonStrikerId: "",
+  bowlerId: "",
+  extraType: "NONE",
+  runsOffBat: "0",
+  extras: "0",
+  isWicket: false,
+  wicketType: "NONE",
+  dismissedPlayerId: "",
+  newBatterId: "",
+  note: ""
+});
   async function api(url, options = {}) {
     const res = await fetch(url, {
       ...options,
@@ -277,6 +353,17 @@ async function loadLeagues() {
       return;
     }
 
+  fetch("/api/user/preferences", {
+    method: "POST",
+    headers: {
+      "Content-Type": "application/json"
+    },
+    body: JSON.stringify({
+      activeLeagueId: activeLeagueId,
+      activeMatchId: selectedMatchId
+    })
+  });
+
     const [detail, board, statData] = await Promise.all([
       api(`/api/matches/${matchId}`),
       api(`/api/scoreboard/${matchId}`),
@@ -310,15 +397,15 @@ const league = await api("/api/leagues", {
     setLeagueForm({
       name: ""
     });
-setSelectedLeagueId(
-  String(league.id)
-);
+setActiveLeagueId(Number(activeLeagueId));
     showToast(
       "success",
       "🏆 League created"
     );
 
     await loadLeagues();
+    await loadMatches();
+    await loadTeams();
   } catch (err) {
     setError(err.message);
   }
@@ -465,12 +552,21 @@ setBallForm((prev) => ({
     scoreboard?.currentState?.strikerId != null
       ? String(scoreboard.currentState.strikerId)
       : "",
-
+  bowlerId:
+      scoreboard.currentState.bowlerId
+        ? String(scoreboard.currentState.bowlerId)
+        : "",
+  bowlerName:
+      scoreboard.currentState.bowlerId
+        ? String(scoreboard.currentState.bowlerName)
+        : "",      
   newBatterId: ""
 }));
   }, [
     scoreboard?.currentState?.strikerId,
     scoreboard?.currentState?.nonStrikerId,
+    scoreboard?.currentState?.bowlerId,
+    scoreboard?.currentState?.bowlerName,
     scoreboard?.currentInnings
   ]);
 
@@ -500,7 +596,9 @@ setTeamForm({
   }
 
   async function handleDeleteTeam(teamId, teamName) {
-    if (!confirm(`Delete team "${teamName}"?`)) return;
+    if (!confirm(`Delete team "${teamName}"?`)) {
+       return;
+    }   
 
     setMessage("");
     setError("");
@@ -729,7 +827,40 @@ await api("/api/players/bulk", {
       wicketType: "NONE"
     }));
   }
+async function selectLeague(league) {
+  setActiveLeagueId(league.id);
+  setSelectedMatchId("");
+  setMatches([]);
+  setActiveTab("matches");
 
+  fetch("/api/user/preferences", {
+    method: "POST",
+    headers: {
+      "Content-Type": "application/json"
+    },
+    body: JSON.stringify({
+      activeLeagueId: league.id,
+      activeMatchId: selectedMatchId
+    })
+  });
+  await loadMatches();
+}
+  const handleLeagueChange = (leagueId) => {
+  setActiveLeagueId(leagueId);
+
+  localStorage.setItem(
+    "activeLeagueId",
+    String(leagueId)
+  );
+};
+const handleMatchChange = (matchId) => {
+  setSelectedMatchId(matchId);
+
+  localStorage.setItem(
+    "selectedMatchId",
+    String(matchId)
+  );
+};
 function quickExtra(type) {
   setSelectedExtraType(type);
 
@@ -936,25 +1067,23 @@ function triggerQuickAction(actionKey, callback) {
 return (
   <>
 <div className="tabs">
-  <button
-    className={`tab-btn ${activeTab === "scoring" ? "active" : ""}`}
-    onClick={() => setActiveTab("scoring")}
+    <button
+    className={`tab-btn ${activeTab === "management" ? "active" : ""}`}
+    onClick={() => setActiveTab("management")}
   >
-    🏏 <span>Live Scoring</span>
+    ⚙️ <span>Leagues</span>
   </button>
-
   <button
     className={`tab-btn ${activeTab === "matches" ? "active" : ""}`}
     onClick={() => setActiveTab("matches")}
   >
     📋 <span>Matches</span>
   </button>
-
   <button
-    className={`tab-btn ${activeTab === "management" ? "active" : ""}`}
-    onClick={() => setActiveTab("management")}
+    className={`tab-btn ${activeTab === "scoring" ? "active" : ""}`}
+    onClick={() => setActiveTab("scoring")}
   >
-    ⚙️ <span>Leagues</span>
+    🏏 <span>Live Scoring</span>
   </button>
 </div>
   {activeTab === "scoring" && (
@@ -1659,10 +1788,14 @@ return (
     <div className="grid-main">
 <Card title="🎯 Active League">
   <select
-    value={selectedLeagueId}
-    onChange={(e) =>
-      setSelectedLeagueId(e.target.value)
-    }
+    value={activeLeagueId || ""}
+ onChange={(e) => {
+  const value = e.target.value;
+
+  setActiveLeagueId(
+    value ? Number(value) : null
+  );
+}}
   >
     <option value="">
       Select League
@@ -1679,11 +1812,30 @@ return (
   </select>
 </Card>
       <Card title="🗓️ Create Match" defaultCollapsed={false}>
+{activeLeagueId && (
+  <div
+    style={{
+      marginBottom: 16,
+      padding: 12,
+      background: "#eff6ff",
+      borderRadius: 8
+    }}
+  >
+    Active League:{" "}
+    <strong>
+      {
+        leagues.find(
+          (l) => l.id === activeLeagueId
+        )?.name
+      }
+    </strong>
+  </div>
+)}
         <form className="form stack" onSubmit={handleCreateMatch}>
             <label>
               <span>Team A</span>
               <select
-                value={matchForm.teamAId}
+                value={matchForm.teamAId || ""}
                 onChange={(e) =>
                   setMatchForm((prev) => ({ ...prev, teamAId: e.target.value }))
                 }
@@ -1704,7 +1856,7 @@ return (
             <label>
               <span>Team B</span>
               <select
-                value={matchForm.teamBId}
+                value={matchForm.teamBId || ""}
                 onChange={(e) =>
                   setMatchForm((prev) => ({ ...prev, teamBId: e.target.value }))
                 }
@@ -1725,7 +1877,7 @@ return (
             <label>
               <span>Batting First</span>
               <select
-                value={matchForm.battingFirstTeamId}
+                value={matchForm.battingFirstTeamId || ""}
                 onChange={(e) =>
                   setMatchForm((prev) => ({
                     ...prev,
@@ -1919,7 +2071,7 @@ return (
   <div className="page-grid">
 
     <div className="grid-main">
-<Card title="🏆 Create League" defaultCollapsed={false}>
+<Card title="🏆 Create League" defaultCollapsed={true}>
   <form className="form stack" onSubmit={handleAddLeague}>
     <label>
       <span>League Name</span>
@@ -1953,8 +2105,31 @@ return (
       style={{ marginBottom: 16 }}
     >
       <div className="card-head">
-        <h4>{league.name}</h4>
+        <button
+          type="button"
+          className="btn btn-outline"
+            key={league.id}
+            style={{
+              background:
+                activeLeagueId === league.id
+                  ? "#dbeafe"
+                  : "#f8fafc",
+            }}
 
+            onClick={() => selectLeague(league)}
+       >
+            <strong>{league.name}</strong>
+            {activeLeagueId === league.id && (
+              <span
+                style={{
+                  marginLeft: 10,
+                  color: "#2563eb"
+                }}
+              >
+                (Active)
+              </span>
+            )}
+        </button>     
         <button
           type="button"
           className="btn btn-outline"
@@ -2078,7 +2253,7 @@ onChange={(e) =>
 </button>
 
     <button
-      onClick={() => deleteTeam(team.id)}
+      onClick={() => handleDeleteTeam(team.id,team.name)}
     >
       Delete Team
     </button>
@@ -2092,33 +2267,12 @@ onChange={(e) =>
     </div>
 
     <div className="grid-side">
-<Card title="🎯 Active League">
-  <select
-    value={selectedLeagueId}
-    onChange={(e) =>
-      setSelectedLeagueId(e.target.value)
-    }
-  >
-    <option value="">
-      Select League
-    </option>
-
-    {leagues.map((league) => (
-      <option
-        key={league.id}
-        value={league.id}
-      >
-        {league.name}
-      </option>
-    ))}
-  </select>
-</Card>
  <Card title="🧍 Add Player" defaultCollapsed={false}>
           <form className="form stack" onSubmit={handleAddPlayer}>
             <label>
               <span>Team</span>
               <select
-                value={playerForm.teamId}
+                value={playerForm.teamId || ""}
                 onChange={(e) =>
                   setPlayerForm((prev) => ({ ...prev, teamId: e.target.value }))
                 }
@@ -2181,7 +2335,7 @@ Rohit Sharma`}
       <label>
         <span>Wicket Type</span>
         <select
-          value={ballForm.wicketType}
+          value={ballForm.wicketType || ""}
           onChange={(e) =>
             setBallForm((prev) => ({
               ...prev,
@@ -2203,7 +2357,7 @@ Rohit Sharma`}
         <span>New Batter</span>
 
         <select
-          value={ballForm.newBatterId}
+          value={ballForm.newBatterId || ""}
           onChange={(e) =>
             setBallForm((prev) => ({
               ...prev,
@@ -2305,7 +2459,7 @@ Rohit Sharma`}
       <p>Select incoming batter</p>
 
       <select
-        value={retiredHurtBatterId}
+        value={retiredHurtBatterId || ""}
         onChange={(e) => setRetiredHurtBatterId(e.target.value)}
       >
         <option value="">Select batter</option>

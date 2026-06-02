@@ -21,6 +21,7 @@ function countsAsWicket(ball) {
   );
 }
 
+
 export async function GET() {
   const session = await getServerSession(authOptions);
 
@@ -30,22 +31,30 @@ export async function GET() {
       { status: 401 }
     );
   }
-
-  const matches = await prisma.match.findMany({
-    orderBy: { createdAt: "desc" },
-
-    include: {
-      teamA: true,
-      teamB: true,
-      battingFirstTeam: true,
-
-      balls: {
-        orderBy: {
-          sequence: "asc"
-        }
-      }
+  const user = await prisma.user.findUnique({
+    where: {
+      email: session.user.email
     }
   });
+
+const activeLeagueId = user?.activeLeagueId;
+console.log("matchesGet:"+activeLeagueId)
+
+const matches = await prisma.match.findMany({
+  where: {
+    leagueId: user.activeLeagueId
+  },
+  include: {
+    teamA: true,
+    teamB: true,
+    battingFirstTeam: true,
+    balls: {
+      orderBy: {
+        sequence: "asc"
+      }
+    }
+  }
+});
 
   // AUTO UPDATE MATCH STATUS
   for (const match of matches) {
@@ -130,10 +139,22 @@ export async function GET() {
 
 export async function POST(request) {
   const session = await getServerSession(authOptions);
-  if (!session) {
-    return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
+
+  if (!session?.user?.email) {
+    return NextResponse.json(
+      { error: "Unauthorized" },
+      { status: 401 }
+    );
   }
 
+  const user = await prisma.user.findUnique({
+    where: {
+      email: session.user.email
+    }
+  });
+
+const activeLeagueId = user?.activeLeagueId;
+console.log("matchesPost:"+activeLeagueId);
   const body = await request.json();
 
   const teamAId = Number(body.teamAId);
@@ -189,15 +210,17 @@ export async function POST(request) {
       );
     }
   }
-const user = await prisma.user.findUnique({
-  where: {
-    email: session.user.email
-  }
-});
+
+if (!activeLeagueId) {
+  return NextResponse.json(
+    { error: "No active league selected" },
+    { status: 400 }
+  );
+}
 
 const league = await prisma.league.findUnique({
   where: {
-    id: Number(leagueId)
+    id: activeLeagueId
   }
 });
 
@@ -207,7 +230,7 @@ if (!league) {
     { status: 404 }
   );
 }
-
+/*
 const membership = await prisma.leagueMember.findFirst({
   where: {
     userId: user.id,
@@ -224,8 +247,11 @@ if (!isMember) {
     { status: 403 }
   );
 }
+*/
+const leagueId = user.activeLeagueId;
   const match = await prisma.match.create({
     data: {
+      leagueId,
       teamAId,
       teamBId,
       battingFirstTeamId,

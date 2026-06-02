@@ -9,7 +9,6 @@ export default async function DashboardPage() {
   if (!session) {
     redirect("/login");
   }
-
   return (
     <>
       <section className="hero">
