@@ -875,3 +875,22 @@ select:focus {
     font-size: 12px;
   }
 }
+@media (max-width: 768px) {
+  .page-grid {
+    grid-template-columns: 1fr !important;
+  }
+
+  .card {
+    padding: 14px;
+  }
+
+  .btn {
+    width: 100%;
+  }
+
+  select,
+  input,
+  textarea {
+    width: 100%;
+  }
+}

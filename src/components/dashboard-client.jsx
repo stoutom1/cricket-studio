@@ -915,6 +915,26 @@ setMessage("🔄 Striker swapped successfully");
     setError(err.message);
   }
 }
+
+async function handleMatchSelect(matchId) {
+  setSelectedMatchId(String(matchId));
+
+  await loadSelectedMatch(matchId);
+
+  setActiveTab("scoring");
+
+  await fetch("/api/user/preferences", {
+    method: "POST",
+    headers: {
+      "Content-Type": "application/json"
+    },
+    body: JSON.stringify({
+      activeLeagueId: activeLeagueId,
+      activeMatchId: matchId
+    })
+  });
+}
+
   function getNextAvailableBatter(players, strikerId, nonStrikerId, balls = []) {
   if (!players?.length) return null;
 
@@ -1713,6 +1733,7 @@ return (
                   type="button"
                   onClick={() =>
                     setSelectedMatchId(String(match.id))
+                    //handleMatchSelect(match.id)
                   }
                   style={{
                     flex: 1,
@@ -1991,7 +2012,8 @@ return (
                 <button
                   type="button"
                   onClick={() =>
-                    setSelectedMatchId(String(match.id))
+                    //setSelectedMatchId(String(match.id))
+                    handleMatchSelect(match.id)
                   }
                   style={{
                     flex: 1,
