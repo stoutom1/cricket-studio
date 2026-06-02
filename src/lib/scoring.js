@@ -13,8 +13,15 @@ export const WICKET_TYPES = [
   "OTHER"
 ];
 
-export function isLegalDelivery(extraType) {
-  return !["WIDE", "NOBALL", "RETIRED_HURT"].includes(extraType);
+export function isLegalDelivery(
+  extraType,
+  wicketType = "NONE"
+) {
+  if (wicketType === "RETIRED_HURT") {
+    return false;
+  }
+console.log("wicketType",wicketType);
+  return !["WIDE", "NOBALL"].includes(extraType);
 }
 
 export function formatOversFromBalls(legalBalls) {
@@ -198,6 +205,9 @@ function runsCompleted(ball) {
       return Math.max(0, ball.extras - 1);
     
     case "SWAP_STRIKE":
+      return Math.max(0, ball.extras - 1); 
+      
+    case "RETIRED_HURT":
       return Math.max(0, ball.extras - 1);  
 
     case "BYE":
@@ -295,7 +305,12 @@ export function summarizeInningsDetailed(balls, playerMap, oversPerInnings) {
   }
 
   const nextPair = applyBallOutcome(ball);
-
+/*if (ball.extraType === "SWAP_STRIKE") {
+  return {
+    strikerId: ball.nonStrikerId,
+    nonStrikerId: ball.strikerId
+  };
+}*/
   const countsAsWicket =
     Boolean(ball.isWicket) &&
     ball.wicketType !== "RETIRED_HURT";

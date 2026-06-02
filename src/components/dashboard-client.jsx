@@ -895,13 +895,13 @@ async function swapBatters() {
   if (!selectedMatchId) return;
 
   try {
- await fetch(
-  `/api/matches/${selectedMatchId}/swap-strike`,
-  {
-    method: "POST"
-  }
-);
 
+setBallForm((prev) => ({
+      ...prev,
+      strikerId: prev.nonStrikerId || "",
+      nonStrikerId: prev.strikerId || "",
+    }));
+    
     await loadSelectedMatch(selectedMatchId);
 setMessage("🔄 Striker swapped successfully");
     showToast(
@@ -1018,7 +1018,7 @@ async function confirmRetiredHurt() {
   try {
     setMessage("");
     setError("");
-
+/*
     await api("/api/balls", {
       method: "POST",
       body: JSON.stringify({
@@ -1039,12 +1039,12 @@ async function confirmRetiredHurt() {
         dismissedPlayerId: Number(ballForm.strikerId),
 
         newBatterId: Number(retiredHurtBatterId),
-
+        
         note: "Retired Hurt",
         dismissal: "Retired Hurt"
       })
     });
-
+*/
     setBallForm((prev) => ({
       ...prev,
       strikerId: String(selectedBatter.id),

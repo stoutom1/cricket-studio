@@ -15,7 +15,9 @@ export async function POST(request, { params }) {
       { status: 404 }
     );
   }
-await prisma.ball.update({
+
+
+  await prisma.ball.update({
   where: {
     id: lastBall.id
   },
@@ -24,6 +26,8 @@ await prisma.ball.update({
     nonStrikerId: lastBall.strikerId
   }
 });
+console.log(strikerId);
+console.log(nonStrikerId);
   await prisma.matchState.update({
     where: { matchId },
     data: {
