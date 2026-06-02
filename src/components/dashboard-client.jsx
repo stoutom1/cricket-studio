@@ -1841,7 +1841,6 @@ return (
     style={{
       marginBottom: 16,
       padding: 12,
-      background: "#eff6ff",
       borderRadius: 8
     }}
   >
