@@ -2109,12 +2109,6 @@ return (
           type="button"
           className="btn btn-outline"
             key={league.id}
-            style={{
-              background:
-                activeLeagueId === league.id
-                  ? "#dbeafe"
-                  : "#f8fafc",
-            }}
 
             onClick={() => selectLeague(league)}
        >
