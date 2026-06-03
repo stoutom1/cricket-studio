@@ -141,6 +141,7 @@ const [permissions, setPermissions] = useState({
   canScoreMatch: false,
   canUndoBall: false
 });
+const [selectedMember, setSelectedMember] = useState(null);
   const [matchDetail, setMatchDetail] = useState(null);
   const [scoreboard, setScoreboard] = useState(null);
   const [stats, setStats] = useState({ batting: [], bowling: [] });
@@ -155,6 +156,9 @@ const [permissions, setPermissions] = useState({
   const [teamForm, setTeamForm] = useState({leagueId: "", name: ""});
   const [playerForm, setPlayerForm] = useState({teamId: "", names: ""});
 const [preferencesLoaded, setPreferencesLoaded] = useState(false);
+
+
+
 const [me, setMe] = useState(null);
 
 useEffect(() => {
@@ -294,7 +298,68 @@ const [ballForm, setBallForm] = useState({
   newBatterId: "",
   note: ""
 });
-  async function api(url, options = {}) {
+
+function openPermissionEditor(member) {
+  setSelectedMember(member);
+
+  setPermissions({
+    canViewManagement:
+      member.canViewManagement ?? false,
+
+    canCreateMatch:
+      member.canCreateMatch ?? false,
+
+    canDeleteMatch:
+      member.canDeleteMatch ?? false,
+
+    canScoreMatch:
+      member.canScoreMatch ?? false,
+
+    canUndoBall:
+      member.canUndoBall ?? false
+  });
+}
+
+function updatePermission(
+  permission,
+  value
+) {
+  setPermissions((prev) => ({
+    ...prev,
+    [permission]: value
+  }));
+}
+
+async function savePermissions() {
+  if (!selectedMember) return;
+
+  const response = await fetch(
+    `/api/leagues/${activeLeague.id}/permissions`,
+    {
+      method: "POST",
+      headers: {
+        "Content-Type":
+          "application/json"
+      },
+      body: JSON.stringify({
+        email:
+          selectedMember.user.email,
+        ...permissions
+      })
+    }
+  );
+
+  if (!response.ok) {
+    alert(
+      "Failed to save permissions"
+    );
+    return;
+  }
+
+  alert("Permissions updated");
+}
+
+async function api(url, options = {}) {
     const res = await fetch(url, {
       ...options,
       headers: {
@@ -2434,126 +2499,159 @@ Rohit Sharma`}
 
   </div>
 )}
-  {activeTab === "permissions" && (
+{activeTab === "permissions" && (
   <div className="page-grid">
     <div className="grid-main">
+
+      {/* MEMBER LIST */}
       <Card title="👥 League Permissions">
-  {leagues.members?.map((member) => (
-    <div
-      key={member.id}
-      className="member-row"
-    >
-      <div>
-        <strong>{member.user.name}</strong>
-        <div>{member.user.email}</div>
-      </div>
+        {activeLeague?.members?.map((member) => (
+          <div
+            key={member.id}
+            className="member-row"
+          >
+            <div>
+              <strong>
+                {member.user?.name || "Unknown User"}
+              </strong>
 
-      <select
-        value={member.role}
-        onChange={(e) =>
-          updateRole(
-            league.id,
-            member.userId,
-            e.target.value
-          )
-        }
-      >
-        <option value="OWNER">Owner</option>
-        <option value="ADMIN">Admin</option>
-        <option value="CAPTAIN">Captain</option>
-        <option value="SCORER">Scorer</option>
-        <option value="ANALYST">Analyst</option>
-        <option value="VIEWER">Viewer</option>
-      </select>
+              <div>
+                {member.user?.email}
+              </div>
+            </div>
 
-      <button
-        className="btn"
-        onClick={() =>
-          openPermissionEditor(member)
-        }
-      >
-        Permissions
-      </button>
-    </div>
-  ))}
-</Card>
-  {permissions && (    
- <Card title="🔐 Permissions">
+            <select
+              value={member.role}
+              onChange={(e) =>
+                updateRole(
+                  activeLeague.id,
+                  member.userId,
+                  e.target.value
+                )
+              }
+            >
+              <option value="OWNER">Owner</option>
+              <option value="ADMIN">Admin</option>
+              <option value="CAPTAIN">Captain</option>
+              <option value="SCORER">Scorer</option>
+              <option value="ANALYST">Analyst</option>
+              <option value="VIEWER">Viewer</option>
+            </select>
 
-<label>
-  <input
-    type="checkbox"
-    checked={permissions?.canViewManagement ?? false}
-    onChange={(e)=>
-      updatePermission(
-        "canViewManagement",
-        e.target.checked
-      )
-    }
-  />
-  View Management
-</label>
+            <button
+              className="btn"
+              onClick={() =>
+                openPermissionEditor(member)
+              }
+            >
+              Permissions
+            </button>
+          </div>
+        ))}
+      </Card>
 
-<label>
-  <input
-    type="checkbox"
-    checked={permissions?.canCreateMatch ?? false}
-    onChange={(e) =>
-      updatePermission(
-        "canCreateMatch",
-        e.target.checked
-      )
-    }
-  />
-  Create Match
-</label>
+      {/* MEMBER PERMISSIONS */}
+      {selectedMember && permissions && (
+        <Card
+          title={`🔐 Permissions - ${
+            selectedMember.user?.name ||
+            selectedMember.user?.email
+          }`}
+        >
+          <label>
+            <input
+              type="checkbox"
+              checked={
+                permissions.canViewManagement ??
+                false
+              }
+              onChange={(e) =>
+                updatePermission(
+                  "canViewManagement",
+                  e.target.checked
+                )
+              }
+            />
+            View Management
+          </label>
 
-<label>
-  <input
-    type="checkbox"
-    checked={permissions?.canDeleteMatch ?? false}
-    onChange={(e) =>
-      updatePermission(
-        "canDeleteMatch",
-        e.target.checked
-      )
-    }
-  />
-  Delete Match
-</label>
+          <label>
+            <input
+              type="checkbox"
+              checked={
+                permissions.canCreateMatch ??
+                false
+              }
+              onChange={(e) =>
+                updatePermission(
+                  "canCreateMatch",
+                  e.target.checked
+                )
+              }
+            />
+            Create Match
+          </label>
 
-<label>
-  <input
-    type="checkbox"
-    checked={permissions?.canScoreMatch ?? false}
-    onChange={(e) =>
-      updatePermission(
-        "canScoreMatch",
-        e.target.checked
-      )
-    }
-  />
-  Score Match
-</label>
+          <label>
+            <input
+              type="checkbox"
+              checked={
+                permissions.canDeleteMatch ??
+                false
+              }
+              onChange={(e) =>
+                updatePermission(
+                  "canDeleteMatch",
+                  e.target.checked
+                )
+              }
+            />
+            Delete Match
+          </label>
 
-<label>
-  <input
-    type="checkbox"
-    checked={permissions?.canUndoBall ?? false}
-    onChange={(e) =>
-      updatePermission(
-        "canUndoBall",
-        e.target.checked
-      )
-    }
-  />
-  Undo Ball
-</label>
+          <label>
+            <input
+              type="checkbox"
+              checked={
+                permissions.canScoreMatch ??
+                false
+              }
+              onChange={(e) =>
+                updatePermission(
+                  "canScoreMatch",
+                  e.target.checked
+                )
+              }
+            />
+            Score Match
+          </label>
 
-</Card>
-     
-  )}      
-  {me?.isSuperAdmin && (
+          <label>
+            <input
+              type="checkbox"
+              checked={
+                permissions.canUndoBall ??
+                false
+              }
+              onChange={(e) =>
+                updatePermission(
+                  "canUndoBall",
+                  e.target.checked
+                )
+              }
+            />
+            Undo Ball
+          </label>
+
+          <button
+            className="btn btn-primary"
+            onClick={savePermissions}
+          >
+            Save Permissions
+          </button>
+        </Card>
+      )}
+       {me?.isSuperAdmin && (
   <Card title="Admin Tools">
     <button>
       View All Leagues
@@ -2564,7 +2662,7 @@ Rohit Sharma`}
     </button>
   </Card>
 )}
-      </div>
+    </div>
   </div>
 )}
 {showWicketModal && (
