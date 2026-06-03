@@ -1230,56 +1230,66 @@ const activeLeague =
 
 return (
   <>
-<div className="tabs">
-    {
-    permissions?.canViewManagement &&
-  (  
+<div className="dashboard-tabs">
+  {permissions?.canViewManagement && (
     <button
-    className={`tab-btn ${activeTab === "management" ? "active" : ""}`}
-    onClick={() => setActiveTab("management")}
-  >
-    ⚙️ <span>Leagues</span>
-  </button>
+      className={`dashboard-tab ${
+        activeTab === "management" ? "active" : ""
+      }`}
+      onClick={() => setActiveTab("management")}
+    >
+      <span className="tab-icon">⚙️</span>
+      <span className="tab-text">Leagues</span>
+    </button>
   )}
-  {
-permissions?.canViewMatches && (
-  <button
-    className={`tab-btn ${activeTab === "matches" ? "active" : ""}`}
-    onClick={() => setActiveTab("matches")}
-  >
-    📋 <span>Matches</span>
-  </button>
-)}
-{
-permissions?.canViewScoring && (  
-  <button
-    className={`tab-btn ${activeTab === "scoring" ? "active" : ""}`}
-    onClick={() => setActiveTab("scoring")}
-  >
-    🏏 <span>Live Scoring</span>
-  </button>
-)}
-{
-permissions?.canViewStats && (
-  <button
-    onClick={() =>
-      setActiveTab(
-        "stats"
-      )
-    }
-  >
-    Stats
-  </button>
-)}
-{
-permissions?.canViewManagement && (  
-  <button
-    className={`tab-btn ${activeTab === "members" ? "active" : ""}`}
-    onClick={() => setActiveTab("permissions")}
-  >
-    🏏 <span>Permissions</span>
-  </button>
-)}  
+
+  {permissions?.canViewMatches && (
+    <button
+      className={`dashboard-tab ${
+        activeTab === "matches" ? "active" : ""
+      }`}
+      onClick={() => setActiveTab("matches")}
+    >
+      <span className="tab-icon">📋</span>
+      <span className="tab-text">Matches</span>
+    </button>
+  )}
+
+  {permissions?.canViewScoring && (
+    <button
+      className={`dashboard-tab ${
+        activeTab === "scoring" ? "active" : ""
+      }`}
+      onClick={() => setActiveTab("scoring")}
+    >
+      <span className="tab-icon">🏏</span>
+      <span className="tab-text">Scoring</span>
+    </button>
+  )}
+
+  {permissions?.canViewStats && (
+    <button
+      className={`dashboard-tab ${
+        activeTab === "stats" ? "active" : ""
+      }`}
+      onClick={() => setActiveTab("stats")}
+    >
+      <span className="tab-icon">📊</span>
+      <span className="tab-text">Stats</span>
+    </button>
+  )}
+
+  {permissions?.canViewManagement && (
+    <button
+      className={`dashboard-tab ${
+        activeTab === "permissions" ? "active" : ""
+      }`}
+      onClick={() => setActiveTab("permissions")}
+    >
+      <span className="tab-icon">🔐</span>
+      <span className="tab-text">Permissions</span>
+    </button>
+  )}
 </div>
   {activeTab === "scoring" && (
   <div className="page-grid">
@@ -2353,13 +2363,13 @@ return(
         >
           {expandedLeagueId === league.id
             ? "Hide Teams"
-            : `Add/Delete Teams (${league.teams?.length || 0})`}
+            : `Teams (${league.teams?.length || 0})`}
         </button>
         <button
   className="btn btn-outline"
   onClick={() => generateInviteLink(league.id)}
 >
-  🔗 Registration Link
+  🔗 Invite Link
 </button>
  {(!isProtectedLeague ||
   canDeleteProtectedLeague) && (
