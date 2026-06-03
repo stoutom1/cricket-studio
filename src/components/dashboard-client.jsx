@@ -1325,7 +1325,7 @@ return (
                 </div>
                 <span className="pill">{scoreboard.match.status}</span>
               </div>
-
+<div className="table-scroll">
               <table className="score-table">
                 <thead>
                   <tr>
@@ -1352,7 +1352,7 @@ return (
                   ))}
                 </tbody>
               </table>
-
+</div>
               {scoreboard.currentState ? (
                 <div className="result-box">
                   <p><strong>🎯 Current innings:</strong> {scoreboard.currentInnings}</p>
@@ -1371,6 +1371,7 @@ return (
   {!activeInnings?.partnerships?.length ? (
     <p className="muted">No partnerships yet</p>
   ) : (
+    <div className="table-scroll">
     <table className="score-table">
       <thead>
         <tr>
@@ -1396,6 +1397,7 @@ return (
         ))}
       </tbody>
     </table>
+    </div>
   )}
 </CollapsibleSection>
 
@@ -1406,6 +1408,7 @@ return (
   {!activeInnings?.fallOfWickets?.length ? (
     <p className="muted">No wickets yet</p>
   ) : (
+    <div className="table-scroll">
     <table className="score-table">
       <thead>
         <tr>
@@ -1427,6 +1430,7 @@ return (
         ))}
       </tbody>
     </table>
+    </div>
   )}
 </CollapsibleSection>
 
@@ -1811,7 +1815,7 @@ return (
                   {Object.entries(battingByTeam || {}).map(([teamName, players]) => (
                     <div key={teamName} style={{ marginBottom: 24 }}>
                       <h5>{teamName}</h5>
-
+<div className="table-scroll">
                       <table className="score-table">
                         <thead>
                           <tr>
@@ -1839,6 +1843,7 @@ return (
                           ))}
                         </tbody>
                       </table>
+                      </div>
                     </div>
                   ))}
                 </div>
@@ -1847,7 +1852,7 @@ return (
                         {Object.entries(bowlingByTeam || {}).map(([teamName, players]) => (
                           <div key={teamName} style={{ marginBottom: 24 }}>
                             <h5>{teamName}</h5>
-
+<div className="table-scroll">
                             <table className="score-table">
                               <thead>
                                 <tr>
@@ -1873,6 +1878,7 @@ return (
                                 ))}
                               </tbody>
                             </table>
+                            </div>
                           </div>
                         ))}
                       </div>
@@ -2547,51 +2553,62 @@ Rohit Sharma`}
     <div className="grid-main">
 
       {/* MEMBER LIST */}
-      <Card title="👥 League Permissions">
-        {activeLeague?.members?.map((member) => (
-          <div
-            key={member.id}
-            className="member-row"
-          >
-            <div>
-              <strong>
-                {member.user?.name || "Unknown User"}
-              </strong>
+<Card title="👥 League Permissions">
+  <div className="members-list">
+    {activeLeague?.members?.map((member) => (
+      <div
+        key={member.id}
+        className="member-card"
+      >
+        <div className="member-info">
+          <div className="member-avatar">
+            👤
+          </div>
 
-              <div>
-                {member.user?.email}
-              </div>
+          <div className="member-details">
+            <div className="member-name">
+              {member.user?.name || "Unknown User"}
             </div>
 
-<select
-  value={member.role}
-  onChange={(e) =>
-    updateRole(
-      activeLeague.id,
-      member.id,
-      e.target.value
-    )
-  }
->
-  <option value="OWNER">Owner</option>
-  <option value="ADMIN">Admin</option>
-  <option value="CAPTAIN">Captain</option>
-  <option value="SCORER">Scorer</option>
-  <option value="ANALYST">Analyst</option>
-  <option value="VIEWER">Viewer</option>
-</select>
-<div>
-            <button className="btn btn-outline" 
-              onClick={() =>
-                openPermissionEditor(member)
-              }
-            >
-              Permissions
-            </button>
-</div>            
+            <div className="member-email">
+              {member.user?.email}
+            </div>
           </div>
-        ))}
-      </Card>
+        </div>
+
+        <div className="member-actions">
+          <select
+            className="member-role-select"
+            value={member.role}
+            onChange={(e) =>
+              updateRole(
+                activeLeague.id,
+                member.id,
+                e.target.value
+              )
+            }
+          >
+            <option value="OWNER">Owner</option>
+            <option value="ADMIN">Admin</option>
+            <option value="CAPTAIN">Captain</option>
+            <option value="SCORER">Scorer</option>
+            <option value="ANALYST">Analyst</option>
+            <option value="VIEWER">Viewer</option>
+          </select>
+
+          <button
+            className="btn btn-outline"
+            onClick={() =>
+              openPermissionEditor(member)
+            }
+          >
+            🔐 Permissions
+          </button>
+        </div>
+      </div>
+    ))}
+  </div>
+</Card>
 
  {/* MEMBER PERMISSIONS */}
 {selectedMember && permissions && (
