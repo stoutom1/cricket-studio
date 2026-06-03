@@ -1559,7 +1559,6 @@ return (
   )}
 </div>
 
-</div>
 <div className="quick-actions">
   <button type="button" className={`chip ${activeQuickAction === "0" ? "chip-active" : ""}`} onClick={() => triggerQuickAction("0", () => quickNormalBall(0))}>0</button>
   <button type="button" className={`chip ${activeQuickAction === "1" ? "chip-active" : ""}`} onClick={() => triggerQuickAction("1", () => quickNormalBall(1))}>1</button>
@@ -1604,7 +1603,7 @@ return (
 </div>
 
 <div className="scoring-action-bar">
-
+</div>
 </div>
 
               <form id="add-ball-form" className="form grid-2" onSubmit={handleAddBall}>
@@ -1620,15 +1619,22 @@ return (
                     <option value="2">Innings 2</option>
                   </select>
                 </label>
+              <label>
+                  <span>Bowler</span>
+                  <select
+                    value={ballForm.bowlerId || ""}
+                    onChange={(e) =>
+                      setBallForm((prev) => ({ ...prev, bowlerId: e.target.value }))
+                    }
+                    required
+                  >
+                    <option value="">Select bowler</option>
+                    {(bowlingTeam?.players || []).map((p) => (
+                      <option key={p.id} value={p.id}>{p.name}</option>
+                    ))}
+                  </select>
+                </label>
 
-<div
-  style={{
-    display: "grid",
-    gridTemplateColumns: "1fr auto 1fr",
-    gap: 12,
-    alignItems: "end"
-  }}
->
   {/* Striker */}
   <label>
     <span>Striker</span>
@@ -1677,24 +1683,6 @@ return (
       ))}
     </select>
   </label>
-</div>
-
-                <label>
-                  <span>Bowler</span>
-                  <select
-                    value={ballForm.bowlerId || ""}
-                    onChange={(e) =>
-                      setBallForm((prev) => ({ ...prev, bowlerId: e.target.value }))
-                    }
-                    required
-                  >
-                    <option value="">Select bowler</option>
-                    {(bowlingTeam?.players || []).map((p) => (
-                      <option key={p.id} value={p.id}>{p.name}</option>
-                    ))}
-                  </select>
-                </label>
-
                 <label>
                   <span>Extra Type</span>
                   <select
