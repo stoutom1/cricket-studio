@@ -1619,22 +1619,6 @@ return (
                     <option value="2">Innings 2</option>
                   </select>
                 </label>
-              <label>
-                  <span>Bowler</span>
-                  <select
-                    value={ballForm.bowlerId || ""}
-                    onChange={(e) =>
-                      setBallForm((prev) => ({ ...prev, bowlerId: e.target.value }))
-                    }
-                    required
-                  >
-                    <option value="">Select bowler</option>
-                    {(bowlingTeam?.players || []).map((p) => (
-                      <option key={p.id} value={p.id}>{p.name}</option>
-                    ))}
-                  </select>
-                </label>
-
   {/* Striker */}
   <label>
     <span>Striker</span>
@@ -1658,8 +1642,23 @@ return (
         </option>
       ))}
     </select>
+     {/* Bowler */}
   </label>
-
+                <label>
+                  <span>Bowler</span>
+                  <select
+                    value={ballForm.bowlerId || ""}
+                    onChange={(e) =>
+                      setBallForm((prev) => ({ ...prev, bowlerId: e.target.value }))
+                    }
+                    required
+                  >
+                    <option value="">Select bowler</option>
+                    {(bowlingTeam?.players || []).map((p) => (
+                      <option key={p.id} value={p.id}>{p.name}</option>
+                    ))}
+                  </select>
+                </label>
   {/* Non Striker */}
   <label>
     <span>Non-striker</span>

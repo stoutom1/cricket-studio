@@ -20,16 +20,13 @@ export default function AuthNav() {
     <Link href="/help">Help</Link>
   </div>
 
-  <div className="nav-user">
+  <div className="nav-auth">
     {status === "loading" ? (
-      <span className="loading-text">
-        Loading...
-      </span>
+      <span className="loading-text">Loading...</span>
     ) : session ? (
       <>
         <div className="user-info">
           <span className="user-avatar">👤</span>
-
           <span className="user-email">
             {session.user?.email}
           </span>
