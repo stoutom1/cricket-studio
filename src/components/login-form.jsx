@@ -2,42 +2,49 @@
 
 import Link from "next/link";
 import { useState } from "react";
+import { useRouter } from "next/navigation";
 import { signIn } from "next-auth/react";
-import { useRouter, useSearchParams } from "next/navigation";
 
-export default function LoginForm() {
+export default function LoginForm({
+  callbackUrl = "/dashboard"
+}) {
   const router = useRouter();
-  const searchParams = useSearchParams();
-
-  const callbackUrl =
-    searchParams.get("callbackUrl") ||
-    "/dashboard";
 
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
   const [error, setError] = useState("");
+  const [loading, setLoading] = useState(false);
 
   async function handleSubmit(e) {
     e.preventDefault();
 
     setError("");
-    console.log(callbackUrl);
-    console.log(email, password);
-    const result = await signIn(
-      "credentials",
-      {
-        email,
-        password,
-        redirect: false
+    setLoading(true);
+
+    try {
+      const result = await signIn(
+        "credentials",
+        {
+          email,
+          password,
+          redirect: false,
+          callbackUrl
+        }
+      );
+
+      if (!result?.ok) {
+        setError("Invalid email or password");
+        return;
       }
-    );
 
-    if (!result?.ok) {
-      setError("Invalid email or password");
-      return;
+      router.push(callbackUrl);
+      router.refresh();
+    } catch (err) {
+      console.error(err);
+      setError("Unable to sign in");
+    } finally {
+      setLoading(false);
     }
-
-    router.push(callbackUrl);
   }
 
   return (
@@ -55,6 +62,7 @@ export default function LoginForm() {
             setEmail(e.target.value)
           }
           required
+          autoComplete="email"
         />
       </label>
 
@@ -68,6 +76,7 @@ export default function LoginForm() {
             setPassword(e.target.value)
           }
           required
+          autoComplete="current-password"
         />
       </label>
 
@@ -80,11 +89,19 @@ export default function LoginForm() {
       <button
         type="submit"
         className="btn"
+        disabled={loading}
       >
-        Sign In
+        {loading
+          ? "Signing In..."
+          : "Sign In"}
       </button>
 
-      <div style={{ marginTop: 12 }}>
+      <div
+        style={{
+          marginTop: 12,
+          textAlign: "center"
+        }}
+      >
         New user?{" "}
         <Link href="/register">
           Create Account
