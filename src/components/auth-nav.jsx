@@ -16,6 +16,7 @@ export default function AuthNav() {
           <Link href="/">Dashboard</Link>
           <Link href="/about">About Us</Link>
           <Link href="/contact">Contact Us</Link>
+          <Link href="/help">Help</Link>
           <button
             className="btn btn-outline"
             onClick={() => signOut({ callbackUrl: "/login" })}
@@ -26,7 +27,8 @@ export default function AuthNav() {
       ) : (
         <Link href="/login" className="btn btn-outline"> Sign in </Link>,
         <Link href="/about">About Us</Link>,
-        <Link href="/contact">Contact Us</Link>
+        <Link href="/contact">Contact Us</Link>,
+        <Link href="/help">Help</Link>
       )}
     </div>
   );

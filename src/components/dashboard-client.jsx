@@ -157,8 +157,6 @@ const [selectedMember, setSelectedMember] = useState(null);
   const [playerForm, setPlayerForm] = useState({teamId: "", names: ""});
 const [preferencesLoaded, setPreferencesLoaded] = useState(false);
 
-
-
 const [me, setMe] = useState(null);
 
 useEffect(() => {
@@ -336,22 +334,23 @@ async function savePermissions() {
   const response = await fetch(
     `/api/leagues/${activeLeague.id}/permissions`,
     {
-      method: "POST",
+      method: "PATCH",
       headers: {
-        "Content-Type":
-          "application/json"
+        "Content-Type": "application/json"
       },
-      body: JSON.stringify({
-        email:
-          selectedMember.user.email,
-        ...permissions
-      })
+ body: JSON.stringify({
+  memberId: selectedMember.id,
+  email: selectedMember.user.email,
+  ...permissions
+})
     }
   );
 
   if (!response.ok) {
+    const error = await response.json();
+
     alert(
-      "Failed to save permissions"
+      error.error || "Failed to save permissions"
     );
     return;
   }
@@ -423,6 +422,46 @@ async function api(url, options = {}) {
 async function loadLeagues() {
   const data = await api("/api/leagues");
   setLeagues(data);
+}
+
+async function updateRole(
+  leagueId,
+  memberId,
+  role
+) {
+  const response = await fetch(
+    `/api/leagues/${leagueId}/permissions`,
+    {
+      method: "PATCH",
+      headers: {
+        "Content-Type":
+          "application/json"
+      },
+      body: JSON.stringify({
+        memberId,
+        role
+      })
+    }
+  );
+
+  if (!response.ok) {
+    alert("Failed to update role");
+    return;
+  }
+
+  setLeagues((prev) =>
+    prev.map((league) => ({
+      ...league,
+      members: league.members?.map((member) =>
+        member.id === memberId
+          ? {
+              ...member,
+              role
+            }
+          : member
+      )
+    }))
+  );
 }
   async function loadTeams() {
     const data = await api("/api/teams");
@@ -1182,6 +1221,13 @@ function triggerQuickAction(actionKey, callback) {
   const activeInnings =
     scoreboard?.innings?.find((x) => x.number === scoreboard.currentInnings) ||
     scoreboard?.innings?.[0];
+
+const activeLeague =
+  leagues.find(
+    (league) =>
+      league.id === me?.activeLeagueId
+  );
+
 return (
   <>
 <div className="tabs">
@@ -1226,12 +1272,12 @@ permissions?.canViewStats && (
   </button>
 )}
 {
-permissions?.canViewScoring && (  
+permissions?.canViewManagement && (  
   <button
     className={`tab-btn ${activeTab === "members" ? "active" : ""}`}
-    onClick={() => setActiveTab("members")}
+    onClick={() => setActiveTab("permissions")}
   >
-    🏏 <span>Member Management</span>
+    🏏 <span>Permissions</span>
   </button>
 )}  
 </div>
@@ -2520,24 +2566,24 @@ Rohit Sharma`}
               </div>
             </div>
 
-            <select
-              value={member.role}
-              onChange={(e) =>
-                updateRole(
-                  activeLeague.id,
-                  member.userId,
-                  e.target.value
-                )
-              }
-            >
-              <option value="OWNER">Owner</option>
-              <option value="ADMIN">Admin</option>
-              <option value="CAPTAIN">Captain</option>
-              <option value="SCORER">Scorer</option>
-              <option value="ANALYST">Analyst</option>
-              <option value="VIEWER">Viewer</option>
-            </select>
-
+<select
+  value={member.role}
+  onChange={(e) =>
+    updateRole(
+      activeLeague.id,
+      member.id,
+      e.target.value
+    )
+  }
+>
+  <option value="OWNER">Owner</option>
+  <option value="ADMIN">Admin</option>
+  <option value="CAPTAIN">Captain</option>
+  <option value="SCORER">Scorer</option>
+  <option value="ANALYST">Analyst</option>
+  <option value="VIEWER">Viewer</option>
+</select>
+<div className="btn">
             <button
               className="btn"
               onClick={() =>
@@ -2546,6 +2592,7 @@ Rohit Sharma`}
             >
               Permissions
             </button>
+</div>            
           </div>
         ))}
       </Card>
@@ -2574,7 +2621,6 @@ Rohit Sharma`}
             />
             View Management
           </label>
-
           <label>
             <input
               type="checkbox"
@@ -2591,7 +2637,6 @@ Rohit Sharma`}
             />
             Create Match
           </label>
-
           <label>
             <input
               type="checkbox"
@@ -2608,7 +2653,6 @@ Rohit Sharma`}
             />
             Delete Match
           </label>
-
           <label>
             <input
               type="checkbox"
@@ -2625,7 +2669,6 @@ Rohit Sharma`}
             />
             Score Match
           </label>
-
           <label>
             <input
               type="checkbox"
@@ -2643,12 +2686,14 @@ Rohit Sharma`}
             Undo Ball
           </label>
 
+          <div>      
           <button
-            className="btn btn-primary"
+            className="btn"
             onClick={savePermissions}
           >
             Save Permissions
           </button>
+          </div>
         </Card>
       )}
        {me?.isSuperAdmin && (

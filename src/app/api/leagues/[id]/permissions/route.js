@@ -4,154 +4,6 @@ import { getServerSession } from "next-auth";
 import prisma from "@/lib/prisma";
 import { authOptions } from "@/lib/auth";
 
-function getRoleTemplate(role) {
-  switch (role) {
-    case "OWNER":
-      return {
-        role: "OWNER",
-
-        canViewDashboard: true,
-        canViewManagement: true,
-        canViewMatches: true,
-        canViewScoring: true,
-        canViewStats: true,
-
-        canCreateLeague: true,
-        canCreateTeam: true,
-        canCreateMatch: true,
-
-        canDeleteLeague: true,
-        canDeleteTeam: true,
-        canDeletePlayer: true,
-        canDeleteMatch: true,
-
-        canScoreMatch: true,
-        canEditScore: true,
-        canUndoBall: true
-      };
-
-    case "ADMIN":
-      return {
-        role: "ADMIN",
-
-        canViewDashboard: true,
-        canViewManagement: true,
-        canViewMatches: true,
-        canViewScoring: true,
-        canViewStats: true,
-
-        canCreateLeague: true,
-        canCreateTeam: true,
-        canCreateMatch: true,
-
-        canDeleteLeague: true,
-        canDeleteTeam: true,
-        canDeletePlayer: true,
-        canDeleteMatch: true,
-
-        canScoreMatch: true,
-        canEditScore: true,
-        canUndoBall: true
-      };
-
-    case "CAPTAIN":
-      return {
-        role: "CAPTAIN",
-
-        canViewDashboard: true,
-        canViewManagement: false,
-        canViewMatches: true,
-        canViewScoring: false,
-        canViewStats: true,
-
-        canCreateLeague: false,
-        canCreateTeam: true,
-        canCreateMatch: true,
-
-        canDeleteLeague: false,
-        canDeleteTeam: false,
-        canDeletePlayer: false,
-        canDeleteMatch: false,
-
-        canScoreMatch: false,
-        canEditScore: false,
-        canUndoBall: false
-      };
-
-    case "SCORER":
-      return {
-        role: "SCORER",
-
-        canViewDashboard: true,
-        canViewManagement: false,
-        canViewMatches: true,
-        canViewScoring: true,
-        canViewStats: true,
-
-        canCreateLeague: false,
-        canCreateTeam: false,
-        canCreateMatch: false,
-
-        canDeleteLeague: false,
-        canDeleteTeam: false,
-        canDeletePlayer: false,
-        canDeleteMatch: false,
-
-        canScoreMatch: true,
-        canEditScore: true,
-        canUndoBall: true
-      };
-
-    case "ANALYST":
-      return {
-        role: "ANALYST",
-
-        canViewDashboard: true,
-        canViewManagement: false,
-        canViewMatches: true,
-        canViewScoring: false,
-        canViewStats: true,
-
-        canCreateLeague: false,
-        canCreateTeam: false,
-        canCreateMatch: false,
-
-        canDeleteLeague: false,
-        canDeleteTeam: false,
-        canDeletePlayer: false,
-        canDeleteMatch: false,
-
-        canScoreMatch: false,
-        canEditScore: false,
-        canUndoBall: false
-      };
-
-    default:
-      return {
-        role: "VIEWER",
-
-        canViewDashboard: true,
-        canViewManagement: false,
-        canViewMatches: true,
-        canViewScoring: false,
-        canViewStats: true,
-
-        canCreateLeague: false,
-        canCreateTeam: false,
-        canCreateMatch: false,
-
-        canDeleteLeague: false,
-        canDeleteTeam: false,
-        canDeletePlayer: false,
-        canDeleteMatch: false,
-
-        canScoreMatch: false,
-        canEditScore: false,
-        canUndoBall: false
-      };
-  }
-}
-
 export async function GET(request, { params }) {
   const session = await getServerSession(authOptions);
 
@@ -162,7 +14,8 @@ export async function GET(request, { params }) {
     );
   }
 
-  const leagueId = Number(params.id);
+  const { id } = await params;
+  const leagueId = Number(id);
 
   const members = await prisma.leagueMember.findMany({
     where: {
@@ -185,118 +38,211 @@ export async function GET(request, { params }) {
   return NextResponse.json(members);
 }
 
-export async function PUT(request, { params }) {
-  const session = await getServerSession(authOptions);
+export async function PATCH(request, { params }) {
+  try {
+    const session =
+      await getServerSession(authOptions);
 
-  if (!session?.user?.email) {
-    return NextResponse.json(
-      { error: "Unauthorized" },
-      { status: 401 }
-    );
-  }
-
-  const leagueId = Number(params.id);
-
-  const currentUser = await prisma.user.findUnique({
-    where: {
-      email: session.user.email
+    if (!session?.user?.email) {
+      return NextResponse.json(
+        { error: "Unauthorized" },
+        { status: 401 }
+      );
     }
-  });
 
-  if (!currentUser) {
-    return NextResponse.json(
-      { error: "User not found" },
-      { status: 404 }
-    );
-  }
+    const { id } = await params;
+    const leagueId = Number(id);
 
-  const league = await prisma.league.findUnique({
-    where: {
-      id: leagueId
+    const currentUser =
+      await prisma.user.findUnique({
+        where: {
+          email: session.user.email
+        }
+      });
+
+    if (!currentUser) {
+      return NextResponse.json(
+        { error: "User not found" },
+        { status: 404 }
+      );
     }
-  });
 
-  if (!league) {
-    return NextResponse.json(
-      { error: "League not found" },
-      { status: 404 }
-    );
-  }
-
-  const currentMembership =
-    await prisma.leagueMember.findUnique({
-      where: {
-        userId_leagueId: {
-          userId: currentUser.id,
-          leagueId
+    const league =
+      await prisma.league.findUnique({
+        where: {
+          id: leagueId
         }
-      }
-    });
+      });
 
-  const isOwner =
-    league.ownerId === currentUser.id;
+    if (!league) {
+      return NextResponse.json(
+        { error: "League not found" },
+        { status: 404 }
+      );
+    }
 
-  const canManage =
-    isOwner ||
-    currentMembership?.canManagePermissions;
-
-  if (!canManage) {
-    return NextResponse.json(
-      { error: "Forbidden" },
-      { status: 403 }
-    );
-  }
-
-  const body = await request.json();
-
-  const targetUserId = body.userId;
-  const role = body.role;
-
-  const targetMembership =
-    await prisma.leagueMember.findUnique({
-      where: {
-        userId_leagueId: {
-          userId: targetUserId,
-          leagueId
+    const currentMembership =
+      await prisma.leagueMember.findUnique({
+        where: {
+          userId_leagueId: {
+            userId: currentUser.id,
+            leagueId
+          }
         }
-      }
+      });
+
+    const canManage =
+      league.ownerId === currentUser.id ||
+      currentMembership?.canManagePermissions;
+
+    if (!canManage) {
+      return NextResponse.json(
+        { error: "Forbidden" },
+        { status: 403 }
+      );
+    }
+
+    const body = await request.json();
+
+    if (!body.memberId) {
+      return NextResponse.json(
+        {
+          error: "memberId is required"
+        },
+        {
+          status: 400
+        }
+      );
+    }
+
+    const member =
+      await prisma.leagueMember.findUnique({
+        where: {
+          id: Number(body.memberId)
+        }
+      });
+
+    if (!member) {
+      return NextResponse.json(
+        { error: "Member not found" },
+        { status: 404 }
+      );
+    }
+
+    if (
+      member.userId === league.ownerId
+    ) {
+      return NextResponse.json(
+        {
+          error:
+            "Cannot modify owner permissions"
+        },
+        {
+          status: 400
+        }
+      );
+    }
+
+    const updatedMember =
+      await prisma.leagueMember.update({
+        where: {
+          id: member.id
+        },
+
+        data: {
+          canViewDashboard:
+            body.canViewDashboard ?? false,
+
+          canViewManagement:
+            body.canViewManagement ?? false,
+
+          canViewMatches:
+            body.canViewMatches ?? false,
+
+          canViewScoring:
+            body.canViewScoring ?? false,
+
+          canViewStats:
+            body.canViewStats ?? false,
+
+          canCreateTeam:
+            body.canCreateTeam ?? false,
+
+          canCreatePlayer:
+            body.canCreatePlayer ?? false,
+
+          canCreateMatch:
+            body.canCreateMatch ?? false,
+
+          canDeleteTeam:
+            body.canDeleteTeam ?? false,
+
+          canDeletePlayer:
+            body.canDeletePlayer ?? false,
+
+          canDeleteMatch:
+            body.canDeleteMatch ?? false,
+
+          canScoreMatch:
+            body.canScoreMatch ?? false,
+
+          canEditScore:
+            body.canEditScore ?? false,
+
+          canUndoBall:
+            body.canUndoBall ?? false,
+
+          canManageMembers:
+            body.canManageMembers ?? false,
+
+          canManagePermissions:
+            body.canManagePermissions ??
+            false,
+
+          canEditLeague:
+            body.canEditLeague ?? false,
+
+          canEditTeam:
+            body.canEditTeam ?? false,
+
+          canEditPlayer:
+            body.canEditPlayer ?? false,
+
+          canEditMatch:
+            body.canEditMatch ?? false,
+
+          canSwapStrike:
+            body.canSwapStrike ?? false,
+
+          canRetirePlayer:
+            body.canRetirePlayer ?? false,
+
+          canExportStats:
+            body.canExportStats ?? false,
+
+          canViewAuditLogs:
+            body.canViewAuditLogs ?? false
+        }
+      });
+
+    return NextResponse.json({
+      success: true,
+      member: updatedMember
     });
-
-  if (!targetMembership) {
-    return NextResponse.json(
-      { error: "Member not found" },
-      { status: 404 }
+  } catch (error) {
+    console.error(
+      "Permission update error:",
+      error
     );
-  }
 
-  if (targetUserId === league.ownerId) {
     return NextResponse.json(
       {
         error:
-          "League owner permissions cannot be modified"
+          "Failed to update permissions"
       },
-      { status: 400 }
+      {
+        status: 500
+      }
     );
   }
-
-  const roleTemplate =
-    getRoleTemplate(role);
-
-  const updated =
-    await prisma.leagueMember.update({
-      where: {
-        userId_leagueId: {
-          userId: targetUserId,
-          leagueId
-        }
-      },
-
-      data: {
-        ...roleTemplate,
-
-        ...(body.customPermissions || {})
-      }
-    });
-
-  return NextResponse.json(updated);
 }

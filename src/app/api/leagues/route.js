@@ -29,11 +29,11 @@ export async function GET() {
     );
   }
 const superAdmin = isSuperAdmin(session);
-  const leagues =
-    await prisma.league.findMany({
-      where: superAdmin
-      ? {}
-      :{
+
+const leagues = await prisma.league.findMany({
+  where: superAdmin
+    ? {}
+    : {
         members: {
           some: {
             userId: user.id
@@ -41,20 +41,30 @@ const superAdmin = isSuperAdmin(session);
         }
       },
 
+  include: {
+    teams: {
       include: {
-        teams: {
-          include: {
-            players: true
-          }
-        },
-
-        members: true
-      },
-
-      orderBy: {
-        name: "asc"
+        players: true
       }
-    });
+    },
+
+    members: {
+      include: {
+        user: {
+          select: {
+            id: true,
+            name: true,
+            email: true
+          }
+        }
+      }
+    }
+  },
+
+  orderBy: {
+    name: "asc"
+  }
+});
 
   return NextResponse.json(
     leagues
