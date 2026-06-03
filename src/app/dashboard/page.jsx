@@ -17,14 +17,6 @@ export default async function DashboardPage() {
     <main className="dashboard-page">
       <section className="dashboard-hero">
         <h2>📊 Dashboard</h2>
-
-        <div className="dashboard-hero-sub">
-          Manage teams, add roster players,
-          create matches, score every
-          delivery, and view live
-          scoreboards plus player
-          statistics.
-        </div>
       </section>
 
       <section className="dashboard-content">
