@@ -1230,56 +1230,51 @@ const activeLeague =
 
 return (
   <>
-<div className="tabs">
-    {
-    permissions?.canViewManagement &&
-  (  
+<div className="dashboard-tabs">
+  {permissions?.canViewManagement && (
     <button
-    className={`tab-btn ${activeTab === "management" ? "active" : ""}`}
-    onClick={() => setActiveTab("management")}
-  >
-    ⚙️ <span>Leagues</span>
-  </button>
+      className={`tab-pill ${activeTab === "management" ? "active" : ""}`}
+      onClick={() => setActiveTab("management")}
+    >
+      ⚙️ Leagues
+    </button>
   )}
-  {
-permissions?.canViewMatches && (
-  <button
-    className={`tab-btn ${activeTab === "matches" ? "active" : ""}`}
-    onClick={() => setActiveTab("matches")}
-  >
-    📋 <span>Matches</span>
-  </button>
-)}
-{
-permissions?.canViewScoring && (  
-  <button
-    className={`tab-btn ${activeTab === "scoring" ? "active" : ""}`}
-    onClick={() => setActiveTab("scoring")}
-  >
-    🏏 <span>Live Scoring</span>
-  </button>
-)}
-{
-permissions?.canViewStats && (
-  <button
-    onClick={() =>
-      setActiveTab(
-        "stats"
-      )
-    }
-  >
-    Stats
-  </button>
-)}
-{
-permissions?.canViewManagement && (  
-  <button
-    className={`tab-btn ${activeTab === "members" ? "active" : ""}`}
-    onClick={() => setActiveTab("permissions")}
-  >
-    🏏 <span>Permissions</span>
-  </button>
-)}  
+
+  {permissions?.canViewMatches && (
+    <button
+      className={`tab-pill ${activeTab === "matches" ? "active" : ""}`}
+      onClick={() => setActiveTab("matches")}
+    >
+      📋 Matches
+    </button>
+  )}
+
+  {permissions?.canViewScoring && (
+    <button
+      className={`tab-pill ${activeTab === "scoring" ? "active" : ""}`}
+      onClick={() => setActiveTab("scoring")}
+    >
+      🏏 Live Scoring
+    </button>
+  )}
+
+  {permissions?.canViewStats && (
+    <button
+      className={`tab-pill ${activeTab === "stats" ? "active" : ""}`}
+      onClick={() => setActiveTab("stats")}
+    >
+      📊 Stats
+    </button>
+  )}
+
+  {permissions?.canViewManagement && (
+    <button
+      className={`tab-pill ${activeTab === "permissions" ? "active" : ""}`}
+      onClick={() => setActiveTab("permissions")}
+    >
+      🔐 Permissions
+    </button>
+  )}
 </div>
   {activeTab === "scoring" && (
   <div className="page-grid">
