@@ -77,7 +77,14 @@ if (!superAdmin) {
     );
   }
 }
-
+await prisma.user.updateMany({
+  where: {
+    activeLeagueId: leagueId
+  },
+  data: {
+    activeLeagueId: null
+  }
+});
     await prisma.leagueMember.deleteMany({
       where: {
         leagueId
@@ -95,7 +102,11 @@ if (!superAdmin) {
         leagueId
       }
     });
-
+await prisma.leagueInvite.deleteMany({
+  where: {
+    leagueId
+  }
+});
     await prisma.league.delete({
       where: {
         id: leagueId

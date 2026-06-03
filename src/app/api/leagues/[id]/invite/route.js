@@ -38,7 +38,7 @@ export async function POST(req, { params }) {
 const origin = new URL(req.url).origin;
   const inviteLink =
     //`${process.env.NEXT_PUBLIC_APP_URL}/register-league/${token}`;
-    `${origin}/register-league/${token}`;
+    `${origin}/invite/${token}`;
 
   return NextResponse.json({
     inviteLink

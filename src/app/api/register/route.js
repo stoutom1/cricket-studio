@@ -16,7 +16,7 @@ export async function POST(req) {
         { status: 400 }
       );
     }
-
+console.log("I am in register route before checking existing user");
     const existingUser =
       await prisma.user.findUnique({
         where: { email }
@@ -30,7 +30,7 @@ export async function POST(req) {
         { status: 400 }
       );
     }
-
+console.log("I am in register route");
     const hashedPassword =
       await bcrypt.hash(password, 10);
 

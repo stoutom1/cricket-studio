@@ -8,7 +8,7 @@ import { ROLES } from "@/lib/roles";
 export async function POST(request, { params }) {
   try {
     const session = await getServerSession(authOptions);
-
+console.log("I am in register league route");
     if (!session?.user?.email) {
       return NextResponse.json(
         {

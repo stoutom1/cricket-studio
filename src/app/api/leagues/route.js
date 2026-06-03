@@ -125,44 +125,44 @@ const league = await prisma.league.create({
   }
 });
 
-    await prisma.leagueMember.create({
-      data: {
-        userId: session.user.id,
-        leagueId: league.id,
-        role: "OWNER",
+await prisma.leagueMember.create({
+  data: {
+    userId: user.id,
+    leagueId: league.id,
+    role: "OWNER",
 
-        canViewDashboard: true,
-        canViewManagement: true,
-        canViewMatches: true,
-        canViewScoring: true,
-        canViewStats: true,
+    canViewDashboard: true,
+    canViewManagement: true,
+    canViewMatches: true,
+    canViewScoring: true,
+    canViewStats: true,
 
-        canCreateTeam: true,
-        canCreatePlayer: true,
+    canCreateTeam: true,
+    canCreatePlayer: true,
 
-        canEditLeague: true,
-        canEditTeam: true,
-        canEditPlayer: true,
-        canEditMatch: true,
+    canEditLeague: true,
+    canEditTeam: true,
+    canEditPlayer: true,
+    canEditMatch: true,
 
-        canDeleteTeam: true,
-        canDeletePlayer: true,
-        canDeleteMatch: true,
+    canDeleteTeam: true,
+    canDeletePlayer: true,
+    canDeleteMatch: true,
 
-        canManageMembers: true,
-        canManagePermissions: true,
+    canManageMembers: true,
+    canManagePermissions: true,
 
-        canScoreMatch: true,
-        canEditScore: true,
-        canUndoBall: true,
+    canScoreMatch: true,
+    canEditScore: true,
+    canUndoBall: true,
 
-        canSwapStrike: true,
-        canRetirePlayer: true,
+    canSwapStrike: true,
+    canRetirePlayer: true,
 
-        canExportStats: true,
-        canViewAuditLogs: true,
-      },
-    });
+    canExportStats: true,
+    canViewAuditLogs: true
+  }
+});
 
     await prisma.user.update({
   where: {
