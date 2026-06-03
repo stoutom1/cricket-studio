@@ -997,3 +997,97 @@ select:focus {
   display: flex;
   justify-content: flex-end;
 }
+.auth-nav {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+
+  gap: 16px;
+  padding: 12px 20px;
+
+  border-bottom: 1px solid #e5e7eb;
+  background: #fff;
+}
+
+.nav-brand a {
+  font-size: 1.1rem;
+  font-weight: 700;
+  text-decoration: none;
+}
+
+.nav-links {
+  display: flex;
+  gap: 20px;
+  flex-wrap: wrap;
+}
+
+.nav-links a {
+  text-decoration: none;
+}
+
+.nav-user {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+}
+
+.user-info {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+
+  min-width: 0;
+}
+
+.user-email {
+  max-width: 220px;
+
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.logout-btn,
+.login-btn {
+  white-space: nowrap;
+}
+@media (max-width: 768px) {
+  .auth-nav {
+    flex-direction: column;
+    align-items: stretch;
+    gap: 12px;
+  }
+
+  .nav-brand {
+    text-align: center;
+  }
+
+  .nav-links {
+    justify-content: center;
+    gap: 16px;
+  }
+
+  .nav-user {
+    flex-direction: column;
+    align-items: stretch;
+  }
+
+  .user-info {
+    justify-content: center;
+  }
+
+  .user-email {
+    max-width: 100%;
+    text-align: center;
+  }
+
+  .logout-btn,
+  .login-btn {
+    width: 100%;
+  }
+}
+@media (max-width: 480px) {
+  .user-email {
+    display: none;
+  }
+}

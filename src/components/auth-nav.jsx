@@ -8,19 +8,19 @@ export default function AuthNav() {
 
   return (
 <nav className="auth-nav">
-  <div>
+  <div className="nav-brand">
     <Link href="/">
       🏏 Cricket Studio
     </Link>
   </div>
 
-  <div>
-    <Link href="/about">About  </Link>
-    <Link href="/contact">Contact  </Link>
-    <Link href="/help">Help  </Link>
+  <div className="nav-links">
+    <Link href="/about">About</Link>
+    <Link href="/contact">Contact</Link>
+    <Link href="/help">Help</Link>
   </div>
 
-  <div>
+  <div className="nav-user">
     {status === "loading" ? (
       <span className="loading-text">
         Loading...
@@ -28,9 +28,7 @@ export default function AuthNav() {
     ) : session ? (
       <>
         <div className="user-info">
-          <span className="user-avatar">
-            👤
-          </span>
+          <span className="user-avatar">👤</span>
 
           <span className="user-email">
             {session.user?.email}
