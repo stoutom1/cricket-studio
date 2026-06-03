@@ -7,29 +7,57 @@ export default function AuthNav() {
   const { data: session, status } = useSession();
 
   return (
-    <div className="auth-nav">
-      {status === "loading" ? (
-        <span className="muted">Loading...</span>
-      ) : session ? (
-        <>
-          <span className="muted">👤 {session.user?.email}</span>
-          <Link href="/">Dashboard</Link>
-          <Link href="/about">About Us</Link>
-          <Link href="/contact">Contact Us</Link>
-          <Link href="/help">Help</Link>
-          <button
-            className="btn btn-outline"
-            onClick={() => signOut({ callbackUrl: "/login" })}
-          >
-            Sign out
-          </button>
-        </>
-      ) : (
-        <Link href="/login" className="btn btn-outline"> Sign in </Link>,
-        <Link href="/about">About Us</Link>,
-        <Link href="/contact">Contact Us</Link>,
-        <Link href="/help">Help</Link>
-      )}
-    </div>
+<nav className="auth-nav">
+  <div className="nav-brand">
+    <Link href="/">
+      🏏 Cricket Studio
+    </Link>
+  </div>
+
+  <div className="nav-links">
+    <Link href="/">Dashboard</Link>
+    <Link href="/about">About</Link>
+    <Link href="/contact">Contact</Link>
+    <Link href="/help">Help</Link>
+  </div>
+
+  <div className="nav-user">
+    {status === "loading" ? (
+      <span className="loading-text">
+        Loading...
+      </span>
+    ) : session ? (
+      <>
+        <div className="user-info">
+          <span className="user-avatar">
+            👤
+          </span>
+
+          <span className="user-email">
+            {session.user?.email}
+          </span>
+        </div>
+
+        <button
+          className="logout-btn"
+          onClick={() =>
+            signOut({
+              callbackUrl: "/login",
+            })
+          }
+        >
+          Sign Out
+        </button>
+      </>
+    ) : (
+      <Link
+        href="/login"
+        className="login-btn"
+      >
+        Sign In
+      </Link>
+    )}
+  </div>
+</nav>
   );
 }

@@ -139,7 +139,7 @@ await prisma.leagueMember.create({
 
     canCreateTeam: true,
     canCreatePlayer: true,
-
+    canCreateMatch: true,
     canEditLeague: true,
     canEditTeam: true,
     canEditPlayer: true,

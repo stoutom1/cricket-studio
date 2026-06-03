@@ -149,31 +149,31 @@ export async function POST(request, { params }) {
           body.canViewStats ?? false,
 
         canCreateTeams:
-          body.canCreateTeams ?? false,
+          body.canCreateTeam ?? false,
 
         canDeleteTeams:
-          body.canDeleteTeams ?? false,
+          body.canDeleteTeam ?? false,
 
         canCreatePlayers:
-          body.canCreatePlayers ?? false,
+          body.canCreatePlayer ?? false,
 
         canDeletePlayers:
-          body.canDeletePlayers ?? false,
+          body.canDeletePlayer ?? false,
 
         canCreateMatches:
-          body.canCreateMatches ?? false,
+          body.canCreateMatch ?? false,
 
         canDeleteMatches:
-          body.canDeleteMatches ?? false,
+          body.canDeleteMatch ?? false,
 
         canScoreMatches:
-          body.canScoreMatches ?? false,
+          body.canScoreMatch ?? false,
 
         canEditScore:
           body.canEditScore ?? false,
 
         canDeleteBalls:
-          body.canDeleteBalls ?? false,
+          body.canDeleteBall ?? false,
 
         canManageRoles:
           body.canManageRoles ?? false
@@ -200,25 +200,25 @@ export async function POST(request, { params }) {
           body.canViewStats ?? false,
 
         canCreateTeams:
-          body.canCreateTeams ?? false,
+          body.canCreateTeam ?? false,
 
         canDeleteTeams:
-          body.canDeleteTeams ?? false,
+          body.canDeleteTeam ?? false,
 
         canCreatePlayers:
-          body.canCreatePlayers ?? false,
+          body.canCreatePlayer ?? false,
 
         canDeletePlayers:
-          body.canDeletePlayers ?? false,
+          body.canDeletePlayer ?? false,
 
         canCreateMatches:
-          body.canCreateMatches ?? false,
+          body.canCreateMatch ?? false,
 
         canDeleteMatches:
-          body.canDeleteMatches ?? false,
+          body.canDeleteMatch ?? false,
 
         canScoreMatches:
-          body.canScoreMatches ?? false,
+          body.canScoreMatch ?? false,
 
         canEditScore:
           body.canEditScore ?? false,
