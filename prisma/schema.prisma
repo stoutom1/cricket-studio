@@ -67,7 +67,7 @@ model Match {
   teamB                 Team        @relation("TeamB", fields: [teamBId], references: [id])
   state                 MatchState?
   leagueId              Int?
-  league                League?      @relation(fields: [leagueId], references: [id])
+  league                League?     @relation(fields: [leagueId], references: [id])
 }
 
 model Ball {
@@ -146,6 +146,49 @@ model LeagueMember {
   leagueId Int
 
   joinedAt DateTime @default(now())
+
+  role String @default("VIEWER")
+
+  // Navigation
+  canViewDashboard  Boolean @default(true)
+  canViewManagement Boolean @default(false)
+  canViewMatches    Boolean @default(true)
+  canViewScoring    Boolean @default(false)
+  canViewStats      Boolean @default(true)
+
+  // League
+  canEditLeague        Boolean @default(false)
+  canDeleteLeague      Boolean @default(false)
+  canManageMembers     Boolean @default(false)
+  canManagePermissions Boolean @default(false)
+
+  // Teams
+  canCreateTeam Boolean @default(false)
+  canEditTeam   Boolean @default(false)
+  canDeleteTeam Boolean @default(false)
+
+  // Players
+  canCreatePlayer Boolean @default(false)
+  canEditPlayer   Boolean @default(false)
+  canDeletePlayer Boolean @default(false)
+
+  // Matches
+  canCreateMatch Boolean @default(false)
+  canEditMatch   Boolean @default(false)
+  canDeleteMatch Boolean @default(false)
+
+  // Scoring
+  canScoreMatch   Boolean @default(false)
+  canEditScore    Boolean @default(false)
+  canUndoBall     Boolean @default(false)
+  canSwapStrike   Boolean @default(false)
+  canRetirePlayer Boolean @default(false)
+
+  // Statistics
+  canExportStats Boolean @default(false)
+
+  // Admin
+  canViewAuditLogs Boolean @default(false)
 
   league League @relation(fields: [leagueId], references: [id], onDelete: Cascade)
   user   User   @relation(fields: [userId], references: [id])

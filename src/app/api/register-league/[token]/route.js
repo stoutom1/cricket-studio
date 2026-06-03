@@ -3,6 +3,7 @@ import { getServerSession } from "next-auth";
 
 import prisma from "@/lib/prisma";
 import { authOptions } from "@/lib/auth";
+import { ROLES } from "@/lib/roles";
 
 export async function POST(request, { params }) {
   try {
@@ -79,13 +80,15 @@ const existingMember =
     }
   });
 
+ // const permissions = ROLES[role] || ROLES.VIEWER;
 if (!existingMember) {
-  await prisma.leagueMember.create({
-    data: {
-      userId: user.id,
-      leagueId: invite.leagueId
-    }
-  });
+await prisma.leagueMember.create({
+  data: {
+    userId: user.id,
+    leagueId: invite.leagueId,
+    role: "VIEWER"
+  }
+});
 }
 
     return NextResponse.json({

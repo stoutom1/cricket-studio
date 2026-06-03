@@ -2,7 +2,7 @@ import { getServerSession } from "next-auth";
 import { NextResponse } from "next/server";
 import prisma from "@/lib/prisma";
 import { authOptions } from "@/lib/auth";
-
+import { isSuperAdmin } from "@/lib/superAdmin";
 export const runtime = "nodejs";
 
 /*function formatOvers(legalBalls) {
@@ -39,23 +39,42 @@ export async function GET() {
 
 const activeLeagueId = user?.activeLeagueId;
 
+const superAdmin = isSuperAdmin(session);
+if (!user) {
+  return NextResponse.json(
+    { error: "User not found" },
+    { status: 404 }
+  );
+}
+const where = {};
+
+if (!superAdmin) {
+  where.leagueId = activeLeagueId;
+
+  where.league = {
+    members: {
+      some: {
+        userId: user.id
+      }
+    }
+  };
+} else if (activeLeagueId) {
+  where.leagueId = activeLeagueId;
+}
+
 const matches = await prisma.match.findMany({
-  where: {
-    leagueId: user.activeLeagueId
-  },
+  where,
   include: {
-    league:true,
+    league: true,
     teamA: true,
     teamB: true,
     battingFirstTeam: true,
-    balls: {
-      orderBy: {
-        sequence: "asc"
-      }
-    }
+    balls: true
+  },
+  orderBy: {
+    createdAt: "desc"
   }
 });
-
   // AUTO UPDATE MATCH STATUS
   for (const match of matches) {
     const innings1Balls = match.balls.filter(
@@ -195,14 +214,44 @@ const activeLeagueId = user?.activeLeagueId;
     );
   }
 
-  const teams = await prisma.team.findMany({
-    where: { id: { in: [teamAId, teamBId] } },
-    include: { players: true }
-  });
+ const superAdmin = isSuperAdmin(session);
 
-  if (teams.length !== 2) {
-    return NextResponse.json({ error: "One or both teams do not exist" }, { status: 404 });
+const teams = await prisma.team.findMany({
+  where: {
+    id: {
+      in: [teamAId, teamBId]
+    }
+  },
+
+  include: {
+    players: true
   }
+});
+
+if (teams[0].leagueId !== teams[1].leagueId) {
+  return NextResponse.json(
+    {
+      error: "Teams must belong to the same league"
+    },
+    {
+      status: 400
+    }
+  );
+}
+
+if (teams.length !== 2) {
+  return NextResponse.json(
+    {
+      error:
+        "One or both teams do not exist"
+    },
+    {
+      status: 404
+    }
+  );
+}
+
+
 
   for (const team of teams) {
     if (team.players.length === 0) {
@@ -232,26 +281,22 @@ if (!league) {
     { status: 404 }
   );
 }
-/*
-const membership = await prisma.leagueMember.findFirst({
-  where: {
-    userId: user.id,
-    leagueId: league.id
-  }
-});
 
-const isMember =
-  league.ownerId === user.id || membership;
-
-if (!isMember) {
+if (teams[0].leagueId !== activeLeagueId) {
   return NextResponse.json(
-    { error: "Forbidden" },
-    { status: 403 }
+    {
+      error:
+        "Selected teams are not in active league"
+    },
+    {
+      status: 400
+    }
   );
 }
-*/
-const leagueId = user.activeLeagueId;
-  const match = await prisma.match.create({
+
+const leagueId = activeLeagueId;
+  
+const match = await prisma.match.create({
     data: {
       leagueId,
       teamAId,

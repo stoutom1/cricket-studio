@@ -1,47 +1,182 @@
 import prisma from "@/lib/prisma";
 import { NextResponse } from "next/server";
+import { getServerSession } from "next-auth";
+import { authOptions } from "@/lib/auth";
+import { isSuperAdmin } from "@/lib/superAdmin";
 
 export async function GET() {
-  
-const leagues = await prisma.league.findMany({
-  include: {
-    teams: {
-      include: {
-        players: true
-      }
-    }
-  },
-  orderBy: {
-    name: "asc"
-  }
-});
+  const session =
+    await getServerSession(authOptions);
 
-/*
-const leagues =
-  await prisma.league.findMany({
-    where: {
-      members: {
-        some: {
-          userId: session.user.id
-        }
+  if (!session?.user?.email) {
+    return NextResponse.json(
+      { error: "Unauthorized" },
+      { status: 401 }
+    );
+  }
+
+  const user =
+    await prisma.user.findUnique({
+      where: {
+        email: session.user.email
       }
-    },
-    include: {
-      teams: true
-    }
-  });
-  */
-return NextResponse.json(leagues);
+    });
+
+  if (!user) {
+    return NextResponse.json(
+      { error: "User not found" },
+      { status: 404 }
+    );
+  }
+const superAdmin = isSuperAdmin(session);
+  const leagues =
+    await prisma.league.findMany({
+      where: superAdmin
+      ? {}
+      :{
+        members: {
+          some: {
+            userId: user.id
+          }
+        }
+      },
+
+      include: {
+        teams: {
+          include: {
+            players: true
+          }
+        },
+
+        members: true
+      },
+
+      orderBy: {
+        name: "asc"
+      }
+    });
+
+  return NextResponse.json(
+    leagues
+  );
 }
 
 export async function POST(req) {
-  const body = await req.json();
+  try {
+    const session = await getServerSession(authOptions);
 
-  const league = await prisma.league.create({
-    data: {
-      name: body.name.trim()
+    if (!session?.user?.id) {
+      return NextResponse.json(
+        { error: "Unauthorized" },
+        { status: 401 }
+      );
     }
-  });
+   const user = await prisma.user.findUnique({
+  where: {
+    email: session.user.email
+  }
+});
 
-  return NextResponse.json(league);
+if (!user) {
+  return NextResponse.json(
+    { error: "User not found" },
+    { status: 404 }
+  );
+}
+
+    const body = await req.json();
+
+    const name = body?.name?.trim();
+
+    if (!name) {
+      return NextResponse.json(
+        { error: "League name is required" },
+        { status: 400 }
+      );
+    }
+
+    const existingLeague = await prisma.league.findUnique({
+      where: { name },
+    });
+
+    if (existingLeague) {
+      return NextResponse.json(
+        {
+          error: `League "${name}" already exists`,
+        },
+        { status: 409 }
+      );
+    }
+
+const league = await prisma.league.create({
+  data: {
+    name: body.name.trim(),
+    ownerId: user.id
+  }
+});
+
+    await prisma.leagueMember.create({
+      data: {
+        userId: session.user.id,
+        leagueId: league.id,
+        role: "OWNER",
+
+        canViewDashboard: true,
+        canViewManagement: true,
+        canViewMatches: true,
+        canViewScoring: true,
+        canViewStats: true,
+
+        canCreateTeam: true,
+        canCreatePlayer: true,
+
+        canEditLeague: true,
+        canEditTeam: true,
+        canEditPlayer: true,
+        canEditMatch: true,
+
+        canDeleteTeam: true,
+        canDeletePlayer: true,
+        canDeleteMatch: true,
+
+        canManageMembers: true,
+        canManagePermissions: true,
+
+        canScoreMatch: true,
+        canEditScore: true,
+        canUndoBall: true,
+
+        canSwapStrike: true,
+        canRetirePlayer: true,
+
+        canExportStats: true,
+        canViewAuditLogs: true,
+      },
+    });
+
+    await prisma.user.update({
+  where: {
+    id: user.id
+  },
+  data: {
+    activeLeagueId: league.id
+  }
+});
+
+    return NextResponse.json(league, { status: 201 });
+  } catch (error) {
+    console.error("League creation error:", error);
+
+    if (error.code === "P2002") {
+      return NextResponse.json(
+        { error: "League already exists" },
+        { status: 409 }
+      );
+    }
+
+    return NextResponse.json(
+      { error: "Failed to create league" },
+      { status: 500 }
+    );
+  }
 }

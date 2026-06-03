@@ -3,6 +3,7 @@ import { useSession } from "next-auth/react";
 import React, { useEffect, useMemo, useState } from "react";
 import { EXTRA_TYPES, getPlayerName, WICKET_TYPES } from "@/lib/scoring";
 import "@/app/globals.css";
+import { useRouter } from "next/navigation";
 
 function Card({
   title,
@@ -133,7 +134,13 @@ const [selectedLeagueId, setSelectedLeagueId] = useState("");
 const [expandedLeagueId, setExpandedLeagueId] = useState(null);
 const [activeLeagueId, setActiveLeagueId] = useState(null);
 const [activeTab, setActiveTab] = useState("management");
-
+const [permissions, setPermissions] = useState({
+  canViewManagement: false,
+  canCreateMatch: false,
+  canDeleteMatch: false,
+  canScoreMatch: false,
+  canUndoBall: false
+});
   const [matchDetail, setMatchDetail] = useState(null);
   const [scoreboard, setScoreboard] = useState(null);
   const [stats, setStats] = useState({ batting: [], bowling: [] });
@@ -148,6 +155,31 @@ const [activeTab, setActiveTab] = useState("management");
   const [teamForm, setTeamForm] = useState({leagueId: "", name: ""});
   const [playerForm, setPlayerForm] = useState({teamId: "", names: ""});
 const [preferencesLoaded, setPreferencesLoaded] = useState(false);
+const [me, setMe] = useState(null);
+
+useEffect(() => {
+  fetch("/api/me")
+    .then((r) => r.json())
+    .then(setMe);
+}, []);
+
+useEffect(() => {
+  async function loadPermissions() {
+    const res =
+      await fetch(
+        "/api/my-permissions"
+      );
+
+    if (!res.ok) return;
+
+    const data =
+      await res.json();
+
+    setPermissions(data);
+  }
+
+  loadPermissions();
+}, [activeLeagueId]);
 
 
 useEffect(() => {
@@ -387,14 +419,15 @@ async function handleAddLeague(e) {
 const league = await api("/api/leagues", {
   method: "POST",
   body: JSON.stringify({
-    name: leagueForm.name.trim()
+    name: leagueForm.name.trim(),
+    leagueId: activeLeagueId
   })
 });
 
     setLeagueForm({
       name: ""
     });
-setActiveLeagueId(Number(activeLeagueId));
+    setActiveLeagueId(Number(league.id));
     showToast(
       "success",
       "🏆 League created"
@@ -403,6 +436,9 @@ setActiveLeagueId(Number(activeLeagueId));
     await loadLeagues();
     await loadMatches();
     await loadTeams();
+    await refreshAll();
+    //setActiveLeagueId(Number(activeLeagueId));
+    //router.refresh();
   } catch (err) {
     setError(err.message);
   }
@@ -1084,24 +1120,55 @@ function triggerQuickAction(actionKey, callback) {
 return (
   <>
 <div className="tabs">
+    {
+    permissions?.canViewManagement &&
+  (  
     <button
     className={`tab-btn ${activeTab === "management" ? "active" : ""}`}
     onClick={() => setActiveTab("management")}
   >
     ⚙️ <span>Leagues</span>
   </button>
+  )}
+  {
+permissions?.canViewMatches && (
   <button
     className={`tab-btn ${activeTab === "matches" ? "active" : ""}`}
     onClick={() => setActiveTab("matches")}
   >
     📋 <span>Matches</span>
   </button>
+)}
+{
+permissions?.canViewScoring && (  
   <button
     className={`tab-btn ${activeTab === "scoring" ? "active" : ""}`}
     onClick={() => setActiveTab("scoring")}
   >
     🏏 <span>Live Scoring</span>
   </button>
+)}
+{
+permissions?.canViewStats && (
+  <button
+    onClick={() =>
+      setActiveTab(
+        "stats"
+      )
+    }
+  >
+    Stats
+  </button>
+)}
+{
+permissions?.canViewScoring && (  
+  <button
+    className={`tab-btn ${activeTab === "members" ? "active" : ""}`}
+    onClick={() => setActiveTab("members")}
+  >
+    🏏 <span>Member Management</span>
+  </button>
+)}  
 </div>
   {activeTab === "scoring" && (
   <div className="page-grid">
@@ -1777,8 +1844,8 @@ return (
                   <span className="pill">
                     {match.status}
                   </span>
-  {(!isProtectedLeague ||
-  canDeleteProtectedLeague) && (                 
+      {
+            permissions?.canDeleteMatch && (                 
                   <button 
                     type="button"
                     className="btn btn-outline"
@@ -1788,8 +1855,7 @@ return (
                   >
                     Delete
                   </button>
-                  
-                  )}
+            )}            
                 </div>
               </div>
     ); 
@@ -2269,8 +2335,8 @@ onChange={(e) =>
         </option>
       ))}
     </select>
-{(!isProtectedLeague ||
-  canDeleteProtectedLeague) && (
+{
+permissions?.canDeletePlayer && (
 <button
   disabled={!selectedPlayers[team.id]}
   onClick={() => {
@@ -2289,8 +2355,8 @@ onChange={(e) =>
 </button>
   )}
 
-  {(!isProtectedLeague ||
-  canDeleteProtectedLeague) && (
+    {
+      permissions?.canDeleteTeam && (
     <button
       onClick={() => handleDeleteTeam(team.id,team.name)}
     >
@@ -2366,6 +2432,139 @@ Rohit Sharma`}
         )}
     </div>
 
+  </div>
+)}
+  {activeTab === "permissions" && (
+  <div className="page-grid">
+    <div className="grid-main">
+      <Card title="👥 League Permissions">
+  {leagues.members?.map((member) => (
+    <div
+      key={member.id}
+      className="member-row"
+    >
+      <div>
+        <strong>{member.user.name}</strong>
+        <div>{member.user.email}</div>
+      </div>
+
+      <select
+        value={member.role}
+        onChange={(e) =>
+          updateRole(
+            league.id,
+            member.userId,
+            e.target.value
+          )
+        }
+      >
+        <option value="OWNER">Owner</option>
+        <option value="ADMIN">Admin</option>
+        <option value="CAPTAIN">Captain</option>
+        <option value="SCORER">Scorer</option>
+        <option value="ANALYST">Analyst</option>
+        <option value="VIEWER">Viewer</option>
+      </select>
+
+      <button
+        className="btn"
+        onClick={() =>
+          openPermissionEditor(member)
+        }
+      >
+        Permissions
+      </button>
+    </div>
+  ))}
+</Card>
+  {permissions && (    
+ <Card title="🔐 Permissions">
+
+<label>
+  <input
+    type="checkbox"
+    checked={permissions?.canViewManagement ?? false}
+    onChange={(e)=>
+      updatePermission(
+        "canViewManagement",
+        e.target.checked
+      )
+    }
+  />
+  View Management
+</label>
+
+<label>
+  <input
+    type="checkbox"
+    checked={permissions?.canCreateMatch ?? false}
+    onChange={(e) =>
+      updatePermission(
+        "canCreateMatch",
+        e.target.checked
+      )
+    }
+  />
+  Create Match
+</label>
+
+<label>
+  <input
+    type="checkbox"
+    checked={permissions?.canDeleteMatch ?? false}
+    onChange={(e) =>
+      updatePermission(
+        "canDeleteMatch",
+        e.target.checked
+      )
+    }
+  />
+  Delete Match
+</label>
+
+<label>
+  <input
+    type="checkbox"
+    checked={permissions?.canScoreMatch ?? false}
+    onChange={(e) =>
+      updatePermission(
+        "canScoreMatch",
+        e.target.checked
+      )
+    }
+  />
+  Score Match
+</label>
+
+<label>
+  <input
+    type="checkbox"
+    checked={permissions?.canUndoBall ?? false}
+    onChange={(e) =>
+      updatePermission(
+        "canUndoBall",
+        e.target.checked
+      )
+    }
+  />
+  Undo Ball
+</label>
+
+</Card>
+     
+  )}      
+  {me?.isSuperAdmin && (
+  <Card title="Admin Tools">
+    <button>
+      View All Leagues
+    </button>
+
+    <button>
+      System Settings
+    </button>
+  </Card>
+)}
+      </div>
   </div>
 )}
 {showWicketModal && (
