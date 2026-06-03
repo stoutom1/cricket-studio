@@ -955,3 +955,45 @@ select:focus {
 .tab-text {
   font-size: 14px;
 }
+.permissions-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(220px, 1fr));
+  gap: 12px;
+  margin-top: 12px;
+}
+
+.permission-item {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+
+  padding: 12px 14px;
+
+  border: 1px solid var(--border-color, #e5e7eb);
+  border-radius: 10px;
+
+  cursor: pointer;
+  transition: all 0.2s ease;
+}
+
+.permission-item:hover {
+  background: rgba(59, 130, 246, 0.05);
+}
+
+.permission-item input[type="checkbox"] {
+  width: 18px;
+  height: 18px;
+  margin: 0;
+  flex-shrink: 0;
+}
+
+.permission-item span {
+  font-size: 14px;
+  font-weight: 500;
+}
+
+.permission-actions {
+  margin-top: 20px;
+  display: flex;
+  justify-content: flex-end;
+}

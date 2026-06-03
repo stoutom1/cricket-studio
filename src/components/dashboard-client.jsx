@@ -2581,9 +2581,8 @@ Rohit Sharma`}
   <option value="ANALYST">Analyst</option>
   <option value="VIEWER">Viewer</option>
 </select>
-<div className="btn">
-            <button
-              className="btn"
+<div>
+            <button className="btn btn-outline" 
               onClick={() =>
                 openPermissionEditor(member)
               }
@@ -2595,114 +2594,97 @@ Rohit Sharma`}
         ))}
       </Card>
 
-      {/* MEMBER PERMISSIONS */}
-      {selectedMember && permissions && (
-        <Card
-          title={`🔐 Permissions - ${
-            selectedMember.user?.name ||
-            selectedMember.user?.email
-          }`}
-        >
-          <label>
-            <input
-              type="checkbox"
-              checked={
-                permissions.canViewManagement ??
-                false
-              }
-              onChange={(e) =>
-                updatePermission(
-                  "canViewManagement",
-                  e.target.checked
-                )
-              }
-            />
-            View Management
-          </label>
-          <label>
-            <input
-              type="checkbox"
-              checked={
-                permissions.canCreateMatch ??
-                false
-              }
-              onChange={(e) =>
-                updatePermission(
-                  "canCreateMatch",
-                  e.target.checked
-                )
-              }
-            />
-            Create Match
-          </label>
-          <label>
-            <input
-              type="checkbox"
-              checked={
-                permissions.canDeleteMatch ??
-                false
-              }
-              onChange={(e) =>
-                updatePermission(
-                  "canDeleteMatch",
-                  e.target.checked
-                )
-              }
-            />
-            Delete Match
-          </label>
-          <label>
-            <input
-              type="checkbox"
-              checked={
-                permissions.canScoreMatch ??
-                false
-              }
-              onChange={(e) =>
-                updatePermission(
-                  "canScoreMatch",
-                  e.target.checked
-                )
-              }
-            />
-            Score Match
-          </label>
-          <label>
-            <input
-              type="checkbox"
-              checked={
-                permissions.canUndoBall ??
-                false
-              }
-              onChange={(e) =>
-                updatePermission(
-                  "canUndoBall",
-                  e.target.checked
-                )
-              }
-            />
-            Undo Ball
-          </label>
+ {/* MEMBER PERMISSIONS */}
+{selectedMember && permissions && (
+  <Card
+    title={`🔐 Permissions - ${
+      selectedMember.user?.name ||
+      selectedMember.user?.email
+    }`}
+  >
+    <div className="permissions-grid">
 
-          <div>      
-          <button
-            className="btn"
-            onClick={savePermissions}
-          >
-            Save Permissions
-          </button>
-          </div>
-        </Card>
-      )}
-       {me?.isSuperAdmin && (
-  <Card title="Admin Tools">
-    <button>
-      View All Leagues
-    </button>
+      <label className="permission-item">
+        <input
+          type="checkbox"
+          checked={permissions.canViewManagement ?? false}
+          onChange={(e) =>
+            updatePermission(
+              "canViewManagement",
+              e.target.checked
+            )
+          }
+        />
+        <span>View Management</span>
+      </label>
 
-    <button>
-      System Settings
-    </button>
+      <label className="permission-item">
+        <input
+          type="checkbox"
+          checked={permissions.canCreateMatch ?? false}
+          onChange={(e) =>
+            updatePermission(
+              "canCreateMatch",
+              e.target.checked
+            )
+          }
+        />
+        <span>Create Match</span>
+      </label>
+
+      <label className="permission-item">
+        <input
+          type="checkbox"
+          checked={permissions.canDeleteMatch ?? false}
+          onChange={(e) =>
+            updatePermission(
+              "canDeleteMatch",
+              e.target.checked
+            )
+          }
+        />
+        <span>Delete Match</span>
+      </label>
+
+      <label className="permission-item">
+        <input
+          type="checkbox"
+          checked={permissions.canScoreMatch ?? false}
+          onChange={(e) =>
+            updatePermission(
+              "canScoreMatch",
+              e.target.checked
+            )
+          }
+        />
+        <span>Score Match</span>
+      </label>
+
+      <label className="permission-item">
+        <input
+          type="checkbox"
+          checked={permissions.canUndoBall ?? false}
+          onChange={(e) =>
+            updatePermission(
+              "canUndoBall",
+              e.target.checked
+            )
+          }
+        />
+        <span>Undo Ball</span>
+      </label>
+
+    </div>
+
+    <div className="permission-actions">
+      <button
+        className="btn"
+        onClick={savePermissions}
+      >
+        💾 Save Permissions
+      </button>
+    </div>
+
   </Card>
 )}
     </div>

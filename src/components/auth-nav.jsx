@@ -8,20 +8,19 @@ export default function AuthNav() {
 
   return (
 <nav className="auth-nav">
-  <div className="nav-brand">
+  <div>
     <Link href="/">
       🏏 Cricket Studio
     </Link>
   </div>
 
-  <div className="nav-links">
-    <Link href="/">Dashboard</Link>
-    <Link href="/about">About</Link>
-    <Link href="/contact">Contact</Link>
-    <Link href="/help">Help</Link>
+  <div>
+    <Link href="/about">About  </Link>
+    <Link href="/contact">Contact  </Link>
+    <Link href="/help">Help  </Link>
   </div>
 
-  <div className="nav-user">
+  <div>
     {status === "loading" ? (
       <span className="loading-text">
         Loading...
