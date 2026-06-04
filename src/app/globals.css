@@ -1311,25 +1311,3 @@ body {
   border: 1px solid #cbd5e1;
   color: #111827;
 }
-select,
-input,
-textarea {
-  width: 100%;
-  padding: 12px;
-  border-radius: 10px;
-  border: 1px solid #d1d5db;
-  background: white;
-  color: #111827;
-}
-:root {
-  --bg: #f8fafc;
-  --card: #ffffff;
-  --text: #111827;
-  --muted: #64748b;
-
-  --primary: #2563eb;
-  --success: #16a34a;
-  --danger: #dc2626;
-
-  --border: #e2e8f0;
-}
