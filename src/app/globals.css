@@ -1251,10 +1251,6 @@ body {
   border: 1px solid #e5e7eb;
   box-shadow: 0 4px 12px rgba(0,0,0,.08);
 }
-.card {
-  background: #1e293b;
-  color: #f8fafc;
-}
 .dashboard-page {
   background: #f4f6fb;
 }
@@ -1288,26 +1284,4 @@ body {
   .auth-nav > div {
     width: 100%;
   }
-}
-.active-league-card,
-.create-match-card {
-  background: #ffffff;
-  color: #111827;
-}
-.card-header {
-  background: #eff6ff;
-}
-.btn {
-  background: #2563eb;
-  color: white;
-  border: none;
-}
-
-.btn:hover {
-  background: #1d4ed8;
-}
-.btn-outline {
-  background: white;
-  border: 1px solid #cbd5e1;
-  color: #111827;
 }
