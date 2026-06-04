@@ -1243,3 +1243,93 @@ body {
   flex: 1 1 200px;
   min-width: 120px;
 }
+.card {
+  background: #ffffff;
+  color: #111827;
+  border-radius: 16px;
+  padding: 16px;
+  border: 1px solid #e5e7eb;
+  box-shadow: 0 4px 12px rgba(0,0,0,.08);
+}
+.card {
+  background: #1e293b;
+  color: #f8fafc;
+}
+.dashboard-page {
+  background: #f4f6fb;
+}
+.dashboard-tabs {
+  display: flex;
+  overflow-x: auto;
+  gap: 8px;
+
+  scrollbar-width: none;
+  -ms-overflow-style: none;
+
+  padding-bottom: 8px;
+}
+
+.dashboard-tabs::-webkit-scrollbar {
+  display: none;
+}
+.auth-nav {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 12px;
+  justify-content: space-between;
+  align-items: center;
+}
+@media (max-width: 768px) {
+  .auth-nav {
+    flex-direction: column;
+    text-align: center;
+  }
+
+  .auth-nav > div {
+    width: 100%;
+  }
+}
+.active-league-card,
+.create-match-card {
+  background: #ffffff;
+  color: #111827;
+}
+.card-header {
+  background: #eff6ff;
+}
+.btn {
+  background: #2563eb;
+  color: white;
+  border: none;
+}
+
+.btn:hover {
+  background: #1d4ed8;
+}
+.btn-outline {
+  background: white;
+  border: 1px solid #cbd5e1;
+  color: #111827;
+}
+select,
+input,
+textarea {
+  width: 100%;
+  padding: 12px;
+  border-radius: 10px;
+  border: 1px solid #d1d5db;
+  background: white;
+  color: #111827;
+}
+:root {
+  --bg: #f8fafc;
+  --card: #ffffff;
+  --text: #111827;
+  --muted: #64748b;
+
+  --primary: #2563eb;
+  --success: #16a34a;
+  --danger: #dc2626;
+
+  --border: #e2e8f0;
+}
