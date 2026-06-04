@@ -1243,17 +1243,6 @@ body {
   flex: 1 1 200px;
   min-width: 120px;
 }
-.card {
-  background: #ffffff;
-  color: #111827;
-  border-radius: 16px;
-  padding: 16px;
-  border: 1px solid #e5e7eb;
-  box-shadow: 0 4px 12px rgba(0,0,0,.08);
-}
-.dashboard-page {
-  background: #f4f6fb;
-}
 .dashboard-tabs {
   display: flex;
   overflow-x: auto;
