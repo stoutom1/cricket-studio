@@ -87,14 +87,33 @@ button, input, select { font: inherit; }
   padding: 16px;
   box-shadow: var(--shadow);
 }
-
+.card-header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 12px;
+}
 .card-head {
   display: flex;
   flex-wrap: wrap;
   gap: 8px;
   align-items: center;
 }
-
+.card-title {
+  flex: 1;
+  min-width: 0;
+  font-size: 1rem;
+  line-height: 1.2;
+}
+.card-toggle {
+  flex-shrink: 0;
+  width: 40px;
+}
+.card-title {
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
 .card-head .btn {
   flex: 1 1 auto;
 }
@@ -1038,26 +1057,27 @@ select:focus {
 /* Mobile */
 @media (max-width: 768px) {
   .auth-nav {
-    flex-direction: column;
-    align-items: stretch;
+    padding: 12px;
   }
 
-  .nav-brand {
-    text-align: center;
-  }
-
-  .nav-links {
+  .auth-nav-links {
+    display: flex;
     justify-content: center;
-    flex-wrap: wrap;
     gap: 16px;
   }
 
-  .nav-auth {
-    justify-content: center;
-    flex-wrap: wrap;
+  .auth-nav-user {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    gap: 12px;
+    width: 100%;
   }
 
   .user-email {
+    overflow: hidden;
+    text-overflow: ellipsis;
+    white-space: nowrap;
     max-width: 180px;
   }
 }

@@ -94,14 +94,6 @@ export async function POST(
       activeLeagueId: invite.leagueId
     }
   });
-await prisma.user.update({
-  where: {
-    id: user.id
-  },
-  data: {
-    activeLeagueId: invite.leagueId
-  }
-});
   return NextResponse.json({
     success: true,
     leagueId: invite.leagueId
