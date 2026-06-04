@@ -164,8 +164,8 @@ export default function HelpPage() {
         </ol>
 
         <p>
-          New users can register and
-          automatically join the league.
+          New users can register or create a new account and while being logged into the app, when they use the invite link they should be
+          to join the league and automatically join the league.
         </p>
       </section>
 

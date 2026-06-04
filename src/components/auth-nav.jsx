@@ -10,7 +10,7 @@ export default function AuthNav() {
 <nav className="auth-nav">
   <div className="nav-brand">
     <Link href="/">
-      🏏 Cricket Studio
+      Dashboard
     </Link>
   </div>
 

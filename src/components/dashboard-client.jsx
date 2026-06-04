@@ -157,6 +157,17 @@ const [selectedMember, setSelectedMember] = useState(null);
   const [playerForm, setPlayerForm] = useState({teamId: "", names: ""});
 const [preferencesLoaded, setPreferencesLoaded] = useState(false);
 
+const [showPlayerModal, setShowPlayerModal] =
+  useState(false);
+
+const [playerLeagueId, setPlayerLeagueId] =
+  useState(null);
+
+  const playerTeams =
+  leagues
+    .find((l) => l.id === playerLeagueId)
+    ?.teams || [];
+
 const [me, setMe] = useState(null);
 
 useEffect(() => {
@@ -1623,6 +1634,22 @@ return (
                     <option value="2">Innings 2</option>
                   </select>
                 </label>
+                  <label>
+                  <span>Bowler</span>
+                  <select
+                    value={ballForm.bowlerId || ""}
+                    onChange={(e) =>
+                      setBallForm((prev) => ({ ...prev, bowlerId: e.target.value }))
+                    }
+                    required
+                  >
+                    <option value="">Select bowler</option>
+                    {(bowlingTeam?.players || []).map((p) => (
+                      <option key={p.id} value={p.id}>{p.name}</option>
+                    ))}
+                  </select>
+                </label>
+              
   {/* Striker */}
   <label>
     <span>Striker</span>
@@ -1648,23 +1675,8 @@ return (
     </select>
      {/* Bowler */}
   </label>
-                <label>
-                  <span>Bowler</span>
-                  <select
-                    value={ballForm.bowlerId || ""}
-                    onChange={(e) =>
-                      setBallForm((prev) => ({ ...prev, bowlerId: e.target.value }))
-                    }
-                    required
-                  >
-                    <option value="">Select bowler</option>
-                    {(bowlingTeam?.players || []).map((p) => (
-                      <option key={p.id} value={p.id}>{p.name}</option>
-                    ))}
-                  </select>
-                </label>
-  {/* Non Striker */}
   <label>
+  {/* Non Striker */}
     <span>Non-striker</span>
 
     <select
@@ -2410,6 +2422,16 @@ onChange={(e) =>
             >
               Add Team
             </button>
+                     <button
+    type="button"
+    className="btn btn-outline"
+    onClick={() => {
+      setPlayerLeagueId(league.id);
+      setShowPlayerModal(true);
+    }}
+  >
+    👥 Add Players
+  </button>
           </form>
 
           {/* TEAM LIST */}
@@ -2488,56 +2510,6 @@ permissions?.canDeletePlayer && (
     </div>
 
     <div className="grid-side">
- <Card title="🧍 Add Player" defaultCollapsed={false}>
-          <form className="form stack" onSubmit={handleAddPlayer}>
-            <label>
-              <span>Team</span>
-              <select
-                value={playerForm.teamId || ""}
-                onChange={(e) =>
-                  setPlayerForm((prev) => ({ ...prev, teamId: e.target.value }))
-                }
-                required
-              >
-                <option value="">Select team</option>
-                {teamsForMatch.map(team => (
-  <option
-    key={team.id}
-    value={team.id}
-  >
-    {team.name}
-  </option>
-))}
-              </select>
-            </label>
-
-<label>
-  <span>Player Names</span>
-
-  <textarea
-    rows={8}
-    value={playerForm.names}
-    onChange={(e) =>
-      setPlayerForm((prev) => ({
-        ...prev,
-        names: e.target.value
-      }))
-    }
-    placeholder={`Sachin Tendulkar
-Virat Kohli
-MS Dhoni
-Rohit Sharma`}
-    required
-  />
-
-  <small className="muted">
-    Enter one player per line
-  </small>
-</label>
-
-            <button type="submit" className="btn">Add Player</button>
-          </form>
-        </Card>
         {(message || error) && (
           <Card title="ℹ️ Notifications" defaultCollapsed={false}>
             {message ? <p className="success">{message}</p> : null}
@@ -2827,6 +2799,85 @@ Rohit Sharma`}
       >
         Cancel
       </button>
+    </div>
+  </div>
+)}
+{showPlayerModal && (
+  <div className="modal-backdrop">
+    <div className="modal-card player-modal">
+
+      <h3>👥 Manage Players</h3>
+
+      <form
+        className="form stack"
+        onSubmit={handleAddPlayer}
+      >
+        <label>
+          <span>Team</span>
+
+          <select
+            value={playerForm.teamId || ""}
+            onChange={(e) =>
+              setPlayerForm((prev) => ({
+                ...prev,
+                teamId: e.target.value
+              }))
+            }
+            required
+          >
+            <option value="">
+              Select Team
+            </option>
+
+            {playerTeams.map((team) => (
+              <option
+                key={team.id}
+                value={team.id}
+              >
+                {team.name}
+              </option>
+            ))}
+          </select>
+        </label>
+
+        <label>
+          <span>Player Names</span>
+
+          <textarea
+            rows={8}
+            value={playerForm.names}
+            onChange={(e) =>
+              setPlayerForm((prev) => ({
+                ...prev,
+                names: e.target.value
+              }))
+            }
+            placeholder={`Sachin Tendulkar
+Virat Kohli
+MS Dhoni`}
+            required
+          />
+        </label>
+
+        <div className="modal-actions">
+          <button
+            type="submit"
+            className="btn"
+          >
+            ➕ Add Players
+          </button>
+          <button
+            type="button"
+            className="btn btn-outline"
+            onClick={() =>
+              setShowPlayerModal(false)
+            }
+          >
+            Cancel
+          </button>
+        </div>
+      </form>
+
     </div>
   </div>
 )}
