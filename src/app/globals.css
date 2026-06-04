@@ -1185,16 +1185,7 @@ select:focus {
 .card-head .btn {
   flex: 1 1 auto;
 }
-@media (max-width: 768px) {
-  .card-head {
-    flex-direction: column;
-    align-items: stretch;
-  }
-
-  .card-head .btn {
-    width: 100%;
-  }
-}.add-team-form {
+.add-team-form {
   display: flex;
   gap: 8px;
   flex-wrap: wrap;
