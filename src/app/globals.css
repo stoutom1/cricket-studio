@@ -1175,3 +1175,80 @@ select:focus {
     word-break: break-word;
   }
 }
+.card-head {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px;
+  align-items: center;
+}
+
+.card-head .btn {
+  flex: 1 1 auto;
+}
+@media (max-width: 768px) {
+  .card-head {
+    flex-direction: column;
+    align-items: stretch;
+  }
+
+  .card-head .btn {
+    width: 100%;
+  }
+}.add-team-form {
+  display: flex;
+  gap: 8px;
+  flex-wrap: wrap;
+}
+
+.add-team-form input {
+  flex: 1;
+  min-width: 220px;
+}
+
+.add-team-form button {
+  width: auto;
+}
+.dashboard-tabs {
+  display: flex;
+  overflow-x: auto;
+  flex-wrap: nowrap;
+  gap: 8px;
+
+  -webkit-overflow-scrolling: touch;
+  scrollbar-width: none;
+}
+
+.dashboard-tabs::-webkit-scrollbar {
+  display: none;
+}
+.dashboard-tab {
+  flex: 0 0 auto;
+  white-space: nowrap;
+}
+.table-scroll {
+  overflow-x: auto;
+  width: 100%;
+}
+html,
+body {
+  overflow-x: hidden;
+}
+
+.page-grid,
+.grid-main,
+.grid-side,
+.card {
+  min-width: 0;
+}
+.team-row {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  margin-bottom: 12px;
+  flex-wrap: wrap;
+}
+
+.team-name {
+  flex: 1 1 200px;
+  min-width: 120px;
+}
