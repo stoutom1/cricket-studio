@@ -2727,7 +2727,7 @@ return (
   {selectedLeague &&
     permissions?.canDeleteLeague && (
       <button
-        className="icon-btn danger"
+        className="btn btn-danger"
         title={`Delete ${selectedLeague.name}`}
         onClick={() =>
           handleDeleteLeague(
@@ -3052,8 +3052,6 @@ return (
   style={{
     padding: "16px",
     borderRadius: 12,
-    background:
-      "linear-gradient(135deg,#eff6ff,#dbeafe)",
     border: "1px solid #93c5fd",
     marginBottom: 15,
   }}
@@ -3061,7 +3059,6 @@ return (
   <h3
     style={{
       margin: 0,
-      color: "#1e40af",
       fontWeight: 700,
       fontSize: "1.1rem",
     }}
@@ -3069,7 +3066,6 @@ return (
     🔗 Invite Members to{" "}
     <span
       style={{
-        color: "#0f172a",
       }}
     >
       {activeLeague.name}
@@ -3080,7 +3076,6 @@ return (
     style={{
       marginTop: 8,
       fontSize: 14,
-      color: "#475569",
       lineHeight: 1.5,
     }}
   >

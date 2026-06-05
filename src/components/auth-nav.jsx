@@ -8,27 +8,25 @@ export default function AuthNav() {
 
   return (
 <nav className="auth-nav">
-  <div className="nav-brand">
-    <Link href="/">
-     ← Home
-    </Link>
-  </div>
+  <Link href="/" className="nav-home">
+    ← Home
+  </Link>
 
-  <div className="nav-links">
+  <div className="nav-right">
     <Link href="/contact">Contact</Link>
-  </div>
 
-  <div className="nav-auth">
     {status === "loading" ? (
-      <span className="loading-text">Loading...</span>
+      <span className="loading-text">
+        Loading...
+      </span>
     ) : session ? (
       <>
-        <div className="user-info">
-          <span className="user-avatar">👤</span>
-          <span className="user-email">
-            {session.user?.email}
-          </span>
-        </div>
+        <span
+          className="user-avatar"
+          title={session.user?.email}
+        >
+          👤
+        </span>
 
         <button
           className="logout-btn"
