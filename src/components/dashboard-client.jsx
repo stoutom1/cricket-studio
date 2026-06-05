@@ -187,7 +187,16 @@ useEffect(() => {
     .then((r) => r.json())
     .then(setMe);
 }, []);
+useEffect(() => {
+  if (!message && !error) return;
 
+  const timer = setTimeout(() => {
+    setMessage("");
+    setError("");
+  }, 30000); // 30 seconds
+
+  return () => clearTimeout(timer);
+}, [message, error]);
 const selectedLeague =
   leagues.find(
     (l) => String(l.id) === String(activeLeagueId)
@@ -250,6 +259,15 @@ const filteredMembers =
       );
     }
   ) || [];
+
+  const helpCardStyle = {
+  padding: 20,
+  borderRadius: 12,
+  background: "#f8fafc",
+  border: "1px solid #e2e8f0",
+  boxShadow:
+    "0 2px 8px rgba(15,23,42,0.06)",
+};
 
   const playerTeams =
   leagues
@@ -2892,19 +2910,36 @@ onClick={() => {
     style={{
       marginTop: 20,
       padding: 16,
-      border: "1px solid #d1fae5",
-      borderRadius: 10,
-      background: "#f0fdf4",
+      borderRadius: 12,
+      background: "#dcfce7",
+      border: "1px solid #86efac",
+      boxShadow:
+        "0 2px 8px rgba(0,0,0,0.08)",
     }}
   >
     <div
       style={{
         marginBottom: 12,
+        color: "#14532d",
       }}
     >
-      <strong>✅ League setup complete</strong>
-      <div style={{ marginTop: 4 }}>
-        You can now schedule matches from the Matches tab.
+      <div
+        style={{
+          fontWeight: 600,
+          fontSize: "1rem",
+        }}
+      >
+        ✅ League setup complete
+      </div>
+
+      <div
+        style={{
+          marginTop: 6,
+          fontSize: "0.95rem",
+        }}
+      >
+        You can now schedule matches from the
+        Matches tab.
       </div>
     </div>
 
@@ -2915,7 +2950,7 @@ onClick={() => {
       🏏 Create Match
     </button>
   </div>
-)}      </Card>
+)}   </Card>
 
     </div>
     <div className="grid-side">
@@ -3239,7 +3274,7 @@ onClick={() => {
       {/* Step 1 */}
       <div
         style={{
-          background: "#fff",
+          background: "#f8fafc",
           border: "1px solid #e5e7eb",
           borderRadius: 12,
           padding: 20,
@@ -3265,7 +3300,7 @@ onClick={() => {
       {/* Step 2 */}
       <div
         style={{
-          background: "#fff",
+          background: "#f8fafc",
           border: "1px solid #e5e7eb",
           borderRadius: 12,
           padding: 20,
@@ -3291,7 +3326,7 @@ onClick={() => {
       {/* Step 3 */}
       <div
         style={{
-          background: "#fff",
+          background: "#f8fafc",
           border: "1px solid #e5e7eb",
           borderRadius: 12,
           padding: 20,
@@ -3333,7 +3368,7 @@ onClick={() => {
       {/* Step 4 */}
       <div
         style={{
-          background: "#fff",
+          background: "#f8fafc",
           border: "1px solid #e5e7eb",
           borderRadius: 12,
           padding: 20,
@@ -3360,7 +3395,7 @@ onClick={() => {
       {/* Step 5 */}
       <div
         style={{
-          background: "#fff",
+          background: "#f8fafc",
           border: "1px solid #e5e7eb",
           borderRadius: 12,
           padding: 20,
@@ -3436,7 +3471,7 @@ onClick={() => {
     <div
       style={{
         marginTop: 24,
-        background: "#fff",
+        background: "#f8fafc",
         border: "1px solid #e5e7eb",
         borderRadius: 12,
         padding: 20,
@@ -3478,7 +3513,7 @@ onClick={() => {
     <div
       style={{
         marginTop: 24,
-        background: "#fff",
+        background: "#f8fafc",
         border: "1px solid #e5e7eb",
         borderRadius: 12,
         padding: 20,
@@ -3591,7 +3626,7 @@ onClick={() => {
     {/* Mission */}
     <div
       style={{
-        background: "#fff",
+        background: "#f8fafc",
         border: "1px solid #e5e7eb",
         borderRadius: 12,
         padding: 20,
@@ -3618,7 +3653,7 @@ onClick={() => {
     {/* Features */}
     <div
       style={{
-        background: "#fff",
+        background: "#f8fafc",
         border: "1px solid #e5e7eb",
         borderRadius: 12,
         padding: 20,
@@ -3680,7 +3715,7 @@ onClick={() => {
     {/* Roadmap */}
     <div
       style={{
-        background: "#fff",
+        background: "#f8fafc",
         border: "1px solid #e5e7eb",
         borderRadius: 12,
         padding: 20,
@@ -3708,7 +3743,7 @@ onClick={() => {
     {/* Technology */}
     <div
       style={{
-        background: "#fff",
+        background: "#f8fafc",
         border: "1px solid #e5e7eb",
         borderRadius: 12,
         padding: 20,
