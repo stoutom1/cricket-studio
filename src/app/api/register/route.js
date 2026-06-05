@@ -1,7 +1,6 @@
 import { NextResponse } from "next/server";
 import bcrypt from "bcryptjs";
 import prisma from "@/lib/prisma";
-import {sendWelcomeEmail} from "@/lib/email";
 
 export async function POST(req) {
   try {
@@ -42,18 +41,6 @@ console.log("I am in register route");
         password: hashedPassword
       }
     });
-
-    try {
-  await sendWelcomeEmail(
-    user.name,
-    user.email
-  );
-} catch (emailError) {
-  console.error(
-    "Welcome email failed:",
-    emailError
-  );
-}
 
     return NextResponse.json({
       success: true,
