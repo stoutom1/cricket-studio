@@ -69,19 +69,44 @@ console.log(
         />
       </label>
 
-      <label>
-        <span>Password</span>
+<label>
+  <span>Password</span>
 
-        <input
-          type="password"
-          value={password}
-          onChange={(e) =>
-            setPassword(e.target.value)
-          }
-          required
-          autoComplete="current-password"
-        />
-      </label>
+  <input
+    type="password"
+    value={password}
+    onChange={(e) =>
+      setPassword(e.target.value)
+    }
+    required
+    autoComplete="current-password"
+  />
+</label>
+
+<div
+  style={{
+    textAlign: "right",
+    marginTop: -8,
+    marginBottom: 12,
+  }}
+>
+<Link
+  href={
+    callbackUrl
+      ? `/forgot-password?callbackUrl=${encodeURIComponent(
+          callbackUrl
+        )}`
+      : "/forgot-password"
+  }
+  style={{
+    fontSize: "0.9rem",
+    color: "#60a5fa",
+    textDecoration: "none",
+  }}
+>
+  Forgot Password?
+</Link>
+</div>
 
       {error && (
         <div className="error">

@@ -16,6 +16,8 @@ model User {
   leagueRegistrations LeagueRegistration[]
   activeLeagueId      Int?
   activeMatchId       Int?
+  resetToken          String?
+  resetTokenExpiry    DateTime?
   createdAt           DateTime             @default(now())
 }
 

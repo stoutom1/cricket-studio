@@ -1,63 +1,72 @@
+"use client";
+
+import { useState } from "react";
+
 export default function ForgotPasswordPage() {
+  const [email, setEmail] =
+    useState("");
+
+  const [message, setMessage] =
+    useState("");
+
+  async function handleSubmit(e) {
+    e.preventDefault();
+
+    const res = await fetch(
+      "/api/forgot-password",
+      {
+        method: "POST",
+        headers: {
+          "Content-Type":
+            "application/json"
+        },
+        body: JSON.stringify({
+          email
+        })
+      }
+    );
+
+    if (res.ok) {
+      setMessage(
+        "If an account exists, a reset email has been sent."
+      );
+    }
+  }
+
   return (
-    <div
-      style={{
-        minHeight: "100vh",
-        display: "flex",
-        justifyContent: "center",
-        alignItems: "center",
-        background: "#030712",
-        color: "white"
-      }}
-    >
-      <div
-        style={{
-          background: "#111827",
-          padding: 30,
-          borderRadius: 16,
-          width: 400
-        }}
-      >
-        <h1
-          style={{
-            marginBottom: 20,
-            fontSize: 28
-          }}
-        >
+    <div className="center-screen">
+      <div className="card">
+        <h1>
           Reset Password
         </h1>
 
-        <form>
+        <form
+          onSubmit={
+            handleSubmit
+          }
+        >
           <input
             type="email"
-            placeholder="Enter your email"
+            placeholder="Email"
+            value={email}
+            onChange={(e) =>
+              setEmail(
+                e.target.value
+              )
+            }
             required
-            style={{
-              width: "100%",
-              padding: 12,
-              borderRadius: 10,
-              border: "1px solid #374151",
-              marginBottom: 16,
-              background: "#1f2937",
-              color: "white"
-            }}
           />
 
           <button
             type="submit"
-            style={{
-              width: "100%",
-              padding: 12,
-              borderRadius: 10,
-              border: "none",
-              background: "#2563eb",
-              color: "white",
-              fontWeight: 700
-            }}
           >
             Send Reset Link
           </button>
         </form>
+
+        {message && (
+          <p>{message}</p>
+        )}
       </div>
     </div>
   );

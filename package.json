@@ -29,7 +29,8 @@
     "pg": "^8.21.0",
     "postcss": "^8.5.15",
     "react": "^18.2.0",
-    "react-dom": "^18.2.0"
+    "react-dom": "^18.2.0",
+    "resend": "^6.12.4"
   },
   "devDependencies": {
     "babel-plugin-react-compiler": "^1.0.0",
