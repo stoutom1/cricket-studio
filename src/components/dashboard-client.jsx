@@ -2736,18 +2736,41 @@ return (
       ))}
     </select>
 
-    <button
-      className="btn"
-      style={{
-        marginTop: 12,
-        width: "100%",
-      }}
-      onClick={() =>
-        setShowLeagueModal(true)
-      }
-    >
-      ➕ Create League
-    </button>
+<div
+  style={{
+    display: "flex",
+    gap: 10,
+    marginTop: 12,
+  }}
+>
+  <button
+    className="btn"
+    style={{
+      flex: 1,
+    }}
+    onClick={() =>
+      setShowLeagueModal(true)
+    }
+  >
+    ➕ Create League
+  </button>
+
+  {selectedLeague &&
+    permissions?.canDeleteLeague && (
+      <button
+        className="icon-btn danger"
+        title={`Delete ${selectedLeague.name}`}
+        onClick={() =>
+          handleDeleteLeague(
+            selectedLeague.id,
+            selectedLeague.name
+          )
+        }
+      >
+        🗑️
+      </button>
+    )}
+</div>
   </div>
 
   {/* TEAM CARD */}
