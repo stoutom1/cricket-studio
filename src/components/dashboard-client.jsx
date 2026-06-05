@@ -1528,33 +1528,6 @@ async function confirmRetiredHurt() {
   try {
     setMessage("");
     setError("");
-/*
-    await api("/api/balls", {
-      method: "POST",
-      body: JSON.stringify({
-        matchId: Number(selectedMatchId),
-        inningsNo: Number(ballForm.inningsNo),
-
-        strikerId: Number(ballForm.strikerId),
-        nonStrikerId: Number(ballForm.nonStrikerId),
-        bowlerId: Number(ballForm.bowlerId),
-
-        extraType: "NONE",
-        runsOffBat: 0,
-        extras: 0,
-
-        isWicket: 1,
-        wicketType: "RETIRED_HURT",
-
-        dismissedPlayerId: Number(ballForm.strikerId),
-
-        newBatterId: Number(retiredHurtBatterId),
-        
-        note: "Retired Hurt",
-        dismissal: "Retired Hurt"
-      })
-    });
-*/
     setBallForm((prev) => ({
       ...prev,
       strikerId: String(selectedBatter.id),
