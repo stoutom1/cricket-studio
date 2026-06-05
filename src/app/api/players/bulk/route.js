@@ -5,6 +5,7 @@ import { authOptions } from "@/lib/auth";
 
 export async function POST(request) {
   const session = await getServerSession(authOptions);
+const body = await request.json();
 
   if (!session) {
     return NextResponse.json(
@@ -12,16 +13,21 @@ export async function POST(request) {
       { status: 401 }
     );
   }
+let names = [];
 
-  const body = await request.json();
+if (Array.isArray(body.names)) {
+  names = body.names
+    .map((n) => String(n).trim())
+    .filter(Boolean);
+} else if (typeof body.names === "string") {
+  names = body.names
+    .split("\n")
+    .map((n) => n.trim())
+    .filter(Boolean);
+}
+  
 
   const teamId = Number(body.teamId);
-
-  const names = Array.isArray(body.names)
-    ? body.names
-        .map((n) => String(n).trim())
-        .filter(Boolean)
-    : [];
 
   if (!teamId) {
     return NextResponse.json(

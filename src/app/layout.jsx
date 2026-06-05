@@ -16,10 +16,28 @@ export default function RootLayout({ children }) {
             <header className="topbar">
               <div className="topbar-inner">
                 <div>
-                  <div className="brand-title">🏏 Cricket Studio</div>
-                  <div className="brand-sub">
-                    Advanced scoring • custom overs • custom wickets • custom powerplay overs • player stats
-                  </div>
+<div className="brand-section">
+  <div className="brand-title">
+    🏏 Cricket Studio
+  </div>
+
+  <div
+    style={{
+      marginTop: 4,
+      fontSize: "0.9rem",
+      color: "#64748b",
+      display: "flex",
+      alignItems: "center",
+      gap: 6,
+    }}
+  >
+    <span>💡</span>
+    <span>
+      New here? Open the <strong>Help </strong>
+      tab for a step-by-step guide.
+    </span>
+  </div>
+</div>
                 </div>
                 <AuthNav />
               </div>

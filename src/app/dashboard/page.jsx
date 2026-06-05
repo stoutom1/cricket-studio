@@ -2,6 +2,7 @@ import { getServerSession } from "next-auth";
 import { redirect } from "next/navigation";
 import { authOptions } from "@/lib/auth";
 import DashboardClient from "@/components/dashboard-client";
+import Link from "next/link";
 
 export default async function DashboardPage() {
   const session =
@@ -15,9 +16,23 @@ export default async function DashboardPage() {
 
   return (
     <main className="dashboard-page">
-      <section className="dashboard-hero">
-        <h2>📊 Dashboard</h2>
-      </section>
+
+  <section className="dashboard-hero">
+    <h2>
+        <Link
+          href="/"
+          style={{
+            textDecoration: "none",
+            color: "inherit",
+          }}
+        >📊 Dashboard
+  </Link>
+  </h2>
+                      <div className="brand-sub">
+                        Advanced scoring • custom overs • custom wickets • custom powerplay overs • player stats • league permissions • and more! 
+                      </div>
+  </section>
+
 
       <section className="dashboard-content">
         <DashboardClient />

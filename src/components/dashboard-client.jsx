@@ -112,7 +112,6 @@ function formatDate(value) {
 
 export default function DashboardClient() {
   const { data: session } = useSession();
-  //const [activeTab, setActiveTab] = useState("management");
   const [teams, setTeams] = useState([]);
   const [matches, setMatches] = useState([]);
   const [selectedMatchId, setSelectedMatchId] = useState("");
@@ -120,7 +119,7 @@ export default function DashboardClient() {
 const [activeQuickAction, setActiveQuickAction] = useState(null);
 const [expandedTeamId, setExpandedTeamId] = useState(null);
 const [selectedPlayerId, setSelectedPlayerId] = useState("");
-//const [selectedPlayers, setSelectedPlayers] = useState({});
+
 const [showWicketModal, setShowWicketModal] = useState(false);
 const [selectedWicketType, setSelectedWicketType] = useState("BOWLED");
 const [selectedNewBatter, setSelectedNewBatter] = useState("");
@@ -130,9 +129,14 @@ const [leagues, setLeagues] = useState([]);
 const [leagueForm, setLeagueForm] = useState({
   name: ""
 });
-const [selectedLeagueId, setSelectedLeagueId] = useState("");
+const [selectedPlayerTeamId, setSelectedPlayerTeamId] =
+  useState("");
+  const [showLeagueModal, setShowLeagueModal] =
+  useState(false);
+  
+const [selectedTeamId, setSelectedTeamId] = useState("");
 const [expandedLeagueId, setExpandedLeagueId] = useState(null);
-const [activeLeagueId, setActiveLeagueId] = useState(null);
+const [activeLeagueId, setActiveLeagueId] = useState("");
 const [activeTab, setActiveTab] = useState("management");
 const [permissions, setPermissions] = useState({
   canViewManagement: false,
@@ -141,7 +145,7 @@ const [permissions, setPermissions] = useState({
   canScoreMatch: false,
   canUndoBall: false
 });
-const [selectedMember, setSelectedMember] = useState(null);
+//const [selectedMember, setSelectedMember] = useState(null);
   const [matchDetail, setMatchDetail] = useState(null);
   const [scoreboard, setScoreboard] = useState(null);
   const [stats, setStats] = useState({ batting: [], bowling: [] });
@@ -154,19 +158,27 @@ const [selectedMember, setSelectedMember] = useState(null);
   const [selectedPlayers, setSelectedPlayers] = useState({});
 
   const [teamForm, setTeamForm] = useState({leagueId: "", name: ""});
-  const [playerForm, setPlayerForm] = useState({teamId: "", names: ""});
+const [playerForm, setPlayerForm] = useState({
+  names: "",
+  teamId: "",
+  leagueId: ""
+});
 const [preferencesLoaded, setPreferencesLoaded] = useState(false);
+const [searchTerm, setSearchTerm] = useState("");
 
-const [showPlayerModal, setShowPlayerModal] =
-  useState(false);
+const [roleFilter, setRoleFilter] = useState("ALL");
 
-const [playerLeagueId, setPlayerLeagueId] =
-  useState(null);
+const [showPlayerModal, setShowPlayerModal] = useState(false);
 
-  const playerTeams =
-  leagues
-    .find((l) => l.id === playerLeagueId)
-    ?.teams || [];
+const [playerLeagueId, setPlayerLeagueId] = useState(null);
+const [showPermissionModal,setShowPermissionModal] = useState(false);
+const [selectedMember, setSelectedMember] = useState(null);
+const [showAddTeam, setShowAddTeam] = useState(false);
+const [playerNames, setPlayerNames] = useState("");
+const [selectedMemberId, setSelectedMemberId] = useState("");
+
+const [showAddPlayers, setShowAddPlayers] = useState(false);
+const [memberSearch, setMemberSearch] = useState("");
 
 const [me, setMe] = useState(null);
 
@@ -176,6 +188,85 @@ useEffect(() => {
     .then(setMe);
 }, []);
 
+const selectedLeague =
+  leagues.find(
+    (l) => String(l.id) === String(activeLeagueId)
+  );
+const activeLeague =
+  leagues.find(
+    (league) =>
+      league.id ===
+      Number(activeLeagueId)
+  ) || null;
+/*const selectedMember =
+  selectedLeague?.members?.find(
+    (m) => String(m.id) === String(selectedMemberId)
+  ) || null;
+*/
+  //const activeLeague = selectedLeague;
+
+const selectedTeam =
+  selectedLeague?.teams?.find(
+    (t) => String(t.id) === String(selectedTeamId)
+  );
+/*
+  const filteredMembers =
+  activeLeague?.members?.filter(
+    (member) =>
+      member.user?.name
+        ?.toLowerCase()
+        .includes(
+          memberSearch.toLowerCase()
+        ) ||
+      member.user?.email
+        ?.toLowerCase()
+        .includes(
+          memberSearch.toLowerCase()
+        )
+  );
+*/
+const filteredMembers =
+  activeLeague?.members?.filter(
+    (member) => {
+      const matchesSearch =
+        (member.user?.name || "")
+          .toLowerCase()
+          .includes(
+            searchTerm.toLowerCase()
+          ) ||
+        (member.user?.email || "")
+          .toLowerCase()
+          .includes(
+            searchTerm.toLowerCase()
+          );
+
+      const matchesRole =
+        roleFilter === "ALL" ||
+        member.role === roleFilter;
+
+      return (
+        matchesSearch &&
+        matchesRole
+      );
+    }
+  ) || [];
+
+  const playerTeams =
+  leagues
+    .find((l) => l.id === playerLeagueId)
+    ?.teams || [];
+const selectedPlayerLeague = leagues.find(
+  (l) => l.id === Number(playerLeagueId)
+);
+useEffect(() => {
+  if (
+    activeLeague?.members?.length > 0
+  ) {
+    setSelectedMember(
+      activeLeague.members[0]
+    );
+  }
+}, [activeLeague]);
 useEffect(() => {
   async function loadPermissions() {
     const res =
@@ -246,6 +337,35 @@ useEffect(() => {
   setMatches([]);
   loadMatches();
 }, [activeLeagueId]);
+
+useEffect(() => {
+  if (
+    showPlayerModal &&
+    activeLeague
+  ) {
+    setPlayerForm((prev) => ({
+      ...prev,
+      leagueId: activeLeague.id,
+    }));
+  }
+}, [showPlayerModal, activeLeague]);
+
+useEffect(() => {
+  if (!activeLeague) return;
+
+  const member =
+    activeLeague.members?.find(
+      (m) =>
+        String(m.id) === String(selectedMemberId)
+    );
+
+  if (member) {
+    setSelectedMember(member);
+  }
+
+  setShowPermissionModal(false);
+}, [selectedMemberId, activeLeague]);
+
 const filteredTeams = teams.filter(
   (team) =>
     String(team.leagueId) ===
@@ -271,28 +391,6 @@ const teamsForMatch =
   maxOversPerBowler: ""
 });
 
- /* const [ballForm, setBallForm] = useState({
-    inningsNo: "1",
-    strikerId: "",
-    nonStrikerId: "",
-    bowlerId: "",
-    extraType: "NONE",
-    runsOffBat: "0",
-    extras: "0",
-    isWicket: false,
-    wicketType: "NONE",
-    dismissedPlayerId: "",
-    newBatterId: "",
-    note: ""
-  }, [
-  scoreboard?.currentState?.strikerId,
-  scoreboard?.currentState?.nonStrikerId,
-  scoreboard?.currentState?.bowlerId,
-  scoreboard?.currentState?.dismissedPlayerId,
-  scoreboard?.currentState?.inningsNo,
-  scoreboard?.currentInnings
-]);
-*/
 const [ballForm, setBallForm] = useState({
   inningsNo: "1",
   strikerId: "",
@@ -307,9 +405,157 @@ const [ballForm, setBallForm] = useState({
   newBatterId: "",
   note: ""
 });
+async function loadMatches() {
+  try {
+    const data = await api("/api/matches");
 
+    setMatches(data);
+
+    if (!selectedMatchId && data.length > 0) {
+      setSelectedMatchId(String(data[0].id));
+    } else if (
+      selectedMatchId &&
+      !data.some(
+        (m) =>
+          String(m.id) ===
+          String(selectedMatchId)
+      )
+    ) {
+      setSelectedMatchId(
+        data[0]
+          ? String(data[0].id)
+          : ""
+      );
+    }
+  } catch (error) {
+    console.error(
+      "Load Matches Error:",
+      error
+    );
+  }
+}
+async function loadTeams() {
+  try {
+    const data = await api("/api/teams");
+
+    setTeams(data || []);
+
+    // Keep selected team valid
+    if (!selectedTeamId && data?.length > 0) {
+      setSelectedTeamId(String(data[0].id));
+    } else if (
+      selectedTeamId &&
+      !data.some(
+        (t) =>
+          String(t.id) ===
+          String(selectedTeamId)
+      )
+    ) {
+      setSelectedTeamId(
+        data[0]
+          ? String(data[0].id)
+          : ""
+      );
+    }
+
+  } catch (error) {
+    console.error(
+      "Load Teams Error:",
+      error
+    );
+
+    setError(
+      error.message ||
+      "Failed to load teams"
+    );
+
+    setTeams([]);
+  }
+}
+const handleAddPlayers = async (e) => {
+ alert(JSON.stringify(playerForm));
+  console.log("FULL playerForm:", playerForm);
+console.log("playerLeagueId:", playerLeagueId);
+console.log("activeLeague:", activeLeague);
+
+  e.preventDefault();
+
+  try {
+    console.log("SAVE PLAYERS CLICKED");
+    console.log("playerForm:", playerForm);
+
+    if (!playerForm.teamId) {
+      setError("Please select a team");
+      return;
+    }
+
+    const rawNames = playerForm.names || "";
+
+    console.log("RAW NAMES:", rawNames);
+
+    const playerNames = rawNames
+      .split(/\r?\n/)
+      .map((name) => name.trim())
+      .filter((name) => name.length > 0);
+
+    console.log("PARSED NAMES:", playerNames);
+
+    if (playerNames.length === 0) {
+      setError("Enter at least one player");
+      return;
+    }
+
+    const payload = {
+      teamId: Number(selectedPlayerTeamId),
+      names: playerNames,
+    };
+
+    console.log("SENDING:", payload);
+
+    const response = await fetch(
+      "/api/players/bulk",
+      {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+        },
+        body: JSON.stringify(payload),
+      }
+    );
+
+    const data = await response.json();
+
+    console.log("RESPONSE:", data);
+
+    if (!response.ok) {
+      throw new Error(
+        data.error || "Failed to create players"
+      );
+    }
+
+    await loadTeams();
+    await loadLeagues();
+
+    setMessage(
+      `${data.created || playerNames.length} players added`
+    );
+
+    setPlayerForm({
+      names: "",
+      teamId: "",
+      leagueId: activeLeagueId || "",
+    });
+
+    setShowPlayerModal(false);
+
+  } catch (error) {
+    console.error("Add Players Error:", error);
+    setError(error.message);
+  }
+};
 function openPermissionEditor(member) {
-  setSelectedMember(member);
+setSelectedMember(member);
+setShowPermissionModal(true);
 
   setPermissions({
     canViewManagement:
@@ -343,7 +589,7 @@ async function savePermissions() {
   if (!selectedMember) return;
 
   const response = await fetch(
-    `/api/leagues/${activeLeague.id}/permissions`,
+    `/api/leagues/${activeLeague?.id}/permissions`,
     {
       method: "PATCH",
       headers: {
@@ -430,68 +676,81 @@ async function api(url, options = {}) {
         console.error(err);
       }
     }
-async function loadLeagues() {
-  const data = await api("/api/leagues");
-  setLeagues(data);
+const loadLeagues = async () => {
+  const response = await fetch("/api/leagues");
+  const data = await response.json();
+
+ setLeagues(data);
+
+if (activeLeagueId) {
+  const refreshedLeague =
+    data.find(
+      (l) =>
+        String(l.id) ===
+        String(activeLeagueId)
+    );
+
+  if (!refreshedLeague) {
+    setActiveLeagueId("");
+    setSelectedTeamId("");
+  }
 }
+  return data;
+};
 
 async function updateRole(
   leagueId,
   memberId,
   role
 ) {
-  const response = await fetch(
-    `/api/leagues/${leagueId}/permissions`,
-    {
-      method: "PATCH",
-      headers: {
-        "Content-Type":
-          "application/json"
-      },
-      body: JSON.stringify({
-        memberId,
-        role
-      })
+  try {
+    const response = await fetch(
+      `/api/leagues/${leagueId}/permissions`,
+      {
+        method: "PATCH",
+        headers: {
+          "Content-Type": "application/json"
+        },
+        body: JSON.stringify({
+          memberId,
+          role
+        })
+      }
+    );
+
+    const data = await response.json();
+
+    if (!response.ok) {
+      throw new Error(
+        data.error || "Failed to update role"
+      );
     }
-  );
 
-  if (!response.ok) {
-    alert("Failed to update role");
-    return;
-  }
-
-  setLeagues((prev) =>
-    prev.map((league) => ({
-      ...league,
-      members: league.members?.map((member) =>
-        member.id === memberId
+    setLeagues((prev) =>
+      prev.map((league) =>
+        league.id === leagueId
           ? {
-              ...member,
-              role
+              ...league,
+              members: league.members?.map(
+                (member) =>
+                  member.id === memberId
+                    ? {
+                        ...member,
+                        role
+                      }
+                    : member
+              )
             }
-          : member
+          : league
       )
-    }))
-  );
+    );
+
+    setMessage("Role updated successfully");
+  } catch (error) {
+    console.error(error);
+    setError(error.message);
+  }
 }
-  async function loadTeams() {
-    const data = await api("/api/teams");
-    setTeams(data);
-  }
-
-  async function loadMatches() {
-    const data = await api("/api/matches");
-    setMatches(data);
-
-    if (!selectedMatchId && data.length > 0) {
-      setSelectedMatchId(String(data[0].id));
-    } else if (
-      selectedMatchId &&
-      !data.some((m) => String(m.id) === String(selectedMatchId))
-    ) {
-      setSelectedMatchId(data[0] ? String(data[0].id) : "");
-    }
-  }
 
   async function loadSelectedMatch(matchId) {
     if (!matchId) {
@@ -552,8 +811,6 @@ const league = await api("/api/leagues", {
     await loadMatches();
     await loadTeams();
     await refreshAll();
-    //setActiveLeagueId(Number(activeLeagueId));
-    //router.refresh();
   } catch (err) {
     setError(err.message);
   }
@@ -718,30 +975,48 @@ setBallForm((prev) => ({
     scoreboard?.currentInnings
   ]);
 
-  async function handleAddTeam(e) {
-    e.preventDefault();
-    setMessage("");
-    setError("");
+const handleAddTeam = async (e) => {
+  e.preventDefault();
 
-    try {
-await api("/api/teams", {
-  method: "POST",
-  body: JSON.stringify({
-    leagueId: Number(teamForm.leagueId),
-    name: teamForm.name.trim()
-  })
-});
+  try {
+    console.log("Submitting team:", teamForm);
 
-setTeamForm({
-  leagueId: "",
-  name: ""
-});
-      setMessage("✅ Team added");
-      await refreshAll();
-    } catch (err) {
-      setError(err.message);
+    const response = await fetch("/api/teams", {
+      method: "POST",
+      headers: {
+        "Content-Type": "application/json",
+      },
+      body: JSON.stringify({
+        name: teamForm.name,
+        leagueId: teamForm.leagueId,
+      }),
+    });
+
+    const data = await response.json();
+
+    console.log("API Response:", data);
+
+    if (!response.ok) {
+      throw new Error(data.error || "Failed to create team");
     }
+
+ setMessage(`Team "${data.name}" created`);
+
+await loadLeagues();
+
+setTeamForm((prev) => ({
+  ...prev,
+  name: ""
+}));
+
+setShowAddTeam(false);
+
+  } catch (error) {
+    console.error("Create Team Error:", error);
+
+    setError(error.message);
   }
+};
 
   async function handleDeleteTeam(teamId, teamName) {
     if (!confirm(`Delete team "${teamName}"?`)) {
@@ -763,32 +1038,59 @@ setTeamForm({
     }
   }
 
-  async function handleAddPlayer(e) {
-    e.preventDefault();
-    setMessage("");
-    setError("");
+const handleAddPlayer = async (e) => {
+  e.preventDefault();
 
-    try {
-const names = playerForm.names
-  .split(/\r?\n|,/)
-  .map((x) => x.trim())
-  .filter(Boolean);
+  try {
+    const response = await fetch(
+      "/api/players",
+      {
+        method: "POST",
+        headers: {
+          "Content-Type":
+            "application/json",
+        },
+        body: JSON.stringify({
+          name: playerForm.name,
+          teamId: selectedTeam.id,
+        }),
+      }
+    );
 
-await api("/api/players/bulk", {
-  method: "POST",
-  body: JSON.stringify({
-    teamId: Number(playerForm.teamId),
-    names
-  })
-});
+    const data =
+      await response.json();
 
-      setPlayerForm({ teamId: "", names: "" });
-      setMessage("✅ Player added");
-      await refreshAll();
-    } catch (err) {
-      setError(err.message);
+    if (!response.ok) {
+      throw new Error(
+        data.error ||
+          "Failed to add player"
+      );
     }
+
+    setMessage(
+      `Player "${data.name}" added`
+    );
+
+    setPlayerForm({
+      name: "",
+    });
+
+    setShowPlayerModal(false);
+
+   const updatedLeagues = await loadLeagues();
+
+const refreshedLeague = updatedLeagues.find(
+  (l) => l.id === activeLeague.id
+);
+
+if (refreshedLeague) {
+  selectLeague(refreshedLeague);
+}
+
+  } catch (error) {
+    setError(error.message);
   }
+};
 
   async function handleDeletePlayer(playerId, playerName) {
     if (!confirm(`Delete player "${playerName}"?`)) return;
@@ -1063,7 +1365,46 @@ setMessage("🔄 Striker swapped successfully");
     setError(err.message);
   }
 }
+const handleBulkAddPlayers = async (e) => {
+  e.preventDefault();
 
+  try {
+
+const names = playerForm.names
+  .split("\n")
+  .map((name) => name.trim())
+  .filter(Boolean);
+
+    const response = await fetch("/api/players/bulk", {
+      method: "POST",
+      headers: {
+        "Content-Type": "application/json",
+      },
+      body: JSON.stringify({
+        teamId: playerForm.teamId,
+        names,
+      }),
+    });
+
+    const data = await response.json();
+
+    if (!response.ok) {
+      throw new Error(
+        data.error || "Failed to add players"
+      );
+    }
+
+    await loadLeagues();
+
+    setShowPlayerModal(false);
+
+    setMessage(
+      `${names.length} players added successfully`
+    );
+  } catch (error) {
+    setError(error.message);
+  }
+};
 async function handleMatchSelect(matchId) {
   setSelectedMatchId(String(matchId));
 
@@ -1232,13 +1573,8 @@ function triggerQuickAction(actionKey, callback) {
   const activeInnings =
     scoreboard?.innings?.find((x) => x.number === scoreboard.currentInnings) ||
     scoreboard?.innings?.[0];
-
-const activeLeague =
-  leagues.find(
-    (league) =>
-      league.id === me?.activeLeagueId
-  );
-
+const canCreateMatch =
+  activeLeague?.teams?.length >= 2;
 return (
   <>
 <div className="dashboard-tabs">
@@ -1301,6 +1637,20 @@ return (
       <span className="tab-text">Permissions</span>
     </button>
   )}
+<button
+  className="dashboard-tab"
+  onClick={() => setActiveTab("help")}
+>
+  ❓ Help
+</button>
+<button
+  className={"dashboard-tab"}
+  onClick={() =>
+    setActiveTab("about")
+  }
+>
+  ℹ️ About
+</button>  
 </div>
   {activeTab === "scoring" && (
   <div className="page-grid">
@@ -1906,6 +2256,16 @@ return (
           <p className="muted">No matches yet</p>
         ) : (
           <div className="match-list">
+            <div
+    style={{
+      padding: 10,
+      background: "#eff6ff",
+      borderRadius: 8,
+      fontSize: "10px"
+    }}
+  >
+    👉 Click any match below to view the Scoring screen.
+  </div>
             {matches.map((match) => {
                   const isProtectedLeague = match.leagueName === "Surprise Cricket League";
                   //const PROTECTED_LEAGUE_ID = 2;
@@ -2194,6 +2554,17 @@ return (
           <p className="muted">No matches yet</p>
         ) : (
           <div className="match-list">
+                        <div
+    style={{
+      marginBottom: 6,
+      padding: 10,
+      background: "#eff6ff",
+      borderRadius: 8,
+      fontSize: "12px"
+    }}
+  >
+    👉 Click any match below to view the Scoring screen.
+  </div>
             {matches.map((match) => {
                                 const isProtectedLeague = match.leagueName === "Surprise Cricket League";
                   //const PROTECTED_LEAGUE_ID = 2;
@@ -2295,220 +2666,258 @@ return (
   <div className="page-grid">
 
     <div className="grid-main">
-<Card title="🏆 Create League" defaultCollapsed={true}>
-  <form className="form stack" onSubmit={handleAddLeague}>
-    <label>
-      <span>League Name</span>
 
-      <input
-        type="text"
-        value={leagueForm.name}
-        onChange={(e) =>
-          setLeagueForm({
-            name: e.target.value
-          })
-        }
-        placeholder="Premier League"
-        required
-      />
-    </label>
+      <Card title="🏏 League Management">
 
-    <button
-      type="submit"
-      className="btn"
-    >
-      Create League
-    </button>
-  </form>
-</Card>
-<Card title="🏆 Leagues" defaultCollapsed={false}>
-  {leagues.map((league) => {
-    const isProtectedLeague =
-    league.name === "Surprise Cricket League";
-
-  const canDeleteProtectedLeague =
-    session?.user?.email ===
-    "surprisecricket11@gmail.com";
-return(
-    <div
-      key={league.id}
-      className="card"
-      style={{ marginBottom: 16 }}
-    >
-      <div className="card-head">
-        <button
-          type="button"
-          className="btn btn-outline"
-            key={league.id}
-
-            onClick={() => selectLeague(league)}
-       >
-            <strong>{league.name}</strong>
-            {activeLeagueId === league.id && (
-              <span
-                style={{
-                  marginLeft: 10,
-                  color: "#2563eb"
-                }}
-              >
-                (Active)
-              </span>
-            )}
-        </button>     
-        <button
-          type="button"
-          className="btn btn-outline"
-          onClick={() =>
-            setExpandedLeagueId(
-              expandedLeagueId === league.id
-                ? null
-                : league.id
-            )
-          }
+        <div
+          style={{
+            display: "grid",
+            gridTemplateColumns:
+              "1fr 1fr 1fr",
+            gap: 20
+          }}
         >
-          {expandedLeagueId === league.id
-            ? "Hide Teams"
-            : `Teams (${league.teams?.length || 0})`}
-        </button>
-        <button
-  className="btn btn-outline"
-  onClick={() => generateInviteLink(league.id)}
->
-  🔗 Invite Link
-</button>
- {(!isProtectedLeague ||
-  canDeleteProtectedLeague) && (
-  <button
-    className="btn btn-danger"
-    onClick={() =>
-      handleDeleteLeague(
-        league.id,
-        league.name
-      )
-    }
-  >
-    Delete League
-  </button>
-)}
-      </div>
 
-      {expandedLeagueId === league.id && (
-        <>
-          {/* ADD TEAM FORM */}
-          <form
-            onSubmit={handleAddTeam}
-            style={{
-              marginTop: 12,
-              marginBottom: 12
-            }}
-          >
-            <input
-              type="text"
-              value={teamForm.name}
-              placeholder="Team name"
-onChange={(e) =>
-  setTeamForm((prev) => ({
-    ...prev,
-    leagueId: league.id,
-    name: e.target.value
-  }))
-}
-              required
-            />
+          {/* LEAGUES */}
+
+          <div>
+
+            <h3>Leagues</h3>
+
+            <select
+              value={activeLeagueId || ""}
+              onChange={(e) => {
+                setActiveLeagueId(
+                  e.target.value
+                );
+
+                setSelectedTeamId("");
+              }}
+              style={{
+                width: "100%"
+              }}
+            >
+              <option value="">
+                Select League
+              </option>
+
+              {leagues.map((league) => (
+                <option
+                  key={league.id}
+                  value={league.id}
+                >
+                  {league.name}
+                </option>
+              ))}
+            </select>
 
             <button
-              type="submit"
               className="btn"
+              style={{
+                marginTop: 10
+              }}
+              onClick={() =>
+                setShowLeagueModal(true)
+              }
             >
-              Add Team
+              ➕ Create League
             </button>
-                     <button
-    type="button"
-    className="btn btn-outline"
-    onClick={() => {
-      setPlayerLeagueId(league.id);
-      setShowPlayerModal(true);
-    }}
-  >
-    👥 Add Players
-  </button>
-          </form>
 
-          {/* TEAM LIST */}
-          {league.teams?.map((team) => (
-   <div
-    key={team.id}
-    style={{
-      display: "flex",
-      alignItems: "center",
-      gap: 12,
-      marginBottom: 12
-    }}
-  >
-    <span style={{ minWidth: 150 }}>
-      {team.name}
-    </span>
+          </div>
 
-    <select
-      value={selectedPlayers[team.id] || ""}
-      onChange={(e) =>
-        setSelectedPlayers((prev) => ({
-          ...prev,
-          [team.id]: e.target.value
-        }))
-      }
-    >
-      <option value="">
-        Select Player
-      </option>
+          {/* TEAMS */}
 
-      {team.players?.map((player) => (
-        <option
-          key={player.id}
-          value={player.id}
-        >
-          {player.name}
-        </option>
-      ))}
-    </select>
-{
-permissions?.canDeletePlayer && (
+          <div>
+
+            <h3>Teams</h3>
+
+            <select
+              value={selectedTeamId || ""}
+              onChange={(e) =>
+                setSelectedTeamId(
+                  e.target.value
+                )
+              }
+              disabled={!selectedLeague}
+              style={{
+                width: "100%"
+              }}
+            >
+              <option value="">
+                Select Team
+              </option>
+
+              {selectedLeague?.teams?.map(
+                (team) => (
+                  <option
+                    key={team.id}
+                    value={team.id}
+                  >
+                    {team.name}
+                  </option>
+                )
+              )}
+            </select>
+
+            <div
+              style={{
+                display: "flex",
+                gap: 10,
+                marginTop: 10
+              }}
+            >
+
+              <button
+                className="btn"
+                disabled={!selectedLeague}
+                onClick={() => {
+                  setTeamForm({
+                    name: "",
+                    leagueId:
+                      selectedLeague.id
+                  });
+
+                  setShowAddTeam(true);
+                }}
+              >
+                ➕ Add Team
+              </button>
+
+              {selectedTeam &&
+                permissions?.canDeleteTeam && (
+                  <button
+                    className="btn btn-danger"
+                    onClick={() =>
+                      handleDeleteTeam(
+                        selectedTeam.id,
+                        selectedTeam.name
+                      )
+                    }
+                  >
+                    Delete
+                  </button>
+                )}
+
+            </div>
+
+          </div>
+
+          {/* PLAYERS */}
+
+          <div>
+
+            <h3>Players</h3>
+
+            {!selectedTeam && (
+              <p>
+                Select a team
+              </p>
+            )}
+
+            {selectedTeam && (
+              <>
+                <div
+                  style={{
+                    maxHeight: 400,
+                    overflowY: "auto",
+                    border:
+                      "1px solid var(--border)",
+                    borderRadius: 8,
+                    padding: 10
+                  }}
+                >
+
+                  {selectedTeam.players?.map(
+                    (player) => (
+                      <div
+                        key={player.id}
+                        style={{
+                          display: "flex",
+                          justifyContent:
+                            "space-between",
+                          alignItems:
+                            "center",
+                          marginBottom: 8
+                        }}
+                      >
+                        <span>
+                          {player.name}
+                        </span>
+
+                        {permissions?.canDeletePlayer && (
 <button
-  disabled={!selectedPlayers[team.id]}
-  onClick={() => {
-    const player = team.players.find(
-      (p) =>
-        p.id === Number(selectedPlayers[team.id])
-    );
-
+  className="icon-btn danger"
+  title={`Delete ${player.name}`}
+  onClick={() =>
     handleDeletePlayer(
       player.id,
       player.name
-    );
+    )
+  }
+>
+  🗑️
+</button>
+                        )}
+                      </div>
+                    )
+                  )}
+
+                </div>
+
+<button
+  className="btn"
+onClick={() => {
+  setPlayerLeagueId(activeLeagueId);
+
+  setPlayerForm({
+    names: "",
+    leagueId: activeLeagueId,
+    teamId: selectedTeamId
+  });
+
+    setShowPlayerModal(true);
   }}
 >
-  Delete Player
+  ➕ Add Players
 </button>
-  )}
 
-    {
-      permissions?.canDeleteTeam && (
-    <button
-      onClick={() => handleDeleteTeam(team.id,team.name)}
+              </>
+            )}
+
+          </div>
+
+        </div>
+{canCreateMatch && (
+  <div
+    style={{
+      marginTop: 20,
+      padding: 16,
+      border: "1px solid #d1fae5",
+      borderRadius: 10,
+      background: "#f0fdf4",
+    }}
+  >
+    <div
+      style={{
+        marginBottom: 12,
+      }}
     >
-      Delete Team
-    </button>
-  )}   
-  </div>
-          ))}
-        </>
-      )}
-    </div>
-);    
-})}
-</Card>
+      <strong>✅ League setup complete</strong>
+      <div style={{ marginTop: 4 }}>
+        You can now schedule matches from the Matches tab.
+      </div>
     </div>
 
+    <button
+      className="btn btn-primary"
+      onClick={() => setActiveTab("matches")}
+    >
+      🏏 Create Match
+    </button>
+  </div>
+)}      </Card>
+
+    </div>
     <div className="grid-side">
         {(message || error) && (
           <Card title="ℹ️ Notifications" defaultCollapsed={false}>
@@ -2517,8 +2926,29 @@ permissions?.canDeletePlayer && (
           </Card>
         )}
     </div>
-
   </div>
+)}
+{activeTab === "stats" && (
+  <Card title="📈 Statistics">
+    <div
+      style={{
+        textAlign: "center",
+        padding: "50px 20px",
+      }}
+    >
+      <h2>🚧 Statistics Module Coming Soon</h2>
+
+      <p>
+        This section is currently under development.
+      </p>
+
+      <p style={{ color: "#6b7280" }}>
+        Future releases will include batting averages,
+        bowling figures, leaderboards, player rankings,
+        team analytics, and match insights.
+      </p>
+    </div>
+  </Card>
 )}
 {activeTab === "permissions" && (
   <div className="page-grid">
@@ -2526,64 +2956,136 @@ permissions?.canDeletePlayer && (
 
       {/* MEMBER LIST */}
 <Card title="👥 League Permissions">
-  <div className="members-list">
-    {activeLeague?.members?.map((member) => (
-      <div
-        key={member.id}
-        className="member-card"
-      >
-        <div className="member-info">
-          <div className="member-avatar">
-            👤
-          </div>
 
-          <div className="member-details">
-            <div className="member-name">
-              {member.user?.name || "Unknown User"}
-            </div>
+  {!activeLeague && (
+    <p>Select a league first.</p>
+  )}
 
-            <div className="member-email">
-              {member.user?.email}
-            </div>
-          </div>
-        </div>
+  {activeLeague && (
+    <>
+      <label>
+        <strong>Member</strong>
+      </label>
+ <select
+  value={selectedMember?.id || ""}
+  onChange={(e) => {
+    const member =
+      activeLeague.members.find(
+        (m) =>
+          m.id === Number(e.target.value)
+      );
 
-        <div className="member-actions">
-          <select
-            className="member-role-select"
-            value={member.role}
-            onChange={(e) =>
-              updateRole(
-                activeLeague.id,
-                member.id,
-                e.target.value
-              )
-            }
-          >
-            <option value="OWNER">Owner</option>
-            <option value="ADMIN">Admin</option>
-            <option value="CAPTAIN">Captain</option>
-            <option value="SCORER">Scorer</option>
-            <option value="ANALYST">Analyst</option>
-            <option value="VIEWER">Viewer</option>
-          </select>
+    setSelectedMember(member);
+    setShowPermissionModal(false);
+  }}
+>
+        <option value="">
+          Select Member
+        </option>
 
-          <button
-            className="btn btn-outline"
-            onClick={() =>
-              openPermissionEditor(member)
-            }
-          >
-            🔐 Permissions
-          </button>
-        </div>
-      </div>
-    ))}
+        {activeLeague.members?.map(
+          (member) => (
+            <option
+              key={member.id}
+              value={member.id}
+            >
+              {member.user?.name} (
+              {member.role})
+            </option>
+          )
+        )}
+      </select>
+{!activeLeague?.members?.length && (
+  <div
+    style={{
+      padding: 12,
+      border: "1px solid #ddd",
+      borderRadius: 8
+    }}
+  >
+    No members found for this league.
   </div>
+)}
+      {selectedMember && (
+        <>
+          <div
+            style={{
+              padding: 16,
+              border: "1px solid #ddd",
+              borderRadius: 8,
+              marginBottom: 20,
+            }}
+          >
+            <h3>
+              {selectedMember.user?.name}
+            </h3>
+
+            <div
+              style={{
+                color: "#666",
+                marginBottom: 15,
+              }}
+            >
+              {selectedMember.user?.email}
+            </div>
+
+            <label>
+              <strong>Role</strong>
+            </label>
+
+            <select
+              value={selectedMember.role}
+              onChange={(e) =>
+                updateRole(
+                  activeLeague.id,
+                  selectedMember.id,
+                  e.target.value
+                )
+              }
+              style={{
+                width: "100%",
+                marginTop: 8,
+                marginBottom: 15,
+              }}
+            >
+              <option value="OWNER">
+                Owner
+              </option>
+              <option value="ADMIN">
+                Admin
+              </option>
+              <option value="CAPTAIN">
+                Captain
+              </option>
+              <option value="SCORER">
+                Scorer
+              </option>
+              <option value="ANALYST">
+                Analyst
+              </option>
+              <option value="VIEWER">
+                Viewer
+              </option>
+            </select>
+
+            <button
+              className="btn"
+              onClick={() =>
+                        openPermissionEditor(selectedMember)
+                      }
+            >
+              🔐 Edit Permissions
+            </button>
+          </div>
+        </>
+      )}
+    </>
+  )}
+
 </Card>
 
  {/* MEMBER PERMISSIONS */}
-{selectedMember && permissions && (
+{showPermissionModal && selectedMember && (
   <Card
     title={`🔐 Permissions - ${
       selectedMember.user?.name ||
@@ -2675,6 +3177,819 @@ permissions?.canDeletePlayer && (
 
   </Card>
 )}
+    </div>
+  </div>
+)}
+{activeTab === "help" && (
+  <Card title="❓ Cricket Studio Help Center">
+
+    {/* Hero */}
+    <div
+      style={{
+        background:
+          "linear-gradient(135deg,#2563eb,#1d4ed8)",
+        color: "#fff",
+        padding: 24,
+        borderRadius: 12,
+        marginBottom: 24,
+      }}
+    >
+      <h2
+        style={{
+          margin: 0,
+          marginBottom: 10,
+        }}
+      >
+        🏏 Welcome to Cricket Studio
+      </h2>
+
+      <p
+        style={{
+          margin: 0,
+          opacity: 0.95,
+          fontSize: 16,
+          lineHeight: 1.6,
+        }}
+      >
+        Follow the steps below to create
+        your league, add teams and players,
+        schedule matches, and start live
+        scoring.
+      </p>
+    </div>
+
+    {/* Setup Journey */}
+    <h3
+      style={{
+        marginBottom: 16,
+      }}
+    >
+      🚀 Quick Start Guide
+    </h3>
+
+    <div
+      style={{
+        display: "grid",
+        gridTemplateColumns:
+          "repeat(auto-fit,minmax(260px,1fr))",
+        gap: 16,
+      }}
+    >
+
+      {/* Step 1 */}
+      <div
+        style={{
+          background: "#fff",
+          border: "1px solid #e5e7eb",
+          borderRadius: 12,
+          padding: 20,
+          boxShadow:
+            "0 2px 8px rgba(15,23,42,0.06)",
+        }}
+      >
+        <h3>🏆 Step 1</h3>
+
+        <h4>Create League</h4>
+
+        <p>
+          Open the Management tab and click
+          <strong> Create League</strong>.
+        </p>
+
+        <p>
+          Every team, player, and match
+          belongs to a league.
+        </p>
+      </div>
+
+      {/* Step 2 */}
+      <div
+        style={{
+          background: "#fff",
+          border: "1px solid #e5e7eb",
+          borderRadius: 12,
+          padding: 20,
+          boxShadow:
+            "0 2px 8px rgba(15,23,42,0.06)",
+        }}
+      >
+        <h3>👥 Step 2</h3>
+
+        <h4>Add Teams</h4>
+
+        <p>
+          Select a league and click
+          <strong> Add Team</strong>.
+        </p>
+
+        <p>
+          You need at least two teams before
+          a match can be created.
+        </p>
+      </div>
+
+      {/* Step 3 */}
+      <div
+        style={{
+          background: "#fff",
+          border: "1px solid #e5e7eb",
+          borderRadius: 12,
+          padding: 20,
+          boxShadow:
+            "0 2px 8px rgba(15,23,42,0.06)",
+        }}
+      >
+        <h3>🏏 Step 3</h3>
+
+        <h4>Add Players</h4>
+
+        <p>
+          Click <strong>Add Players</strong>,
+          select a team, and paste player
+          names one per line.
+        </p>
+
+        <div
+          style={{
+            marginTop: 12,
+            padding: 12,
+            borderRadius: 8,
+            border: "1px solid #e5e7eb",
+            background: "#f8fafc",
+            fontFamily: "monospace",
+            fontSize: 13,
+          }}
+        >
+          Virat Kohli
+          <br />
+          Rohit Sharma
+          <br />
+          MS Dhoni
+          <br />
+          KL Rahul
+        </div>
+      </div>
+
+      {/* Step 4 */}
+      <div
+        style={{
+          background: "#fff",
+          border: "1px solid #e5e7eb",
+          borderRadius: 12,
+          padding: 20,
+          boxShadow:
+            "0 2px 8px rgba(15,23,42,0.06)",
+        }}
+      >
+        <h3>📅 Step 4</h3>
+
+        <h4>Create Match</h4>
+
+        <p>
+          Navigate to the Matches tab and
+          click
+          <strong> Create Match</strong>.
+        </p>
+
+        <p>
+          Select Team A and Team B from the
+          chosen league.
+        </p>
+      </div>
+
+      {/* Step 5 */}
+      <div
+        style={{
+          background: "#fff",
+          border: "1px solid #e5e7eb",
+          borderRadius: 12,
+          padding: 20,
+          boxShadow:
+            "0 2px 8px rgba(15,23,42,0.06)",
+        }}
+      >
+        <h3>🎯 Step 5</h3>
+
+        <h4>Start Live Scoring</h4>
+
+        <p>
+          After creating a match, click the
+          match from the Matches tab.
+        </p>
+
+        <p>
+          The selected match automatically
+          becomes available in the Live
+          Scoring tab.
+        </p>
+      </div>
+
+    </div>
+
+    {/* Pro Tips */}
+    <div
+      style={{
+        marginTop: 28,
+        background: "#eff6ff",
+        border: "1px solid #93c5fd",
+        borderRadius: 12,
+        padding: 20,
+      }}
+    >
+      <h3
+        style={{
+          marginTop: 0,
+        }}
+      >
+        💡 Pro Tips
+      </h3>
+
+      <ul
+        style={{
+          marginBottom: 0,
+          lineHeight: 1.8,
+        }}
+      >
+        <li>
+          Create at least 2 teams before
+          creating a match.
+        </li>
+
+        <li>
+          Add players in bulk using the
+          multi-line text area.
+        </li>
+
+        <li>
+          Select a match before opening Live
+          Scoring.
+        </li>
+
+        <li>
+          Use League Permissions to assign
+          scorers and captains.
+        </li>
+      </ul>
+    </div>
+
+    {/* Roles */}
+    <div
+      style={{
+        marginTop: 24,
+        background: "#fff",
+        border: "1px solid #e5e7eb",
+        borderRadius: 12,
+        padding: 20,
+        boxShadow:
+          "0 2px 8px rgba(15,23,42,0.06)",
+      }}
+    >
+      <h3
+        style={{
+          marginTop: 0,
+        }}
+      >
+        🔐 Roles & Permissions
+      </h3>
+
+      <p>
+        League Owners and Admins can manage
+        members and control access levels.
+      </p>
+
+      <div
+        style={{
+          display: "flex",
+          flexWrap: "wrap",
+          gap: 10,
+          marginTop: 12,
+        }}
+      >
+        <span className="badge">OWNER</span>
+        <span className="badge">ADMIN</span>
+        <span className="badge">CAPTAIN</span>
+        <span className="badge">SCORER</span>
+        <span className="badge">ANALYST</span>
+        <span className="badge">VIEWER</span>
+      </div>
+    </div>
+
+    {/* FAQ */}
+    <div
+      style={{
+        marginTop: 24,
+        background: "#fff",
+        border: "1px solid #e5e7eb",
+        borderRadius: 12,
+        padding: 20,
+        boxShadow:
+          "0 2px 8px rgba(15,23,42,0.06)",
+      }}
+    >
+      <h3
+        style={{
+          marginTop: 0,
+        }}
+      >
+        ❓ Frequently Asked Questions
+      </h3>
+
+      <div
+        style={{
+          display: "flex",
+          flexDirection: "column",
+          gap: 16,
+        }}
+      >
+        <div>
+          <strong>
+            Why don't I see my teams?
+          </strong>
+          <br />
+          Re-select the league from the
+          dropdown.
+        </div>
+
+        <div>
+          <strong>
+            Players are not saving?
+          </strong>
+          <br />
+          Ensure a team is selected before
+          clicking Save Players.
+        </div>
+
+        <div>
+          <strong>
+            Why can't I create a match?
+          </strong>
+          <br />
+          The selected league must contain
+          at least two teams.
+        </div>
+
+        <div>
+          <strong>
+            Live scoring page is empty?
+          </strong>
+          <br />
+          Open the Matches tab and click a
+          match first.
+        </div>
+
+        <div>
+          <strong>
+            Can I add players in bulk?
+          </strong>
+          <br />
+          Yes. Paste one player name per
+          line in the Add Players popup.
+        </div>
+      </div>
+    </div>
+
+  </Card>
+)}
+{activeTab === "about" && (
+  <Card title="ℹ️ About Cricket Studio">
+
+    {/* Hero */}
+    <div
+      style={{
+        background:
+          "linear-gradient(135deg,#0f172a,#1e293b)",
+        color: "#fff",
+        padding: 24,
+        borderRadius: 12,
+        marginBottom: 24,
+      }}
+    >
+      <h2
+        style={{
+          margin: 0,
+          marginBottom: 10,
+        }}
+      >
+        🏏 Cricket Studio
+      </h2>
+
+      <p
+        style={{
+          margin: 0,
+          fontSize: 16,
+          opacity: 0.9,
+          lineHeight: 1.7,
+        }}
+      >
+        A complete cricket league management
+        and live scoring platform designed
+        for clubs, leagues, academies, and
+        tournament organizers.
+      </p>
+    </div>
+
+    {/* Mission */}
+    <div
+      style={{
+        background: "#fff",
+        border: "1px solid #e5e7eb",
+        borderRadius: 12,
+        padding: 20,
+        marginBottom: 20,
+      }}
+    >
+      <h3>🎯 Our Mission</h3>
+
+      <p>
+        Cricket Studio aims to simplify the
+        management of cricket leagues,
+        matches, teams, players, and scoring
+        into a single easy-to-use platform.
+      </p>
+
+      <p>
+        Whether you're organizing a local
+        tournament or managing a full league,
+        Cricket Studio helps you stay focused
+        on the game.
+      </p>
+    </div>
+
+    {/* Features */}
+    <div
+      style={{
+        background: "#fff",
+        border: "1px solid #e5e7eb",
+        borderRadius: 12,
+        padding: 20,
+        marginBottom: 20,
+      }}
+    >
+      <h3>🚀 Key Features</h3>
+
+      <div
+        style={{
+          display: "grid",
+          gridTemplateColumns:
+            "repeat(auto-fit,minmax(250px,1fr))",
+          gap: 12,
+          marginTop: 12,
+        }}
+      >
+        <div>🏆 League Management</div>
+        <div>👥 Team Management</div>
+        <div>🏏 Player Management</div>
+        <div>📅 Match Scheduling</div>
+        <div>🎯 Live Ball-by-Ball Scoring</div>
+        <div>🔐 Role Based Access</div>
+        <div>📊 Statistics Dashboard</div>
+        <div>📱 Mobile Friendly Design</div>
+      </div>
+    </div>
+
+    {/* Current Version */}
+    <div
+      style={{
+        background: "#eff6ff",
+        border: "1px solid #93c5fd",
+        borderRadius: 12,
+        padding: 20,
+        marginBottom: 20,
+      }}
+    >
+      <h3>📦 Current Release</h3>
+
+      <p>
+        <strong>Version:</strong> MVP 1.0
+      </p>
+
+      <p>
+        Current functionality includes:
+      </p>
+
+      <ul>
+        <li>League creation</li>
+        <li>Team creation</li>
+        <li>Bulk player imports</li>
+        <li>Match scheduling</li>
+        <li>Live scoring</li>
+        <li>League permissions</li>
+      </ul>
+    </div>
+
+    {/* Roadmap */}
+    <div
+      style={{
+        background: "#fff",
+        border: "1px solid #e5e7eb",
+        borderRadius: 12,
+        padding: 20,
+        marginBottom: 20,
+      }}
+    >
+      <h3>🛣️ Upcoming Features</h3>
+
+      <ul
+        style={{
+          lineHeight: 2,
+        }}
+      >
+        <li>📈 Advanced Match Statistics</li>
+        <li>🏅 Player Rankings</li>
+        <li>🏆 Tournament Brackets</li>
+        <li>📊 Analytics Dashboard</li>
+        <li>📱 Push Notifications</li>
+        <li>🎥 Match Highlights</li>
+        <li>☁️ Offline Sync Support</li>
+        <li>📺 Public Scoreboards</li>
+      </ul>
+    </div>
+
+    {/* Technology */}
+    <div
+      style={{
+        background: "#fff",
+        border: "1px solid #e5e7eb",
+        borderRadius: 12,
+        padding: 20,
+        marginBottom: 20,
+      }}
+    >
+      <h3>⚙️ Built With</h3>
+
+      <div
+        style={{
+          display: "flex",
+          flexWrap: "wrap",
+          gap: 10,
+        }}
+      >
+        <span className="badge">
+          Next.js
+        </span>
+
+        <span className="badge">
+          React
+        </span>
+
+        <span className="badge">
+          Prisma
+        </span>
+
+        <span className="badge">
+          PostgreSQL
+        </span>
+
+        <span className="badge">
+          NextAuth
+        </span>
+      </div>
+    </div>
+
+    {/* Footer */}
+    <div
+      style={{
+        textAlign: "center",
+        padding: 20,
+        color: "#64748b",
+        borderTop:
+          "1px solid #e5e7eb",
+      }}
+    >
+      <h3>🏏 Cricket Studio</h3>
+
+      <p>
+        Manage Leagues. Score Matches.
+        Grow Cricket.
+      </p>
+
+      <p
+        style={{
+          fontSize: 13,
+        }}
+      >
+        © 2026 Cricket Studio
+      </p>
+    </div>
+
+  </Card>
+)}
+{showLeagueModal && (
+  <div className="modal-backdrop">
+    <div className="modal-card">
+      <h3>Create League</h3>
+
+      <form onSubmit={handleAddLeague}>
+        <input
+          type="text"
+          placeholder="League Name"
+          value={leagueForm.name}
+          onChange={(e) =>
+            setLeagueForm({
+              name: e.target.value,
+            })
+          }
+          required
+        />
+
+        <div
+          style={{
+            display: "flex",
+            gap: 10,
+            marginTop: 20,
+          }}
+        >
+          <button
+            type="submit"
+            className="btn"
+          >
+            Create
+          </button>
+
+          <button
+            type="button"
+            className="btn btn-outline"
+            onClick={() =>
+              setShowLeagueModal(false)
+            }
+          >
+            Cancel
+          </button>
+        </div>
+      </form>
+    </div>
+  </div>
+)}
+{showAddTeam && (
+  <div className="modal-backdrop">
+    <div className="modal-card">
+
+      <h3>Add Team</h3>
+
+      <form onSubmit={handleAddTeam}>
+
+        <input
+          type="text"
+          placeholder="Team Name"
+          value={teamForm.name}
+          onChange={(e) =>
+            setTeamForm((prev) => ({
+              ...prev,
+              name: e.target.value
+            }))
+          }
+          required
+        />
+
+        <div
+          style={{
+            display: "flex",
+            gap: 10,
+            marginTop: 20
+          }}
+        >
+          <button
+            type="submit"
+            className="btn"
+          >
+            Save
+          </button>
+
+          <button
+            type="button"
+            className="btn btn-outline"
+            onClick={() =>
+              setShowAddTeam(false)
+            }
+          >
+            Cancel
+          </button>
+        </div>
+
+      </form>
+
+    </div>
+  </div>
+)}
+{showPlayerModal && (
+  <div className="modal-backdrop">
+    <div className="modal-card">
+
+      <h3>Add Players</h3>
+
+      <form onSubmit={handleAddPlayers}>
+
+        <label>
+          League
+        </label>
+
+        <select
+          value={playerLeagueId || ""}
+          onChange={(e) => {
+            const leagueId =
+              Number(e.target.value);
+
+            setPlayerLeagueId(
+              leagueId
+            );
+
+            setPlayerForm((prev) => ({
+              ...prev,
+              leagueId,
+              teamId: "",
+            }));
+          }}
+        >
+          <option value="">
+            Select League
+          </option>
+
+          {leagues.map((league) => (
+            <option
+              key={league.id}
+              value={league.id}
+            >
+              {league.name}
+            </option>
+          ))}
+        </select>
+
+        <label>
+          Team
+        </label>
+
+<select
+  value={selectedPlayerTeamId}
+  onChange={(e) =>
+    setSelectedPlayerTeamId(
+      Number(e.target.value)
+    )
+  }
+>
+          <option value="">
+            Select Team
+          </option>
+
+          {selectedPlayerLeague
+            ?.teams?.map((team) => (
+              <option
+                key={team.id}
+                value={team.id}
+              >
+                {team.name}
+              </option>
+            ))}
+        </select>
+
+        <label>
+          Players
+        </label>
+
+<textarea
+  rows={10}
+  placeholder={`Virat Kohli
+Rohit Sharma
+MS Dhoni
+KL Rahul`}
+  value={playerForm.names || ""}
+  onChange={(e) =>
+    setPlayerForm((prev) => ({
+      ...prev,
+      names: Number(e.target.value),
+    }))
+  }
+  required
+/>
+
+        <div
+          style={{
+            display: "flex",
+            gap: 10,
+            marginTop: 20,
+          }}
+        >
+          <button
+            type="submit"
+            className="btn"
+          >
+            Save Players
+          </button>
+
+          <button
+            type="button"
+            className="btn btn-outline"
+            onClick={() =>
+              setShowPlayerModal(
+                false
+              )
+            }
+          >
+            Cancel
+          </button>
+        </div>
+
+      </form>
+
     </div>
   </div>
 )}
@@ -2804,68 +4119,64 @@ permissions?.canDeletePlayer && (
 )}
 {showPlayerModal && (
   <div className="modal-backdrop">
-    <div className="modal-card player-modal">
+    <div className="modal-card">
 
-      <h3>👥 Manage Players</h3>
+      <h3>👥 Add Players</h3>
 
-      <form
-        className="form stack"
-        onSubmit={handleAddPlayer}
-      >
-        <label>
-          <span>Team</span>
-
-          <select
-            value={playerForm.teamId || ""}
-            onChange={(e) =>
-              setPlayerForm((prev) => ({
-                ...prev,
-                teamId: e.target.value
-              }))
-            }
-            required
-          >
-            <option value="">
-              Select Team
-            </option>
-
-            {playerTeams.map((team) => (
-              <option
-                key={team.id}
-                value={team.id}
-              >
-                {team.name}
-              </option>
-            ))}
-          </select>
-        </label>
+      <form onSubmit={handleBulkAddPlayers}>
 
         <label>
-          <span>Player Names</span>
+          <span>League</span>
 
-          <textarea
-            rows={8}
-            value={playerForm.names}
-            onChange={(e) =>
-              setPlayerForm((prev) => ({
-                ...prev,
-                names: e.target.value
-              }))
-            }
-            placeholder={`Sachin Tendulkar
-Virat Kohli
-MS Dhoni`}
-            required
+          <input
+            value={activeLeague?.name || ""}
+            disabled
           />
         </label>
 
-        <div className="modal-actions">
+        <label>
+          <span>Team</span>
+
+          <input
+            value={selectedTeam?.name || ""}
+            disabled
+          />
+        </label>
+
+        <label>
+          <span>Players</span>
+
+<textarea
+  rows={10}
+  placeholder={`Virat Kohli
+Rohit Sharma
+MS Dhoni
+KL Rahul`}
+  value={playerForm.names || ""}
+  onChange={(e) =>
+    setPlayerForm((prev) => ({
+      ...prev,
+      names: e.target.value,
+    }))
+  }
+  required
+/>
+        </label>
+
+        <div
+          style={{
+            display: "flex",
+            gap: 10,
+            marginTop: 20,
+          }}
+        >
           <button
             type="submit"
             className="btn"
           >
-            ➕ Add Players
+            Save Players
           </button>
+
           <button
             type="button"
             className="btn btn-outline"
@@ -2876,8 +4187,8 @@ MS Dhoni`}
             Cancel
           </button>
         </div>
-      </form>
 
+      </form>
     </div>
   </div>
 )}

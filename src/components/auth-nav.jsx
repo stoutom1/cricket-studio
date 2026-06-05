@@ -10,14 +10,12 @@ export default function AuthNav() {
 <nav className="auth-nav">
   <div className="nav-brand">
     <Link href="/">
-      Dashboard
+     ← Home
     </Link>
   </div>
 
   <div className="nav-links">
-    <Link href="/about">About</Link>
     <Link href="/contact">Contact</Link>
-    <Link href="/help">Help</Link>
   </div>
 
   <div className="nav-auth">
