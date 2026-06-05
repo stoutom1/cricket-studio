@@ -2306,9 +2306,8 @@ return (
                   }
                   style={{
                     flex: 1,
-  
+                    background: "transparent",  
                     border: "none",
-                    color: "inherit",
                     textAlign: "left",
                     cursor: "pointer"
                   }}
@@ -2605,7 +2604,7 @@ return (
                   }
                   style={{
                     flex: 1,
-
+                    background: "transparent",
                     border: "none",
                     color: "inherit",
                     textAlign: "left",
@@ -2687,246 +2686,279 @@ return (
 
       <Card title="🏏 League Management">
 
+<div
+  style={{
+    display: "flex",
+    flexDirection: "column",
+    gap: 20,
+  }}
+>
+
+  {/* LEAGUE CARD */}
+
+  <div
+    style={{
+      border: "1px solid var(--border)",
+      borderRadius: 12,
+      padding: 16,
+    }}
+  >
+    <h3
+      style={{
+        marginTop: 0,
+        marginBottom: 12,
+      }}
+    >
+      🏆 Leagues
+    </h3>
+
+    <select
+      value={activeLeagueId || ""}
+      onChange={(e) => {
+        setActiveLeagueId(e.target.value);
+        setSelectedTeamId("");
+      }}
+      style={{
+        width: "100%",
+      }}
+    >
+      <option value="">
+        Select League
+      </option>
+
+      {leagues.map((league) => (
+        <option
+          key={league.id}
+          value={league.id}
+        >
+          {league.name}
+        </option>
+      ))}
+    </select>
+
+    <button
+      className="btn"
+      style={{
+        marginTop: 12,
+        width: "100%",
+      }}
+      onClick={() =>
+        setShowLeagueModal(true)
+      }
+    >
+      ➕ Create League
+    </button>
+  </div>
+
+  {/* TEAM CARD */}
+
+  <div
+    style={{
+      border: "1px solid var(--border)",
+      borderRadius: 12,
+      padding: 16,
+    }}
+  >
+    <h3
+      style={{
+        marginTop: 0,
+        marginBottom: 12,
+      }}
+    >
+      👥 Teams
+    </h3>
+
+    <select
+      value={selectedTeamId || ""}
+      onChange={(e) =>
+        setSelectedTeamId(
+          e.target.value
+        )
+      }
+      disabled={!selectedLeague}
+      style={{
+        width: "100%",
+      }}
+    >
+      <option value="">
+        Select Team
+      </option>
+
+      {selectedLeague?.teams?.map(
+        (team) => (
+          <option
+            key={team.id}
+            value={team.id}
+          >
+            {team.name}
+          </option>
+        )
+      )}
+    </select>
+
+    <div
+      style={{
+        display: "flex",
+        gap: 10,
+        marginTop: 12,
+      }}
+    >
+      <button
+        className="btn"
+        style={{ flex: 1 }}
+        disabled={!selectedLeague}
+        onClick={() => {
+          setTeamForm({
+            name: "",
+            leagueId:
+              selectedLeague.id,
+          });
+
+          setShowAddTeam(true);
+        }}
+      >
+        ➕ Add Team
+      </button>
+
+      {selectedTeam &&
+        permissions?.canDeleteTeam && (
+          <button
+            className="btn btn-danger"
+            onClick={() =>
+              handleDeleteTeam(
+                selectedTeam.id,
+                selectedTeam.name
+              )
+            }
+          >
+            🗑️
+          </button>
+        )}
+    </div>
+  </div>
+
+  {/* PLAYER CARD */}
+
+  <div
+    style={{
+      border: "1px solid var(--border)",
+      borderRadius: 12,
+      padding: 16,
+    }}
+  >
+    <h3
+      style={{
+        marginTop: 0,
+        marginBottom: 12,
+      }}
+    >
+      🏏 Players
+    </h3>
+
+    {!selectedTeam && (
+      <div
+        style={{
+          color: "#64748b",
+        }}
+      >
+        Select a team to view players
+      </div>
+    )}
+
+    {selectedTeam && (
+      <>
         <div
           style={{
-            display: "grid",
-            gridTemplateColumns:
-              "1fr 1fr 1fr",
-            gap: 20
+            maxHeight: 350,
+            overflowY: "auto",
+            border:
+              "1px solid var(--border)",
+            borderRadius: 8,
+            padding: 10,
+            marginBottom: 12,
           }}
         >
-
-          {/* LEAGUES */}
-
-          <div>
-
-            <h3>Leagues</h3>
-
-            <select
-              value={activeLeagueId || ""}
-              onChange={(e) => {
-                setActiveLeagueId(
-                  e.target.value
-                );
-
-                setSelectedTeamId("");
-              }}
-              style={{
-                width: "100%"
-              }}
-            >
-              <option value="">
-                Select League
-              </option>
-
-              {leagues.map((league) => (
-                <option
-                  key={league.id}
-                  value={league.id}
-                >
-                  {league.name}
-                </option>
-              ))}
-            </select>
-
-            <button
-              className="btn"
-              style={{
-                marginTop: 10
-              }}
-              onClick={() =>
-                setShowLeagueModal(true)
-              }
-            >
-              ➕ Create League
-            </button>
-
-          </div>
-
-          {/* TEAMS */}
-
-          <div>
-
-            <h3>Teams</h3>
-
-            <select
-              value={selectedTeamId || ""}
-              onChange={(e) =>
-                setSelectedTeamId(
-                  e.target.value
-                )
-              }
-              disabled={!selectedLeague}
-              style={{
-                width: "100%"
-              }}
-            >
-              <option value="">
-                Select Team
-              </option>
-
-              {selectedLeague?.teams?.map(
-                (team) => (
-                  <option
-                    key={team.id}
-                    value={team.id}
-                  >
-                    {team.name}
-                  </option>
-                )
-              )}
-            </select>
-
-            <div
-              style={{
-                display: "flex",
-                gap: 10,
-                marginTop: 10
-              }}
-            >
-
-              <button
-                className="btn"
-                disabled={!selectedLeague}
-                onClick={() => {
-                  setTeamForm({
-                    name: "",
-                    leagueId:
-                      selectedLeague.id
-                  });
-
-                  setShowAddTeam(true);
+          {selectedTeam.players?.map(
+            (player) => (
+              <div
+                key={player.id}
+                style={{
+                  display: "flex",
+                  justifyContent:
+                    "space-between",
+                  alignItems: "center",
+                  padding: "6px 0",
+                  borderBottom:
+                    "1px solid rgba(0,0,0,0.05)",
                 }}
               >
-                ➕ Add Team
-              </button>
+                <span>
+                  {player.name}
+                </span>
 
-              {selectedTeam &&
-                permissions?.canDeleteTeam && (
+                {permissions?.canDeletePlayer && (
                   <button
-                    className="btn btn-danger"
+                    className="icon-btn danger"
+                    title={`Delete ${player.name}`}
                     onClick={() =>
-                      handleDeleteTeam(
-                        selectedTeam.id,
-                        selectedTeam.name
+                      handleDeletePlayer(
+                        player.id,
+                        player.name
                       )
                     }
                   >
-                    Delete
+                    🗑️
                   </button>
                 )}
-
-            </div>
-
-          </div>
-
-          {/* PLAYERS */}
-
-          <div>
-
-            <h3>Players</h3>
-
-            {!selectedTeam && (
-              <p>
-                Select a team
-              </p>
-            )}
-
-            {selectedTeam && (
-              <>
-                <div
-                  style={{
-                    maxHeight: 400,
-                    overflowY: "auto",
-                    border:
-                      "1px solid var(--border)",
-                    borderRadius: 8,
-                    padding: 10
-                  }}
-                >
-
-                  {selectedTeam.players?.map(
-                    (player) => (
-                      <div
-                        key={player.id}
-                        style={{
-                          display: "flex",
-                          justifyContent:
-                            "space-between",
-                          alignItems:
-                            "center",
-                          marginBottom: 8
-                        }}
-                      >
-                        <span>
-                          {player.name}
-                        </span>
-
-                        {permissions?.canDeletePlayer && (
-<button
-  className="icon-btn danger"
-  title={`Delete ${player.name}`}
-  onClick={() =>
-    handleDeletePlayer(
-      player.id,
-      player.name
-    )
-  }
->
-  🗑️
-</button>
-                        )}
-                      </div>
-                    )
-                  )}
-
-                </div>
-
-<button
-  className="btn"
-onClick={() => {
-  setPlayerLeagueId(activeLeagueId);
-
-  setPlayerForm({
-    names: "",
-    leagueId: activeLeagueId,
-    teamId: selectedTeamId
-  });
-
-    setShowPlayerModal(true);
-  }}
->
-  ➕ Add Players
-</button>
-
-              </>
-            )}
-
-          </div>
-
+              </div>
+            )
+          )}
         </div>
-{canCreateMatch && (
-  <div
-    style={{
-      marginTop: 20,
-      padding: 16,
-      borderRadius: 12,
 
-      border: "1px solid #86efac",
-      boxShadow:
-        "0 2px 8px rgba(0,0,0,0.08)",
-    }}
-  >
+        <button
+          className="btn"
+          style={{
+            width: "100%",
+          }}
+          onClick={() => {
+            setPlayerLeagueId(
+              activeLeagueId
+            );
+
+            setPlayerForm({
+              names: "",
+              leagueId:
+                activeLeagueId,
+              teamId:
+                selectedTeamId,
+            });
+
+            setShowPlayerModal(true);
+          }}
+        >
+          ➕ Add Players
+        </button>
+      </>
+    )}
+  </div>
+
+  {/* CREATE MATCH CARD */}
+
+  {canCreateMatch && (
     <div
       style={{
-        marginBottom: 12,
-        color: "#14532d",
+        padding: 18,
+        borderRadius: 12,
+        border:
+          "1px solid #86efac",
+        background:
+          "rgba(34,197,94,0.10)",
       }}
     >
       <div
         style={{
           fontWeight: 600,
-          fontSize: "1rem",
+          marginBottom: 6,
         }}
       >
         ✅ League setup complete
@@ -2934,23 +2966,28 @@ onClick={() => {
 
       <div
         style={{
-          marginTop: 6,
-          fontSize: "0.95rem",
+          marginBottom: 14,
         }}
       >
-        You can now schedule matches from the
-        Matches tab.
+        You can now schedule matches
+        from the Matches tab.
       </div>
-    </div>
 
-    <button
-      className="btn btn-primary"
-      onClick={() => setActiveTab("matches")}
-    >
-      🏏 Create Match
-    </button>
-  </div>
-)}   </Card>
+      <button
+        className="btn btn-primary"
+        style={{
+          width: "100%",
+        }}
+        onClick={() =>
+          setActiveTab("matches")
+        }
+      >
+        🏏 Create Match
+      </button>
+    </div>
+  )}
+
+</div></Card>
 
     </div>
     <div className="grid-side">
