@@ -2,10 +2,14 @@
 
 import { useRouter } from "next/navigation";
 import { useState } from "react";
+import { useSearchParams } from "next/navigation";
+import { signIn } from "next-auth/react";
+
 
 export default function RegisterPage() {
   const router = useRouter();
-
+const searchParams = useSearchParams();
+const callbackUrl = searchParams.get("callbackUrl");
   const [name, setName] = useState("");
   const [email, setEmail] = useState("");
   const [password, setPassword] =
@@ -44,11 +48,32 @@ export default function RegisterPage() {
       return;
     }
 
-    setMessage("Registration successful");
+setMessage("Registration successful");
 
-    setTimeout(() => {
-      router.push("/login");
-    }, 1500);
+const result = await signIn(
+  "credentials",
+  {
+    email,
+    password,
+    redirect: false,
+    callbackUrl:
+      callbackUrl || "/dashboard",
+  }
+);
+
+if (result?.ok) {
+  router.push(
+    callbackUrl || "/dashboard"
+  );
+} else {
+  router.push(
+    callbackUrl
+      ? `/login?callbackUrl=${encodeURIComponent(
+          callbackUrl
+        )}`
+      : "/login"
+  );
+}
   }
 
   return (

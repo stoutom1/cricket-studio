@@ -195,6 +195,7 @@ select:focus {
   text-align: left;
   border: 1px solid var(--border);
   background: #0c1530;
+  color: var(--text);
   padding: 12px;
   border-radius: 14px;
   cursor: pointer;

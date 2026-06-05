@@ -2771,6 +2771,27 @@ return (
       </button>
     )}
 </div>
+ <div
+  className="success-banner"
+  style={{
+    marginTop:5,
+    display: "flex",
+    justifyContent: "flex-end",
+  }}
+>
+{activeLeague && (
+  <button
+    className="btn btn-outline"
+    title="Copy registration link"
+    onClick={() =>
+      generateInviteLink(activeLeague.id)
+    }
+  >
+    🔗 Invitation link to{" "}
+    <strong>{activeLeague.name}</strong>
+  </button>
+)}
+</div>
   </div>
 
   {/* TEAM CARD */}
@@ -3058,6 +3079,61 @@ return (
 
   {activeLeague && (
     <>
+<div
+  style={{
+    padding: "16px",
+    borderRadius: 12,
+    background:
+      "linear-gradient(135deg,#eff6ff,#dbeafe)",
+    border: "1px solid #93c5fd",
+    marginBottom: 15,
+  }}
+>
+  <h3
+    style={{
+      margin: 0,
+      color: "#1e40af",
+      fontWeight: 700,
+      fontSize: "1.1rem",
+    }}
+  >
+    🔗 Invite Members to{" "}
+    <span
+      style={{
+        color: "#0f172a",
+      }}
+    >
+      {activeLeague.name}
+    </span>
+  </h3>
+
+  <div
+    style={{
+      marginTop: 8,
+      fontSize: 14,
+      color: "#475569",
+      lineHeight: 1.5,
+    }}
+  >
+    Generate a registration link and share it
+    with players, captains, scorers, and
+    league administrators.
+  </div>
+
+  <div
+
+  >
+    <button
+      className="btn"
+      disabled={!activeLeague}
+      onClick={() =>
+        generateInviteLink(activeLeague.id)
+      }
+    >
+      📋 Copy Registration Link
+    </button>
+  </div>
+</div>
       <label>
         <strong>Member</strong>
       </label>

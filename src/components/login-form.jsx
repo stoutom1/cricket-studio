@@ -6,7 +6,7 @@ import { useRouter } from "next/navigation";
 import { signIn } from "next-auth/react";
 
 export default function LoginForm({
-  callbackUrl = "/dashboard"
+  callbackUrl = {callbackUrl}
 }) {
   const router = useRouter();
 
@@ -20,7 +20,10 @@ export default function LoginForm({
 
     setError("");
     setLoading(true);
-
+console.log(
+  "callbackUrl123123123123123:",
+  callbackUrl
+);
     try {
       const result = await signIn(
         "credentials",
@@ -28,7 +31,7 @@ export default function LoginForm({
           email,
           password,
           redirect: false,
-          callbackUrl
+          callbackUrl: callbackUrl || "/dashboard",
         }
       );
 
@@ -103,9 +106,17 @@ export default function LoginForm({
         }}
       >
         New user?{" "}
-        <Link href="/register">
-          Create Account
-        </Link>
+ <Link
+  href={
+    callbackUrl
+      ? `/register?callbackUrl=${encodeURIComponent(
+          callbackUrl
+        )}`
+      : "/register"
+  }
+>
+  Create Account
+</Link>
       </div>
     </form>
   );

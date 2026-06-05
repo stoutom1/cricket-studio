@@ -4,17 +4,23 @@ import { authOptions } from "@/lib/auth";
 import LoginForm from "@/components/login-form";
 
 export default async function LoginPage({
-  searchParams
+  searchParams,
 }) {
-  const session = await getServerSession(authOptions);
+  const params = await searchParams;
 
-  if (session) {
-    redirect("/dashboard");
-  }
+  const session =
+    await getServerSession(authOptions);
 
   const callbackUrl =
-    searchParams?.callbackUrl ||
-    "/dashboard";
+    params?.callbackUrl || "/dashboard";
+
+  if (session) {
+    if (callbackUrl) {
+      redirect(callbackUrl);
+    }
+
+    redirect("/dashboard");
+  }
 
   return (
     <div className="center-screen">

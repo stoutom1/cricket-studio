@@ -15,26 +15,59 @@ export const authOptions = {
         email: { label: "Email", type: "email" },
         password: { label: "Password", type: "password" }
       },
-      async authorize(credentials) {
-        if (!credentials?.email || !credentials?.password) {
-          return null;
-        }
+async authorize(credentials) {
+  try {
+    if (
+      !credentials?.email ||
+      !credentials?.password
+    ) {
+      return null;
+    }
 
-        const user = await prisma.user.findUnique({
-          where: { email: credentials.email }
-        });
+    const user =
+      await prisma.user.findUnique({
+        where: {
+          email: credentials.email,
+        },
+      });
 
-        if (!user) return null;
+    if (!user) {
+      return null;
+    }
 
-        const valid = await bcrypt.compare(credentials.password, user.password);
-        if (!valid) return null;
+    if (!user.password) {
+      console.error(
+        "User has no password:",
+        user.email
+      );
+      return null;
+    }
 
-        return {
-          id: user.id,
-          email: user.email,
-          name: user.name || user.email
-        };
-      }
+    const valid =
+      await bcrypt.compare(
+        credentials.password,
+        user.password
+      );
+
+    if (!valid) {
+      return null;
+    }
+
+    return {
+      id: String(user.id),
+      email: user.email,
+      name:
+        user.name || user.email,
+    };
+  } catch (error) {
+    console.error(
+      "Authorize error:",
+      error
+    );
+
+    return null;
+  }
+}
     }),
 /*    GoogleProvider({
     clientId: process.env.GOOGLE_CLIENT_ID,
