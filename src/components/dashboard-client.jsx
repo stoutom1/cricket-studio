@@ -1497,10 +1497,6 @@ async function generateInviteLink(leagueId) {
   await navigator.clipboard.writeText(
     data.inviteLink)
 
-/*  await navigator.clipboard.writeText(
-    res.url
-  );
-*/
   showToast(
     "success",
     "Registration link copied"
