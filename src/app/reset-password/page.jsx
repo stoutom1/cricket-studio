@@ -1,118 +1,17 @@
-"use client";
+import ResetPasswordForm from "./reset-password-form";
 
-import {
-  useSearchParams,
-  useRouter
-} from "next/navigation";
-
-import { useState } from "react";
-
-export default function ResetPasswordPage() {
-  const router =
-    useRouter();
-
+export default async function ResetPasswordPage({
+  searchParams
+}) {
   const params =
-    useSearchParams();
+    await searchParams;
 
   const token =
-    params.get("token");
-
-  const [password, setPassword] =
-    useState("");
-
-  const [confirm, setConfirm] =
-    useState("");
-
-  const [message, setMessage] =
-    useState("");
-
-  async function handleSubmit(e) {
-    e.preventDefault();
-
-    if (
-      password !== confirm
-    ) {
-      setMessage(
-        "Passwords do not match"
-      );
-      return;
-    }
-
-    const res = await fetch(
-      "/api/reset-password",
-      {
-        method: "POST",
-        headers: {
-          "Content-Type":
-            "application/json"
-        },
-        body: JSON.stringify({
-          token,
-          password
-        })
-      }
-    );
-
-    const data =
-      await res.json();
-
-    if (!res.ok) {
-      setMessage(
-        data.error
-      );
-      return;
-    }
-
-    router.push(
-      "/login"
-    );
-  }
+    params?.token || "";
 
   return (
-    <div className="center-screen">
-      <div className="card">
-        <h1>
-          New Password
-        </h1>
-
-        <form
-          onSubmit={
-            handleSubmit
-          }
-        >
-          <input
-            type="password"
-            placeholder="New Password"
-            value={password}
-            onChange={(e) =>
-              setPassword(
-                e.target.value
-              )
-            }
-          />
-
-          <input
-            type="password"
-            placeholder="Confirm Password"
-            value={confirm}
-            onChange={(e) =>
-              setConfirm(
-                e.target.value
-              )
-            }
-          />
-
-          <button
-            type="submit"
-          >
-            Update Password
-          </button>
-        </form>
-
-        {message && (
-          <p>{message}</p>
-        )}
-      </div>
-    </div>
+    <ResetPasswordForm
+      token={token}
+    />
   );
 }
