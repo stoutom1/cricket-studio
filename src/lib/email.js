@@ -7,7 +7,11 @@ export async function sendResetPasswordEmail(
   email,
   name,
   resetLink
-) {
+)  {
+  console.log("resetLink check in route", resetLink);
+  console.log("name check in route", name);
+  console.log("email check in route", email);
+  
   await resend.emails.send({
     from:
       process.env.EMAIL_FROM,
