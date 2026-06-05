@@ -263,7 +263,7 @@ const filteredMembers =
   const helpCardStyle = {
   padding: 20,
   borderRadius: 12,
-  background: "#f8fafc",
+
   border: "1px solid #e2e8f0",
   boxShadow:
     "0 2px 8px rgba(15,23,42,0.06)",
@@ -2277,7 +2277,7 @@ return (
             <div
     style={{
       padding: 10,
-      background: "#eff6ff",
+
       borderRadius: 8,
       fontSize: "10px"
     }}
@@ -2306,7 +2306,7 @@ return (
                   }
                   style={{
                     flex: 1,
-                    background: "transparent",
+  
                     border: "none",
                     color: "inherit",
                     textAlign: "left",
@@ -2576,7 +2576,7 @@ return (
     style={{
       marginBottom: 6,
       padding: 10,
-      background: "#eff6ff",
+
       borderRadius: 8,
       fontSize: "12px"
     }}
@@ -2605,7 +2605,7 @@ return (
                   }
                   style={{
                     flex: 1,
-                    background: "transparent",
+
                     border: "none",
                     color: "inherit",
                     textAlign: "left",
@@ -2911,7 +2911,7 @@ onClick={() => {
       marginTop: 20,
       padding: 16,
       borderRadius: 12,
-      background: "#dcfce7",
+
       border: "1px solid #86efac",
       boxShadow:
         "0 2px 8px rgba(0,0,0,0.08)",
@@ -3221,9 +3221,7 @@ onClick={() => {
     {/* Hero */}
     <div
       style={{
-        background:
-          "linear-gradient(135deg,#2563eb,#1d4ed8)",
-        color: "#fff",
+
         padding: 24,
         borderRadius: 12,
         marginBottom: 24,
@@ -3274,7 +3272,6 @@ onClick={() => {
       {/* Step 1 */}
       <div
         style={{
-          background: "#f8fafc",
           border: "1px solid #e5e7eb",
           borderRadius: 12,
           padding: 20,
@@ -3300,7 +3297,7 @@ onClick={() => {
       {/* Step 2 */}
       <div
         style={{
-          background: "#f8fafc",
+
           border: "1px solid #e5e7eb",
           borderRadius: 12,
           padding: 20,
@@ -3326,7 +3323,7 @@ onClick={() => {
       {/* Step 3 */}
       <div
         style={{
-          background: "#f8fafc",
+
           border: "1px solid #e5e7eb",
           borderRadius: 12,
           padding: 20,
@@ -3350,7 +3347,7 @@ onClick={() => {
             padding: 12,
             borderRadius: 8,
             border: "1px solid #e5e7eb",
-            background: "#f8fafc",
+
             fontFamily: "monospace",
             fontSize: 13,
           }}
@@ -3368,7 +3365,7 @@ onClick={() => {
       {/* Step 4 */}
       <div
         style={{
-          background: "#f8fafc",
+
           border: "1px solid #e5e7eb",
           borderRadius: 12,
           padding: 20,
@@ -3395,7 +3392,7 @@ onClick={() => {
       {/* Step 5 */}
       <div
         style={{
-          background: "#f8fafc",
+
           border: "1px solid #e5e7eb",
           borderRadius: 12,
           padding: 20,
@@ -3425,7 +3422,7 @@ onClick={() => {
     <div
       style={{
         marginTop: 28,
-        background: "#eff6ff",
+
         border: "1px solid #93c5fd",
         borderRadius: 12,
         padding: 20,
@@ -3471,7 +3468,7 @@ onClick={() => {
     <div
       style={{
         marginTop: 24,
-        background: "#f8fafc",
+
         border: "1px solid #e5e7eb",
         borderRadius: 12,
         padding: 20,
@@ -3513,7 +3510,7 @@ onClick={() => {
     <div
       style={{
         marginTop: 24,
-        background: "#f8fafc",
+
         border: "1px solid #e5e7eb",
         borderRadius: 12,
         padding: 20,
@@ -3591,9 +3588,7 @@ onClick={() => {
     {/* Hero */}
     <div
       style={{
-        background:
-          "linear-gradient(135deg,#0f172a,#1e293b)",
-        color: "#fff",
+
         padding: 24,
         borderRadius: 12,
         marginBottom: 24,
@@ -3626,7 +3621,7 @@ onClick={() => {
     {/* Mission */}
     <div
       style={{
-        background: "#f8fafc",
+
         border: "1px solid #e5e7eb",
         borderRadius: 12,
         padding: 20,
@@ -3653,7 +3648,7 @@ onClick={() => {
     {/* Features */}
     <div
       style={{
-        background: "#f8fafc",
+
         border: "1px solid #e5e7eb",
         borderRadius: 12,
         padding: 20,
@@ -3685,7 +3680,7 @@ onClick={() => {
     {/* Current Version */}
     <div
       style={{
-        background: "#eff6ff",
+
         border: "1px solid #93c5fd",
         borderRadius: 12,
         padding: 20,
@@ -3715,7 +3710,7 @@ onClick={() => {
     {/* Roadmap */}
     <div
       style={{
-        background: "#f8fafc",
+
         border: "1px solid #e5e7eb",
         borderRadius: 12,
         padding: 20,
@@ -3743,7 +3738,7 @@ onClick={() => {
     {/* Technology */}
     <div
       style={{
-        background: "#f8fafc",
+
         border: "1px solid #e5e7eb",
         borderRadius: 12,
         padding: 20,
