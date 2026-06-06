@@ -4,8 +4,14 @@ import { getServerSession } from "next-auth";
 import prisma from "@/lib/prisma";
 import { authOptions } from "@/lib/auth";
 
-export async function GET(request, { params }) {
-  const session = await getServerSession(authOptions);
+export async function GET(
+  request,
+  { params }
+) {
+  const session =
+    await getServerSession(
+      authOptions
+    );
 
   if (!session?.user?.email) {
     return NextResponse.json(
@@ -17,25 +23,33 @@ export async function GET(request, { params }) {
   const { id } = await params;
   const leagueId = Number(id);
 
-  const members = await prisma.leagueMember.findMany({
-    where: {
-      leagueId
-    },
-    include: {
-      user: {
-        select: {
-          id: true,
-          name: true,
-          email: true
+  const user =
+    await prisma.user.findUnique({
+      where: {
+        email: session.user.email
+      }
+    });
+
+  if (!user) {
+    return NextResponse.json(
+      { error: "User not found" },
+      { status: 404 }
+    );
+  }
+
+  const membership =
+    await prisma.leagueMember.findUnique({
+      where: {
+        userId_leagueId: {
+          userId: user.id,
+          leagueId
         }
       }
-    },
-    orderBy: {
-      joinedAt: "asc"
-    }
-  });
+    });
 
-  return NextResponse.json(members);
+  return NextResponse.json(
+    membership || {}
+  );
 }
 
 export async function PATCH(request, { params }) {

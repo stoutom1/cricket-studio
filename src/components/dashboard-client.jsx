@@ -138,13 +138,7 @@ const [selectedTeamId, setSelectedTeamId] = useState("");
 const [expandedLeagueId, setExpandedLeagueId] = useState(null);
 const [activeLeagueId, setActiveLeagueId] = useState("");
 const [activeTab, setActiveTab] = useState("management");
-const [permissions, setPermissions] = useState({
-  canViewManagement: false,
-  canCreateMatch: false,
-  canDeleteMatch: false,
-  canScoreMatch: false,
-  canUndoBall: false
-});
+const [permissions, setPermissions] = useState(null);
 //const [selectedMember, setSelectedMember] = useState(null);
   const [matchDetail, setMatchDetail] = useState(null);
   const [scoreboard, setScoreboard] = useState(null);
@@ -181,6 +175,9 @@ const [showAddPlayers, setShowAddPlayers] = useState(false);
 const [memberSearch, setMemberSearch] = useState("");
 
 const [me, setMe] = useState(null);
+const [permissionsLoading, setPermissionsLoading] =
+  useState(false);
+
 
 useEffect(() => {
   fetch("/api/me")
@@ -213,6 +210,41 @@ const activeLeague =
   ) || null;
 */
   //const activeLeague = selectedLeague;
+
+useEffect(() => {
+  if (!activeLeagueId) return;
+
+  async function loadPermissions() {
+    try {
+      setPermissionsLoading(true);
+
+      const data = await api(
+        `/api/leagues/${activeLeagueId}/permissions`
+      );
+
+      setPermissions(data);
+    } catch (err) {
+      console.error(err);
+
+      setPermissions(null);
+    } finally {
+      setPermissionsLoading(false);
+    }
+  }
+if (isSuperAdmin) {
+    setPermissions({
+      canViewManagement: true,
+      canViewMatches: true,
+      canViewScoring: true,
+      canViewStats: true,
+      canManagePermissions: true
+    });
+
+    return;
+  }
+  loadPermissions();
+}, [activeLeagueId]);
+
 
 const selectedTeam =
   selectedLeague?.teams?.find(
@@ -285,23 +317,6 @@ useEffect(() => {
     );
   }
 }, [activeLeague]);
-useEffect(() => {
-  async function loadPermissions() {
-    const res =
-      await fetch(
-        "/api/my-permissions"
-      );
-
-    if (!res.ok) return;
-
-    const data =
-      await res.json();
-
-    setPermissions(data);
-  }
-
-  loadPermissions();
-}, [activeLeagueId]);
 
 
 useEffect(() => {
@@ -819,6 +834,7 @@ const league = await api("/api/leagues", {
     setLeagueForm({
       name: ""
     });
+    await loadLeagues();
     setActiveLeagueId(Number(league.id));
     showToast(
       "success",
@@ -1563,83 +1579,112 @@ function triggerQuickAction(actionKey, callback) {
     scoreboard?.innings?.[0];
 const canCreateMatch =
   activeLeague?.teams?.length >= 2;
+const isSuperAdmin =
+  session?.user?.email ===
+  "surprisecricket11@gmail.com";
 return (
   <>
 <div className="dashboard-tabs">
-  {permissions?.canViewManagement && (
-    <button
-      className={`dashboard-tab ${
-        activeTab === "management" ? "active" : ""
-      }`}
-      onClick={() => setActiveTab("management")}
-    >
-      <span className="tab-icon">⚙️</span>
-      <span className="tab-text">Leagues</span>
-    </button>
-  )}
+  {permissionsLoading ? (
+    <span>Loading permissions...</span>
+  ) : (
+    <>
+      {permissions?.canViewManagement && (
+        <button
+          className={`dashboard-tab ${
+            activeTab === "management"
+              ? "active"
+              : ""
+          }`}
+          onClick={() =>
+            setActiveTab("management")
+          }
+        >
+          ⚙️ Leagues
+        </button>
+      )}
 
-  {permissions?.canViewMatches && (
-    <button
-      className={`dashboard-tab ${
-        activeTab === "matches" ? "active" : ""
-      }`}
-      onClick={() => setActiveTab("matches")}
-    >
-      <span className="tab-icon">📋</span>
-      <span className="tab-text">Matches</span>
-    </button>
-  )}
+      {permissions?.canViewMatches && (
+        <button
+          className={`dashboard-tab ${
+            activeTab === "matches"
+              ? "active"
+              : ""
+          }`}
+          onClick={() =>
+            setActiveTab("matches")
+          }
+        >
+          📋 Matches
+        </button>
+      )}
 
-  {permissions?.canViewScoring && (
-    <button
-      className={`dashboard-tab ${
-        activeTab === "scoring" ? "active" : ""
-      }`}
-      onClick={() => setActiveTab("scoring")}
-    >
-      <span className="tab-icon">🏏</span>
-      <span className="tab-text">Scoring</span>
-    </button>
-  )}
+      {permissions?.canViewScoring && (
+        <button
+          className={`dashboard-tab ${
+            activeTab === "scoring"
+              ? "active"
+              : ""
+          }`}
+          onClick={() =>
+            setActiveTab("scoring")
+          }
+        >
+          🏏 Scoring
+        </button>
+      )}
 
-  {permissions?.canViewStats && (
-    <button
-      className={`dashboard-tab ${
-        activeTab === "stats" ? "active" : ""
-      }`}
-      onClick={() => setActiveTab("stats")}
-    >
-      <span className="tab-icon">📊</span>
-      <span className="tab-text">Stats</span>
-    </button>
-  )}
+      {permissions?.canViewStats && (
+        <button
+          className={`dashboard-tab ${
+            activeTab === "stats"
+              ? "active"
+              : ""
+          }`}
+          onClick={() =>
+            setActiveTab("stats")
+          }
+        >
+          📊 Stats
+        </button>
+      )}
 
-  {permissions?.canViewManagement && (
-    <button
-      className={`dashboard-tab ${
-        activeTab === "permissions" ? "active" : ""
-      }`}
-      onClick={() => setActiveTab("permissions")}
-    >
-      <span className="tab-icon">🔐</span>
-      <span className="tab-text">Permissions</span>
-    </button>
+      {permissions?.canManagePermissions && (
+        <button
+          className={`dashboard-tab ${
+            activeTab === "permissions"
+              ? "active"
+              : ""
+          }`}
+          onClick={() =>
+            setActiveTab("permissions")
+          }
+        >
+          🔐 Permissions
+        </button>
+      )}
+
+      <button
+        className="dashboard-tab"
+        onClick={() =>
+          setActiveTab("help")
+        }
+      >
+        ❓ Help
+      </button>
+
+      <button
+        className="dashboard-tab"
+        onClick={() =>
+          setActiveTab("about")
+        }
+      >
+        ℹ️ About
+      </button>
+    </>
   )}
-<button
-  className="dashboard-tab"
-  onClick={() => setActiveTab("help")}
->
-  ❓ Help
-</button>
-<button
-  className={"dashboard-tab"}
-  onClick={() =>
-    setActiveTab("about")
-  }
->
-  ℹ️ About
-</button>  
 </div>
+
   {activeTab === "scoring" && (
   <div className="page-grid">
     <div className="grid-main">
