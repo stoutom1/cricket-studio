@@ -116,29 +116,25 @@ export default function DashboardClient() {
   const [matches, setMatches] = useState([]);
   const [selectedMatchId, setSelectedMatchId] = useState("");
   const [toast, setToast] = useState(null);
-const [activeQuickAction, setActiveQuickAction] = useState(null);
-const [expandedTeamId, setExpandedTeamId] = useState(null);
-const [selectedPlayerId, setSelectedPlayerId] = useState("");
+  const [activeQuickAction, setActiveQuickAction] = useState(null);
+  const [expandedTeamId, setExpandedTeamId] = useState(null);
+  const [selectedPlayerId, setSelectedPlayerId] = useState("");
 
-const [showWicketModal, setShowWicketModal] = useState(false);
-const [selectedWicketType, setSelectedWicketType] = useState("BOWLED");
-const [selectedNewBatter, setSelectedNewBatter] = useState("");
-const [showExtrasModal, setShowExtrasModal] = useState(false);
-const [selectedExtraType, setSelectedExtraType] = useState("WIDE");
-const [leagues, setLeagues] = useState([]);
-const [leagueForm, setLeagueForm] = useState({
-  name: ""
-});
-const [selectedPlayerTeamId, setSelectedPlayerTeamId] =
-  useState("");
-  const [showLeagueModal, setShowLeagueModal] =
-  useState(false);
-  
-const [selectedTeamId, setSelectedTeamId] = useState("");
-const [expandedLeagueId, setExpandedLeagueId] = useState(null);
-const [activeLeagueId, setActiveLeagueId] = useState("");
-const [activeTab, setActiveTab] = useState("management");
-const [permissions, setPermissions] = useState(null);
+  const [showWicketModal, setShowWicketModal] = useState(false);
+  const [selectedWicketType, setSelectedWicketType] = useState("BOWLED");
+  const [selectedNewBatter, setSelectedNewBatter] = useState("");
+  const [showExtrasModal, setShowExtrasModal] = useState(false);
+  const [selectedExtraType, setSelectedExtraType] = useState("WIDE");
+  const [leagues, setLeagues] = useState([]);
+  const [leagueForm, setLeagueForm] = useState({name: ""});
+  const [selectedPlayerTeamId, setSelectedPlayerTeamId] = useState("");
+  const [showLeagueModal, setShowLeagueModal] = useState(false);
+  const [pendingNonBallEvent, setPendingNonBallEvent] = useState(false);
+  const [selectedTeamId, setSelectedTeamId] = useState("");
+  const [expandedLeagueId, setExpandedLeagueId] = useState(null);
+  const [activeLeagueId, setActiveLeagueId] = useState("");
+  const [activeTab, setActiveTab] = useState("management");
+  const [permissions, setPermissions] = useState(null);
 //const [selectedMember, setSelectedMember] = useState(null);
   const [matchDetail, setMatchDetail] = useState(null);
   const [scoreboard, setScoreboard] = useState(null);
@@ -1221,7 +1217,19 @@ if (refreshedLeague) {
       setError("Please select a match");
       return;
     }
+if (pendingNonBallEvent) {
+  setPendingNonBallEvent(false);
 
+  await loadSelectedMatch(
+    selectedMatchId
+  );
+
+  setMessage(
+    "Non-ball event recorded"
+  );
+
+  return;
+}
     try {
       await api("/api/balls", {
         method: "POST",
@@ -1391,6 +1399,7 @@ setBallForm((prev) => ({
     }));
     
     await loadSelectedMatch(selectedMatchId);
+    setPendingNonBallEvent(true);
 setMessage("🔄 Striker swapped successfully");
     showToast(
       "success",
@@ -1501,6 +1510,7 @@ function quickRetiredHurt() {
 
   setRetiredHurtBatterId("");
   setShowRetiredHurtModal(true);
+  setPendingNonBallEvent(true);
 }
 async function generateInviteLink(leagueId) {
   const res = await api(
