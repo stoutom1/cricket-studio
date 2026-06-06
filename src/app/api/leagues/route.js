@@ -148,6 +148,7 @@ await prisma.leagueMember.create({
     canDeleteTeam: true,
     canDeletePlayer: true,
     canDeleteMatch: true,
+    canDeleteLeague: true,
 
     canManageMembers: true,
     canManagePermissions: true,

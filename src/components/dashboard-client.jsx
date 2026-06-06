@@ -1021,6 +1021,7 @@ const handleAddTeam = async (e) => {
  setMessage(`Team "${data.name}" created`);
 
 await loadLeagues();
+await loadTeams();
 
 setTeamForm((prev) => ({
   ...prev,

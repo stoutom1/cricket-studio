@@ -153,6 +153,9 @@ export async function POST(request, { params }) {
 
         canDeleteTeams:
           body.canDeleteTeam ?? false,
+        
+          canDeleteLeague:
+          body.canDeleteLeague ?? false,
 
         canCreatePlayers:
           body.canCreatePlayer ?? false,
@@ -204,6 +207,9 @@ export async function POST(request, { params }) {
 
         canDeleteTeams:
           body.canDeleteTeam ?? false,
+
+        canDeleteLeague:
+          body.canDeleteLeague ?? false,
 
         canCreatePlayers:
           body.canCreatePlayer ?? false,
