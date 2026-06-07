@@ -233,7 +233,15 @@ if (isSuperAdmin) {
       canViewMatches: true,
       canViewScoring: true,
       canViewStats: true,
-      canManagePermissions: true
+      canManagePermissions: true,
+      canCreateTeam: true,
+      canCreateMatch: true,
+      canDeleteTeam: true,
+      canDeletePlayer: true,
+      canDeleteMatch: true,
+      canScoreMatch: true,
+      canEditScore: true,
+      canUndoBall: true
     });
 
     return;
@@ -1966,7 +1974,12 @@ return (
     <span className="muted">No recent balls</span>
   )}
 </div>
-
+{!permissions?.canScoreMatch && (
+<div>
+   👉 You do not have permissions to score a match. Please check with your league owner to give you access to score for this match.
+</div>
+)}
+{permissions?.canScoreMatch && (
 <div className="quick-actions">
   <button type="button" className={`chip ${activeQuickAction === "0" ? "chip-active" : ""}`} onClick={() => triggerQuickAction("0", () => quickNormalBall(0))}>0</button>
   <button type="button" className={`chip ${activeQuickAction === "1" ? "chip-active" : ""}`} onClick={() => triggerQuickAction("1", () => quickNormalBall(1))}>1</button>
@@ -2009,11 +2022,11 @@ return (
     ✅ Add Delivery
   </button>
 </div>
-
+)}
 <div className="scoring-action-bar">
 </div>
 </div>
-
+{permissions?.canScoreMatch && (
               <form id="add-ball-form" className="form grid-2" onSubmit={handleAddBall}>
                 <label>
                   <span>Innings</span>
@@ -2205,6 +2218,7 @@ return (
                   />
                 </label>
               </form>
+              )}
             </>
           )}
         </Card>
@@ -2583,7 +2597,14 @@ return (
               />
             </label>
 
-            <button type="submit" className="btn">Create Match</button>
+{!permissions?.canScoreMatch && (
+<div>
+   👉 You do not have permissions to create a match. Please check with your league owner to give you access to score for this match.
+</div>
+)}
+{permissions?.canScoreMatch && (
+<button type="submit" className="btn">Create Match</button>
+)}
         </form>
       </Card>
 
