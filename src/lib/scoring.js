@@ -20,7 +20,7 @@ export function isLegalDelivery(
   if (wicketType === "RETIRED_HURT") {
     return false;
   }
-console.log("wicketType",wicketType);
+
   return !["WIDE", "NOBALL"].includes(extraType);
 }
 

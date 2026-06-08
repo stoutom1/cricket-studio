@@ -68,6 +68,6 @@ export default async function InvitePage({
       canViewStats: true
     }
   });
-console.log("at the end of app/invite/token/page.jsx");
+
   redirect("/dashboard");
 }

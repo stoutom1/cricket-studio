@@ -25,7 +25,7 @@ async function upsertTeamWithPlayers(teamName, players) {
     team = await prisma.team.create({
       data: { name: teamName }
     });
-    console.log(`✅ Team created: ${teamName}`);
+
   }
 
   for (const name of players) {
@@ -38,7 +38,7 @@ async function upsertTeamWithPlayers(teamName, players) {
       await prisma.player.create({
         data: { name, teamId: team.id }
       });
-      console.log(`✅ Player created: ${teamName} / ${name}`);
+  
     }
   }
 }
@@ -59,7 +59,7 @@ async function main() {
         name: "Demo User"
       }
     });
-    console.log("✅ Demo user created: demo@example.com / demo12345");
+
   }
 
   await upsertTeamWithPlayers("Lions", [

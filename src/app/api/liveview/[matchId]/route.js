@@ -156,25 +156,33 @@ const currentInningsBalls = match.balls.filter(
         target &&
         innings2Summary.runs >= target;
 
-      const allOut =
-        innings2Summary.wickets >= 10;
+      const maxWickets =
+        match.maxWicketsPerInnings ??
+        ((innings2TeamId.battingTeam?.players?.length) -1);
 
+
+      const allOut =
+        innings2Summary.wickets >= maxWickets;
+
+      //const matchStatus = match.stats;  
       const isCompleted =
         innings1Complete &&
         (
           innings2Complete ||
-          chaseCompleted ||
-          allOut
+          chaseCompleted // || (match.status = "Completed")
+          // ||
+          //allOut
         );
 
       let statusText = "Match in progress";
 
       if (isCompleted) {
         if (innings2Summary.runs >= target) {
-          const wicketsRemaining =
-            10 - innings2Summary.wickets;
+          const wicketsRemaining = maxWicketsPerInnings;
+            //10 - innings2Summary.wickets;
 
-          statusText = `${innings2TeamName} won by ${wicketsRemaining} wickets`;
+          statusText = `${innings2TeamName} won by chasing the target`;
+          //by ${wicketsRemaining} wickets`;
         } else if (
           innings2Summary.runs === innings1Summary.runs
         ) {
@@ -187,7 +195,7 @@ const currentInningsBalls = match.balls.filter(
           statusText = `${innings1TeamName} won by ${margin} runs`;
         }
 
-        // UPDATE MATCH STATUS
+ /*       // UPDATE MATCH STATUS
         await prisma.match.update({
           where: { id: match.id },
           data: {
@@ -195,7 +203,7 @@ const currentInningsBalls = match.balls.filter(
             statusText
           }
         });
-
+*/
         match.status = "COMPLETED";
       } else {
         match.status = "LIVE";

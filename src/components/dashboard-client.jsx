@@ -146,7 +146,8 @@ export default function DashboardClient() {
   const [showRetiredHurtModal, setShowRetiredHurtModal] = useState(false);
   const [retiredHurtBatterId, setRetiredHurtBatterId] = useState("");
   const [selectedPlayers, setSelectedPlayers] = useState({});
-
+  const [showBowlerModal, setShowBowlerModal] = useState(false);
+  const [pendingBallData, setPendingBallData] = useState(null);
   const [teamForm, setTeamForm] = useState({leagueId: "", name: ""});
 const [playerForm, setPlayerForm] = useState({
   names: "",
@@ -511,15 +512,12 @@ async function loadTeams() {
 }
 const handleAddPlayers = async (e) => {
  alert(JSON.stringify(playerForm));
-  console.log("FULL playerForm:", playerForm);
-console.log("playerLeagueId:", playerLeagueId);
-console.log("activeLeague:", activeLeague);
+
 
   e.preventDefault();
 
   try {
-    console.log("SAVE PLAYERS CLICKED");
-    console.log("playerForm:", playerForm);
+
 
     if (!playerForm.teamId) {
       setError("Please select a team");
@@ -528,14 +526,14 @@ console.log("activeLeague:", activeLeague);
 
     const rawNames = playerForm.names || "";
 
-    console.log("RAW NAMES:", rawNames);
+
 
     const playerNames = rawNames
       .split(/\r?\n/)
       .map((name) => name.trim())
       .filter((name) => name.length > 0);
 
-    console.log("PARSED NAMES:", playerNames);
+
 
     if (playerNames.length === 0) {
       setError("Enter at least one player");
@@ -547,7 +545,7 @@ console.log("activeLeague:", activeLeague);
       names: playerNames,
     };
 
-    console.log("SENDING:", payload);
+
 
     const response = await fetch(
       "/api/players/bulk",
@@ -562,7 +560,7 @@ console.log("activeLeague:", activeLeague);
 
     const data = await response.json();
 
-    console.log("RESPONSE:", data);
+  
 
     if (!response.ok) {
       throw new Error(
@@ -1012,12 +1010,20 @@ setBallForm((prev) => ({
     scoreboard?.currentState?.bowlerName,
     scoreboard?.currentInnings
   ]);
-
+useEffect(() => {
+  if (
+    scoreboard?.currentState
+      ?.needNewBowler
+  ) {
+    alert("Opening bowler popup555");
+    setShowBowlerModal(true);
+  }
+}, [scoreboard]);
 const handleAddTeam = async (e) => {
   e.preventDefault();
 
   try {
-    console.log("Submitting team:", teamForm);
+
 
     const response = await fetch("/api/teams", {
       method: "POST",
@@ -1032,7 +1038,7 @@ const handleAddTeam = async (e) => {
 
     const data = await response.json();
 
-    console.log("API Response:", data);
+
 
     if (!response.ok) {
       throw new Error(data.error || "Failed to create team");
@@ -1197,6 +1203,8 @@ if (refreshedLeague) {
       setError(err.message);
     }
   }
+const isMatchCompleted = scoreboard?.match?.status === "COMPLETED";
+const isMatchLocked = scoreboard?.match?.status ===  "COMPLETED_LOCKED";
 
   async function handleDeleteMatch(matchId) {
     if (!confirm("Delete this match and all its scoring data?")) return;
@@ -1220,12 +1228,22 @@ if (refreshedLeague) {
     e.preventDefault();
     setMessage("");
     setError("");
-
+if (scoreboard?.match?.status === "COMPLETED") {
+  return NextResponse.json(
+    {
+      error:
+        "Match has already ended"
+    },
+    {
+      status: 400
+    }
+  );
+}
     if (!selectedMatchId) {
       setError("Please select a match");
       return;
     }
-if (pendingNonBallEvent) {
+    if (pendingNonBallEvent) {
   setPendingNonBallEvent(false);
 
   await loadSelectedMatch(
@@ -1238,6 +1256,37 @@ if (pendingNonBallEvent) {
 
   return;
 }
+const payload = {
+  matchId: Number(ballForm.selectedMatchId),
+  inningsNo: Number(ballForm.inningsNo),
+  strikerId: Number(ballForm.strikerId),
+  nonStrikerId: Number(ballForm.nonStrikerId),
+  bowlerId: Number(ballForm.bowlerId),
+  extraType: ballForm.extraType,
+  runsOffBat: Number(ballForm.runsOffBat),
+  extras: Number(ballForm.extras),
+  isWicket:
+    ballForm.isWicket &&
+    ballForm.wicketType !== "RETIRED_HURT"
+      ? 1
+      : 0,
+  wicketType: ballForm.isWicket
+    ? ballForm.wicketType
+    : "NONE",
+  dismissedPlayerId: ballForm.isWicket
+    ? Number(
+        ballForm.dismissedPlayerId ||
+        ballForm.strikerId
+      )
+    : null,
+  newBatterId:
+    ballForm.isWicket &&
+    ballForm.newBatterId
+      ? Number(ballForm.newBatterId)
+      : null,
+  note: ballForm.note
+};
+
     try {
       await api("/api/balls", {
         method: "POST",
@@ -1259,7 +1308,8 @@ if (pendingNonBallEvent) {
             ballForm.isWicket && ballForm.newBatterId
               ? Number(ballForm.newBatterId)
               : null,
-          note: ballForm.note
+          note: ballForm.note,
+          matchStatus: scoreboard.match.status
         })
       });
 
@@ -1277,13 +1327,60 @@ if (pendingNonBallEvent) {
         dismissal: ""
       }));
 
-      await loadSelectedMatch(selectedMatchId);
-      await loadTeams();
-    } catch (err) {
-      setError(err.message);
-      showToast(error, err.message);
-    }
-  }
+  await Promise.all([
+  loadSelectedMatch(selectedMatchId),
+  loadMatches()
+]);
+    }catch (err) {
+
+
+if (
+  err.message?.includes(
+    "BOWLER_CONSECUTIVE_OVER"
+  )
+) {
+  setPendingBallData({
+    matchId: Number(selectedMatchId),
+    inningsNo: Number(ballForm.inningsNo),
+    strikerId: Number(ballForm.strikerId),
+    nonStrikerId: Number(ballForm.nonStrikerId),
+    bowlerId: Number(ballForm.bowlerId),
+    extraType: ballForm.extraType,
+    runsOffBat: Number(ballForm.runsOffBat),
+    extras: Number(ballForm.extras),
+    isWicket:
+      ballForm.isWicket &&
+      ballForm.wicketType !==
+        "RETIRED_HURT"
+        ? 1
+        : 0,
+    wicketType: ballForm.isWicket
+      ? ballForm.wicketType
+      : "NONE",
+    dismissedPlayerId:
+      ballForm.isWicket
+        ? Number(
+            ballForm.dismissedPlayerId ||
+            ballForm.strikerId
+          )
+        : null,
+    newBatterId:
+      ballForm.newBatterId
+        ? Number(
+            ballForm.newBatterId
+          )
+        : null,
+    note: ballForm.note
+  });
+
+  setShowBowlerModal(true);
+  return;
+}
+
+  setError(err.message);
+  showToast(error, err.message);
+}
+}
 
   async function handleUndoBall() {
     setMessage("");
@@ -1299,8 +1396,12 @@ if (pendingNonBallEvent) {
         method: "POST"
       });
 
+      await Promise.all([
+        loadSelectedMatch(selectedMatchId),
+        loadMatches()
+      ]);
+      
       setMessage("↩️ Last ball removed");
-      await loadSelectedMatch(selectedMatchId);
     } catch (err) {
       setError(err.message);
     }
@@ -1582,7 +1683,54 @@ async function confirmRetiredHurt() {
     setError(err.message);
   }
 }
+async function handleEndMatch() {
+  const confirmed = window.confirm(
+    "End this match? No more scoring will be allowed."
+  );
 
+  if (!confirmed) return;
+
+  try {
+    await api(
+      `/api/matches/${selectedMatchId}/end`,
+      {
+        method: "POST"
+      }
+    );
+    await loadMatches();
+    await loadSelectedMatch(selectedMatchId);
+    setMessage("Match ended successfully");
+  } catch (err) {
+    setError(
+      err.message ||
+      "Failed to end match"
+    );
+  }
+}
+async function confirmBowlerChange() {
+  try {
+    const payload = {
+      ...pendingBallData,
+      bowlerId: Number(ballForm.bowlerId)
+    };
+
+    await api("/api/balls", {
+      method: "POST",
+      body: JSON.stringify(payload)
+    });
+
+    setShowBowlerModal(false);
+    setPendingBallData(null);
+
+    await loadSelectedMatch(
+      selectedMatchId
+    );
+
+    setMessage("✅ Ball added");
+  } catch (err) {
+    setError(err.message);
+  }
+}
 function triggerQuickAction(actionKey, callback) {
   setActiveQuickAction(actionKey);
 
@@ -1600,6 +1748,7 @@ const canCreateMatch =
 const isSuperAdmin =
   session?.user?.email ===
   "surprisecricket11@gmail.com";
+
 return (
   <>
 <div className="dashboard-tabs">
@@ -1981,28 +2130,29 @@ return (
 )}
 {permissions?.canScoreMatch && (
 <div className="quick-actions">
-  <button type="button" className={`chip ${activeQuickAction === "0" ? "chip-active" : ""}`} onClick={() => triggerQuickAction("0", () => quickNormalBall(0))}>0</button>
-  <button type="button" className={`chip ${activeQuickAction === "1" ? "chip-active" : ""}`} onClick={() => triggerQuickAction("1", () => quickNormalBall(1))}>1</button>
-  <button type="button" className={`chip ${activeQuickAction === "2" ? "chip-active" : ""}`} onClick={() => triggerQuickAction("2", () => quickNormalBall(2))}>2</button>
-  <button type="button" className={`chip ${activeQuickAction === "3" ? "chip-active" : ""}`} onClick={() => triggerQuickAction("3", () => quickNormalBall(3))}>3</button>
-  <button type="button" className={`chip ${activeQuickAction === "4" ? "chip-active" : ""}`} onClick={() => triggerQuickAction("4", () => quickNormalBall(4))}>4</button>
-  <button type="button" className={`chip ${activeQuickAction === "6" ? "chip-active" : ""}`} onClick={() => triggerQuickAction("6", () => quickNormalBall(6))}>6</button>
+  <button type="button" disabled={isMatchCompleted || isMatchLocked} className={`chip ${activeQuickAction === "0" ? "chip-active" : ""}`} onClick={() => triggerQuickAction("0", () => quickNormalBall(0))}>0</button>
+  <button type="button" disabled={isMatchCompleted || isMatchLocked} className={`chip ${activeQuickAction === "1" ? "chip-active" : ""}`} onClick={() => triggerQuickAction("1", () => quickNormalBall(1))}>1</button>
+  <button type="button" disabled={isMatchCompleted || isMatchLocked} className={`chip ${activeQuickAction === "2" ? "chip-active" : ""}`} onClick={() => triggerQuickAction("2", () => quickNormalBall(2))}>2</button>
+  <button type="button" disabled={isMatchCompleted || isMatchLocked} className={`chip ${activeQuickAction === "3" ? "chip-active" : ""}`} onClick={() => triggerQuickAction("3", () => quickNormalBall(3))}>3</button>
+  <button type="button" disabled={isMatchCompleted || isMatchLocked} className={`chip ${activeQuickAction === "4" ? "chip-active" : ""}`} onClick={() => triggerQuickAction("4", () => quickNormalBall(4))}>4</button>
+  <button type="button" disabled={isMatchCompleted || isMatchLocked} className={`chip ${activeQuickAction === "6" ? "chip-active" : ""}`} onClick={() => triggerQuickAction("6", () => quickNormalBall(6))}>6</button>
 
-  <button type="button" className={`chip ${activeQuickAction === "Wd" ? "chip-active" : ""}`} onClick={() => triggerQuickAction("Wd", () => quickExtra("WIDE"))}>Wd</button>
+  <button type="button" disabled={isMatchCompleted || isMatchLocked} className={`chip ${activeQuickAction === "Wd" ? "chip-active" : ""}`} onClick={() => triggerQuickAction("Wd", () => quickExtra("WIDE"))}>Wd</button>
 
-  <button type="button" className={`chip ${activeQuickAction === "Nb" ? "chip-active" : ""}`} onClick={() => triggerQuickAction("Nb", () => quickExtra("NOBALL"))}>Nb</button>
+  <button type="button" disabled={isMatchCompleted || isMatchLocked} className={`chip ${activeQuickAction === "Nb" ? "chip-active" : ""}`} onClick={() => triggerQuickAction("Nb", () => quickExtra("NOBALL"))}>Nb</button>
 
-  <button type="button" className={`chip ${activeQuickAction === "B" ? "chip-active" : ""}`} onClick={() => triggerQuickAction("B", () => quickExtra("BYE"))}>B</button>
+  <button type="button" disabled={isMatchCompleted || isMatchLocked} className={`chip ${activeQuickAction === "B" ? "chip-active" : ""}`} onClick={() => triggerQuickAction("B", () => quickExtra("BYE"))}>B</button>
 
-  <button type="button" className={`chip ${activeQuickAction === "LB" ? "chip-active" : ""}`} onClick={() => triggerQuickAction("LB", () => quickExtra("LEGBYE"))}>LB</button>
+  <button type="button" disabled={isMatchCompleted || isMatchLocked} className={`chip ${activeQuickAction === "LB" ? "chip-active" : ""}`} onClick={() => triggerQuickAction("LB", () => quickExtra("LEGBYE"))}>LB</button>
 
-  <button type="button" className={`chip ${activeQuickAction === "W" ? "chip-active" : ""}`} onClick={() => triggerQuickAction("W", () => quickWicket("BOWLED"))}>Wkt</button>
-   <button type="button" className="chip" onClick={quickRetiredHurt}>
+  <button type="button" disabled={isMatchCompleted || isMatchLocked} className={`chip ${activeQuickAction === "W" ? "chip-active" : ""}`} onClick={() => triggerQuickAction("W", () => quickWicket("BOWLED"))}>Wkt</button>
+   <button type="button" className="chip" disabled={isMatchCompleted || isMatchLocked} onClick={quickRetiredHurt}>
     RH
   </button>
  <button
     type="button"
     className="btn btn-outline"
+    disabled={isMatchCompleted || isMatchLocked}
     onClick={swapBatters}
   >
     ⇄ Swap
@@ -2010,6 +2160,7 @@ return (
   <button
     type="button"
     className="btn btn-danger scoring-btn"
+    disabled={isMatchLocked}
     onClick={handleUndoBall}
   >
     ↩ Undo Ball
@@ -2018,8 +2169,11 @@ return (
     type="submit"
     form="add-ball-form"
     className="btn scoring-btn scoring-btn-primary"
+    disabled={isMatchCompleted || isMatchLocked}
   >
-    ✅ Add Delivery
+    ✅ {isMatchCompleted || isMatchLocked
+    ? "Match Ended"
+    : "Add Delivery"}
   </button>
 </div>
 )}
@@ -2217,6 +2371,15 @@ return (
                     placeholder="Optional note"
                   />
                 </label>
+<button
+  type="button"
+  className="btn btn-danger"
+  disabled={isMatchLocked}
+  onClick={handleEndMatch}
+>
+  🏁 End Match
+</button>
+
               </form>
               )}
             </>
@@ -2630,9 +2793,7 @@ return (
   </div>
             {matches.map((match) => {
                                 const isProtectedLeague = match.leagueName === "Surprise Cricket League";
-                  //const PROTECTED_LEAGUE_ID = 2;
-                  //const isProtectedLeague = Number(match.leagueId) === PROTECTED_LEAGUE_ID;
-                  const canDeleteProtectedLeague = session?.user?.email === "surprisecricket11@gmail.com";
+                                const canDeleteProtectedLeague = session?.user?.email === "surprisecricket11@gmail.com";
     return (
               <div
                 key={match.id}
@@ -3981,49 +4142,87 @@ return (
 
   </Card>
 )}
-{showLeagueModal && (
-  <div className="modal-backdrop">
+
+{showBowlerModal && (
+  <div className="modal-overlay">
     <div className="modal-card">
-      <h3>Create League</h3>
+      <h3>
+        🏏 Select New Bowler
+      </h3>
 
-      <form onSubmit={handleAddLeague}>
-        <input
-          type="text"
-          placeholder="League Name"
-          value={leagueForm.name}
+      <p
+        style={{
+          marginBottom: 16,
+          opacity: 0.8
+        }}
+      >
+        The same bowler cannot bowl
+        consecutive overs.
+      </p>
+
+      <label>
+        <span>New Bowler</span>
+
+        <select
+          value={ballForm.bowlerId || ""}
           onChange={(e) =>
-            setLeagueForm({
-              name: e.target.value,
-            })
+            setBallForm((prev) => ({
+              ...prev,
+              bowlerId: e.target.value
+            }))
           }
-          required
-        />
+        >
+          <option value="">
+            Select Bowler
+          </option>
 
-        <div
-          style={{
-            display: "flex",
-            gap: 10,
-            marginTop: 20,
+          {bowlingTeam?.players
+            ?.filter(
+              (player) =>
+                String(player.id) !==
+                String(
+                  pendingBallData?.bowlerId
+                )
+            )
+            .map((player) => (
+              <option
+                key={player.id}
+                value={player.id}
+              >
+                {player.name}
+              </option>
+            ))}
+        </select>
+      </label>
+
+      <div
+        style={{
+          display: "flex",
+          justifyContent: "flex-end",
+          gap: 12,
+          marginTop: 20
+        }}
+      >
+        <button
+          type="button"
+          className="btn btn-outline"
+          onClick={() => {
+            setShowBowlerModal(false);
+            setPendingBallData(null);
           }}
         >
-          <button
-            type="submit"
-            className="btn"
-          >
-            Create
-          </button>
+          Cancel
+        </button>
 
-          <button
-            type="button"
-            className="btn btn-outline"
-            onClick={() =>
-              setShowLeagueModal(false)
-            }
-          >
-            Cancel
-          </button>
-        </div>
-      </form>
+        <button
+          type="button"
+          className="btn"
+          disabled={!ballForm.bowlerId}
+          onClick={confirmBowlerChange}
+        >
+          Continue
+        </button>
+      </div>
     </div>
   </div>
 )}

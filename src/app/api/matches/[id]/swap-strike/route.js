@@ -26,8 +26,7 @@ export async function POST(request, { params }) {
     nonStrikerId: lastBall.strikerId
   }
 });
-console.log(strikerId);
-console.log(nonStrikerId);
+
   await prisma.matchState.update({
     where: { matchId },
     data: {

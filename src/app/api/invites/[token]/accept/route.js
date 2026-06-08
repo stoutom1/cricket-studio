@@ -52,7 +52,7 @@ export async function POST(
       role: "VIEWER"
     }
   });
-console.log("invite accdepted");
+
   return NextResponse.redirect(
     new URL("/dashboard", request.url)
   );

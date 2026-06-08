@@ -21,6 +21,8 @@ export function isMatchCompleted(
 ) {
   const maxBalls = oversPerInnings * 6;
 
+
+
   // Chase successful
   if (inningsNo === 2 && target && runs >= target) {
     return true;

@@ -47,10 +47,7 @@ export async function sendWelcomeEmail(
       `
     });
 
-  console.log(
-    "WELCOME EMAIL:",
-    result
-  );
+
 }
 
 export async function sendResetPasswordEmail(
@@ -81,8 +78,5 @@ export async function sendResetPasswordEmail(
       `
     });
 
-  console.log(
-    "RESET EMAIL:",
-    result
-  );
+
 }

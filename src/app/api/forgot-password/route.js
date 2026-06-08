@@ -46,15 +46,13 @@ export async function POST(req) {
     const resetLink =
       `${process.env.NEXTAUTH_URL}` +
       `/reset-password?token=${token}`;
-console.log("RESET LINK:");
-console.log(resetLink);
+
     await sendResetPasswordEmail(
       user.email,
       user.name || "User",
       resetLink
     );
-console.log("RESET LINK123:");
-console.log(resetLink);
+
     return NextResponse.json({
       success: true
     });

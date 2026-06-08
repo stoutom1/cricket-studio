@@ -81,10 +81,7 @@ export async function POST(
       }
     });
 
-  console.log(
-    "League member created",
-    member
-  );
+
 
   await prisma.user.update({
     where: {

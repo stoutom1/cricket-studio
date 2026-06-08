@@ -38,6 +38,7 @@ export async function POST(request) {
       ? Number(body.newBatterId)
       : null,
     note: body.note?.trim() || null,
+    matchStatus: String(body.matchStatus),
   };
 
 if (
@@ -187,7 +188,7 @@ if (payload.extraType === "NOBALL" && payload.extras < 1) {
       legalDelivery: true
     }
   });
-
+console.log("legalBallsCount123:", legalBallsCount);
   const isNewOver =
   legalBallsCount > 0 &&
   legalBallsCount % 6 === 0;
@@ -212,9 +213,14 @@ if (payload.extraType === "NOBALL" && payload.extras < 1) {
       previousOverBowler &&
       previousOverBowler.bowlerId === payload.bowlerId
     ) {
+        //setPendingBallData(ballForm);
+
+        //setShowBowlerModal(true);
       return NextResponse.json(
         {
-          error: "Bowler cannot bowl consecutive overs"
+          error: "BOWLER_CONSECUTIVE_OVER",
+      message:
+        "Bowler cannot bowl consecutive overs"
         },
         { status: 400 }
       );
@@ -226,15 +232,6 @@ if (payload.extraType === "NOBALL" && payload.extras < 1) {
       inningsNo: payload.inningsNo
     }
   });
-
-  const maxLegalBalls = match.oversPerInnings * 6;
-
-  if (legalBallsCount >= maxLegalBalls) {
-    return NextResponse.json(
-      { error: "This innings has already completed its overs" },
-      { status: 400 }
-    );
-  }
 
   const overNo = Math.floor(legalBallsCount / 6);
   const ballInOver = (legalBallsCount % 6) + 1;
@@ -340,5 +337,27 @@ const nextSequence = (lastBall?.sequence ?? 0) + 1;
       note: payload.note,
     },
   });
+
+  const maxLegalBalls = match.oversPerInnings * 6;
+  const updatedLegalBallsCount =
+  legalDelivery
+    ? legalBallsCount + 1
+    : legalBallsCount;
+
+  const inningsCompleted =
+    updatedLegalBallsCount >= maxLegalBalls;
+
+  if (
+  payload.inningsNo === 2 &&
+  inningsCompleted
+) {
+  await prisma.match.update({
+    where: { id: match.id },
+    data: {
+      status: "COMPLETED"
+    }
+  });
+}
+
   return NextResponse.json(ball, { status: 201 });
 }

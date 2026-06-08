@@ -20,10 +20,7 @@ export default function LoginForm({
 
     setError("");
     setLoading(true);
-console.log(
-  "callbackUrl123123123123123:",
-  callbackUrl
-);
+
     try {
       const result = await signIn(
         "credentials",

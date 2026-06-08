@@ -70,7 +70,7 @@ useEffect(() => {
   if (status !== "success") return;
 
   const timer = setTimeout(() => {
-    console.log("Timeout");
+
     router.push("/dashboard");
   }, 5000);
 
@@ -170,7 +170,7 @@ useEffect(() => {
                 if (leagueId) {
                   router.push(`/leagues/${leagueId}`);
                 } else {
-                  console.log("inside register-league moving to dashboard");
+
                   router.push("/dashboard");
                 }
               }}

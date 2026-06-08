@@ -77,6 +77,7 @@ const matches = await prisma.match.findMany({
 });
   // AUTO UPDATE MATCH STATUS
   for (const match of matches) {
+
     const innings1Balls = match.balls.filter(
       (b) => b.inningsNo === 1
     );
@@ -121,20 +122,23 @@ const matches = await prisma.match.findMany({
       innings1LegalBalls > 0 &&
       innings2Completed;
 
-    if (
+    if(match.status !== "COMPLETED_LOCKED")  
+    {
+      if (
       shouldComplete &&
-      match.status !== "completed"
+      match.status !== "COMPLETED"
     ) {
       await prisma.match.update({
         where: { id: match.id },
 
         data: {
-          status: "completed"
+          status: "COMPLETED"
         }
       });
 
-      match.status = "completed";
+      match.status = "COMPLETED";
     }
+  }
   }
 
   const formatted = matches.map((m) => ({
@@ -320,6 +324,6 @@ const match = await prisma.match.create({
       status: "in_progress"
     }
   });
-console.log("Match",match);
+
   return NextResponse.json(match, { status: 201 });
 }
