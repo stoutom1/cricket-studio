@@ -119,7 +119,7 @@ export default function DashboardClient() {
   const [activeQuickAction, setActiveQuickAction] = useState(null);
   const [expandedTeamId, setExpandedTeamId] = useState(null);
   const [selectedPlayerId, setSelectedPlayerId] = useState("");
-
+  const [leagueName, setLeagueName] = useState("");
   const [showWicketModal, setShowWicketModal] = useState(false);
   const [selectedWicketType, setSelectedWicketType] = useState("BOWLED");
   const [selectedNewBatter, setSelectedNewBatter] = useState("");
@@ -135,7 +135,7 @@ export default function DashboardClient() {
   const [activeLeagueId, setActiveLeagueId] = useState("");
   const [activeTab, setActiveTab] = useState("management");
   const [permissions, setPermissions] = useState(null);
-//const [selectedMember, setSelectedMember] = useState(null);
+
   const [matchDetail, setMatchDetail] = useState(null);
   const [scoreboard, setScoreboard] = useState(null);
   const [stats, setStats] = useState({ batting: [], bowling: [] });
@@ -172,8 +172,7 @@ const [selectedMemberId, setSelectedMemberId] = useState("");
 
 const [showAddPlayers, setShowAddPlayers] = useState(false);
 const [memberSearch, setMemberSearch] = useState("");
-const [showScoreboardFullscreen, setShowScoreboardFullscreen] =
-  useState(false);
+
 const [me, setMe] = useState(null);
 const [permissionsLoading, setPermissionsLoading] =
   useState(false);
@@ -258,22 +257,7 @@ const selectedTeam =
   selectedLeague?.teams?.find(
     (t) => String(t.id) === String(selectedTeamId)
   );
-/*
-  const filteredMembers =
-  activeLeague?.members?.filter(
-    (member) =>
-      member.user?.name
-        ?.toLowerCase()
-        .includes(
-          memberSearch.toLowerCase()
-        ) ||
-      member.user?.email
-        ?.toLowerCase()
-        .includes(
-          memberSearch.toLowerCase()
-        )
-  );
-*/
+
 const filteredMembers =
   activeLeague?.members?.filter(
     (member) => {
@@ -406,6 +390,24 @@ useEffect(() => {
 
   setShowPermissionModal(false);
 }, [selectedMemberId, activeLeague]);
+
+async function handleCreateLeague() {
+  try {
+    await api("/api/leagues", {
+      method: "POST",
+      body: JSON.stringify({
+        name: leagueName
+      })
+    });
+
+    setShowLeagueModal(false);
+    setLeagueName("");
+
+    await loadLeagues();
+  } catch (err) {
+    setError(err.message);
+  }
+}
 
 const filteredTeams = teams.filter(
   (team) =>
@@ -2025,9 +2027,7 @@ async function confirmRetiredHurt() {
   }
 }
 */
-const isMobile =
-  typeof window !== "undefined" &&
-  window.innerWidth < 768;
+
 async function handleEndMatch() {
   const confirmed = window.confirm(
     "End this match? No more scoring will be allowed."
@@ -2204,13 +2204,7 @@ return (
 
   {activeTab === "scoring" && (
   <div className="page-grid">
-    <div className="grid-main" onClick={() => {
-    if(isMobile){
-    if (window.innerWidth < 768) {
-      setShowScoreboardFullscreen(true);
-    }
-  }
-  }}><div className="expand-icon">TEST</div>
+    <div className="grid-main">
           <Card
             title="🏏 Live Scoreboard" defaultCollapsed={false}
             right={
@@ -4496,52 +4490,35 @@ return (
 
   </Card>
 )}
-{showScoreboardFullscreen && (
-  <div className="fullscreen-overlay">
-    <div className="fullscreen-content">
+{showLeagueModal && (
+  <div className="modal-overlay">
+    <div className="modal-card">
+      <h3>Create League</h3>
 
-      <button
-        className="close-btn"
-        onClick={() =>
-          setShowScoreboardFullscreen(false)
+      <input
+        type="text"
+        value={leagueName}
+        onChange={(e) =>
+          setLeagueName(e.target.value)
         }
-      >
-        ✕
-      </button>
+        placeholder="League name"
+      />
 
-      <h2>
-        {selectedMatch?.teamAName}
-        {" vs "}
-        {selectedMatch?.teamBName}
-      </h2>
+      <div className="modal-actions">
+        <button
+          onClick={() =>
+            setShowLeagueModal(false)
+          }
+        >
+          Cancel
+        </button>
 
-      <div className="score-large">
-        {scoreboard?.innings?.[0]?.runs}/
-        {scoreboard?.innings?.[0]?.wickets}
+        <button
+          onClick={handleCreateLeague}
+        >
+          Create
+        </button>
       </div>
-
-      <div>
-        Overs:
-        {" "}
-        {scoreboard?.innings?.[0]?.overs}
-      </div>
-
-      <div>
-        RR:
-        {" "}
-        {scoreboard?.innings?.[0]?.runRate}
-      </div>
-
-      <div>
-        Target:
-        {" "}
-        {scoreboard?.summary?.target}
-      </div>
-
-      <div>
-        {scoreboard?.summary?.statusText}
-      </div>
-
     </div>
   </div>
 )}
