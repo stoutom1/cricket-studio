@@ -2200,15 +2200,7 @@ return (
   {activeTab === "scoring" && (
   <div className="page-grid">
     <div className="grid-main">
-      <button
-  className="floating-scoreboard-btn"
-  onClick={() =>
-    setShowFullScoreboard(true)
-  }
->
-  📊 Scoreboard
-</button>
-          <Card className="scoring-console"
+          <Card
             title="🏏 Live Scoreboard" defaultCollapsed={false}
             right={
               selectedMatchId ? (
