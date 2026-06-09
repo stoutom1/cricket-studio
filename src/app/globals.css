@@ -1849,7 +1849,7 @@ body {
 }
 @media (max-width: 768px) {
 
-  .scoreboard-wrap {
+  .grid-side .scoreboard-wrap {
     display: none;
   }
 
