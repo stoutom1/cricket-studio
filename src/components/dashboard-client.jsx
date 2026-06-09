@@ -139,10 +139,10 @@ export default function DashboardClient() {
   const [matchDetail, setMatchDetail] = useState(null);
   const [scoreboard, setScoreboard] = useState(null);
   const [stats, setStats] = useState({ batting: [], bowling: [] });
-const [showAdvancedPanel, setShowAdvancedPanel] = useState(false);
+
   const [message, setMessage] = useState("");
   const [error, setError] = useState("");
-
+const [showAdvancedSheet, setShowAdvancedSheet] = useState(false);
   const [showRetiredHurtModal, setShowRetiredHurtModal] = useState(false);
   const [retiredHurtBatterId, setRetiredHurtBatterId] = useState("");
   const [retiredPlayerType, setRetiredPlayerType] = useState("STRIKER");
@@ -169,7 +169,7 @@ const [selectedMember, setSelectedMember] = useState(null);
 const [showAddTeam, setShowAddTeam] = useState(false);
 const [playerNames, setPlayerNames] = useState("");
 const [selectedMemberId, setSelectedMemberId] = useState("");
-
+const [isMobile, setIsMobile] = useState(false);
 const [showAddPlayers, setShowAddPlayers] = useState(false);
 const [memberSearch, setMemberSearch] = useState("");
 
@@ -390,7 +390,24 @@ useEffect(() => {
 
   setShowPermissionModal(false);
 }, [selectedMemberId, activeLeague]);
+useEffect(() => {
+  const checkMobile = () => {
+    setIsMobile(window.innerWidth < 768);
+  };
 
+  checkMobile();
+
+  window.addEventListener(
+    "resize",
+    checkMobile
+  );
+
+  return () =>
+    window.removeEventListener(
+      "resize",
+      checkMobile
+    );
+}, []);
 async function handleCreateLeague() {
   const league = await api("/api/leagues", {
     method: "POST",
@@ -1542,6 +1559,7 @@ if (scoreboard?.match?.status === "COMPLETED") {
         note: "",
         dismissal: ""
       }));
+      setShowAdvancedSheet(false);
   await Promise.all([
   loadSelectedMatch(selectedMatchId),
   loadMatches()
@@ -1857,32 +1875,6 @@ async function handleMatchSelect(matchId) {
   );
 }
 
-/*
-function quickRetiredHurt() {
-  if (!selectedMatchId) {
-    setError("Please select a match");
-    return;
-  }
-
-  if (!battingTeam) {
-    setError("Batting team not found");
-    return;
-  }
-
-  const striker = battingTeam.players.find(
-    (p) => String(p.id) === String(ballForm.strikerId)
-  );
-
-  if (!striker) {
-    setError("Current striker not found");
-    return;
-  }
-
-  setRetiredHurtBatterId("");
-  setShowRetiredHurtModal(true);
-  setPendingNonBallEvent(true);
-}
-*/
 async function handleRetiredHurtSubmit() {
   if (!replacementPlayerId) {
     setError("Select replacement batter");
@@ -2097,7 +2089,11 @@ const canCreateMatch =
 const isSuperAdmin =
   session?.user?.email ===
   "surprisecricket11@gmail.com";
-
+ 
+  /*const isMobile =
+  typeof window !== "undefined" &&
+  window.innerWidth < 768;
+*/
 return (
   <>
 <div className="dashboard-tabs">
@@ -2369,6 +2365,7 @@ return (
             </div>
           )}
         </Card>
+
 <Card
   className="scoring-console"
   title="🎯 Advanced Scoring"
@@ -2527,27 +2524,56 @@ return (
     ✅ Match Ended
   </button>
 )}
+<button
+  type="button"
+  className="advanced-sheet-btn"
+  onClick={() =>
+    setShowAdvancedSheet(true)
+  }
+>
+  ⚙️ Scoring Fields
+</button>
 </div>
 )}
 <div className="scoring-action-bar">
 </div>
 </div>
-<button
-  type="button"
-  className="advanced-toggle"
-  onClick={() =>
-    setShowAdvancedPanel(
-      !showAdvancedPanel
-    )
-  }
->
-  {showAdvancedPanel
-    ? "▼ Hide Advanced Scoring"
-    : "▲ Show Advanced Scoring"}
-</button>
-{permissions?.canScoreMatch && (
+
+{permissions?.canScoreMatch  && (isMobile ? (
   <>
-  {showAdvancedPanel && (
+{showAdvancedSheet && (
+  <>
+    <div
+      className="sheet-backdrop"
+      onClick={() =>
+        setShowAdvancedSheet(false)
+      }
+    />
+
+    <div className="advanced-sheet">
+
+      <div className="sheet-header">
+
+        <div className="sheet-handle" />
+
+        <h3>
+          ⚙️ Advanced Scoring
+        </h3>
+
+        <button
+          type="button"
+          className="sheet-close"
+          onClick={() =>
+            setShowAdvancedSheet(false)
+          }
+        >
+          ✕
+        </button>
+
+      </div>
+
+      <div className="sheet-content">
+
               <form id="add-ball-form" className="form grid-2" onSubmit={handleAddBall}>
                 <label>
                   <span>Innings</span>
@@ -2748,8 +2774,214 @@ return (
 </button>
 
               </form>
-  )}
+
+      </div>
+    </div>
   </>
+)}
+  </>
+) : (
+                <form id="add-ball-form" className="form grid-2" onSubmit={handleAddBall}>
+                <label>
+                  <span>Innings</span>
+                  <select
+                    value={ballForm.inningsNo || ""}
+                    onChange={(e) =>
+                      setBallForm((prev) => ({ ...prev, inningsNo: e.target.value }))
+                    }
+                  >
+                    <option value="1">Innings 1</option>
+                    <option value="2">Innings 2</option>
+                  </select>
+                </label>
+                  <label>
+                  <span>Bowler</span>
+                  <select
+                    value={ballForm.bowlerId || ""}
+                    onChange={(e) =>
+                      setBallForm((prev) => ({ ...prev, bowlerId: e.target.value }))
+                    }
+                    required
+                  >
+                    <option value="">Select bowler</option>
+                    {(bowlingTeam?.players || []).map((p) => (
+                      <option key={p.id} value={p.id}>{p.name}</option>
+                    ))}
+                  </select>
+                </label>
+              
+  {/* Striker */}
+  <label>
+    <span>Striker</span>
+
+    <select
+      value={ballForm.strikerId || ""}
+      onChange={(e) =>
+        setBallForm((prev) => ({
+          ...prev,
+          strikerId: e.target.value,
+          dismissedPlayerId: e.target.value
+        }))
+      }
+      required
+    >
+      <option value="">Select striker</option>
+
+      {(battingTeam?.players || []).map((p) => (
+        <option key={p.id} value={p.id}>
+          {p.name}
+        </option>
+      ))}
+    </select>
+     {/* Bowler */}
+  </label>
+  <label>
+  {/* Non Striker */}
+    <span>Non-striker</span>
+
+    <select
+      value={ballForm.nonStrikerId || ""}
+      onChange={(e) =>
+        setBallForm((prev) => ({
+          ...prev,
+          nonStrikerId: e.target.value
+        }))
+      }
+      required
+    >
+      <option value="">Select non-striker</option>
+
+      {(battingTeam?.players || []).map((p) => (
+        <option key={p.id} value={p.id}>
+          {p.name}
+        </option>
+      ))}
+    </select>
+  </label>
+                <label>
+                  <span>Extra Type</span>
+                  <select
+                    value={ballForm.extraType || ""}
+                    onChange={(e) =>
+                      setBallForm((prev) => ({ ...prev, extraType: e.target.value }))
+                    }
+                  >
+                    {EXTRA_TYPES.map((type) => (
+                      <option key={type} value={type}>{type}</option>
+                    ))}
+                  </select>
+                </label>
+
+                <label>
+                  <span>Runs Off Bat</span>
+                  <input
+                    type="number"
+                    min="0"
+                    value={ballForm.runsOffBat || ""}
+                    onChange={(e) =>
+                      setBallForm((prev) => ({ ...prev, runsOffBat: e.target.value }))
+                    }
+                    required
+                  />
+                </label>
+
+                <label>
+                  <span>Extras</span>
+                  <input
+                    type="number"
+                    min="0"
+                    value={ballForm.extras || ""}
+                    onChange={(e) =>
+                      setBallForm((prev) => ({ ...prev, extras: e.target.value }))
+                    }
+                    required
+                  />
+                </label>
+
+                <label className="checkbox-row">
+                  <span>Wicket</span>
+                  <input
+                    type="checkbox"
+                    checked={ballForm.isWicket}
+                    onChange={(e) =>
+                      setBallForm((prev) => ({
+                        ...prev,
+                        isWicket: e.target.checked,
+                        wicketType: e.target.checked ? "BOWLED" : "NONE"
+                      }))
+                    }
+                  />
+                </label>
+
+                <label>
+                  <span>Wicket Type</span>
+                  <select
+                    value={ballForm.wicketType || ""}
+                    onChange={(e) =>
+                      setBallForm((prev) => ({ ...prev, wicketType: e.target.value }))
+                    }
+                    disabled={!ballForm.isWicket}
+                  >
+                    {WICKET_TYPES.map((type) => (
+                      <option key={type} value={type}>{type}</option>
+                    ))}
+                  </select>
+                </label>
+
+                <label>
+                  <span>Dismissed Player</span>
+                  <select
+                    value={ballForm.dismissedPlayerId || ""}
+                    onChange={(e) =>
+                      setBallForm((prev) => ({ ...prev, dismissedPlayerId: e.target.value }))
+                    }
+                    disabled={!ballForm.isWicket}
+                  >
+                    <option value="">Select dismissed player</option>
+                    {(battingTeam?.players || []).map((p) => (
+                      <option key={p.id} value={p.id}>{p.name}</option>
+                    ))}
+                  </select>
+                </label>
+
+                <label>
+                  <span>New Batter</span>
+                  <select
+                    value={ballForm.newBatterId || ""}
+                    onChange={(e) =>
+                      setBallForm((prev) => ({ ...prev, newBatterId: e.target.value }))
+                    }
+                    disabled={!ballForm.isWicket}
+                  >
+                    <option value="">Select new batter</option>
+                    {availableNewBatters.map((p) => (
+                      <option key={p.id} value={p.id}>{p.name}</option>
+                    ))}
+                  </select>
+                </label>
+
+                <label className="full-span">
+                  <span>Note</span>
+                  <input
+                    type="text"
+                    value={ballForm.note || ""}
+                    onChange={(e) =>
+                      setBallForm((prev) => ({ ...prev, note: e.target.value }))
+                    }
+                    placeholder="Optional note"
+                  />
+                </label>
+<button
+  type="button"
+  className="btn btn-danger"
+  disabled={isMatchLocked}
+  onClick={handleEndMatch}
+>
+  🏁 End Match
+</button>
+
+              </form>
+)
     )}
             </>
           )}
