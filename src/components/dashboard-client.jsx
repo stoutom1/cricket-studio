@@ -2089,7 +2089,9 @@ const canCreateMatch =
 const isSuperAdmin =
   session?.user?.email ===
   "surprisecricket11@gmail.com";
- 
+const selectedMatch = matches.find(
+  (m) => String(m.id) === String(selectedMatchId)
+); 
   /*const isMobile =
   typeof window !== "undefined" &&
   window.innerWidth < 768;
@@ -2201,103 +2203,79 @@ return (
   <div className="page-grid">
     <div className="grid-main">
           <div className="grid-side">
-            <Card title="📋 Matches" defaultCollapsed={false}>
-        {matches.length === 0 ? (
-          <p className="muted">No matches yet</p>
-        ) : (
-          <div className="match-list">
-            <div
-    style={{
-      padding: 10,
+<Card title="📋 Matches" defaultCollapsed={false}>
+  {matches.length === 0 ? (
+    <p className="muted">No matches yet</p>
+  ) : (
+    <>
+      <div className="match-picker">
+        <select
+          value={selectedMatchId || ""}
+          onChange={(e) =>
+            setSelectedMatchId(e.target.value)
+          }
+        >
+          <option value="">
+            Select Match
+          </option>
 
-      borderRadius: 8,
-      fontSize: "10px"
-    }}
-  >
-    👉 Click any match below to view the Scoring screen.
-  </div>
-            {matches.map((match) => {
-                  const isProtectedLeague = match.leagueName === "Surprise Cricket League";
-                  //const PROTECTED_LEAGUE_ID = 2;
-                  //const isProtectedLeague = Number(match.leagueId) === PROTECTED_LEAGUE_ID;
-                  const canDeleteProtectedLeague = session?.user?.email === "surprisecricket11@gmail.com";
-    return (
-              <div
-                key={match.id}
-                className={`match-item ${
-                  String(match.id) === String(selectedMatchId)
-                    ? "active"
-                    : ""
-                }`}
-              >
-                <button
-                  type="button"
-                  onClick={() =>
-                    setSelectedMatchId(String(match.id))
-                    //handleMatchSelect(match.id)
-                  }
-                  style={{
-                    flex: 1,
-                    background: "transparent",  
-                    border: "none",
-                    textAlign: "left",
-                    cursor: "pointer"
-                  }}
-                >
-                  <div>
-                    <strong>
-                      #{match.id} • {match.teamAName} vs{" "}
-                      {match.teamBName}
-                    </strong>
+          {matches.map((match) => (
+            <option
+              key={match.id}
+              value={match.id}
+            >
+              #{match.id} • {match.teamAName} vs {match.teamBName}
+            </option>
+          ))}
+        </select>
 
-                    <div className="muted small">
-                      Bat first: {match.battingFirstTeamName}
-                      {" • "}
-                      {match.oversPerInnings} overs
-                      {" • "}
-                      Max wkts:{" "}
-                      {match.maxWicketsPerInnings ?? "∞"}
-                      {" • "}
-                      Bowler limit:{" "}
-                      {match.maxOversPerBowler ?? "∞"}
-                    </div>
-
-                    <div className="muted small">
-                      {formatDate(match.createdAt)}
-                    </div>
-                  </div>
-                </button>
-
-                <div
-                  style={{
-                    display: "flex",
-                    flexDirection: "column",
-                    gap: 8
-                  }}
-                >
-                  
-                  <span className="pill">
-                    {match.status}
-                  </span>
-      {
-            permissions?.canDeleteMatch && (                 
-                  <button 
-                    type="button"
-                    className="btn btn-outline"
-                    onClick={() =>
-                      handleDeleteMatch(match.id)
-                    }
-                  >
-                    Delete
-                  </button>
-            )}            
-                </div>
-              </div>
-    ); 
-          })}
-          </div>
+        {selectedMatch && (
+          <span className="pill">
+            {selectedMatch.status}
+          </span>
         )}
-      </Card>
+      </div>
+
+      <div className="muted small match-help">
+        👉 Selecting a match opens scoring
+      </div>
+
+      {selectedMatch && (
+        <details className="match-summary">
+          <summary>
+            🏏 {selectedMatch.teamAName} vs {selectedMatch.teamBName}
+          </summary>
+
+          <div className="match-quick-info">
+            Bat 1st: {selectedMatch.battingFirstTeamName}
+            {" • "}
+            {selectedMatch.oversPerInnings} overs
+            {" • "}
+            Max wkts: {selectedMatch.maxWicketsPerInnings ?? "∞"}
+            {" • "}
+            Bowler limit: {selectedMatch.maxOversPerBowler ?? "∞"}
+          </div>
+
+          <div className="muted small">
+            {formatDate(selectedMatch.createdAt)}
+          </div>
+
+          {permissions?.canDeleteMatch && (
+            <button
+              type="button"
+              className="btn btn-outline"
+              onClick={() =>
+                handleDeleteMatch(selectedMatch.id)
+              }
+            >
+              Delete Match
+            </button>
+          )}
+        </details>
+      )}
+    </>
+  )}
+</Card>
     </div>
           <Card
             title="🏏 Live Scoreboard" defaultCollapsed={false}

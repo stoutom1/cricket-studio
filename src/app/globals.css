@@ -2039,3 +2039,75 @@ body {
   cursor: help;
   font-size: 18px;
 }
+.match-selector-card {
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+
+  padding: 16px;
+
+  border-radius: 14px;
+
+  background: rgba(255,255,255,.03);
+
+  border: 1px solid var(--border);
+}
+
+.match-selector-header {
+  font-size: 15px;
+  font-weight: 700;
+}
+
+.match-selector {
+  height: 52px;
+
+  font-size: 15px;
+  font-weight: 600;
+
+  border-radius: 12px;
+}
+
+.match-details-card {
+  margin-top: 16px;
+
+  padding: 16px;
+
+  border-radius: 14px;
+
+  background: rgba(255,255,255,.03);
+
+  border: 1px solid var(--border);
+}
+.match-picker {
+  display: flex;
+  gap: 8px;
+  align-items: center;
+}
+
+.match-picker select {
+  flex: 1;
+  height: 42px;
+}
+
+.match-help {
+  margin-top: 6px;
+}
+
+.match-summary {
+  margin-top: 10px;
+
+  border: 1px solid var(--border);
+  border-radius: 10px;
+
+  padding: 10px;
+}
+
+.match-summary summary {
+  cursor: pointer;
+  font-weight: 600;
+}
+
+.match-quick-info {
+  margin-top: 8px;
+  font-size: 13px;
+}
