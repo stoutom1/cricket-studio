@@ -1831,3 +1831,44 @@ body {
 
   margin: 12px 0;
 }
+.advanced-toggle {
+  width: 100%;
+  margin-top: 12px;
+}
+.scoring-console {
+  position: sticky;
+  top: 0;
+  z-index: 100;
+}
+@media (max-width: 768px) {
+
+  .scoring-console {
+    min-height: 100vh;
+  }
+
+}
+@media (max-width: 768px) {
+
+  .scoreboard-wrap {
+    display: none;
+  }
+
+}
+.floating-scoreboard-btn {
+  position: fixed;
+  bottom: 90px;
+  right: 16px;
+  z-index: 999;
+}
+.mobile-scoreboard-drawer {
+  position: fixed;
+  inset: 0;
+
+  z-index: 9999;
+
+  overflow-y: auto;
+
+  background: var(--card-bg);
+
+  padding: 20px;
+}

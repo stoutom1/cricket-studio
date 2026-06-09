@@ -135,11 +135,11 @@ export default function DashboardClient() {
   const [activeLeagueId, setActiveLeagueId] = useState("");
   const [activeTab, setActiveTab] = useState("management");
   const [permissions, setPermissions] = useState(null);
-
+  const [showControls, setShowControls] = useState(false);
   const [matchDetail, setMatchDetail] = useState(null);
   const [scoreboard, setScoreboard] = useState(null);
   const [stats, setStats] = useState({ batting: [], bowling: [] });
-
+const [showAdvancedPanel, setShowAdvancedPanel] = useState(false);
   const [message, setMessage] = useState("");
   const [error, setError] = useState("");
 
@@ -158,7 +158,7 @@ const [playerForm, setPlayerForm] = useState({
 });
 const [preferencesLoaded, setPreferencesLoaded] = useState(false);
 const [searchTerm, setSearchTerm] = useState("");
-
+const [showFullScoreboard, setShowFullScoreboard] = useState(false);
 const [roleFilter, setRoleFilter] = useState("ALL");
 
 const [showPlayerModal, setShowPlayerModal] = useState(false);
@@ -2204,7 +2204,15 @@ return (
   {activeTab === "scoring" && (
   <div className="page-grid">
     <div className="grid-main">
-          <Card
+      <button
+  className="floating-scoreboard-btn"
+  onClick={() =>
+    setShowFullScoreboard(true)
+  }
+>
+  📊 Scoreboard
+</button>
+          <Card className="scoring-console"
             title="🏏 Live Scoreboard" defaultCollapsed={false}
             right={
               selectedMatchId ? (
@@ -2362,6 +2370,7 @@ return (
           )}
         </Card>
 <Card
+  className="scoring-console"
   title="🎯 Advanced Scoring"
   defaultCollapsed={false}
 >
@@ -2523,7 +2532,22 @@ return (
 <div className="scoring-action-bar">
 </div>
 </div>
+<button
+  type="button"
+  className="advanced-toggle"
+  onClick={() =>
+    setShowAdvancedPanel(
+      !showAdvancedPanel
+    )
+  }
+>
+  {showAdvancedPanel
+    ? "▼ Hide Advanced Scoring"
+    : "▲ Show Advanced Scoring"}
+</button>
 {permissions?.canScoreMatch && (
+  <>
+  {showAdvancedPanel && (
               <form id="add-ball-form" className="form grid-2" onSubmit={handleAddBall}>
                 <label>
                   <span>Innings</span>
@@ -2724,7 +2748,9 @@ return (
 </button>
 
               </form>
-              )}
+  )}
+  </>
+    )}
             </>
           )}
         </Card>
@@ -4484,6 +4510,21 @@ return (
     </div>
 
   </Card>
+)}
+{showFullScoreboard && (
+  <div className="mobile-scoreboard-drawer">
+
+    <button
+      onClick={() =>
+        setShowFullScoreboard(false)
+      }
+    >
+      ✕
+    </button>
+
+    {/* existing scoreboard content */}
+
+  </div>
 )}
 {showLeagueModal && (
   <div className="league-modal-backdrop">
