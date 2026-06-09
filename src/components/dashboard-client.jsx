@@ -2625,11 +2625,23 @@ return (
 <button
   type="button"
   className="advanced-sheet-btn"
-  onClick={() =>
-    setShowAdvancedSheet(true)
-  }
+  onClick={() => setShowAdvancedSheet(true)}
 >
-  ⚙️ Scoring Fields
+  <span className="advanced-sheet-icon">⚙️</span>
+
+  <div className="advanced-sheet-text">
+    <span className="advanced-sheet-title">
+      Scoring Fields
+    </span>
+
+    <span className="advanced-sheet-subtitle">
+      Open advanced scoring screen
+    </span>
+  </div>
+
+  <span className="advanced-sheet-arrow">
+    →
+  </span>
 </button>
 </div>
 )}

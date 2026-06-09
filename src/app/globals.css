@@ -1958,3 +1958,75 @@ body {
 
   cursor: pointer;
 }
+.advanced-sheet-btn {
+  width: 100%;
+
+  display: flex;
+  align-items: center;
+  gap: 14px;
+
+  padding: 16px 18px;
+
+  border: 1px solid rgba(85, 214, 255, 0.25);
+  border-radius: 16px;
+
+  background:
+    linear-gradient(
+      135deg,
+      rgba(85, 214, 255, 0.15),
+      rgba(124, 133, 255, 0.12)
+    );
+
+  color: white;
+
+  cursor: pointer;
+
+  transition: all 0.2s ease;
+
+  box-shadow:
+    0 8px 24px rgba(0,0,0,.18);
+}
+
+.advanced-sheet-btn:hover {
+  transform: translateY(-2px);
+
+  border-color: var(--accent);
+
+  box-shadow:
+    0 12px 30px rgba(85,214,255,.15);
+}
+
+.advanced-sheet-icon {
+  font-size: 24px;
+  flex-shrink: 0;
+}
+
+.advanced-sheet-text {
+  flex: 1;
+  text-align: left;
+}
+
+.advanced-sheet-title {
+  display: block;
+  font-size: 16px;
+  font-weight: 700;
+}
+
+.advanced-sheet-subtitle {
+  display: block;
+  font-size: 12px;
+  color: var(--muted);
+  margin-top: 2px;
+}
+
+.advanced-sheet-arrow {
+  font-size: 22px;
+  font-weight: 700;
+  color: var(--accent);
+
+  transition: transform .2s ease;
+}
+
+.advanced-sheet-btn:hover .advanced-sheet-arrow {
+  transform: translateX(4px);
+}
