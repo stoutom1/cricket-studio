@@ -2029,3 +2029,18 @@ body {
 .advanced-sheet-btn:hover .advanced-sheet-arrow {
   transform: translateX(4px);
 }
+.advanced-sheet {
+  position: fixed;
+  left: 0;
+  right: 0;
+  bottom: 0;
+
+  transform: translateY(100%);
+  transition: transform 0.25s ease;
+
+  z-index: 9999;
+}
+
+.advanced-sheet.open {
+  transform: translateY(0);
+}

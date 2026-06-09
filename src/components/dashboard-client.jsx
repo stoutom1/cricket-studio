@@ -2654,7 +2654,9 @@ return (
 {showAdvancedSheet && (
   <>
     <div
-      className="sheet-backdrop"
+      className={`advanced-sheet ${
+    showAdvancedSheet ? "open" : ""
+  }`}
       onClick={() =>
         setShowAdvancedSheet(false)
       }
