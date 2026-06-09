@@ -392,21 +392,20 @@ useEffect(() => {
 }, [selectedMemberId, activeLeague]);
 
 async function handleCreateLeague() {
-  try {
-    await api("/api/leagues", {
-      method: "POST",
-      body: JSON.stringify({
-        name: leagueName
-      })
-    });
+  const league = await api("/api/leagues", {
+    method: "POST",
+    body: JSON.stringify({
+      name: leagueName
+    })
+  });
 
-    setShowLeagueModal(false);
-    setLeagueName("");
+  await loadLeagues();
 
-    await loadLeagues();
-  } catch (err) {
-    setError(err.message);
-  }
+  setActiveLeagueId(String(league.id));
+  setSelectedTeamId("");
+
+  setShowLeagueModal(false);
+  setLeagueName("");
 }
 
 const filteredTeams = teams.filter(
@@ -4491,21 +4490,49 @@ return (
   </Card>
 )}
 {showLeagueModal && (
-  <div className="modal-backdrop">
-    <div className="modal-card">
-      <h3>Create League</h3>
+  <div className="league-modal-backdrop">
+    <div className="league-modal">
 
-      <input
-        type="text"
-        value={leagueName}
-        onChange={(e) =>
-          setLeagueName(e.target.value)
-        }
-        placeholder="League name"
-      />
+      <div className="league-modal-header">
+        <div>
+          <h3>🏆 Create League</h3>
+          <p>
+            Organize teams, fixtures and standings
+            under a new league.
+          </p>
+        </div>
 
-      <div className="modal-actions">
         <button
+          className="icon-btn"
+          onClick={() =>
+            setShowLeagueModal(false)
+          }
+        >
+          ✕
+        </button>
+      </div>
+
+      <div className="league-modal-body">
+        <label className="league-label">
+          League Name
+        </label>
+
+        <input
+          className="league-input"
+          type="text"
+          value={leagueName}
+          onChange={(e) =>
+            setLeagueName(e.target.value)
+          }
+          placeholder="e.g. Summer Premier League 2026"
+          autoFocus
+        />
+      </div>
+
+      <div className="league-modal-actions">
+        <button
+          type="button"
+          className="btn btn-outline"
           onClick={() =>
             setShowLeagueModal(false)
           }
@@ -4514,76 +4541,85 @@ return (
         </button>
 
         <button
+          type="button"
+          className="btn"
+          disabled={!leagueName.trim()}
           onClick={handleCreateLeague}
         >
-          Create
+          ➕ Create League
         </button>
       </div>
+
     </div>
   </div>
 )}
 {showBowlerModal && (
-  <div className="modal-backdrop">
-    <div className="modal-card">
-      <h3>
-        🏏 Select New Bowler
-      </h3>
+  <div className="bowler-modal-backdrop">
+    <div className="bowler-modal">
 
-      <p
-        style={{
-          marginBottom: 16,
-          opacity: 0.8
-        }}
-      >
-        The same bowler cannot bowl
-        consecutive overs.
-      </p>
+      <div className="bowler-modal-header">
+        <div>
+          <h3>🏏 Change Bowler</h3>
+          <p>
+            Select a different bowler for the next over
+          </p>
+        </div>
 
-      <label>
-        <span>New Bowler</span>
-
-        <select
-          value={ballForm.bowlerId || ""}
-          onChange={(e) =>
-            setBallForm((prev) => ({
-              ...prev,
-              bowlerId: e.target.value
-            }))
-          }
-        >
-          <option value="">
-            Select Bowler
-          </option>
-
-          {bowlingTeam?.players
-            ?.filter(
-              (player) =>
-                String(player.id) !==
-                String(
-                  pendingBallData?.bowlerId
-                )
-            )
-            .map((player) => (
-              <option
-                key={player.id}
-                value={player.id}
-              >
-                {player.name}
-              </option>
-            ))}
-        </select>
-      </label>
-
-      <div
-        style={{
-          display: "flex",
-          justifyContent: "flex-end",
-          gap: 12,
-          marginTop: 20
-        }}
-      >
         <button
-          type="button"
+          className="icon-btn"
+          onClick={() => {
+            setShowBowlerModal(false);
+            setPendingBallData(null);
+          }}
+        >
+          ✕
+        </button>
+      </div>
+
+      <div className="bowler-warning">
+        Same bowler cannot bowl consecutive overs.
+      </div>
+
+      <div className="bowler-list">
+        {bowlingTeam?.players
+          ?.filter(
+            (player) =>
+              String(player.id) !==
+              String(
+                pendingBallData?.bowlerId
+              )
+          )
+          .map((player) => (
+            <button
+              key={player.id}
+              className={`bowler-option ${
+                String(ballForm.bowlerId) ===
+                String(player.id)
+                  ? "selected"
+                  : ""
+              }`}
+              onClick={() =>
+                setBallForm((prev) => ({
+                  ...prev,
+                  bowlerId: player.id
+                }))
+              }
+            >
+              <div className="bowler-avatar">
+                🏏
+              </div>
+
+              <div>
+                <div className="bowler-name">
+                  {player.name}
+                </div>
+              </div>
+            </button>
+          ))}
+      </div>
+
+      <div className="bowler-modal-actions">
+        <button
           className="btn btn-outline"
           onClick={() => {
             setShowBowlerModal(false);
@@ -4594,14 +4630,14 @@ return (
         </button>
 
         <button
-          type="button"
           className="btn"
           disabled={!ballForm.bowlerId}
           onClick={confirmBowlerChange}
         >
-          Continue
+          Continue →
         </button>
       </div>
+
     </div>
   </div>
 )}
@@ -4893,7 +4929,7 @@ KL Rahul`}
       </div>
 
       <button
-        className="btn btn-outline"
+        className="btn"
         style={{ marginTop: 16 }}
         onClick={() => setShowExtrasModal(false)}
       >
