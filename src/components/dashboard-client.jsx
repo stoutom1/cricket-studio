@@ -2417,15 +2417,11 @@ return (
       )
     </span>
   </div>
-  {(message || error) && (
-    <div
-      className={`notification-banner ${
-        error ? "notification-error" : "notification-success"
-      }`}
-    >
-      {error || message}
-    </div>
-  )}
+<div className="live-feed-banner">
+  {error ||
+    message ||
+    "🏏 Ready for next delivery"}
+</div>
 <div className="recent-balls-row">
   <span className="recent-label">Recent: </span>
 
