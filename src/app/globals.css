@@ -1890,7 +1890,7 @@ body {
 
   z-index: 9998;
 
-  backdrop-filter: blur(4px);
+  backdrop-filter: blur(100px);
 }
 .advanced-sheet {
   position: fixed;
@@ -1901,7 +1901,6 @@ body {
 
   z-index: 9999;
 
-  background: var(--card-bg);
 
   border-top-left-radius: 20px;
   border-top-right-radius: 20px;

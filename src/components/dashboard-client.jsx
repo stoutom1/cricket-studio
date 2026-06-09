@@ -2631,7 +2631,7 @@ return (
 
   <div className="advanced-sheet-text">
     <span className="advanced-sheet-title">
-      Scoring Fields
+      Scoring Form
     </span>
 
     <span className="advanced-sheet-subtitle">
@@ -2667,7 +2667,7 @@ return (
         <div className="sheet-handle" />
 
         <h3>
-          ⚙️ Advanced Scoring
+          ⚙️ Scoring form for manual updates
         </h3>
 
         <button
