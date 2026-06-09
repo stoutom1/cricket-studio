@@ -2298,13 +2298,6 @@ return (
           </div>
         )}
       </Card>
-
-        {(message || error) && (
-          <Card title="ℹ️ Notifications" defaultCollapsed={false}>
-            {message ? <p className="success">{message}</p> : null}
-            {error ? <p className="error">{error}</p> : null}
-          </Card>
-        )}
     </div>
           <Card
             title="🏏 Live Scoreboard" defaultCollapsed={false}
