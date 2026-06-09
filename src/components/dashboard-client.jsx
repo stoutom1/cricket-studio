@@ -189,7 +189,7 @@ useEffect(() => {
   const timer = setTimeout(() => {
     setMessage("");
     setError("");
-  }, 30000); // 30 seconds
+  }, 20000); // 30 seconds
 
   return () => clearTimeout(timer);
 }, [message, error]);
@@ -1051,7 +1051,7 @@ useEffect(() => {
     scoreboard?.currentState
       ?.needNewBowler
   ) {
-    alert("Opening bowler popup555");
+    //alert("Opening bowler popup555");
     setShowBowlerModal(true);
   }
 }, [scoreboard]);
@@ -1299,7 +1299,9 @@ const isMatchAbandoned = scoreboard?.match?.status ===  "ABANDONED";
   }, {});
 
   async function quickNormalBall(runs) {
-  await submitBall({
+  
+  try{  
+    await submitBall({
     matchId: Number(selectedMatchId),
     inningsNo: Number(ballForm.inningsNo),
     strikerId: Number(ballForm.strikerId),
@@ -1313,166 +1315,23 @@ const isMatchAbandoned = scoreboard?.match?.status ===  "ABANDONED";
     dismissedPlayerId: null,
     newBatterId: null
   });
-}
 
-/*  async function handleAddBall( e, overrides = {}) {
-    e?.preventDefault();
-    setMessage("");
-    setError("");
-if (scoreboard?.match?.status === "COMPLETED") {
-  return NextResponse.json(
-    {
-      error:
-        "Match has already ended"
-    },
-    {
-      status: 400
+    if (runs === 0) {
+      setMessage("🟢 Dot ball recorded.");
+    } else if (runs === 4) {
+      setMessage("🔥 FOUR! Ball recorded and 4 runs added.");
+    } else if (runs === 6) {
+      setMessage("🚀 SIX! Ball recorded and 6 runs added.");
+    } else {
+      setMessage(
+        `🏏 Ball recorded • ${runs} run${runs > 1 ? "s" : ""} added to the total.`
+      );
     }
-  );
-}
-    if (!selectedMatchId) {
-      setError("Please select a match");
-      return;
-    }
-    if (pendingNonBallEvent) {
-  setPendingNonBallEvent(false);
-
-  await loadSelectedMatch(
-    selectedMatchId
-  );
-
-  setMessage(
-    "Non-ball event recorded"
-  );
-
-  return;
-}
-const payload = {
-  matchId: Number(ballForm.selectedMatchId),
-  inningsNo: Number(ballForm.inningsNo),
-  strikerId: Number(ballForm.strikerId),
-  nonStrikerId: Number(ballForm.nonStrikerId),
-  bowlerId: Number(ballForm.bowlerId),
-  extraType: ballForm.extraType,
-  runsOffBat: Number(ballForm.runsOffBat),
-  extras: Number(ballForm.extras),
-  isWicket:
-    ballForm.isWicket &&
-    ballForm.wicketType !== "RETIRED_HURT"
-      ? 1
-      : 0,
-  wicketType: ballForm.isWicket
-    ? ballForm.wicketType
-    : "NONE",
-  dismissedPlayerId: ballForm.isWicket
-    ? Number(
-        ballForm.dismissedPlayerId ||
-        ballForm.strikerId
-      )
-    : null,
-  newBatterId:
-    ballForm.isWicket &&
-    ballForm.newBatterId
-      ? Number(ballForm.newBatterId)
-      : null,
-  note: ballForm.note
-};
-
-    try {
-      await api("/api/balls", {
-        method: "POST",
-        body: JSON.stringify({
-          matchId: Number(selectedMatchId),
-          inningsNo: Number(ballForm.inningsNo),
-          strikerId: Number(ballForm.strikerId),
-          nonStrikerId: Number(ballForm.nonStrikerId),
-          bowlerId: Number(ballForm.bowlerId),
-          extraType: ballForm.extraType,
-          runsOffBat: Number(ballForm.runsOffBat),
-          extras: Number(ballForm.extras),
-          isWicket: ballForm.isWicket && ballForm.wicketType !== "RETIRED_HURT"? 1 : 0,
-          wicketType: ballForm.isWicket? ballForm.wicketType: "NONE",
-          dismissedPlayerId: ballForm.isWicket
-            ? Number(ballForm.dismissedPlayerId || ballForm.strikerId)
-            : null,
-          newBatterId:add delivery
-            ballForm.isWicket && ballForm.newBatterId
-              ? Number(ballForm.newBatterId)
-              : null,
-          note: ballForm.note,
-          matchStatus: scoreboard.match.status
-        })
-      });
-
-      setMessage("✅ Ball added");
-
-      setBallForm((prev) => ({
-        ...prev,
-        extraType: "NONE",
-        runsOffBat: "0",
-        extras: "0",
-        isWicket: false,
-        wicketType: "NONE",
-        newBatterId: "",
-        note: "",
-        dismissal: ""
-      }));
-
-  await Promise.all([
-  loadSelectedMatch(selectedMatchId),
-  loadMatches()
-]);
-    }catch (err) {
-
-
-if (
-  err.message?.includes(
-    "BOWLER_CONSECUTIVE_OVER"
-  )
-) {
-  setPendingBallData({
-    matchId: Number(selectedMatchId),
-    inningsNo: Number(ballForm.inningsNo),
-    strikerId: Number(ballForm.strikerId),
-    nonStrikerId: Number(ballForm.nonStrikerId),
-    bowlerId: Number(ballForm.bowlerId),
-    extraType: ballForm.extraType,
-    runsOffBat: Number(ballForm.runsOffBat),
-    extras: Number(ballForm.extras),
-    isWicket:
-      ballForm.isWicket &&
-      ballForm.wicketType !==
-        "RETIRED_HURT"
-        ? 1
-        : 0,
-    wicketType: ballForm.isWicket
-      ? ballForm.wicketType
-      : "NONE",
-    dismissedPlayerId:
-      ballForm.isWicket
-        ? Number(
-            ballForm.dismissedPlayerId ||
-            ballForm.strikerId
-          )
-        : null,
-    newBatterId:
-      ballForm.newBatterId
-        ? Number(
-            ballForm.newBatterId
-          )
-        : null,
-    note: ballForm.note
-  });
-
-  setShowBowlerModal(true);
-  return;
+  } catch (err) {
+    setError(err.message);
+  }  
 }
 
-  setError(err.message);
-  showToast(error, err.message);
-}
-}
-*/
 async function handleAddBall(e) {
   e?.preventDefault();
 
@@ -1517,37 +1376,12 @@ if (scoreboard?.match?.status === "COMPLETED") {
       setError("Please select a match");
       return;
     }
- 
-
-    //await loadSelectedMatch(selectedMatchId);
-    //await loadMatches();
-    //await loadTeams();
-    //showToast ("success:", "Retired Hurt player is replaced")
-    //return;
-  //}
-    /*    
-    if (pendingNonBallEvent) {
-  setPendingNonBallEvent(false);
-
-  await loadSelectedMatch(
-    selectedMatchId
-  );
-
-
-  setMessage(
-    "Non-ball event recorded"
-  );
-
-  return;
-}  */
-
-  
    try {
     await api("/api/balls", {
     method: "POST",
     body: JSON.stringify(data)
   });
-      setMessage("✅ Ball added");
+      //setMessage("✅ Ball added");
 
       setBallForm((prev) => ({
         ...prev,
@@ -1658,6 +1492,8 @@ function quickExtra(type) {
   setShowExtrasModal(true);
 }
 async function confirmExtra(extraRuns) {
+  
+  try{
   await submitBall({
     matchId: Number(selectedMatchId),
     inningsNo: Number(ballForm.inningsNo),
@@ -1699,7 +1535,25 @@ async function confirmExtra(extraRuns) {
       scoreboard?.match?.status
   });
 
-  setShowExtrasModal(false);
+const extraLabels = {
+  WIDE: "Wide",
+  NO_BALL: "No Ball",
+  BYE: "Bye",
+  LEG_BYE: "Leg Bye",
+  NONE: "Extra"
+};
+
+const extraLabel =
+  extraLabels[ballForm.extraType] ||
+  ballForm.extraType;
+
+  setMessage(`✅ ${extraRuns} ${extraRuns === 1 ? "run" : "runs"} added as ${extraLabel}.`);
+  setMessage(`📢 ${extraLabel}! ${extraRuns} ${extraRuns === 1 ? "run" : "runs"} awarded to the batting side.`);
+  setShowExtrasModal(false); 
+
+  } catch (err) {
+    setError(err.message);
+  }  
 }
 async function quickWicket(type = "BOWLED") {
   setBallForm((prev) => ({
@@ -1712,48 +1566,75 @@ async function quickWicket(type = "BOWLED") {
   setShowWicketModal(true);
 }
 async function confirmWicket() {
-  await submitBall({
-    matchId: Number(selectedMatchId),
-    inningsNo: Number(ballForm.inningsNo),
-    strikerId: Number(ballForm.strikerId),
-    nonStrikerId: Number(ballForm.nonStrikerId),
-    bowlerId: Number(ballForm.bowlerId),
-    extraType: ballForm.extraType,
-    runsOffBat: Number(ballForm.runsOffBat),
-    extras: Number(ballForm.extras),
+  try {
 
-    isWicket:
-      ballForm.isWicket &&
-      ballForm.wicketType !== "RETIRED_HURT"
-        ? 1
-        : 0,
+    const dismissedPlayer = battingTeam?.players?.find(
+      p => Number(p.id) === Number(
+        ballForm.dismissedPlayerId || ballForm.strikerId
+      )
+    );
 
-    wicketType:
-      ballForm.isWicket
-        ? ballForm.wicketType
-        : "NONE",
+    const newBatter = battingTeam?.players?.find(
+      p => Number(p.id) === Number(ballForm.newBatterId)
+    );
 
-    dismissedPlayerId:
-      ballForm.isWicket
-        ? Number(
-            ballForm.dismissedPlayerId ||
-            ballForm.strikerId
-          )
-        : null,
+    await submitBall({
+      matchId: Number(selectedMatchId),
+      inningsNo: Number(ballForm.inningsNo),
+      strikerId: Number(ballForm.strikerId),
+      nonStrikerId: Number(ballForm.nonStrikerId),
+      bowlerId: Number(ballForm.bowlerId),
+      extraType: ballForm.extraType,
+      runsOffBat: Number(ballForm.runsOffBat),
+      extras: Number(ballForm.extras),
 
-    newBatterId:
-      ballForm.isWicket &&
-      ballForm.newBatterId
-        ? Number(ballForm.newBatterId)
-        : null,
+      isWicket:
+        ballForm.isWicket &&
+        ballForm.wicketType !== "RETIRED_HURT"
+          ? 1
+          : 0,
 
-    note: ballForm.note,
+      wicketType:
+        ballForm.isWicket
+          ? ballForm.wicketType
+          : "NONE",
 
-    matchStatus:
-      scoreboard?.match?.status
-  });
+      dismissedPlayerId:
+        ballForm.isWicket
+          ? Number(
+              ballForm.dismissedPlayerId ||
+              ballForm.strikerId
+            )
+          : null,
 
-  setShowWicketModal(false);
+      newBatterId:
+        ballForm.isWicket &&
+        ballForm.newBatterId
+          ? Number(ballForm.newBatterId)
+          : null,
+
+      note: ballForm.note,
+
+      matchStatus:
+        scoreboard?.match?.status
+    });
+
+    const wicketTypeLabel =
+      ballForm.wicketType
+        ?.replaceAll("_", " ")
+        ?.toLowerCase();
+
+    setMessage(
+      `🚨 ${dismissedPlayer?.name || "Batter"} is out (${wicketTypeLabel}). ${
+        newBatter?.name || "New batter"
+      } comes to the crease.`
+    );
+
+    setShowWicketModal(false);
+
+  } catch (err) {
+    setError(err.message);
+  }
 }
 
 
@@ -1887,6 +1768,24 @@ async function handleRetiredHurtSubmit() {
       ? Number(ballForm.strikerId)
       : Number(ballForm.nonStrikerId);
 
+  const retiredPlayer =
+    retiredPlayerType === "STRIKER"
+      ? battingTeam?.players?.find(
+          p => p.id === Number(ballForm.strikerId)
+        )
+      : battingTeam?.players?.find(
+          p => p.id === Number(ballForm.nonStrikerId)
+        );
+
+  const retiredPlayerName = retiredPlayer?.name;
+  const replacementPlayer =
+    battingTeam?.players?.find(
+      p => p.id === Number(replacementPlayerId)
+    );
+
+  const replacementPlayerName =
+    replacementPlayer?.name;      
+
   const retiredHurtBall = {
     ...ballForm,
 
@@ -1903,36 +1802,22 @@ async function handleRetiredHurtSubmit() {
 
     legalDelivery: false
   };
+
+try {  
 await api("/api/balls", {
   method: "POST",
   body: JSON.stringify(retiredHurtBall)
 });
-/*
-await api(
-  "/api/events/retired-hurt",
-  {
-    method: "POST",
-    body: JSON.stringify({
-      matchId: selectedMatchId,
-      inningsNo: ballForm.inningsNo,
 
-      dismissedPlayerId,
-
-      newBatterId:
-        replacementPlayerId,
-
-      strikerId:
-        ballForm.strikerId,
-
-      nonStrikerId:
-        ballForm.nonStrikerId
-    })
-  }
-);
-*/
   await loadSelectedMatch(selectedMatchId);
-
+  setMessage("✅ "+retiredPlayerName +" is retired hurt and replaced by "+ replacementPlayerName);
   setShowRetiredHurtModal(false);
+  } catch (err) {
+    setError(
+      err.message ||
+      "Failed to retired hurt a player"
+    );
+  }  
 }
 
 async function generateInviteLink(leagueId) {
@@ -1965,7 +1850,7 @@ async function handleEndMatch() {
       {
         method: "POST",
         body: JSON.stringify({
-        matchEndType: "Abandon" })
+        matchEndType: "End" })
       }
     );
     await loadMatches();
@@ -2054,7 +1939,7 @@ await api(
       selectedMatchId
     );
 
-    setMessage("✅ Ball added");
+    setMessage("✅ Bowler change successful");
   } catch (err) {
     setError(err.message);
   }
@@ -2535,27 +2420,27 @@ return (
 )}
 {permissions?.canScoreMatch && (
 <div className="quick-actions">
-  <button type="button" disabled={isMatchCompleted || isMatchLocked} className={`chip ${activeQuickAction === "0" ? "chip-active" : ""}`} onClick={() => triggerQuickAction("0", () => quickNormalBall(0))}>0</button>
-  <button type="button" disabled={isMatchCompleted || isMatchLocked} className={`chip ${activeQuickAction === "1" ? "chip-active" : ""}`} onClick={() => triggerQuickAction("1", () => quickNormalBall(1))}>1</button>
-  <button type="button" disabled={isMatchCompleted || isMatchLocked} className={`chip ${activeQuickAction === "2" ? "chip-active" : ""}`} onClick={() => triggerQuickAction("2", () => quickNormalBall(2))}>2</button>
-  <button type="button" disabled={isMatchCompleted || isMatchLocked} className={`chip ${activeQuickAction === "3" ? "chip-active" : ""}`} onClick={() => triggerQuickAction("3", () => quickNormalBall(3))}>3</button>
-  <button type="button" disabled={isMatchCompleted || isMatchLocked} className={`chip ${activeQuickAction === "4" ? "chip-active" : ""}`} onClick={() => triggerQuickAction("4", () => quickNormalBall(4))}>4</button>
-  <button type="button" disabled={isMatchCompleted || isMatchLocked} className={`chip ${activeQuickAction === "6" ? "chip-active" : ""}`} onClick={() => triggerQuickAction("6", () => quickNormalBall(6))}>6</button>
+  <button type="button" disabled={isMatchCompleted || isMatchLocked || isMatchAbandoned} className={`chip ${activeQuickAction === "0" ? "chip-active" : ""}`} onClick={() => triggerQuickAction("0", () => quickNormalBall(0))}>0</button>
+  <button type="button" disabled={isMatchCompleted || isMatchLocked || isMatchAbandoned} className={`chip ${activeQuickAction === "1" ? "chip-active" : ""}`} onClick={() => triggerQuickAction("1", () => quickNormalBall(1))}>1</button>
+  <button type="button" disabled={isMatchCompleted || isMatchLocked || isMatchAbandoned} className={`chip ${activeQuickAction === "2" ? "chip-active" : ""}`} onClick={() => triggerQuickAction("2", () => quickNormalBall(2))}>2</button>
+  <button type="button" disabled={isMatchCompleted || isMatchLocked || isMatchAbandoned} className={`chip ${activeQuickAction === "3" ? "chip-active" : ""}`} onClick={() => triggerQuickAction("3", () => quickNormalBall(3))}>3</button>
+  <button type="button" disabled={isMatchCompleted || isMatchLocked || isMatchAbandoned} className={`chip ${activeQuickAction === "4" ? "chip-active" : ""}`} onClick={() => triggerQuickAction("4", () => quickNormalBall(4))}>4</button>
+  <button type="button" disabled={isMatchCompleted || isMatchLocked || isMatchAbandoned} className={`chip ${activeQuickAction === "6" ? "chip-active" : ""}`} onClick={() => triggerQuickAction("6", () => quickNormalBall(6))}>6</button>
 
-  <button type="button" disabled={isMatchCompleted || isMatchLocked} className={`chip ${activeQuickAction === "Wd" ? "chip-active" : ""}`} onClick={() => triggerQuickAction("Wd", () => quickExtra("WIDE"))}>Wd</button>
+  <button type="button" disabled={isMatchCompleted || isMatchLocked || isMatchAbandoned} className={`chip ${activeQuickAction === "Wd" ? "chip-active" : ""}`} onClick={() => triggerQuickAction("Wd", () => quickExtra("WIDE"))}>Wd</button>
 
-  <button type="button" disabled={isMatchCompleted || isMatchLocked} className={`chip ${activeQuickAction === "Nb" ? "chip-active" : ""}`} onClick={() => triggerQuickAction("Nb", () => quickExtra("NOBALL"))}>Nb</button>
+  <button type="button" disabled={isMatchCompleted || isMatchLocked || isMatchAbandoned} className={`chip ${activeQuickAction === "Nb" ? "chip-active" : ""}`} onClick={() => triggerQuickAction("Nb", () => quickExtra("NOBALL"))}>Nb</button>
 
-  <button type="button" disabled={isMatchCompleted || isMatchLocked} className={`chip ${activeQuickAction === "B" ? "chip-active" : ""}`} onClick={() => triggerQuickAction("B", () => quickExtra("BYE"))}>B</button>
+  <button type="button" disabled={isMatchCompleted || isMatchLocked || isMatchAbandoned} className={`chip ${activeQuickAction === "B" ? "chip-active" : ""}`} onClick={() => triggerQuickAction("B", () => quickExtra("BYE"))}>B</button>
 
-  <button type="button" disabled={isMatchCompleted || isMatchLocked} className={`chip ${activeQuickAction === "LB" ? "chip-active" : ""}`} onClick={() => triggerQuickAction("LB", () => quickExtra("LEGBYE"))}>LB</button>
+  <button type="button" disabled={isMatchCompleted || isMatchLocked || isMatchAbandoned} className={`chip ${activeQuickAction === "LB" ? "chip-active" : ""}`} onClick={() => triggerQuickAction("LB", () => quickExtra("LEGBYE"))}>LB</button>
 
-  <button type="button" disabled={isMatchCompleted || isMatchLocked} className={`chip ${activeQuickAction === "W" ? "chip-active" : ""}`} onClick={() => triggerQuickAction("W", () => quickWicket("BOWLED"))}>Wkt</button>
-  <button type="button" className="chip" disabled={isMatchCompleted || isMatchLocked} onClick={() => setShowRetiredHurtModal(true)}>RH</button>
+  <button type="button" disabled={isMatchCompleted || isMatchLocked || isMatchAbandoned} className={`chip ${activeQuickAction === "W" ? "chip-active" : ""}`} onClick={() => triggerQuickAction("W", () => quickWicket("BOWLED"))}>Wkt</button>
+  <button type="button" className="chip" disabled={isMatchCompleted || isMatchLocked || isMatchAbandoned} onClick={() => setShowRetiredHurtModal(true)}>RH</button>
  <button
     type="button"
     className="btn btn-outline"
-    disabled={isMatchCompleted || isMatchLocked}
+    disabled={isMatchCompleted || isMatchLocked || isMatchAbandoned}
     onClick={swapBatters}
   >
     ⇄ Swap
@@ -2842,15 +2727,6 @@ return (
                     placeholder="Optional note"
                   />
                 </label>
-<button
-  type="button"
-  className="btn btn-danger"
-  disabled={isMatchLocked}
-  onClick={handleEndMatch}
->
-  🏁 End Match
-</button>
-
               </form>
 
       </div>
@@ -3151,9 +3027,9 @@ return (
       disabled={isMatchLocked}
       onClick={handleLockMatch}
     >
-      🏁 Lock Match
+      🔒 Lock Match
     </button>
-
+{(!isMatchAbandoned && !isMatchCompleted && !isMatchLocked) && (
     <button
       type="button"
       className="btn btn-danger"
@@ -3162,6 +3038,17 @@ return (
     >
       ⛔ Abandon Match
     </button>
+    
+)}    
+{(ballForm.inningsNo != 1 && !isMatchLocked && !isMatchAbandoned && !isMatchCompleted) && (
+  <button
+  type="button"
+  className="btn btn-danger"
+  onClick={handleEndMatch}
+>
+  🏁 End Match
+</button>
+)}
   </div>
 
   <div className="match-warning">
