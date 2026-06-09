@@ -2029,3 +2029,13 @@ body {
 .advanced-sheet-btn:hover .advanced-sheet-arrow {
   transform: translateX(4px);
 }
+.lock-match-wrapper {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+}
+
+.tooltip-icon {
+  cursor: help;
+  font-size: 18px;
+}

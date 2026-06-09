@@ -2371,7 +2371,7 @@ return (
               ) : null}
 <CollapsibleSection
   title="🤝 Partnerships"
-  defaultOpen={true}
+  defaultOpen={false}
 >
   {!activeInnings?.partnerships?.length ? (
     <p className="muted">No partnerships yet</p>
@@ -2438,9 +2438,11 @@ return (
     </div>
   )}
 </CollapsibleSection>
-
+<CollapsibleSection
+  title="🕘 Recent Balls"
+  defaultOpen={false}
+>
               <div>
-                <h4>🕘 Recent Balls</h4>
                 <div className="recent-balls">
                   {scoreboard.recentBalls.length === 0 ? (
                     <span className="muted">No deliveries yet</span>
@@ -2453,6 +2455,7 @@ return (
                   )}
                 </div>
               </div>
+</CollapsibleSection>              
             </div>
           )}
         </Card>
@@ -2615,6 +2618,7 @@ return (
     ✅ Match Ended
   </button>
 )}
+{isMobile && (
 <button
   type="button"
   className="advanced-sheet-btn"
@@ -2636,6 +2640,7 @@ return (
     →
   </span>
 </button>
+)}
 </div>
 )}
 <div className="scoring-action-bar">
@@ -2884,6 +2889,10 @@ return (
 )}
   </>
 ) : (
+<CollapsibleSection
+  title="🏏 Scoring Form"
+  defaultOpen={false}
+>
                 <form id="add-ball-form" className="form grid-2" onSubmit={handleAddBall}>
                 <label>
                   <span>Innings</span>
@@ -3074,16 +3083,8 @@ return (
                     placeholder="Optional note"
                   />
                 </label>
-<button
-  type="button"
-  className="btn btn-danger"
-  disabled={isMatchLocked}
-  onClick={handleEndMatch}
->
-  🏁 End Match
-</button>
-
               </form>
+              </CollapsibleSection>
 )
     )}
             </>
@@ -3171,7 +3172,29 @@ return (
             </div>
           )}
         </Card>
+{permissions?.canScoreMatch && (
+<div>
+  <button
+    type="button"
+    className="btn btn-danger"
+    disabled={isMatchLocked}
+    onClick={handleEndMatch}
+  >
+    🏁 Lock Match
+  </button>
 
+  <div
+    style={{
+      marginTop: 8,
+      fontSize: 12,
+      color: "#fca5a5",
+      fontWeight: 500,
+    }}
+  >
+    ⚠️ Once locked, this match cannot be edited or scored further.
+  </div>
+</div>
+)}
     </div>
   </div>
 )}
