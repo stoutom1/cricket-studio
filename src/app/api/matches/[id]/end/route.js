@@ -7,15 +7,26 @@ export async function POST(
 ) {
   try {
     const { id } = await params;
-
     const matchId = Number(id);
+    
+    const body = await request.json();
+    const { matchEndType } = body;
+    //const status = matchEndType === "Lock"? "COMPLETED_LOCKED": "COMPLETED";
+    let status;
 
+    if (matchEndType === "Lock") {
+      status = "COMPLETED_LOCKED";
+    } else if (matchEndType === "Abandon") {
+      status = "ABANDONED";
+    } else {
+      status = "COMPLETED";
+    }
     await prisma.match.update({
       where: {
         id: matchId
       },
       data: {
-        status: "COMPLETED_LOCKED"
+        status: status
       }
     });
     

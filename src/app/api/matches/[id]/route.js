@@ -41,23 +41,7 @@ include: {
     }
   });
 
- /* if (
-  match.teamA?.league?.name ===
-    "Surprise Cricket League" &&
-  session.user.email !==
-    "surprisecricket11@gmail.com"
-) {
-  return NextResponse.json(
-    {
-      error:
-        "Players in this league are protected"
-    },
-    {
-      status: 403
-    }
-  );
-}
-*/
+ 
   if (!match) {
     return NextResponse.json({ error: "Match not found" }, { status: 404 });
   }

@@ -1241,6 +1241,7 @@ if (refreshedLeague) {
   }
 const isMatchCompleted = scoreboard?.match?.status === "COMPLETED";
 const isMatchLocked = scoreboard?.match?.status ===  "COMPLETED_LOCKED";
+const isMatchAbandoned = scoreboard?.match?.status ===  "ABANDONED";
 
   async function handleDeleteMatch(matchId) {
     if (!confirm("Delete this match and all its scoring data?")) return;
@@ -1951,74 +1952,6 @@ async function generateInviteLink(leagueId) {
     "Registration link copied"
   );
 }
-/*
-async function confirmRetiredHurt() {
-  if (!retiredHurtBatterId) {
-    setError("Please select a new batter");
-    return;
-  }
-
-  const striker = battingTeam.players.find(
-    (p) => String(p.id) === String(ballForm.strikerId)
-  );
-
-  const selectedBatter = battingTeam.players.find(
-    (p) => String(p.id) === String(retiredHurtBatterId)
-  );
-
-  if (!selectedBatter) {
-    setError("Invalid batter selected");
-    return;
-  }
-
-  try {
-    setMessage("");
-    setError("");
-    setBallForm((prev) => ({
-      ...prev,
-      strikerId: String(selectedBatter.id),
-      dismissedPlayerId: "",
-      newBatterId: "",
-      isWicket: false,
-      wicketType: "NONE",
-      runsOffBat: "0",
-      extras: "0"
-    }));
- await submitBall({
-    matchId: Number(selectedMatchId),
-    inningsNo: Number(ballForm.inningsNo),
-    strikerId: Number(ballForm.strikerId),
-    nonStrikerId: Number(ballForm.nonStrikerId),
-    bowlerId: Number(ballForm.bowlerId),
-    extraType: ballForm.extraType,
-    runsOffBat: Number(ballForm.runsOffBat),
-    extras: Number(ballForm.extras),
-    isWicket: ballForm.isWicket && ballForm.wicketType !== "RETIRED_HURT" && ballForm.wicketType !== "RETIRED_HURT"? 1 : 0,
-    wicketType: ballForm.isWicket? ballForm.wicketType: "NONE",
-    dismissedPlayerId: ballForm.isWicket
-            ? Number(ballForm.dismissedPlayerId || ballForm.strikerId)
-            : null,
-    newBatterId:
-            ballForm.isWicket && ballForm.newBatterId
-              ? Number(ballForm.newBatterId)
-              : null,
-    note: ballForm.note,
-    matchStatus: scoreboard.match.status
-  });
-    setShowRetiredHurtModal(false);
-
-    setMessage(
-      `${striker.name} retired hurt. ${selectedBatter.name} came in to bat.`
-    );
-
-    await loadSelectedMatch(selectedMatchId);
-
-  } catch (err) {
-    setError(err.message);
-  }
-}
-*/
-
 async function handleEndMatch() {
   const confirmed = window.confirm(
     "End this match? No more scoring will be allowed."
@@ -2030,7 +1963,61 @@ async function handleEndMatch() {
     await api(
       `/api/matches/${selectedMatchId}/end`,
       {
-        method: "POST"
+        method: "POST",
+        body: JSON.stringify({
+        matchEndType: "Abandon" })
+      }
+    );
+    await loadMatches();
+    await loadSelectedMatch(selectedMatchId);
+    setMessage("Match ended successfully");
+  } catch (err) {
+    setError(
+      err.message ||
+      "Failed to end match"
+    );
+  }
+}
+async function handleLockMatch() {
+  const confirmed = window.confirm(
+    "Lock this match?  Once locked, this match cannot be edited or scored further."
+  );
+
+  if (!confirmed) return;
+
+  try {
+    await api(
+      `/api/matches/${selectedMatchId}/end`,
+      {
+        method: "POST",
+        body: JSON.stringify({
+        matchEndType: "Lock" })
+      }
+    );
+    await loadMatches();
+    await loadSelectedMatch(selectedMatchId);
+    setMessage("Match ended successfully");
+  } catch (err) {
+    setError(
+      err.message ||
+      "Failed to end match"
+    );
+  }
+}
+async function handleAbandonMatch() {
+  const confirmed = window.confirm(
+    "Abandon this match?  Once abandoned, this match cannot be edited or scored further."
+  );
+
+  if (!confirmed) return;
+
+  try {
+    await api(
+      `/api/matches/${selectedMatchId}/end`,
+      {
+        method: "POST",
+        body: JSON.stringify({
+        matchEndType: "Abandon" })
       }
     );
     await loadMatches();
@@ -2235,11 +2222,6 @@ return (
           </span>
         )}
       </div>
-
-      <div className="muted small match-help">
-        👉 Selecting a match opens scoring
-      </div>
-
       {selectedMatch && (
         <details className="match-summary">
           <summary>
@@ -2594,6 +2576,16 @@ return (
     disabled
   >
     ✅ Match Ended
+  </button>
+)}
+{(isMatchAbandoned) && (
+  <button
+    type="submit"
+    form="add-ball-form"
+    className="btn scoring-btn scoring-btn-primary"
+    disabled
+  >
+    ⛔ Match Abandoned
   </button>
 )}
 {isMobile && (
@@ -3069,7 +3061,7 @@ return (
           )}
         </Card>
 
-        <Card title="📊 Player Statistics" defaultCollapsed={false}>
+        <Card title="📊 Player Statistics" defaultCollapsed={true}>
           {!stats ? (
             <p className="muted">Select a match.</p>
           ) : (
@@ -3152,23 +3144,27 @@ return (
         </Card>
 {permissions?.canScoreMatch && (
 <div>
-  <button
-    type="button"
-    className="btn btn-danger"
-    disabled={isMatchLocked}
-    onClick={handleEndMatch}
-  >
-    🏁 Lock Match
-  </button>
+  <div className="match-action-bar">
+    <button
+      type="button"
+      className="btn btn-danger"
+      disabled={isMatchLocked}
+      onClick={handleLockMatch}
+    >
+      🏁 Lock Match
+    </button>
 
-  <div
-    style={{
-      marginTop: 8,
-      fontSize: 12,
-      color: "#fca5a5",
-      fontWeight: 500,
-    }}
-  >
+    <button
+      type="button"
+      className="btn btn-danger"
+      disabled={isMatchLocked || isMatchCompleted}
+      onClick={handleAbandonMatch}
+    >
+      ⛔ Abandon Match
+    </button>
+  </div>
+
+  <div className="match-warning">
     ⚠️ Once locked, this match cannot be edited or scored further.
   </div>
 </div>
@@ -3373,102 +3369,93 @@ return (
 
     <div className="grid-side">
 
-      <Card title="📋 Matches" defaultCollapsed={false}>
-        {matches.length === 0 ? (
-          <p className="muted">No matches yet</p>
-        ) : (
-          <div className="match-list">
-                        <div
-    style={{
-      marginBottom: 6,
-      padding: 10,
+ <Card title="📋 Matches" defaultCollapsed={false}>
+  {matches.length === 0 ? (
+    <p className="muted">No matches yet</p>
+  ) : (
+    <>
+      <div className="match-picker">
+        <select
+          value={selectedMatchId || ""}
+          onChange={(e) =>
+            setSelectedMatchId(e.target.value)
+          }
+        >
+          <option value="">
+            Select Match
+          </option>
 
-      borderRadius: 8,
-      fontSize: "12px"
-    }}
-  >
-    👉 Click any match below to view the Scoring screen.
-  </div>
-            {matches.map((match) => {
-                                const isProtectedLeague = match.leagueName === "Surprise Cricket League";
-                                const canDeleteProtectedLeague = session?.user?.email === "surprisecricket11@gmail.com";
-    return (
-              <div
-                key={match.id}
-                className={`match-item ${
-                  String(match.id) === String(selectedMatchId)
-                    ? "active"
-                    : ""
-                }`}
-              >
-                <button
-                  type="button"
-                  onClick={() =>
-                    //setSelectedMatchId(String(match.id))
-                    handleMatchSelect(match.id)
-                  }
-                  style={{
-                    flex: 1,
-                    background: "transparent",
-                    border: "none",
-                    color: "inherit",
-                    textAlign: "left",
-                    cursor: "pointer"
-                  }}
-                >
-                  <div>
-                    <strong>
-                      #{match.id} • {match.teamAName} vs{" "}
-                      {match.teamBName}
-                    </strong>
+          {matches.map((match) => (
+            <option
+              key={match.id}
+              value={match.id}
+            >
+              #{match.id} • {match.teamAName} vs {match.teamBName}
+            </option>
+          ))}
+        </select>
 
-                    <div className="muted small">
-                      Bat first: {match.battingFirstTeamName}
-                      {" • "}
-                      {match.oversPerInnings} overs
-                      {" • "}
-                      Max wkts:{" "}
-                      {match.maxWicketsPerInnings ?? "∞"}
-                      {" • "}
-                      Bowler limit:{" "}
-                      {match.maxOversPerBowler ?? "∞"}
-                    </div>
-
-                    <div className="muted small">
-                      {formatDate(match.createdAt)}
-                    </div>
-                  </div>
-                </button>
-
-                <div
-                  style={{
-                    display: "flex",
-                    flexDirection: "column",
-                    gap: 8
-                  }}
-                >
-                  <span className="pill">
-                    {match.status}
-                  </span>
-  {(!isProtectedLeague ||
-  canDeleteProtectedLeague) && (     
-                  <button
-                    type="button"
-                    className="btn btn-outline"
-                    onClick={() =>
-                      handleDeleteMatch(match.id)
-                    }
-                  >
-                    Delete
-                  </button>
-  )}
-                </div>
-              </div>
-    );  
-})}
-          </div>
+        {selectedMatch && (
+          <span className="pill">
+            {selectedMatch.status}
+          </span>
         )}
-      </Card>
+      </div>
+
+      <div className="muted small match-help">
+        👉 Selecting a match opens scoring
+      </div>
+
+      {selectedMatch && (
+        <details className="match-summary">
+          <summary>
+            🏏 {selectedMatch.teamAName} vs {selectedMatch.teamBName}
+          </summary>
+          <button
+            type="button"
+            onClick={() =>
+              //setSelectedMatchId(String(match.id))
+              handleMatchSelect(selectedMatch.id)
+            }
+            style={{
+              flex: 1,
+              background: "transparent",
+              border: "none",
+              color: "inherit",
+              textAlign: "left",
+              cursor: "pointer"
+            }}
+          >
+          <div className="match-quick-info">
+            Bat 1st: {selectedMatch.battingFirstTeamName}
+            {" • "}
+            {selectedMatch.oversPerInnings} overs
+            {" • "}
+            Max wkts: {selectedMatch.maxWicketsPerInnings ?? "∞"}
+            {" • "}
+            Bowler limit: {selectedMatch.maxOversPerBowler ?? "∞"}
+          </div>
+
+          <div className="muted small">
+            {formatDate(selectedMatch.createdAt)}
+          </div>
+          </button>    
+          {permissions?.canDeleteMatch && (
+            <button
+              type="button"
+              className="btn btn-outline"
+              onClick={() =>
+                handleDeleteMatch(selectedMatch.id)
+              }
+            >
+              Delete Match
+            </button>
+          )}
+        </details>
+      )}
+    </>
+  )}
+</Card>
 
       {(message || error) && (
         <Card title="ℹ️ Notifications">

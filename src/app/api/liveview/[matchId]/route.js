@@ -174,13 +174,16 @@ const currentInningsBalls = match.balls.filter(
       const isCompleted =
         innings1Complete &&
         (
-          innings2Complete ||
-          chaseCompleted
-          // ||
-          //allOut
+          innings2Complete ||  chaseCompleted || match.status === "COMPLETED_LOCKED" || match.status === "COMPLETED"
+          // || allOut
         );
 
       let statusText = "Match in progress";
+
+      if(match.status === "ABANDONED"){
+        statusText = "Match is Abandoned";
+      }
+
 /*
       console.log("isCompleted", isCompleted);
       console.log("innings1Complete", innings1Complete);
@@ -191,7 +194,10 @@ const currentInningsBalls = match.balls.filter(
       console.log("target", target);
       console.log("innings2TeamName", innings2TeamName);
       console.log("innings1Summary.runs", innings1Summary.runs);
+      console.log("match status Locked", match.status === "COMPLETED_LOCKED");
+      console.log("match status ended", match.status === "COMPLETED");
 */
+
       if (isCompleted) {
         if (innings2Summary.runs >= target) {
           //const wicketsRemaining = maxWicketsPerInnings;
