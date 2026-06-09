@@ -9,7 +9,7 @@ export async function POST(
     const { id } = await params;
 
     const matchId = Number(id);
-console.log("match ended matchId", matchId);
+
     await prisma.match.update({
       where: {
         id: matchId
@@ -19,13 +19,13 @@ console.log("match ended matchId", matchId);
       }
     });
     
-console.log("match ended matchId123", matchId);
+
     return NextResponse.json({
       success: true
     });
   } catch (error) {
     console.error(error);
-console.log("match ended matchId555", matchId);
+
     return NextResponse.json(
       {
         error: "Failed to end match"

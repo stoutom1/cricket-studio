@@ -23,7 +23,7 @@ const matchEnded = await prisma.match.findUnique({
   }
 });
 
-if (matchEnded.status === "COMPLETED_LOCKED") {
+if (matchEnded.status === "Completed & Locked") {
   return NextResponse.json(
     {
       error:
@@ -78,6 +78,36 @@ if (!match) {
     { status: 404 }
   );
 }
+const newLastBall = await prisma.ball.findFirst({
+  where: { matchId },
+  orderBy: [
+    { inningsNo: "desc" },
+    { sequence: "desc" }
+  ]
+});
+const { applyBallOutcome } = await import("@/lib/scoring");
+
+const restoredState =
+  applyBallOutcome(newLastBall);
+
+await prisma.matchState.upsert({
+  where: { matchId },
+
+  update: {
+    inningsNo: newLastBall.inningsNo,
+    strikerId: restoredState.strikerId,
+    nonStrikerId: restoredState.nonStrikerId,
+    bowlerId: newLastBall.bowlerId
+  },
+
+  create: {
+    matchId,
+    inningsNo: newLastBall.inningsNo,
+    strikerId: restoredState.strikerId,
+    nonStrikerId: restoredState.nonStrikerId,
+    bowlerId: newLastBall.bowlerId
+  }
+});
 
 if (match.status === "COMPLETED") {
   await prisma.match.update({

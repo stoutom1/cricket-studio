@@ -1,0 +1,4 @@
+export const EVENT_TYPES = {
+  RETIRED_HURT: "RETIRED_HURT",
+  SWAP_STRIKE: "SWAP_STRIKE"
+};

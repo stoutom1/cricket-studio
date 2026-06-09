@@ -6,7 +6,8 @@ import {
   getBattingTeamId,
   getBowlingTeamId,
   isLegalDelivery,
-  validateBallInput
+  validateBallInput,
+  applyBallOutcome
 } from "@/lib/scoring";
 
 export const runtime = "nodejs";
@@ -66,12 +67,41 @@ if (payload.extraType === "NOBALL" && payload.extras < 1) {
     where: { id: payload.matchId }
   });
 
+
+
   if (!match) {
     return NextResponse.json({ error: "Match not found" }, { status: 404 });
   }
+const currentState =
+  await prisma.matchState.findUnique({
+    where: {
+      matchId: payload.matchId
+    }
+  });
 
-  const battingTeamId = getBattingTeamId(match, payload.inningsNo);
-  const bowlingTeamId = getBowlingTeamId(match, payload.inningsNo);
+const ballsInInnings = await prisma.ball.count({
+  where: {
+    matchId: payload.matchId,
+    inningsNo: payload.inningsNo
+  }
+});
+
+if (ballsInInnings > 0 && currentState) {
+  payload.strikerId = currentState.strikerId;
+  payload.nonStrikerId = currentState.nonStrikerId;
+//  payload.bowlerId = currentState.bowlerId;
+}
+const battingTeamId =
+  getBattingTeamId(
+    match,
+    payload.inningsNo
+  );
+
+const bowlingTeamId =
+  getBowlingTeamId(
+    match,
+    payload.inningsNo
+  );
 
   const playerIds = [
     payload.strikerId,
@@ -124,7 +154,9 @@ if (payload.extraType === "NOBALL" && payload.extras < 1) {
     );
   }
 
-  const dismissedPlayerId = payload.isWicket
+const dismissedPlayerId =
+  payload.isWicket ||
+  payload.wicketType === "RETIRED_HURT"
     ? payload.dismissedPlayerId
     : null;
 
@@ -188,7 +220,7 @@ if (payload.extraType === "NOBALL" && payload.extras < 1) {
       legalDelivery: true
     }
   });
-console.log("legalBallsCount123:", legalBallsCount);
+
   const isNewOver =
   legalBallsCount > 0 &&
   legalBallsCount % 6 === 0;
@@ -233,12 +265,6 @@ console.log("legalBallsCount123:", legalBallsCount);
     }
   });
 
-  const overNo = Math.floor(legalBallsCount / 6);
-  const ballInOver = (legalBallsCount % 6) + 1;
-
-  const isPowerPlay = overNo < match.powerplayOversInnings;
-  const totalRuns = payload.runsOffBat + payload.extras;
-
   // CURRENT INNINGS
 //const innings = scoreboard.innings.find(
 //  (x) => x.number === inningsNo
@@ -272,7 +298,7 @@ if (
 }
 const bowlerBalls = inningsBalls.filter(
   (b) =>
-    b.bowlerId === Number(body.bowlerId) &&
+    b.bowlerId === Number(payload.bowlerId) &&
     b.extraType !== "WIDE" &&
     b.extraType !== "NOBALL" &&
     b.extraType !== "RETIRED_HURT"
@@ -308,10 +334,29 @@ const lastBall = await prisma.ball.findFirst({
   },
   select: {
     sequence: true,
+    overNo: true,
+    ballInOver: true
   },
 });
+const isRetiredHurt = payload.wicketType === "RETIRED_HURT";
 
+const overNo =
+  isRetiredHurt
+    ? lastBall?.overNo ?? 0
+    : Math.floor(legalBallsCount / 6);
+
+const ballInOver =
+  isRetiredHurt
+    ? lastBall?.ballInOver ?? 1
+    : (legalBallsCount % 6) + 1;
+    
 const nextSequence = (lastBall?.sequence ?? 0) + 1;
+
+
+  const isPowerPlay = overNo < match.powerplayOversInnings;
+  const totalRuns = payload.runsOffBat + payload.extras;
+
+
   const ball = await prisma.ball.create({
     data: {
       matchId: payload.matchId,
@@ -319,24 +364,75 @@ const nextSequence = (lastBall?.sequence ?? 0) + 1;
       sequence: nextSequence,
       overNo,
       ballInOver,
-      legalDelivery,
+      legalDelivery: isRetiredHurt
+      ? false
+      : legalDelivery,
       strikerId: payload.strikerId,
       nonStrikerId: payload.nonStrikerId,
       bowlerId: payload.bowlerId,
       dismissedPlayerId,
       newBatterId: payload.newBatterId,
-      runsOffBat: payload.runsOffBat,
-      extras: payload.extras,
-      extraType: payload.extraType,
-      totalRuns,
-      isWicket: payload.isWicket,
-      wicketType: payload.isWicket
+      runsOffBat: isRetiredHurt
+      ? 0
+      : payload.runsOffBat,
+    extras: isRetiredHurt
+      ? 0
+      : payload.extras,
+
+    extraType: isRetiredHurt
+      ? "RETIRED_HURT"
+      : payload.extraType,
+
+    totalRuns: isRetiredHurt
+      ? 0
+      : totalRuns,
+
+    isWicket: isRetiredHurt
+      ? 0
+      : payload.isWicket,
+
+    wicketType: payload.wicketType
         ? payload.wicketType
         : "NONE",
       isPowerPlay,
       note: payload.note,
     },
   });
+  const nextState =
+  applyBallOutcome(ball);
+  
+  await prisma.matchState.upsert({
+  where: {
+    matchId: payload.matchId
+  },
+
+  update: {
+    strikerId:
+      nextState.strikerId,
+
+    nonStrikerId:
+      nextState.nonStrikerId,
+
+    bowlerId:
+      payload.bowlerId
+  },
+
+  create: {
+    matchId: payload.matchId,
+
+    inningsNo:
+      payload.inningsNo,
+
+    strikerId:
+      nextState.strikerId,
+
+    nonStrikerId:
+      nextState.nonStrikerId,
+
+    bowlerId:
+      payload.bowlerId
+  }
+});
 
   const maxLegalBalls = match.oversPerInnings * 6;
   const updatedLegalBallsCount =

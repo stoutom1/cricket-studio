@@ -22,7 +22,7 @@ export async function GET(request, { params }) {
     where: { id: matchId },
     include: {
       teamA: {
-        include: {
+        include: {  
           players: true,
         },
       },
@@ -35,7 +35,11 @@ export async function GET(request, { params }) {
         orderBy: {
           sequence: "asc",
         },
-      },
+      },events: {
+      orderBy: {
+        id: "asc"
+      }
+    }
     },
   });
 
@@ -63,17 +67,19 @@ export async function GET(request, { params }) {
     (b) => b.inningsNo === 2
   );
 
-const innings1Summary = summarizeInningsDetailed(
-  innings1Balls,
-  playerMap,
-  match.oversPerInnings
-);
+const innings1Summary =
+  summarizeInningsDetailed(
+    innings1Balls,
+    playerMap,
+    match.oversPerInnings
+  );
 
-const innings2Summary = summarizeInningsDetailed(
-  innings2Balls,
-  playerMap,
-  match.oversPerInnings
-);
+const innings2Summary =
+  summarizeInningsDetailed(
+    innings2Balls,
+    playerMap,
+    match.oversPerInnings
+  );
 
 const innings1MatchStats = buildMatchStats({
   ...match,
@@ -169,16 +175,26 @@ const currentInningsBalls = match.balls.filter(
         innings1Complete &&
         (
           innings2Complete ||
-          chaseCompleted // || (match.status = "Completed")
+          chaseCompleted
           // ||
           //allOut
         );
 
       let statusText = "Match in progress";
-
+/*
+      console.log("isCompleted", isCompleted);
+      console.log("innings1Complete", innings1Complete);
+      console.log("innings2Complete", innings2Complete);
+      console.log("match.status", match.status);
+      console.log("chaseCompleted", chaseCompleted);
+      console.log("innings2Summary.runs", innings2Summary.runs);
+      console.log("target", target);
+      console.log("innings2TeamName", innings2TeamName);
+      console.log("innings1Summary.runs", innings1Summary.runs);
+*/
       if (isCompleted) {
         if (innings2Summary.runs >= target) {
-          const wicketsRemaining = maxWicketsPerInnings;
+          //const wicketsRemaining = maxWicketsPerInnings;
             //10 - innings2Summary.wickets;
 
           statusText = `${innings2TeamName} won by chasing the target`;
@@ -205,7 +221,7 @@ const currentInningsBalls = match.balls.filter(
         });
 */
         match.status = "COMPLETED";
-      } else {
+      }else {
         match.status = "LIVE";
       }
 

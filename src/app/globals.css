@@ -1420,3 +1420,50 @@ body {
 
   z-index: 999999;
 }
+.fullscreen-overlay {
+  position: fixed;
+  inset: 0;
+  z-index: 9999;
+
+  background: rgba(0,0,0,.75);
+
+  display: flex;
+  justify-content: center;
+  align-items: center;
+}
+
+.fullscreen-content {
+  width: 100%;
+  height: 100%;
+
+  background: #fff;
+
+  overflow-y: auto;
+
+  padding: 24px;
+}
+
+.close-btn {
+  position: absolute;
+  top: 12px;
+  right: 12px;
+}
+
+.score-large {
+  font-size: 3rem;
+  font-weight: bold;
+  margin: 20px 0;
+}
+.expand-icon {
+  position: absolute;
+  top: 8px;
+  right: 8px;
+
+  font-size: 20px;
+}
+
+@media (min-width: 768px) {
+  .expand-icon {
+    display: none;
+  }
+}

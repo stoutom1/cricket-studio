@@ -6,7 +6,8 @@ import { authOptions } from "@/lib/auth";
 import {
   ballShortText,
   getBattingTeamId,
-  summarizeInningsDetailed
+  summarizeInningsDetailed,
+  getPlayerName
 } from "@/lib/scoring";
 
 export const runtime = "nodejs";
@@ -61,20 +62,27 @@ export async function GET(request, { params }) {
     );
   }
 
-  const match = await prisma.match.findUnique({
-    where: { id: matchId },
-    include: {
-      teamA: { include: { players: true } },
-      teamB: { include: { players: true } },
-      battingFirstTeam: true,
-      balls: {
-        orderBy: [
-          { inningsNo: "asc" },
-          { sequence: "asc" }
-        ]
+const match = await prisma.match.findUnique({
+  where: { id: matchId },
+  include: {
+    teamA: { include: { players: true } },
+    teamB: { include: { players: true } },
+    battingFirstTeam: true,
+
+    balls: {
+      orderBy: [
+        { inningsNo: "asc" },
+        { sequence: "asc" }
+      ]
+    },
+
+    events: {
+      orderBy: {
+        id: "asc"
       }
     }
-  });
+  }
+});
 
   if (!match) {
     return NextResponse.json({ error: "Match not found" }, { status: 404 });
@@ -114,7 +122,27 @@ export async function GET(request, { params }) {
   const remainingBalls = innings2Started
     ? Math.max(maxLegalBalls - innings2.legalBalls, 0)
     : null;
+function getBatterStats(playerId, balls) {
+  let runs = 0;
+  let ballsFaced = 0;
 
+  for (const ball of balls) {
+    if (ball.strikerId === playerId) {
+      runs += ball.runsOffBat;
+
+      if (
+        ball.extraType !== "WIDE"
+      ) {
+        ballsFaced++;
+      }
+    }
+  }
+
+  return {
+    runs,
+    balls: ballsFaced
+  };
+}
   let statusText = "Match in progress";
 
   if (!innings1Started && !innings2Started) {
@@ -135,13 +163,76 @@ export async function GET(request, { params }) {
     statusText = `${innings2TeamName} need ${target} runs to win`;
   }
 
-  const recentBalls = match.balls.slice(-12).reverse().map((ball) => ({
+  const recentBalls = match.balls
+  .filter(
+    b => b.wicketType !== "RETIRED_HURT"
+  )
+  .slice(-12)
+  .reverse()
+  .map((ball) => ({
     id: ball.id,
     label: ballShortText(ball)
   }));
 
   const currentInnings = innings2Started ? 2 : 1;
-  const currentState = currentInnings === 1 ? innings1.currentState : innings2.currentState;
+
+
+  const matchState =
+  await prisma.matchState.findUnique({
+    where: {
+      matchId
+    }
+  });
+const inningsBalls =
+  currentInnings === 1
+    ? innings1Balls
+    : innings2Balls;
+
+const baseState =
+  currentInnings === 1
+    ? innings1.currentState
+    : innings2.currentState;    
+
+const currentState = {
+  ...baseState,
+
+  strikerId:
+    matchState?.strikerId ??
+    null,
+
+  nonStrikerId:
+    matchState?.nonStrikerId ??
+    null,
+
+  bowlerId:
+    matchState?.bowlerId ??
+    baseState?.bowlerId
+};
+
+currentState.strikerName =
+  getPlayerName(
+    playerMap,
+    currentState.strikerId
+  );
+
+currentState.nonStrikerName =
+  getPlayerName(
+    playerMap,
+    currentState.nonStrikerId
+  );
+
+currentState.strikerStats =
+  getBatterStats(
+    currentState.strikerId,
+    inningsBalls
+  );
+
+currentState.nonStrikerStats =
+  getBatterStats(
+    currentState.nonStrikerId,
+    inningsBalls
+  );
+
 const response = {
   match: {
     id: match.id,
@@ -167,27 +258,5 @@ const response = {
 };
 
 return NextResponse.json(response);
-  return NextResponse.json({
-    match: {
-      id: match.id,
-      teamAName: match.teamA.name,
-      teamBName: match.teamB.name,
-      battingFirstTeamName: match.battingFirstTeam.name,
-      oversPerInnings: match.oversPerInnings,
-      powerplayOversInnings: match.powerplayOversInnings,
-      status: match.status
-    },
-    innings: [
-      { number: 1, teamName: innings1TeamName, ...innings1 },
-      { number: 2, teamName: innings2TeamName, ...innings2 }
-    ],
-    currentInnings,
-    currentState,
-    summary: {
-      target,
-      remainingBalls,
-      statusText
-    },
-    recentBalls
-  });
+
 }

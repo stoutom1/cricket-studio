@@ -203,12 +203,6 @@ function runsCompleted(ball) {
 
     case "NOBALL":
       return Math.max(0, ball.extras - 1);
-    
-    case "SWAP_STRIKE":
-      return Math.max(0, ball.extras - 1); 
-      
-    case "RETIRED_HURT":
-      return Math.max(0, ball.extras - 1);  
 
     case "BYE":
     case "LEGBYE":
@@ -219,14 +213,33 @@ function runsCompleted(ball) {
   }
 }
 export function applyBallOutcome(ball) {
- if (ball.extraType === "SWAP_STRIKE") {
-  return {
-    strikerId: ball.strikerId,
-    nonStrikerId: ball.nonStrikerId
-  };
-}
+ 
+  
   let strikerId = ball.strikerId || null;
   let nonStrikerId = ball.nonStrikerId || null;  
+
+    // RETIRED HURT
+  if (ball.wicketType === "RETIRED_HURT") {
+
+    if (
+      Number(ball.dismissedPlayerId) ===
+      Number(ball.strikerId)
+    ) {
+      strikerId = ball.newBatterId;
+    }
+
+    if (
+      Number(ball.dismissedPlayerId) ===
+      Number(ball.nonStrikerId)
+    ) {
+      nonStrikerId = ball.newBatterId;
+    }
+
+    return {
+      strikerId,
+      nonStrikerId
+    };
+  }
 
 if (ball.isWicket) {
   if (!ball.newBatterId) {
@@ -303,14 +316,29 @@ export function summarizeInningsDetailed(balls, playerMap, oversPerInnings) {
     cumulativeLegalBalls += 1;
     currentPartnershipBalls += 1;
   }
+if (
+  ball.wicketType === "RETIRED_HURT"
+) {
+  currentPair = {
+    strikerId:
+      ball.dismissedPlayerId ===
+      currentPair?.strikerId
+        ? ball.newBatterId
+        : currentPair?.strikerId,
 
-  const nextPair = applyBallOutcome(ball);
-/*if (ball.extraType === "SWAP_STRIKE") {
-  return {
-    strikerId: ball.nonStrikerId,
-    nonStrikerId: ball.strikerId
+    nonStrikerId:
+      ball.dismissedPlayerId ===
+      currentPair?.nonStrikerId
+        ? ball.newBatterId
+        : currentPair?.nonStrikerId
   };
-}*/
+
+  continue;
+}
+  const nextPair = applyBallOutcome(ball);
+
+
+
   const countsAsWicket =
     Boolean(ball.isWicket) &&
     ball.wicketType !== "RETIRED_HURT";
@@ -350,6 +378,7 @@ export function summarizeInningsDetailed(balls, playerMap, oversPerInnings) {
   }
 
   currentPair = nextPair;
+
 }
 
   if (sorted.length > 0 && currentPair && (currentPartnershipRuns > 0 || currentPartnershipBalls > 0)) {
@@ -478,6 +507,20 @@ function getBowlerStats(playerId) {
             ? getBowlerStats(latestBowlerId)
             : { runs: 0, wickets: 0, overs: "0.0"}
   };
+  if (currentState) {
+
+  currentState.strikerName =
+    getPlayerName(
+      playerMap,
+      currentState.strikerId
+    );
+
+  currentState.nonStrikerName =
+    getPlayerName(
+      playerMap,
+      currentState.nonStrikerId
+    );
+}
 }
 
 return {

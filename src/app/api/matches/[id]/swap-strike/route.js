@@ -17,16 +17,6 @@ export async function POST(request, { params }) {
   }
 
 
-  await prisma.ball.update({
-  where: {
-    id: lastBall.id
-  },
-  data: {
-    strikerId: lastBall.nonStrikerId,
-    nonStrikerId: lastBall.strikerId
-  }
-});
-
   await prisma.matchState.update({
     where: { matchId },
     data: {

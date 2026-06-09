@@ -108,6 +108,11 @@ export async function DELETE(
       { status: 403 }
     );
   }
+  await prisma.matchState.delete({
+    where: {
+      matchId: matchId
+    }
+  });
 
   await prisma.match.delete({
     where: {
