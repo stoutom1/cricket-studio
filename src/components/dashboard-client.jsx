@@ -4645,7 +4645,16 @@ return (
   <div className="modal-backdrop">
     <div className="modal-card">
 
-      <h3>Add Team</h3>
+      <h3>🏏 Add Team</h3>
+
+        <p
+          style={{
+            opacity: 0.75,
+            marginBottom: 20
+          }}
+        >
+          Create a new team in the selected league.
+        </p>
 
       <form onSubmit={handleAddTeam}>
 
@@ -4662,30 +4671,24 @@ return (
           required
         />
 
-        <div
-          style={{
-            display: "flex",
-            gap: 10,
-            marginTop: 20
-          }}
-        >
-          <button
-            type="submit"
-            className="btn"
-          >
-            Save
-          </button>
+<div className="modal-actions">
+  <button
+    type="button"
+    className="btn btn-outline"
+    onClick={() =>
+      setShowAddTeam(false)
+    }
+  >
+    Cancel
+  </button>
 
-          <button
-            type="button"
-            className="btn btn-outline"
-            onClick={() =>
-              setShowAddTeam(false)
-            }
-          >
-            Cancel
-          </button>
-        </div>
+  <button
+    type="submit"
+    className="btn"
+  >
+    Save Team
+  </button>
+</div>
 
       </form>
 
@@ -4696,8 +4699,16 @@ return (
   <div className="modal-backdrop">
     <div className="modal-card">
 
-      <h3>Add Players</h3>
+<h3>👥 Add Players</h3>
 
+<p
+  style={{
+    opacity: 0.75,
+    marginBottom: 20
+  }}
+>
+  Add multiple players, one name per line.
+</p>
       <form onSubmit={handleAddPlayers}>
 
         <label>
@@ -4767,7 +4778,8 @@ return (
         </label>
 
 <textarea
-  rows={10}
+  rows={8}
+  className="modal-textarea"
   placeholder={`Virat Kohli
 Rohit Sharma
 MS Dhoni
@@ -4782,32 +4794,24 @@ KL Rahul`}
   required
 />
 
-        <div
-          style={{
-            display: "flex",
-            gap: 10,
-            marginTop: 20,
-          }}
-        >
-          <button
-            type="submit"
-            className="btn"
-          >
-            Save Players
-          </button>
+<div className="modal-actions">
+  <button
+    type="button"
+    className="btn btn-outline"
+    onClick={() =>
+      setShowPlayerModal(false)
+    }
+  >
+    Cancel
+  </button>
 
-          <button
-            type="button"
-            className="btn btn-outline"
-            onClick={() =>
-              setShowPlayerModal(
-                false
-              )
-            }
-          >
-            Cancel
-          </button>
-        </div>
+  <button
+    type="submit"
+    className="btn"
+  >
+    Save Players
+  </button>
+</div>
 
       </form>
 
@@ -4817,7 +4821,16 @@ KL Rahul`}
 {showWicketModal && (
   <div className="modal-backdrop">
     <div className="modal-card">
-      <h3>🏏 Wicket Details</h3>
+<h3>🏏 Wicket Details</h3>
+
+<p
+  style={{
+    opacity: 0.75,
+    marginBottom: 16
+  }}
+>
+  Select the dismissal type and replacement batter.
+</p>
 
       <label>
         <span>Wicket Type</span>
@@ -4864,36 +4877,30 @@ KL Rahul`}
         </select>
       </label>
 
-      <div
-        style={{
-          display: "flex",
-          gap: 12,
-          marginTop: 20
-        }}
-      >
-        <button
-          className="btn"
-          onClick={() => confirmWicket()}
-        >
-          Confirm
-        </button>
+<div className="modal-actions">
+  <button
+    className="btn btn-outline"
+    onClick={() => {
+      setShowWicketModal(false);
 
-        <button
-          className="btn btn-outline"
-          onClick={() => {
-            setShowWicketModal(false);
+      setBallForm((prev) => ({
+        ...prev,
+        isWicket: false,
+        wicketType: "NONE",
+        newBatterId: ""
+      }));
+    }}
+  >
+    Cancel
+  </button>
 
-            setBallForm((prev) => ({
-              ...prev,
-              isWicket: false,
-              wicketType: "NONE",
-              newBatterId: ""
-            }));
-          }}
-        >
-          Cancel
-        </button>
-      </div>
+  <button
+    className="btn"
+    onClick={() => confirmWicket()}
+  >
+    Confirm Wicket
+  </button>
+</div>
     </div>
   </div>
 )}
@@ -4907,16 +4914,23 @@ KL Rahul`}
         {selectedExtraType === "LEGBYE" && "Leg Bye"}
       </h3>
 
-      <p>Select total extra runs</p>
+<p
+  style={{
+    opacity: 0.75
+  }}
+>
+  Select total extra runs
+</p>
 
-      <div
-        style={{
-          display: "grid",
-          gridTemplateColumns: "repeat(6, 1fr)",
-          gap: 8,
-          marginTop: 12
-        }}
-      >
+ <div
+  style={{
+    display: "grid",
+    gridTemplateColumns:
+      "repeat(auto-fit,minmax(60px,1fr))",
+    gap: 10,
+    marginTop: 16
+  }}
+>
         {[1, 2, 3, 4, 5, 6, 7].map((runs) => (
           <button
             key={runs}
@@ -4928,13 +4942,16 @@ KL Rahul`}
         ))}
       </div>
 
-      <button
-        className="btn"
-        style={{ marginTop: 16 }}
-        onClick={() => setShowExtrasModal(false)}
-      >
-        Cancel
-      </button>
+<div className="modal-actions">
+  <button
+    className="btn btn-outline"
+    onClick={() =>
+      setShowExtrasModal(false)
+    }
+  >
+    Cancel
+  </button>
+</div>
     </div>
   </div>
 )}
@@ -5014,15 +5031,28 @@ KL Rahul`}
   </div>
 )}
 {showRetiredHurtModal && (
-  <div className="modal-overlay">
+  <div className="modal-backdrop">
     <div className="modal-card">
-      <h3>Retired Hurt</h3>
+<h3>🚑 Retired Hurt</h3>
+
+<p
+  style={{
+    opacity: 0.75,
+    marginBottom: 20
+  }}
+>
+  Choose the retiring batter and select a replacement.
+</p>
 
       <label>
         Who is retiring?
       </label>
 
-<div className="retired-hurt-options">
+<div   style={{
+    display: "grid",
+    gap: 10,
+    marginBottom: 20
+  }} className="retired-hurt-options">
   <button
     type="button"
     className="btn btn-outline"
@@ -5093,25 +5123,23 @@ onClick={() => {
           ))}
       </select>
 
-      <div className="modal-actions">
-        <button
-          onClick={() =>
-            setShowRetiredHurtModal(
-              false
-            )
-          }
-        >
-          Cancel
-        </button>
+<div className="modal-actions">
+  <button
+    className="btn btn-outline"
+    onClick={() =>
+      setShowRetiredHurtModal(false)
+    }
+  >
+    Cancel
+  </button>
 
-        <button
-          onClick={
-            handleRetiredHurtSubmit
-          }
-        >
-          Confirm
-        </button>
-      </div>
+  <button
+    className="btn"
+    onClick={handleRetiredHurtSubmit}
+  >
+    Confirm Replacement
+  </button>
+</div>
     </div>
   </div>
 )}
