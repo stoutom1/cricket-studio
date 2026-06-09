@@ -4491,7 +4491,7 @@ return (
   </Card>
 )}
 {showLeagueModal && (
-  <div className="modal-overlay">
+  <div className="modal-backdrop">
     <div className="modal-card">
       <h3>Create League</h3>
 
@@ -4523,7 +4523,7 @@ return (
   </div>
 )}
 {showBowlerModal && (
-  <div className="modal-overlay">
+  <div className="modal-backdrop">
     <div className="modal-card">
       <h3>
         🏏 Select New Bowler
