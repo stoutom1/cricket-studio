@@ -53,6 +53,7 @@ model Player {
 
 model Match {
   id                    Int          @id @default(autoincrement())
+  shareCode             String?      @unique
   teamAId               Int
   teamBId               Int
   battingFirstTeamId    Int

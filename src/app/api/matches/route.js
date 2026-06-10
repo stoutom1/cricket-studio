@@ -4,6 +4,7 @@ import prisma from "@/lib/prisma";
 import { authOptions } from "@/lib/auth";
 import { isSuperAdmin } from "@/lib/superAdmin";
 export const runtime = "nodejs";
+import crypto from "crypto";
 
 /*function formatOvers(legalBalls) {
   return `${Math.floor(legalBalls / 6)}.${legalBalls % 6}`;
@@ -304,7 +305,8 @@ if (teams[0].leagueId !== activeLeagueId) {
 }
 
 const leagueId = activeLeagueId;
-  
+const shareCode =
+  crypto.randomBytes(5).toString("base64url");  
 const match = await prisma.match.create({
     data: {
       leagueId,
@@ -326,7 +328,8 @@ const match = await prisma.match.create({
         ? Number(body.maxOversPerBowler)
         : null,
         
-      status: "in_progress"
+      status: "in_progress",
+      shareCode
     }
   });
 

@@ -248,7 +248,8 @@ const response = {
     battingFirstTeamName: match.battingFirstTeam.name,
     oversPerInnings: match.oversPerInnings,
     powerplayOversInnings: match.powerplayOversInnings,
-    status: match.status
+    status: match.status,
+    shareCode: match.shareCode,
   },
   innings: [
     { number: 1, teamName: innings1TeamName, ...innings1 },

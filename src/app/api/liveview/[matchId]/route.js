@@ -8,21 +8,28 @@ import {
 } from "@/lib/scoring";
 
 export async function GET(request, { params }) {
-  const { matchId: matchIdParam } = await params;
-  const matchId = Number(matchIdParam);
+const { matchId: matchIdParam } = await params;
 
-  if (Number.isNaN(matchId)) {
-    return NextResponse.json(
-      { error: "Invalid match id 1" },
-      { status: 400 }
-    );
-  }
+const numericMatchId = Number(matchIdParam);
 
-  const match = await prisma.match.findUnique({
-    where: { id: matchId },
+  const match = await prisma.match.findFirst({
+    where: {
+      OR: [
+        {
+          shareCode: matchIdParam,
+        },
+        ...(!Number.isNaN(numericMatchId)
+          ? [
+              {
+                id: numericMatchId,
+              },
+            ]
+          : []),
+      ],
+    },
     include: {
       teamA: {
-        include: {  
+        include: {
           players: true,
         },
       },
@@ -35,11 +42,12 @@ export async function GET(request, { params }) {
         orderBy: {
           sequence: "asc",
         },
-      },events: {
-      orderBy: {
-        id: "asc"
-      }
-    }
+      },
+      events: {
+        orderBy: {
+          id: "asc",
+        },
+      },
     },
   });
 
@@ -234,6 +242,7 @@ const currentInningsBalls = match.balls.filter(
 return NextResponse.json({
   match: {
     id: match.id,
+    shareCode: match.shareCode,
     teamAName: match.teamA.name,
     teamBName: match.teamB.name,
     battingFirstTeamId: match.battingFirstTeamId,

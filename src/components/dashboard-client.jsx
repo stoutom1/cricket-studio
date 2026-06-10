@@ -856,10 +856,11 @@ function showToast(type, text) {
     setToast(null);
   }, 3000);
 }
-      async function handleShareMatch() {
+  async function handleShareMatch() {
       if (!scoreboard) return;
 
-      const shareUrl = `${window.location.origin}/live/${selectedMatchId}`;
+      const shareCode = scoreboard?.match?.shareCode;
+      const shareUrl = `${window.location.origin}/live/${shareCode}`;
       const innings =
         scoreboard.innings?.[scoreboard.innings.length - 1];
 
