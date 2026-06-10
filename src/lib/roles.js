@@ -2,24 +2,43 @@ export const ROLES = {
   OWNER: {
     role: "OWNER",
 
-    canViewDashboard: true,
-    canViewManagement: true,
-    canViewMatches: true,
-    canViewScoring: true,
-    canViewStats: true,
+      canViewDashboard:  true,
+  canViewManagement:  true,
+  canViewMatches:  true,
+  canViewScoring:  true,
+  canViewStats:  true,
 
-    canCreateLeague: true,
-    canCreateTeam: true,
-    canCreateMatch: true,
+  canCreateLeague:  true,
+  canEditLeague:  true,
+  canDeleteLeague:  true,
 
-    canDeleteLeague: true,
-    canDeleteTeam: true,
-    canDeletePlayer: true,
-    canDeleteMatch: true,
+  canManageMembers:  true,
+  canManagePermissions:  true,
 
-    canScoreMatch: true,
-    canEditScore: true,
-    canUndoBall: true
+  canCreateTeam:  true,
+  canEditTeam:  true,
+  canDeleteTeam:  true,
+
+  canCreatePlayer:  true,
+  canEditPlayer:  true,
+  canDeletePlayer:  true,
+
+  canCreateMatch:  true,
+  canEditMatch:  true,
+  canDeleteMatch:  true,
+
+  canScoreMatch:  true,
+  canEditScore:  true,
+  canUndoBall:  true,
+  canSwapStrike:  true,
+  canRetirePlayer:  true,
+
+  canEndMatch:  true,
+  canAbandonMatch:  true,
+  canLockMatch:  true,
+
+  canExportStats:  true,
+  canViewAuditLogs:  true,
   },
 
   ADMIN: {
@@ -31,51 +50,77 @@ export const ROLES = {
     canViewScoring: true,
     canViewStats: true,
 
-    canCreateTeam: true,
-    canCreateMatch: true,
+    canManageMembers: true,
 
+    canCreateTeam: true,
+    canEditTeam: true,
     canDeleteTeam: true,
+
+    canCreatePlayer: true,
+    canEditPlayer: true,
     canDeletePlayer: true,
+
+    canCreateMatch: true,
+    canEditMatch: true,
     canDeleteMatch: true,
 
     canScoreMatch: true,
     canEditScore: true,
-    canUndoBall: true
+    canUndoBall: true,
+    canSwapStrike: true,
+    canRetirePlayer: true,
+
+    canEndMatch: true,
+    canAbandonMatch: true,
+
+    canExportStats: true
   },
 
   SCORER: {
     role: "SCORER",
 
+    canViewDashboard: true,
     canViewMatches: true,
     canViewScoring: true,
     canViewStats: true,
 
     canScoreMatch: true,
     canEditScore: true,
-    canUndoBall: true
+    canUndoBall: true,
+    canSwapStrike: true,
+    canRetirePlayer: true,
+
+    canEndMatch: true
   },
 
   CAPTAIN: {
     role: "CAPTAIN",
 
+    canViewDashboard: true,
     canViewMatches: true,
     canViewScoring: true,
     canViewStats: true,
 
-    canCreateTeam: true
-  },
+    canCreatePlayer: true,
+    canEditPlayer: true,
 
-  ANALYST: {
-    role: "ANALYST",
+    canCreateTeam: false,
+    canEditTeam: false,
+    canDeleteTeam: false,
 
-    canViewMatches: true,
-    canViewStats: true
+    canScoreMatch: false,
+    canEditScore: false,
+    canUndoBall: false
   },
 
   VIEWER: {
     role: "VIEWER",
 
+    canViewDashboard: true,
     canViewMatches: true,
-    canViewStats: true
+    canViewStats: true,
+    canViewScoring: true,
+    canExportStats: true,
+    canViewManagement: true
   }
 };

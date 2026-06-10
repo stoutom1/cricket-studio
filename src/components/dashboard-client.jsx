@@ -174,9 +174,10 @@ const [showAddPlayers, setShowAddPlayers] = useState(false);
 const [memberSearch, setMemberSearch] = useState("");
 
 const [me, setMe] = useState(null);
-const [permissionsLoading, setPermissionsLoading] =
-  useState(false);
-
+const [permissionsLoading, setPermissionsLoading] = useState(false);
+const isSuperAdmin =
+  session?.user?.email ===
+  "surprisecricket11@gmail.com";
 
 useEffect(() => {
   fetch("/api/me")
@@ -203,16 +204,11 @@ const activeLeague =
       league.id ===
       Number(activeLeagueId)
   ) || null;
-/*const selectedMember =
-  selectedLeague?.members?.find(
-    (m) => String(m.id) === String(selectedMemberId)
-  ) || null;
-*/
-  //const activeLeague = selectedLeague;
 
 useEffect(() => {
   if (!activeLeagueId) return;
 
+  /* below functionwas originally developed but new one is being asked for here
   async function loadPermissions() {
     try {
       setPermissionsLoading(true);
@@ -230,29 +226,90 @@ useEffect(() => {
       setPermissionsLoading(false);
     }
   }
-if (isSuperAdmin) {
+  */
+
+  if (isSuperAdmin) {
     setPermissions({
-      canViewManagement: true,
-      canViewMatches: true,
-      canViewScoring: true,
-      canViewStats: true,
-      canManagePermissions: true,
-      canCreateTeam: true,
-      canCreateMatch: true,
-      canDeleteTeam: true,
-      canDeletePlayer: true,
-      canDeleteMatch: true,
-      canScoreMatch: true,
-      canEditScore: true,
-      canUndoBall: true
+        canViewDashboard:  true,
+  canViewManagement:  true,
+  canViewMatches:  true,
+  canViewScoring:  true,
+  canViewStats:  true,
+
+  canCreateLeague:  true,
+  canEditLeague:  true,
+  canDeleteLeague:  true,
+
+  canManageMembers:  true,
+  canManagePermissions:  true,
+
+  canCreateTeam:  true,
+  canEditTeam:  true,
+  canDeleteTeam:  true,
+
+  canCreatePlayer:  true,
+  canEditPlayer:  true,
+  canDeletePlayer:  true,
+
+  canCreateMatch:  true,
+  canEditMatch:  true,
+  canDeleteMatch:  true,
+
+  canScoreMatch:  true,
+  canEditScore:  true,
+  canUndoBall:  true,
+  canSwapStrike:  true,
+  canRetirePlayer:  true,
+
+  canEndMatch:  true,
+  canAbandonMatch:  true,
+  canLockMatch:  true,
+
+  canExportStats:  true,
+  canViewAuditLogs:  true
     });
 
     return;
   }
-  loadPermissions();
-}, [activeLeagueId]);
+  //loadPermissions(selectedMember);
+  loadMyLeaguePermissions(activeLeagueId);
+}, [activeLeagueId, isSuperAdmin]);
 
+async function loadPermissions(member) {
+  try {
+    if (!activeLeague?.id || !member?.id) {
+      setError("Member id is required");
+      return;
+    }
 
+    setPermissionsLoading(true);
+
+    const data = await api(
+      `/api/leagues/${activeLeague.id}/permissions?memberId=${member.id}`
+    );
+
+    const latestMember = data.member;
+
+    setSelectedMember(latestMember);
+
+    const loadedPermissions = {
+      role: latestMember.role || "VIEWER",
+    };
+
+    for (const field of PERMISSION_FIELDS) {
+      loadedPermissions[field] =
+        latestMember[field] ?? false;
+    }
+
+    setPermissions(loadedPermissions);
+    setShowPermissionModal(true);
+  } catch (err) {
+    console.error(err);
+    setError(err.message);
+  } finally {
+    setPermissionsLoading(false);
+  }
+}
 const selectedTeam =
   selectedLeague?.teams?.find(
     (t) => String(t.id) === String(selectedTeamId)
@@ -609,68 +666,154 @@ const handleAddPlayers = async (e) => {
     setError(error.message);
   }
 };
-function openPermissionEditor(member) {
-setSelectedMember(member);
-setShowPermissionModal(true);
+async function openPermissionEditor(member) {
+  try {
+    setSelectedMember(member);
+    setShowPermissionModal(true);
 
-  setPermissions({
-    canViewManagement:
-      member.canViewManagement ?? false,
+    const response = await fetch(
+      //`/api/leagues/${activeLeague.id}/permissions?memberId=${member.id}`
+    `/api/leagues/${activeLeague.id}/permissions?memberId=${member.id}`
+    );
 
-    canCreateMatch:
-      member.canCreateMatch ?? false,
+    const data = await response.json();
 
-    canDeleteMatch:
-      member.canDeleteMatch ?? false,
+    if (!response.ok) {
+      throw new Error(
+        data.error || "Failed to load permissions"
+      );
+    }
 
-    canScoreMatch:
-      member.canScoreMatch ?? false,
+    const latestMember = data.member;
 
-    canUndoBall:
-      member.canUndoBall ?? false
-  });
+    const loadedPermissions = {
+      role: latestMember.role || "VIEWER",
+    };
+
+    for (const field of PERMISSION_FIELDS) {
+      loadedPermissions[field] =
+        latestMember[field] ?? false;
+    }
+
+    setSelectedMember(latestMember);
+    setPermissions(loadedPermissions);
+  } catch (error) {
+    setError(error.message);
+  }
 }
-
-function updatePermission(
-  permission,
-  value
-) {
+function updatePermission(permission, value) {
   setPermissions((prev) => ({
     ...prev,
-    [permission]: value
+    [permission]: value,
   }));
 }
 
-async function savePermissions() {
-  if (!selectedMember) return;
+async function savePermissions(member) {
+  console.log("selectedMember", selectedMember);
+  console.log("active League Id:", activeLeagueId);
+   console.log("active League.Id:", activeLeague.id);
+      console.log("member.Id:", member.id);
+  if (!selectedMember || !activeLeague?.id) return;
 
-  const response = await fetch(
-    `/api/leagues/${activeLeague?.id}/permissions`,
-    {
-      method: "PATCH",
-      headers: {
-        "Content-Type": "application/json"
-      },
- body: JSON.stringify({
-  memberId: selectedMember.id,
-  email: selectedMember.user.email,
-  ...permissions
-})
-    }
-  );
-
-  if (!response.ok) {
-    const error = await response.json();
-
-    alert(
-      error.error || "Failed to save permissions"
+  try {
+    const response = await fetch(
+      `/api/leagues/${activeLeague.id}/permissions?memberId=${member.id}`,
+      {
+        method: "PATCH",
+        headers: {
+          "Content-Type": "application/json",
+        },
+        body: JSON.stringify({
+          memberId: selectedMember.id,
+          email: selectedMember.user?.email,
+          role: permissions.role,
+          ...Object.fromEntries(
+            PERMISSION_FIELDS.map((field) => [
+              field,
+              permissions[field] ?? false,
+            ])
+          ),
+        }),
+      }
     );
-    return;
+
+    const data = await response.json();
+console.log("data", data);
+    if (!response.ok) {
+      throw new Error(
+        data.error || "Failed to save permissions"
+      );
+    }
+
+    const updatedMember = data.member || {
+      ...selectedMember,
+      ...permissions,
+    };
+
+    setLeagues((prev) =>
+      prev.map((league) =>
+        league.id === activeLeague.id
+          ? {
+              ...league,
+              members: league.members?.map((member) =>
+                member.id === selectedMember.id
+                  ? {
+                      ...member,
+                      ...updatedMember,
+                    }
+                  : member
+              ),
+            }
+          : league
+      )
+    );
+
+    setSelectedMember(updatedMember);
+    setShowPermissionModal(false);
+    setMessage("✅ Role and permissions updated successfully");
+  } catch (error) {
+    setError(error.message);
   }
-
-  alert("Permissions updated");
 }
+const PERMISSION_FIELDS = [
+  "canViewDashboard",
+  "canViewManagement",
+  "canViewMatches",
+  "canViewScoring",
+  "canViewStats",
 
+  "canCreateLeague",
+  "canEditLeague",
+  "canDeleteLeague",
+
+  "canManageMembers",
+  "canManagePermissions",
+
+  "canCreateTeam",
+  "canEditTeam",
+  "canDeleteTeam",
+
+  "canCreatePlayer",
+  "canEditPlayer",
+  "canDeletePlayer",
+
+  "canCreateMatch",
+  "canEditMatch",
+  "canDeleteMatch",
+
+  "canScoreMatch",
+  "canEditScore",
+  "canUndoBall",
+  "canSwapStrike",
+  "canRetirePlayer",
+
+  "canEndMatch",
+  "canAbandonMatch",
+  "canLockMatch",
+
+  "canExportStats",
+  "canViewAuditLogs",
+];
 async function api(url, options = {}) {
     const res = await fetch(url, {
       ...options,
@@ -687,13 +830,13 @@ async function api(url, options = {}) {
 
     return data;
   }
-    function showToast(type, text) {
-      setToast({ type, text });
+function showToast(type, text) {
+  setToast({ type, text });
 
-      setTimeout(() => {
-        setToast(null);
-      }, 3000);
-    }
+  setTimeout(() => {
+    setToast(null);
+  }, 3000);
+}
       async function handleShareMatch() {
       if (!scoreboard) return;
 
@@ -761,7 +904,7 @@ async function updateRole(
 ) {
   try {
     const response = await fetch(
-      `/api/leagues/${leagueId}/permissions`,
+      `/api/leagues/${activeLeague.id}/permissions?memberId=${memberId}`,
       {
         method: "PATCH",
         headers: {
@@ -1819,7 +1962,23 @@ await api("/api/balls", {
     );
   }  
 }
+async function loadMyLeaguePermissions(leagueId) {
+  try {
+    setPermissionsLoading(true);
 
+    const data = await api(
+      `/api/leagues/${leagueId}/permissions/me`
+    );
+
+    setPermissions(data.permissions);
+  } catch (err) {
+    console.error(err);
+    setPermissions(null);
+    setError(err.message);
+  } finally {
+    setPermissionsLoading(false);
+  }
+}
 async function generateInviteLink(leagueId) {
   const res = await api(
     `/api/leagues/${leagueId}/invite`,
@@ -1958,9 +2117,7 @@ function triggerQuickAction(actionKey, callback) {
     scoreboard?.innings?.[0];
 const canCreateMatch =
   activeLeague?.teams?.length >= 2;
-const isSuperAdmin =
-  session?.user?.email ===
-  "surprisecricket11@gmail.com";
+
 const selectedMatch = matches.find(
   (m) => String(m.id) === String(selectedMatchId)
 ); 
@@ -3087,6 +3244,93 @@ return (
     ))}
   </select>
 </Card>
+<Card title="📋 Matches" defaultCollapsed={false}>
+  {matches.length === 0 ? (
+    <p className="muted">No matches yet</p>
+  ) : (
+    <>
+      <div className="match-picker">
+        <select
+          value={selectedMatchId || ""}
+          onChange={(e) =>
+            setSelectedMatchId(e.target.value)
+          }
+        >
+          <option value="">
+            Select Match
+          </option>
+
+          {matches.map((match) => (
+            <option
+              key={match.id}
+              value={match.id}
+            >
+              #{match.id} • {match.teamAName} vs {match.teamBName}
+            </option>
+          ))}
+        </select>
+
+        {selectedMatch && (
+          <span className="pill">
+            {selectedMatch.status}
+          </span>
+        )}
+      </div>
+
+      <div className="muted small match-help">
+        👉 Selecting a match opens scoring
+      </div>
+
+      {selectedMatch && (
+        <details className="match-summary">
+          <summary>
+            🏏 {selectedMatch.teamAName} vs {selectedMatch.teamBName}
+          </summary>
+          <button
+            type="button"
+            onClick={() =>
+              //setSelectedMatchId(String(match.id))
+              handleMatchSelect(selectedMatch.id)
+            }
+            style={{
+              flex: 1,
+              background: "transparent",
+              border: "none",
+              color: "inherit",
+              textAlign: "left",
+              cursor: "pointer"
+            }}
+          >
+          <div className="match-quick-info">
+            Bat 1st: {selectedMatch.battingFirstTeamName}
+            {" • "}
+            {selectedMatch.oversPerInnings} overs
+            {" • "}
+            Max wkts: {selectedMatch.maxWicketsPerInnings ?? "∞"}
+            {" • "}
+            Bowler limit: {selectedMatch.maxOversPerBowler ?? "∞"}
+          </div>
+
+          <div className="muted small">
+            {formatDate(selectedMatch.createdAt)}
+          </div>
+          </button>    
+          {permissions?.canDeleteMatch && (
+            <button
+              type="button"
+              className="btn btn-outline"
+              onClick={() =>
+                handleDeleteMatch(selectedMatch.id)
+              }
+            >
+              Delete Match
+            </button>
+          )}
+        </details>
+      )}
+    </>
+  )}
+</Card>
       <Card title="🗓️ Create Match" defaultCollapsed={false}>
 {activeLeagueId && (
   <div
@@ -3255,94 +3499,6 @@ return (
     </div>
 
     <div className="grid-side">
-
- <Card title="📋 Matches" defaultCollapsed={false}>
-  {matches.length === 0 ? (
-    <p className="muted">No matches yet</p>
-  ) : (
-    <>
-      <div className="match-picker">
-        <select
-          value={selectedMatchId || ""}
-          onChange={(e) =>
-            setSelectedMatchId(e.target.value)
-          }
-        >
-          <option value="">
-            Select Match
-          </option>
-
-          {matches.map((match) => (
-            <option
-              key={match.id}
-              value={match.id}
-            >
-              #{match.id} • {match.teamAName} vs {match.teamBName}
-            </option>
-          ))}
-        </select>
-
-        {selectedMatch && (
-          <span className="pill">
-            {selectedMatch.status}
-          </span>
-        )}
-      </div>
-
-      <div className="muted small match-help">
-        👉 Selecting a match opens scoring
-      </div>
-
-      {selectedMatch && (
-        <details className="match-summary">
-          <summary>
-            🏏 {selectedMatch.teamAName} vs {selectedMatch.teamBName}
-          </summary>
-          <button
-            type="button"
-            onClick={() =>
-              //setSelectedMatchId(String(match.id))
-              handleMatchSelect(selectedMatch.id)
-            }
-            style={{
-              flex: 1,
-              background: "transparent",
-              border: "none",
-              color: "inherit",
-              textAlign: "left",
-              cursor: "pointer"
-            }}
-          >
-          <div className="match-quick-info">
-            Bat 1st: {selectedMatch.battingFirstTeamName}
-            {" • "}
-            {selectedMatch.oversPerInnings} overs
-            {" • "}
-            Max wkts: {selectedMatch.maxWicketsPerInnings ?? "∞"}
-            {" • "}
-            Bowler limit: {selectedMatch.maxOversPerBowler ?? "∞"}
-          </div>
-
-          <div className="muted small">
-            {formatDate(selectedMatch.createdAt)}
-          </div>
-          </button>    
-          {permissions?.canDeleteMatch && (
-            <button
-              type="button"
-              className="btn btn-outline"
-              onClick={() =>
-                handleDeleteMatch(selectedMatch.id)
-              }
-            >
-              Delete Match
-            </button>
-          )}
-        </details>
-      )}
-    </>
-  )}
-</Card>
 
       {(message || error) && (
         <Card title="ℹ️ Notifications">
@@ -3851,7 +4007,7 @@ return (
     No members found for this league.
   </div>
 )}
-      {selectedMember && (
+{selectedMember && (
         <>
           <div
             style={{
@@ -3879,13 +4035,9 @@ return (
             </label>
 
             <select
-              value={selectedMember.role}
+              value={permissions.role || "VIEWER"}
               onChange={(e) =>
-                updateRole(
-                  activeLeague.id,
-                  selectedMember.id,
-                  e.target.value
-                )
+                updatePermission("role", e.target.value)
               }
               style={{
                 width: "100%",
@@ -3905,9 +4057,6 @@ return (
               <option value="SCORER">
                 Scorer
               </option>
-              <option value="ANALYST">
-                Analyst
-              </option>
               <option value="VIEWER">
                 Viewer
               </option>
@@ -3916,7 +4065,8 @@ return (
             <button
               className="btn"
               onClick={() =>
-                        openPermissionEditor(selectedMember)
+                        //openPermissionEditor(selectedMember)
+                        loadPermissions(selectedMember)
                       }
             >
               🔐 Edit Permissions
@@ -3952,6 +4102,63 @@ return (
         />
         <span>View Management</span>
       </label>
+      
+      <label className="permission-item">
+        <input
+          type="checkbox"
+          checked={permissions.canViewDashboard ?? false}
+          onChange={(e) =>
+            updatePermission(
+              "canViewDashboard",
+              e.target.checked
+            )
+          }
+        />
+        <span>View Dashboard</span>
+      </label>
+
+      <label className="permission-item">
+        <input
+          type="checkbox"
+          checked={permissions.canViewMatches ?? false}
+          onChange={(e) =>
+            updatePermission(
+              "canViewMatches",
+              e.target.checked
+            )
+          }
+        />
+        <span>View Matches</span>
+      </label>
+
+      <label className="permission-item">
+        <input
+          type="checkbox"
+          checked={permissions.canViewScoring ?? false}
+          onChange={(e) =>
+            updatePermission(
+              "canViewScoring",
+              e.target.checked
+            )
+          }
+        />
+        <span>View Scoring</span>
+      </label>
+
+      <label className="permission-item">
+        <input
+          type="checkbox"
+          checked={permissions.canViewStats ?? false}
+          onChange={(e) =>
+            updatePermission(
+              "canViewStats",
+              e.target.checked
+            )
+          }
+        />
+        <span>View Stats</span>
+      </label>
+
 
       <label className="permission-item">
         <input
@@ -3965,6 +4172,20 @@ return (
           }
         />
         <span>Create Match</span>
+      </label>
+      
+      <label className="permission-item">
+        <input
+          type="checkbox"
+          checked={permissions.canEditMatch ?? false}
+          onChange={(e) =>
+            updatePermission(
+              "canEditMatch",
+              e.target.checked
+            )
+          }
+        />
+        <span>Edit Match</span>
       </label>
 
       <label className="permission-item">
@@ -3998,6 +4219,20 @@ return (
       <label className="permission-item">
         <input
           type="checkbox"
+          checked={permissions.canEditScore ?? false}
+          onChange={(e) =>
+            updatePermission(
+              "canEditScore",
+              e.target.checked
+            )
+          }
+        />
+        <span>Edit Score</span>
+      </label>
+
+      <label className="permission-item">
+        <input
+          type="checkbox"
           checked={permissions.canUndoBall ?? false}
           onChange={(e) =>
             updatePermission(
@@ -4009,12 +4244,237 @@ return (
         <span>Undo Ball</span>
       </label>
 
+      <label className="permission-item">
+        <input
+          type="checkbox"
+          checked={permissions.canSwapStrike ?? false}
+          onChange={(e) =>
+            updatePermission(
+              "canSwapStrike",
+              e.target.checked
+            )
+          }
+        />
+        <span>Swap Strike</span>
+      </label>
+
+      <label className="permission-item">
+        <input
+          type="checkbox"
+          checked={permissions.canRetirePlayer ?? false}
+          onChange={(e) =>
+            updatePermission(
+              "canRetirePlayer",
+              e.target.checked
+            )
+          }
+        />
+        <span>Retire Player</span>
+      </label>
+
+        <label className="permission-item">
+        <input
+          type="checkbox"
+          checked={permissions.canCreateTeam ?? false}
+          onChange={(e) =>
+            updatePermission(
+              "canCreateTeam",
+              e.target.checked
+            )
+          }
+        />
+        <span>Create Team</span>
+      </label>
+
+        <label className="permission-item">
+        <input
+          type="checkbox"
+          checked={permissions.canEditTeam ?? false}
+          onChange={(e) =>
+            updatePermission(
+              "canEditTeam",
+              e.target.checked
+            )
+          }
+        />
+        <span>Edit Team</span>
+      </label>
+
+        <label className="permission-item">
+        <input
+          type="checkbox"
+          checked={permissions.canDeleteTeam ?? false}
+          onChange={(e) =>
+            updatePermission(
+              "canDeleteTeam",
+              e.target.checked
+            )
+          }
+        />
+        <span>Delete Team</span>
+      </label>
+
+        <label className="permission-item">
+        <input
+          type="checkbox"
+          checked={permissions.canCreatePlayer ?? false}
+          onChange={(e) =>
+            updatePermission(
+              "canCreatePlayer",
+              e.target.checked
+            )
+          }
+        />
+        <span>Create Player</span>
+      </label>
+
+        <label className="permission-item">
+        <input
+          type="checkbox"
+          checked={permissions.canDeletePlayer ?? false}
+          onChange={(e) =>
+            updatePermission(
+              "canDeletePlayer",
+              e.target.checked
+            )
+          }
+        />
+        <span>Delete Player</span>
+      </label>
+
+        <label className="permission-item">
+        <input
+          type="checkbox"
+          checked={permissions.canEditPlayer ?? false}
+          onChange={(e) =>
+            updatePermission(
+              "canEditPlayer",
+              e.target.checked
+            )
+          }
+        />
+        <span>Edit Player</span>
+      </label>    
+
+        <label className="permission-item">
+        <input
+          type="checkbox"
+          checked={permissions.canCreateLeague ?? false}
+          onChange={(e) =>
+            updatePermission(
+              "canCreateLeague",
+              e.target.checked
+            )
+          }
+        />
+        <span>Create League</span>
+      </label>  
+
+        <label className="permission-item">
+        <input
+          type="checkbox"
+          checked={permissions.canEditLeague ?? false}
+          onChange={(e) =>
+            updatePermission(
+              "canEditLeague",
+              e.target.checked
+            )
+          }
+        />
+        <span>Edit League</span>
+      </label>  
+
+        <label className="permission-item">
+        <input
+          type="checkbox"
+          checked={permissions.canDeleteLeague ?? false}
+          onChange={(e) =>
+            updatePermission(
+              "canDeleteLeague",
+              e.target.checked
+            )
+          }
+        />
+        <span>Delete League</span>
+      </label>  
+
+        <label className="permission-item">
+        <input
+          type="checkbox"
+          checked={permissions.canEndMatch ?? false}
+          onChange={(e) =>
+            updatePermission(
+              "canEndMatch",
+              e.target.checked
+            )
+          }
+        />
+        <span>End Match</span>
+      </label>  
+
+        <label className="permission-item">
+        <input
+          type="checkbox"
+          checked={permissions.canAbandonMatch ?? false}
+          onChange={(e) =>
+            updatePermission(
+              "canAbandonMatch",
+              e.target.checked
+            )
+          }
+        />
+        <span>Abandon Match</span>
+      </label>  
+
+        <label className="permission-item">
+        <input
+          type="checkbox"
+          checked={permissions.canLockMatch ?? false}
+          onChange={(e) =>
+            updatePermission(
+              "canLockMatch",
+              e.target.checked
+            )
+          }
+        />
+        <span>Lock Match</span>
+      </label>  
+
+        <label className="permission-item">
+        <input
+          type="checkbox"
+          checked={permissions.canManageMembers ?? false}
+          onChange={(e) =>
+            updatePermission(
+              "canManageMembers",
+              e.target.checked
+            )
+          }
+        />
+        <span>Manage Members</span>
+      </label>  
+
+        <label className="permission-item">
+        <input
+          type="checkbox"
+          checked={permissions.canManagePermissions ?? false}
+          onChange={(e) =>
+            updatePermission(
+              "canManagePermissions",
+              e.target.checked
+            )
+          }
+        />
+        <span>Manage Permissions</span>
+      </label>  
+
+
     </div>
 
     <div className="permission-actions">
       <button
         className="btn"
-        onClick={savePermissions}
+        onClick={() => savePermissions(selectedMember)}
       >
         💾 Save Permissions
       </button>

@@ -65,7 +65,11 @@ export default async function InvitePage({
 
       canViewDashboard: true,
       canViewMatches: true,
-      canViewStats: true
+      canViewStats: true,
+      canViewScoring: true,
+      canExportStats: true,
+      canViewManagement: true
+
     }
   });
 

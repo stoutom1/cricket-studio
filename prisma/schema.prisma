@@ -160,6 +160,7 @@ model LeagueMember {
   canViewStats      Boolean @default(true)
 
   // League
+  canCreateLeague      Boolean @default(false)
   canEditLeague        Boolean @default(false)
   canDeleteLeague      Boolean @default(false)
   canManageMembers     Boolean @default(false)
@@ -176,9 +177,12 @@ model LeagueMember {
   canDeletePlayer Boolean @default(false)
 
   // Matches
-  canCreateMatch Boolean @default(false)
-  canEditMatch   Boolean @default(false)
-  canDeleteMatch Boolean @default(false)
+  canCreateMatch  Boolean @default(false)
+  canEditMatch    Boolean @default(false)
+  canDeleteMatch  Boolean @default(false)
+  canEndMatch     Boolean @default(false)
+  canAbandonMatch Boolean @default(false)
+  canLockMatch    Boolean @default(false)
 
   // Scoring
   canScoreMatch   Boolean @default(false)

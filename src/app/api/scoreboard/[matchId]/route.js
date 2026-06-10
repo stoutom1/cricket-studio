@@ -158,7 +158,14 @@ function getBatterStats(playerId, balls) {
       statusText = `${innings1TeamName} won by ${innings1.runs - innings2.runs} runs`;
     }
   } else if (target && innings2Started) {
+    if (match.status === "COMPLETED" || match.status === "COMPLETED_LOCKED") {
+       statusText = `${innings1TeamName} won by ${innings1.runs - innings2.runs} runs`;
+    } else if (match.status === "ABANDONED") {
+      statusText = "Match is abandoned";
+    }
+    else {
     statusText = `${innings2TeamName} need ${Math.max(target - innings2.runs, 0)} runs from ${remainingBalls} balls`;
+    }
   } else if (target && !innings2Started) {
     statusText = `${innings2TeamName} need ${target} runs to win`;
   }

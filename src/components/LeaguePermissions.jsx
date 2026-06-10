@@ -194,10 +194,6 @@ export default function LeaguePermissions({
                 SCORER
               </option>
 
-              <option value="ANALYST">
-                ANALYST
-              </option>
-
               <option value="VIEWER">
                 VIEWER
               </option>
