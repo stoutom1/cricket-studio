@@ -414,10 +414,18 @@ useEffect(() => {
 useEffect(() => {
   if (!activeLeagueId) {
     setMatches([]);
+    setSelectedMatchId("");
+    setMatchDetail(null);
+    setScoreboard(null);
+    setStats(null);
     return;
   }
 
-  setMatches([]);
+  setSelectedMatchId("");
+  setMatchDetail(null);
+  setScoreboard(null);
+  setStats(null);
+
   loadMatches();
 }, [activeLeagueId]);
 
@@ -524,31 +532,41 @@ const [ballForm, setBallForm] = useState({
 });
 async function loadMatches() {
   try {
-    const data = await api("/api/matches");
+    if (!activeLeagueId) {
+      setMatches([]);
+      setSelectedMatchId("");
+      return;
+    }
 
-    setMatches(data);
+    const data = await api(
+      `/api/matches?leagueId=${activeLeagueId}`
+    );
 
-    if (!selectedMatchId && data.length > 0) {
-      setSelectedMatchId(String(data[0].id));
-    } else if (
+    const leagueMatches = data.filter(
+      (m) =>
+        String(m.leagueId) === String(activeLeagueId)
+    );
+
+    setMatches(leagueMatches);
+
+    if (
       selectedMatchId &&
-      !data.some(
-        (m) =>
-          String(m.id) ===
-          String(selectedMatchId)
+      !leagueMatches.some(
+        (m) => String(m.id) === String(selectedMatchId)
       )
     ) {
-      setSelectedMatchId(
-        data[0]
-          ? String(data[0].id)
-          : ""
-      );
+      setSelectedMatchId("");
+      setMatchDetail(null);
+      setScoreboard(null);
+      setStats(null);
+      return;
+    }
+
+    if (!selectedMatchId && leagueMatches.length > 0) {
+      setSelectedMatchId(String(leagueMatches[0].id));
     }
   } catch (error) {
-    console.error(
-      "Load Matches Error:",
-      error
-    );
+    console.error("Load Matches Error:", error);
   }
 }
 async function loadTeams() {

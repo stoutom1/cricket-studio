@@ -22,7 +22,7 @@ function countsAsWicket(ball) {
 }
 
 
-export async function GET() {
+export async function GET(request) {
   const session = await getServerSession(authOptions);
 
   if (!session) {
@@ -31,53 +31,67 @@ export async function GET() {
       { status: 401 }
     );
   }
+
+  const { searchParams } = new URL(request.url);
+
+  const requestedLeagueId = Number(
+    searchParams.get("leagueId")
+  );
+
   const user = await prisma.user.findUnique({
     where: {
-      email: session.user.email
-    }
+      email: session.user.email,
+    },
   });
 
-const activeLeagueId = user?.activeLeagueId;
-
-const superAdmin = isSuperAdmin(session);
-if (!user) {
-  return NextResponse.json(
-    { error: "User not found" },
-    { status: 404 }
-  );
-}
-const where = {};
-
-if (!superAdmin) {
-  where.leagueId = activeLeagueId;
-
-  where.league = {
-    members: {
-      some: {
-        userId: user.id
-      }
-    }
-  };
-} else if (activeLeagueId) {
-  where.leagueId = activeLeagueId;
-}
-
-const matches = await prisma.match.findMany({
-  where,
-  include: {
-    league: true,
-    teamA: true,
-    teamB: true,
-    battingFirstTeam: true,
-    balls: true
-  },
-  orderBy: {
-    createdAt: "desc"
+  if (!user) {
+    return NextResponse.json(
+      { error: "User not found" },
+      { status: 404 }
+    );
   }
-});
-  // AUTO UPDATE MATCH STATUS
-  for (const match of matches) {
 
+  const superAdmin = isSuperAdmin(session);
+
+  const leagueId =
+    !Number.isNaN(requestedLeagueId) &&
+    requestedLeagueId > 0
+      ? requestedLeagueId
+      : user.activeLeagueId;
+
+  if (!leagueId) {
+    return NextResponse.json([]);
+  }
+
+  const where = {
+    leagueId,
+  };
+
+  if (!superAdmin) {
+    where.league = {
+      members: {
+        some: {
+          userId: user.id,
+        },
+      },
+    };
+  }
+
+  const matches = await prisma.match.findMany({
+    where,
+    include: {
+      league: true,
+      teamA: true,
+      teamB: true,
+      battingFirstTeam: true,
+      balls: true,
+    },
+    orderBy: {
+      createdAt: "desc",
+    },
+  });
+
+  for (const match of matches) {
     const innings1Balls = match.balls.filter(
       (b) => b.inningsNo === 1
     );
@@ -96,49 +110,40 @@ const matches = await prisma.match.findMany({
       0
     );
 
-    const innings1LegalBalls = innings1Balls.filter(
-      (b) => b.legalDelivery
-    ).length;
+    const innings1LegalBalls =
+      innings1Balls.filter((b) => b.legalDelivery)
+        .length;
 
-    const innings2LegalBalls = innings2Balls.filter(
-      (b) => b.legalDelivery
-    ).length;
-
-    const innings2Wickets = innings2Balls.reduce(
-      (sum, b) =>
-        sum + (countsAsWicket(b) ? 1 : 0),
-      0
-    );
+    const innings2LegalBalls =
+      innings2Balls.filter((b) => b.legalDelivery)
+        .length;
 
     const target = innings1Runs + 1;
 
     const innings2Completed =
       innings2Runs >= target ||
       innings2LegalBalls >=
-        match.oversPerInnings * 6
-//         || innings2Wickets >= 10;
+        match.oversPerInnings * 6;
 
     const shouldComplete =
       innings1LegalBalls > 0 &&
       innings2Completed;
 
-    if(match.status !== "COMPLETED_LOCKED")  
-    {
-      if (
+    if (
+      match.status !== "COMPLETED_LOCKED" &&
+      match.status !== "ABANDONED" &&
       shouldComplete &&
       match.status !== "COMPLETED"
     ) {
       await prisma.match.update({
         where: { id: match.id },
-
         data: {
-          status: "COMPLETED"
-        }
+          status: "COMPLETED",
+        },
       });
 
       match.status = "COMPLETED";
     }
-  }
   }
 
   const formatted = matches.map((m) => ({
@@ -156,7 +161,7 @@ const matches = await prisma.match.findMany({
     maxWicketsPerInnings: m.maxWicketsPerInnings,
     maxOversPerBowler: m.maxOversPerBowler,
     status: m.status,
-    createdAt: m.createdAt
+    createdAt: m.createdAt,
   }));
 
   return NextResponse.json(formatted);
