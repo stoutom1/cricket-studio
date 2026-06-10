@@ -3,6 +3,7 @@ import { NextResponse } from "next/server";
 import { getServerSession } from "next-auth";
 import { authOptions } from "@/lib/auth";
 import { isSuperAdmin } from "@/lib/superAdmin";
+export const dynamic = "force-dynamic";
 
 export async function GET() {
   const session =
