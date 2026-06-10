@@ -4,6 +4,7 @@ import React, { useEffect, useMemo, useState } from "react";
 import { EXTRA_TYPES, getPlayerName, WICKET_TYPES } from "@/lib/scoring";
 import "@/app/globals.css";
 import { useRouter } from "next/navigation";
+import { Analytics } from "@vercel/analytics/next"
 
 function Card({
   title,
@@ -2128,6 +2129,7 @@ const selectedMatch = matches.find(
 return (
   <>
 <div className="dashboard-tabs">
+<Analytics />
   {permissionsLoading ? (
     <span>Loading permissions...</span>
   ) : (
