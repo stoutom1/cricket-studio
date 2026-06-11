@@ -1,5 +1,9 @@
 {
-  "appId": "cric4all.app",
-  "appName": "Cric4all",
-  "webDir": "public"
+  "appId": "com.cric4all.app",
+  "appName": "Cric4All",
+  "webDir": "public",
+  "server": {
+    "url": "https://cric4all.app",
+    "cleartext": false
+  }
 }

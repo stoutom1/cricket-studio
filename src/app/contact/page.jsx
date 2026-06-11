@@ -48,7 +48,6 @@ export default function ContactPage() {
           style={{
             marginTop: 24,
             padding: 16,
-            background: "#f8fafc",
             borderRadius: 8
           }}
         >
