@@ -5669,36 +5669,41 @@ KL Rahul`}
     gap: 10,
     marginBottom: 20
   }} className="retired-hurt-options">
-  <button
-    type="button"
-    className="btn btn-outline"
-onClick={() => {
-  setRetiredPlayerType("STRIKER");
-  setReplacementPlayerId("");
-  setShowRetiredHurtModal(true);
-}}
-  >
-    Retire Striker (
-    {scoreboard?.currentState?.strikerName}
-    )
-  </button>
+<button
+  type="button"
+  className={`btn ${
+    retiredPlayerType === "STRIKER"
+      ? "btn-selected"
+      : "btn-outline"
+  }`}
+  onClick={() => {
+    setRetiredPlayerType("STRIKER");
+    setReplacementPlayerId("");
+    setShowRetiredHurtModal(true);
+  }}
+>
+  ✅ Retire Striker (
+  {scoreboard?.currentState?.strikerName}
+  )
+</button>
 
-  <button
-    type="button"
-    className="btn btn-outline"
-onClick={() => {
-  setRetiredPlayerType("NON_STRIKER");
-  setReplacementPlayerId("");
-  setShowRetiredHurtModal(true);
-}}
-  >
-    Retire Non-Striker (
-    {
-      scoreboard?.currentState
-        ?.nonStrikerName
-    }
-    )
-  </button>
+<button
+  type="button"
+  className={`btn ${
+    retiredPlayerType === "NON_STRIKER"
+      ? "btn-selected"
+      : "btn-outline"
+  }`}
+  onClick={() => {
+    setRetiredPlayerType("NON_STRIKER");
+    setReplacementPlayerId("");
+    setShowRetiredHurtModal(true);
+  }}
+>
+  ✅ Retire Non-Striker (
+  {scoreboard?.currentState?.nonStrikerName}
+  )
+</button>
 </div>
 
       <label>
