@@ -4,6 +4,7 @@ import { getServerSession } from "next-auth";
 import prisma from "@/lib/prisma";
 import { authOptions } from "@/lib/auth";
 import { ROLES } from "@/lib/roles";
+import { sendWelcomeEmail } from "@/lib/email";
 
 export async function POST(request, { params }) {
   try {
@@ -90,7 +91,11 @@ await prisma.leagueMember.create({
   }
 });
 }
-
+ /*   await sendWelcomeEmail(
+      user.email,
+      user.name || "User",
+    );
+*/
     return NextResponse.json({
       success: true,
       leagueId: invite.league.id,

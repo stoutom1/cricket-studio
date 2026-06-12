@@ -40,6 +40,7 @@ if (!name || !email || !password) {
       }
     });
 */
+try{
   const hashedPassword =
       await bcrypt.hash(password, 10);
   const user =
@@ -50,6 +51,22 @@ if (!name || !email || !password) {
         password: hashedPassword
       }
     });
+    
+    console.log("Inside Complete");
 
+    await sendWelcomeEmail(
+      user.email,
+      user.name || "User",
+    );
+      } catch (error) {
+    console.error(error);
+
+    return NextResponse.json(
+      {
+        error: "Something went wrong"
+      },
+      { status: 500 }
+    );
+  }
   return NextResponse.json(user);
 }
