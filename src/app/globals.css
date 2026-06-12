@@ -1423,9 +1423,9 @@ body {
   max-width: 420px;
   max-height: 85vh;
   overflow-y: auto;
-  background: #ffffff;
-  color: #111827;
-  border-radius: 16px;
+  background: #1e293b;   /* same as your app cards */
+  color: #f8fafc;
+  border: 1px solid rgba(255,255,255,0.08);
   padding: 16px;
 }
 
