@@ -30,6 +30,9 @@ export async function GET() {
     );
   }
 const superAdmin = isSuperAdmin(session);
+console.log("SESSION USER:", session?.user);
+console.log("DATABASE_URL exists:", !!process.env.DATABASE_URL);
+console.log("superAdmin", superAdmin);
 
 const leagues = await prisma.league.findMany({
   where: superAdmin
