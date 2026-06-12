@@ -1410,31 +1410,23 @@ body {
 .bowler-modal-backdrop {
   position: fixed;
   inset: 0;
+  background: rgba(0, 0, 0, 0.55);
   z-index: 9999;
-
-  background: rgba(0, 0, 0, 0.65);
-  backdrop-filter: blur(100px);
-
   display: flex;
   align-items: center;
   justify-content: center;
-
   padding: 16px;
 }
 
 .bowler-modal {
   width: 100%;
-  max-width: 520px;
-
-  background: var(--surface);
-  border: 1px solid var(--border);
-
-  border-radius: 24px;
-
-  overflow: hidden;
-
-  box-shadow:
-    0 20px 60px rgba(0,0,0,.25);
+  max-width: 420px;
+  max-height: 85vh;
+  overflow-y: auto;
+  background: #ffffff;
+  color: #111827;
+  border-radius: 16px;
+  padding: 16px;
 }
 
 .bowler-modal-header {
@@ -1469,32 +1461,30 @@ body {
 }
 
 .bowler-list {
-  max-height: 320px;
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+  margin-top: 12px;
+  max-height: 45vh;
   overflow-y: auto;
-
-  padding: 0 16px;
 }
 
 .bowler-option {
   width: 100%;
-
   display: flex;
   align-items: center;
   gap: 12px;
-
-  padding: 14px;
-
-  margin-bottom: 10px;
-
-  border-radius: 14px;
-
-  border: 1px solid var(--border);
-
-  background: transparent;
-
+  padding: 12px;
+  border: 1px solid #e5e7eb;
+  border-radius: 12px;
+  background: #ffffff;
+  color: #111827;
+  text-align: left;
   cursor: pointer;
+}
 
-  transition: all .15s ease;
+.bowler-option * {
+  color: #111827;
 }
 
 .bowler-option:hover {
@@ -1502,25 +1492,25 @@ body {
 }
 
 .bowler-option.selected {
-  border-color: var(--primary);
-  background: rgba(37,99,235,.12);
+  border-color: #16a34a;
+  background: #ecfdf5;
 }
 
 .bowler-avatar {
-  width: 42px;
-  height: 42px;
-
-  display: flex;
-  align-items: center;
-  justify-content: center;
-
-  border-radius: 50%;
-
-  background: rgba(37,99,235,.12);
+  flex-shrink: 0;
+  font-size: 20px;
 }
 
 .bowler-name {
+  display: block;
+  color: #111827;
+  font-size: 15px;
   font-weight: 600;
+  line-height: 1.3;
+  visibility: visible;
+  opacity: 1;
+  white-space: normal;
+  overflow: visible;
 }
 
 .bowler-modal-actions {
