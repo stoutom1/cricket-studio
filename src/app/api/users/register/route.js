@@ -15,15 +15,39 @@ export async function POST(request) {
     );
   }
 
-  const body =
-    await request.json();
+    const body =
+      await request.json();
+    
+    const { name, email, password } = body;
 
-  const user =
+    //console.log("password:", password);
+    
+if (!name || !email || !password) {
+      return NextResponse.json(
+        {
+          error: "All fields are required"
+        },
+        { status: 400 }
+      );
+    }  
+
+  /*const user =
     await prisma.user.create({
       data: {
         email: session.user.email,
         name: body.name,
         password: "oauth-user"
+      }
+    });
+*/
+  const hashedPassword =
+      await bcrypt.hash(password, 10);
+  const user =
+    await prisma.user.create({
+      data: {
+        email: session.user.email,
+        name: body.name,
+        password: hashedPassword
       }
     });
 
