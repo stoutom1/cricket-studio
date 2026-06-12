@@ -2905,7 +2905,17 @@ return (
                     placeholder="Optional note"
                   />
                 </label>
-              </form>
+</form>
+
+<div className="sheet-actions">
+  <button
+    type="button"
+    className="btn btn-outline"
+    onClick={() => setShowAdvancedSheet(false)}
+  >
+    Done
+  </button>
+</div>
 
       </div>
     </div>
@@ -3107,7 +3117,7 @@ return (
                     placeholder="Optional note"
                   />
                 </label>
-              </form>
+</form>
               </CollapsibleSection>
 )
     )}

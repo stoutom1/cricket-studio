@@ -2124,3 +2124,17 @@ body {
     flex: 1;
   }
 }
+.sheet-actions {
+  position: sticky;
+  bottom: 0;
+  display: flex;
+  gap: 12px;
+  justify-content: space-between;
+  padding: 14px 0 4px;
+  background: inherit;
+  z-index: 10;
+}
+
+.sheet-actions .btn {
+  flex: 1;
+}
