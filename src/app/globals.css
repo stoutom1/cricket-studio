@@ -2138,3 +2138,22 @@ body {
 .sheet-actions .btn {
   flex: 1;
 }
+.scoring-btn {
+  transition: transform 0.08s ease,
+              opacity 0.08s ease,
+              box-shadow 0.08s ease;
+  -webkit-tap-highlight-color: transparent;
+}
+
+.scoring-btn:active {
+  transform: scale(0.96);
+  opacity: 0.85;
+}
+
+.scoring-btn:focus {
+  outline: none;
+}
+
+.scoring-btn:focus-visible {
+  outline: 2px solid rgba(255,255,255,0.4);
+}
