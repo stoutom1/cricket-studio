@@ -140,10 +140,10 @@ export default function DashboardClient() {
   const [matchDetail, setMatchDetail] = useState(null);
   const [scoreboard, setScoreboard] = useState(null);
   const [stats, setStats] = useState({ batting: [], bowling: [] });
-
+  const [runOutRuns, setRunOutRuns] = useState(0);
   const [message, setMessage] = useState("");
   const [error, setError] = useState("");
-const [showAdvancedSheet, setShowAdvancedSheet] = useState(false);
+  const [showAdvancedSheet, setShowAdvancedSheet] = useState(false);
   const [showRetiredHurtModal, setShowRetiredHurtModal] = useState(false);
   const [retiredHurtBatterId, setRetiredHurtBatterId] = useState("");
   const [retiredPlayerType, setRetiredPlayerType] = useState("STRIKER");
@@ -1655,68 +1655,102 @@ function quickExtra(type) {
   setShowExtrasModal(true);
 }
 async function confirmExtra(extraRuns) {
-  
-  try{
-  await submitBall({
-    matchId: Number(selectedMatchId),
-    inningsNo: Number(ballForm.inningsNo),
-    strikerId: Number(ballForm.strikerId),
-    nonStrikerId: Number(ballForm.nonStrikerId),
-    bowlerId: Number(ballForm.bowlerId),
-    extraType: ballForm.extraType,
-    runsOffBat: Number(ballForm.runsOffBat),
-    extras: extraRuns,
+  try {
+    let runsOffBat = Number(ballForm.runsOffBat || 0);
+    let extras = Number(ballForm.extras || 0);
+    let displayLabel = String(extraRuns);
 
-    isWicket:
-      ballForm.isWicket &&
-      ballForm.wicketType !== "RETIRED_HURT"
-        ? 1
-        : 0,
+    // Handles WD, WD+1, WD+2...
+    if (typeof extraRuns === "string" && extraRuns.startsWith("WD")) {
+      const additionalRuns = extraRuns.includes("+")
+        ? Number(extraRuns.split("+")[1])
+        : 0;
 
-    wicketType:
-      ballForm.isWicket
+      runsOffBat = 0;
+      extras = 1 + additionalRuns; // WD+1 = 2 extras
+    }
+
+    // Handles NB, NB+1, NB+2...
+    else if (typeof extraRuns === "string" && extraRuns.startsWith("NB")) {
+      const batRuns = extraRuns.includes("+")
+        ? Number(extraRuns.split("+")[1])
+        : 0;
+
+      runsOffBat = batRuns; // NB+1 = 1 to striker
+      extras = 1;           // only no-ball penalty as extra
+    }
+
+    // Bye / Leg bye
+    else {
+      runsOffBat = 0;
+      extras = Number(extraRuns);
+    }
+
+    await submitBall({
+      matchId: Number(selectedMatchId),
+      inningsNo: Number(ballForm.inningsNo),
+      strikerId: Number(ballForm.strikerId),
+      nonStrikerId: Number(ballForm.nonStrikerId),
+      bowlerId: Number(ballForm.bowlerId),
+      extraType: ballForm.extraType,
+      runsOffBat,
+      extras,
+
+      isWicket:
+        ballForm.isWicket &&
+        ballForm.wicketType !== "RETIRED_HURT"
+          ? 1
+          : 0,
+
+      wicketType: ballForm.isWicket
         ? ballForm.wicketType
         : "NONE",
 
-    dismissedPlayerId:
-      ballForm.isWicket
+      dismissedPlayerId: ballForm.isWicket
         ? Number(
             ballForm.dismissedPlayerId ||
-            ballForm.strikerId
+              ballForm.strikerId
           )
         : null,
 
-    newBatterId:
-      ballForm.isWicket &&
-      ballForm.newBatterId
-        ? Number(ballForm.newBatterId)
-        : null,
+      newBatterId:
+        ballForm.isWicket && ballForm.newBatterId
+          ? Number(ballForm.newBatterId)
+          : null,
 
-    note: ballForm.note,
+      note: ballForm.note,
+      matchStatus: scoreboard?.match?.status
+    });
+if (
+  ballForm.extraType === "NOBALL" &&
+  runsOffBat % 2 === 1
+) {
+  setBallForm((prev) => ({
+    ...prev,
+    strikerId: prev.nonStrikerId,
+    nonStrikerId: prev.strikerId
+  }));
+}
+    const extraLabels = {
+      WIDE: "Wide",
+      NOBALL: "No Ball",
+      BYE: "Bye",
+      LEGBYE: "Leg Bye",
+      NONE: "Extra"
+    };
 
-    matchStatus:
-      scoreboard?.match?.status
-  });
+    const extraLabel =
+      extraLabels[ballForm.extraType] ||
+      ballForm.extraType;
 
-const extraLabels = {
-  WIDE: "Wide",
-  NO_BALL: "No Ball",
-  BYE: "Bye",
-  LEG_BYE: "Leg Bye",
-  NONE: "Extra"
-};
+    setMessage(
+      `✅ ${displayLabel} added as ${extraLabel}.`
+    );
 
-const extraLabel =
-  extraLabels[ballForm.extraType] ||
-  ballForm.extraType;
-
-  setMessage(`✅ ${extraRuns} ${extraRuns === 1 ? "run" : "runs"} added as ${extraLabel}.`);
-  setMessage(`📢 ${extraLabel}! ${extraRuns} ${extraRuns === 1 ? "run" : "runs"} awarded to the batting side.`);
-  setShowExtrasModal(false); 
-
+    setShowExtrasModal(false);
   } catch (err) {
     setError(err.message);
-  }  
+  }
 }
 async function quickWicket(type = "BOWLED") {
   setBallForm((prev) => ({
@@ -1730,15 +1764,37 @@ async function quickWicket(type = "BOWLED") {
 }
 async function confirmWicket() {
   try {
+    const isRunOut = ballForm.wicketType === "RUN_OUT";
+
+    if (isRunOut && runOutRuns === null) {
+      setError("Please select runs completed before the run out.");
+      return;
+    }
+
+    const dismissedPlayerId = isRunOut
+      ? Number(ballForm.dismissedPlayerId)
+      : Number(ballForm.dismissedPlayerId || ballForm.strikerId);
+
+    if (isRunOut && !dismissedPlayerId) {
+      setError("Please select who is out.");
+      return;
+    }
+
+    if (!ballForm.newBatterId) {
+      setError("Please select a new batter.");
+      return;
+    }
+
+    const runsOffBat = isRunOut
+      ? Number(runOutRuns)
+      : Number(ballForm.runsOffBat || 0);
 
     const dismissedPlayer = battingTeam?.players?.find(
-      p => Number(p.id) === Number(
-        ballForm.dismissedPlayerId || ballForm.strikerId
-      )
+      (p) => Number(p.id) === dismissedPlayerId
     );
 
     const newBatter = battingTeam?.players?.find(
-      p => Number(p.id) === Number(ballForm.newBatterId)
+      (p) => Number(p.id) === Number(ballForm.newBatterId)
     );
 
     await submitBall({
@@ -1747,9 +1803,9 @@ async function confirmWicket() {
       strikerId: Number(ballForm.strikerId),
       nonStrikerId: Number(ballForm.nonStrikerId),
       bowlerId: Number(ballForm.bowlerId),
-      extraType: ballForm.extraType,
-      runsOffBat: Number(ballForm.runsOffBat),
-      extras: Number(ballForm.extras),
+      extraType: "NONE",
+      runsOffBat,
+      extras: 0,
 
       isWicket:
         ballForm.isWicket &&
@@ -1757,44 +1813,27 @@ async function confirmWicket() {
           ? 1
           : 0,
 
-      wicketType:
-        ballForm.isWicket
-          ? ballForm.wicketType
-          : "NONE",
+      wicketType: ballForm.isWicket
+        ? ballForm.wicketType
+        : "NONE",
 
-      dismissedPlayerId:
-        ballForm.isWicket
-          ? Number(
-              ballForm.dismissedPlayerId ||
-              ballForm.strikerId
-            )
-          : null,
-
-      newBatterId:
-        ballForm.isWicket &&
-        ballForm.newBatterId
-          ? Number(ballForm.newBatterId)
-          : null,
+      dismissedPlayerId,
+      newBatterId: Number(ballForm.newBatterId),
 
       note: ballForm.note,
-
-      matchStatus:
-        scoreboard?.match?.status
+      matchStatus: scoreboard?.match?.status
     });
 
-    const wicketTypeLabel =
-      ballForm.wicketType
-        ?.replaceAll("_", " ")
-        ?.toLowerCase();
-
     setMessage(
-      `🚨 ${dismissedPlayer?.name || "Batter"} is out (${wicketTypeLabel}). ${
-        newBatter?.name || "New batter"
-      } comes to the crease.`
+      `🚨 ${dismissedPlayer?.name || "Batter"} is out (${ballForm.wicketType
+        ?.replaceAll("_", " ")
+        ?.toLowerCase()}). ${runsOffBat} ${
+        runsOffBat === 1 ? "run" : "runs"
+      } awarded. ${newBatter?.name || "New batter"} comes in.`
     );
 
     setShowWicketModal(false);
-
+    setRunOutRuns(null);
   } catch (err) {
     setError(err.message);
   }
@@ -5437,37 +5476,115 @@ KL Rahul`}
 {showWicketModal && (
   <div className="modal-backdrop">
     <div className="modal-card">
-<h3>🏏 Wicket Details</h3>
+      <h3>🏏 Wicket Details</h3>
 
-<p
-  style={{
-    opacity: 0.75,
-    marginBottom: 16
-  }}
->
-  Select the dismissal type and replacement batter.
-</p>
+      <p style={{ opacity: 0.75, marginBottom: 16 }}>
+        Select the dismissal type, runs completed, player out, and replacement batter.
+      </p>
 
       <label>
         <span>Wicket Type</span>
         <select
           value={ballForm.wicketType || ""}
+ onChange={(e) => {
+  const wicketType = e.target.value;
+
+  setBallForm((prev) => ({
+    ...prev,
+    wicketType,
+    dismissedPlayerId:
+      wicketType === "RUN_OUT"
+        ? ""
+        : prev.strikerId
+  }));
+
+  if (wicketType !== "RUN_OUT") {
+    setRunOutRuns(null);
+  }
+}}
+        >
+          {WICKET_TYPES.filter((x) => x !== "NONE").map((type) => (
+            <option key={type} value={type}>
+              {type}
+            </option>
+          ))}
+        </select>
+      </label>
+
+{ballForm.wicketType === "RUN_OUT" && (
+  <div className="runout-panel">
+    <h4>🏏 RUN OUT</h4>
+
+    <p className="muted">
+      How many runs were completed before the run out?
+    </p>
+
+    <div className="runout-runs-grid">
+      {[0, 1, 2, 3, 4, 5, 6].map((runs) => (
+        <button
+          key={runs}
+          type="button"
+          className={`btn ${
+            runOutRuns === runs ? "btn-selected" : "btn-outline"
+          }`}
+          onClick={() => {
+            setRunOutRuns(runs);
+
+            setBallForm((prev) => ({
+              ...prev,
+              runsOffBat: runs,
+              extras: 0,
+              extraType: "NONE"
+            }));
+          }}
+        >
+          {runs}
+        </button>
+      ))}
+    </div>
+
+    {runOutRuns !== null && (
+      <div className="runout-summary">
+        <strong>
+          Selected: Run Out + {runOutRuns}{" "}
+          {runOutRuns === 1 ? "run" : "runs"}
+        </strong>
+
+        <div>
+          {runOutRuns % 2 === 1
+            ? "ℹ️ Batters crossed. Strike will rotate."
+            : "ℹ️ Strike remains unchanged."}
+        </div>
+      </div>
+    )}
+
+    {runOutRuns !== null && (
+      <label style={{ marginTop: 12 }}>
+        <span>Who is out?</span>
+
+        <select
+          value={ballForm.dismissedPlayerId || ""}
           onChange={(e) =>
             setBallForm((prev) => ({
               ...prev,
-              wicketType: e.target.value
+              dismissedPlayerId: e.target.value
             }))
           }
         >
-          {WICKET_TYPES
-            .filter((x) => x !== "NONE")
-            .map((type) => (
-              <option key={type} value={type}>
-                {type}
-              </option>
-            ))}
+          <option value="">Select player out</option>
+
+          <option value={ballForm.strikerId}>
+            Striker ({scoreboard?.currentState?.strikerName})
+          </option>
+
+          <option value={ballForm.nonStrikerId}>
+            Non-Striker ({scoreboard?.currentState?.nonStrikerName})
+          </option>
         </select>
       </label>
+    )}
+  </div>
+)}
 
       <label style={{ marginTop: 12 }}>
         <span>New Batter</span>
@@ -5481,9 +5598,7 @@ KL Rahul`}
             }))
           }
         >
-          <option value="">
-            Select New Batter
-          </option>
+          <option value="">Select New Batter</option>
 
           {availableNewBatters.map((p) => (
             <option key={p.id} value={p.id}>
@@ -5493,30 +5608,36 @@ KL Rahul`}
         </select>
       </label>
 
-<div className="modal-actions">
-  <button
-    className="btn btn-outline"
-    onClick={() => {
-      setShowWicketModal(false);
+      <div className="modal-actions">
+        <button
+          type="button"
+          className="btn btn-outline"
+          onClick={() => {
+            setShowWicketModal(false);
+            setRunOutRuns(null);
 
-      setBallForm((prev) => ({
-        ...prev,
-        isWicket: false,
-        wicketType: "NONE",
-        newBatterId: ""
-      }));
-    }}
-  >
-    Cancel
-  </button>
+            setBallForm((prev) => ({
+              ...prev,
+              isWicket: false,
+              wicketType: "NONE",
+              dismissedPlayerId: "",
+              newBatterId: "",
+              runsOffBat: 0,
+              extras: 0
+            }));
+          }}
+        >
+          Cancel
+        </button>
 
-  <button
-    className="btn"
-    onClick={() => confirmWicket()}
-  >
-    Confirm Wicket
-  </button>
-</div>
+        <button
+          type="button"
+          className="btn"
+          onClick={() => confirmWicket()}
+        >
+          Confirm Wicket
+        </button>
+      </div>
     </div>
   </div>
 )}
@@ -5530,26 +5651,28 @@ KL Rahul`}
         {selectedExtraType === "LEGBYE" && "Leg Bye"}
       </h3>
 
-<p
-  style={{
-    opacity: 0.75
-  }}
->
-  Select total extra runs
-</p>
+      <p style={{ opacity: 0.75 }}>
+        Select total extra runs
+      </p>
 
- <div
-  style={{
-    display: "grid",
-    gridTemplateColumns:
-      "repeat(auto-fit,minmax(60px,1fr))",
-    gap: 10,
-    marginTop: 16
-  }}
->
-        {[1, 2, 3, 4, 5, 6, 7].map((runs) => (
+      <div
+        style={{
+          display: "grid",
+          gridTemplateColumns: "repeat(auto-fit,minmax(60px,1fr))",
+          gap: 10,
+          marginTop: 16
+        }}
+      >
+        {(
+          selectedExtraType === "WIDE"
+            ? ["WD", "WD+1", "WD+2", "WD+3", "WD+4", "WD+5", "WD+6"]
+            : selectedExtraType === "NOBALL"
+              ? ["NB", "NB+1", "NB+2", "NB+3", "NB+4", "NB+5", "NB+6"]
+              : [1, 2, 3, 4, 5, 6, 7]
+        ).map((runs) => (
           <button
             key={runs}
+            type="button"
             className="btn"
             onClick={() => confirmExtra(runs)}
           >
@@ -5558,16 +5681,15 @@ KL Rahul`}
         ))}
       </div>
 
-<div className="modal-actions">
-  <button
-    className="btn btn-outline"
-    onClick={() =>
-      setShowExtrasModal(false)
-    }
-  >
-    Cancel
-  </button>
-</div>
+      <div className="modal-actions">
+        <button
+          type="button"
+          className="btn btn-outline"
+          onClick={() => setShowExtrasModal(false)}
+        >
+          Cancel
+        </button>
+      </div>
     </div>
   </div>
 )}

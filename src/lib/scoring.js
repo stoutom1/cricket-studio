@@ -201,8 +201,11 @@ function runsCompleted(ball) {
     case "WIDE":
       return Math.max(0, ball.extras - 1);
 
-    case "NOBALL":
-      return Math.max(0, ball.extras - 1);
+case "NOBALL":
+  return (
+    Number(ball.runsOffBat || 0) +
+    Math.max(0, Number(ball.extras || 0) - 1)
+  );
 
     case "BYE":
     case "LEGBYE":
@@ -248,11 +251,11 @@ if (ball.isWicket) {
 
   if (
     !ball.dismissedPlayerId ||
-    ball.dismissedPlayerId === ball.strikerId
+    Number(ball.dismissedPlayerId) === Number(ball.strikerId)
   ) {
     strikerId = ball.newBatterId;
   } else if (
-    ball.dismissedPlayerId === ball.nonStrikerId
+    Number(ball.dismissedPlayerId) === Number(ball.nonStrikerId)
   ) {
     nonStrikerId = ball.newBatterId;
   }
