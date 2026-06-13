@@ -151,6 +151,7 @@ export default function DashboardClient() {
   const [selectedPlayers, setSelectedPlayers] = useState({});
   const [showBowlerModal, setShowBowlerModal] = useState(false);
   const [pendingBallData, setPendingBallData] = useState(null);
+  const [mustChangeBowler, setMustChangeBowler] = useState(false);
   const [teamForm, setTeamForm] = useState({leagueId: "", name: ""});
 const [playerForm, setPlayerForm] = useState({
   names: "",
@@ -1521,97 +1522,107 @@ async function handleAddBall(e) {
   });
 }
 async function submitBall(data) {
-  
-      setMessage("");
-    setError("");
-if (scoreboard?.match?.status === "COMPLETED") {
-  return NextResponse.json(
-    {
-      error:
-        "Match has already ended"
-    },
-    {
-      status: 400
-    }
-  );
+  setMessage("");
+  setError("");
+
+  if (scoreboard?.match?.status === "COMPLETED") {
+    setError("Match has already ended");
+    return;
+  }
+
+  if (!selectedMatchId) {
+    setError("Please select a match");
+    return;
+  }
+
+  try {
+    await api("/api/balls", {
+      method: "POST",
+      body: JSON.stringify(data)
+    });
+
+    const wasLegalLastBallOfOver =
+      data.extraType !== "WIDE" &&
+      data.extraType !== "NOBALL" &&
+      Number(scoreboard?.currentState?.nextBallInOver) === 6;
+
+    setBallForm((prev) => ({
+      ...prev,
+      extraType: "NONE",
+      runsOffBat: "0",
+      extras: "0",
+      isWicket: false,
+      wicketType: "NONE",
+      newBatterId: "",
+      dismissedPlayerId: "",
+      note: "",
+      dismissal: ""
+    }));
+
+    setShowAdvancedSheet(false);
+
+    await Promise.all([
+      loadSelectedMatch(selectedMatchId),
+      loadMatches()
+    ]);
+
+if (wasLegalLastBallOfOver) {
+  setPendingBallData(null);
+  setMustChangeBowler(true);
+  setShowBowlerModal(true);
 }
-    if (!selectedMatchId) {
-      setError("Please select a match");
+  } catch (err) {
+    if (
+      err.message?.includes(
+        "BOWLER_CONSECUTIVE_OVER"
+      )
+    ) {
+      setPendingBallData({
+        matchId: Number(selectedMatchId),
+        inningsNo: Number(data.inningsNo),
+        strikerId: Number(data.strikerId),
+        nonStrikerId: Number(data.nonStrikerId),
+        bowlerId: Number(data.bowlerId),
+        extraType: data.extraType,
+        runsOffBat: Number(data.runsOffBat),
+        extras: Number(data.extras),
+
+        isWicket:
+          data.isWicket &&
+          data.wicketType !== "RETIRED_HURT"
+            ? 1
+            : 0,
+
+        wicketType: data.isWicket
+          ? data.wicketType
+          : "NONE",
+
+        dismissedPlayerId:
+          data.isWicket
+            ? Number(
+                data.dismissedPlayerId ||
+                  data.strikerId
+              )
+            : null,
+
+        newBatterId:
+          data.newBatterId
+            ? Number(data.newBatterId)
+            : null,
+
+        note: data.note,
+        matchStatus: data.matchStatus
+      });
+
+      setShowBowlerModal(true);
       return;
     }
-   try {
-    await api("/api/balls", {
-    method: "POST",
-    body: JSON.stringify(data)
-  });
-      //setMessage("✅ Ball added");
 
-      setBallForm((prev) => ({
-        ...prev,
-        extraType: "NONE",
-        runsOffBat: "0",
-        extras: "0",
-        isWicket: false,
-        wicketType: "NONE",
-        newBatterId: "",
-        note: "",
-        dismissal: ""
-      }));
-      setShowAdvancedSheet(false);
-  await Promise.all([
-  loadSelectedMatch(selectedMatchId),
-  loadMatches()
-]);
-   }catch (err) {
-
-
-if (
-  err.message?.includes(
-    "BOWLER_CONSECUTIVE_OVER"
-  )
-) {
-  setPendingBallData({
-    matchId: Number(selectedMatchId),
-    inningsNo: Number(ballForm.inningsNo),
-    strikerId: Number(ballForm.strikerId),
-    nonStrikerId: Number(ballForm.nonStrikerId),
-    bowlerId: Number(ballForm.bowlerId),
-    extraType: ballForm.extraType,
-    runsOffBat: Number(ballForm.runsOffBat),
-    extras: Number(ballForm.extras),
-    isWicket:
-      ballForm.isWicket &&
-      ballForm.wicketType !==
-        "RETIRED_HURT"
-        ? 1
-        : 0,
-    wicketType: ballForm.isWicket
-      ? ballForm.wicketType
-      : "NONE",
-    dismissedPlayerId:
-      ballForm.isWicket
-        ? Number(
-            ballForm.dismissedPlayerId ||
-            ballForm.strikerId
-          )
-        : null,
-    newBatterId:
-      ballForm.newBatterId
-        ? Number(
-            ballForm.newBatterId
-          )
-        : null,
-    note: ballForm.note
-  });
-
-  setShowBowlerModal(true);
-  return;
+    setError(err.message);
+    showToast("error", err.message);
+  }
 }
 
-  setError(err.message);
-  showToast(error, err.message);
-}
-}
 async function selectLeague(league) {
   setActiveLeagueId(league.id);
   setSelectedMatchId("");
@@ -1764,6 +1775,13 @@ async function quickWicket(type = "BOWLED") {
 }
 async function confirmWicket() {
   try {
+    if (mustChangeBowler) {
+  setError("Please select a new bowler before scoring the next ball.");
+  setShowWicketModal(false);
+  setShowRetiredHurtModal(false);
+  setShowBowlerModal(true);
+  return;
+}
     const isRunOut = ballForm.wicketType === "RUN_OUT";
 
     if (isRunOut && runOutRuns === null) {
@@ -1960,6 +1978,14 @@ async function handleMatchSelect(matchId) {
 }
 
 async function handleRetiredHurtSubmit() {
+  if (mustChangeBowler) {
+  setError("Please select a new bowler before scoring the next ball.");
+  setShowRetiredHurtModal(false);
+  setShowWicketModal(false);
+  setShowBowlerModal(true);
+  return;
+}
+
   if (!replacementPlayerId) {
     setError("Select replacement batter");
     return;
@@ -2135,6 +2161,17 @@ async function handleAbandonMatch() {
 }
 async function confirmBowlerChange() {
   try {
+
+     if (!ballForm.bowlerId) {
+    setError("Please select a new bowler.");
+    return;
+  }
+
+    setBallForm((prev) => ({
+    ...prev,
+    bowlerId: Number(prev.bowlerId)
+  }));
+
     const payload = {
       ...pendingBallData,
       bowlerId: Number(ballForm.bowlerId)
@@ -2150,8 +2187,10 @@ await api(
   }
 );
 
-    setShowBowlerModal(false);
-    setPendingBallData(null);
+setMustChangeBowler(false);
+  setShowBowlerModal(false);
+  setPendingBallData(null);
+
 
     await loadSelectedMatch(
       selectedMatchId
@@ -2162,6 +2201,18 @@ await api(
     setError(err.message);
   }
 }
+
+function handleCloseBowlerModal() {
+  if (mustChangeBowler) {
+    setError("Please select a new bowler before scoring the next ball.");
+    setShowBowlerModal(true);
+    return;
+  }
+
+  setShowBowlerModal(false);
+  setPendingBallData(null);
+}
+
 function triggerQuickAction(actionKey, callback) {
   setActiveQuickAction(actionKey);
 
@@ -5222,10 +5273,7 @@ return (
 
         <button
           className="icon-btn"
-          onClick={() => {
-            setShowBowlerModal(false);
-            setPendingBallData(null);
-          }}
+          onClick={handleCloseBowlerModal}
         >
           ✕
         </button>
@@ -5274,15 +5322,12 @@ return (
       </div>
 
       <div className="bowler-modal-actions">
-        <button
-          className="btn btn-outline"
-          onClick={() => {
-            setShowBowlerModal(false);
-            setPendingBallData(null);
-          }}
-        >
-          Cancel
-        </button>
+<button
+  className="btn btn-outline"
+  onClick={handleCloseBowlerModal}
+>
+  {mustChangeBowler ? "Select Bowler Required" : "Cancel"}
+</button>
 
         <button
           className="btn"
@@ -5552,8 +5597,8 @@ KL Rahul`}
 
         <div>
           {runOutRuns % 2 === 1
-            ? "ℹ️ Batters crossed. Strike will rotate."
-            : "ℹ️ Strike remains unchanged."}
+            ? "ℹ️ Batters crossed. Strike will rotate. If not, please click on the SWAP button after current action is completed."
+            : "ℹ️ Strike remains unchanged. If not, please click on the SWAP button after current action is completed."}
         </div>
       </div>
     )}
