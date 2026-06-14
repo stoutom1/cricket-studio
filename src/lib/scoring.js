@@ -148,11 +148,17 @@ export function ballShortText(ball) {
   }
 
   switch (ball.extraType) {
-    case "WIDE":
-      return `${label} Wd${ball.extras === 0 ? "" : "(" +ball.extras+")"}`;
+case "WIDE": {
+  const wideRuns = Math.max(0, Number(ball.extras || 0) - 1);
+  return wideRuns > 0
+    ? `${label} Wd+${wideRuns}`
+    : `${label} Wd`;
+}
 
-    case "NOBALL":
-      return `${label} Nb${ball.extras === 0 ? "" : "(" +ball.extras+")"}`;
+case "NOBALL":
+  return ball.runsOffBat > 0
+    ? `${label} Nb+${ball.runsOffBat}`
+    : `${label} Nb`;
 
     case "BYE":
       return `${label} B${ball.extras}`;

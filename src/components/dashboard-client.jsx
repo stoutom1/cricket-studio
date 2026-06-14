@@ -2161,40 +2161,60 @@ async function handleAbandonMatch() {
 }
 async function confirmBowlerChange() {
   try {
+    const newBowlerId = Number(ballForm.bowlerId);
 
-     if (!ballForm.bowlerId) {
-    setError("Please select a new bowler.");
-    return;
-  }
+    if (!newBowlerId) {
+      setError("Please select a new bowler.");
+      return;
+    }
+
+    const selectedBowler = bowlingTeam?.players?.find(
+      (p) => Number(p.id) === newBowlerId
+    );
+
+    await api(`/api/matches/${selectedMatchId}/change-bowler`, {
+      method: "POST",
+      body: JSON.stringify({
+        bowlerId: newBowlerId
+      })
+    });
 
     setBallForm((prev) => ({
-    ...prev,
-    bowlerId: Number(prev.bowlerId)
-  }));
+      ...prev,
+      bowlerId: newBowlerId
+    }));
 
-    const payload = {
-      ...pendingBallData,
-      bowlerId: Number(ballForm.bowlerId)
-    };
+    setMustChangeBowler(false);
+    setShowBowlerModal(false);
+    setPendingBallData(null);
 
-await api(
-  `/api/matches/${selectedMatchId}/change-bowler`,
-  {
-    method: "POST",
-    body: JSON.stringify({
-      bowlerId: Number(ballForm.bowlerId)
-    })
+    await loadSelectedMatch(selectedMatchId);
+    await loadMatches();
+
+    // IMPORTANT: do this AFTER loadSelectedMatch
+    const selectedBowlerStats = stats?.bowling?.find(
+  (row) => Number(row.playerId) === newBowlerId
+  );
+  
+ setScoreboard((prev) => ({
+  ...prev,
+  currentState: {
+    ...prev?.currentState,
+    bowlerId: newBowlerId,
+    bowlerName: selectedBowler?.name || "Selected Bowler",
+    bowlerStats: selectedBowlerStats
+      ? {
+          runs: selectedBowlerStats.runs || 0,
+          wickets: selectedBowlerStats.wickets || 0,
+          overs: selectedBowlerStats.overs || "0.0"
+        }
+      : {
+          runs: 0,
+          wickets: 0,
+          overs: "0.0"
+        }
   }
-);
-
-setMustChangeBowler(false);
-  setShowBowlerModal(false);
-  setPendingBallData(null);
-
-
-    await loadSelectedMatch(
-      selectedMatchId
-    );
+}));
 
     setMessage("✅ Bowler change successful");
   } catch (err) {
