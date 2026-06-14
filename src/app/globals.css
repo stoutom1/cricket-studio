@@ -2467,3 +2467,35 @@ body {
   flex-direction: column;
   gap: 2px;
 }
+.scoring-subtabs {
+  display: grid;
+  grid-template-columns: repeat(3, 1fr);
+  gap: 8px;
+  position: sticky;
+  top: 0;
+  z-index: 20;
+  padding: 8px 0;
+  background: var(--page-bg, #0f172a);
+}
+
+.scoring-subtabs button {
+  border: 1px solid rgba(255,255,255,0.12);
+  background: rgba(255,255,255,0.06);
+  color: inherit;
+  border-radius: 999px;
+  padding: 10px 8px;
+  font-weight: 700;
+  cursor: pointer;
+}
+
+.scoring-subtabs button.active {
+  background: #16a34a;
+  border-color: #22c55e;
+  color: #fff;
+}
+
+@media (max-width: 700px) {
+  .scoring-subtabs {
+    grid-template-columns: 1fr;
+  }
+}

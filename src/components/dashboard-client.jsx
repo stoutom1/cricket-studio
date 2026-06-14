@@ -179,6 +179,7 @@ const [matchesSubTab, setMatchesSubTab] = useState("ACTIVE");
 const [me, setMe] = useState(null);
 const [permissionsLoading, setPermissionsLoading] = useState(false);
 const scheduledMatches = matches.filter((m) => normalizeStatus(m.status) === "SCHEDULED");
+const [scoringSubTab, setScoringSubTab] = useState("ADVANCED");
 const isSuperAdmin =
   session?.user?.email ===
   "surprisecricket11@gmail.com";
@@ -208,7 +209,11 @@ const activeLeague =
       league.id ===
       Number(activeLeagueId)
   ) || null;
-
+useEffect(() => {
+  if (activeTab === "scoring") {
+    setScoringSubTab("ADVANCED");
+  }
+}, [activeTab]);
 useEffect(() => {
   if (!activeLeagueId) return;
 
@@ -2490,7 +2495,35 @@ return (
     </>
   )}
 </Card>
+{selectedMatchId && (
+  <div className="scoring-subtabs">
+    <button
+      type="button"
+      className={scoringSubTab === "ADVANCED" ? "active" : ""}
+      onClick={() => setScoringSubTab("ADVANCED")}
+    >
+      🎯 Advanced Scoring
+    </button>
+
+    <button
+      type="button"
+      className={scoringSubTab === "SCOREBOARD" ? "active" : ""}
+      onClick={() => setScoringSubTab("SCOREBOARD")}
+    >
+      🏏 Live Scoreboard
+    </button>
+
+    <button
+      type="button"
+      className={scoringSubTab === "STATS" ? "active" : ""}
+      onClick={() => setScoringSubTab("STATS")}
+    >
+      📊 Player Statistics
+    </button>
+  </div>
+)}
     </div>
+          {selectedMatchId && scoringSubTab === "SCOREBOARD" && (
           <Card
             title="🏏 Live Scoreboard" defaultCollapsed={false}
             right={
@@ -2651,7 +2684,8 @@ return (
             </div>
           )}
         </Card>
-
+          )}
+{selectedMatchId && scoringSubTab === "ADVANCED" && (          
 <Card
   className="scoring-console"
   title="🎯 Advanced Scoring"
@@ -3293,8 +3327,9 @@ return (
             </>
           )}
         </Card>
-
-        <Card title="📊 Player Statistics" defaultCollapsed={true}>
+)}
+        {selectedMatchId && scoringSubTab === "STATS" && (
+        <Card title="📊 Player Statistics" defaultCollapsed={false}>
           {!stats ? (
             <p className="muted">Select a match.</p>
           ) : (
@@ -3375,6 +3410,7 @@ return (
             </div>
           )}
         </Card>
+        )}        
 {permissions?.canScoreMatch && (
 <div>
   <div className="match-action-bar">
