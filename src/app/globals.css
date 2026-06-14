@@ -2623,3 +2623,50 @@ body {
     font-size: 12px;
   }
 }
+.tabs,
+.nav-tabs,
+.dashboard-tabs,
+.main-tabs {
+  display: flex;
+  gap: 8px;
+  overflow-x: auto;
+  overflow-y: hidden;
+  white-space: nowrap;
+  max-width: 100%;
+  padding-bottom: 6px;
+  -webkit-overflow-scrolling: touch;
+  scrollbar-width: none;
+}
+
+.tabs::-webkit-scrollbar,
+.nav-tabs::-webkit-scrollbar,
+.dashboard-tabs::-webkit-scrollbar,
+.main-tabs::-webkit-scrollbar {
+  display: none;
+}
+
+.tabs button,
+.nav-tabs button,
+.dashboard-tabs button,
+.main-tabs button {
+  flex: 0 0 auto;
+}
+.scoring-layout {
+  display: flex;
+  flex-direction: column;
+  gap: 16px;
+  width: 100%;
+  max-width: 100%;
+}
+
+.scoring-layout > * {
+  width: 100%;
+}
+
+.scoring-layout .card,
+.scoring-layout .scoring-console,
+.scoring-layout .scoreboard-wrap,
+.scoring-layout .stats-grid {
+  width: 100%;
+  max-width: 100%;
+}

@@ -162,7 +162,7 @@ const [preferencesLoaded, setPreferencesLoaded] = useState(false);
 const [searchTerm, setSearchTerm] = useState("");
 const [showFullScoreboard, setShowFullScoreboard] = useState(false);
 const [roleFilter, setRoleFilter] = useState("ALL");
-
+const [pointsTable, setPointsTable] = useState([]);
 const [showPlayerModal, setShowPlayerModal] = useState(false);
 const [showStartMatchModal, setShowStartMatchModal] = useState(false);
 const [startMatchData, setStartMatchData] = useState({matchId: "",battingFirstTeamId: ""});
@@ -283,7 +283,11 @@ useEffect(() => {
   //loadPermissions(selectedMember);
   loadMyLeaguePermissions(activeLeagueId);
 }, [activeLeagueId, isSuperAdmin]);
-
+useEffect(() => {
+  if (activeLeagueId) {
+    loadPointsTable(activeLeagueId);
+  }
+}, [activeLeagueId]);
 async function loadPermissions(member) {
   try {
     if (!activeLeague?.id || !member?.id) {
@@ -872,6 +876,12 @@ function showToast(type, text) {
   setTimeout(() => {
     setToast(null);
   }, 3000);
+}
+async function loadPointsTable(leagueId) {
+  if (!leagueId) return;
+
+  const data = await api(`/api/leagues/${leagueId}/points-table`);
+  setPointsTable(data);
 }
   async function handleShareMatch() {
       if (!scoreboard) return;
@@ -2404,6 +2414,18 @@ return (
           🏏 Scoring
         </button>
       )}
+        <button
+          className={`dashboard-tab ${
+            activeTab === "Points"
+              ? "active"
+              : ""
+          }`}
+          onClick={() =>
+            setActiveTab("Points")
+          }
+        >
+          🥇 Points
+        </button>
 
       {permissions?.canViewStats && (
         <button
@@ -2431,7 +2453,7 @@ return (
             setActiveTab("permissions")
           }
         >
-          🔐 Permissions
+          🔐 Access
         </button>
       )}
 
@@ -2457,9 +2479,7 @@ return (
 </div>
 
   {activeTab === "scoring" && (
-  <div className="page-grid">
-    <div className="grid-main">
-          <div className="grid-side">
+<div className="scoring-layout">
 <Card
   title="🏏 Match Center"
   defaultCollapsed={false}
@@ -2475,6 +2495,12 @@ return (
     ) : null
   }
 >
+          <div className="active-league-banner">
+          Active League:{" "}
+          <strong>
+    {leagues.find((l) => Number(l.id) === Number(activeLeagueId))?.name || "No league selected"}
+          </strong>
+        </div>
   {matches.length === 0 ? (
     <div className="match-empty-state">
       No matches yet. Create or start a match first.
@@ -2550,10 +2576,9 @@ return (
           </button>
         </div>
       )}
-    </div>
+</div>
   )}
 </Card>
-    </div>
           {selectedMatchId && scoringSubTab === "SCOREBOARD" && (
           <Card
             title="🏏 Live Scoreboard" defaultCollapsed={false}
@@ -3470,7 +3495,6 @@ return (
 </div>
 )}
     </div>
-  </div>
 )}
 {activeTab === "matches" && (
   <div className="matches-page">
@@ -3547,7 +3571,7 @@ return (
         <div className="active-league-banner">
           Active League:{" "}
           <strong>
-            {leagues.find((l) => l.id === activeLeagueId)?.name}
+    {leagues.find((l) => Number(l.id) === Number(activeLeagueId))?.name || "No league selected"}
           </strong>
         </div>
 
@@ -3962,9 +3986,7 @@ return (
   </div>
 )}
 {activeTab === "management" && (
-  <div className="page-grid">
-
-    <div className="grid-main">
+ <div className="scoring-layout">
 
       <Card title="🏏 League Management">
 
@@ -4313,9 +4335,8 @@ return (
     </div>
   )}
 
-</div></Card>
-
-    </div>
+</div>
+</Card>
     <div className="grid-side">
         {(message || error) && (
           <Card title="ℹ️ Notifications" defaultCollapsed={false}>
@@ -4324,7 +4345,52 @@ return (
           </Card>
         )}
     </div>
-  </div>
+</div>    
+)}
+{activeTab === "Points" && (
+  <Card title="🏆 Points" defaultCollapsed={false}>
+         <div className="active-league-banner">
+          Active League:{" "}
+  <strong>
+    {leagues.find((l) => Number(l.id) === Number(activeLeagueId))?.name || "No league selected"}
+  </strong>
+        </div>  
+  {pointsTable.length === 0 ? (
+    <p className="muted">No points table available yet.</p>
+  ) : (
+    <div className="table-scroll">
+      <table className="score-table">
+        <thead>
+          <tr>
+            <th>Team</th>
+            <th>P</th>
+            <th>W</th>
+            <th>L</th>
+            <th>T</th>
+            <th>NR</th>
+            <th>Pts</th>
+            <th>NRR</th>
+          </tr>
+        </thead>
+
+        <tbody>
+          {pointsTable.map((row) => (
+            <tr key={row.teamId}>
+              <td>{row.teamName}</td>
+              <td>{row.played}</td>
+              <td>{row.won}</td>
+              <td>{row.lost}</td>
+              <td>{row.tied}</td>
+              <td>{row.noResult}</td>
+              <td><strong>{row.points}</strong></td>
+              <td>{row.nrr}</td>
+            </tr>
+          ))}
+        </tbody>
+      </table>
+    </div>
+  )}
+</Card>
 )}
 {activeTab === "stats" && (
   <Card title="📈 Statistics">
@@ -4349,8 +4415,7 @@ return (
   </Card>
 )}
 {activeTab === "permissions" && (
-  <div className="page-grid">
-    <div className="grid-main">
+ <div className="scoring-layout">
 
       {/* MEMBER LIST */}
 <Card title="👥 League Permissions">
@@ -4930,7 +4995,6 @@ return (
   </Card>
 )}
     </div>
-  </div>
 )}
 {activeTab === "help" && (
   <Card title="❓ Cricket Studio Help Center">
