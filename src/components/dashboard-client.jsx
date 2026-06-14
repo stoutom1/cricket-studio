@@ -2931,32 +2931,55 @@ return (
   </Card>
 )}
 {selectedMatchId && scoringSubTab === "COMMENTARY" && (
-  <Card title="📝 Ball-by-Ball Commentary" defaultCollapsed={false}>
+  <Card title="🎙️ Live Match Commentary" defaultCollapsed={false}>
     {!scoreboard ? (
       <p className="muted">Select a match to view commentary.</p>
     ) : !scoreboard.commentary?.length ? (
-      <p className="muted">No commentary yet.</p>
+      <div className="commentary-empty">
+        📝 No commentary yet. Start scoring to build the live timeline.
+      </div>
     ) : (
-      <div className="commentary-feed">
-       {scoreboard.commentary.map((section, sectionIndex) => (
-  <div
-    key={`innings-${section.inningsNo}-${sectionIndex}`}
-    className="commentary-innings-section"
-  >
+      <div className="commentary-feed pretty-commentary">
+        {scoreboard.commentary.map((section, sectionIndex) => (
+          <div
+            key={`innings-${section.inningsNo}-${sectionIndex}`}
+            className="commentary-innings-section"
+          >
             <div className="commentary-innings-title">
-              🏏 {section.title}
+              <span>🏏</span>
+              <strong>{section.title}</strong>
             </div>
 
- {section.items.map((item, itemIndex) => (
-  <div
-    key={`commentary-${section.inningsNo}-${item.id ?? itemIndex}`}
-    className={`commentary-item ${
-      item.type === "OVER_SUMMARY" ? "over-summary-item" : ""
-    }`}
-  >
-                <div className="commentary-ball">
-                  {item.over}
-                </div>
+            {section.items.map((item, itemIndex) => (
+              <div
+                key={`commentary-${section.inningsNo}-${item.id ?? itemIndex}`}
+                className={`commentary-item pretty-commentary-item ${
+                  item.type === "OVER_SUMMARY" ? "over-summary-item" : ""
+                }`}
+              >
+<div
+  className={`commentary-ball ${
+    item.type === "OVER_SUMMARY"
+      ? "summary-pill"
+      : item.text?.includes("WICKET")
+        ? "wicket-pill"
+        : item.text?.includes("FOUR")
+          ? "four-pill"
+          : item.text?.includes("SIX")
+            ? "six-pill"
+            : ""
+  }`}
+>
+  {item.type === "OVER_SUMMARY"
+    ? "END"
+    : item.text?.includes("WICKET")
+      ? "W"
+      : item.text?.includes("FOUR")
+        ? "4"
+        : item.text?.includes("SIX")
+          ? "6"
+          : item.over}
+</div>
 
                 <div className="commentary-body">
                   <div className="commentary-main">
@@ -2966,20 +2989,21 @@ return (
                   <div className="commentary-meta">
                     {item.score}
                   </div>
-                      {item.type === "BALL" && (
-      <div className="commentary-mini-score">
-        <span>{item.strikerSummary}</span>
-        <span>{item.nonStrikerSummary}</span>
-        <span>{item.bowlerSummary}</span>
-      </div>
-    )}
 
-    {item.type === "OVER_SUMMARY" && (
-      <div className="commentary-over-summary">
-        <strong>{item.score}</strong>
-        <span>{item.bowlerSummary}</span>
-      </div>
-    )}
+                  {item.type === "BALL" && (
+                    <div className="commentary-mini-score">
+                      <span>🏏 {item.strikerSummary}</span>
+                      <span>🏃 {item.nonStrikerSummary}</span>
+                      <span>🎯 {item.bowlerSummary}</span>
+                    </div>
+                  )}
+
+                  {item.type === "OVER_SUMMARY" && (
+                    <div className="commentary-over-summary">
+                      <strong>{item.score}</strong>
+                      <span>🎯 {item.bowlerSummary}</span>
+                    </div>
+                  )}
                 </div>
               </div>
             ))}
