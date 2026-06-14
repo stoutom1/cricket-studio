@@ -2494,8 +2494,32 @@ body {
   color: #fff;
 }
 
-@media (max-width: 700px) {
-  .scoring-subtabs {
-    grid-template-columns: 1fr;
-  }
+.scoring-subtabs {
+  display: flex;
+  gap: 8px;
+  overflow-x: auto;
+  white-space: nowrap;
+  position: sticky;
+  top: 0;
+  z-index: 20;
+  padding: 8px 0;
+  background: var(--page-bg, #0f172a);
+  -webkit-overflow-scrolling: touch;
+}
+
+.scoring-subtabs button {
+  flex: 0 0 auto;
+  border: 1px solid rgba(255,255,255,0.12);
+  background: rgba(255,255,255,0.06);
+  color: inherit;
+  border-radius: 999px;
+  padding: 10px 12px;
+  font-weight: 700;
+  cursor: pointer;
+}
+
+.scoring-subtabs button.active {
+  background: #16a34a;
+  border-color: #22c55e;
+  color: #fff;
 }

@@ -2502,7 +2502,7 @@ return (
       className={scoringSubTab === "ADVANCED" ? "active" : ""}
       onClick={() => setScoringSubTab("ADVANCED")}
     >
-      🎯 Advanced Scoring
+      🎯 Scoring
     </button>
 
     <button
@@ -2510,7 +2510,7 @@ return (
       className={scoringSubTab === "SCOREBOARD" ? "active" : ""}
       onClick={() => setScoringSubTab("SCOREBOARD")}
     >
-      🏏 Live Scoreboard
+      🏏 Scoreboard
     </button>
 
     <button
@@ -2518,7 +2518,7 @@ return (
       className={scoringSubTab === "STATS" ? "active" : ""}
       onClick={() => setScoringSubTab("STATS")}
     >
-      📊 Player Statistics
+      📊 Stats
     </button>
   </div>
 )}
@@ -3329,7 +3329,7 @@ return (
         </Card>
 )}
         {selectedMatchId && scoringSubTab === "STATS" && (
-        <Card title="📊 Player Statistics" defaultCollapsed={false}>
+        <Card title="📊 Stats" defaultCollapsed={false}>
           {!stats ? (
             <p className="muted">Select a match.</p>
           ) : (
