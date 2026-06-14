@@ -576,9 +576,9 @@ const rankingConfig = {
     value: (r) => `${r.sixes} sixes`
   },
   bestAllRounders: {
-    label: "All-rounders",
+    label: "Top Performers",
     icon: "⭐",
-    title: "Best All-Rounders",
+    title: "Top Performers",
     value: (r) => `${r.allRounderPoints} pts`
   }
 };
@@ -4818,144 +4818,121 @@ return (
       </Card>
     ) : (
       <>
-        {statsSubTab === "BATTING" && (
-          <Card title="🏏 Batting Records">
-            {!leagueStats?.batting?.length ? (
-              <p className="muted">No batting stats yet.</p>
-            ) : (
-              <div className="table-scroll">
-                <table className="score-table">
-                  <thead>
-                    <tr>
-                      <th>Player</th>
-                      <th>Team</th>
-                      <th>M</th>
-                      <th>Inn</th>
-                      <th>Runs</th>
-                      <th>Balls</th>
-                      <th>Avg</th>
-                      <th>SR</th>
-                      <th>4s</th>
-                      <th>6s</th>
-                      <th>HS</th>                    
-                    </tr>
-                  </thead>
+{statsSubTab === "BATTING" && (
+  <Card title="🏏 Batting Records">
+    {!leagueStats?.batting?.length ? (
+      <p className="muted">No batting stats yet.</p>
+    ) : (
+      <div className="pretty-stats-list">
+        {leagueStats.batting.map((row, idx) => (
+          <div
+            key={`league-bat-${row.playerId ?? row.playerName}-${idx}`}
+            className="pretty-stat-card"
+          >
+            <div className="pretty-stat-rank">#{idx + 1}</div>
 
-                  <tbody>
-                    {leagueStats.batting.map((row, idx) => (
-  <tr
-    key={`league-bat-${row.playerId ?? row.playerName}-${idx}`}
-  >
-                        <td>{row.playerName}</td>
-                        <td>{row.teamName}</td>
-                        <td>{row.matches}</td>
-                        <td>{row.battingInnings}</td>
-                        <td>{row.runs}</td>
-                        <td>{row.balls}</td>
-                        <td>{row.average}</td>
-                        <td>{row.strikeRate}</td>
-                        <td>{row.fours}</td>
-                        <td>{row.sixes}</td>
-                        <td>{row.highestScore}</td>
-                      </tr>
-                    ))}
-                  </tbody>
-                </table>
-              </div>
-            )}
-          </Card>
-        )}
+            <div className="pretty-stat-main">
+              <strong>{row.playerName}</strong>
+              <small>{row.teamName}</small>
+            </div>
 
-        {statsSubTab === "BOWLING" && (
-          <Card title="🎯 Bowling Records">
-            {!leagueStats?.bowling?.length ? (
-              <p className="muted">No bowling stats yet.</p>
-            ) : (
-              <div className="table-scroll">
-                <table className="score-table">
-                  <thead>
-                    <tr>
-                      <th>Player</th>
-                      <th>Team</th>
-                      <th>M</th>
-                      <th>Overs</th>
-                      <th>Runs</th>
-                      <th>Wkts</th>
-                      <th>Eco</th>
-                      <th>Avg</th>
-                      <th>SR</th>
-                      <th>Dots</th>
-                      <th>Best</th>
-                    </tr>
-                  </thead>
+            <div className="pretty-stat-highlight">
+              <strong>{row.runs}</strong>
+              <small>Runs</small>
+            </div>
 
-                  <tbody>
-  {leagueStats.bowling.map((row, idx) => (
-  <tr
-    key={`league-bowl-${row.playerId ?? row.playerName}-${idx}`}
-  >
-                        <td>{row.playerName}</td>
-                        <td>{row.teamName}</td>
-                        <td>{row.matches}</td>
-                        <td>{row.bowlingOvers}</td>
-                        <td>{row.bowlingRuns}</td>
-                        <td>{row.wickets}</td>
-                        <td>{row.economy}</td>
-                        <td>{row.bowlingAverage}</td>
-                        <td>{row.bowlingStrikeRate}</td>
-                        <td>{row.dots}</td>
-                        <td>{row.bestBowling}</td>
-                      </tr>
-                    ))}
-                  </tbody>
-                </table>
-              </div>
-            )}
-          </Card>
-        )}
+            <div className="pretty-stat-grid">
+              <span>M {row.matches}</span>
+              <span>Inn {row.battingInnings}</span>
+              <span>B {row.balls}</span>
+              <span>Avg {row.average}</span>
+              <span>SR {row.strikeRate}</span>
+              <span>4s {row.fours}</span>
+              <span>6s {row.sixes}</span>
+              <span>HS {row.highestScore}</span>
+            </div>
+          </div>
+        ))}
+      </div>
+    )}
+  </Card>
+)}
 
-        {statsSubTab === "FIELDING" && (
-          <Card title="🧤 Fielding Records">
-            {!leagueStats?.fielding?.length ? (
-              <p className="muted">No fielding stats yet.</p>
-            ) : (
-              <div className="table-scroll">
-                <table className="score-table">
-                  <thead>
-                    <tr>
-                      <th>Player</th>
-                      <th>Team</th>
-                      <th>Catches</th>
-                      <th>Run Outs</th>
-                      <th>Stumpings</th>
-                      <th>Assists</th>
-                      <th>Total</th>
-                    </tr>
-                  </thead>
+{statsSubTab === "BOWLING" && (
+  <Card title="🎯 Bowling Records">
+    {!leagueStats?.bowling?.length ? (
+      <p className="muted">No bowling stats yet.</p>
+    ) : (
+      <div className="pretty-stats-list">
+        {leagueStats.bowling.map((row, idx) => (
+          <div
+            key={`league-bowl-${row.playerId ?? row.playerName}-${idx}`}
+            className="pretty-stat-card"
+          >
+            <div className="pretty-stat-rank">#{idx + 1}</div>
 
-                  <tbody>
- {leagueStats.fielding.map((row, idx) => (
-  <tr
-    key={`league-field-${row.playerId ?? row.playerName}-${idx}`}
-  >
-                        <td>{row.playerName}</td>
-                        <td>{row.teamName}</td>
-                        <td>{row.catches}</td>
-                        <td>{row.runOuts}</td>
-                        <td>{row.stumpings}</td>
-                        <td>{row.assists}</td>
-                        <td>
-                          <strong>{row.fieldingTotal}</strong>
-                        </td>
-                      </tr>
-                    ))}
-                  </tbody>
-                </table>
-              </div>
-            )}
-          </Card>
-        )}
+            <div className="pretty-stat-main">
+              <strong>{row.playerName}</strong>
+              <small>{row.teamName}</small>
+            </div>
 
+            <div className="pretty-stat-highlight">
+              <strong>{row.wickets}</strong>
+              <small>Wkts</small>
+            </div>
+
+            <div className="pretty-stat-grid">
+              <span>M {row.matches}</span>
+              <span>O {row.bowlingOvers}</span>
+              <span>R {row.bowlingRuns}</span>
+              <span>Eco {row.economy}</span>
+              <span>Avg {row.bowlingAverage}</span>
+              <span>SR {row.bowlingStrikeRate}</span>
+              <span>Dots {row.dots}</span>
+              <span>Best {row.bestBowling}</span>
+            </div>
+          </div>
+        ))}
+      </div>
+    )}
+  </Card>
+)}
+
+{statsSubTab === "FIELDING" && (
+  <Card title="🧤 Fielding Records">
+    {!leagueStats?.fielding?.length ? (
+      <p className="muted">No fielding stats yet.</p>
+    ) : (
+      <div className="pretty-stats-list">
+        {leagueStats.fielding.map((row, idx) => (
+          <div
+            key={`league-field-${row.playerId ?? row.playerName}-${idx}`}
+            className="pretty-stat-card"
+          >
+            <div className="pretty-stat-rank">#{idx + 1}</div>
+
+            <div className="pretty-stat-main">
+              <strong>{row.playerName}</strong>
+              <small>{row.teamName}</small>
+            </div>
+
+            <div className="pretty-stat-highlight">
+              <strong>{row.fieldingTotal}</strong>
+              <small>Total</small>
+            </div>
+
+            <div className="pretty-stat-grid">
+              <span>Catches {row.catches}</span>
+              <span>Run Outs {row.runOuts}</span>
+              <span>Stumpings {row.stumpings}</span>
+              <span>Assists {row.assists}</span>
+            </div>
+          </div>
+        ))}
+      </div>
+    )}
+  </Card>
+)}
 {statsSubTab === "RANKINGS" && (
   <Card title="🏆 Rankings Hub">
     <div className="ranking-category-tabs">

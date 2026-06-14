@@ -3127,3 +3127,93 @@ body {
   margin-top: 6px;
   font-size: 13px;
 }
+.pretty-stats-list {
+  display: grid;
+  gap: 12px;
+}
+
+.pretty-stat-card {
+  display: grid;
+  grid-template-columns: 46px minmax(160px, 1fr) 90px;
+  gap: 12px;
+  align-items: center;
+  padding: 14px;
+  border-radius: 16px;
+  background: rgba(255,255,255,0.06);
+  border: 1px solid rgba(255,255,255,0.08);
+}
+
+.pretty-stat-rank {
+  font-weight: 900;
+  opacity: 0.75;
+}
+
+.pretty-stat-main {
+  display: grid;
+  gap: 2px;
+  min-width: 0;
+}
+
+.pretty-stat-main strong {
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+.pretty-stat-main small {
+  opacity: 0.7;
+}
+
+.pretty-stat-highlight {
+  text-align: center;
+  padding: 8px;
+  border-radius: 14px;
+  background: rgba(22, 163, 74, 0.14);
+  border: 1px solid rgba(34, 197, 94, 0.22);
+}
+
+.pretty-stat-highlight strong {
+  display: block;
+  font-size: 20px;
+}
+
+.pretty-stat-highlight small {
+  opacity: 0.75;
+}
+
+.pretty-stat-grid {
+  grid-column: 2 / 4;
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px;
+}
+
+.pretty-stat-grid span {
+  padding: 5px 8px;
+  border-radius: 999px;
+  background: rgba(255,255,255,0.07);
+  font-size: 12px;
+  white-space: nowrap;
+}
+
+@media (max-width: 700px) {
+  .pretty-stat-card {
+    grid-template-columns: 38px 1fr 74px;
+    gap: 8px;
+    padding: 12px;
+  }
+
+  .pretty-stat-highlight strong {
+    font-size: 17px;
+  }
+
+  .pretty-stat-grid {
+    grid-column: 1 / -1;
+    gap: 6px;
+  }
+
+  .pretty-stat-grid span {
+    font-size: 11px;
+    padding: 4px 7px;
+  }
+}
