@@ -2624,6 +2624,15 @@ return (
             <span>🏏</span>
             <strong>Scoreboard</strong>
           </button>
+
+          <button
+  type="button"
+  className={scoringSubTab === "COMMENTARY" ? "active" : ""}
+  onClick={() => setScoringSubTab("COMMENTARY")}
+>
+  <span>📝</span>
+  <strong>Commentary</strong>
+</button>
         </div>
       )}
 </div>
@@ -2652,9 +2661,9 @@ return (
         </div>
 
         <div className="innings-score-cards">
-          {scoreboard.innings.map((inn) => (
-            <div
-              key={inn.number}
+          {scoreboard.innings.map((inn, idx) => (
+  <div
+    key={`innings-card-${inn.number ?? idx}`}
               className={`innings-score-card ${
                 Number(scoreboard.currentInnings) === Number(inn.number)
                   ? "active"
@@ -2713,8 +2722,10 @@ return (
           </div>
         )}
 
-        {scoreboard.innings.map((inn) => (
-          <div key={inn.number} className="full-innings-card">
+        {scoreboard.innings.map((inn, idx) => (
+  <div
+    key={`innings-card-${inn.number ?? idx}`}
+   className="full-innings-card">
             <div className="innings-section-header">
               <div>
                 <h3>
@@ -2745,7 +2756,9 @@ return (
                   <tbody>
                     {(inn.battingRows || inn.batting || []).length ? (
                       (inn.battingRows || inn.batting || []).map((row) => (
-                        <tr key={row.playerId}>
+   <tr
+  key={`bat-${inn.number}-${row.playerId}`}
+>
                           <td>
                             <strong>
                               {row.playerName}
@@ -2792,7 +2805,9 @@ return (
                   <tbody>
                     {(inn.bowlingRows || inn.bowling || []).length ? (
                       (inn.bowlingRows || inn.bowling || []).map((row) => (
-                        <tr key={row.playerId}>
+<tr
+  key={`bat-${inn.number}-${row.playerId}`}
+>
                           <td>
                             <strong>{row.playerName}</strong>
                           </td>
@@ -2821,8 +2836,11 @@ return (
                 <p className="muted">No wickets yet.</p>
               ) : (
                 <div className="fow-list">
-                  {inn.fallOfWickets.map((w, idx) => (
-                    <div key={idx} className="fow-chip">
+ {inn.fallOfWickets.map((w, idx) => (
+  <div
+    key={`fow-${inn.number}-${w.wicketNumber}-${w.over}-${idx}`}
+    className="fow-chip"
+  >
                       <strong>
                         {w.score}-{w.wicketNumber}
                       </strong>
@@ -2850,8 +2868,10 @@ return (
                     </thead>
 
                     <tbody>
-                      {inn.partnerships.map((p, idx) => (
-                        <tr key={idx}>
+ {inn.partnerships.map((p, idx) => (
+  <tr
+    key={`partnership-${inn.number}-${p.batter1}-${p.batter2}-${idx}`}
+  >
                           <td>
                             {p.batter1} & {p.batter2}
                           </td>
@@ -2877,14 +2897,74 @@ return (
             {scoreboard.recentBalls.length === 0 ? (
               <span className="muted">No deliveries yet</span>
             ) : (
-              scoreboard.recentBalls.map((item) => (
-                <span key={item.id} className="ball-timeline-chip">
+scoreboard.recentBalls.map((item, idx) => (
+  <span
+    key={`recent-${item.id ?? item.label}-${idx}`}
+    className="ball-timeline-chip"
+  >
                   {item.label}
                 </span>
               ))
             )}
           </div>
         </CollapsibleSection>
+      </div>
+    )}
+  </Card>
+)}
+{selectedMatchId && scoringSubTab === "COMMENTARY" && (
+  <Card title="📝 Ball-by-Ball Commentary" defaultCollapsed={false}>
+    {!scoreboard ? (
+      <p className="muted">Select a match to view commentary.</p>
+    ) : !scoreboard.commentary?.length ? (
+      <p className="muted">No commentary yet.</p>
+    ) : (
+      <div className="commentary-feed">
+       {scoreboard.commentary.map((section, sectionIndex) => (
+  <div
+    key={`innings-${section.inningsNo}-${sectionIndex}`}
+    className="commentary-innings-section"
+  >
+            <div className="commentary-innings-title">
+              🏏 {section.title}
+            </div>
+
+            {section.items.map((item, itemIndex) => (
+      <div
+        key={`commentary-${section.inningsNo}-${item.id ?? itemIndex}`}
+        className="commentary-item"
+      >
+                <div className="commentary-ball">
+                  {item.over}
+                </div>
+
+                <div className="commentary-body">
+                  <div className="commentary-main">
+                    {item.text}
+                  </div>
+
+                  <div className="commentary-meta">
+                    {item.score}
+                  </div>
+                      {item.type === "BALL" && (
+      <div className="commentary-mini-score">
+        <span>{item.strikerSummary}</span>
+        <span>{item.nonStrikerSummary}</span>
+        <span>{item.bowlerSummary}</span>
+      </div>
+    )}
+
+    {item.type === "OVER_SUMMARY" && (
+      <div className="commentary-over-summary">
+        <strong>{item.score}</strong>
+        <span>{item.bowlerSummary}</span>
+      </div>
+    )}
+                </div>
+              </div>
+            ))}
+          </div>
+        ))}
       </div>
     )}
   </Card>
@@ -3668,7 +3748,9 @@ return (
 
                         <tbody>
                           {players.map((row) => (
-                            <tr key={row.playerId}>
+  <tr
+  key={`bat-${inn.number}-${row.playerId}`}
+>
                               <td>{row.playerName}</td>
                               <td>{row.runs}</td>
                               <td>{row.balls}</td>
@@ -3704,7 +3786,9 @@ return (
 
                               <tbody>
                                 {players.map((row) => (
-                                  <tr key={row.playerId}>
+   <tr
+  key={`bat-${inn.number}-${row.playerId}`}
+>
                                     <td>{row.playerName}</td>
                                     <td>{row.overs}</td>
                                     <td>{row.runs}</td>
@@ -4734,13 +4818,14 @@ return (
                       <th>4s</th>
                       <th>6s</th>
                       <th>HS</th>
-                      <th>Out</th>
                     </tr>
                   </thead>
 
                   <tbody>
                     {leagueStats.batting.map((row) => (
-                      <tr key={row.playerId}>
+ <tr
+  key={`bat-${inn.number}-${row.playerId}`}
+>
                         <td>{row.playerName}</td>
                         <td>{row.teamName}</td>
                         <td>{row.matches}</td>
@@ -4787,7 +4872,9 @@ return (
 
                   <tbody>
                     {leagueStats.bowling.map((row) => (
-                      <tr key={row.playerId}>
+  <tr
+  key={`bat-${inn.number}-${row.playerId}`}
+>
                         <td>{row.playerName}</td>
                         <td>{row.teamName}</td>
                         <td>{row.matches}</td>
@@ -4829,7 +4916,9 @@ return (
 
                   <tbody>
                     {leagueStats.fielding.map((row) => (
-                      <tr key={row.playerId}>
+   <tr
+  key={`bat-${inn.number}-${row.playerId}`}
+>
                         <td>{row.playerName}</td>
                         <td>{row.teamName}</td>
                         <td>{row.catches}</td>
@@ -4871,7 +4960,7 @@ return (
         <div className="ranking-hero">
           {selectedRanking.slice(0, 3).map((row, index) => (
             <div
-              key={row.playerId}
+    key={`bowl-${inn.number}-${row.playerId}`}
               className={`ranking-podium podium-${index + 1}`}
             >
               <div className="podium-rank">
@@ -4916,7 +5005,9 @@ return (
 
             <tbody>
               {selectedRanking.map((row, index) => (
-                <tr key={row.playerId}>
+  <tr
+  key={`bat-${inn.number}-${row.playerId}`}
+>
                   <td>
                     <strong>#{index + 1}</strong>
                   </td>

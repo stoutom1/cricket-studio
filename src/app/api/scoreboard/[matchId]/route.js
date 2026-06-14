@@ -89,6 +89,237 @@ const match = await prisma.match.findUnique({
     return NextResponse.json({ error: "Match not found" }, { status: 404 });
   }
 
+function formatBallOver(legalBallsBeforeThisBall, isLegalDelivery) {
+  const overNo = Math.floor(legalBallsBeforeThisBall / 6);
+  const ballNo = (legalBallsBeforeThisBall % 6) + 1;
+
+  if (!isLegalDelivery) {
+    return `${overNo}.${ballNo}`;
+  }
+
+  return `${overNo}.${ballNo}`;
+}
+
+function formatOversFromBalls(balls) {
+  const overs = Math.floor(Number(balls || 0) / 6);
+  const rem = Number(balls || 0) % 6;
+  return `${overs}.${rem}`;
+}
+
+function runsChargedToBowler(ball) {
+  if (
+    ball.extraType === "BYE" ||
+    ball.extraType === "LEGBYE"
+  ) {
+    return 0;
+  }
+
+  return (
+    Number(ball.runsOffBat || 0) +
+    Number(ball.extras || 0)
+  );
+}
+
+function wicketsForBowler(ball) {
+  if (!ball.isWicket) {
+    return 0;
+  }
+
+  if (
+    ball.wicketType === "RUN_OUT" ||
+    ball.wicketType === "RETIRED_OUT" ||
+    ball.wicketType === "RETIRED_HURT"
+  ) {
+    return 0;
+  }
+
+  if (ball.extraType === "NOBALL") {
+    return 0;
+  }
+
+  return 1;
+}
+
+function buildCommentary(match) {
+  const playerMap = new Map(
+    [
+      ...(match.teamA?.players || []),
+      ...(match.teamB?.players || [])
+    ].map((p) => [Number(p.id), p.name])
+  );
+
+  const batterStats = new Map();
+  const bowlerStats = new Map();
+
+  function getBatter(id) {
+    const key = Number(id);
+    if (!batterStats.has(key)) {
+      batterStats.set(key, {
+        runs: 0,
+        balls: 0
+      });
+    }
+    return batterStats.get(key);
+  }
+
+  function getBowler(id) {
+    const key = Number(id);
+    if (!bowlerStats.has(key)) {
+      bowlerStats.set(key, {
+        balls: 0,
+        runs: 0,
+        wickets: 0
+      });
+    }
+    return bowlerStats.get(key);
+  }
+
+  const inningsState = {
+    1: { runs: 0, wickets: 0, legalBalls: 0, items: [] },
+    2: { runs: 0, wickets: 0, legalBalls: 0, items: [] }
+  };
+
+  const ballsAsc = [...(match.balls || [])].sort(
+    (a, b) =>
+      Number(a.inningsNo) - Number(b.inningsNo) ||
+      Number(a.sequence) - Number(b.sequence)
+  );
+
+  for (const ball of ballsAsc) {
+    const inningsNo = Number(ball.inningsNo || 1);
+    const inn = inningsState[inningsNo];
+
+    const overNo = Math.floor(inn.legalBalls / 6);
+    const ballNo = (inn.legalBalls % 6) + 1;
+    const overLabel = `${overNo}.${ballNo}`;
+
+    const strikerName =
+      playerMap.get(Number(ball.strikerId)) || "Batter";
+
+    const nonStrikerName =
+      playerMap.get(Number(ball.nonStrikerId)) || "Non-striker";
+
+    const bowlerName =
+      playerMap.get(Number(ball.bowlerId)) || "Bowler";
+
+    const striker = getBatter(ball.strikerId);
+    const nonStriker = getBatter(ball.nonStrikerId);
+    const bowler = getBowler(ball.bowlerId);
+
+    const runsOffBat = Number(ball.runsOffBat || 0);
+    const totalRuns = Number(ball.totalRuns || 0);
+
+    inn.runs += totalRuns;
+
+    striker.runs += runsOffBat;
+
+    if (
+      ball.extraType !== "WIDE" &&
+      ball.extraType !== "NOBALL" &&
+      ball.wicketType !== "RETIRED_HURT"
+    ) {
+      striker.balls += 1;
+    }
+
+    bowler.runs += runsChargedToBowler(ball);
+
+    if (
+      ball.legalDelivery &&
+      ball.wicketType !== "RETIRED_HURT"
+    ) {
+      bowler.balls += 1;
+    }
+
+    if (wicketsForBowler(ball)) {
+      bowler.wickets += 1;
+    }
+
+    if (
+      ball.isWicket &&
+      ball.wicketType !== "RETIRED_HURT"
+    ) {
+      inn.wickets += 1;
+    }
+
+    let eventText = "";
+
+    if (ball.isWicket && ball.wicketType !== "NONE") {
+      const dismissed =
+        playerMap.get(Number(ball.dismissedPlayerId)) ||
+        strikerName;
+
+      eventText = `WICKET! ${dismissed} is out ${String(
+        ball.wicketType
+      )
+        .replaceAll("_", " ")
+        .toLowerCase()}.`;
+    } else if (ball.extraType === "WIDE") {
+      eventText = `${bowlerName} to ${strikerName}, wide. ${totalRuns} run(s).`;
+    } else if (ball.extraType === "NOBALL") {
+      eventText = `${bowlerName} to ${strikerName}, no-ball. ${totalRuns} run(s).`;
+    } else if (ball.extraType === "BYE") {
+      eventText = `${bowlerName} to ${strikerName}, bye. ${totalRuns} run(s).`;
+    } else if (ball.extraType === "LEGBYE") {
+      eventText = `${bowlerName} to ${strikerName}, leg bye. ${totalRuns} run(s).`;
+    } else if (runsOffBat === 4) {
+      eventText = `${bowlerName} to ${strikerName}, FOUR!`;
+    } else if (runsOffBat === 6) {
+      eventText = `${bowlerName} to ${strikerName}, SIX!`;
+    } else {
+      eventText = `${bowlerName} to ${strikerName}, ${runsOffBat} run(s).`;
+    }
+
+    inn.items.push({
+      id: ball.id,
+      type: "BALL",
+      inningsNo,
+      over: overLabel,
+      text: eventText,
+      score: `Innings ${inningsNo}: ${inn.runs}/${inn.wickets}`,
+      strikerSummary: `${strikerName}: ${striker.runs} (${striker.balls})`,
+      nonStrikerSummary: `${nonStrikerName}: ${nonStriker.runs} (${nonStriker.balls})`,
+      bowlerSummary: `${bowlerName}: ${bowler.wickets}/${bowler.runs} in ${formatOversFromBalls(
+        bowler.balls
+      )}`
+    });
+
+    if (ball.legalDelivery) {
+      inn.legalBalls += 1;
+
+      const isEndOfOver = inn.legalBalls % 6 === 0;
+
+      if (isEndOfOver) {
+        inn.items.push({
+          id: `over-${inningsNo}-${inn.legalBalls}`,
+          type: "OVER_SUMMARY",
+          inningsNo,
+          over: formatOversFromBalls(inn.legalBalls),
+          text: `End of over ${formatOversFromBalls(
+            inn.legalBalls
+          )}: ${inn.runs}/${inn.wickets}`,
+          score: `${strikerName}: ${striker.runs} (${striker.balls}) • ${nonStrikerName}: ${nonStriker.runs} (${nonStriker.balls})`,
+          bowlerSummary: `${bowlerName}: ${bowler.wickets}/${bowler.runs} in ${formatOversFromBalls(
+            bowler.balls
+          )}`
+        });
+      }
+    }
+  }
+
+  return [
+    {
+      inningsNo: 2,
+      title: "Innings 2",
+      items: inningsState[2].items.reverse()
+    },
+    {
+      inningsNo: 1,
+      title: "Innings 1",
+      items: inningsState[1].items.reverse()
+    }
+  ].filter((section) => section.items.length > 0);
+}
+
   const playerMap = new Map(
     [...match.teamA.players, ...match.teamB.players].map((p) => [p.id, p])
   );
@@ -296,7 +527,8 @@ innings: [
     remainingBalls,
     statusText
   },
-  recentBalls
+  recentBalls,
+  commentary: buildCommentary(match)
 };
 
 return NextResponse.json(response);
