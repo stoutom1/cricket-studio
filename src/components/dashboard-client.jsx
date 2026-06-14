@@ -2647,23 +2647,23 @@ return (
         <div className="pro-score-hero">
           <div>
             <h2>
-              {scoreboard.match.teamAName} vs {scoreboard.match.teamBName}
+              {scoreboard.match?.teamAName} vs {scoreboard.match?.teamBName}
             </h2>
 
             <p>
-              Batting first: {scoreboard.match.battingFirstTeamName} •{" "}
-              {scoreboard.match.oversPerInnings} overs • Powerplay:{" "}
-              {scoreboard.match.powerplayOversInnings}
+              Batting first: {scoreboard.match?.battingFirstTeamName} •{" "}
+              {scoreboard.match?.oversPerInnings} overs • Powerplay:{" "}
+              {scoreboard.match?.powerplayOversInnings}
             </p>
           </div>
 
-          <span className="pill">{scoreboard.match.status}</span>
+          <span className="pill">{scoreboard.match?.status}</span>
         </div>
 
         <div className="innings-score-cards">
-          {scoreboard.innings.map((inn, idx) => (
-  <div
-    key={`innings-card-${inn.number ?? idx}`}
+          {(scoreboard.innings || []).map((inn, idx) => (
+            <div
+              key={`innings-summary-${inn.number ?? idx}`}
               className={`innings-score-card ${
                 Number(scoreboard.currentInnings) === Number(inn.number)
                   ? "active"
@@ -2672,7 +2672,9 @@ return (
             >
               <div className="innings-card-top">
                 <span>Innings {inn.number}</span>
-                <strong>{inn.teamName}</strong>
+                <strong>
+                  {inn.teamName || inn.battingTeamName || inn.team || "Team"}
+                </strong>
               </div>
 
               <div className="innings-main-score">
@@ -2683,7 +2685,7 @@ return (
                 <span>Overs: {inn.oversDisplay}</span>
                 <span>RR: {inn.runRate}</span>
                 <span>
-                  PP: {inn.powerplay.runs}/{inn.powerplay.wickets}
+                  PP: {inn.powerplay?.runs ?? 0}/{inn.powerplay?.wickets ?? 0}
                 </span>
               </div>
             </div>
@@ -2722,15 +2724,18 @@ return (
           </div>
         )}
 
-        {scoreboard.innings.map((inn, idx) => (
-  <div
-    key={`innings-card-${inn.number ?? idx}`}
-   className="full-innings-card">
+        {(scoreboard.innings || []).map((inn, innIdx) => (
+          <div
+            key={`innings-detail-${inn.number ?? innIdx}`}
+            className="full-innings-card"
+          >
             <div className="innings-section-header">
               <div>
                 <h3>
-  Innings {inn.number}: {inn.teamName || inn.battingTeamName || inn.team || "Team"}
+                  Innings {inn.number}:{" "}
+                  {inn.teamName || inn.battingTeamName || inn.team || "Team"}
                 </h3>
+
                 <p className="muted small">
                   {inn.runs}/{inn.wickets} in {inn.oversDisplay} overs • RR{" "}
                   {inn.runRate}
@@ -2755,26 +2760,31 @@ return (
 
                   <tbody>
                     {(inn.battingRows || inn.batting || []).length ? (
-                      (inn.battingRows || inn.batting || []).map((row) => (
-   <tr
-  key={`bat-${inn.number}-${row.playerId}`}
->
-                          <td>
-                            <strong>
-                              {row.playerName}
-                              {scoreboard.currentState?.strikerId === row.playerId
-                                ? " *"
-                                : ""}
-                            </strong>
-                          </td>
-                          <td>{row.outs ? row.dismissal : "not out"}</td>
-                          <td>{row.runs}</td>
-                          <td>{row.balls}</td>
-                          <td>{row.fours}</td>
-                          <td>{row.sixes}</td>
-                          <td>{row.strikeRate}</td>
-                        </tr>
-                      ))
+                      (inn.battingRows || inn.batting || []).map(
+                        (row, rowIdx) => (
+                          <tr
+                            key={`bat-${inn.number ?? innIdx}-${
+                              row.playerId ?? rowIdx
+                            }-${rowIdx}`}
+                          >
+                            <td>
+                              <strong>
+                                {row.playerName}
+                                {Number(scoreboard.currentState?.strikerId) ===
+                                Number(row.playerId)
+                                  ? " *"
+                                  : ""}
+                              </strong>
+                            </td>
+                            <td>{row.outs ? row.dismissal : "not out"}</td>
+                            <td>{row.runs}</td>
+                            <td>{row.balls}</td>
+                            <td>{row.fours}</td>
+                            <td>{row.sixes}</td>
+                            <td>{row.strikeRate}</td>
+                          </tr>
+                        )
+                      )
                     ) : (
                       <tr>
                         <td colSpan="7" className="muted">
@@ -2804,21 +2814,25 @@ return (
 
                   <tbody>
                     {(inn.bowlingRows || inn.bowling || []).length ? (
-                      (inn.bowlingRows || inn.bowling || []).map((row) => (
-<tr
-  key={`bat-${inn.number}-${row.playerId}`}
->
-                          <td>
-                            <strong>{row.playerName}</strong>
-                          </td>
-                          <td>{row.overs}</td>
-                          <td>{row.maidens || 0}</td>
-                          <td>{row.runs}</td>
-                          <td>{row.wickets}</td>
-                          <td>{row.dots}</td>
-                          <td>{row.economy}</td>
-                        </tr>
-                      ))
+                      (inn.bowlingRows || inn.bowling || []).map(
+                        (row, rowIdx) => (
+                          <tr
+                            key={`bowl-${inn.number ?? innIdx}-${
+                              row.playerId ?? rowIdx
+                            }-${rowIdx}`}
+                          >
+                            <td>
+                              <strong>{row.playerName}</strong>
+                            </td>
+                            <td>{row.overs}</td>
+                            <td>{row.maidens || 0}</td>
+                            <td>{row.runs}</td>
+                            <td>{row.wickets}</td>
+                            <td>{row.dots}</td>
+                            <td>{row.economy}</td>
+                          </tr>
+                        )
+                      )
                     ) : (
                       <tr>
                         <td colSpan="7" className="muted">
@@ -2836,11 +2850,13 @@ return (
                 <p className="muted">No wickets yet.</p>
               ) : (
                 <div className="fow-list">
- {inn.fallOfWickets.map((w, idx) => (
-  <div
-    key={`fow-${inn.number}-${w.wicketNumber}-${w.over}-${idx}`}
-    className="fow-chip"
-  >
+                  {inn.fallOfWickets.map((w, wicketIdx) => (
+                    <div
+                      key={`fow-${inn.number ?? innIdx}-${
+                        w.wicketNumber ?? wicketIdx
+                      }-${w.over ?? "over"}-${wicketIdx}`}
+                      className="fow-chip"
+                    >
                       <strong>
                         {w.score}-{w.wicketNumber}
                       </strong>
@@ -2868,10 +2884,12 @@ return (
                     </thead>
 
                     <tbody>
- {inn.partnerships.map((p, idx) => (
-  <tr
-    key={`partnership-${inn.number}-${p.batter1}-${p.batter2}-${idx}`}
-  >
+                      {inn.partnerships.map((p, pIdx) => (
+                        <tr
+                          key={`partnership-${inn.number ?? innIdx}-${
+                            p.batter1 || "b1"
+                          }-${p.batter2 || "b2"}-${pIdx}`}
+                        >
                           <td>
                             {p.batter1} & {p.batter2}
                           </td>
@@ -2894,14 +2912,14 @@ return (
 
         <CollapsibleSection title="🕘 Ball-by-Ball Timeline" defaultOpen={true}>
           <div className="recent-balls pro-recent-balls">
-            {scoreboard.recentBalls.length === 0 ? (
+            {!scoreboard.recentBalls?.length ? (
               <span className="muted">No deliveries yet</span>
             ) : (
-scoreboard.recentBalls.map((item, idx) => (
-  <span
-    key={`recent-${item.id ?? item.label}-${idx}`}
-    className="ball-timeline-chip"
-  >
+              scoreboard.recentBalls.map((item, idx) => (
+                <span
+                  key={`recent-${item.id ?? item.label ?? "ball"}-${idx}`}
+                  className="ball-timeline-chip"
+                >
                   {item.label}
                 </span>
               ))
@@ -2929,11 +2947,13 @@ scoreboard.recentBalls.map((item, idx) => (
               🏏 {section.title}
             </div>
 
-            {section.items.map((item, itemIndex) => (
-      <div
-        key={`commentary-${section.inningsNo}-${item.id ?? itemIndex}`}
-        className="commentary-item"
-      >
+ {section.items.map((item, itemIndex) => (
+  <div
+    key={`commentary-${section.inningsNo}-${item.id ?? itemIndex}`}
+    className={`commentary-item ${
+      item.type === "OVER_SUMMARY" ? "over-summary-item" : ""
+    }`}
+  >
                 <div className="commentary-ball">
                   {item.over}
                 </div>
