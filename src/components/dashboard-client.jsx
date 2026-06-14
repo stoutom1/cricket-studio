@@ -2988,12 +2988,11 @@ return (
                       {item.text}
                     </div>
 
-                    <div className="commentary-meta">
-                      {item.score}
-                    </div>
 
-                    {item.type === "BALL" && (
+
+                    {item.type === "BALL" && item.badge !== "END" &&(
                       <div className="commentary-mini-score">
+                        <span>{item.score}</span>
                         <span>🏏 {item.strikerSummary}</span>
                         <span>🏃 {item.nonStrikerSummary}</span>
                         <span>🎯 {item.bowlerSummary}</span>
