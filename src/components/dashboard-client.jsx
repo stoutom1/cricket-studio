@@ -2460,83 +2460,103 @@ return (
   <div className="page-grid">
     <div className="grid-main">
           <div className="grid-side">
-<Card title="📋 Matches" defaultCollapsed={false}>
+<Card
+  title="🏏 Match Center"
+  defaultCollapsed={false}
+  right={
+    selectedMatchId ? (
+      <button
+        type="button"
+        className="share-score-btn"
+        onClick={handleShareMatch}
+      >
+        📤 Share - Spectator View
+      </button>
+    ) : null
+  }
+>
   {matches.length === 0 ? (
-    <p className="muted">No matches yet</p>
+    <div className="match-empty-state">
+      No matches yet. Create or start a match first.
+    </div>
   ) : (
-    <>
-      <div className="match-picker">
+    <div className="match-center">
+      <label className="match-select-label">
+        <span>Select Match</span>
+
         <select
           value={selectedMatchId || ""}
-          onChange={(e) =>
-            setSelectedMatchId(e.target.value)
-          }
+          onChange={(e) => {
+            setSelectedMatchId(e.target.value);
+            setScoringSubTab("ADVANCED");
+          }}
         >
-          <option value="">
-            Select Match
-          </option>
+          <option value="">Choose a match</option>
 
           {matches.map((match) => (
-            <option
-              key={match.id}
-              value={match.id}
-            >
+            <option key={match.id} value={match.id}>
               #{match.id} • {match.teamAName} vs {match.teamBName}
             </option>
           ))}
         </select>
+      </label>
 
-        {selectedMatch && (
+      {selectedMatch && (
+        <div className="selected-match-banner">
+          <div>
+            <strong>
+              {selectedMatch.teamAName} vs {selectedMatch.teamBName}
+            </strong>
+            <span>
+              {selectedMatch.battingFirstTeamName
+                ? `Batting first: ${selectedMatch.battingFirstTeamName}`
+                : "Batting first not decided"}
+            </span>
+          </div>
+
           <span className="pill">
             {selectedMatch.status}
           </span>
-        )}
-      </div>
-    </>
+        </div>
+      )}
+
+      {selectedMatchId && (
+        <div className="scoring-subtabs pretty">
+          <button
+            type="button"
+            className={scoringSubTab === "ADVANCED" ? "active" : ""}
+            onClick={() => setScoringSubTab("ADVANCED")}
+          >
+            <span>🎯</span>
+            <strong>Scoring</strong>
+          </button>
+
+          <button
+            type="button"
+            className={scoringSubTab === "SCOREBOARD" ? "active" : ""}
+            onClick={() => setScoringSubTab("SCOREBOARD")}
+          >
+            <span>🏏</span>
+            <strong>Scoreboard</strong>
+          </button>
+
+          <button
+            type="button"
+            className={scoringSubTab === "STATS" ? "active" : ""}
+            onClick={() => setScoringSubTab("STATS")}
+          >
+            <span>📊</span>
+            <strong>Stats</strong>
+          </button>
+        </div>
+      )}
+    </div>
   )}
 </Card>
-{selectedMatchId && (
-  <div className="scoring-subtabs">
-    <button
-      type="button"
-      className={scoringSubTab === "ADVANCED" ? "active" : ""}
-      onClick={() => setScoringSubTab("ADVANCED")}
-    >
-      🎯 Scoring
-    </button>
-
-    <button
-      type="button"
-      className={scoringSubTab === "SCOREBOARD" ? "active" : ""}
-      onClick={() => setScoringSubTab("SCOREBOARD")}
-    >
-      🏏 Scoreboard
-    </button>
-
-    <button
-      type="button"
-      className={scoringSubTab === "STATS" ? "active" : ""}
-      onClick={() => setScoringSubTab("STATS")}
-    >
-      📊 Stats
-    </button>
-  </div>
-)}
     </div>
           {selectedMatchId && scoringSubTab === "SCOREBOARD" && (
           <Card
             title="🏏 Live Scoreboard" defaultCollapsed={false}
-            right={
-              selectedMatchId ? (
-                <button
-                  type="button"
-                  className="btn btn-outline"
-                  onClick={handleShareMatch}
-                >
-                  📤 Share
-                </button>
-              ) : null
-            }
           >
           {!scoreboard ? (
             <p className="muted">Select a match to view scoreboard.</p>
