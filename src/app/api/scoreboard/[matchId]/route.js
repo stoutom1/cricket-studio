@@ -7,6 +7,7 @@ import {
   ballShortText,
   getBattingTeamId,
   summarizeInningsDetailed,
+  buildMatchStats,
   getPlayerName
 } from "@/lib/scoring";
 
@@ -100,7 +101,7 @@ const match = await prisma.match.findUnique({
 
   const innings1TeamName = innings1TeamId === match.teamAId ? match.teamA.name : match.teamB.name;
   const innings2TeamName = innings2TeamId === match.teamAId ? match.teamA.name : match.teamB.name;
-
+const matchStats = buildMatchStats(match);
   const innings1 = summarizeInningsDetailed(innings1Balls, playerMap, match.oversPerInnings);
   const innings2 = summarizeInningsDetailed(innings2Balls, playerMap, match.oversPerInnings);
 
@@ -251,10 +252,43 @@ const response = {
     status: match.status,
     shareCode: match.shareCode,
   },
-  innings: [
-    { number: 1, teamName: innings1TeamName, ...innings1 },
-    { number: 2, teamName: innings2TeamName, ...innings2 }
-  ],
+innings: [
+  {
+    ...innings1,
+    teamName:
+    innings1.teamName ||
+    innings1.battingTeamName ||
+    match.battingFirstTeam?.name ||
+    "Team",
+    battingRows:
+      matchStats.battingRows?.filter(
+        (row) => Number(row.inningsNo) === 1
+      ) || [],
+    bowlingRows:
+      matchStats.bowlingRows?.filter(
+        (row) => Number(row.inningsNo) === 1
+      ) || []
+  },
+  {
+    ...innings2,
+    teamName:
+    innings2.teamName ||
+    innings2.battingTeamName ||
+    (
+      match.battingFirstTeamId === match.teamAId
+        ? match.teamB.name
+        : match.teamA.name
+    ),
+    battingRows:
+      matchStats.battingRows?.filter(
+        (row) => Number(row.inningsNo) === 2
+      ) || [],
+    bowlingRows:
+      matchStats.bowlingRows?.filter(
+        (row) => Number(row.inningsNo) === 2
+      ) || []
+  }
+],
   currentInnings,
   currentState,
   summary: {

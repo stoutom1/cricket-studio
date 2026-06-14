@@ -2,6 +2,7 @@ import { NextResponse } from "next/server";
 import prisma from "@/lib/prisma";
 import { getServerSession } from "next-auth";
 import { authOptions } from "@/lib/auth";
+import { isSuperAdmin } from "@/lib/superAdmin";
 
 export const runtime = "nodejs";
 
@@ -199,8 +200,9 @@ const shouldMergePlayersByName =
         userId: user.id
       }
     });
+  const superAdmin = isSuperAdmin(session);
 
-    if (!membership) {
+    if (!superAdmin && !membership) {
       return NextResponse.json(
         { error: "You do not have access to this league" },
         { status: 403 }

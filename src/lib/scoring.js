@@ -620,74 +620,156 @@ export function buildMatchStats(match) {
     ...(match.teamA?.players || []),
     ...(match.teamB?.players || [])
   ];
-const playerMap = new Map(
-  players.map((p) => [Number(p.id), p])
-);
+
+  const playerMap = new Map(
+    players.map((p) => [Number(p.id), p])
+  );
+
   const batting = new Map();
   const bowling = new Map();
 
-  players.forEach((player) => {
-    batting.set(player.id, {
-      playerId: player.id,
-      playerName: player.name,
-      teamName: player.team?.name || "",
-      runs: 0,
-      balls: 0,
-      fours: 0,
-      sixes: 0,
-      outs: 0,
-      dismissal: "not out"
-    });
+  function battingKey(inningsNo, playerId) {
+    return `${inningsNo}-${playerId}`;
+  }
 
-    bowling.set(player.id, {
-      playerId: player.id,
-      playerName: player.name,
-      teamName: player.team?.name || "",
-      balls: 0,
-      dots: 0,
-      runs: 0,
-      wickets: 0
-    });
-  });
+  function bowlingKey(inningsNo, playerId) {
+    return `${inningsNo}-${playerId}`;
+  }
 
-  for (const ball of match.balls) {
-    const isRetiredHurt = ball.wicketType === "RETIRED_HURT";
-    if (ball.strikerId && batting.has(ball.strikerId)) {
-      const row = batting.get(ball.strikerId);
-      row.runs += ball.runsOffBat;
+  function ensureBattingRow(inningsNo, player) {
+    const key = battingKey(inningsNo, player.id);
 
-      if (!isRetiredHurt && ball.extraType !== "WIDE" && ball.extraType !== "NOBALL" && ball.extraType !== "RETIRED_HURT") {
+    if (!batting.has(key)) {
+      batting.set(key, {
+        inningsNo,
+        playerId: player.id,
+        playerName: player.name,
+        teamId: player.teamId,
+        teamName: player.team?.name || "",
+        runs: 0,
+        balls: 0,
+        fours: 0,
+        sixes: 0,
+        outs: 0,
+        dismissal: "not out",
+        firstSequence: 999999
+      });
+    }
+
+    return batting.get(key);
+  }
+
+  function ensureBowlingRow(inningsNo, player) {
+    const key = bowlingKey(inningsNo, player.id);
+
+    if (!bowling.has(key)) {
+      bowling.set(key, {
+        inningsNo,
+        playerId: player.id,
+        playerName: player.name,
+        teamId: player.teamId,
+        teamName: player.team?.name || "",
+        balls: 0,
+        dots: 0,
+        runs: 0,
+        wickets: 0,
+        firstSequence: 999999
+      });
+    }
+
+    return bowling.get(key);
+  }
+
+  for (const ball of match.balls || []) {
+    const inningsNo = Number(ball.inningsNo || 1);
+    const sequence = Number(ball.sequence || 0);
+    const isRetiredHurt =
+      ball.wicketType === "RETIRED_HURT";
+
+    const strikerPlayer =
+      playerMap.get(Number(ball.strikerId));
+
+    if (strikerPlayer) {
+      const row = ensureBattingRow(
+        inningsNo,
+        strikerPlayer
+      );
+
+      row.firstSequence = Math.min(
+        row.firstSequence,
+        sequence
+      );
+
+      row.runs += Number(ball.runsOffBat || 0);
+
+      if (
+        !isRetiredHurt &&
+        ball.extraType !== "WIDE" &&
+        ball.extraType !== "NOBALL"
+      ) {
         row.balls += 1;
       }
 
-      if (ball.runsOffBat === 4) row.fours += 1;
-      if (ball.runsOffBat === 6) row.sixes += 1;
-    }
-
-      if (
-        ball.dismissedPlayerId &&
-        batting.has(ball.dismissedPlayerId)
-      ) {
-        const row = batting.get(ball.dismissedPlayerId);
-        
-        if (ball.wicketType !== "RETIRED_HURT") {
-          row.outs += 1;
-        }
-        else if(!ball.batter1 && !ball.batter2){
-          row.outs = "Retired Hurt";
-        }
-        //else {
-        //  row.outs = "Not Out";
-        //}
-
-row.dismissal = formatDismissal(ball, playerMap);
+      if (Number(ball.runsOffBat || 0) === 4) {
+        row.fours += 1;
       }
 
-    if (ball.bowlerId && bowling.has(ball.bowlerId)) {
-      const row = bowling.get(ball.bowlerId);
+      if (Number(ball.runsOffBat || 0) === 6) {
+        row.sixes += 1;
+      }
+    }
 
-      if (ball.legalDelivery && !isRetiredHurt && ball.extraType !== "WIDE" && ball.extraType !== "NOBALL" && ball.extraType !== "RETIRED_HURT") row.balls += 1;
-      if (ball.legalDelivery && !isRetiredHurt && ball.extraType !== "WIDE" && ball.extraType !== "NOBALL" && ball.extraType !== "RETIRED_HURT" && ball.totalRuns === 0) row.dots += 1;
+    const dismissedPlayer =
+      playerMap.get(Number(ball.dismissedPlayerId));
+
+    if (dismissedPlayer) {
+      const row = ensureBattingRow(
+        inningsNo,
+        dismissedPlayer
+      );
+
+      row.firstSequence = Math.min(
+        row.firstSequence,
+        sequence
+      );
+
+      if (ball.wicketType !== "RETIRED_HURT") {
+        row.outs += 1;
+        row.dismissal = formatDismissal(
+          ball,
+          playerMap
+        );
+      } else {
+        row.dismissal = "retired hurt";
+      }
+    }
+
+    const bowlerPlayer =
+      playerMap.get(Number(ball.bowlerId));
+
+    if (bowlerPlayer) {
+      const row = ensureBowlingRow(
+        inningsNo,
+        bowlerPlayer
+      );
+
+      row.firstSequence = Math.min(
+        row.firstSequence,
+        sequence
+      );
+
+      if (
+        ball.legalDelivery &&
+        !isRetiredHurt &&
+        ball.extraType !== "WIDE" &&
+        ball.extraType !== "NOBALL"
+      ) {
+        row.balls += 1;
+
+        if (Number(ball.totalRuns || 0) === 0) {
+          row.dots += 1;
+        }
+      }
 
       row.runs += runsChargedToBowler(ball);
       row.wickets += wicketsForBowler(ball);
@@ -697,22 +779,49 @@ row.dismissal = formatDismissal(ball, playerMap);
   const battingRows = [...batting.values()]
     .map((row) => ({
       ...row,
-      strikeRate: row.balls ? ((row.runs / row.balls) * 100).toFixed(2) : "0.00"
+      strikeRate: row.balls
+        ? ((row.runs / row.balls) * 100).toFixed(2)
+        : "0.00"
     }))
-    .filter((row) => row.runs > 0 || row.balls > 0 || row.outs > 0)
-    .sort((a, b) => b.runs - a.runs || a.balls - b.balls);
+    .filter(
+      (row) =>
+        row.runs > 0 ||
+        row.balls > 0 ||
+        row.outs > 0 ||
+        row.dismissal !== "not out"
+    )
+    .sort(
+      (a, b) =>
+        Number(a.inningsNo) - Number(b.inningsNo) ||
+        a.firstSequence - b.firstSequence
+    );
 
   const bowlingRows = [...bowling.values()]
     .map((row) => ({
       ...row,
       overs: formatOversFromBalls(row.balls),
-      economy: row.balls ? ((row.runs / row.balls) * 6).toFixed(2) : "0.00"
+      economy: row.balls
+        ? ((row.runs / row.balls) * 6).toFixed(2)
+        : "0.00"
     }))
-    .filter((row) => row.balls > 0 || row.runs > 0 || row.wickets > 0)
-    .sort((a, b) => b.wickets - a.wickets || Number(a.economy) - Number(b.economy));
+    .filter(
+      (row) =>
+        row.balls > 0 ||
+        row.runs > 0 ||
+        row.wickets > 0
+    )
+    .sort(
+      (a, b) =>
+        Number(a.inningsNo) - Number(b.inningsNo) ||
+        a.firstSequence - b.firstSequence
+    );
 
   return {
     batting: battingRows,
-    bowling: bowlingRows
+    bowling: bowlingRows,
+
+    // Added for professional scoreboard
+    battingRows,
+    bowlingRows
   };
 }

@@ -2624,171 +2624,271 @@ return (
             <span>🏏</span>
             <strong>Scoreboard</strong>
           </button>
-
-          <button
-            type="button"
-            className={scoringSubTab === "STATS" ? "active" : ""}
-            onClick={() => setScoringSubTab("STATS")}
-          >
-            <span>📊</span>
-            <strong>Stats</strong>
-          </button>
         </div>
       )}
 </div>
   )}
 </Card>
-          {selectedMatchId && scoringSubTab === "SCOREBOARD" && (
-          <Card
-            title="🏏 Live Scoreboard" defaultCollapsed={false}
-          >
-          {!scoreboard ? (
-            <p className="muted">Select a match to view scoreboard.</p>
-          ) : (
-            <div className="scoreboard-wrap">
-              <div className="score-header">
-                <div>
-                  <h3>
-                    {scoreboard.match.teamAName} vs {scoreboard.match.teamBName}
-                  </h3>
-                  <p className="muted small">
-                    Batting first: {scoreboard.match.battingFirstTeamName} • Overs:{" "}
-                    {scoreboard.match.oversPerInnings} • Powerplay:{" "}
-                    {scoreboard.match.powerplayOversInnings}
-                  </p>
-                </div>
-                <span className="pill">{scoreboard.match.status}</span>
+{selectedMatchId && scoringSubTab === "SCOREBOARD" && (
+  <Card title="🏟️ Professional Scoreboard" defaultCollapsed={false}>
+    {!scoreboard ? (
+      <p className="muted">Select a match to view scoreboard.</p>
+    ) : (
+      <div className="pro-scoreboard">
+        <div className="pro-score-hero">
+          <div>
+            <h2>
+              {scoreboard.match.teamAName} vs {scoreboard.match.teamBName}
+            </h2>
+
+            <p>
+              Batting first: {scoreboard.match.battingFirstTeamName} •{" "}
+              {scoreboard.match.oversPerInnings} overs • Powerplay:{" "}
+              {scoreboard.match.powerplayOversInnings}
+            </p>
+          </div>
+
+          <span className="pill">{scoreboard.match.status}</span>
+        </div>
+
+        <div className="innings-score-cards">
+          {scoreboard.innings.map((inn) => (
+            <div
+              key={inn.number}
+              className={`innings-score-card ${
+                Number(scoreboard.currentInnings) === Number(inn.number)
+                  ? "active"
+                  : ""
+              }`}
+            >
+              <div className="innings-card-top">
+                <span>Innings {inn.number}</span>
+                <strong>{inn.teamName}</strong>
               </div>
-<div className="table-scroll">
-              <table className="score-table">
-                <thead>
-                  <tr>
-                    <th>Innings</th>
-                    <th>Team</th>
-                    <th>Runs</th>
-                    <th>Wkts</th>
-                    <th>Overs</th>
-                    <th>RR</th>
-                    <th>PP</th>
-                  </tr>
-                </thead>
-                <tbody>
-                  {scoreboard.innings.map((inn) => (
-                    <tr key={inn.number}>
-                      <td>{inn.number}</td>
-                      <td>{inn.teamName}</td>
-                      <td>{inn.runs}</td>
-                      <td>{inn.wickets}</td>
-                      <td>{inn.oversDisplay}</td>
-                      <td>{inn.runRate}</td>
-                      <td>{inn.powerplay.runs}/{inn.powerplay.wickets}</td>
-                    </tr>
-                  ))}
-                </tbody>
-              </table>
-</div>
-              {scoreboard.currentState ? (
-                <div className="result-box">
-                  <p><strong>🎯 Current innings:</strong> {scoreboard.currentInnings}</p>
-                  <p><strong>🏏 Striker:</strong> {scoreboard.currentState.strikerName}</p>
-                  <p><strong>🏃 Non-striker:</strong> {scoreboard.currentState.nonStrikerName}</p>
-                  <p>
-                    <strong>⏭️ Next ball:</strong>{" "}
-                    {scoreboard.currentState.nextOverNo}.{scoreboard.currentState.nextBallInOver}
-                  </p>
-                </div>
-              ) : null}
-<CollapsibleSection
-  title="🤝 Partnerships"
-  defaultOpen={false}
->
-  {!activeInnings?.partnerships?.length ? (
-    <p className="muted">No partnerships yet</p>
-  ) : (
-    <div className="table-scroll">
-    <table className="score-table">
-      <thead>
-        <tr>
-          <th>Batters</th>
-          <th>Runs</th>
-          <th>Balls</th>
-          <th>Status</th>
-        </tr>
-      </thead>
 
-      <tbody>
-        {activeInnings.partnerships.map((p, idx) => (
-          <tr key={idx}>
-            <td>{p.batter1} & {p.batter2}</td>
-            <td>{p.runs}</td>
-            <td>{p.balls}</td>
-            <td>
-              {p.ongoing
-                ? "Current"
-                : `Ended at wicket ${p.wicketNumber}`}
-            </td>
-          </tr>
-        ))}
-      </tbody>
-    </table>
-    </div>
-  )}
-</CollapsibleSection>
-
-<CollapsibleSection
-  title="💥 Fall of Wickets"
-  defaultOpen={false}
->
-  {!activeInnings?.fallOfWickets?.length ? (
-    <p className="muted">No wickets yet</p>
-  ) : (
-    <div className="table-scroll">
-    <table className="score-table">
-      <thead>
-        <tr>
-          <th>Wkt</th>
-          <th>Score</th>
-          <th>Player Out</th>
-          <th>Over</th>
-        </tr>
-      </thead>
-
-      <tbody>
-        {activeInnings.fallOfWickets.map((w, idx) => (
-          <tr key={idx}>
-            <td>{w.wicketNumber}</td>
-            <td>{w.score}</td>
-            <td>{w.playerOut}</td>
-            <td>{w.over}</td>
-          </tr>
-        ))}
-      </tbody>
-    </table>
-    </div>
-  )}
-</CollapsibleSection>
-<CollapsibleSection
-  title="🕘 Recent Balls"
-  defaultOpen={false}
->
-              <div>
-                <div className="recent-balls">
-                  {scoreboard.recentBalls.length === 0 ? (
-                    <span className="muted">No deliveries yet</span>
-                  ) : (
-                    scoreboard.recentBalls.map((item) => (
-                      <span key={item.id} className="tag">
-                        {item.label}
-                      </span>
-                    ))
-                  )}
-                </div>
+              <div className="innings-main-score">
+                {inn.runs}/{inn.wickets}
               </div>
-</CollapsibleSection>              
+
+              <div className="innings-card-meta">
+                <span>Overs: {inn.oversDisplay}</span>
+                <span>RR: {inn.runRate}</span>
+                <span>
+                  PP: {inn.powerplay.runs}/{inn.powerplay.wickets}
+                </span>
+              </div>
             </div>
-          )}
-        </Card>
-          )}
+          ))}
+        </div>
+
+        {scoreboard.currentState && (
+          <div className="current-match-strip">
+            <div>
+              <span>Current Innings</span>
+              <strong>{scoreboard.currentInnings}</strong>
+            </div>
+
+            <div>
+              <span>Striker</span>
+              <strong>{scoreboard.currentState.strikerName}</strong>
+            </div>
+
+            <div>
+              <span>Non-Striker</span>
+              <strong>{scoreboard.currentState.nonStrikerName}</strong>
+            </div>
+
+            <div>
+              <span>Bowler</span>
+              <strong>{scoreboard.currentState.bowlerName || "-"}</strong>
+            </div>
+
+            <div>
+              <span>Next Ball</span>
+              <strong>
+                {scoreboard.currentState.nextOverNo}.
+                {scoreboard.currentState.nextBallInOver}
+              </strong>
+            </div>
+          </div>
+        )}
+
+        {scoreboard.innings.map((inn) => (
+          <div key={inn.number} className="full-innings-card">
+            <div className="innings-section-header">
+              <div>
+                <h3>
+  Innings {inn.number}: {inn.teamName || inn.battingTeamName || inn.team || "Team"}
+                </h3>
+                <p className="muted small">
+                  {inn.runs}/{inn.wickets} in {inn.oversDisplay} overs • RR{" "}
+                  {inn.runRate}
+                </p>
+              </div>
+            </div>
+
+            <CollapsibleSection title="🏏 Batting Scorecard" defaultOpen={true}>
+              <div className="table-scroll">
+                <table className="score-table pro-table">
+                  <thead>
+                    <tr>
+                      <th>Batter</th>
+                      <th>Dismissal</th>
+                      <th>R</th>
+                      <th>B</th>
+                      <th>4s</th>
+                      <th>6s</th>
+                      <th>SR</th>
+                    </tr>
+                  </thead>
+
+                  <tbody>
+                    {(inn.battingRows || inn.batting || []).length ? (
+                      (inn.battingRows || inn.batting || []).map((row) => (
+                        <tr key={row.playerId}>
+                          <td>
+                            <strong>
+                              {row.playerName}
+                              {scoreboard.currentState?.strikerId === row.playerId
+                                ? " *"
+                                : ""}
+                            </strong>
+                          </td>
+                          <td>{row.outs ? row.dismissal : "not out"}</td>
+                          <td>{row.runs}</td>
+                          <td>{row.balls}</td>
+                          <td>{row.fours}</td>
+                          <td>{row.sixes}</td>
+                          <td>{row.strikeRate}</td>
+                        </tr>
+                      ))
+                    ) : (
+                      <tr>
+                        <td colSpan="7" className="muted">
+                          Batting details not available yet.
+                        </td>
+                      </tr>
+                    )}
+                  </tbody>
+                </table>
+              </div>
+            </CollapsibleSection>
+
+            <CollapsibleSection title="🎯 Bowling Scorecard" defaultOpen={true}>
+              <div className="table-scroll">
+                <table className="score-table pro-table">
+                  <thead>
+                    <tr>
+                      <th>Bowler</th>
+                      <th>O</th>
+                      <th>M</th>
+                      <th>R</th>
+                      <th>W</th>
+                      <th>Dots</th>
+                      <th>Eco</th>
+                    </tr>
+                  </thead>
+
+                  <tbody>
+                    {(inn.bowlingRows || inn.bowling || []).length ? (
+                      (inn.bowlingRows || inn.bowling || []).map((row) => (
+                        <tr key={row.playerId}>
+                          <td>
+                            <strong>{row.playerName}</strong>
+                          </td>
+                          <td>{row.overs}</td>
+                          <td>{row.maidens || 0}</td>
+                          <td>{row.runs}</td>
+                          <td>{row.wickets}</td>
+                          <td>{row.dots}</td>
+                          <td>{row.economy}</td>
+                        </tr>
+                      ))
+                    ) : (
+                      <tr>
+                        <td colSpan="7" className="muted">
+                          Bowling details not available yet.
+                        </td>
+                      </tr>
+                    )}
+                  </tbody>
+                </table>
+              </div>
+            </CollapsibleSection>
+
+            <CollapsibleSection title="💥 Fall of Wickets" defaultOpen={false}>
+              {!inn.fallOfWickets?.length ? (
+                <p className="muted">No wickets yet.</p>
+              ) : (
+                <div className="fow-list">
+                  {inn.fallOfWickets.map((w, idx) => (
+                    <div key={idx} className="fow-chip">
+                      <strong>
+                        {w.score}-{w.wicketNumber}
+                      </strong>
+                      <span>{w.playerOut}</span>
+                      <small>{w.over} ov</small>
+                    </div>
+                  ))}
+                </div>
+              )}
+            </CollapsibleSection>
+
+            <CollapsibleSection title="🤝 Partnerships" defaultOpen={false}>
+              {!inn.partnerships?.length ? (
+                <p className="muted">No partnerships yet.</p>
+              ) : (
+                <div className="table-scroll">
+                  <table className="score-table pro-table">
+                    <thead>
+                      <tr>
+                        <th>Batters</th>
+                        <th>Runs</th>
+                        <th>Balls</th>
+                        <th>Status</th>
+                      </tr>
+                    </thead>
+
+                    <tbody>
+                      {inn.partnerships.map((p, idx) => (
+                        <tr key={idx}>
+                          <td>
+                            {p.batter1} & {p.batter2}
+                          </td>
+                          <td>{p.runs}</td>
+                          <td>{p.balls}</td>
+                          <td>
+                            {p.ongoing
+                              ? "Current"
+                              : `Ended at wicket ${p.wicketNumber}`}
+                          </td>
+                        </tr>
+                      ))}
+                    </tbody>
+                  </table>
+                </div>
+              )}
+            </CollapsibleSection>
+          </div>
+        ))}
+
+        <CollapsibleSection title="🕘 Ball-by-Ball Timeline" defaultOpen={true}>
+          <div className="recent-balls pro-recent-balls">
+            {scoreboard.recentBalls.length === 0 ? (
+              <span className="muted">No deliveries yet</span>
+            ) : (
+              scoreboard.recentBalls.map((item) => (
+                <span key={item.id} className="ball-timeline-chip">
+                  {item.label}
+                </span>
+              ))
+            )}
+          </div>
+        </CollapsibleSection>
+      </div>
+    )}
+  </Card>
+)}
 {selectedMatchId && scoringSubTab === "ADVANCED" && (          
 <Card
   className="scoring-console"
