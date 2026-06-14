@@ -3107,7 +3107,6 @@ body {
 .commentary-mini-score span {
   padding: 4px 8px;
   border-radius: 999px;
-  background: rgba(255,255,255,0.06);
 }
 
 .over-summary-item {
@@ -3285,7 +3284,6 @@ body {
 .commentary-mini-score span {
   padding: 5px 8px;
   border-radius: 999px;
-  background: rgba(255,255,255,0.075);
   font-size: 12px;
   font-weight: 700;
 }
