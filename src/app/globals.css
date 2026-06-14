@@ -3071,11 +3071,6 @@ body {
   display: grid;
   gap: 4px;
 }
-
-.commentary-main {
-  font-weight: 700;
-}
-
 .commentary-meta {
   font-size: 12px;
   opacity: 0.7;
@@ -3270,7 +3265,7 @@ body {
 }
 
 .commentary-main {
-  font-weight: 800;
+  font-weight: 300;
   line-height: 1.35;
 }
 
@@ -3408,4 +3403,41 @@ body {
     padding: 0 6px;
     font-size: 10px;
   }
+}
+.wide-pill {
+  background: rgba(14, 165, 233, 0.16);
+  border-color: rgba(14, 165, 233, 0.34);
+  color: #bae6fd;
+}
+
+.noball-pill {
+  background: rgba(249, 115, 22, 0.16);
+  border-color: rgba(249, 115, 22, 0.34);
+  color: #fed7aa;
+}
+
+.bye-pill {
+  background: rgba(148, 163, 184, 0.16);
+  border-color: rgba(148, 163, 184, 0.34);
+  color: #e2e8f0;
+}
+
+.legbye-pill {
+  background: rgba(20, 184, 166, 0.16);
+  border-color: rgba(20, 184, 166, 0.34);
+  color: #99f6e4;
+}
+
+.retired-pill {
+  background: rgba(168, 85, 247, 0.16);
+  border-color: rgba(168, 85, 247, 0.34);
+  color: #e9d5ff;
+}
+.over-summary-item .commentary-main {
+  font-weight: 900;
+}
+.wicket-pill + .commentary-body .commentary-main,
+.four-pill + .commentary-body .commentary-main,
+.six-pill + .commentary-body .commentary-main {
+  font-weight: 700;
 }

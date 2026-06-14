@@ -150,7 +150,115 @@ function buildCommentary(match) {
 
   const batterStats = new Map();
   const bowlerStats = new Map();
+function getBadgeForBall(ball, overLabel) {
+  if (ball.wicketType === "RETIRED_HURT") {
+    return {
+      badge: "RH",
+      badgeClass: "retired-pill"
+    };
+  }
 
+  if (ball.isWicket && ball.wicketType !== "NONE") {
+    return {
+      badge: "W",
+      badgeClass: "wicket-pill"
+    };
+  }
+
+  if (ball.extraType === "WIDE") {
+    return {
+      badge: "WD",
+      badgeClass: "wide-pill"
+    };
+  }
+
+  if (ball.extraType === "NOBALL") {
+    return {
+      badge: "NB",
+      badgeClass: "noball-pill"
+    };
+  }
+
+  if (ball.extraType === "BYE") {
+    return {
+      badge: "B",
+      badgeClass: "bye-pill"
+    };
+  }
+
+  if (ball.extraType === "LEGBYE") {
+    return {
+      badge: "LB",
+      badgeClass: "legbye-pill"
+    };
+  }
+
+  if (Number(ball.runsOffBat || 0) === 4) {
+    return {
+      badge: "4",
+      badgeClass: "four-pill"
+    };
+  }
+
+  if (Number(ball.runsOffBat || 0) === 6) {
+    return {
+      badge: "6",
+      badgeClass: "six-pill"
+    };
+  }
+
+  return {
+    badge: overLabel,
+    badgeClass: ""
+  };
+}
+
+function formatWicketText(ball, playerMap, strikerName, bowlerName) {
+  const dismissed =
+    playerMap.get(Number(ball.dismissedPlayerId)) ||
+    strikerName;
+
+  const fielder =
+    playerMap.get(Number(ball.fielderId)) ||
+    "fielder";
+
+  const assistant =
+    playerMap.get(Number(ball.assistantFielderId));
+
+  switch (ball.wicketType) {
+    case "BOWLED":
+      return `BOWLED! ${dismissed} b ${bowlerName}.`;
+
+    case "LBW":
+      return `LBW! ${dismissed} lbw b ${bowlerName}.`;
+
+    case "CAUGHT":
+      return `CAUGHT! ${dismissed} c ${fielder} b ${bowlerName}.`;
+
+    case "STUMPED":
+      return `STUMPED! ${dismissed} st ${fielder} b ${bowlerName}.`;
+
+    case "RUN_OUT":
+      return assistant
+        ? `RUN OUT! ${dismissed} run out (${fielder} / ${assistant}).`
+        : `RUN OUT! ${dismissed} run out (${fielder}).`;
+
+    case "HIT_WICKET":
+      return `HIT WICKET! ${dismissed} hit wicket b ${bowlerName}.`;
+
+    case "RETIRED_HURT":
+      return `${dismissed} retired hurt.`;
+
+    case "RETIRED_OUT":
+      return `RETIRED OUT! ${dismissed} retired out.`;
+
+    case "OTHER":
+      return ball.wicketNote || `WICKET! ${dismissed} is out.`;
+
+    default:
+      return `WICKET! ${dismissed} is out.`;
+  }
+}
   function getBatter(id) {
     const key = Number(id);
     if (!batterStats.has(key)) {
@@ -241,48 +349,54 @@ function buildCommentary(match) {
       inn.wickets += 1;
     }
 
-    let eventText = "";
+let eventText = "";
 
-    if (ball.isWicket && ball.wicketType !== "NONE") {
-      const dismissed =
-        playerMap.get(Number(ball.dismissedPlayerId)) ||
-        strikerName;
+if (ball.isWicket && ball.wicketType !== "NONE") {
+  eventText = formatWicketText(
+    ball,
+    playerMap,
+    strikerName,
+    bowlerName
+  );
+} else if (ball.extraType === "WIDE") {
+  eventText =
+    totalRuns > 1
+      ? `${bowlerName} to ${strikerName}, wide + ${totalRuns - 1} run(s).`
+      : `${bowlerName} to ${strikerName}, wide.`;
+} else if (ball.extraType === "NOBALL") {
+  eventText =
+    runsOffBat > 0
+      ? `${bowlerName} to ${strikerName}, no-ball + ${runsOffBat} run(s) off the bat.`
+      : `${bowlerName} to ${strikerName}, no-ball.`;
+} else if (ball.extraType === "BYE") {
+  eventText = `${bowlerName} to ${strikerName}, ${totalRuns} bye(s).`;
+} else if (ball.extraType === "LEGBYE") {
+  eventText = `${bowlerName} to ${strikerName}, ${totalRuns} leg-bye(s).`;
+} else if (runsOffBat === 4) {
+  eventText = `${bowlerName} to ${strikerName}, FOUR!`;
+} else if (runsOffBat === 6) {
+  eventText = `${bowlerName} to ${strikerName}, SIX!`;
+} else {
+  eventText = `${bowlerName} to ${strikerName}, ${runsOffBat} run(s).`;
+}
 
-      eventText = `WICKET! ${dismissed} is out ${String(
-        ball.wicketType
-      )
-        .replaceAll("_", " ")
-        .toLowerCase()}.`;
-    } else if (ball.extraType === "WIDE") {
-      eventText = `${bowlerName} to ${strikerName}, wide. ${totalRuns} run(s).`;
-    } else if (ball.extraType === "NOBALL") {
-      eventText = `${bowlerName} to ${strikerName}, no-ball. ${totalRuns} run(s).`;
-    } else if (ball.extraType === "BYE") {
-      eventText = `${bowlerName} to ${strikerName}, bye. ${totalRuns} run(s).`;
-    } else if (ball.extraType === "LEGBYE") {
-      eventText = `${bowlerName} to ${strikerName}, leg bye. ${totalRuns} run(s).`;
-    } else if (runsOffBat === 4) {
-      eventText = `${bowlerName} to ${strikerName}, FOUR!`;
-    } else if (runsOffBat === 6) {
-      eventText = `${bowlerName} to ${strikerName}, SIX!`;
-    } else {
-      eventText = `${bowlerName} to ${strikerName}, ${runsOffBat} run(s).`;
-    }
+const badgeInfo = getBadgeForBall(ball, overLabel);
 
-    inn.items.push({
-      id: ball.id,
-      type: "BALL",
-      inningsNo,
-      over: overLabel,
-      text: eventText,
-      score: `Innings ${inningsNo}: ${inn.runs}/${inn.wickets}`,
-      strikerSummary: `${strikerName}: ${striker.runs} (${striker.balls})`,
-      nonStrikerSummary: `${nonStrikerName}: ${nonStriker.runs} (${nonStriker.balls})`,
-      bowlerSummary: `${bowlerName}: ${bowler.wickets}/${bowler.runs} in ${formatOversFromBalls(
-        bowler.balls
-      )}`
-    });
-
+inn.items.push({
+  id: ball.id,
+  type: "BALL",
+  inningsNo,
+  over: overLabel,
+  badge: badgeInfo.badge,
+  badgeClass: badgeInfo.badgeClass,
+  text: eventText,
+  score: `Innings ${inningsNo}: ${inn.runs}/${inn.wickets}`,
+  strikerSummary: `${strikerName}: ${striker.runs} (${striker.balls})`,
+  nonStrikerSummary: `${nonStrikerName}: ${nonStriker.runs} (${nonStriker.balls})`,
+  bowlerSummary: `${bowlerName}: ${bowler.wickets}/${bowler.runs} in ${formatOversFromBalls(
+    bowler.balls
+  )}`
+});
     if (ball.legalDelivery) {
       inn.legalBalls += 1;
 

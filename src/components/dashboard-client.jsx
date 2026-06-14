@@ -2866,7 +2866,7 @@ return (
                       className="fow-chip"
                     >
                       <strong>
-                        {w.score}-{w.wicketNumber}
+                        {w.score}
                       </strong>
                       <span>{w.playerOut}</span>
                       <small>{w.over} ov</small>
@@ -2949,84 +2949,69 @@ return (
       </div>
     ) : (
       <>
-              {scoreboard?.summary?.statusText && (
+        {scoreboard?.summary?.statusText && (
           <div className="single-line-scoreboard">
             <span className="status-chip">
               📌 {scoreboard.summary.statusText}
             </span>
           </div>
         )}
-      <div className="commentary-feed pretty-commentary">
-        {scoreboard.commentary.map((section, sectionIndex) => (
-          <div
-            key={`innings-${section.inningsNo}-${sectionIndex}`}
-            className="commentary-innings-section"
-          >
-            <div className="commentary-innings-title">
-              <span>🏏</span>
-              <strong>{section.title}</strong>
-            </div>
 
-            {section.items.map((item, itemIndex) => (
-              <div
-                key={`commentary-${section.inningsNo}-${item.id ?? itemIndex}`}
-                className={`commentary-item pretty-commentary-item ${
-                  item.type === "OVER_SUMMARY" ? "over-summary-item" : ""
-                }`}
-              >
-<div
-  className={`commentary-ball ${
-    item.type === "OVER_SUMMARY"
-      ? "summary-pill"
-      : item.text?.includes("WICKET")
-        ? "wicket-pill"
-        : item.text?.includes("FOUR")
-          ? "four-pill"
-          : item.text?.includes("SIX")
-            ? "six-pill"
-            : ""
-  }`}
->
-  {item.type === "OVER_SUMMARY"
-    ? "END"
-    : item.text?.includes("WICKET")
-      ? "W"
-      : item.text?.includes("FOUR")
-        ? "4"
-        : item.text?.includes("SIX")
-          ? "6"
-          : item.over}
-</div>
-
-                <div className="commentary-body">
-                  <div className="commentary-main">
-                    {item.text}
-                  </div>
-
-                  <div className="commentary-meta">
-                    {item.score}
-                  </div>
-
-                  {item.type === "BALL" && (
-                    <div className="commentary-mini-score">
-                      <span>🏏 {item.strikerSummary}</span>
-                      <span>🏃 {item.nonStrikerSummary}</span>
-                      <span>🎯 {item.bowlerSummary}</span>
-                    </div>
-                  )}
-
-                  {item.type === "OVER_SUMMARY" && (
-                    <div className="commentary-over-summary">
-                      <strong>{item.score}</strong>
-                      <span>🎯 {item.bowlerSummary}</span>
-                    </div>
-                  )}
-                </div>
+        <div className="commentary-feed pretty-commentary">
+          {scoreboard.commentary.map((section, sectionIndex) => (
+            <div
+              key={`innings-${section.inningsNo}-${sectionIndex}`}
+              className="commentary-innings-section"
+            >
+              <div className="commentary-innings-title">
+                <span>🏏</span>
+                <strong>{section.title}</strong>
               </div>
-            ))}
-          </div>
-        ))}
-      </div>
+
+              {section.items.map((item, itemIndex) => (
+                <div
+                  key={`commentary-${section.inningsNo}-${item.id ?? itemIndex}`}
+                  className={`commentary-item pretty-commentary-item ${
+                    item.type === "OVER_SUMMARY" ? "over-summary-item" : ""
+                  }`}
+                >
+                  <div
+                    className={`commentary-ball ${
+                      item.badgeClass || ""
+                    }`}
+                  >
+                    {item.badge || item.over}
+                  </div>
+
+                  <div className="commentary-body">
+                    <div className="commentary-main">
+                      {item.text}
+                    </div>
+
+                    <div className="commentary-meta">
+                      {item.score}
+                    </div>
+
+                    {item.type === "BALL" && (
+                      <div className="commentary-mini-score">
+                        <span>🏏 {item.strikerSummary}</span>
+                        <span>🏃 {item.nonStrikerSummary}</span>
+                        <span>🎯 {item.bowlerSummary}</span>
+                      </div>
+                    )}
+
+                    {item.type === "OVER_SUMMARY" && (
+                      <div className="commentary-over-summary">
+                        <strong>{item.score}</strong>
+                        <span>🎯 {item.bowlerSummary}</span>
+                      </div>
+                    )}
+                  </div>
+                </div>
+              ))}
+            </div>
+          ))}
+        </div>
       </>
     )}
   </Card>
