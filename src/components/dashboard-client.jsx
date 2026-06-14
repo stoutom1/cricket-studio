@@ -153,11 +153,7 @@ export default function DashboardClient() {
   const [pendingBallData, setPendingBallData] = useState(null);
   const [mustChangeBowler, setMustChangeBowler] = useState(false);
   const [teamForm, setTeamForm] = useState({leagueId: "", name: ""});
-const [playerForm, setPlayerForm] = useState({
-  names: "",
-  teamId: "",
-  leagueId: ""
-});
+const [playerForm, setPlayerForm] = useState({names: "",teamId: "",leagueId: ""});
 const [preferencesLoaded, setPreferencesLoaded] = useState(false);
 const [searchTerm, setSearchTerm] = useState("");
 const [showFullScoreboard, setShowFullScoreboard] = useState(false);
@@ -180,6 +176,8 @@ const [me, setMe] = useState(null);
 const [permissionsLoading, setPermissionsLoading] = useState(false);
 const scheduledMatches = matches.filter((m) => normalizeStatus(m.status) === "SCHEDULED");
 const [scoringSubTab, setScoringSubTab] = useState("ADVANCED");
+const [statsSubTab, setStatsSubTab] = useState("BATTING");
+const [leagueStats, setLeagueStats] = useState(null);
 const isSuperAdmin =
   session?.user?.email ===
   "surprisecricket11@gmail.com";
@@ -486,6 +484,12 @@ useEffect(() => {
       checkMobile
     );
 }, []);
+useEffect(() => {
+  if (activeLeagueId) {
+    loadLeagueStats(activeLeagueId);
+  }
+}, [activeLeagueId]);
+
 async function handleCreateLeague() {
   const league = await api("/api/leagues", {
     method: "POST",
@@ -502,7 +506,12 @@ async function handleCreateLeague() {
   setShowLeagueModal(false);
   setLeagueName("");
 }
+async function loadLeagueStats(leagueId) {
+  if (!leagueId) return;
 
+  const data = await api(`/api/leagues/${leagueId}/stats`);
+  setLeagueStats(data);
+}
 const filteredTeams = teams.filter(
   (team) =>
     String(team.leagueId) ===
@@ -549,7 +558,10 @@ const [ballForm, setBallForm] = useState({
   wicketType: "NONE",
   dismissedPlayerId: "",
   newBatterId: "",
-  note: ""
+  note: "",
+  fielderId: "",
+  assistantFielderId: "",
+  wicketNote: ""
 });
 async function loadMatches() {
   try {
@@ -1554,7 +1566,16 @@ async function handleAddBall(e) {
               ? Number(ballForm.newBatterId)
               : null,
     note: ballForm.note,
-    matchStatus: scoreboard.match.status
+    matchStatus: scoreboard.match.status,
+    fielderId: ballForm.fielderId
+  ? Number(ballForm.fielderId)
+  : null,
+
+assistantFielderId: ballForm.assistantFielderId
+  ? Number(ballForm.assistantFielderId)
+  : null,
+
+wicketNote: ballForm.wicketNote || null
   });
 }
 async function submitBall(data) {
@@ -1592,7 +1613,10 @@ async function submitBall(data) {
       newBatterId: "",
       dismissedPlayerId: "",
       note: "",
-      dismissal: ""
+      dismissal: "",
+      fielderId: "",
+      assistantFielderId: "",
+      wicketNote: ""
     }));
 
     setShowAdvancedSheet(false);
@@ -1875,7 +1899,17 @@ async function confirmWicket() {
       newBatterId: Number(ballForm.newBatterId),
 
       note: ballForm.note,
-      matchStatus: scoreboard?.match?.status
+      matchStatus: scoreboard?.match?.status,
+
+      fielderId: ballForm.fielderId
+          ? Number(ballForm.fielderId)
+          : null,
+
+      assistantFielderId: ballForm.assistantFielderId
+          ? Number(ballForm.assistantFielderId)
+          : null,
+
+      wicketNote: ballForm.wicketNote || null
     });
 
     setMessage(
@@ -3125,7 +3159,61 @@ return (
                     ))}
                   </select>
                 </label>
+{["CAUGHT", "STUMPED", "RUN_OUT"].includes(ballForm.wicketType) && (
+  <label>
+    <span>
+      {ballForm.wicketType === "CAUGHT"
+        ? "Caught By"
+        : ballForm.wicketType === "STUMPED"
+          ? "Stumped By / Wicketkeeper"
+          : "Run Out By"}
+    </span>
 
+    <select
+      value={ballForm.fielderId || ""}
+      onChange={(e) =>
+        setBallForm((prev) => ({
+          ...prev,
+          fielderId: e.target.value
+        }))
+      }
+      disabled={!ballForm.isWicket}
+    >
+      <option value="">Select fielder</option>
+
+      {(bowlingTeam?.players || []).map((p) => (
+        <option key={p.id} value={p.id}>
+          {p.name}
+        </option>
+      ))}
+    </select>
+  </label>
+)}
+
+{ballForm.wicketType === "RUN_OUT" && (
+  <label>
+    <span>Assisted By / Stumps Broken By</span>
+
+    <select
+      value={ballForm.assistantFielderId || ""}
+      onChange={(e) =>
+        setBallForm((prev) => ({
+          ...prev,
+          assistantFielderId: e.target.value
+        }))
+      }
+      disabled={!ballForm.isWicket}
+    >
+      <option value="">Optional</option>
+
+      {(bowlingTeam?.players || []).map((p) => (
+        <option key={p.id} value={p.id}>
+          {p.name}
+        </option>
+      ))}
+    </select>
+  </label>
+)}
                 <label>
                   <span>New Batter</span>
                   <select
@@ -3337,7 +3425,61 @@ return (
                     ))}
                   </select>
                 </label>
+{["CAUGHT", "STUMPED", "RUN_OUT"].includes(ballForm.wicketType) && (
+  <label>
+    <span>
+      {ballForm.wicketType === "CAUGHT"
+        ? "Caught By"
+        : ballForm.wicketType === "STUMPED"
+          ? "Stumped By / Wicketkeeper"
+          : "Run Out By"}
+    </span>
 
+    <select
+      value={ballForm.fielderId || ""}
+      onChange={(e) =>
+        setBallForm((prev) => ({
+          ...prev,
+          fielderId: e.target.value
+        }))
+      }
+      disabled={!ballForm.isWicket}
+    >
+      <option value="">Select fielder</option>
+
+      {(bowlingTeam?.players || []).map((p) => (
+        <option key={p.id} value={p.id}>
+          {p.name}
+        </option>
+      ))}
+    </select>
+  </label>
+)}
+
+{ballForm.wicketType === "RUN_OUT" && (
+  <label>
+    <span>Assisted By / Stumps Broken By</span>
+
+    <select
+      value={ballForm.assistantFielderId || ""}
+      onChange={(e) =>
+        setBallForm((prev) => ({
+          ...prev,
+          assistantFielderId: e.target.value
+        }))
+      }
+      disabled={!ballForm.isWicket}
+    >
+      <option value="">Optional</option>
+
+      {(bowlingTeam?.players || []).map((p) => (
+        <option key={p.id} value={p.id}>
+          {p.name}
+        </option>
+      ))}
+    </select>
+  </label>
+)}
                 <label>
                   <span>New Batter</span>
                   <select
@@ -4393,26 +4535,269 @@ return (
 </Card>
 )}
 {activeTab === "stats" && (
-  <Card title="📈 Statistics">
-    <div
-      style={{
-        textAlign: "center",
-        padding: "50px 20px",
-      }}
-    >
-      <h2>🚧 Statistics Module Coming Soon</h2>
+  <div className="stats-page">
+    <Card title="📊 League Statistics" defaultCollapsed={false}>
+      <div className="active-league-banner">
+        Active League:{" "}
+        <strong>
+          {activeLeague?.name || "No league selected"}
+        </strong>
+      </div>
 
-      <p>
-        This section is currently under development.
-      </p>
+      <div className="stats-subtabs">
+        <button
+          type="button"
+          className={statsSubTab === "BATTING" ? "active" : ""}
+          onClick={() => setStatsSubTab("BATTING")}
+        >
+          🏏 Batting
+        </button>
 
-      <p style={{ color: "#6b7280" }}>
-        Future releases will include batting averages,
-        bowling figures, leaderboards, player rankings,
-        team analytics, and match insights.
-      </p>
+        <button
+          type="button"
+          className={statsSubTab === "BOWLING" ? "active" : ""}
+          onClick={() => setStatsSubTab("BOWLING")}
+        >
+          🎯 Bowling
+        </button>
+
+        <button
+          type="button"
+          className={statsSubTab === "FIELDING" ? "active" : ""}
+          onClick={() => setStatsSubTab("FIELDING")}
+        >
+          🧤 Fielding
+        </button>
+
+        <button
+          type="button"
+          className={statsSubTab === "RANKINGS" ? "active" : ""}
+          onClick={() => setStatsSubTab("RANKINGS")}
+        >
+          🏆 Rankings
+        </button>
+      </div>
+    </Card>
+
+    {!activeLeagueId ? (
+      <Card title="Select League">
+        <p className="muted">Please select an active league first.</p>
+      </Card>
+    ) : !leagueStats ? (
+      <Card title="Loading Stats">
+        <p className="muted">Loading league statistics...</p>
+      </Card>
+    ) : (
+      <>
+        {statsSubTab === "BATTING" && (
+          <Card title="🏏 Batting Records">
+            {!leagueStats?.batting?.length ? (
+              <p className="muted">No batting stats yet.</p>
+            ) : (
+              <div className="table-scroll">
+                <table className="score-table">
+                  <thead>
+                    <tr>
+                      <th>Player</th>
+                      <th>Team</th>
+                      <th>M</th>
+                      <th>Inn</th>
+                      <th>Runs</th>
+                      <th>Balls</th>
+                      <th>Avg</th>
+                      <th>SR</th>
+                      <th>4s</th>
+                      <th>6s</th>
+                      <th>HS</th>
+                      <th>Out</th>
+                    </tr>
+                  </thead>
+
+                  <tbody>
+                    {leagueStats.batting.map((row) => (
+                      <tr key={row.playerId}>
+                        <td>{row.playerName}</td>
+                        <td>{row.teamName}</td>
+                        <td>{row.matches}</td>
+                        <td>{row.battingInnings}</td>
+                        <td>{row.runs}</td>
+                        <td>{row.balls}</td>
+                        <td>{row.average}</td>
+                        <td>{row.strikeRate}</td>
+                        <td>{row.fours}</td>
+                        <td>{row.sixes}</td>
+                        <td>{row.highestScore}</td>
+                        <td>{row.lastDismissal || "not out"}</td>
+                      </tr>
+                    ))}
+                  </tbody>
+                </table>
+              </div>
+            )}
+          </Card>
+        )}
+
+        {statsSubTab === "BOWLING" && (
+          <Card title="🎯 Bowling Records">
+            {!leagueStats?.bowling?.length ? (
+              <p className="muted">No bowling stats yet.</p>
+            ) : (
+              <div className="table-scroll">
+                <table className="score-table">
+                  <thead>
+                    <tr>
+                      <th>Player</th>
+                      <th>Team</th>
+                      <th>M</th>
+                      <th>Overs</th>
+                      <th>Runs</th>
+                      <th>Wkts</th>
+                      <th>Eco</th>
+                      <th>Avg</th>
+                      <th>SR</th>
+                      <th>Dots</th>
+                      <th>Best</th>
+                    </tr>
+                  </thead>
+
+                  <tbody>
+                    {leagueStats.bowling.map((row) => (
+                      <tr key={row.playerId}>
+                        <td>{row.playerName}</td>
+                        <td>{row.teamName}</td>
+                        <td>{row.matches}</td>
+                        <td>{row.bowlingOvers}</td>
+                        <td>{row.bowlingRuns}</td>
+                        <td>{row.wickets}</td>
+                        <td>{row.economy}</td>
+                        <td>{row.bowlingAverage}</td>
+                        <td>{row.bowlingStrikeRate}</td>
+                        <td>{row.dots}</td>
+                        <td>{row.bestBowling}</td>
+                      </tr>
+                    ))}
+                  </tbody>
+                </table>
+              </div>
+            )}
+          </Card>
+        )}
+
+        {statsSubTab === "FIELDING" && (
+          <Card title="🧤 Fielding Records">
+            {!leagueStats?.fielding?.length ? (
+              <p className="muted">No fielding stats yet.</p>
+            ) : (
+              <div className="table-scroll">
+                <table className="score-table">
+                  <thead>
+                    <tr>
+                      <th>Player</th>
+                      <th>Team</th>
+                      <th>Catches</th>
+                      <th>Run Outs</th>
+                      <th>Stumpings</th>
+                      <th>Assists</th>
+                      <th>Total</th>
+                    </tr>
+                  </thead>
+
+                  <tbody>
+                    {leagueStats.fielding.map((row) => (
+                      <tr key={row.playerId}>
+                        <td>{row.playerName}</td>
+                        <td>{row.teamName}</td>
+                        <td>{row.catches}</td>
+                        <td>{row.runOuts}</td>
+                        <td>{row.stumpings}</td>
+                        <td>{row.assists}</td>
+                        <td>
+                          <strong>{row.fieldingTotal}</strong>
+                        </td>
+                      </tr>
+                    ))}
+                  </tbody>
+                </table>
+              </div>
+            )}
+          </Card>
+        )}
+
+{statsSubTab === "RANKINGS" && (
+  <Card title="🏆 League Rankings">
+    <div className="rankings-grid pretty-rankings">
+      {[
+        {
+          title: "Top Run Scorers",
+          icon: "🏏",
+          rows: leagueStats?.rankings?.topRunScorers || [],
+          value: (r) => `${r.runs} runs`
+        },
+        {
+          title: "Top Wicket Takers",
+          icon: "🎯",
+          rows: leagueStats?.rankings?.topWicketTakers || [],
+          value: (r) => `${r.wickets} wkts`
+        },
+        {
+          title: "Best Strike Rate",
+          icon: "🚀",
+          rows: leagueStats?.rankings?.bestStrikeRate || [],
+          value: (r) => r.strikeRate
+        },
+        {
+          title: "Best Economy",
+          icon: "🧊",
+          rows: leagueStats?.rankings?.bestEconomy || [],
+          value: (r) => r.economy
+        },
+        {
+          title: "Most Sixes",
+          icon: "💥",
+          rows: leagueStats?.rankings?.mostSixes || [],
+          value: (r) => `${r.sixes} sixes`
+        },
+        {
+          title: "Best All-Rounders",
+          icon: "⭐",
+          rows: leagueStats?.rankings?.bestAllRounders || [],
+          value: (r) => `${r.allRounderPoints} pts`
+        }
+      ].map((section) => (
+        <div className="ranking-card" key={section.title}>
+          <div className="ranking-card-header">
+            <span className="ranking-icon">{section.icon}</span>
+            <h4>{section.title}</h4>
+          </div>
+
+          {!section.rows.length ? (
+            <p className="muted small">No data yet</p>
+          ) : (
+            section.rows.slice(0, 5).map((row, idx) => (
+              <div className="ranking-item" key={`${section.title}-${row.playerId}`}>
+                <div className={`rank-badge rank-${idx + 1}`}>
+                  #{idx + 1}
+                </div>
+
+                <div className="ranking-player">
+                  <strong>{row.playerName}</strong>
+                  <small>{row.teamName}</small>
+                </div>
+
+                <div className="ranking-value">
+                  {section.value(row)}
+                </div>
+              </div>
+            ))
+          )}
+        </div>
+      ))}
     </div>
   </Card>
+)}
+      </>
+    )}
+  </div>
 )}
 {activeTab === "permissions" && (
  <div className="scoring-layout">
@@ -5914,29 +6299,33 @@ KL Rahul`}
       <h3>🏏 Wicket Details</h3>
 
       <p style={{ opacity: 0.75, marginBottom: 16 }}>
-        Select the dismissal type, runs completed, player out, and replacement batter.
+        Select dismissal type, fielder details, player out, and replacement batter.
       </p>
 
       <label>
         <span>Wicket Type</span>
+
         <select
           value={ballForm.wicketType || ""}
- onChange={(e) => {
-  const wicketType = e.target.value;
+          onChange={(e) => {
+            const wicketType = e.target.value;
 
-  setBallForm((prev) => ({
-    ...prev,
-    wicketType,
-    dismissedPlayerId:
-      wicketType === "RUN_OUT"
-        ? ""
-        : prev.strikerId
-  }));
+            setBallForm((prev) => ({
+              ...prev,
+              wicketType,
+              dismissedPlayerId:
+                wicketType === "RUN_OUT"
+                  ? ""
+                  : prev.strikerId,
+              fielderId: "",
+              assistantFielderId: "",
+              wicketNote: ""
+            }));
 
-  if (wicketType !== "RUN_OUT") {
-    setRunOutRuns(null);
-  }
-}}
+            if (wicketType !== "RUN_OUT") {
+              setRunOutRuns(null);
+            }
+          }}
         >
           {WICKET_TYPES.filter((x) => x !== "NONE").map((type) => (
             <option key={type} value={type}>
@@ -5946,80 +6335,152 @@ KL Rahul`}
         </select>
       </label>
 
-{ballForm.wicketType === "RUN_OUT" && (
-  <div className="runout-panel">
-    <h4>🏏 RUN OUT</h4>
+      {ballForm.wicketType === "RUN_OUT" && (
+        <div className="runout-panel">
+          <h4>🏏 RUN OUT</h4>
 
-    <p className="muted">
-      How many runs were completed before the run out?
-    </p>
+          <p className="muted">
+            How many runs were completed before the run out?
+          </p>
 
-    <div className="runout-runs-grid">
-      {[0, 1, 2, 3, 4, 5, 6].map((runs) => (
-        <button
-          key={runs}
-          type="button"
-          className={`btn ${
-            runOutRuns === runs ? "btn-selected" : "btn-outline"
-          }`}
-          onClick={() => {
-            setRunOutRuns(runs);
+          <div className="runout-runs-grid">
+            {[0, 1, 2, 3, 4, 5, 6].map((runs) => (
+              <button
+                key={runs}
+                type="button"
+                className={`btn ${
+                  runOutRuns === runs ? "btn-selected" : "btn-outline"
+                }`}
+                onClick={() => {
+                  setRunOutRuns(runs);
 
-            setBallForm((prev) => ({
-              ...prev,
-              runsOffBat: runs,
-              extras: 0,
-              extraType: "NONE"
-            }));
-          }}
-        >
-          {runs}
-        </button>
-      ))}
-    </div>
+                  setBallForm((prev) => ({
+                    ...prev,
+                    runsOffBat: runs,
+                    extras: 0,
+                    extraType: "NONE"
+                  }));
+                }}
+              >
+                {runs}
+              </button>
+            ))}
+          </div>
 
-    {runOutRuns !== null && (
-      <div className="runout-summary">
-        <strong>
-          Selected: Run Out + {runOutRuns}{" "}
-          {runOutRuns === 1 ? "run" : "runs"}
-        </strong>
+          {runOutRuns !== null && (
+            <div className="runout-summary">
+              <strong>
+                Selected: Run Out + {runOutRuns}{" "}
+                {runOutRuns === 1 ? "run" : "runs"}
+              </strong>
 
-        <div>
-          {runOutRuns % 2 === 1
-            ? "ℹ️ Batters crossed. Strike will rotate. If not, please click on the SWAP button after current action is completed."
-            : "ℹ️ Strike remains unchanged. If not, please click on the SWAP button after current action is completed."}
+              <div>
+                {runOutRuns % 2 === 1
+                  ? "ℹ️ Batters crossed. Strike will rotate. If not, click SWAP after this action."
+                  : "ℹ️ Strike remains unchanged. If not, click SWAP after this action."}
+              </div>
+            </div>
+          )}
+
+          {runOutRuns !== null && (
+            <label style={{ marginTop: 12 }}>
+              <span>Who is out?</span>
+
+              <select
+                value={ballForm.dismissedPlayerId || ""}
+                onChange={(e) =>
+                  setBallForm((prev) => ({
+                    ...prev,
+                    dismissedPlayerId: e.target.value
+                  }))
+                }
+              >
+                <option value="">Select player out</option>
+
+                <option value={ballForm.strikerId}>
+                  Striker ({scoreboard?.currentState?.strikerName})
+                </option>
+
+                <option value={ballForm.nonStrikerId}>
+                  Non-Striker ({scoreboard?.currentState?.nonStrikerName})
+                </option>
+              </select>
+            </label>
+          )}
         </div>
-      </div>
-    )}
+      )}
 
-    {runOutRuns !== null && (
-      <label style={{ marginTop: 12 }}>
-        <span>Who is out?</span>
+      {["CAUGHT", "STUMPED", "RUN_OUT"].includes(ballForm.wicketType) && (
+        <label style={{ marginTop: 12 }}>
+          <span>
+            {ballForm.wicketType === "CAUGHT"
+              ? "Caught By"
+              : ballForm.wicketType === "STUMPED"
+                ? "Stumped By / Wicketkeeper"
+                : "Run Out By"}
+          </span>
 
-        <select
-          value={ballForm.dismissedPlayerId || ""}
-          onChange={(e) =>
-            setBallForm((prev) => ({
-              ...prev,
-              dismissedPlayerId: e.target.value
-            }))
-          }
-        >
-          <option value="">Select player out</option>
+          <select
+            value={ballForm.fielderId || ""}
+            onChange={(e) =>
+              setBallForm((prev) => ({
+                ...prev,
+                fielderId: e.target.value
+              }))
+            }
+          >
+            <option value="">Select fielder</option>
 
-          <option value={ballForm.strikerId}>
-            Striker ({scoreboard?.currentState?.strikerName})
-          </option>
+            {(bowlingTeam?.players || []).map((p) => (
+              <option key={p.id} value={p.id}>
+                {p.name}
+              </option>
+            ))}
+          </select>
+        </label>
+      )}
 
-          <option value={ballForm.nonStrikerId}>
-            Non-Striker ({scoreboard?.currentState?.nonStrikerName})
-          </option>
-        </select>
-      </label>
-    )}
-  </div>
-)}
+      {ballForm.wicketType === "RUN_OUT" && (
+        <label style={{ marginTop: 12 }}>
+          <span>Assisted By / Stumps Broken By</span>
+
+          <select
+            value={ballForm.assistantFielderId || ""}
+            onChange={(e) =>
+              setBallForm((prev) => ({
+                ...prev,
+                assistantFielderId: e.target.value
+              }))
+            }
+          >
+            <option value="">Optional</option>
+
+            {(bowlingTeam?.players || []).map((p) => (
+              <option key={p.id} value={p.id}>
+                {p.name}
+              </option>
+            ))}
+          </select>
+        </label>
+      )}
+
+      {["OTHER", "RETIRED_OUT"].includes(ballForm.wicketType) && (
+        <label style={{ marginTop: 12 }}>
+          <span>Wicket Note</span>
+
+          <input
+            type="text"
+            value={ballForm.wicketNote || ""}
+            onChange={(e) =>
+              setBallForm((prev) => ({
+                ...prev,
+                wicketNote: e.target.value
+              }))
+            }
+            placeholder="Example: obstructing the field"
+          />
+        </label>
+      )}
 
       <label style={{ marginTop: 12 }}>
         <span>New Batter</span>
@@ -6058,7 +6519,10 @@ KL Rahul`}
               dismissedPlayerId: "",
               newBatterId: "",
               runsOffBat: 0,
-              extras: 0
+              extras: 0,
+              fielderId: "",
+              assistantFielderId: "",
+              wicketNote: ""
             }));
           }}
         >

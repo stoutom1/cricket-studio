@@ -570,13 +570,59 @@ function runsChargedToBowler(ball) {
   if (["BYE", "LEGBYE"].includes(ball.extraType)) return 0;
   return ball.runsOffBat + ball.extras;
 }
+function playerName(playerMap, id) {
+  if (!id) return "";
+  return playerMap.get(Number(id))?.name || "";
+}
 
+function formatDismissal(ball, playerMap) {
+  const bowler = playerName(playerMap, ball.bowlerId);
+  const fielder = playerName(playerMap, ball.fielderId);
+  const assistant = playerName(playerMap, ball.assistantFielderId);
+
+  switch (ball.wicketType) {
+    case "BOWLED":
+      return bowler ? `b ${bowler}` : "bowled";
+
+    case "LBW":
+      return bowler ? `lbw b ${bowler}` : "lbw";
+
+    case "CAUGHT":
+      return `c ${fielder || "fielder"}${bowler ? ` b ${bowler}` : ""}`;
+
+    case "STUMPED":
+      return `st ${fielder || "keeper"}${bowler ? ` b ${bowler}` : ""}`;
+
+    case "RUN_OUT":
+      if (fielder && assistant) {
+        return `run out (${fielder} / ${assistant})`;
+      }
+      if (fielder) {
+        return `run out (${fielder})`;
+      }
+      return "run out";
+
+    case "HIT_WICKET":
+      return bowler ? `hit wicket b ${bowler}` : "hit wicket";
+
+    case "RETIRED_HURT":
+      return "retired hurt";
+
+    case "RETIRED_OUT":
+      return "retired out";
+
+    default:
+      return ball.wicketNote || "out";
+  }
+}
 export function buildMatchStats(match) {
   const players = [
     ...(match.teamA?.players || []),
     ...(match.teamB?.players || [])
   ];
-
+const playerMap = new Map(
+  players.map((p) => [Number(p.id), p])
+);
   const batting = new Map();
   const bowling = new Map();
 
@@ -634,9 +680,7 @@ export function buildMatchStats(match) {
         //  row.outs = "Not Out";
         //}
 
-        row.dismissal = (ball.wicketType || "OUT")
-          .replace(/_/g, " ")
-          .toLowerCase();
+row.dismissal = formatDismissal(ball, playerMap);
       }
 
     if (ball.bowlerId && bowling.has(ball.bowlerId)) {

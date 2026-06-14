@@ -40,6 +40,9 @@ export async function POST(request) {
       : null,
     note: body.note?.trim() || null,
     matchStatus: String(body.matchStatus),
+    fielderId: body.fielderId || null,
+    assistantFielderId: body.assistantFielderId || null,
+    wicketNote: body.wicketNote || null,
   };
 
 if (
@@ -396,6 +399,9 @@ const nextSequence = (lastBall?.sequence ?? 0) + 1;
         : "NONE",
       isPowerPlay,
       note: payload.note,
+      fielderId: payload.fielderId || null,
+      assistantFielderId: payload.assistantFielderId || null,
+      wicketNote: payload.wicketNote || null,
     },
   });
   const nextState =
