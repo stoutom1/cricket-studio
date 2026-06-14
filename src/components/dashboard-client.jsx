@@ -3500,8 +3500,6 @@ return (
           ))}
         </select>
       </label>
-    </Card>
-
     <div className="matches-subtabs">
       <button
         type="button"
@@ -3535,7 +3533,7 @@ return (
         ✅ Completed
       </button>
     </div>
-
+    </Card>
     {!activeLeagueId && (
       <Card title="📋 Matches">
         <div className="empty-state">
