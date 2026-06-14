@@ -144,7 +144,15 @@ function ensurePlayer(statsMap, player) {
 
   return statsMap.get(player.id);
 }
+function playerStatsKey(player, shouldMergePlayersByName) {
+  if (shouldMergePlayersByName) {
+    return String(player.name || "")
+      .trim()
+      .toLowerCase();
+  }
 
+  return String(player.id);
+}
 export async function GET(req, { params }) {
   try {
     const session = await getServerSession(authOptions);
@@ -165,6 +173,14 @@ export async function GET(req, { params }) {
         { status: 400 }
       );
     }
+
+    const league = await prisma.league.findUnique({
+  where: { id: leagueId }
+});
+
+const shouldMergePlayersByName =
+  league?.name?.trim().toLowerCase() ===
+  "surprise cricket league";
 
     const user = await prisma.user.findUnique({
       where: { email: session.user.email }
@@ -222,10 +238,45 @@ export async function GET(req, { params }) {
     const playerMap = new Map();
     const statsMap = new Map();
 
-    for (const player of allPlayers) {
-      const row = ensurePlayer(statsMap, player);
-      playerMap.set(player.id, row);
-    }
+for (const player of allPlayers) {
+  const key = playerStatsKey(player, shouldMergePlayersByName);
+
+  if (!statsMap.has(key)) {
+    statsMap.set(key, {
+      playerId: key,
+      playerName: player.name,
+      teamId: player.teamId,
+      teamName: shouldMergePlayersByName
+        ? "Surprise 1 / Surprise 2"
+        : player.team?.name || "",
+
+      matchesSet: new Set(),
+
+      battingInnings: 0,
+      runs: 0,
+      balls: 0,
+      fours: 0,
+      sixes: 0,
+      outs: 0,
+      highestScore: 0,
+      dismissals: [],
+
+      bowlingBalls: 0,
+      bowlingRuns: 0,
+      wickets: 0,
+      dots: 0,
+      bestWickets: 0,
+      bestRuns: 0,
+
+      catches: 0,
+      runOuts: 0,
+      stumpings: 0,
+      assists: 0
+    });
+  }
+
+  playerMap.set(Number(player.id), statsMap.get(key));
+}
 
     /*
     const eligibleMatches = matches.filter((match) =>
@@ -238,9 +289,8 @@ const eligibleMatches = matches;
       const bowlingFiguresByPlayer = new Map();
 
       for (const ball of match.balls || []) {
-        const striker = statsMap.get(Number(ball.strikerId));
-        const bowler = statsMap.get(Number(ball.bowlerId));
-
+const striker = playerMap.get(Number(ball.strikerId));
+const bowler = playerMap.get(Number(ball.bowlerId));
         if (striker) {
           striker.matchesSet.add(match.id);
 
@@ -320,7 +370,7 @@ const eligibleMatches = matches;
           ball.dismissedPlayerId &&
           ball.wicketType !== "RETIRED_HURT"
         ) {
-          const dismissed = statsMap.get(Number(ball.dismissedPlayerId));
+const dismissed = playerMap.get(Number(ball.dismissedPlayerId));
 
           if (dismissed) {
             dismissed.outs += 1;
@@ -328,7 +378,7 @@ const eligibleMatches = matches;
           }
         }
 
-        const fielder = statsMap.get(Number(ball.fielderId));
+const fielder = playerMap.get(Number(ball.fielderId));
 
         if (fielder) {
           fielder.matchesSet.add(match.id);
@@ -346,7 +396,7 @@ const eligibleMatches = matches;
           }
         }
 
-        const assistant = statsMap.get(Number(ball.assistantFielderId));
+const assistant = playerMap.get(Number(ball.assistantFielderId));
 
         if (assistant && ball.wicketType === "RUN_OUT") {
           assistant.matchesSet.add(match.id);
@@ -466,54 +516,31 @@ const eligibleMatches = matches;
       .filter((r) => r.fieldingTotal > 0)
       .sort((a, b) => b.fieldingTotal - a.fieldingTotal);
 
-    const rankings = {
-      topRunScorers: [...batting]
-        .sort((a, b) => b.runs - a.runs)
-        .slice(0, 10),
+const rankings = {
+  topRunScorers: [...batting]
+    .sort((a, b) => b.runs - a.runs),
 
-      topWicketTakers: [...bowling]
-        .sort((a, b) => b.wickets - a.wickets)
-        .slice(0, 10),
+  topWicketTakers: [...bowling]
+    .sort((a, b) => b.wickets - a.wickets),
 
-      bestStrikeRate: [...batting]
-        .filter((r) => r.balls >= 10)
-        .sort((a, b) => Number(b.strikeRate) - Number(a.strikeRate))
-        .slice(0, 10),
+  bestStrikeRate: [...batting]
+    .filter((r) => r.balls >= 10)
+    .sort((a, b) => Number(b.strikeRate) - Number(a.strikeRate)),
 
-      bestEconomy: [...bowling]
-        .filter((r) => r.bowlingBalls >= 6)
-        .sort((a, b) => Number(a.economy) - Number(b.economy))
-        .slice(0, 10),
+  bestEconomy: [...bowling]
+    .filter((r) => r.bowlingBalls >= 6)
+    .sort((a, b) => Number(a.economy) - Number(b.economy)),
 
-      mostSixes: [...batting]
-        .sort((a, b) => b.sixes - a.sixes)
-        .slice(0, 10),
+  mostSixes: [...batting]
+    .sort((a, b) => b.sixes - a.sixes),
 
-      mostCatches: [...fielding]
-        .sort((a, b) => b.catches - a.catches)
-        .slice(0, 10),
+  mostCatches: [...fielding]
+    .sort((a, b) => b.catches - a.catches),
 
-      bestAllRounders: [...rows]
-        .filter((r) => r.allRounderPoints > 0)
-        .sort((a, b) => b.allRounderPoints - a.allRounderPoints)
-        .slice(0, 10)
-    };
-console.log("LEAGUE STATS DEBUG-1", {
-  leagueId,
-  teamsCount: teams.length,
-  playersCount: allPlayers.length,
-  matchesCount: matches.length,
-  eligibleMatchesCount: eligibleMatches.length,
-  ballsCount: eligibleMatches.reduce(
-    (sum, m) => sum + (m.balls?.length || 0),
-    0
-  ),
-  statuses: matches.map((m) => ({
-    id: m.id,
-    status: m.status,
-    balls: m.balls?.length || 0
-  }))
-});
+  bestAllRounders: [...rows]
+    .filter((r) => r.allRounderPoints > 0)
+    .sort((a, b) => b.allRounderPoints - a.allRounderPoints)
+};
     return NextResponse.json({
       leagueId,
       matchesCount: eligibleMatches.length,
@@ -524,22 +551,6 @@ console.log("LEAGUE STATS DEBUG-1", {
     });
   } catch (error) {
     console.error("League stats failed:", error);
-console.log("LEAGUE STATS DEBUG", {
-  leagueId,
-  teamsCount: teams.length,
-  playersCount: allPlayers.length,
-  matchesCount: matches.length,
-  eligibleMatchesCount: eligibleMatches.length,
-  ballsCount: eligibleMatches.reduce(
-    (sum, m) => sum + (m.balls?.length || 0),
-    0
-  ),
-  statuses: matches.map((m) => ({
-    id: m.id,
-    status: m.status,
-    balls: m.balls?.length || 0
-  }))
-});
     return NextResponse.json(
       { error: "Failed to load league stats" },
       { status: 500 }

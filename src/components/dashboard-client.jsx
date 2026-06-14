@@ -178,6 +178,7 @@ const scheduledMatches = matches.filter((m) => normalizeStatus(m.status) === "SC
 const [scoringSubTab, setScoringSubTab] = useState("ADVANCED");
 const [statsSubTab, setStatsSubTab] = useState("BATTING");
 const [leagueStats, setLeagueStats] = useState(null);
+const [rankingType, setRankingType] = useState("topRunScorers");
 const isSuperAdmin =
   session?.user?.email ===
   "surprisecricket11@gmail.com";
@@ -214,26 +215,6 @@ useEffect(() => {
 }, [activeTab]);
 useEffect(() => {
   if (!activeLeagueId) return;
-
-  /* below functionwas originally developed but new one is being asked for here
-  async function loadPermissions() {
-    try {
-      setPermissionsLoading(true);
-
-      const data = await api(
-        `/api/leagues/${activeLeagueId}/permissions`
-      );
-
-      setPermissions(data);
-    } catch (err) {
-      console.error(err);
-
-      setPermissions(null);
-    } finally {
-      setPermissionsLoading(false);
-    }
-  }
-  */
 
   if (isSuperAdmin) {
     setPermissions({
@@ -563,6 +544,50 @@ const [ballForm, setBallForm] = useState({
   assistantFielderId: "",
   wicketNote: ""
 });
+const rankingConfig = {
+  topRunScorers: {
+    label: "Runs",
+    icon: "🏏",
+    title: "Top Run Scorers",
+    value: (r) => `${r.runs} runs`
+  },
+  topWicketTakers: {
+    label: "Wickets",
+    icon: "🎯",
+    title: "Top Wicket Takers",
+    value: (r) => `${r.wickets} wkts`
+  },
+  bestStrikeRate: {
+    label: "Strike Rate",
+    icon: "🚀",
+    title: "Best Strike Rate",
+    value: (r) => r.strikeRate
+  },
+  bestEconomy: {
+    label: "Economy",
+    icon: "🧊",
+    title: "Best Economy",
+    value: (r) => r.economy
+  },
+  mostSixes: {
+    label: "Sixes",
+    icon: "💥",
+    title: "Most Sixes",
+    value: (r) => `${r.sixes} sixes`
+  },
+  bestAllRounders: {
+    label: "All-rounders",
+    icon: "⭐",
+    title: "Best All-Rounders",
+    value: (r) => `${r.allRounderPoints} pts`
+  }
+};
+
+const selectedRanking =
+  leagueStats?.rankings?.[rankingType] || [];
+
+const currentRankingConfig =
+  rankingConfig[rankingType];
 async function loadMatches() {
   try {
     if (!activeLeagueId) {
@@ -4724,75 +4749,92 @@ return (
         )}
 
 {statsSubTab === "RANKINGS" && (
-  <Card title="🏆 League Rankings">
-    <div className="rankings-grid pretty-rankings">
-      {[
-        {
-          title: "Top Run Scorers",
-          icon: "🏏",
-          rows: leagueStats?.rankings?.topRunScorers || [],
-          value: (r) => `${r.runs} runs`
-        },
-        {
-          title: "Top Wicket Takers",
-          icon: "🎯",
-          rows: leagueStats?.rankings?.topWicketTakers || [],
-          value: (r) => `${r.wickets} wkts`
-        },
-        {
-          title: "Best Strike Rate",
-          icon: "🚀",
-          rows: leagueStats?.rankings?.bestStrikeRate || [],
-          value: (r) => r.strikeRate
-        },
-        {
-          title: "Best Economy",
-          icon: "🧊",
-          rows: leagueStats?.rankings?.bestEconomy || [],
-          value: (r) => r.economy
-        },
-        {
-          title: "Most Sixes",
-          icon: "💥",
-          rows: leagueStats?.rankings?.mostSixes || [],
-          value: (r) => `${r.sixes} sixes`
-        },
-        {
-          title: "Best All-Rounders",
-          icon: "⭐",
-          rows: leagueStats?.rankings?.bestAllRounders || [],
-          value: (r) => `${r.allRounderPoints} pts`
-        }
-      ].map((section) => (
-        <div className="ranking-card" key={section.title}>
-          <div className="ranking-card-header">
-            <span className="ranking-icon">{section.icon}</span>
-            <h4>{section.title}</h4>
-          </div>
-
-          {!section.rows.length ? (
-            <p className="muted small">No data yet</p>
-          ) : (
-            section.rows.slice(0, 5).map((row, idx) => (
-              <div className="ranking-item" key={`${section.title}-${row.playerId}`}>
-                <div className={`rank-badge rank-${idx + 1}`}>
-                  #{idx + 1}
-                </div>
-
-                <div className="ranking-player">
-                  <strong>{row.playerName}</strong>
-                  <small>{row.teamName}</small>
-                </div>
-
-                <div className="ranking-value">
-                  {section.value(row)}
-                </div>
-              </div>
-            ))
-          )}
-        </div>
+  <Card title="🏆 Rankings Hub">
+    <div className="ranking-category-tabs">
+      {Object.entries(rankingConfig).map(([key, config]) => (
+        <button
+          key={key}
+          type="button"
+          className={rankingType === key ? "active" : ""}
+          onClick={() => setRankingType(key)}
+        >
+          <span>{config.icon}</span>
+          {config.label}
+        </button>
       ))}
     </div>
+
+    {!selectedRanking.length ? (
+      <p className="muted">No ranking data yet.</p>
+    ) : (
+      <>
+        <div className="ranking-hero">
+          {selectedRanking.slice(0, 3).map((row, index) => (
+            <div
+              key={row.playerId}
+              className={`ranking-podium podium-${index + 1}`}
+            >
+              <div className="podium-rank">
+                #{index + 1}
+              </div>
+
+              <div className="podium-avatar">
+                {currentRankingConfig.icon}
+              </div>
+
+              <strong>{row.playerName}</strong>
+
+              <small>{row.teamName}</small>
+
+              <div className="podium-value">
+                {currentRankingConfig.value(row)}
+              </div>
+            </div>
+          ))}
+        </div>
+
+        <div className="ranking-table-header">
+          <h4>
+            {currentRankingConfig.icon} {currentRankingConfig.title}
+          </h4>
+          <span>
+            {selectedRanking.length} players
+          </span>
+        </div>
+
+        <div className="table-scroll">
+          <table className="score-table ranking-table">
+            <thead>
+              <tr>
+                <th>Rank</th>
+                <th>Player</th>
+                <th>Team</th>
+                <th>Matches</th>
+                <th>Value</th>
+              </tr>
+            </thead>
+
+            <tbody>
+              {selectedRanking.map((row, index) => (
+                <tr key={row.playerId}>
+                  <td>
+                    <strong>#{index + 1}</strong>
+                  </td>
+                  <td>{row.playerName}</td>
+                  <td>{row.teamName}</td>
+                  <td>{row.matches}</td>
+                  <td>
+                    <strong>
+                      {currentRankingConfig.value(row)}
+                    </strong>
+                  </td>
+                </tr>
+              ))}
+            </tbody>
+          </table>
+        </div>
+      </>
+    )}
   </Card>
 )}
       </>
