@@ -3139,58 +3139,23 @@ body {
   margin-top: 6px;
   font-size: 13px;
 }
-.pro-scoreboard,
-.full-innings-card,
-.scoreboard-wrap {
-  width: 100%;
-  max-width: 100%;
-  overflow-x: hidden;
-  box-sizing: border-box;
-}
-
-.pro-score-hero {
-  min-width: 0;
-}
-
-.pro-score-hero h2,
-.pro-score-hero p,
-.innings-card-top strong,
-.innings-section-header h3 {
-  overflow-wrap: anywhere;
-  word-break: break-word;
-}
-
-.table-scroll {
-  width: 100%;
-  max-width: 100%;
-  overflow-x: auto;
-  -webkit-overflow-scrolling: touch;
-}
-
-.pro-table {
-  width: 100%;
-  min-width: 640px;
-}
-
-.innings-score-cards,
-.current-match-strip {
-  width: 100%;
-  max-width: 100%;
-}
 @media (max-width: 700px) {
+
   .pro-scoreboard {
     gap: 12px;
   }
 
   .pro-score-hero {
-    flex-direction: column;
     padding: 14px;
     border-radius: 16px;
+    flex-direction: column;
+    gap: 8px;
   }
 
   .pro-score-hero h2 {
     font-size: 18px;
-    line-height: 1.25;
+    line-height: 1.3;
+    margin: 0;
   }
 
   .pro-score-hero p {
@@ -3199,7 +3164,9 @@ body {
   }
 
   .innings-score-cards {
+    display: grid;
     grid-template-columns: 1fr;
+    gap: 10px;
   }
 
   .innings-score-card {
@@ -3207,34 +3174,32 @@ body {
     border-radius: 14px;
   }
 
-  .innings-card-top {
-    align-items: flex-start;
-    flex-direction: column;
-    gap: 4px;
-  }
-
   .innings-main-score {
     font-size: 30px;
   }
 
   .innings-card-meta {
-    display: grid;
-    grid-template-columns: 1fr;
-    gap: 4px;
+    display: flex;
+    flex-wrap: wrap;
+    gap: 8px;
+    font-size: 12px;
   }
 
   .current-match-strip {
-    grid-template-columns: repeat(2, minmax(0, 1fr));
+    display: grid;
+    grid-template-columns: repeat(2, 1fr);
+    gap: 8px;
   }
 
-  .current-match-strip div {
-    min-width: 0;
+  .current-match-strip > div {
     padding: 10px;
+    border-radius: 12px;
   }
 
   .current-match-strip strong {
-    white-space: normal;
-    overflow-wrap: anywhere;
+    display: block;
+    font-size: 13px;
+    word-break: break-word;
   }
 
   .full-innings-card {
@@ -3244,271 +3209,55 @@ body {
 
   .innings-section-header h3 {
     font-size: 16px;
-    line-height: 1.3;
   }
 
-  .pro-table th,
-  .pro-table td {
-    white-space: nowrap;
-    font-size: 12px;
-    padding: 8px;
-  }
-
-  .pro-table td:first-child {
-    min-width: 120px;
-  }
-
-  .fow-list,
-  .pro-recent-balls {
-    max-width: 100%;
+  /*
+   * IMPORTANT:
+   * Let scorecards scroll horizontally
+   * instead of crushing columns.
+   */
+  .table-scroll {
     overflow-x: auto;
-    flex-wrap: nowrap;
     -webkit-overflow-scrolling: touch;
   }
 
-  .ball-timeline-chip,
-  .fow-chip {
-    flex: 0 0 auto;
-  }
-}
-.table-scroll {
-  overflow-x: auto;
-}
-
-.pro-table {
-  min-width: 640px;
-}
-@media (max-width: 700px) {
   .pro-table {
-    min-width: 100%;
-    width: 100%;
-    table-layout: fixed;
+    min-width: 620px;
+    width: max-content;
+    table-layout: auto;
   }
 
   .pro-table th,
   .pro-table td {
-    font-size: 10px;
-    padding: 6px 4px;
-    white-space: normal;
-    word-break: break-word;
-    line-height: 1.2;
+    padding: 8px 10px;
+    white-space: nowrap;
+    font-size: 12px;
   }
 
   .pro-table td:first-child,
   .pro-table th:first-child {
-    width: 26%;
-    min-width: 0;
+    min-width: 120px;
   }
 
-  .pro-table th:nth-child(2),
-  .pro-table td:nth-child(2) {
-    width: 28%;
-  }
-
-  .pro-table th:nth-child(n + 3),
-  .pro-table td:nth-child(n + 3) {
-    width: 8%;
-    text-align: center;
-  }
-
-  .table-scroll {
-    overflow-x: hidden;
-  }
-
-  .score-table {
-    font-size: 10px;
-  }
-
-  .full-innings-card {
-    padding: 8px;
-  }
-}
-@media (max-width: 700px) {
-  /* Batting table */
-  .pro-table th:nth-child(1) {
-    font-size: 0;
-  }
-
-  .pro-table th:nth-child(1)::after {
-    content: "Bat";
-    font-size: 10px;
-  }
-
-  .pro-table th:nth-child(2) {
-    font-size: 0;
-  }
-
-  .pro-table th:nth-child(2)::after {
-    content: "Out";
-    font-size: 10px;
-  }
-
-  .pro-table th:nth-child(5) {
-    font-size: 0;
-  }
-
-  .pro-table th:nth-child(5)::after {
-    content: "4";
-    font-size: 10px;
-  }
-
-  .pro-table th:nth-child(6) {
-    font-size: 0;
-  }
-
-  .pro-table th:nth-child(6)::after {
-    content: "6";
-    font-size: 10px;
-  }
-}
-@media (max-width: 700px) {
-  .bowling-table th:nth-child(1) {
-    font-size: 0;
-  }
-
-  .bowling-table th:nth-child(1)::after {
-    content: "Bowl";
-    font-size: 10px;
-  }
-
-  .bowling-table th:nth-child(6) {
-    font-size: 0;
-  }
-
-  .bowling-table th:nth-child(6)::after {
-    content: "D";
-    font-size: 10px;
-  }
-}
-
-/* Professional scoreboard mobile fix */
-.pro-scoreboard,
-.full-innings-card,
-.innings-score-card,
-.pro-score-hero {
-  max-width: 100%;
-  width: 100%;
-  box-sizing: border-box;
-  overflow: hidden;
-}
-
-.table-scroll {
-  width: 100%;
-  max-width: 100%;
-  overflow-x: auto;
-  -webkit-overflow-scrolling: touch;
-}
-
-.pro-table {
-  width: 100%;
-  border-collapse: collapse;
-}
-
-/* Desktop/laptop keeps professional wide table */
-@media (min-width: 701px) {
-  .pro-table {
-    min-width: 640px;
-  }
-}
-
-/* Phone portrait: fit table inside screen */
-@media (max-width: 700px) {
-  .pro-scoreboard {
-    gap: 10px;
-  }
-
-  .pro-score-hero {
-    padding: 12px;
-    border-radius: 14px;
-    flex-direction: column;
-  }
-
-  .pro-score-hero h2 {
-    font-size: 17px;
-    line-height: 1.25;
-    word-break: break-word;
-  }
-
-  .pro-score-hero p {
-    font-size: 12px;
-    line-height: 1.35;
-  }
-
-  .innings-score-cards,
-  .current-match-strip {
-    grid-template-columns: 1fr !important;
-  }
-
-  .innings-score-card {
-    padding: 12px;
-  }
-
-  .innings-main-score {
-    font-size: 30px;
-  }
-
-  .full-innings-card {
-    padding: 8px;
-    border-radius: 14px;
-  }
-
-  .innings-section-header h3 {
-    font-size: 15px;
-    line-height: 1.3;
-  }
-
-  .table-scroll {
-    overflow-x: hidden;
-  }
-
-  .pro-table {
-    min-width: 0 !important;
-    width: 100%;
-    table-layout: fixed;
-  }
-
-  .pro-table th,
-  .pro-table td {
-    font-size: 9.5px;
-    padding: 6px 3px;
-    line-height: 1.2;
-    white-space: normal;
-    word-break: break-word;
-  }
-
-  .pro-table th:first-child,
-  .pro-table td:first-child {
-    width: 26%;
-  }
-
-  .pro-table th:nth-child(2),
-  .pro-table td:nth-child(2) {
-    width: 28%;
-  }
-
-  .pro-table th:nth-child(n + 3),
-  .pro-table td:nth-child(n + 3) {
-    width: 7.5%;
-    text-align: center;
-  }
-
-  .pro-table td strong {
-    font-size: 10px;
-  }
-
-  .fow-list,
-  .pro-recent-balls {
+  .fow-list {
+    display: flex;
     flex-wrap: wrap;
-    overflow-x: hidden;
+    gap: 8px;
   }
 
-  .fow-chip,
+  .fow-chip {
+    flex: 1 1 calc(50% - 8px);
+    min-width: 130px;
+    font-size: 12px;
+  }
+
+  .pro-recent-balls {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 8px;
+  }
+
   .ball-timeline-chip {
-    font-size: 11px;
-    padding: 6px 8px;
-  }
-
-  .score-table {
-    border-spacing: 0;
+    font-size: 12px;
   }
 }

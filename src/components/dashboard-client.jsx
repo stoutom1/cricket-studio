@@ -4837,15 +4837,15 @@ return (
                       <th>SR</th>
                       <th>4s</th>
                       <th>6s</th>
-                      <th>HS</th>
+                      <th>HS</th>                    
                     </tr>
                   </thead>
 
                   <tbody>
-                    {leagueStats.batting.map((row) => (
- <tr
-  key={`bat-${inn.number}-${row.playerId}`}
->
+                    {leagueStats.batting.map((row, idx) => (
+  <tr
+    key={`league-bat-${row.playerId ?? row.playerName}-${idx}`}
+  >
                         <td>{row.playerName}</td>
                         <td>{row.teamName}</td>
                         <td>{row.matches}</td>
@@ -4857,7 +4857,6 @@ return (
                         <td>{row.fours}</td>
                         <td>{row.sixes}</td>
                         <td>{row.highestScore}</td>
-                        <td>{row.lastDismissal || "not out"}</td>
                       </tr>
                     ))}
                   </tbody>
@@ -4891,10 +4890,10 @@ return (
                   </thead>
 
                   <tbody>
-                    {leagueStats.bowling.map((row) => (
+  {leagueStats.bowling.map((row, idx) => (
   <tr
-  key={`bat-${inn.number}-${row.playerId}`}
->
+    key={`league-bowl-${row.playerId ?? row.playerName}-${idx}`}
+  >
                         <td>{row.playerName}</td>
                         <td>{row.teamName}</td>
                         <td>{row.matches}</td>
@@ -4935,10 +4934,10 @@ return (
                   </thead>
 
                   <tbody>
-                    {leagueStats.fielding.map((row) => (
-   <tr
-  key={`bat-${inn.number}-${row.playerId}`}
->
+ {leagueStats.fielding.map((row, idx) => (
+  <tr
+    key={`league-field-${row.playerId ?? row.playerName}-${idx}`}
+  >
                         <td>{row.playerName}</td>
                         <td>{row.teamName}</td>
                         <td>{row.catches}</td>
@@ -4980,21 +4979,13 @@ return (
         <div className="ranking-hero">
           {selectedRanking.slice(0, 3).map((row, index) => (
             <div
-    key={`bowl-${inn.number}-${row.playerId}`}
+              key={`ranking-podium-${rankingType}-${row.playerId ?? row.playerName}-${index}`}
               className={`ranking-podium podium-${index + 1}`}
             >
-              <div className="podium-rank">
-                #{index + 1}
-              </div>
-
-              <div className="podium-avatar">
-                {currentRankingConfig.icon}
-              </div>
-
+              <div className="podium-rank">#{index + 1}</div>
+              <div className="podium-avatar">{currentRankingConfig.icon}</div>
               <strong>{row.playerName}</strong>
-
               <small>{row.teamName}</small>
-
               <div className="podium-value">
                 {currentRankingConfig.value(row)}
               </div>
@@ -5006,9 +4997,7 @@ return (
           <h4>
             {currentRankingConfig.icon} {currentRankingConfig.title}
           </h4>
-          <span>
-            {selectedRanking.length} players
-          </span>
+          <span>{selectedRanking.length} players</span>
         </div>
 
         <div className="table-scroll">
@@ -5025,9 +5014,9 @@ return (
 
             <tbody>
               {selectedRanking.map((row, index) => (
-  <tr
-  key={`bat-${inn.number}-${row.playerId}`}
->
+                <tr
+                  key={`ranking-row-${rankingType}-${row.playerId ?? row.playerName}-${index}`}
+                >
                   <td>
                     <strong>#{index + 1}</strong>
                   </td>
@@ -5035,9 +5024,7 @@ return (
                   <td>{row.teamName}</td>
                   <td>{row.matches}</td>
                   <td>
-                    <strong>
-                      {currentRankingConfig.value(row)}
-                    </strong>
+                    <strong>{currentRankingConfig.value(row)}</strong>
                   </td>
                 </tr>
               ))}
