@@ -2643,6 +2643,14 @@ return (
     {!scoreboard ? (
       <p className="muted">Select a match to view scoreboard.</p>
     ) : (
+            <>
+              {scoreboard?.summary?.statusText && (
+          <div className="single-line-scoreboard">
+            <span className="status-chip">
+              📌 {scoreboard.summary.statusText}
+            </span>
+          </div>
+        )}
       <div className="pro-scoreboard">
         <div className="pro-score-hero">
           <div>
@@ -2927,6 +2935,7 @@ return (
           </div>
         </CollapsibleSection>
       </div>
+      </>
     )}
   </Card>
 )}
@@ -2939,6 +2948,14 @@ return (
         📝 No commentary yet. Start scoring to build the live timeline.
       </div>
     ) : (
+      <>
+              {scoreboard?.summary?.statusText && (
+          <div className="single-line-scoreboard">
+            <span className="status-chip">
+              📌 {scoreboard.summary.statusText}
+            </span>
+          </div>
+        )}
       <div className="commentary-feed pretty-commentary">
         {scoreboard.commentary.map((section, sectionIndex) => (
           <div
@@ -3010,6 +3027,7 @@ return (
           </div>
         ))}
       </div>
+      </>
     )}
   </Card>
 )}
