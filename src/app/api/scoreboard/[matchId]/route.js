@@ -245,7 +245,7 @@ const response = {
     id: match.id,
     teamAName: match.teamA.name,
     teamBName: match.teamB.name,
-    battingFirstTeamName: match.battingFirstTeam.name,
+    battingFirstTeamName: match.battingFirstTeam?.name || "Not decided yet",
     oversPerInnings: match.oversPerInnings,
     powerplayOversInnings: match.powerplayOversInnings,
     status: match.status,

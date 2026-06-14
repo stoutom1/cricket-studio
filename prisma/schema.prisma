@@ -56,16 +56,17 @@ model Match {
   shareCode             String?      @unique
   teamAId               Int
   teamBId               Int
-  battingFirstTeamId    Int
+  battingFirstTeamId    Int?
   oversPerInnings       Int
   powerplayOversInnings Int          @default(0)
   status                String       @default("in_progress")
   createdAt             DateTime     @default(now())
+  scheduledAt           DateTime?
   statusText            String?      @default("LIVE")
   maxOversPerBowler     Int?
   maxWicketsPerInnings  Int?
   balls                 Ball[]
-  battingFirstTeam      Team         @relation("BattingFirstTeam", fields: [battingFirstTeamId], references: [id])
+  battingFirstTeam      Team?        @relation("BattingFirstTeam", fields: [battingFirstTeamId], references: [id])
   teamA                 Team         @relation("TeamA", fields: [teamAId], references: [id])
   teamB                 Team         @relation("TeamB", fields: [teamBId], references: [id])
   state                 MatchState?

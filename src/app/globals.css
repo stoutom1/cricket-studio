@@ -2197,3 +2197,273 @@ body {
   border: 2px solid #22c55e;
   font-weight: 700;
 }
+.matches-page {
+  display: grid;
+  gap: 16px;
+}
+
+.matches-toolbar label {
+  display: grid;
+  gap: 6px;
+}
+
+.empty-state {
+  padding: 18px;
+  border-radius: 14px;
+  background: rgba(255,255,255,0.06);
+  color: var(--muted, #94a3b8);
+  text-align: center;
+}
+
+.match-card-list {
+  display: grid;
+  gap: 12px;
+  margin-top: 14px;
+}
+
+.match-tile {
+  border: 1px solid rgba(255,255,255,0.1);
+  border-radius: 16px;
+  padding: 12px;
+  background: rgba(15, 23, 42, 0.75);
+}
+
+.match-tile.selected {
+  border-color: #22c55e;
+  background: rgba(22, 163, 74, 0.12);
+}
+
+.match-tile-main {
+  width: 100%;
+  border: 0;
+  background: transparent;
+  color: inherit;
+  text-align: left;
+  padding: 0;
+  cursor: pointer;
+}
+
+.match-tile-top {
+  display: flex;
+  justify-content: space-between;
+  gap: 10px;
+  align-items: flex-start;
+}
+
+.match-meta {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px;
+  margin: 10px 0;
+  font-size: 13px;
+  color: var(--muted, #94a3b8);
+}
+
+.match-tile-actions {
+  display: flex;
+  gap: 10px;
+  margin-top: 12px;
+}
+
+.match-tile-actions .btn {
+  flex: 1;
+}
+
+.active-league-banner,
+.permission-warning {
+  padding: 12px;
+  border-radius: 12px;
+  background: rgba(255,255,255,0.06);
+  margin-bottom: 14px;
+}
+
+.create-match-form {
+  display: grid;
+  gap: 14px;
+}
+
+.form-two-col {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 12px;
+}
+
+.create-match-btn {
+  width: 100%;
+  margin-top: 8px;
+}
+
+@media (max-width: 700px) {
+  .form-two-col {
+    grid-template-columns: 1fr;
+  }
+
+  .match-tile-top {
+    flex-direction: column;
+  }
+
+  .match-tile-actions {
+    flex-direction: column;
+  }
+}
+.matches-subtabs {
+  display: grid;
+  grid-template-columns: repeat(3, 1fr);
+  gap: 8px;
+  position: sticky;
+  top: 0;
+  z-index: 20;
+  padding: 8px 0;
+  background: var(--page-bg, #0f172a);
+}
+
+.matches-subtabs button {
+  border: 1px solid rgba(255,255,255,0.12);
+  background: rgba(255,255,255,0.06);
+  color: inherit;
+  border-radius: 999px;
+  padding: 10px 8px;
+  font-weight: 700;
+  cursor: pointer;
+}
+
+.matches-subtabs button.active {
+  background: #16a34a;
+  border-color: #22c55e;
+  color: #fff;
+}
+
+.matches-page {
+  display: grid;
+  gap: 16px;
+}
+
+.match-card-list {
+  display: grid;
+  gap: 12px;
+}
+
+.match-tile {
+  border: 1px solid rgba(255,255,255,0.1);
+  border-radius: 16px;
+  padding: 12px;
+  background: rgba(15, 23, 42, 0.75);
+}
+
+.match-tile.selected {
+  border-color: #22c55e;
+  background: rgba(22, 163, 74, 0.12);
+}
+
+.match-tile-main {
+  width: 100%;
+  border: 0;
+  background: transparent;
+  color: inherit;
+  text-align: left;
+  padding: 0;
+  cursor: pointer;
+}
+
+.match-tile-top {
+  display: flex;
+  justify-content: space-between;
+  gap: 10px;
+}
+
+.match-meta {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px;
+  margin: 10px 0;
+  font-size: 13px;
+}
+
+.match-tile-actions {
+  display: flex;
+  gap: 10px;
+  margin-top: 12px;
+}
+
+.match-tile-actions .btn {
+  flex: 1;
+}
+
+.form-two-col {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 12px;
+}
+
+.create-match-form {
+  display: grid;
+  gap: 14px;
+}
+
+.create-match-btn {
+  width: 100%;
+}
+
+.empty-state,
+.active-league-banner,
+.permission-warning {
+  padding: 14px;
+  border-radius: 12px;
+  background: rgba(255,255,255,0.06);
+}
+
+@media (max-width: 700px) {
+  .matches-subtabs {
+    grid-template-columns: 1fr;
+  }
+
+  .form-two-col {
+    grid-template-columns: 1fr;
+  }
+
+  .match-tile-top,
+  .match-tile-actions {
+    flex-direction: column;
+  }
+}
+.matches-subtabs {
+  grid-template-columns: repeat(4, 1fr);
+}
+
+.match-live-score,
+.match-scheduled-time,
+.match-final-score,
+.match-status-text {
+  margin-top: 10px;
+  padding: 10px 12px;
+  border-radius: 12px;
+  background: rgba(255,255,255,0.06);
+  font-size: 14px;
+}
+.match-tile-top {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  gap: 8px;
+  margin-bottom: 4px;   /* was probably 10-16px */
+}
+
+.match-meta.compact {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 4px 12px;
+  margin-top: 0;
+  padding-top: 0;
+  font-size: 13px;
+  line-height: 1.3;
+}
+
+.match-meta.compact span {
+  margin: 0;
+}
+
+.match-tile-main {
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+}

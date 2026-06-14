@@ -23,6 +23,70 @@ function countsAsWicket(ball) {
 }
 
 
+function formatOversFromLegalBalls(legalBalls) {
+  const overs = Math.floor(legalBalls / 6);
+  const balls = legalBalls % 6;
+  return `${overs}.${balls}`;
+}
+
+function getInningsSummary(match, inningsNo) {
+  const balls = match.balls.filter(
+    (b) => Number(b.inningsNo) === Number(inningsNo)
+  );
+
+  const runs = balls.reduce(
+    (sum, b) => sum + Number(b.totalRuns || 0),
+    0
+  );
+
+  const wickets = balls.reduce(
+    (sum, b) =>
+      sum +
+      (b.isWicket && b.wicketType !== "RETIRED_HURT" ? 1 : 0),
+    0
+  );
+
+  const legalBalls = balls.filter((b) => b.legalDelivery).length;
+
+  return {
+    runs,
+    wickets,
+    legalBalls,
+    overs: formatOversFromLegalBalls(legalBalls)
+  };
+}
+
+function buildResultText(match, innings1, innings2) {
+  if (match.status === "ABANDONED") {
+    return match.statusText || "Match abandoned";
+  }
+
+  const firstTeamName =
+    match.battingFirstTeamId === match.teamAId
+      ? match.teamA.name
+      : match.teamB.name;
+
+  const secondTeamName =
+    match.battingFirstTeamId === match.teamAId
+      ? match.teamB.name
+      : match.teamA.name;
+
+  if (innings1.runs > innings2.runs) {
+    return `${firstTeamName} won by ${innings1.runs - innings2.runs} runs`;
+  }
+
+  if (innings2.runs > innings1.runs) {
+    const maxWickets = match.maxWicketsPerInnings || 10;
+    return `${secondTeamName} won by ${maxWickets - innings2.wickets} wickets`;
+  }
+
+  if (innings1.legalBalls > 0 && innings2.legalBalls > 0) {
+    return "Match tied";
+  }
+
+  return match.statusText || match.status;
+}
+
 export async function GET(request) {
   const session = await getServerSession(authOptions);
 
@@ -85,7 +149,12 @@ export async function GET(request) {
       teamA: true,
       teamB: true,
       battingFirstTeam: true,
-      balls: true,
+      balls: {
+        orderBy: [
+          { inningsNo: "asc" },
+          { sequence: "asc" },
+        ],
+      },
     },
     orderBy: {
       createdAt: "desc",
@@ -93,41 +162,17 @@ export async function GET(request) {
   });
 
   for (const match of matches) {
-    const innings1Balls = match.balls.filter(
-      (b) => b.inningsNo === 1
-    );
+    const innings1 = getInningsSummary(match, 1);
+    const innings2 = getInningsSummary(match, 2);
 
-    const innings2Balls = match.balls.filter(
-      (b) => b.inningsNo === 2
-    );
-
-    const innings1Runs = innings1Balls.reduce(
-      (sum, b) => sum + b.totalRuns,
-      0
-    );
-
-    const innings2Runs = innings2Balls.reduce(
-      (sum, b) => sum + b.totalRuns,
-      0
-    );
-
-    const innings1LegalBalls =
-      innings1Balls.filter((b) => b.legalDelivery)
-        .length;
-
-    const innings2LegalBalls =
-      innings2Balls.filter((b) => b.legalDelivery)
-        .length;
-
-    const target = innings1Runs + 1;
+    const target = innings1.runs + 1;
 
     const innings2Completed =
-      innings2Runs >= target ||
-      innings2LegalBalls >=
-        match.oversPerInnings * 6;
+      innings2.runs >= target ||
+      innings2.legalBalls >= match.oversPerInnings * 6;
 
     const shouldComplete =
-      innings1LegalBalls > 0 &&
+      innings1.legalBalls > 0 &&
       innings2Completed;
 
     if (
@@ -147,23 +192,76 @@ export async function GET(request) {
     }
   }
 
-  const formatted = matches.map((m) => ({
-    id: m.id,
-    leagueId: m.leagueId,
-    leagueName: m.league?.name,
-    teamAId: m.teamAId,
-    teamBId: m.teamBId,
-    teamAName: m.teamA.name,
-    teamBName: m.teamB.name,
-    battingFirstTeamId: m.battingFirstTeamId,
-    battingFirstTeamName: m.battingFirstTeam.name,
-    oversPerInnings: m.oversPerInnings,
-    powerplayOversInnings: m.powerplayOversInnings,
-    maxWicketsPerInnings: m.maxWicketsPerInnings,
-    maxOversPerBowler: m.maxOversPerBowler,
-    status: m.status,
-    createdAt: m.createdAt,
-  }));
+  const formatted = matches.map((m) => {
+    const innings1 = getInningsSummary(m, 1);
+    const innings2 = getInningsSummary(m, 2);
+
+    const firstInningsTeamName =
+      m.battingFirstTeamId === m.teamAId
+        ? m.teamA.name
+        : m.battingFirstTeamId === m.teamBId
+          ? m.teamB.name
+          : "Not decided yet";
+
+    const secondInningsTeamName =
+      m.battingFirstTeamId === m.teamAId
+        ? m.teamB.name
+        : m.battingFirstTeamId === m.teamBId
+          ? m.teamA.name
+          : "Not decided yet";
+
+    const resultText = buildResultText(m, innings1, innings2);
+
+    const firstInningsScore =
+      `${firstInningsTeamName}: ${innings1.runs}/${innings1.wickets} (${innings1.overs})`;
+
+    const secondInningsScore =
+      innings2.legalBalls > 0 || innings2.runs > 0 || innings2.wickets > 0
+        ? `${secondInningsTeamName}: ${innings2.runs}/${innings2.wickets} (${innings2.overs})`
+        : `${secondInningsTeamName}: Yet to bat`;
+
+    return {
+      id: m.id,
+      leagueId: m.leagueId,
+      leagueName: m.league?.name,
+
+      teamAId: m.teamAId,
+      teamBId: m.teamBId,
+      teamAName: m.teamA.name,
+      teamBName: m.teamB.name,
+
+      battingFirstTeamId: m.battingFirstTeamId,
+      battingFirstTeamName:
+        m.battingFirstTeam?.name || "Not decided yet",
+
+      oversPerInnings: m.oversPerInnings,
+      powerplayOversInnings: m.powerplayOversInnings,
+      maxWicketsPerInnings: m.maxWicketsPerInnings,
+      maxOversPerBowler: m.maxOversPerBowler,
+
+      status: m.status,
+      statusText: m.statusText,
+      createdAt: m.createdAt,
+      scheduledAt: m.scheduledAt,
+
+      firstInningsTeamName,
+      firstInningsRuns: innings1.runs,
+      firstInningsWickets: innings1.wickets,
+      firstInningsOvers: innings1.overs,
+
+      secondInningsTeamName,
+      secondInningsRuns: innings2.runs,
+      secondInningsWickets: innings2.wickets,
+      secondInningsOvers: innings2.overs,
+
+      firstInningsScore,
+      secondInningsScore,
+
+      scoreSummary: `${firstInningsScore} • ${secondInningsScore}`,
+      finalScore: `${firstInningsScore} • ${secondInningsScore}`,
+      resultText,
+    };
+  });
 
   return NextResponse.json(formatted);
 }
@@ -193,22 +291,23 @@ const activeLeagueId = user?.activeLeagueId;
   const battingFirstTeamId = Number(body.battingFirstTeamId);
   const oversPerInnings = Number(body.oversPerInnings);
   const powerplayOversInnings = Number(body.powerplayOversInnings || 0);
+  const scheduledAt = body.scheduledAt || null;
 
-  if (!teamAId || !teamBId || !battingFirstTeamId) {
+  if (!teamAId || !teamBId) {
     return NextResponse.json({ error: "Teams and batting first team are required" }, { status: 400 });
   }
 
   if (teamAId === teamBId) {
     return NextResponse.json({ error: "Teams must be different" }, { status: 400 });
   }
-
+/*
   if (![teamAId, teamBId].includes(battingFirstTeamId)) {
     return NextResponse.json(
       { error: "Batting first team must be Team A or Team B" },
       { status: 400 }
     );
   }
-
+*/
   if (!Number.isInteger(oversPerInnings) || oversPerInnings < 1) {
     return NextResponse.json({ error: "Overs per innings must be at least 1" }, { status: 400 });
   }
@@ -312,7 +411,7 @@ const match = await prisma.match.create({
       leagueId,
       teamAId,
       teamBId,
-      battingFirstTeamId,
+      battingFirstTeamId: battingFirstTeamId? Number(battingFirstTeamId) : null,
       oversPerInnings,
       powerplayOversInnings: Number(
       body.powerplayOversInnings
@@ -328,7 +427,10 @@ const match = await prisma.match.create({
         ? Number(body.maxOversPerBowler)
         : null,
         
-      status: "in_progress",
+      status: "SCHEDULED",
+      scheduledAt: scheduledAt
+        ? new Date(scheduledAt)
+        : null,
       shareCode
     }
   });
