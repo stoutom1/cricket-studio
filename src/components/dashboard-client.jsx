@@ -2799,7 +2799,7 @@ return (
 
             <CollapsibleSection title="🎯 Bowling Scorecard" defaultOpen={true}>
               <div className="table-scroll">
-                <table className="score-table pro-table">
+                <table className="score-table pro-table bowling-table">
                   <thead>
                     <tr>
                       <th>Bowler</th>
