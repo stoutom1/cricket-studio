@@ -3864,18 +3864,33 @@ body {
     padding-bottom: 2px;
     -webkit-overflow-scrolling: touch;
   }
-
-  .view-match-btn,
-  .mini-action-btn {
-    flex: 0 0 auto;
+}
+@media (max-width: 700px) {
+  .completed-match-actions {
+    display: flex !important;
+    flex-direction: row !important;
+    flex-wrap: nowrap !important;
+    gap: 8px;
+    width: 100%;
+    overflow-x: auto;
+    justify-content: flex-start;
+    align-items: center;
+    -webkit-overflow-scrolling: touch;
   }
 
-  .view-match-btn {
-    padding: 8px 16px;
+  .completed-match-actions .view-match-btn,
+  .completed-match-actions .mini-action-btn {
+    width: auto !important;
+    min-width: max-content !important;
+    flex: 0 0 auto !important;
+  }
+
+  .completed-match-actions .view-match-btn {
+    padding: 8px 14px;
     font-size: 13px;
   }
 
-  .mini-action-btn {
+  .completed-match-actions .mini-action-btn {
     padding: 8px 10px;
     font-size: 12px;
   }
