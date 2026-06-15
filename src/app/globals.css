@@ -3718,7 +3718,7 @@ body {
 .completed-result-strip {
   padding: 10px 12px;
   border-radius: 16px;
-  background: rgba(250,204,21,0.13);
+  background: rgba(21, 250, 238, 0.13);
   border: 1px solid rgba(250,204,21,0.22);
 }
 
@@ -3789,7 +3789,7 @@ body {
 }
 
 .view-match-btn:focus-visible {
-  outline: 3px solid rgba(59, 130, 246, 0.35);
+  outline: 3px solid rgba(12, 166, 172, 0.35);
   outline-offset: 2px;
 }
 @media (max-width: 700px) {
@@ -3821,7 +3821,7 @@ body {
   border: none;
   border-radius: 999px;
   padding: 8px 14px;
-  background: linear-gradient(135deg, #2563eb, #1d4ed8);
+  background: linear-gradient(135deg, #06a3a8, #02554a);
   color: #fff;
   font-size: 13px;
   font-weight: 900;
