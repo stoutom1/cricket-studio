@@ -5633,592 +5633,487 @@ return (
     </div>
 )}
 {activeTab === "help" && (
-  <Card title="❓ Cricket Studio Help Center">
-
-    {/* Hero */}
-    <div
-      style={{
-
-        padding: 24,
-        borderRadius: 12,
-        marginBottom: 24,
-      }}
-    >
-      <h2
-        style={{
-          margin: 0,
-          marginBottom: 10,
-        }}
-      >
-        🏏 Welcome to Cricket Studio
-      </h2>
-
-      <p
-        style={{
-          margin: 0,
-          opacity: 0.95,
-          fontSize: 16,
-          lineHeight: 1.6,
-        }}
-      >
-        Follow the steps below to create
-        your league, add teams and players,
-        schedule matches, and start live
-        scoring.
-      </p>
-    </div>
-
-    {/* Setup Journey */}
-    <h3
-      style={{
-        marginBottom: 16,
-      }}
-    >
-      🚀 Quick Start Guide
-    </h3>
-
-    <div
-      style={{
-        display: "grid",
-        gridTemplateColumns:
-          "repeat(auto-fit,minmax(260px,1fr))",
-        gap: 16,
-      }}
-    >
-
-      {/* Step 1 */}
-      <div
-        style={{
-          border: "1px solid #e5e7eb",
-          borderRadius: 12,
-          padding: 20,
-          boxShadow:
-            "0 2px 8px rgba(15,23,42,0.06)",
-        }}
-      >
-        <h3>🏆 Step 1</h3>
-
-        <h4>Create League</h4>
-
-        <p>
-          Open the Management tab and click
-          <strong> Create League</strong>.
-        </p>
-
-        <p>
-          Every team, player, and match
-          belongs to a league.
-        </p>
-      </div>
-
-      {/* Step 2 */}
-      <div
-        style={{
-
-          border: "1px solid #e5e7eb",
-          borderRadius: 12,
-          padding: 20,
-          boxShadow:
-            "0 2px 8px rgba(15,23,42,0.06)",
-        }}
-      >
-        <h3>👥 Step 2</h3>
-
-        <h4>Add Teams</h4>
-
-        <p>
-          Select a league and click
-          <strong> Add Team</strong>.
-        </p>
-
-        <p>
-          You need at least two teams before
-          a match can be created.
-        </p>
-      </div>
-
-      {/* Step 3 */}
-      <div
-        style={{
-
-          border: "1px solid #e5e7eb",
-          borderRadius: 12,
-          padding: 20,
-          boxShadow:
-            "0 2px 8px rgba(15,23,42,0.06)",
-        }}
-      >
-        <h3>🏏 Step 3</h3>
-
-        <h4>Add Players</h4>
-
-        <p>
-          Click <strong>Add Players</strong>,
-          select a team, and paste player
-          names one per line.
-        </p>
-
-        <div
-          style={{
-            marginTop: 12,
-            padding: 12,
-            borderRadius: 8,
-            border: "1px solid #e5e7eb",
-
-            fontFamily: "monospace",
-            fontSize: 13,
-          }}
-        >
-          Virat Kohli
-          <br />
-          Rohit Sharma
-          <br />
-          MS Dhoni
-          <br />
-          KL Rahul
+  <Card title="❓ Cric4All Help Center">
+    <div className="help-page">
+      {/* Hero */}
+      <div className="help-hero">
+        <div>
+          <h2>🏏 Welcome to Cric4All</h2>
+          <p>
+            Create leagues, manage teams, schedule matches, score live games,
+            view professional scorecards, commentary, stats, points table, and
+            AI-powered post-match insights.
+          </p>
         </div>
       </div>
 
-      {/* Step 4 */}
-      <div
-        style={{
+      {/* Quick Start */}
+      <h3 className="help-section-title">🚀 Quick Start Guide</h3>
 
-          border: "1px solid #e5e7eb",
-          borderRadius: 12,
-          padding: 20,
-          boxShadow:
-            "0 2px 8px rgba(15,23,42,0.06)",
-        }}
-      >
-        <h3>📅 Step 4</h3>
+      <div className="help-grid">
+        <div className="help-card">
+          <h3>🏆 Step 1</h3>
+          <h4>Create League</h4>
+          <p>
+            Open the <strong>Management</strong> tab and create your league.
+            Every team, player, match, points table, and stats record belongs
+            to a league.
+          </p>
+        </div>
 
-        <h4>Create Match</h4>
+        <div className="help-card">
+          <h3>👥 Step 2</h3>
+          <h4>Add Teams</h4>
+          <p>
+            Select your active league and add teams. You need at least two
+            teams before creating a match.
+          </p>
+        </div>
 
-        <p>
-          Navigate to the Matches tab and
-          click
-          <strong> Create Match</strong>.
-        </p>
+        <div className="help-card">
+          <h3>🏏 Step 3</h3>
+          <h4>Add Players</h4>
+          <p>
+            Add players individually or paste multiple player names, one per
+            line.
+          </p>
 
-        <p>
-          Select Team A and Team B from the
-          chosen league.
-        </p>
+          <div className="help-code-box">
+            Virat Kohli
+            <br />
+            Rohit Sharma
+            <br />
+            MS Dhoni
+            <br />
+            KL Rahul
+          </div>
+        </div>
+
+        <div className="help-card">
+          <h3>📅 Step 4</h3>
+          <h4>Create / Schedule Match</h4>
+          <p>
+            Go to <strong>Matches → Create Match</strong>. You can create a
+            future scheduled match without selecting batting first immediately.
+          </p>
+        </div>
+
+        <div className="help-card">
+          <h3>▶ Step 5</h3>
+          <h4>Start Scheduled Match</h4>
+          <p>
+            Open the <strong>Scheduled</strong> tab, click{" "}
+            <strong>Start Match</strong>, select batting first, and begin live
+            scoring.
+          </p>
+        </div>
+
+        <div className="help-card">
+          <h3>🎯 Step 6</h3>
+          <h4>Live Scoring</h4>
+          <p>
+            Use the <strong>Scoring</strong> subtab for runs, extras, wickets,
+            retired hurt, run outs, bowler changes, and striker rotation.
+          </p>
+        </div>
       </div>
 
-      {/* Step 5 */}
-      <div
-        style={{
+      {/* Main Tabs */}
+      <h3 className="help-section-title">🧭 Main Tabs</h3>
 
-          border: "1px solid #e5e7eb",
-          borderRadius: 12,
-          padding: 20,
-          boxShadow:
-            "0 2px 8px rgba(15,23,42,0.06)",
-        }}
-      >
-        <h3>🎯 Step 5</h3>
+      <div className="help-grid">
+        <div className="help-card">
+          <h3>📋 Matches</h3>
+          <p>
+            Matches are separated into <strong>Create Match</strong>,{" "}
+            <strong>Active</strong>, <strong>Scheduled</strong>, and{" "}
+            <strong>Completed</strong>.
+          </p>
+          <p>
+            Completed matches show final scores, result text, AI insights, and
+            quick access to the match center.
+          </p>
+        </div>
 
-        <h4>Start Live Scoring</h4>
+        <div className="help-card">
+          <h3>🎯 Scoring</h3>
+          <p>
+            Score live balls, extras, wickets, bowler changes, retired hurt,
+            run outs, and striker/non-striker rotation.
+          </p>
+          <p>
+            For completed matches, scoring is hidden and the scorecard opens
+            automatically.
+          </p>
+        </div>
 
-        <p>
-          After creating a match, click the
-          match from the Matches tab.
-        </p>
+        <div className="help-card">
+          <h3>🏟️ Scoreboard</h3>
+          <p>
+            View innings-wise professional scorecards with batting, bowling,
+            wickets, partnerships, recent balls, and match result.
+          </p>
+        </div>
 
-        <p>
-          The selected match automatically
-          becomes available in the Live
-          Scoring tab.
-        </p>
+        <div className="help-card">
+          <h3>🎙️ Commentary</h3>
+          <p>
+            Ball-by-ball commentary shows runs, wides, no-balls, byes, leg
+            byes, wickets, stumping, run outs, retired hurt, and over summaries.
+          </p>
+        </div>
+
+        <div className="help-card">
+          <h3>📊 Stats</h3>
+          <p>
+            League stats include batting records, bowling records, fielding
+            records, and rankings such as top run scorers, wicket takers, six
+            hitters, strike rate, economy, and all-rounders.
+          </p>
+        </div>
+
+        <div className="help-card">
+          <h3>📈 Points Table</h3>
+          <p>
+            Track league standings with wins, losses, points, net run rate, and
+            team performance.
+          </p>
+        </div>
       </div>
 
-    </div>
+      {/* Scoring Details */}
+      <h3 className="help-section-title">🏏 Scoring Features</h3>
 
-    {/* Pro Tips */}
-    <div
-      style={{
-        marginTop: 28,
+      <div className="help-grid">
+        <div className="help-card">
+          <h3>➕ Extras</h3>
+          <p>
+            Supports wides, no-balls, byes, and leg-byes. No-ball runs off the
+            bat are credited to the striker, while wide runs are counted as
+            extras.
+          </p>
+        </div>
 
-        border: "1px solid #93c5fd",
-        borderRadius: 12,
-        padding: 20,
-      }}
-    >
-      <h3
-        style={{
-          marginTop: 0,
-        }}
-      >
-        💡 Pro Tips
-      </h3>
+        <div className="help-card">
+          <h3>🚨 Wickets</h3>
+          <p>
+            Supports bowled, caught, LBW, run out, stumped, hit wicket, retired
+            hurt, retired out, and other dismissal types.
+          </p>
+        </div>
 
-      <ul
-        style={{
-          marginBottom: 0,
-          lineHeight: 1.8,
-        }}
-      >
-        <li>
-          Create at least 2 teams before
-          creating a match.
-        </li>
+        <div className="help-card">
+          <h3>🧤 Fielding Details</h3>
+          <p>
+            Capture caught by, stumped by, run out by, and assisted fielder
+            details so scorecards and stats are more accurate.
+          </p>
+        </div>
 
-        <li>
-          Add players in bulk using the
-          multi-line text area.
-        </li>
+        <div className="help-card">
+          <h3>🎯 Bowler Change</h3>
+          <p>
+            At the end of an over, the app prompts for a new bowler and prevents
+            illegal consecutive overs when required.
+          </p>
+        </div>
 
-        <li>
-          Select a match before opening Live
-          Scoring.
-        </li>
+        <div className="help-card">
+          <h3>🤝 Partnerships</h3>
+          <p>
+            Scoreboard shows partnership runs, balls, current partnership, and
+            wicket-ending partnerships.
+          </p>
+        </div>
 
-        <li>
-          Use League Permissions to assign
-          scorers and captains.
-        </li>
-      </ul>
-    </div>
-
-    {/* Roles */}
-    <div
-      style={{
-        marginTop: 24,
-
-        border: "1px solid #e5e7eb",
-        borderRadius: 12,
-        padding: 20,
-        boxShadow:
-          "0 2px 8px rgba(15,23,42,0.06)",
-      }}
-    >
-      <h3
-        style={{
-          marginTop: 0,
-        }}
-      >
-        🔐 Roles & Permissions
-      </h3>
-
-      <p>
-        League Owners and Admins can manage
-        members and control access levels.
-      </p>
-
-      <div
-        style={{
-          display: "flex",
-          flexWrap: "wrap",
-          gap: 10,
-          marginTop: 12,
-        }}
-      >
-        <span className="badge">OWNER</span>
-        <span className="badge">ADMIN</span>
-        <span className="badge">CAPTAIN</span>
-        <span className="badge">SCORER</span>
-        <span className="badge">ANALYST</span>
-        <span className="badge">VIEWER</span>
+        <div className="help-card">
+          <h3>💥 Fall of Wickets</h3>
+          <p>
+            Each wicket is shown with score, wicket number, player out, and
+            over.
+          </p>
+        </div>
       </div>
-    </div>
 
-    {/* FAQ */}
-    <div
-      style={{
-        marginTop: 24,
+      {/* AI and Sharing */}
+      <h3 className="help-section-title">✨ Premium Match Tools</h3>
 
-        border: "1px solid #e5e7eb",
-        borderRadius: 12,
-        padding: 20,
-        boxShadow:
-          "0 2px 8px rgba(15,23,42,0.06)",
-      }}
-    >
-      <h3
-        style={{
-          marginTop: 0,
-        }}
-      >
-        ❓ Frequently Asked Questions
-      </h3>
-
-      <div
-        style={{
-          display: "flex",
-          flexDirection: "column",
-          gap: 16,
-        }}
-      >
-        <div>
-          <strong>
-            Why don't I see my teams?
-          </strong>
-          <br />
-          Re-select the league from the
-          dropdown.
+      <div className="help-grid">
+        <div className="help-card">
+          <h3>🤖 AI Match Insights</h3>
+          <p>
+            For completed or locked matches, generate post-match AI analysis
+            covering match summary, turning point, top batting, bowling,
+            partnerships, pressure moments, and team takeaways.
+          </p>
+          <p>
+            Once generated, the analysis is saved and can be opened again later.
+          </p>
         </div>
 
-        <div>
-          <strong>
-            Players are not saving?
-          </strong>
-          <br />
-          Ensure a team is selected before
-          clicking Save Players.
+        <div className="help-card">
+          <h3>📤 Share Live Match</h3>
+          <p>
+            Share live scores, scoreboard, commentary, match status, and stats
+            with spectators using the match sharing link.
+          </p>
         </div>
 
-        <div>
-          <strong>
-            Why can't I create a match?
-          </strong>
-          <br />
-          The selected league must contain
-          at least two teams.
+        <div className="help-card">
+          <h3>🔒 Completed Locked</h3>
+          <p>
+            Locked matches prevent further scoring changes and are treated as
+            finalized scorecards.
+          </p>
         </div>
+      </div>
 
-        <div>
-          <strong>
-            Live scoring page is empty?
-          </strong>
-          <br />
-          Open the Matches tab and click a
-          match first.
+      {/* Pro Tips */}
+      <div className="help-tip-box">
+        <h3>💡 Pro Tips</h3>
+
+        <ul>
+          <li>Create at least two teams before creating a match.</li>
+          <li>Add players before starting a match for accurate stats.</li>
+          <li>Use Scheduled matches for future games.</li>
+          <li>Use Commentary to review every ball after the match.</li>
+          <li>Use AI Match Insights only after the match is completed.</li>
+          <li>Completed matches automatically open the scoreboard instead of scoring.</li>
+          <li>Use League Permissions to assign owners, admins, scorers, captains, analysts, and viewers.</li>
+        </ul>
+      </div>
+
+      {/* Roles */}
+      <div className="help-card full">
+        <h3>🔐 Roles & Permissions</h3>
+
+        <p>
+          League Owners and Admins can manage users, teams, matches, scoring,
+          and access levels. Scorers can score matches, captains can help manage
+          team-related actions, and viewers can follow match information.
+        </p>
+
+        <div className="help-badges">
+          <span className="badge">OWNER</span>
+          <span className="badge">ADMIN</span>
+          <span className="badge">CAPTAIN</span>
+          <span className="badge">SCORER</span>
+          <span className="badge">ANALYST</span>
+          <span className="badge">VIEWER</span>
         </div>
+      </div>
 
-        <div>
-          <strong>
-            Can I add players in bulk?
-          </strong>
-          <br />
-          Yes. Paste one player name per
-          line in the Add Players popup.
+      {/* FAQ */}
+      <div className="help-card full">
+        <h3>❓ Frequently Asked Questions</h3>
+
+        <div className="help-faq">
+          <div>
+            <strong>Why don't I see my teams?</strong>
+            <br />
+            Re-select the active league from the dropdown.
+          </div>
+
+          <div>
+            <strong>Why can't I create a match?</strong>
+            <br />
+            Make sure the active league has at least two teams.
+          </div>
+
+          <div>
+            <strong>Why is batting first not required during match creation?</strong>
+            <br />
+            Future scheduled matches can be created first. Batting first can be
+            selected when starting the match.
+          </div>
+
+          <div>
+            <strong>Why is Scoring hidden for a completed match?</strong>
+            <br />
+            Completed and locked matches are finalized, so the app opens the
+            scoreboard instead.
+          </div>
+
+          <div>
+            <strong>Why are stats empty?</strong>
+            <br />
+            Stats appear after balls are scored and players are linked correctly
+            to teams.
+          </div>
+
+          <div>
+            <strong>Can spectators view the match?</strong>
+            <br />
+            Yes. Use the share match option to send the live match link.
+          </div>
+
+          <div>
+            <strong>Can I add players in bulk?</strong>
+            <br />
+            Yes. Paste one player name per line in the Add Players area.
+          </div>
+
+          <div>
+            <strong>When can I use AI Match Insights?</strong>
+            <br />
+            AI Insights are available only for completed or completed locked
+            matches.
+          </div>
         </div>
       </div>
     </div>
-
   </Card>
 )}
 {activeTab === "about" && (
-  <Card title="ℹ️ About Cricket Studio">
+  <Card title="ℹ️ About Cric4All">
+    <div className="about-page">
+      <div className="about-hero">
+        <div>
+          <h2>🏏 Cric4All</h2>
+          <p>
+            A modern cricket league management and live scoring platform built
+            for clubs, leagues, academies, tournaments, and community cricket.
+          </p>
+        </div>
+      </div>
 
-    {/* Hero */}
-    <div
-      style={{
+      <div className="about-card about-mission">
+        <h3>🎯 Our Mission</h3>
+        <p>
+          Cric4All makes cricket scoring, league management, match scheduling,
+          statistics, commentary, and score sharing simple for everyone.
+        </p>
+        <p>
+          Whether you are running a weekend tournament, a local league, or a
+          casual match, Cric4All helps organizers, scorers, captains, players,
+          and spectators stay connected to the game.
+        </p>
+      </div>
 
-        padding: 24,
-        borderRadius: 12,
-        marginBottom: 24,
-      }}
-    >
-      <h2
-        style={{
-          margin: 0,
-          marginBottom: 10,
-        }}
-      >
-        🏏 Cricket Studio
-      </h2>
+      <h3 className="about-section-title">🚀 What Cric4All Helps You Do</h3>
 
-      <p
-        style={{
-          margin: 0,
-          fontSize: 16,
-          opacity: 0.9,
-          lineHeight: 1.7,
-        }}
-      >
-        A complete cricket league management
-        and live scoring platform designed
-        for clubs, leagues, academies, and
-        tournament organizers.
-      </p>
-    </div>
+      <div className="about-feature-grid">
+        <div className="about-feature">🏆 League Management</div>
+        <div className="about-feature">👥 Team Management</div>
+        <div className="about-feature">🏏 Player Management</div>
+        <div className="about-feature">📅 Match Scheduling</div>
+        <div className="about-feature">🎯 Live Ball-by-Ball Scoring</div>
+        <div className="about-feature">🏟️ Professional Scoreboards</div>
+        <div className="about-feature">🎙️ Ball-by-Ball Commentary</div>
+        <div className="about-feature">📊 Player & League Statistics</div>
+        <div className="about-feature">📈 Points Table</div>
+        <div className="about-feature">🤖 AI Post-Match Insights</div>
+        <div className="about-feature">📤 Spectator Sharing Links</div>
+        <div className="about-feature">🔐 Role-Based Access</div>
+      </div>
 
-    {/* Mission */}
-    <div
-      style={{
+      <div className="about-card">
+        <h3>📦 Current Release</h3>
 
-        border: "1px solid #e5e7eb",
-        borderRadius: 12,
-        padding: 20,
-        marginBottom: 20,
-      }}
-    >
-      <h3>🎯 Our Mission</h3>
+        <div className="release-badge-row">
+          <span className="release-badge">MVP 1.0</span>
+          <span className="release-badge">Live Scoring Ready</span>
+          <span className="release-badge">Mobile Friendly</span>
+        </div>
 
-      <p>
-        Cricket Studio aims to simplify the
-        management of cricket leagues,
-        matches, teams, players, and scoring
-        into a single easy-to-use platform.
-      </p>
+        <p>Current functionality includes:</p>
 
-      <p>
-        Whether you're organizing a local
-        tournament or managing a full league,
-        Cricket Studio helps you stay focused
-        on the game.
-      </p>
-    </div>
+        <div className="about-list-grid">
+          <span>✅ League creation</span>
+          <span>✅ Team creation</span>
+          <span>✅ Bulk player imports</span>
+          <span>✅ Scheduled matches</span>
+          <span>✅ Start match workflow</span>
+          <span>✅ Live scoring</span>
+          <span>✅ Wides, no-balls, byes, leg-byes</span>
+          <span>✅ Wickets, run outs, stumpings, retired hurt</span>
+          <span>✅ Scoreboard</span>
+          <span>✅ Commentary timeline</span>
+          <span>✅ League stats and rankings</span>
+          <span>✅ AI match insights</span>
+        </div>
+      </div>
 
-    {/* Features */}
-    <div
-      style={{
+      <div className="about-card">
+        <h3>🏟️ Built for Real Cricket Workflows</h3>
 
-        border: "1px solid #e5e7eb",
-        borderRadius: 12,
-        padding: 20,
-        marginBottom: 20,
-      }}
-    >
-      <h3>🚀 Key Features</h3>
+        <div className="about-workflow-grid">
+          <div>
+            <strong>For Organizers</strong>
+            <p>Create leagues, teams, matches, roles, permissions, and schedules.</p>
+          </div>
 
-      <div
-        style={{
-          display: "grid",
-          gridTemplateColumns:
-            "repeat(auto-fit,minmax(250px,1fr))",
-          gap: 12,
-          marginTop: 12,
-        }}
-      >
-        <div>🏆 League Management</div>
-        <div>👥 Team Management</div>
-        <div>🏏 Player Management</div>
-        <div>📅 Match Scheduling</div>
-        <div>🎯 Live Ball-by-Ball Scoring</div>
-        <div>🔐 Role Based Access</div>
-        <div>📊 Statistics Dashboard</div>
-        <div>📱 Mobile Friendly Design</div>
+          <div>
+            <strong>For Scorers</strong>
+            <p>Score every ball with extras, wickets, bowler changes, and innings tracking.</p>
+          </div>
+
+          <div>
+            <strong>For Players</strong>
+            <p>Track batting, bowling, fielding records, rankings, and performance history.</p>
+          </div>
+
+          <div>
+            <strong>For Spectators</strong>
+            <p>Follow live scores, match status, commentary, scorecards, and stats using shared links.</p>
+          </div>
+        </div>
+      </div>
+
+      <div className="about-card">
+        <h3>🧠 Smart Match Features</h3>
+
+        <p>
+          Cric4All is designed to go beyond basic scoring. Completed matches can
+          include AI-powered post-match analysis, professional scorecards,
+          innings-wise data, player rankings, fielding records, and detailed
+          ball-by-ball commentary.
+        </p>
+
+        <div className="about-highlight-row">
+          <span>🤖 AI Analysis</span>
+          <span>📊 Stats</span>
+          <span>🎙️ Commentary</span>
+          <span>🏆 Rankings</span>
+          <span>📈 Points Table</span>
+        </div>
+      </div>
+
+      <div className="about-card">
+        <h3>🛣️ Roadmap</h3>
+
+        <div className="about-list-grid">
+          <span>📱 Push notifications</span>
+          <span>☁️ Offline scoring sync</span>
+          <span>🏆 Tournament brackets</span>
+          <span>🎥 Match highlights</span>
+          <span>📺 Public scoreboard upgrades</span>
+          <span>📊 Advanced analytics dashboard</span>
+          <span>📲 Android app packaging</span>
+          <span>🍎 iOS app packaging</span>
+        </div>
+      </div>
+
+      <div className="about-card">
+        <h3>⚙️ Built With</h3>
+
+        <div className="about-tech-row">
+          <span className="badge">Next.js</span>
+          <span className="badge">React</span>
+          <span className="badge">Prisma</span>
+          <span className="badge">PostgreSQL</span>
+          <span className="badge">NextAuth</span>
+          <span className="badge">OpenAI</span>
+          <span className="badge">Capacitor</span>
+        </div>
+      </div>
+
+      <div className="about-footer">
+        <h3>🏏 Cric4All</h3>
+        <p>Manage Leagues. Score Matches. Share Live Cricket.</p>
+        <p className="about-copy">© 2026 Cric4All</p>
       </div>
     </div>
-
-    {/* Current Version */}
-    <div
-      style={{
-
-        border: "1px solid #93c5fd",
-        borderRadius: 12,
-        padding: 20,
-        marginBottom: 20,
-      }}
-    >
-      <h3>📦 Current Release</h3>
-
-      <p>
-        <strong>Version:</strong> MVP 1.0
-      </p>
-
-      <p>
-        Current functionality includes:
-      </p>
-
-      <ul>
-        <li>League creation</li>
-        <li>Team creation</li>
-        <li>Bulk player imports</li>
-        <li>Match scheduling</li>
-        <li>Live scoring</li>
-        <li>League permissions</li>
-      </ul>
-    </div>
-
-    {/* Roadmap */}
-    <div
-      style={{
-
-        border: "1px solid #e5e7eb",
-        borderRadius: 12,
-        padding: 20,
-        marginBottom: 20,
-      }}
-    >
-      <h3>🛣️ Upcoming Features</h3>
-
-      <ul
-        style={{
-          lineHeight: 2,
-        }}
-      >
-        <li>📈 Advanced Match Statistics</li>
-        <li>🏅 Player Rankings</li>
-        <li>🏆 Tournament Brackets</li>
-        <li>📊 Analytics Dashboard</li>
-        <li>📱 Push Notifications</li>
-        <li>🎥 Match Highlights</li>
-        <li>☁️ Offline Sync Support</li>
-        <li>📺 Public Scoreboards</li>
-      </ul>
-    </div>
-
-    {/* Technology */}
-    <div
-      style={{
-
-        border: "1px solid #e5e7eb",
-        borderRadius: 12,
-        padding: 20,
-        marginBottom: 20,
-      }}
-    >
-      <h3>⚙️ Built With</h3>
-
-      <div
-        style={{
-          display: "flex",
-          flexWrap: "wrap",
-          gap: 10,
-        }}
-      >
-        <span className="badge">
-          Next.js
-        </span>
-
-        <span className="badge">
-          React
-        </span>
-
-        <span className="badge">
-          Prisma
-        </span>
-
-        <span className="badge">
-          PostgreSQL
-        </span>
-
-        <span className="badge">
-          NextAuth
-        </span>
-      </div>
-    </div>
-
-    {/* Footer */}
-    <div
-      style={{
-        textAlign: "center",
-        padding: 20,
-        color: "#64748b",
-        borderTop:
-          "1px solid #e5e7eb",
-      }}
-    >
-      <h3>🏏 Cricket Studio</h3>
-
-      <p>
-        Manage Leagues. Score Matches.
-        Grow Cricket.
-      </p>
-
-      <p
-        style={{
-          fontSize: 13,
-        }}
-      >
-        © 2026 Cricket Studio
-      </p>
-    </div>
-
   </Card>
 )}
 {showLeagueModal && (
