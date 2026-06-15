@@ -3439,3 +3439,366 @@ body {
 .six-pill + .commentary-body .commentary-main {
   font-weight: 700;
 }
+.ai-analysis-section {
+  margin-top: 14px;
+}
+
+.ai-analysis-btn {
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+
+  padding: 10px 16px;
+
+  border: none;
+  border-radius: 999px;
+
+  background: linear-gradient(
+    135deg,
+    rgba(59,130,246,0.18),
+    rgba(168,85,247,0.18)
+  );
+
+  border: 1px solid rgba(168,85,247,0.30);
+
+  color: inherit;
+  font-weight: 700;
+  font-size: 14px;
+
+  cursor: pointer;
+
+  transition: all 0.2s ease;
+}
+
+.ai-analysis-btn:hover:not(:disabled) {
+  transform: translateY(-1px);
+
+  background: linear-gradient(
+    135deg,
+    rgba(59,130,246,0.25),
+    rgba(168,85,247,0.25)
+  );
+}
+
+.ai-analysis-btn:disabled {
+  opacity: 0.7;
+  cursor: wait;
+}
+
+.ai-analysis-content {
+  margin-top: 12px;
+
+  padding: 14px;
+
+  border-radius: 14px;
+
+  background: rgba(255,255,255,0.05);
+
+  line-height: 1.65;
+}
+
+.ai-analysis-content p {
+  margin: 0 0 10px;
+}
+
+@media (max-width: 700px) {
+  .ai-analysis-btn {
+    width: 100%;
+    justify-content: center;
+
+    font-size: 13px;
+
+    padding: 10px 14px;
+  }
+}
+.ai-analysis-section {
+  margin-top: 14px;
+}
+
+.ai-analysis-btn {
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+  padding: 10px 16px;
+  border-radius: 999px;
+  border: 1px solid rgba(168,85,247,0.35);
+  background: linear-gradient(
+    135deg,
+    rgba(59,130,246,0.2),
+    rgba(168,85,247,0.2)
+  );
+  color: inherit;
+  font-weight: 800;
+  cursor: pointer;
+}
+
+.ai-analysis-modal {
+  width: min(760px, calc(100vw - 24px));
+  max-height: 85vh;
+  overflow-y: auto;
+  border-radius: 20px;
+  padding: 18px;
+  background: var(--card-bg, #0f172a);
+  border: 1px solid rgba(255,255,255,0.12);
+}
+
+.ai-analysis-modal-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  gap: 12px;
+}
+
+.ai-analysis-modal-header h3 {
+  margin: 0;
+}
+
+.ai-analysis-content {
+  margin-top: 14px;
+  line-height: 1.65;
+}
+
+.ai-analysis-content p {
+  margin: 0 0 10px;
+}
+
+@media (max-width: 700px) {
+  .ai-analysis-btn {
+    width: 100%;
+    justify-content: center;
+  }
+
+  .ai-analysis-modal {
+    max-height: 88vh;
+    padding: 14px;
+  }
+}
+.pretty-ai-analysis {
+  display: grid;
+  gap: 10px;
+}
+
+.pretty-ai-analysis h4 {
+  margin: 14px 0 4px;
+  padding: 10px 12px;
+  border-radius: 14px;
+  background: rgba(22, 163, 74, 0.14);
+  border: 1px solid rgba(34, 197, 94, 0.22);
+  font-size: 15px;
+}
+
+.pretty-ai-analysis p {
+  margin: 0;
+  padding: 10px 12px;
+  border-radius: 12px;
+  background: rgba(255,255,255,0.055);
+  line-height: 1.6;
+}
+
+@media (max-width: 700px) {
+  .pretty-ai-analysis h4 {
+    font-size: 14px;
+  }
+
+  .pretty-ai-analysis p {
+    font-size: 13px;
+  }
+}
+.completed-match-list {
+  display: grid;
+  gap: 14px;
+}
+
+.completed-match-card {
+  border-radius: 20px;
+  padding: 14px;
+  background: linear-gradient(
+    135deg,
+    rgba(22, 163, 74, 0.12),
+    rgba(15, 23, 42, 0.72)
+  );
+  border: 1px solid rgba(255,255,255,0.1);
+}
+
+.completed-match-main {
+  display: grid;
+  gap: 12px;
+}
+
+.completed-match-header {
+  display: flex;
+  justify-content: space-between;
+  gap: 14px;
+  align-items: flex-start;
+}
+
+.completed-match-header h3 {
+  margin: 0;
+  font-size: 18px;
+}
+
+.completed-match-header h3 span {
+  opacity: 0.6;
+  font-size: 13px;
+}
+
+.completed-match-status-row,
+.completed-match-actions,
+.completed-match-meta {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px;
+  margin-top: 8px;
+}
+
+.status-pill,
+.mini-pill {
+  padding: 6px 10px;
+  border-radius: 999px;
+  background: rgba(255,255,255,0.075);
+  border: 1px solid rgba(255,255,255,0.08);
+  font-size: 12px;
+  font-weight: 700;
+}
+
+.completed-match-actions {
+  justify-content: flex-end;
+  margin-top: 0;
+}
+
+.mini-action-btn {
+  border: 1px solid rgba(255,255,255,0.1);
+  background: rgba(255,255,255,0.07);
+  color: inherit;
+  border-radius: 999px;
+  padding: 8px 11px;
+  font-size: 12px;
+  font-weight: 800;
+  cursor: pointer;
+}
+
+.ai-mini-btn {
+  border-color: rgba(168,85,247,0.35);
+  background: linear-gradient(
+    135deg,
+    rgba(59,130,246,0.18),
+    rgba(168,85,247,0.18)
+  );
+}
+
+.danger-mini-btn {
+  border-color: rgba(239,68,68,0.28);
+  background: rgba(239,68,68,0.12);
+}
+
+.completed-score-box {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: 10px;
+}
+
+.innings-score-line {
+  padding: 12px;
+  border-radius: 16px;
+  background: rgba(255,255,255,0.06);
+  border: 1px solid rgba(255,255,255,0.08);
+}
+
+.innings-score-line span {
+  display: block;
+  font-size: 12px;
+  opacity: 0.7;
+  margin-bottom: 4px;
+}
+
+.innings-score-line strong {
+  font-size: 18px;
+}
+
+.completed-result-strip {
+  padding: 10px 12px;
+  border-radius: 16px;
+  background: rgba(250,204,21,0.13);
+  border: 1px solid rgba(250,204,21,0.22);
+}
+
+.completed-match-meta span {
+  padding: 6px 9px;
+  border-radius: 999px;
+  background: rgba(255,255,255,0.055);
+  font-size: 12px;
+}
+
+@media (max-width: 700px) {
+  .completed-match-header {
+    flex-direction: column;
+  }
+
+  .completed-match-actions {
+    justify-content: flex-start;
+  }
+
+  .completed-score-box {
+    grid-template-columns: 1fr;
+  }
+
+  .mini-action-btn {
+    flex: 1 1 auto;
+  }
+}
+.view-match-btn {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 8px;
+
+  min-width: 170px;
+  padding: 12px 20px;
+
+  border: none;
+  border-radius: 14px;
+
+  background: linear-gradient(
+    135deg,
+    #12bea7,
+    #0c969b
+  );
+
+  color: #ffffff;
+
+  font-size: 14px;
+  font-weight: 800;
+
+  cursor: pointer;
+
+  box-shadow:
+    0 6px 18px rgba(37, 99, 235, 0.35);
+
+  transition: all 0.2s ease;
+}
+
+.view-match-btn:hover {
+  transform: translateY(-2px);
+
+  box-shadow:
+    0 10px 24px rgba(37, 99, 235, 0.45);
+}
+
+.view-match-btn:active {
+  transform: translateY(0);
+}
+
+.view-match-btn:focus-visible {
+  outline: 3px solid rgba(59, 130, 246, 0.35);
+  outline-offset: 2px;
+}
+@media (max-width: 700px) {
+  .view-match-btn {
+    width: 100%;
+    min-width: 0;
+
+    padding: 14px 18px;
+
+    font-size: 15px;
+  }
+}

@@ -179,6 +179,9 @@ const [scoringSubTab, setScoringSubTab] = useState("ADVANCED");
 const [statsSubTab, setStatsSubTab] = useState("BATTING");
 const [leagueStats, setLeagueStats] = useState(null);
 const [rankingType, setRankingType] = useState("topRunScorers");
+const [aiAnalysis, setAiAnalysis] = useState("");
+const [aiAnalysisLoading, setAiAnalysisLoading] = useState(false);
+const [showAiAnalysisModal, setShowAiAnalysisModal] = useState(false);
 const isSuperAdmin =
   session?.user?.email ===
   "surprisecricket11@gmail.com";
@@ -267,6 +270,22 @@ useEffect(() => {
     loadPointsTable(activeLeagueId);
   }
 }, [activeLeagueId]);
+
+async function loadAiAnalysis(matchId) {
+  try {
+    setAiAnalysisLoading(true);
+
+    const data = await api(`/api/matches/${matchId}/ai-analysis`);
+
+    setAiAnalysis(data.analysis || "");
+    setShowAiAnalysisModal(true);
+  } catch (err) {
+    setError(err.message);
+  } finally {
+    setAiAnalysisLoading(false);
+  }
+}
+
 async function loadPermissions(member) {
   try {
     if (!activeLeague?.id || !member?.id) {
@@ -786,10 +805,7 @@ function updatePermission(permission, value) {
 }
 
 async function savePermissions(member) {
-  console.log("selectedMember", selectedMember);
-  console.log("active League Id:", activeLeagueId);
-   console.log("active League.Id:", activeLeague.id);
-      console.log("member.Id:", member.id);
+
   if (!selectedMember || !activeLeague?.id) return;
 
   try {
@@ -815,7 +831,7 @@ async function savePermissions(member) {
     );
 
     const data = await response.json();
-console.log("data", data);
+
     if (!response.ok) {
       throw new Error(
         data.error || "Failed to save permissions"
@@ -2365,6 +2381,7 @@ const activeMatches = matches.filter((m) =>
 const completedMatches = matches.filter((m) =>
   isCompletedStatus(m.status)
 );
+
 function handleStartMatch(match) {
   setSelectedMatchId(String(match.id));
   setMatchForm((prev) => ({
@@ -2408,7 +2425,18 @@ function triggerQuickAction(actionKey, callback) {
     setActiveQuickAction(null);
   }, 600); // was 400
 }
-  const activeInnings =
+const normalizedMatchStatus = String(
+  scoreboard?.match?.status || ""
+)
+  .trim()
+  .replace(/[\s-]+/g, "_")
+  .toUpperCase();
+
+const canShowAiAnalysis =
+  normalizedMatchStatus === "COMPLETED" ||
+  normalizedMatchStatus === "COMPLETED_LOCKED";
+
+const activeInnings =
     scoreboard?.innings?.find((x) => x.number === scoreboard.currentInnings) ||
     scoreboard?.innings?.[0];
 const canCreateMatch =
@@ -4300,86 +4328,111 @@ return (
       </Card>
     )}
 
-    {activeLeagueId && matchesSubTab === "COMPLETED" && (
-      <Card title="✅ Completed Matches">
-        {completedMatches.length === 0 ? (
-          <div className="empty-state">No completed matches found.</div>
-        ) : (
-          <div className="match-card-list">
-            {completedMatches.map((match) => (
-              <div key={match.id} className="match-tile">
-                <button
-                  type="button"
-                  className="match-tile-main"
-                  onClick={() => {
-                    setSelectedMatchId(String(match.id));
-                    handleMatchSelect(match.id);
-                  }}
-                >
-<div className="match-tile-main">
-  <div className="match-tile-top">
-    <strong>
-      {match.teamAName} vs {match.teamBName}
-    </strong>
+{activeLeagueId && matchesSubTab === "COMPLETED" && (
+  <Card title="✅ Completed Matches">
+    {completedMatches.length === 0 ? (
+      <div className="empty-state">No completed matches found.</div>
+    ) : (
+      <div className="completed-match-list">
+        {completedMatches.map((match) => {
+          const normalizedStatus = String(match.status || "")
+            .trim()
+            .replace(/[\s-]+/g, "_")
+            .toUpperCase();
 
-    <span className="pill">
-      {match.status}
-    </span>
-  </div>
+          const canShowAi =
+            normalizedStatus === "COMPLETED" ||
+            normalizedStatus === "COMPLETED_LOCKED";
 
-  <div className="match-meta compact">
-    <span>
-      🏏 Bat 1st: {match.battingFirstTeamName || "Not decided"}
-    </span>
+          return (
+            <div key={match.id} className="completed-match-card">
+              <div className="completed-match-main">
+                <div className="completed-match-header">
+                  <div>
+                    <h3>
+                      {match.teamAName} <span>vs</span> {match.teamBName}
+                    </h3>
 
-    <span>
-      🎯 {match.oversPerInnings} overs match
-    </span>
+                    <div className="completed-match-status-row">
+                      <span className="status-pill">{match.status}</span>
+                      <span className="mini-pill">
+                        🎯 {match.oversPerInnings} overs
+                      </span>
+                    </div>
+                  </div>
 
-    <span>
-      ⚾ Max wkts allowed: {match.maxWicketsPerInnings ?? "∞"}
-    </span>
-
-    <span>
-      ⚡ Powerplay overs: {match.powerplayOversInnings ?? "∞"}
-    </span>
-  </div>
-</div>
-<div className="match-final-score">
-  <div>{match.firstInningsScore}</div>
-  <div>{match.secondInningsScore}</div>
-  🏆 <strong>{match.resultText}</strong>
-</div>
-                </button>
-
-                <div className="match-tile-actions">
-                  <button
-                    type="button"
-                    className="btn btn-outline"
-                    onClick={() => {
-                      setSelectedMatchId(String(match.id));
-                      handleMatchSelect(match.id);
-                    }}
-                  >
-                    View Match
-                  </button>
-
-                  {permissions?.canDeleteMatch && (
+                  <div className="completed-match-actions">
                     <button
                       type="button"
-                      className="btn btn-outline"
-                      onClick={() => handleDeleteMatch(match.id)}
+                      className="view-match-btn"
+                      onClick={() => {
+                        setSelectedMatchId(String(match.id));
+                        handleMatchSelect(match.id);
+                      }}
                     >
-                      Delete
+                      🏟️ View Match Center
                     </button>
-                  )}
+
+                    {canShowAi && (
+                      <button
+                        type="button"
+                        className="mini-action-btn ai-mini-btn"
+                        disabled={aiAnalysisLoading}
+                        onClick={() => loadAiAnalysis(match.id)}
+                      >
+                        {aiAnalysisLoading
+                          ? "⏳ Generating..."
+                          : "🤖 AI Insights"}
+                      </button>
+                    )}
+
+                    {permissions?.canDeleteMatch && (
+                      <button
+                        type="button"
+                        className="mini-action-btn danger-mini-btn"
+                        onClick={() => handleDeleteMatch(match.id)}
+                      >
+                        🗑️ Delete
+                      </button>
+                    )}
+                  </div>
+                </div>
+
+                <div className="completed-score-box">
+                  <div className="innings-score-line">
+                    <span>1st Innings</span>
+                    <strong>{match.firstInningsScore}</strong>
+                  </div>
+
+                  <div className="innings-score-line">
+                    <span>2nd Innings</span>
+                    <strong>{match.secondInningsScore}</strong>
+                  </div>
+                </div>
+
+                <div className="completed-result-strip">
+                  🏆 <strong>{match.resultText}</strong>
+                </div>
+
+                <div className="completed-match-meta">
+                  <span>
+                    🏏 Bat 1st: {match.battingFirstTeamName || "Not decided"}
+                  </span>
+                  <span>
+                    ⚾ Max wkts: {match.maxWicketsPerInnings ?? "∞"}
+                  </span>
+                  <span>
+                    ⚡ Powerplay: {match.powerplayOversInnings ?? "∞"}
+                  </span>
                 </div>
               </div>
-            ))}
-          </div>
-        )}
-      </Card>
+            </div>
+          );
+        })}
+      </div>
     )}
+  </Card>
+)}
   </div>
 )}
 {activeTab === "management" && (
@@ -6963,6 +7016,59 @@ KL Rahul`}
           onClick={confirmStartMatch}
         >
           Start Match
+        </button>
+      </div>
+    </div>
+  </div>
+)}
+{showAiAnalysisModal && (
+  <div className="modal-backdrop">
+    <div className="ai-analysis-modal">
+      <div className="ai-analysis-modal-header">
+        <h3>🤖 AI Match Insights</h3>
+
+        <button
+          type="button"
+          className="icon-btn"
+          onClick={() => setShowAiAnalysisModal(false)}
+        >
+          ✕
+        </button>
+      </div>
+
+<div className="ai-analysis-content pretty-ai-analysis">
+  {aiAnalysis
+    .split("\n")
+    .filter((line) => line.trim())
+    .map((line, idx) => {
+      const isHeading =
+        line.startsWith("🏆") ||
+        line.startsWith("🔑") ||
+        line.startsWith("🏏") ||
+        line.startsWith("🎯") ||
+        line.startsWith("🤝") ||
+        line.startsWith("💥") ||
+        line.startsWith("📊");
+
+      return isHeading ? (
+        <h4 key={`ai-heading-${idx}`}>
+          {line}
+        </h4>
+      ) : (
+        <p key={`ai-line-${idx}`}>
+          {line.replace(/^[-*]\s*/, "")}
+        </p>
+      );
+    })}
+</div>
+
+      <div className="modal-actions">
+        <button
+          type="button"
+          className="btn"
+          onClick={() => setShowAiAnalysisModal(false)}
+        >
+          Close
         </button>
       </div>
     </div>

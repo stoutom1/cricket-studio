@@ -15,8 +15,7 @@ export async function GET(request, { params }) {
     const memberId = Number(
       searchParams.get("memberId")
     );
-console.log("LeagueId:", leagueId);
-console.log("Member Id:", memberId);
+
     if (
       Number.isNaN(leagueId) ||
       leagueId <= 0

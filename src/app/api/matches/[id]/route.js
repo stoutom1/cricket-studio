@@ -14,6 +14,12 @@ export async function GET(request, { params }) {
 
   const { id } = await params;
   const matchId = Number(id);
+    if (!matchId || Number.isNaN(matchId)) {
+    return NextResponse.json(
+      { error: "Invalid match id" },
+      { status: 400 }
+    );
+  }
   if (!id) {
     return NextResponse.json({ error: "Invalid match id" }, { status: 400 });
   }

@@ -175,21 +175,30 @@ export async function GET(request) {
       innings1.legalBalls > 0 &&
       innings2Completed;
 
-    if (
-      match.status !== "COMPLETED_LOCKED" &&
-      match.status !== "ABANDONED" &&
-      shouldComplete &&
-      match.status !== "COMPLETED"
-    ) {
-      await prisma.match.update({
-        where: { id: match.id },
-        data: {
-          status: "COMPLETED",
-        },
-      });
+const normalizedStatus = String(match.status || "")
+  .trim()
+  .replace(/[\s-]+/g, "_")
+  .toUpperCase();
 
-      match.status = "COMPLETED";
-    }
+const canAutoComplete =
+  ![
+    "COMPLETED",
+    "COMPLETED_LOCKED",
+    "ABANDONED"
+  ].includes(normalizedStatus);
+
+if (canAutoComplete && shouldComplete) {
+  await prisma.match.update({
+    where: { id: match.id },
+    data: {
+      status: "COMPLETED",
+      statusText: "MATCH COMPLETED"
+    },
+  });
+
+  match.status = "COMPLETED";
+  match.statusText = "MATCH COMPLETED";
+}
   }
 
   const formatted = matches.map((m) => {

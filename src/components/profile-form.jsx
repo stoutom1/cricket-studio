@@ -30,7 +30,7 @@ export default function CompleteProfileForm({
       alert("Registration failed");
       return;
     }
-console.log("before join in profile-form", token);
+
     router.push(
       `/register/${token}/join`
     );

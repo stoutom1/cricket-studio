@@ -20,7 +20,7 @@ export async function POST(request) {
     
     const { name, email, password } = body;
 
-    //console.log("password:", password);
+
     
 if (!name || !email || !password) {
       return NextResponse.json(
@@ -52,7 +52,7 @@ try{
       }
     });
     
-    console.log("Inside Complete");
+
 
     await sendWelcomeEmail(
       user.email,

@@ -73,6 +73,8 @@ model Match {
   leagueId              Int?
   league                League?      @relation(fields: [leagueId], references: [id])
   events                MatchEvent[]
+  aiAnalysis            String?
+  aiAnalysisAt          DateTime?
 }
 
 model Ball {

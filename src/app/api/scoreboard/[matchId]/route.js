@@ -446,7 +446,7 @@ inn.items.push({
 
   const innings1TeamName = innings1TeamId === match.teamAId ? match.teamA.name : match.teamB.name;
   const innings2TeamName = innings2TeamId === match.teamAId ? match.teamA.name : match.teamB.name;
-const matchStats = buildMatchStats(match);
+  const matchStats = buildMatchStats(match);
   const innings1 = summarizeInningsDetailed(innings1Balls, playerMap, match.oversPerInnings);
   const innings2 = summarizeInningsDetailed(innings2Balls, playerMap, match.oversPerInnings);
 
@@ -585,6 +585,42 @@ currentState.nonStrikerStats =
     currentState.nonStrikerId,
     inningsBalls
   );
+
+const normalizedStatus = String(match.status || "")
+  .trim()
+  .replace(/[\s-]+/g, "_")
+  .toUpperCase();
+
+const shouldComplete =
+  innings1Complete &&
+  (
+    (target && innings2.runs >= target) ||
+    innings2.legalBalls >= maxLegalBalls ||
+    (
+      match.maxWicketsPerInnings != null &&
+      innings2.wickets >= match.maxWicketsPerInnings
+    )
+  );
+
+const canAutoComplete = ![
+  "COMPLETED",
+  "COMPLETED_LOCKED",
+  "ABANDONED"
+].includes(normalizedStatus);
+/*
+if (canAutoComplete && shouldComplete) {
+  await prisma.match.update({
+    where: { id: match.id },
+    data: {
+      status: "COMPLETED",
+      statusText: "MATCH COMPLETED"
+    }
+  });
+
+  match.status = "COMPLETED";
+  match.statusText = "MATCH COMPLETED";
+}  
+*/
 
 const response = {
   match: {
