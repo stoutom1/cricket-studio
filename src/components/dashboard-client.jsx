@@ -184,8 +184,7 @@ const [aiAnalysisLoading, setAiAnalysisLoading] = useState(false);
 const [showAiAnalysisModal, setShowAiAnalysisModal] = useState(false);
 const [showMatchCreatedModal, setShowMatchCreatedModal] = useState(false);
 const [createdMatchInfo, setCreatedMatchInfo] = useState(null);
-const [showPassword, setShowPassword] = useState(false);
-const [showConfirmPassword, setShowConfirmPassword] = useState(false);
+
 const isSuperAdmin =
   session?.user?.email ===
   "surprisecricket11@gmail.com";
@@ -1301,6 +1300,7 @@ useEffect(() => {
     setShowBowlerModal(true);
   }
 }, [scoreboard]);
+
 const handleAddTeam = async (e) => {
   e.preventDefault();
 
@@ -2468,8 +2468,36 @@ const canCreateMatch =
 
 const selectedMatch = matches.find(
   (m) => String(m.id) === String(selectedMatchId)
-); 
-  /*const isMobile =
+);
+const selectedMatchStatus = String(selectedMatch?.status || "")
+  .trim()
+  .replace(/[\s-]+/g, "_")
+  .toUpperCase();
+
+const isSelectedMatchCompleted =
+  selectedMatchStatus === "COMPLETED" ||
+  selectedMatchStatus === "COMPLETED_LOCKED";
+
+const effectiveScoringSubTab =
+  isSelectedMatchCompleted && scoringSubTab === "ADVANCED"
+    ? "SCOREBOARD"
+    : scoringSubTab;
+/*useEffect(() => {
+  const status = String(selectedMatch?.status || "")
+    .trim()
+    .replace(/[\s-]+/g, "_")
+    .toUpperCase();
+
+  const isCompleted =
+    status === "COMPLETED" ||
+    status === "COMPLETED_LOCKED";
+
+  if (isCompleted && scoringSubTab === "ADVANCED") {
+    setScoringSubTab("SCOREBOARD");
+  }
+}, [selectedMatch, scoringSubTab]); 
+*/
+/*const isMobile =
   typeof window !== "undefined" &&
   window.innerWidth < 768;
 */
@@ -2659,18 +2687,19 @@ return (
 
       {selectedMatchId && (
         <div className="scoring-subtabs pretty">
+{!isSelectedMatchCompleted && (
+  <button
+    type="button"
+    className={effectiveScoringSubTab === "ADVANCED" ? "active" : ""}
+    onClick={() => setScoringSubTab("ADVANCED")}
+  >
+    <span>🎯</span>
+    <strong>Scoring</strong>
+  </button>
+)}
           <button
             type="button"
-            className={scoringSubTab === "ADVANCED" ? "active" : ""}
-            onClick={() => setScoringSubTab("ADVANCED")}
-          >
-            <span>🎯</span>
-            <strong>Scoring</strong>
-          </button>
-
-          <button
-            type="button"
-            className={scoringSubTab === "SCOREBOARD" ? "active" : ""}
+            className={effectiveScoringSubTab === "SCOREBOARD" ? "active" : ""}
             onClick={() => setScoringSubTab("SCOREBOARD")}
           >
             <span>🏏</span>
@@ -2679,7 +2708,7 @@ return (
 
           <button
   type="button"
-  className={scoringSubTab === "COMMENTARY" ? "active" : ""}
+  className={effectiveScoringSubTab === "COMMENTARY" ? "active" : ""}
   onClick={() => setScoringSubTab("COMMENTARY")}
 >
   <span>📝</span>
@@ -2690,7 +2719,7 @@ return (
 </div>
   )}
 </Card>
-{selectedMatchId && scoringSubTab === "SCOREBOARD" && (
+{selectedMatchId && effectiveScoringSubTab === "SCOREBOARD" && (
   <Card title="🏟️ Professional Scoreboard" defaultCollapsed={false}>
     {!scoreboard ? (
       <p className="muted">Select a match to view scoreboard.</p>
@@ -2969,29 +2998,12 @@ return (
             </CollapsibleSection>
           </div>
         ))}
-
-        <CollapsibleSection title="🕘 Ball-by-Ball Timeline" defaultOpen={true}>
-          <div className="recent-balls pro-recent-balls">
-            {!scoreboard.recentBalls?.length ? (
-              <span className="muted">No deliveries yet</span>
-            ) : (
-              scoreboard.recentBalls.map((item, idx) => (
-                <span
-                  key={`recent-${item.id ?? item.label ?? "ball"}-${idx}`}
-                  className="ball-timeline-chip"
-                >
-                  {item.label}
-                </span>
-              ))
-            )}
-          </div>
-        </CollapsibleSection>
       </div>
       </>
     )}
   </Card>
 )}
-{selectedMatchId && scoringSubTab === "COMMENTARY" && (
+{selectedMatchId && effectiveScoringSubTab === "COMMENTARY" && (
   <Card title="🎙️ Live Match Commentary" defaultCollapsed={false}>
     {!scoreboard ? (
       <p className="muted">Select a match to view commentary.</p>
@@ -3067,7 +3079,7 @@ return (
     )}
   </Card>
 )}
-{selectedMatchId && scoringSubTab === "ADVANCED" && (          
+{!isSelectedMatchCompleted && scoringSubTab === "ADVANCED" &&(          
 <Card
   className="scoring-console"
   title="🎯 Advanced Scoring"
@@ -3817,95 +3829,13 @@ return (
             </>
           )}
         </Card>
-)}
-        {selectedMatchId && scoringSubTab === "STATS" && (
-        <Card title="📊 Stats" defaultCollapsed={false}>
-          {!stats ? (
-            <p className="muted">Select a match.</p>
-          ) : (
-            <div className="stats-grid">
-              <div>
-                  <h4>Batting</h4>
-
-                  {Object.entries(battingByTeam || {}).map(([teamName, players]) => (
-                    <div key={teamName} style={{ marginBottom: 24 }}>
-                      <h5>{teamName}</h5>
-<div className="table-scroll">
-                      <table className="score-table">
-                        <thead>
-                          <tr>
-                            <th>Player</th>
-                            <th>R</th>
-                            <th>B</th>
-                            <th>4s</th>
-                            <th>6s</th>
-                            <th>SR</th>
-                            <th>Out</th>
-                          </tr>
-                        </thead>
-
-                        <tbody>
-                          {players.map((row) => (
-  <tr
-  key={`bat-${inn.number}-${row.playerId}`}
->
-                              <td>{row.playerName}</td>
-                              <td>{row.runs}</td>
-                              <td>{row.balls}</td>
-                              <td>{row.fours}</td>
-                              <td>{row.sixes}</td>
-                              <td>{row.strikeRate}</td>
-                              <td>{row.outs ? row.dismissal : "not out"}</td>
-                            </tr>
-                          ))}
-                        </tbody>
-                      </table>
-                      </div>
-                    </div>
-                  ))}
-                </div>
-              <div>
-                        <h4>Bowling</h4>
-                        {Object.entries(bowlingByTeam || {}).map(([teamName, players]) => (
-                          <div key={teamName} style={{ marginBottom: 24 }}>
-                            <h5>{teamName}</h5>
-<div className="table-scroll">
-                            <table className="score-table">
-                              <thead>
-                                <tr>
-                                  <th>Player</th>
-                                  <th>O</th>
-                                  <th>R</th>
-                                  <th>W</th>
-                                  <th>Dots</th>
-                                  <th>Eco</th>
-                                </tr>
-                              </thead>
-
-                              <tbody>
-                                {players.map((row) => (
-   <tr
-  key={`bat-${inn.number}-${row.playerId}`}
->
-                                    <td>{row.playerName}</td>
-                                    <td>{row.overs}</td>
-                                    <td>{row.runs}</td>
-                                    <td>{row.wickets}</td>
-                                    <td>{row.dots}</td>
-                                    <td>{row.economy}</td>
-                                  </tr>
-                                ))}
-                              </tbody>
-                            </table>
-                            </div>
-                          </div>
-                        ))}
-                      </div>
-            </div>
-          )}
-        </Card>
-        )}        
-{permissions?.canScoreMatch && (
+)}        
+{permissions?.canScoreMatch && !(
+  selectedMatch &&
+  ["COMPLETED", "COMPLETED_LOCKED"].includes(
+    String(selectedMatch.status || "").toUpperCase()
+  )
+) &&(
 <div>
   <div className="match-action-bar">
     <button
@@ -3943,7 +3873,7 @@ return (
   </div>
 </div>
 )}
-    </div>
+    </div>    
 )}
 {activeTab === "matches" && (
   <div className="matches-page">
