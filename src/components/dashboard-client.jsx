@@ -4369,7 +4369,7 @@ return (
                         handleMatchSelect(match.id);
                       }}
                     >
-                      🏟️ View Match
+                      🏟️ View
                     </button>
 
                     {canShowAi && (
