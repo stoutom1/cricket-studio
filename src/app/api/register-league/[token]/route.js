@@ -81,7 +81,7 @@ const existingMember =
     }
   });
 
- // const permissions = ROLES[role] || ROLES.VIEWER;
+
 if (!existingMember) {
 await prisma.leagueMember.create({
   data: {

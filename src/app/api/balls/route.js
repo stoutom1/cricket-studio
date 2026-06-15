@@ -269,9 +269,7 @@ const dismissedPlayerId =
   });
 
   // CURRENT INNINGS
-//const innings = scoreboard.innings.find(
-//  (x) => x.number === inningsNo
-//);
+
 const balls = await prisma.ball.findMany({
   where: {
     matchId: Number(matchId)

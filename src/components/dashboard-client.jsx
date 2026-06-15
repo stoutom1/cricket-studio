@@ -969,7 +969,7 @@ async function loadPointsTable(leagueId) {
             `${shareText}\n\n${shareUrl}`
           );
 
-          //alert("Share link copied to clipboard");
+
         }
       } catch (err) {
         console.error(err);
@@ -1075,7 +1075,6 @@ async function updateRole(
       api(`/api/scoreboard/${matchId}`),
       api(`/api/stats/${matchId}`),
       api(`/api/liveview/${matchId}`),
-      //api(`/api/live/${matchId}`)
     ]);
 
     setMatchDetail(detail);

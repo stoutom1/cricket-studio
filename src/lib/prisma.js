@@ -10,12 +10,6 @@ const adapter = new PrismaPg({
 const prisma =
   globalForPrisma.prisma || new PrismaClient({ adapter })
 
-//  new PrismaClient({
-//   accelerateUrl: process.env["DATABASE_URL"],
-//}).$extends(withAccelerate())
-  //new PrismaClient({
-  //  log: ["warn", "error"]
-  //});
 
 if (process.env.NODE_ENV !== "production") {
   globalForPrisma.prisma = prisma;

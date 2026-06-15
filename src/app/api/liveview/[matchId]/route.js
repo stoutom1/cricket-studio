@@ -178,12 +178,11 @@ const currentInningsBalls = match.balls.filter(
       const allOut =
         innings2Summary.wickets >= maxWickets;
 
-      //const matchStatus = match.stats;  
+ 
       const isCompleted =
         innings1Complete &&
         (
           innings2Complete ||  chaseCompleted || match.status === "COMPLETED_LOCKED" || match.status === "COMPLETED"
-          // || allOut
         );
 
       let statusText = "Match in progress";
