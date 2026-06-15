@@ -184,6 +184,8 @@ const [aiAnalysisLoading, setAiAnalysisLoading] = useState(false);
 const [showAiAnalysisModal, setShowAiAnalysisModal] = useState(false);
 const [showMatchCreatedModal, setShowMatchCreatedModal] = useState(false);
 const [createdMatchInfo, setCreatedMatchInfo] = useState(null);
+const [showPassword, setShowPassword] = useState(false);
+const [showConfirmPassword, setShowConfirmPassword] = useState(false);
 const isSuperAdmin =
   session?.user?.email ===
   "surprisecricket11@gmail.com";

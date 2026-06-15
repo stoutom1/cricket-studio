@@ -4,6 +4,7 @@ import Link from "next/link";
 import { useState } from "react";
 import { useRouter } from "next/navigation";
 import { signIn } from "next-auth/react";
+import { Eye, EyeOff } from "lucide-react";
 
 export default function LoginForm({
   callbackUrl = {callbackUrl}
@@ -14,7 +15,9 @@ export default function LoginForm({
   const [password, setPassword] = useState("");
   const [error, setError] = useState("");
   const [loading, setLoading] = useState(false);
-
+  const [showPassword, setShowPassword] = useState(false);
+  const [showConfirmPassword, setShowConfirmPassword] = useState(false);
+  
   async function handleSubmit(e) {
     e.preventDefault();
 
@@ -68,18 +71,33 @@ export default function LoginForm({
 
 <label>
   <span>Password</span>
-
+<div className="password-input-wrapper">
   <input
-    type="password"
+    type={showPassword ? "text" : "password"}
     value={password}
     onChange={(e) =>
       setPassword(e.target.value)
     }
     required
     autoComplete="current-password"
+    placeholder="Enter password"
   />
+  <button
+    type="button"
+    className="password-toggle"
+    onClick={() => setShowPassword((prev) => !prev)}
+    aria-label={
+      showPassword ? "Hide password" : "Show password"
+    }
+  >
+    {showPassword ? (
+  <EyeOff size={18} />
+) : (
+  <Eye size={18} />
+)}
+  </button>
+</div>  
 </label>
-
 <div
   style={{
     textAlign: "right",

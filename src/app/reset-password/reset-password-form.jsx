@@ -2,6 +2,7 @@
 
 import { useState } from "react";
 import { useRouter } from "next/navigation";
+import { Eye, EyeOff } from "lucide-react";
 
 export default function ResetPasswordForm({
   token
@@ -16,6 +17,9 @@ export default function ResetPasswordForm({
 
   const [message, setMessage] =
     useState("");
+
+  const [showPassword, setShowPassword] = useState(false);
+  const [showConfirmPassword, setShowConfirmPassword] = useState(false);    
 
   async function handleSubmit(e) {
     e.preventDefault();
@@ -67,37 +71,69 @@ export default function ResetPasswordForm({
             handleSubmit
           }
         >
-          <input
-            type="password"
-            placeholder="New Password"
-            value={password}
-            onChange={(e) =>
-              setPassword(
-                e.target.value
-              )
-            }
-            required
-          />
-
-          <input
-            type="password"
-            placeholder="Confirm Password"
-            value={confirm}
-            onChange={(e) =>
+  <div className="password-input-wrapper">        
+  <input
+    type={showPassword ? "text" : "password"}
+    value={password}
+    onChange={(e) =>
+      setPassword(e.target.value)
+    }
+    required
+    placeholder="New Password"
+  />
+  <button
+    type="button"
+    className="password-toggle"
+    onClick={() => setShowPassword((prev) => !prev)}
+    aria-label={
+      showPassword ? "Hide password" : "Show password"
+    }
+  >
+    {showPassword ? (
+  <EyeOff size={18} />
+) : (
+  <Eye size={18} />
+)}
+  </button>
+</div>
+<div className="password-input-wrapper">
+  <input
+    type={showConfirmPassword ? "text" : "password"}
+    value={confirm}
+onChange={(e) =>
               setConfirm(
                 e.target.value
               )
-            }
-            required
-          />
+    }
+    required
+    placeholder="Confirm password"
+  />
 
+  <button
+    type="button"
+    className="password-toggle"
+    onClick={() =>
+      setShowConfirmPassword((prev) => !prev)
+    }
+    aria-label={
+      showConfirmPassword
+        ? "Hide password"
+        : "Show password"
+    }
+  >
+    {showConfirmPassword ? (
+  <EyeOff size={18} />
+) : (
+  <Eye size={18} />
+)}
+  </button>
+  </div>
           <button
             type="submit"
           >
             Update Password
           </button>
         </form>
-
         {message && (
           <p>{message}</p>
         )}

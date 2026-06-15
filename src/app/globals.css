@@ -3938,3 +3938,50 @@ body {
     grid-template-columns: 1fr;
   }
 }
+.password-input-wrapper {
+  position: relative;
+  width: 100%;
+}
+
+.password-input-wrapper input {
+  width: 100%;
+  box-sizing: border-box;
+  padding-right: 50px;   /* room for eye icon */
+}
+
+.password-toggle {
+  position: absolute;
+
+  top: 50%;
+  right: 14px;
+
+  transform: translateY(-50%);
+
+  display: flex;
+  align-items: center;
+  justify-content: center;
+
+  width: 32px;
+  height: 32px;
+
+  border: none;
+  background: transparent;
+
+  cursor: pointer;
+
+  color: inherit;
+  font-size: 18px;
+
+  padding: 0;
+  margin: 0;
+
+  z-index: 2;
+}
+
+.password-toggle:hover {
+  opacity: 0.75;
+}
+
+.password-toggle:focus {
+  outline: none;
+}
