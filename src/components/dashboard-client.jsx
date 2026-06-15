@@ -182,6 +182,8 @@ const [rankingType, setRankingType] = useState("topRunScorers");
 const [aiAnalysis, setAiAnalysis] = useState("");
 const [aiAnalysisLoading, setAiAnalysisLoading] = useState(false);
 const [showAiAnalysisModal, setShowAiAnalysisModal] = useState(false);
+const [showMatchCreatedModal, setShowMatchCreatedModal] = useState(false);
+const [createdMatchInfo, setCreatedMatchInfo] = useState(null);
 const isSuperAdmin =
   session?.user?.email ===
   "surprisecricket11@gmail.com";
@@ -1485,8 +1487,29 @@ setMatchForm({
 });
 
       setMessage("✅ Match created");
-      await loadMatches();
-      setSelectedMatchId(String(match.id));
+      const teamA = teams.find(
+          (t) => Number(t.id) === Number(match.teamAId)
+        );
+
+        const teamB = teams.find(
+          (t) => Number(t.id) === Number(match.teamBId)
+        );
+
+        setCreatedMatchInfo({
+          ...match,
+          teamAName: teamA?.name,
+          teamBName: teamB?.name,
+        });
+
+      setShowMatchCreatedModal(true);
+      //setMatchesSubTab("SCHEDULED");
+
+      await Promise.all([
+        loadMatches(),
+        loadSelectedMatch(created.id)
+      ]);
+      //await loadMatches();
+      //setSelectedMatchId(String(match.id));
     } catch (err) {
       setError(err.message);
     }
@@ -3997,6 +4020,7 @@ return (
           <strong>
     {leagues.find((l) => Number(l.id) === Number(activeLeagueId))?.name || "No league selected"}
           </strong>
+
         </div>
 
         <form className="form create-match-form" onSubmit={handleCreateMatch}>
@@ -7068,6 +7092,53 @@ KL Rahul`}
           onClick={() => setShowAiAnalysisModal(false)}
         >
           Close
+        </button>
+      </div>
+    </div>
+  </div>
+)}
+{showMatchCreatedModal && (
+  <div className="modal-backdrop">
+    <div className="match-created-modal">
+      <div className="match-created-icon">✅</div>
+
+      <h3>Match Created Successfully!</h3>
+
+      <p>
+        Your match has been added to the Scheduled tab.
+      </p>
+
+      {createdMatchInfo && (
+        <div className="created-match-preview">
+          <strong>
+            {createdMatchInfo.teamAName || "Team A"} vs{" "}
+            {createdMatchInfo.teamBName || "Team B"}
+          </strong>
+
+          <span>
+            🎯 {createdMatchInfo.oversPerInnings} overs
+          </span>
+        </div>
+      )}
+
+      <div className="modal-actions">
+        <button
+          type="button"
+          className="btn btn-outline"
+          onClick={() => setShowMatchCreatedModal(false)}
+        >
+          Stay Here
+        </button>
+
+        <button
+          type="button"
+          className="btn"
+          onClick={() => {
+            setShowMatchCreatedModal(false);
+            setMatchesSubTab("SCHEDULED");
+          }}
+        >
+          Go to Scheduled Matches
         </button>
       </div>
     </div>

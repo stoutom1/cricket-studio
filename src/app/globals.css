@@ -3895,3 +3895,46 @@ body {
     font-size: 12px;
   }
 }
+.match-created-modal {
+  width: min(440px, calc(100vw - 24px));
+  padding: 22px;
+  border-radius: 22px;
+  text-align: center;
+  background: var(--card-bg, #0f172a);
+  border: 1px solid rgba(255,255,255,0.12);
+}
+
+.match-created-icon {
+  width: 58px;
+  height: 58px;
+  margin: 0 auto 12px;
+  display: grid;
+  place-items: center;
+  border-radius: 999px;
+  background: rgba(22,163,74,0.18);
+  font-size: 30px;
+}
+
+.match-created-modal h3 {
+  margin: 0 0 8px;
+}
+
+.match-created-modal p {
+  opacity: 0.78;
+}
+
+.created-match-preview {
+  display: grid;
+  gap: 6px;
+  margin: 14px 0;
+  padding: 12px;
+  border-radius: 16px;
+  background: rgba(255,255,255,0.06);
+}
+
+@media (max-width: 700px) {
+  .match-created-modal .modal-actions {
+    display: grid;
+    grid-template-columns: 1fr;
+  }
+}
