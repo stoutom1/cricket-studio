@@ -16,6 +16,158 @@ function prettyStatus(status) {
     .toLowerCase()
     .replace(/\b\w/g, (c) => c.toUpperCase());
 }
+function buildPublicLeaders(matches) {
+  const batting = new Map();
+  const bowling = new Map();
+
+  for (const match of matches || []) {
+    for (const ball of match.balls || []) {
+      if (ball.strikerId) {
+        const key = Number(ball.strikerId);
+
+        if (!batting.has(key)) {
+          batting.set(key, {
+            playerId: key,
+            playerName: ball.striker?.name || "Unknown",
+            teamName: ball.striker?.team?.name || "",
+            runs: 0,
+            balls: 0,
+            fours: 0,
+            sixes: 0,
+          });
+        }
+
+        const row = batting.get(key);
+
+        if (ball.extraType !== "WIDE") {
+          row.balls += 1;
+        }
+
+        row.runs += Number(ball.batterRuns || 0);
+
+        if (Number(ball.batterRuns || 0) === 4) row.fours += 1;
+        if (Number(ball.batterRuns || 0) === 6) row.sixes += 1;
+      }
+
+      if (ball.bowlerId) {
+        const key = Number(ball.bowlerId);
+
+        if (!bowling.has(key)) {
+          bowling.set(key, {
+            playerId: key,
+            playerName: ball.bowler?.name || "Unknown",
+            teamName: ball.bowler?.team?.name || "",
+            wickets: 0,
+            balls: 0,
+            runs: 0,
+          });
+        }
+
+        const row = bowling.get(key);
+
+        if (ball.legalDelivery) {
+          row.balls += 1;
+        }
+
+        const bowlerRuns =
+          ball.extraType === "BYE" || ball.extraType === "LEGBYE"
+            ? 0
+            : Number(ball.totalRuns || 0);
+
+        row.runs += bowlerRuns;
+
+        if (
+          ball.isWicket &&
+          !["RUN_OUT", "RETIRED_HURT", "RETIRED_OUT"].includes(ball.wicketType)
+        ) {
+          row.wickets += 1;
+        }
+      }
+    }
+  }
+
+  const battingStats = [...batting.values()].map((row) => ({
+    ...row,
+    strikeRate:
+      row.balls > 0 ? ((row.runs / row.balls) * 100).toFixed(2) : "0.00",
+  }));
+
+  const bowlingStats = [...bowling.values()].map((row) => ({
+    ...row,
+    economy:
+      row.balls > 0 ? ((row.runs / row.balls) * 6).toFixed(2) : "0.00",
+  }));
+
+  return {
+    battingStats,
+    bowlingStats,
+    topRunScorer: [...battingStats].sort((a, b) => b.runs - a.runs)[0],
+    topSixHitter: [...battingStats].sort((a, b) => b.sixes - a.sixes)[0],
+    bestStrikeRate: [...battingStats]
+      .filter((p) => p.balls >= 5)
+      .sort((a, b) => Number(b.strikeRate) - Number(a.strikeRate))[0],
+    topWicketTaker: [...bowlingStats].sort((a, b) => b.wickets - a.wickets)[0],
+    bestEconomy: [...bowlingStats]
+      .filter((p) => p.balls >= 6)
+      .sort((a, b) => Number(a.economy) - Number(b.economy))[0],
+  };
+}
+function formatOversFromBalls(legalBalls) {
+  const overs = Math.floor(Number(legalBalls || 0) / 6);
+  const balls = Number(legalBalls || 0) % 6;
+  return `${overs}.${balls}`;
+}
+
+function buildPublicPointsTable(matches, teams) {
+  const table = new Map();
+
+  teams.forEach((team) => {
+    table.set(Number(team.id), {
+      teamId: team.id,
+      teamName: team.name,
+      played: 0,
+      won: 0,
+      lost: 0,
+      tied: 0,
+      points: 0,
+    });
+  });
+
+  matches
+    .filter((m) =>
+      ["COMPLETED", "COMPLETED_LOCKED"].includes(normalizeStatus(m.status))
+    )
+    .forEach((match) => {
+      const teamA = table.get(Number(match.teamAId));
+      const teamB = table.get(Number(match.teamBId));
+
+      if (!teamA || !teamB) return;
+
+      teamA.played += 1;
+      teamB.played += 1;
+
+      const result = String(match.resultText || "").toLowerCase();
+
+      if (result.includes(teamA.teamName.toLowerCase())) {
+        teamA.won += 1;
+        teamA.points += 2;
+        teamB.lost += 1;
+      } else if (result.includes(teamB.teamName.toLowerCase())) {
+        teamB.won += 1;
+        teamB.points += 2;
+        teamA.lost += 1;
+      } else if (result.includes("tied")) {
+        teamA.tied += 1;
+        teamB.tied += 1;
+        teamA.points += 1;
+        teamB.points += 1;
+      }
+    });
+
+  return [...table.values()].sort(
+    (a, b) => b.points - a.points || b.won - a.won
+  );
+}
 
 export default async function PublicLeaguePage({ params }) {
   const { slug } = await params;
@@ -39,6 +191,24 @@ export default async function PublicLeaguePage({ params }) {
           teamA: true,
           teamB: true,
           series: true,
+balls: {
+  include: {
+    striker: {
+      include: {
+        team: true,
+      },
+    },
+    bowler: {
+      include: {
+        team: true,
+      },
+    },
+  },
+  orderBy: [
+    { inningsNo: "asc" },
+    { sequence: "asc" },
+  ],
+},
         },
         orderBy: { createdAt: "desc" },
       },
@@ -75,6 +245,14 @@ export default async function PublicLeaguePage({ params }) {
         normalizeStatus(match.status)
       )
   );
+const pointsTable = buildPublicPointsTable(league.matches, league.teams);
+const {
+  topRunScorer,
+  topSixHitter,
+  bestStrikeRate,
+  topWicketTaker,
+  bestEconomy,
+} = buildPublicLeaders(league.matches);
 
   const featuredMatch =
     activeMatches[0] || upcomingMatches[0] || completedMatches[0] || null;
@@ -222,6 +400,95 @@ export default async function PublicLeaguePage({ params }) {
             </div>
           </div>
         </div>
+
+        <section className="public-section">
+  <div className="public-section-head">
+    <h2>📈 Points Table</h2>
+    <span>{pointsTable.length}</span>
+  </div>
+
+  <div className="public-table-wrap">
+    <table className="public-table">
+      <thead>
+        <tr>
+          <th>Team</th>
+          <th>P</th>
+          <th>W</th>
+          <th>L</th>
+          <th>T</th>
+          <th>Pts</th>
+        </tr>
+      </thead>
+
+      <tbody>
+        {pointsTable.map((row, index) => (
+          <tr key={row.teamId}>
+            <td>
+              <strong>#{index + 1}</strong> {row.teamName}
+            </td>
+            <td>{row.played}</td>
+            <td>{row.won}</td>
+            <td>{row.lost}</td>
+            <td>{row.tied}</td>
+            <td>
+              <strong>{row.points}</strong>
+            </td>
+          </tr>
+        ))}
+      </tbody>
+    </table>
+  </div>
+</section>
+<section className="public-section">
+  <div className="public-section-head">
+    <h2>🏆 League Leaders</h2>
+  </div>
+
+  <div className="public-leaders-grid">
+
+<div className="leader-card">
+  <div className="leader-label">
+    🏏 Most Runs
+  </div>
+
+  <div className="leader-player">
+    {topRunScorer?.playerName}
+  </div>
+
+  <div className="leader-team">
+    {topRunScorer?.teamName}
+  </div>
+
+  <div className="leader-value">
+    {topRunScorer?.runs}
+  </div>
+</div>
+
+
+    <div className="leader-card">
+  <div className="leader-label">
+    🎯 Most Wickets
+  </div>
+
+  <div className="leader-player">
+    {topWicketTaker?.playerName}
+  </div>
+
+  <div className="leader-team">
+    {topWicketTaker?.teamName}
+  </div>
+</div>
+
+
+  <div className="leader-card">
+  <div className="leader-label">💥 Most Sixes</div>
+  <div className="leader-player">{topSixHitter?.playerName || "No data yet"}</div>
+  <div className="leader-team">{topSixHitter?.teamName || ""}</div>
+  <div className="leader-value">{topSixHitter?.sixes || 0}</div>
+</div>
+
+  </div>
+</section>
       </section>
 
       <section className="public-section">
