@@ -4872,18 +4872,18 @@ return (
 {activeTab === "management" && (
   <div className="management-page">
     <Card title="🏏 League Management">
-      <div className="mgmt-balanced-shell">
+      <div className="mgmt-clean-shell">
 
         {/* LEAGUE */}
-        <section className="mgmt-balanced-card mgmt-league-card">
-          <div className="mgmt-card-head">
+        <section className="mgmt-clean-card">
+          <div className="mgmt-clean-head">
             <div>
               <h3>🏆 League</h3>
-              <p>Select your active league and invite users.</p>
+              <p>Select your active league and share invite/public links.</p>
             </div>
           </div>
 
-          <label>
+          <label className="mgmt-field">
             <span>Active League</span>
             <select
               value={activeLeagueId || ""}
@@ -4903,10 +4903,10 @@ return (
             </select>
           </label>
 
-          <div className="mgmt-action-row-balanced">
+          <div className="mgmt-clean-actions">
             <button
               type="button"
-              className="mgmt-action-primary"
+              className="mgmt-clean-btn"
               onClick={() => setShowLeagueModal(true)}
             >
               ➕ Create League
@@ -4915,29 +4915,33 @@ return (
             {activeLeague && (
               <button
                 type="button"
-                className="mgmt-action-secondary"
+                className="mgmt-clean-btn"
                 onClick={() => generateInviteLink(activeLeague.id)}
               >
                 🔗 Copy Invite Link
               </button>
             )}
-{activeLeague && activeLeague.visibility !== "PRIVATE" && activeLeague.slug && (
-  <button
-    type="button"
-    className="mgmt-action-secondary"
-    onClick={() => {
-      const url = `${window.location.origin}/public/leagues/${activeLeague.slug}`;
-      navigator.clipboard.writeText(url);
-      setMessage("Public league link copied.");
-    }}
-  >
-    🌐 Copy Public View Link
-  </button>
-)}
+
+            {activeLeague &&
+              activeLeague.visibility !== "PRIVATE" &&
+              activeLeague.slug && (
+                <button
+                  type="button"
+                  className="mgmt-clean-btn"
+                  onClick={() => {
+                    const url = `${window.location.origin}/public/leagues/${activeLeague.slug}`;
+                    navigator.clipboard.writeText(url);
+                    setMessage("Public league link copied.");
+                  }}
+                >
+                  🌐 Copy Public View Link
+                </button>
+              )}
+
             {selectedLeague && permissions?.canDeleteLeague && (
               <button
                 type="button"
-                className="mgmt-action-danger"
+                className="mgmt-clean-danger"
                 title={`Delete ${selectedLeague.name}`}
                 onClick={() =>
                   handleDeleteLeague(selectedLeague.id, selectedLeague.name)
@@ -4950,18 +4954,19 @@ return (
         </section>
 
         {/* SERIES */}
-        <section className="mgmt-balanced-card">
-          <div className="mgmt-card-head">
+        <section className="mgmt-clean-card">
+          <div className="mgmt-clean-head">
             <div>
               <h3>📅 Series / Season</h3>
-              <p>Select, create, or delete a series under this league.</p>
+              <p>Optional. Group matches into tournaments, cups, seasons, or years.</p>
             </div>
           </div>
 
-          <label>
+          <label className="mgmt-field">
             <span>Selected Series</span>
             <select
               value={selectedSeriesId || ""}
+              disabled={!activeLeagueId}
               onChange={(e) => {
                 const seriesId = e.target.value;
                 setSelectedSeriesId(seriesId);
@@ -4973,15 +4978,11 @@ return (
                 setContextFilters((prev) => ({
                   ...prev,
                   seriesIds: seriesId ? [Number(seriesId)] : [],
-                  years: selected ? [Number(selected.year)] : []
+                  years: selected ? [Number(selected.year)] : [],
                 }));
               }}
-              disabled={!activeLeagueId}
             >
-<option value="">
-  No Series Selected (Optional)
-</option>
-
+              <option value="">No Series Selected (Optional)</option>
 
               {seriesList.map((series) => (
                 <option key={series.id} value={series.id}>
@@ -4989,18 +4990,20 @@ return (
                 </option>
               ))}
             </select>
-            <small className="field-help">
-    <strong>Series are optional.</strong>
-    <span>
-      Create a series only if you want to group matches into a tournament,
-      cup, season, or year. You can still create matches without a series.
-    </span>
-</small>
+
+            <small className="mgmt-clean-help">
+              <strong>Series are optional.</strong>
+              <span>
+                Create a series only if you want to group matches into a tournament,
+                cup, season, or year. You can still create matches without a series.
+              </span>
+            </small>
           </label>
-          <div className="mgmt-action-row-balanced">
+
+          <div className="mgmt-clean-actions">
             <button
               type="button"
-              className="mgmt-action-primary"
+              className="mgmt-clean-btn"
               disabled={!activeLeagueId}
               onClick={() => setShowSeriesModal(true)}
             >
@@ -5010,7 +5013,7 @@ return (
             {selectedSeries && (
               <button
                 type="button"
-                className="mgmt-action-danger"
+                className="mgmt-clean-danger"
                 title={`Delete ${selectedSeries.name}`}
                 onClick={() =>
                   handleDeleteSeries(selectedSeries.id, selectedSeries.name)
@@ -5023,20 +5026,20 @@ return (
         </section>
 
         {/* TEAMS */}
-        <section className="mgmt-balanced-card">
-          <div className="mgmt-card-head">
+        <section className="mgmt-clean-card">
+          <div className="mgmt-clean-head">
             <div>
               <h3>👥 Teams</h3>
               <p>Select or add teams under the active league.</p>
             </div>
           </div>
 
-          <label>
+          <label className="mgmt-field">
             <span>Selected Team</span>
             <select
               value={selectedTeamId || ""}
-              onChange={(e) => setSelectedTeamId(e.target.value)}
               disabled={!selectedLeague}
+              onChange={(e) => setSelectedTeamId(e.target.value)}
             >
               <option value="">
                 {selectedLeague ? "Select Team" : "Select league first"}
@@ -5050,15 +5053,15 @@ return (
             </select>
           </label>
 
-          <div className="mgmt-action-row-balanced">
+          <div className="mgmt-clean-actions">
             <button
               type="button"
-              className="mgmt-action-primary"
+              className="mgmt-clean-btn"
               disabled={!selectedLeague}
               onClick={() => {
                 setTeamForm({
                   name: "",
-                  leagueId: selectedLeague.id
+                  leagueId: selectedLeague.id,
                 });
 
                 setShowAddTeam(true);
@@ -5070,7 +5073,7 @@ return (
             {selectedTeam && permissions?.canDeleteTeam && (
               <button
                 type="button"
-                className="mgmt-action-danger"
+                className="mgmt-clean-danger"
                 onClick={() =>
                   handleDeleteTeam(selectedTeam.id, selectedTeam.name)
                 }
@@ -5082,8 +5085,8 @@ return (
         </section>
 
         {/* PLAYERS */}
-        <section className="mgmt-balanced-card">
-          <div className="mgmt-card-head">
+        <section className="mgmt-clean-card">
+          <div className="mgmt-clean-head">
             <div>
               <h3>🏏 Players</h3>
               <p>
@@ -5095,20 +5098,20 @@ return (
           </div>
 
           {!selectedTeam ? (
-            <div className="mgmt-empty-state">
+            <div className="mgmt-clean-empty">
               Select a team to view players.
             </div>
           ) : (
             <>
-              <div className="player-list-modern">
+              <div className="mgmt-clean-player-list">
                 {selectedTeam.players?.map((player) => (
-                  <div key={player.id} className="player-row-modern">
+                  <div key={player.id} className="mgmt-clean-player-row">
                     <span>{player.name}</span>
 
                     {permissions?.canDeletePlayer && (
                       <button
                         type="button"
-                        className="icon-btn danger"
+                        className="mgmt-clean-danger small"
                         title={`Delete ${player.name}`}
                         onClick={() =>
                           handleDeletePlayer(player.id, player.name)
@@ -5123,14 +5126,14 @@ return (
 
               <button
                 type="button"
-                className="mgmt-action-primary full"
+                className="mgmt-clean-btn full"
                 onClick={() => {
                   setPlayerLeagueId(activeLeagueId);
 
                   setPlayerForm({
                     names: "",
                     leagueId: activeLeagueId,
-                    teamId: selectedTeamId
+                    teamId: selectedTeamId,
                   });
 
                   setShowPlayerModal(true);
@@ -5142,8 +5145,9 @@ return (
           )}
         </section>
 
+        {/* NEXT STEP */}
         {canCreateMatch && (
-          <section className="mgmt-ready-card">
+          <section className="mgmt-clean-ready">
             <div>
               <strong>✅ League setup complete</strong>
               <p>You can now schedule matches from the Matches tab.</p>
@@ -5151,7 +5155,7 @@ return (
 
             <button
               type="button"
-              className="mgmt-action-primary"
+              className="mgmt-clean-btn"
               onClick={() => setActiveTab("matches")}
             >
               🏏 Create Match
