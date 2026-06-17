@@ -3161,7 +3161,6 @@ body {
   text-align: center;
   padding: 8px;
   border-radius: 14px;
-  background: rgba(22, 163, 74, 0.14);
   border: 1px solid rgba(34, 197, 94, 0.22);
 }
 
@@ -3184,7 +3183,6 @@ body {
 .pretty-stat-grid span {
   padding: 6px 10px;
   border-radius: 999px;
-  background: rgba(255,255,255,0.08);
   font-size: 13px;
   font-weight: 600;
   line-height: 1.3;
