@@ -184,7 +184,10 @@ const [aiAnalysisLoading, setAiAnalysisLoading] = useState(false);
 const [showAiAnalysisModal, setShowAiAnalysisModal] = useState(false);
 const [showMatchCreatedModal, setShowMatchCreatedModal] = useState(false);
 const [createdMatchInfo, setCreatedMatchInfo] = useState(null);
-
+const [contextFilters, setContextFilters] = useState({teamIds: [],matchIds: [],playerNames: [],statuses: [],roles: []});
+const [openFilter, setOpenFilter] = useState(null);
+const [filterSearch, setFilterSearch] = useState("");
+const [filterCategory, setFilterCategory] = useState("teams");
 const isSuperAdmin =
   session?.user?.email ===
   "surprisecricket11@gmail.com";
@@ -272,6 +275,17 @@ useEffect(() => {
   if (activeLeagueId) {
     loadPointsTable(activeLeagueId);
   }
+}, [activeLeagueId]);
+useEffect(() => {
+  setContextFilters({
+    teamIds: [],
+    matchIds: [],
+    playerNames: [],
+    statuses: [],
+    roles: []
+  });
+
+  setOpenFilter(null);
 }, [activeLeagueId]);
 
 async function loadAiAnalysis(matchId) {
@@ -2475,7 +2489,7 @@ const selectedMatchStatus = String(selectedMatch?.status || "")
   .toUpperCase();
 
 const isSelectedMatchCompleted =
-  selectedMatchStatus === "COMPLETED" ||
+  //selectedMatchStatus === "COMPLETED" ||
   selectedMatchStatus === "COMPLETED_LOCKED";
 
 const effectiveScoringSubTab =
@@ -2501,6 +2515,302 @@ const effectiveScoringSubTab =
   typeof window !== "undefined" &&
   window.innerWidth < 768;
 */
+function normalizeStatus(status) {
+  return String(status || "")
+    .trim()
+    .replace(/[\s-]+/g, "_")
+    .toUpperCase();
+}
+
+function toggleFilterValue(type, value) {
+  setContextFilters((prev) => {
+    const exists = prev[type].includes(value);
+
+    return {
+      ...prev,
+      [type]: exists
+        ? prev[type].filter((v) => v !== value)
+        : [...prev[type], value]
+    };
+  });
+}
+
+function clearContextFilters() {
+  setContextFilters({
+    teamIds: [],
+    matchIds: [],
+    playerNames: [],
+    statuses: [],
+    roles: []
+  });
+}
+function matchPassesContextFilters(match) {
+  const teamIds = contextFilters.teamIds.map(Number);
+  const matchIds = contextFilters.matchIds.map(Number);
+  const statuses = contextFilters.statuses.map(normalizeStatus);
+
+  if (
+    teamIds.length &&
+    !teamIds.includes(Number(match.teamAId)) &&
+    !teamIds.includes(Number(match.teamBId))
+  ) {
+    return false;
+  }
+
+  if (
+    matchIds.length &&
+    !matchIds.includes(Number(match.id))
+  ) {
+    return false;
+  }
+
+  if (
+    statuses.length &&
+    !statuses.includes(normalizeStatus(match.status))
+  ) {
+    return false;
+  }
+
+  return true;
+}
+const isSurpriseLeague =
+  String(activeLeague?.name || "")
+    .trim()
+    .toLowerCase() === "surprise cricket league";
+
+const availablePlayersForFilter = (() => {
+  const map = new Map();
+
+  const selectedTeamIds = contextFilters.teamIds.map(Number);
+
+  const activeLeagueTeams = (teams || []).filter((team) => {
+    const isInActiveLeague =
+      Number(team.leagueId) === Number(activeLeagueId);
+
+    if (!isInActiveLeague) return false;
+
+    if (!isSurpriseLeague && selectedTeamIds.length) {
+      return selectedTeamIds.includes(Number(team.id));
+    }
+
+    return true;
+  });
+
+  activeLeagueTeams.forEach((team) => {
+    (team.players || []).forEach((player) => {
+      const normalizedName = String(player.name || "")
+        .trim()
+        .toLowerCase();
+
+      if (!normalizedName) return;
+
+      if (!map.has(normalizedName)) {
+        map.set(normalizedName, {
+          name: player.name.trim(),
+          normalizedName,
+          teams: new Set()
+        });
+      }
+
+      map.get(normalizedName).teams.add(team.name);
+    });
+  });
+
+  return [...map.values()]
+    .map((player) => ({
+      ...player,
+      teamNames: [...player.teams].sort()
+    }))
+    .sort((a, b) =>
+      String(a.name || "").localeCompare(String(b.name || ""))
+    );
+})();
+
+function playerPassesContextFilters(row) {
+  const teamIds = contextFilters.teamIds.map(Number);
+  const playerNames = contextFilters.playerNames || [];
+
+  if (teamIds.length) {
+    const selectedTeamNames = teams
+      .filter((t) => teamIds.includes(Number(t.id)))
+      .map((t) =>
+        String(t.name || "")
+          .trim()
+          .toLowerCase()
+      );
+
+    const rowTeamId = Number(row.teamId);
+
+    const rowTeamName = String(row.teamName || "")
+      .trim()
+      .toLowerCase();
+
+    const rowTeamNames = String(
+      row.teamNames ||
+        row.teams ||
+        row.teamName ||
+        ""
+    )
+      .split(/[,&/|]+/)
+      .map((x) => x.trim().toLowerCase())
+      .filter(Boolean);
+
+    const matchesTeamId = teamIds.includes(rowTeamId);
+
+    const matchesTeamName =
+      selectedTeamNames.includes(rowTeamName) ||
+      rowTeamNames.some((name) =>
+        selectedTeamNames.includes(name)
+      );
+
+    if (!matchesTeamId && !matchesTeamName) {
+      return false;
+    }
+  }
+
+  if (playerNames.length) {
+    const rowName = String(row.playerName || "")
+      .trim()
+      .toLowerCase();
+
+    if (!playerNames.includes(rowName)) {
+      return false;
+    }
+  }
+
+  return true;
+}
+
+const rankedSelectedRanking =
+  (selectedRanking || []).map((row, index) => ({
+    ...row,
+    actualRank: index + 1
+  }));
+
+const filteredSelectedRanking =
+  rankedSelectedRanking.filter(playerPassesContextFilters);
+
+function pointsPassesContextFilters(row) {
+  const teamIds = contextFilters.teamIds.map(Number);
+
+  if (
+    teamIds.length &&
+    !teamIds.includes(Number(row.teamId))
+  ) {
+    return false;
+  }
+
+  return true;
+}
+const availablePlayers = (() => {
+  const map = new Map();
+
+  const addPlayer = (row) => {
+    if (!row?.playerId) return;
+
+    map.set(Number(row.playerId), {
+      id: Number(row.playerId),
+      name: row.playerName,
+      teamId: Number(row.teamId),
+      teamName: row.teamName
+    });
+  };
+
+  (leagueStats?.batting || []).forEach(addPlayer);
+  (leagueStats?.bowling || []).forEach(addPlayer);
+  (leagueStats?.fielding || []).forEach(addPlayer);
+
+  return [...map.values()].sort((a, b) =>
+    String(a.name || "").localeCompare(String(b.name || ""))
+  );
+})();
+
+const filteredActiveMatches =
+  activeMatches.filter(matchPassesContextFilters);
+
+const filteredScheduledMatches =
+  scheduledMatches.filter(matchPassesContextFilters);
+
+const filteredCompletedMatches =
+  completedMatches.filter(matchPassesContextFilters);
+
+const rankedBatting =
+  (leagueStats?.batting || []).map((row, index) => ({
+    ...row,
+    actualRank: index + 1
+  }));
+
+const rankedBowling =
+  (leagueStats?.bowling || []).map((row, index) => ({
+    ...row,
+    actualRank: index + 1
+  }));
+
+const rankedFielding =
+  (leagueStats?.fielding || []).map((row, index) => ({
+    ...row,
+    actualRank: index + 1
+  }));
+
+const filteredBatting =
+  rankedBatting.filter(playerPassesContextFilters);
+
+const filteredBowling =
+  rankedBowling.filter(playerPassesContextFilters);
+
+const filteredFielding =
+  rankedFielding.filter(playerPassesContextFilters);
+
+const filteredPointsTable =
+  pointsTable?.filter(pointsPassesContextFilters) || [];
+
+function ContextLens() {
+  const totalFilters =
+    (contextFilters.teamIds?.length || 0) +
+    (contextFilters.matchIds?.length || 0) +
+    (contextFilters.playerNames?.length || 0) +
+    (contextFilters.statuses?.length || 0) +
+    (contextFilters.roles?.length || 0);
+
+  return (
+    <div className="smart-filter-pill">
+      <button
+        type="button"
+        className="smart-filter-main"
+        onClick={() => setOpenFilter("filterCenter")}
+      >
+        <span className="smart-filter-icon">🔎</span>
+
+        <span className="smart-filter-text">
+          <strong>Smart Filters</strong>
+          <small>
+            {totalFilters
+              ? `${totalFilters} active`
+              : "All records"}
+          </small>
+        </span>
+
+        <span className="smart-filter-action">
+          Open
+        </span>
+      </button>
+
+      {totalFilters > 0 && (
+        <button
+          type="button"
+          className="smart-filter-reset"
+          onClick={() => {
+            clearContextFilters();
+            setFilterSearch("");
+            setFilterCategory("teams");
+          }}
+        >
+          Reset
+        </button>
+      )}
+    </div>
+  );
+}
 return (
   <>
 <div className="dashboard-tabs">
@@ -2619,6 +2929,7 @@ return (
 
   {activeTab === "scoring" && (
 <div className="scoring-layout">
+
 <Card
   title="🏏 Match Center"
   defaultCollapsed={false}
@@ -3832,7 +4143,7 @@ return (
 )}        
 {permissions?.canScoreMatch && !(
   selectedMatch &&
-  ["COMPLETED", "COMPLETED_LOCKED"].includes(
+  ["COMPLETED_LOCKED"].includes(
     String(selectedMatch.status || "").toUpperCase()
   )
 ) &&(
@@ -3883,7 +4194,6 @@ return (
         {error && <p className="error">{error}</p>}
       </div>
     )}
-
     <Card title="🏆 League">
       <label>
         <span>Active League</span>
@@ -3903,6 +4213,7 @@ return (
           ))}
         </select>
       </label>
+           <ContextLens />
     <div className="matches-subtabs">
       <button
         type="button"
@@ -4125,7 +4436,7 @@ return (
           <div className="empty-state">No active matches found.</div>
         ) : (
           <div className="match-card-list">
-            {activeMatches.map((match) => {
+            {filteredActiveMatches.map((match) => {
               const isSelected = String(selectedMatchId) === String(match.id);
 
               return (
@@ -4213,7 +4524,7 @@ return (
           <div className="empty-state">No scheduled matches found.</div>
         ) : (
           <div className="match-card-list">
-            {scheduledMatches.map((match) => (
+            {filteredScheduledMatches.map((match) => (
               <div key={match.id} className="match-tile">
                 <div className="match-tile-main">
   <div className="match-tile-top">
@@ -4289,7 +4600,7 @@ return (
       <div className="empty-state">No completed matches found.</div>
     ) : (
       <div className="completed-match-list">
-        {completedMatches.map((match) => {
+        {filteredCompletedMatches.map((match) => {
           const normalizedStatus = String(match.status || "")
             .trim()
             .replace(/[\s-]+/g, "_")
@@ -4394,7 +4705,6 @@ return (
  <div className="scoring-layout">
 
       <Card title="🏏 League Management">
-
 <div
   style={{
     display: "flex",
@@ -4753,6 +5063,7 @@ return (
 </div>    
 )}
 {activeTab === "Points" && (
+  
   <Card title="🏆 Points" defaultCollapsed={false}>
          <div className="active-league-banner">
           Active League:{" "}
@@ -4764,6 +5075,7 @@ return (
     <p className="muted">No points table available yet.</p>
   ) : (
     <div className="table-scroll">
+            <ContextLens />
       <table className="score-table">
         <thead>
           <tr>
@@ -4779,7 +5091,7 @@ return (
         </thead>
 
         <tbody>
-          {pointsTable.map((row) => (
+          {filteredPointsTable.map((row) => (
             <tr key={row.teamId}>
               <td>{row.teamName}</td>
               <td>{row.played}</td>
@@ -4806,7 +5118,7 @@ return (
           {activeLeague?.name || "No league selected"}
         </strong>
       </div>
-
+    <ContextLens />
       <div className="stats-subtabs">
         <button
           type="button"
@@ -4841,7 +5153,6 @@ return (
         </button>
       </div>
     </Card>
-
     {!activeLeagueId ? (
       <Card title="Select League">
         <p className="muted">Please select an active league first.</p>
@@ -4858,12 +5169,12 @@ return (
       <p className="muted">No batting stats yet.</p>
     ) : (
       <div className="pretty-stats-list">
-        {leagueStats.batting.map((row, idx) => (
+        {filteredBatting.map((row, idx) => (
           <div
             key={`league-bat-${row.playerId ?? row.playerName}-${idx}`}
             className="pretty-stat-card"
           >
-            <div className="pretty-stat-rank">#{idx + 1}</div>
+            <div className="pretty-stat-rank">#{row.actualRank}</div>
 
             <div className="pretty-stat-main">
               <strong>{row.playerName}</strong>
@@ -4898,12 +5209,12 @@ return (
       <p className="muted">No bowling stats yet.</p>
     ) : (
       <div className="pretty-stats-list">
-        {leagueStats.bowling.map((row, idx) => (
+        {filteredBowling.map((row, idx) => (
           <div
             key={`league-bowl-${row.playerId ?? row.playerName}-${idx}`}
             className="pretty-stat-card"
           >
-            <div className="pretty-stat-rank">#{idx + 1}</div>
+            <div className="pretty-stat-rank">#{row.actualRank}</div>
 
             <div className="pretty-stat-main">
               <strong>{row.playerName}</strong>
@@ -4938,12 +5249,12 @@ return (
       <p className="muted">No fielding stats yet.</p>
     ) : (
       <div className="pretty-stats-list">
-        {leagueStats.fielding.map((row, idx) => (
+        {filteredFielding.map((row, idx) => (
           <div
             key={`league-field-${row.playerId ?? row.playerName}-${idx}`}
             className="pretty-stat-card"
           >
-            <div className="pretty-stat-rank">#{idx + 1}</div>
+            <div className="pretty-stat-rank">#{row.actualRank}</div>
 
             <div className="pretty-stat-main">
               <strong>{row.playerName}</strong>
@@ -4983,17 +5294,17 @@ return (
       ))}
     </div>
 
-    {!selectedRanking.length ? (
+    {!filteredSelectedRanking.length ? (
       <p className="muted">No ranking data yet.</p>
     ) : (
       <>
         <div className="ranking-hero">
-          {selectedRanking.slice(0, 3).map((row, index) => (
+          {filteredSelectedRanking.slice(0, 3).map((row, index) => (
             <div
               key={`ranking-podium-${rankingType}-${row.playerId ?? row.playerName}-${index}`}
               className={`ranking-podium podium-${index + 1}`}
             >
-              <div className="podium-rank">#{index + 1}</div>
+              <div className="podium-rank">#{row.actualRank}</div>
               <div className="podium-avatar">{currentRankingConfig.icon}</div>
               <strong>{row.playerName}</strong>
               <small>{row.teamName}</small>
@@ -5008,7 +5319,7 @@ return (
           <h4>
             {currentRankingConfig.icon} {currentRankingConfig.title}
           </h4>
-          <span>{selectedRanking.length} players</span>
+          <span>{filteredSelectedRanking.length} players</span>
         </div>
 
         <div className="table-scroll">
@@ -5024,12 +5335,12 @@ return (
             </thead>
 
             <tbody>
-              {selectedRanking.map((row, index) => (
+              {filteredSelectedRanking.map((row, index) => (
                 <tr
                   key={`ranking-row-${rankingType}-${row.playerId ?? row.playerName}-${index}`}
                 >
                   <td>
-                    <strong>#{index + 1}</strong>
+                    <strong>#{row.actualRank}</strong>
                   </td>
                   <td>{row.playerName}</td>
                   <td>{row.teamName}</td>
@@ -5052,7 +5363,6 @@ return (
 )}
 {activeTab === "permissions" && (
  <div className="scoring-layout">
-
       {/* MEMBER LIST */}
 <Card title="👥 League Permissions">
 
@@ -6966,6 +7276,167 @@ KL Rahul`}
           }}
         >
           Go to Scheduled Matches
+        </button>
+      </div>
+    </div>
+  </div>
+)}
+{openFilter === "filterCenter" && (
+  <div className="modal-backdrop">
+    <div className="filter-center-modal">
+      <div className="filter-center-header">
+        <div>
+          <h3>🔎 Filter Command Center</h3>
+          <p>Search, select, and narrow your cricket data quickly.</p>
+        </div>
+
+        <button type="button" className="btn" onClick={() => setOpenFilter(null)}>
+          ✕
+        </button>
+      </div>
+
+      <input
+        className="filter-search"
+        value={filterSearch}
+        onChange={(e) => setFilterSearch(e.target.value)}
+        placeholder="Search teams, players, matches..."
+      />
+
+      <div className="filter-category-tabs">
+        {["teams", "players", "matches", "statuses"].map((cat) => (
+          <button
+            key={cat}
+            type="button"
+            className={filterCategory === cat ? "active" : ""}
+            onClick={() => setFilterCategory(cat)}
+          >
+            {cat}
+          </button>
+        ))}
+      </div>
+
+      <div className="filter-results-panel">
+        {/* render category results here */}
+        {filterCategory === "teams" &&
+  teams
+    .filter((t) => Number(t.leagueId) === Number(activeLeagueId))
+    .filter((t) =>
+      t.name.toLowerCase().includes(filterSearch.toLowerCase())
+    )
+    .map((team) => (
+      <button
+        key={team.id}
+        type="button"
+        className={
+          contextFilters.teamIds.includes(Number(team.id))
+            ? "filter-row active"
+            : "filter-row"
+        }
+        onClick={() => toggleFilterValue("teamIds", Number(team.id))}
+      >
+        <span>🏏 {team.name}</span>
+        <small>{team.players?.length || 0} players</small>
+      </button>
+    ))}
+    {filterCategory === "players" &&
+  availablePlayersForFilter
+    .filter((p) =>
+      p.name.toLowerCase().includes(filterSearch.toLowerCase())
+    )
+    .map((player) => (
+      <button
+        key={player.normalizedName}
+        type="button"
+        className={
+          contextFilters.playerNames.includes(player.normalizedName)
+            ? "filter-row active"
+            : "filter-row"
+        }
+        onClick={() =>
+          toggleFilterValue("playerNames", player.normalizedName)
+        }
+      >
+        <span>👤 {player.name}</span>
+      </button>
+    ))}
+    {filterCategory === "matches" &&
+  matches
+    .filter((m) =>
+      `${m.teamAName} ${m.teamBName} ${m.id}`
+        .toLowerCase()
+        .includes(filterSearch.toLowerCase())
+    )
+    .map((match) => (
+      <button
+        key={match.id}
+        type="button"
+        className={
+          contextFilters.matchIds.includes(Number(match.id))
+            ? "filter-row active"
+            : "filter-row"
+        }
+        onClick={() => toggleFilterValue("matchIds", Number(match.id))}
+      >
+        <span>#{match.id} {match.teamAName} vs {match.teamBName}</span>
+        <small>{match.status}</small>
+      </button>
+    ))}
+       {filterCategory === "matches" &&
+  matches
+    .filter((m) =>
+      `${m.teamAName} ${m.teamBName} ${m.id}`
+        .toLowerCase()
+        .includes(filterSearch.toLowerCase())
+    )
+    .map((match) => (
+      <button
+        key={match.id}
+        type="button"
+        className={
+          contextFilters.matchIds.includes(Number(match.id))
+            ? "filter-row active"
+            : "filter-row"
+        }
+        onClick={() => toggleFilterValue("matchIds", Number(match.id))}
+      >
+        <span>#{match.id} {match.teamAName} vs {match.teamBName}</span>
+        <small>{match.status}</small>
+      </button>
+    ))}
+    {filterCategory === "statuses" &&
+  ["SCHEDULED", "IN_PROGRESS", "COMPLETED", "COMPLETED_LOCKED"].map(
+    (status) => (
+      <button
+        key={status}
+        type="button"
+        className={
+          contextFilters.statuses.includes(status)
+            ? "filter-row active"
+            : "filter-row"
+        }
+        onClick={() => toggleFilterValue("statuses", status)}
+      >
+        <span>📌 {status.replaceAll("_", " ")}</span>
+      </button>
+    )
+  )}
+      </div>
+
+      <div className="filter-center-footer">
+<button
+  type="button"
+  className="btn"
+  onClick={() => {
+    clearContextFilters();
+    setFilterSearch("");
+    setFilterCategory("teams");
+  }}
+>
+  Clear All
+</button>
+
+        <button type="button" className="btn" onClick={() => setOpenFilter(null)}>
+          Apply Filters
         </button>
       </div>
     </div>
