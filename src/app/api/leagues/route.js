@@ -4,6 +4,7 @@ import { getServerSession } from "next-auth";
 import { authOptions } from "@/lib/auth";
 import { isSuperAdmin } from "@/lib/superAdmin";
 export const dynamic = "force-dynamic";
+import { slugify } from "@/lib/slug";
 
 export async function GET() {
   const session =

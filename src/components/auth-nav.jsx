@@ -13,6 +13,7 @@ export default function AuthNav() {
   </Link>
 
   <div className="nav-right">
+    <Link href="/explore">Explore</Link>
     <Link href="/contact">Contact</Link>
 
     {status === "loading" ? (

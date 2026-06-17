@@ -31,11 +31,6 @@ export default function RootLayout({ children }) {
       gap: 6,
     }}
   >
-    <span>💡</span>
-    <span>
-      New here? Open the <strong>Help </strong>
-      tab for a step-by-step guide.
-    </span>
   </div>
 </div>
                 </div>

@@ -531,7 +531,8 @@ async function handleCreateLeague() {
   const league = await api("/api/leagues", {
     method: "POST",
     body: JSON.stringify({
-      name: leagueName
+      name: leagueName,
+      visibility: leagueForm.visibility || "PRIVATE"
     })
   });
 
@@ -4920,7 +4921,19 @@ return (
                 🔗 Copy Invite Link
               </button>
             )}
-
+{activeLeague && activeLeague.visibility !== "PRIVATE" && activeLeague.slug && (
+  <button
+    type="button"
+    className="mgmt-action-secondary"
+    onClick={() => {
+      const url = `${window.location.origin}/public/leagues/${activeLeague.slug}`;
+      navigator.clipboard.writeText(url);
+      setMessage("Public league link copied.");
+    }}
+  >
+    🌐 Copy Public View Link
+  </button>
+)}
             {selectedLeague && permissions?.canDeleteLeague && (
               <button
                 type="button"
@@ -6560,22 +6573,27 @@ return (
         />
       </div>
       <div className="league-modal-body">
-<label className="league-label">
+<label>
   <span>League Visibility</span>
-</label>  
+
   <select
     value={leagueForm.visibility || "PRIVATE"}
     onChange={(e) =>
       setLeagueForm((prev) => ({
         ...prev,
-        visibility: e.target.value.replace
+        visibility: e.target.value,
       }))
     }
   >
     <option value="PRIVATE">🔒 Private - Members only</option>
-    <option value="UNLISTED">🔗 Unlisted - Anyone with link</option>
+    <option value="UNLISTED">🔗 Unlisted - Anyone with link can view</option>
     <option value="PUBLIC">🌐 Public - Everyone can view</option>
   </select>
+
+  <small className="field-help">
+    You can keep the league private or allow view-only public access.
+  </small>
+</label>
 </div>
       <div className="league-modal-actions">
         <button
