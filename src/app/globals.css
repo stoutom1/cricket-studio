@@ -6083,3 +6083,50 @@ body {
     width: 100%;
   }
 }
+/* Keep management action buttons in one clean row */
+.mgmt-action-row-balanced {
+  display: flex !important;
+  flex-wrap: nowrap !important;
+  align-items: center;
+  gap: 10px;
+}
+
+.mgmt-action-primary,
+.mgmt-action-secondary {
+  flex: 1 1 auto;
+  min-width: 0;
+}
+
+.mgmt-action-danger {
+  flex: 0 0 42px;
+  width: 42px;
+  height: 42px;
+}
+
+/* Phone: keep delete button beside the main action */
+@media (max-width: 700px) {
+  .mgmt-action-row-balanced {
+    display: flex !important;
+    flex-wrap: wrap !important;
+  }
+
+  .mgmt-action-primary {
+    flex: 1 1 calc(100% - 52px);
+  }
+
+  .mgmt-action-danger {
+    flex: 0 0 42px;
+  }
+
+  .mgmt-action-secondary {
+    flex: 1 1 100%;
+  }
+}
+.mgmt-balanced-card,
+.mgmt-ready-card {
+  background: transparent;
+
+  border: 1px solid rgba(255,255,255,0.10);
+
+  backdrop-filter: blur(6px);
+}
