@@ -4717,3 +4717,57 @@ body {
     flex: 0 0 auto;
   }
 }
+@media (max-width: 700px) {
+  .smart-filter-pill {
+    width: 100%;
+    display: flex;
+    gap: 8px;
+    margin: 12px 0 16px;
+  }
+
+  .smart-filter-main {
+    flex: 1 1 auto;
+    min-width: 0;
+    padding: 10px 12px 10px 10px;
+    border-radius: 18px;
+    border-color: rgba(96,165,250,0.45);
+    background: linear-gradient(
+      135deg,
+      rgba(37,99,235,0.20),
+      rgba(168,85,247,0.14)
+    );
+    box-shadow: 0 8px 22px rgba(15,23,42,0.18);
+  }
+
+  .smart-filter-icon {
+    width: 38px;
+    height: 38px;
+    font-size: 18px;
+  }
+
+  .smart-filter-text strong {
+    font-size: 14px;
+  }
+
+  .smart-filter-text small {
+    font-size: 12px;
+  }
+
+  .smart-filter-action {
+    padding: 7px 11px;
+    font-size: 12px;
+  }
+
+  .smart-filter-reset {
+    flex: 0 0 auto;
+    padding: 0 13px;
+    min-height: 46px;
+    border-radius: 18px;
+    font-size: 12px;
+  }
+
+  /* When Reset is hidden, Open Filters takes full width */
+  .smart-filter-pill .smart-filter-main:only-child {
+    width: 100%;
+  }
+}
