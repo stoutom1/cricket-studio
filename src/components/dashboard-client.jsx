@@ -3226,7 +3226,12 @@ return (
           ))}
         </div>
 
-        {scoreboard.currentState && (
+        {scoreboard.currentState && !(
+  selectedMatch &&
+  ["COMPLETED", "COMPLETED_LOCKED"].includes(
+    String(selectedMatch.status || "").toUpperCase()
+  )
+) &&(
           <div className="current-match-strip">
             <div>
               <span>Current Innings</span>
