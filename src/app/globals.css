@@ -1723,7 +1723,7 @@ body {
 
   padding: 12px 14px;
 
-
+  background: rgba(255,255,255,0.05);
   color: inherit;
 }
 
@@ -5197,6 +5197,7 @@ body {
   margin-top: 10px;
   padding: 12px;
   border-radius: 14px;
+  background: rgba(255,255,255,0.055);
   border: 1px solid rgba(255,255,255,0.09);
   display: grid;
   gap: 4px;
@@ -5919,7 +5920,7 @@ body {
 
 .mgmt-balanced-card select,
 .mgmt-balanced-card input {
-
+  background: rgba(255,255,255,0.14);
 
   color: rgba(255,255,255,0.96);
 
@@ -6125,7 +6126,11 @@ body {
 .mgmt-ready-card {
   background: transparent;
 
-  border: 1px solid rgba(255,255,255,0.10);
+  border-left: 4px solid currentColor;
 
-  backdrop-filter: blur(6px);
+  border-top: 1px solid rgba(255,255,255,0.06);
+  border-right: 1px solid rgba(255,255,255,0.06);
+  border-bottom: 1px solid rgba(255,255,255,0.06);
+
+  box-shadow: none;
 }
