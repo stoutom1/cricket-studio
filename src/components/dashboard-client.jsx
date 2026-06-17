@@ -2854,6 +2854,11 @@ const filteredSeriesForContextLens = (seriesList || [])
 
 const filteredMatchesForContextLens = uniqueMatchesForFilter
   .filter((match) => {
+    const selectedYears = (contextFilters.years || []).map(Number);
+    const selectedSeriesIds = (contextFilters.seriesIds || []).map(Number);
+    const selectedTeamIds = (contextFilters.teamIds || []).map(Number);
+    const selectedStatuses = (contextFilters.statuses || []).map(normalizeStatus);
+
     if (
       selectedYears.length &&
       !selectedYears.includes(
@@ -2879,8 +2884,16 @@ const filteredMatchesForContextLens = uniqueMatchesForFilter
       return false;
     }
 
+    if (
+      selectedStatuses.length &&
+      !selectedStatuses.includes(normalizeStatus(match.status))
+    ) {
+      return false;
+    }
+
     return true;
   });
+  
 function ContextLens() {
   const totalFilters =
     (contextFilters.teamIds?.length || 0) +
@@ -7468,7 +7481,7 @@ onClick={() => {
 {filterCategory === "matches" &&
   filteredMatchesForContextLens
     .filter((m) =>
-      `${m.teamAName} ${m.teamBName} ${m.id} ${m.seriesName || ""}`
+      `${m.teamAName} ${m.teamBName} ${m.id} ${m.seriesName || ""} ${m.status || ""}`
         .toLowerCase()
         .includes(filterSearch.toLowerCase())
     )
@@ -7488,7 +7501,7 @@ onClick={() => {
         </span>
         <small>
           {match.seriesName ? `${match.seriesName} • ` : ""}
-          {match.status}
+          {String(match.status || "").replaceAll("_", " ")}
         </small>
       </button>
     ))}
