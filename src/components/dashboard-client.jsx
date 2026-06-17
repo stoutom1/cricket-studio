@@ -723,7 +723,7 @@ async function loadTeams() {
   }
 }
 const handleAddPlayers = async (e) => {
- alert(JSON.stringify(playerForm));
+ //alert(JSON.stringify(playerForm));
 
 
   e.preventDefault();
@@ -4948,6 +4948,7 @@ return (
                     const url = `${window.location.origin}/public/leagues/${activeLeague.slug}`;
                     navigator.clipboard.writeText(url);
                     setMessage("Public league link copied.");
+                    showToast("success", "✅ Public league link copied.");
                   }}
                 >
                   🌐 Copy Public View Link
@@ -5087,66 +5088,96 @@ return (
           </div>
         </section>
 
-        {/* PLAYERS */}
-        <section className="mgmt-clean-card">
-          <div className="mgmt-clean-head">
-            <div>
-              <h3>🏏 Players</h3>
-              <p>
-                {selectedTeam
-                  ? `${selectedTeam.players?.length || 0} players in ${selectedTeam.name}`
-                  : "Select a team to view players."}
-              </p>
-            </div>
-          </div>
+ {/* PLAYERS */}
+<section className="mgmt-clean-card player-manager-card">
+  <div className="player-manager-head">
+    <div>
+      <h3>🏏 Players</h3>
+      <p>
+        {selectedTeam
+          ? `${selectedTeam.players?.length || 0} players ready for ${selectedTeam.name}`
+          : "Select a team to view, add, or manage players."}
+      </p>
+    </div>
 
-          {!selectedTeam ? (
-            <div className="mgmt-clean-empty">
-              Select a team to view players.
-            </div>
-          ) : (
-            <>
-              <div className="mgmt-clean-player-list">
-                {selectedTeam.players?.map((player) => (
-                  <div key={player.id} className="mgmt-clean-player-row">
-                    <span>{player.name}</span>
+    {selectedTeam && (
+      <div className="player-count-pill">
+        👥 {selectedTeam.players?.length || 0}
+      </div>
+    )}
+  </div>
 
-                    {permissions?.canDeletePlayer && (
-                      <button
-                        type="button"
-                        className="mgmt-clean-danger small"
-                        title={`Delete ${player.name}`}
-                        onClick={() =>
-                          handleDeletePlayer(player.id, player.name)
-                        }
-                      >
-                        🗑️
-                      </button>
-                    )}
-                  </div>
-                ))}
+  {!selectedTeam ? (
+    <div className="player-empty-state">
+      <div className="player-empty-icon">👥</div>
+      <strong>No team selected yet</strong>
+      <span>Choose a team above to view and add players.</span>
+    </div>
+  ) : (
+    <>
+      <div className="player-team-banner">
+        <div>
+          <strong>{selectedTeam.name}</strong>
+          <span>Team roster</span>
+        </div>
+
+        <button
+          type="button"
+          className="player-add-btn"
+          onClick={() => {
+            setPlayerLeagueId(activeLeagueId);
+
+            setPlayerForm({
+              names: "",
+              leagueId: activeLeagueId,
+              teamId: selectedTeamId,
+            });
+
+            setShowPlayerModal(true);
+          }}
+        >
+          ➕ Add Players
+        </button>
+      </div>
+
+      {!selectedTeam.players?.length ? (
+        <div className="player-empty-state compact">
+          <div className="player-empty-icon">🏏</div>
+          <strong>No players yet</strong>
+          <span>Add players in bulk by pasting one name per line.</span>
+        </div>
+      ) : (
+        <div className="pretty-player-list">
+          {selectedTeam.players.map((player, index) => (
+            <div key={player.id} className="pretty-player-row">
+              <div className="player-avatar">
+                {String(player.name || "?").trim().charAt(0).toUpperCase()}
               </div>
 
-              <button
-                type="button"
-                className="mgmt-clean-btn full"
-                onClick={() => {
-                  setPlayerLeagueId(activeLeagueId);
+              <div className="player-info">
+                <strong>{player.name}</strong>
+                <span>Player #{index + 1}</span>
+              </div>
 
-                  setPlayerForm({
-                    names: "",
-                    leagueId: activeLeagueId,
-                    teamId: selectedTeamId,
-                  });
-
-                  setShowPlayerModal(true);
-                }}
-              >
-                ➕ Add Players
-              </button>
-            </>
-          )}
-        </section>
+              {permissions?.canDeletePlayer && (
+                <button
+                  type="button"
+                  className="player-delete-btn"
+                  title={`Delete ${player.name}`}
+                  onClick={() =>
+                    handleDeletePlayer(player.id, player.name)
+                  }
+                >
+                  🗑️
+                </button>
+              )}
+            </div>
+          ))}
+        </div>
+      )}
+    </>
+  )}
+</section>
 
         {/* NEXT STEP */}
         {canCreateMatch && (
@@ -6764,371 +6795,119 @@ return (
 )}
 {showPlayerModal && (
   <div className="modal-backdrop">
-    <div className="modal-card app-modal-card">
+    <div className="add-player-pro-modal">
+      <div className="add-player-pro-hero">
+        <div className="add-player-pro-icon">🏏</div>
 
-<h3>👥 Add Players</h3>
+        <div>
+          <h3>Add Players</h3>
+          <p>Build your team roster quickly. Paste one player name per line.</p>
+        </div>
 
-<p
-  style={{
-    opacity: 0.75,
-    marginBottom: 20
-  }}
->
-  Add multiple players, one name per line.
-</p>
-      <form onSubmit={handleAddPlayers}>
-
-        <label>
-          League
-        </label>
-
-        <select
-          value={playerLeagueId || ""}
-          onChange={(e) => {
-            const leagueId =
-              Number(e.target.value);
-
-            setPlayerLeagueId(
-              leagueId
-            );
-
-            setPlayerForm((prev) => ({
-              ...prev,
-              leagueId,
-              teamId: "",
-            }));
-          }}
+        <button
+          type="button"
+          className="add-player-pro-close"
+          onClick={() => setShowPlayerModal(false)}
         >
-          <option value="">
-            Select League
-          </option>
+          ✕
+        </button>
+      </div>
 
-          {leagues.map((league) => (
-            <option
-              key={league.id}
-              value={league.id}
+      <form onSubmit={handleAddPlayers} className="add-player-pro-form">
+        <div className="add-player-pro-grid">
+          <label>
+            <span>🏆 League</span>
+            <select
+              value={playerLeagueId || ""}
+              onChange={(e) => {
+                const leagueId = Number(e.target.value);
+
+                setPlayerLeagueId(leagueId);
+
+                setPlayerForm((prev) => ({
+                  ...prev,
+                  leagueId,
+                  teamId: "",
+                }));
+              }}
             >
-              {league.name}
-            </option>
-          ))}
-        </select>
+              <option value="">Choose League</option>
 
-        <label>
-          Team
-        </label>
+              {leagues.map((league) => (
+                <option key={league.id} value={league.id}>
+                  {league.name}
+                </option>
+              ))}
+            </select>
+          </label>
 
-<select
-  value={selectedPlayerTeamId}
-  onChange={(e) =>
-    setSelectedPlayerTeamId(
-      Number(e.target.value)
-    )
-  }
->
-          <option value="">
-            Select Team
-          </option>
+          <label>
+            <span>👥 Team</span>
+            <select
+              value={selectedPlayerTeamId || ""}
+              onChange={(e) =>
+                setSelectedPlayerTeamId(Number(e.target.value))
+              }
+            >
+              <option value="">Choose Team</option>
 
-          {selectedPlayerLeague
-            ?.teams?.map((team) => (
-              <option
-                key={team.id}
-                value={team.id}
-              >
-                {team.name}
-              </option>
-            ))}
-        </select>
+              {selectedPlayerLeague?.teams?.map((team) => (
+                <option key={team.id} value={team.id}>
+                  {team.name}
+                </option>
+              ))}
+            </select>
+          </label>
+        </div>
 
-        <label>
-          Players
-        </label>
+        <label className="add-player-pro-textarea-wrap">
+          <div className="add-player-pro-label-row">
+            <span>✍️ Player Names</span>
+            <strong>
+              {(playerForm.names || "")
+                .split("\n")
+                .map((x) => x.trim())
+                .filter(Boolean).length}{" "}
+              ready
+            </strong>
+          </div>
 
-<textarea
-  rows={8}
-  className="modal-textarea"
-  placeholder={`Virat Kohli
+          <textarea
+            rows={8}
+            className="add-player-pro-textarea"
+            placeholder={`Virat Kohli
 Rohit Sharma
 MS Dhoni
 KL Rahul`}
-  value={playerForm.names || ""}
-  onChange={(e) =>
-    setPlayerForm((prev) => ({
-      ...prev,
-      names: Number(e.target.value),
-    }))
-  }
-  required
-/>
-
-<div className="modal-actions">
-  <button
-    type="button"
-    className="btn btn-outline"
-    onClick={() =>
-      setShowPlayerModal(false)
-    }
-  >
-    Cancel
-  </button>
-
-  <button
-    type="submit"
-    className="btn"
-  >
-    Save Players
-  </button>
-</div>
-
-      </form>
-
-    </div>
-  </div>
-)}
-{showWicketModal && (
-  <div className="modal-backdrop">
-    <div className="modal-card">
-      <h3>🏏 Wicket Details</h3>
-
-      <p style={{ opacity: 0.75, marginBottom: 16 }}>
-        Select dismissal type, fielder details, player out, and replacement batter.
-      </p>
-
-      <label>
-        <span>Wicket Type</span>
-
-        <select
-          value={ballForm.wicketType || ""}
-          onChange={(e) => {
-            const wicketType = e.target.value;
-
-            setBallForm((prev) => ({
-              ...prev,
-              wicketType,
-              dismissedPlayerId:
-                wicketType === "RUN_OUT"
-                  ? ""
-                  : prev.strikerId,
-              fielderId: "",
-              assistantFielderId: "",
-              wicketNote: ""
-            }));
-
-            if (wicketType !== "RUN_OUT") {
-              setRunOutRuns(null);
-            }
-          }}
-        >
-          {WICKET_TYPES.filter((x) => x !== "NONE").map((type) => (
-            <option key={type} value={type}>
-              {type}
-            </option>
-          ))}
-        </select>
-      </label>
-
-      {ballForm.wicketType === "RUN_OUT" && (
-        <div className="runout-panel">
-          <h4>🏏 RUN OUT</h4>
-
-          <p className="muted">
-            How many runs were completed before the run out?
-          </p>
-
-          <div className="runout-runs-grid">
-            {[0, 1, 2, 3, 4, 5, 6].map((runs) => (
-              <button
-                key={runs}
-                type="button"
-                className={`btn ${
-                  runOutRuns === runs ? "btn-selected" : "btn-outline"
-                }`}
-                onClick={() => {
-                  setRunOutRuns(runs);
-
-                  setBallForm((prev) => ({
-                    ...prev,
-                    runsOffBat: runs,
-                    extras: 0,
-                    extraType: "NONE"
-                  }));
-                }}
-              >
-                {runs}
-              </button>
-            ))}
-          </div>
-
-          {runOutRuns !== null && (
-            <div className="runout-summary">
-              <strong>
-                Selected: Run Out + {runOutRuns}{" "}
-                {runOutRuns === 1 ? "run" : "runs"}
-              </strong>
-
-              <div>
-                {runOutRuns % 2 === 1
-                  ? "ℹ️ Batters crossed. Strike will rotate. If not, click SWAP after this action."
-                  : "ℹ️ Strike remains unchanged. If not, click SWAP after this action."}
-              </div>
-            </div>
-          )}
-
-          {runOutRuns !== null && (
-            <label style={{ marginTop: 12 }}>
-              <span>Who is out?</span>
-
-              <select
-                value={ballForm.dismissedPlayerId || ""}
-                onChange={(e) =>
-                  setBallForm((prev) => ({
-                    ...prev,
-                    dismissedPlayerId: e.target.value
-                  }))
-                }
-              >
-                <option value="">Select player out</option>
-
-                <option value={ballForm.strikerId}>
-                  Striker ({scoreboard?.currentState?.strikerName})
-                </option>
-
-                <option value={ballForm.nonStrikerId}>
-                  Non-Striker ({scoreboard?.currentState?.nonStrikerName})
-                </option>
-              </select>
-            </label>
-          )}
-        </div>
-      )}
-
-      {["CAUGHT", "STUMPED", "RUN_OUT"].includes(ballForm.wicketType) && (
-        <label style={{ marginTop: 12 }}>
-          <span>
-            {ballForm.wicketType === "CAUGHT"
-              ? "Caught By"
-              : ballForm.wicketType === "STUMPED"
-                ? "Stumped By / Wicketkeeper"
-                : "Run Out By"}
-          </span>
-
-          <select
-            value={ballForm.fielderId || ""}
+            value={playerForm.names || ""}
             onChange={(e) =>
-              setBallForm((prev) => ({
+              setPlayerForm((prev) => ({
                 ...prev,
-                fielderId: e.target.value
+                names: e.target.value,
               }))
             }
-          >
-            <option value="">Select fielder</option>
-
-            {(bowlingTeam?.players || []).map((p) => (
-              <option key={p.id} value={p.id}>
-                {p.name}
-              </option>
-            ))}
-          </select>
-        </label>
-      )}
-
-      {ballForm.wicketType === "RUN_OUT" && (
-        <label style={{ marginTop: 12 }}>
-          <span>Assisted By / Stumps Broken By</span>
-
-          <select
-            value={ballForm.assistantFielderId || ""}
-            onChange={(e) =>
-              setBallForm((prev) => ({
-                ...prev,
-                assistantFielderId: e.target.value
-              }))
-            }
-          >
-            <option value="">Optional</option>
-
-            {(bowlingTeam?.players || []).map((p) => (
-              <option key={p.id} value={p.id}>
-                {p.name}
-              </option>
-            ))}
-          </select>
-        </label>
-      )}
-
-      {["OTHER", "RETIRED_OUT"].includes(ballForm.wicketType) && (
-        <label style={{ marginTop: 12 }}>
-          <span>Wicket Note</span>
-
-          <input
-            type="text"
-            value={ballForm.wicketNote || ""}
-            onChange={(e) =>
-              setBallForm((prev) => ({
-                ...prev,
-                wicketNote: e.target.value
-              }))
-            }
-            placeholder="Example: obstructing the field"
+            required
           />
         </label>
-      )}
 
-      <label style={{ marginTop: 12 }}>
-        <span>New Batter</span>
+        <div className="add-player-pro-tip">
+          💡 Tip: You can paste names from WhatsApp, Excel, Notes, or any list.
+        </div>
 
-        <select
-          value={ballForm.newBatterId || ""}
-          onChange={(e) =>
-            setBallForm((prev) => ({
-              ...prev,
-              newBatterId: e.target.value
-            }))
-          }
-        >
-          <option value="">Select New Batter</option>
+        <div className="add-player-pro-actions">
+          <button
+            type="button"
+            className="add-player-pro-cancel"
+            onClick={() => setShowPlayerModal(false)}
+          >
+            Cancel
+          </button>
 
-          {availableNewBatters.map((p) => (
-            <option key={p.id} value={p.id}>
-              {p.name}
-            </option>
-          ))}
-        </select>
-      </label>
-
-      <div className="modal-actions">
-        <button
-          type="button"
-          className="btn btn-outline"
-          onClick={() => {
-            setShowWicketModal(false);
-            setRunOutRuns(null);
-
-            setBallForm((prev) => ({
-              ...prev,
-              isWicket: false,
-              wicketType: "NONE",
-              dismissedPlayerId: "",
-              newBatterId: "",
-              runsOffBat: 0,
-              extras: 0,
-              fielderId: "",
-              assistantFielderId: "",
-              wicketNote: ""
-            }));
-          }}
-        >
-          Cancel
-        </button>
-
-        <button
-          type="button"
-          className="btn"
-          onClick={() => confirmWicket()}
-        >
-          Confirm Wicket
-        </button>
-      </div>
+          <button type="submit" className="add-player-pro-save">
+            ✅ Save Players
+          </button>
+        </div>
+      </form>
     </div>
   </div>
 )}
@@ -7181,81 +6960,6 @@ KL Rahul`}
           Cancel
         </button>
       </div>
-    </div>
-  </div>
-)}
-{showPlayerModal && (
-  <div className="modal-backdrop">
-    <div className="modal-card app-modal-card">
-
-      <h3>👥 Add Players</h3>
-
-      <form onSubmit={handleBulkAddPlayers}>
-
-        <label>
-          <span>League</span>
-
-          <input
-            value={activeLeague?.name || ""}
-            disabled
-          />
-        </label>
-
-        <label>
-          <span>Team</span>
-
-          <input
-            value={selectedTeam?.name || ""}
-            disabled
-          />
-        </label>
-
-        <label>
-          <span>Players</span>
-
-<textarea
-  rows={10}
-  placeholder={`Virat Kohli
-Rohit Sharma
-MS Dhoni
-KL Rahul`}
-  value={playerForm.names || ""}
-  onChange={(e) =>
-    setPlayerForm((prev) => ({
-      ...prev,
-      names: e.target.value,
-    }))
-  }
-  required
-/>
-        </label>
-
-        <div
-          style={{
-            display: "flex",
-            gap: 10,
-            marginTop: 20,
-          }}
-        >
-          <button
-            type="submit"
-            className="btn"
-          >
-            Save Players
-          </button>
-
-          <button
-            type="button"
-            className="btn btn-outline"
-            onClick={() =>
-              setShowPlayerModal(false)
-            }
-          >
-            Cancel
-          </button>
-        </div>
-
-      </form>
     </div>
   </div>
 )}
