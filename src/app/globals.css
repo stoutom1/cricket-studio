@@ -5014,8 +5014,7 @@ body {
 .mgmt-balanced-card {
   padding: 18px;
   border-radius: 18px;
-  background: rgba(255,255,255,0.055);
-  border: 1px solid rgba(255,255,255,0.09);
+
 }
 
 .mgmt-league-card {
@@ -5031,8 +5030,7 @@ body {
 
 .mgmt-card-head p {
   margin: 0;
-  color: rgba(255,255,255,0.82);
-  opacity: 1;
+
   font-size: 13px;
 }
 
@@ -5055,21 +5053,18 @@ body {
 
 .mgmt-action-primary {
   padding: 9px 14px;
-  background: rgba(37,99,235,0.22);
-  border-color: rgba(96,165,250,0.35);
+
 }
 
 .mgmt-action-secondary {
   padding: 9px 14px;
-  background: rgba(34,197,94,0.12);
-  border-color: rgba(34,197,94,0.28);
+
 }
 
 .mgmt-action-danger {
   width: 40px;
   height: 40px;
-  background: rgba(239,68,68,0.12);
-  border-color: rgba(239,68,68,0.3);
+
 }
 
 .mgmt-action-primary.full {
@@ -5163,13 +5158,9 @@ body {
 }
 .mgmt-action-primary {
   padding: 9px 14px;
-  background: rgba(255,255,255,0.07);
-  border-color: rgba(255,255,255,0.12);
 }
 
-.mgmt-action-primary:hover {
-  background: rgba(255,255,255,0.10);
-}
+
 
 .mgmt-action-secondary {
   padding: 9px 14px;
@@ -5191,7 +5182,6 @@ body {
   margin-top: 6px;
   font-size: 12px;
   line-height: 1.4;
-  opacity: 0.72;
 }
 
 .series-optional-empty,
@@ -5858,14 +5848,6 @@ body {
   overflow: hidden;
   padding: 18px;
   border-radius: 20px;
-  background:
-    linear-gradient(
-      135deg,
-      rgba(255,255,255,0.075),
-      rgba(255,255,255,0.035)
-    );
-  border: 1px solid rgba(255,255,255,0.11);
-  box-shadow: 0 10px 26px rgba(15,23,42,0.10);
 }
 
 .mgmt-balanced-card::before {
@@ -5873,24 +5855,13 @@ body {
   position: absolute;
   inset: 0 auto 0 0;
   width: 4px;
-  background: rgba(34,197,94,0.55);
 }
 
 .mgmt-league-card::before {
   background: rgba(59,130,246,0.65);
 }
 
-.mgmt-balanced-card:nth-of-type(2)::before {
-  background: rgba(168,85,247,0.58);
-}
 
-.mgmt-balanced-card:nth-of-type(3)::before {
-  background: rgba(245,158,11,0.62);
-}
-
-.mgmt-balanced-card:nth-of-type(4)::before {
-  background: rgba(34,197,94,0.60);
-}
 
 .mgmt-card-head {
   margin-bottom: 14px;
@@ -5903,8 +5874,7 @@ body {
 
 .mgmt-card-head p {
   margin: 0;
-  color: rgba(255,255,255,0.82);
-  opacity: 1;
+
   font-size: 13px;
   line-height: 1.45;
 }
@@ -5915,24 +5885,17 @@ body {
 }
 
 .mgmt-balanced-card label > span {
-  color: rgba(255,255,255,0.92);
-  opacity: 1;
   font-size: 13px;
   font-weight: 800;
 }
 
 .mgmt-balanced-card select,
 .mgmt-balanced-card input {
-  background: rgba(255,255,255,0.11);
 
-  color: rgba(255,255,255,0.96);
 
   font-weight: 600;
 
-  border: 1px solid rgba(255,255,255,0.18);
 
-  box-shadow:
-    inset 0 1px 0 rgba(255,255,255,0.06);
 }
 
 .mgmt-action-row-balanced {
@@ -5955,8 +5918,7 @@ body {
 
 .mgmt-action-primary {
   padding: 9px 14px;
-  background: rgba(34,197,94,0.13);
-  border-color: rgba(34,197,94,0.28);
+
 }
 
 .mgmt-action-secondary {
@@ -5965,11 +5927,7 @@ body {
   border-color: rgba(59,130,246,0.28);
 }
 
-.mgmt-action-primary:hover,
-.mgmt-action-secondary:hover {
-  transform: translateY(-1px);
-  background: rgba(255,255,255,0.11);
-}
+
 
 .mgmt-action-danger {
   width: 40px;
@@ -5983,27 +5941,13 @@ body {
 }
 
 .field-help {
-  background:
-    linear-gradient(
-      135deg,
-      rgba(245,158,11,0.12),
-      rgba(245,158,11,0.05)
-    );
 
-  border: 1px solid rgba(245,158,11,0.28);
 
   border-radius: 16px;
 
   padding: 12px 14px;
 }
 
-.field-help strong {
-  color: rgba(255,255,255,0.92);
-}
-
-.field-help span {
-  color: rgba(255,255,255,0.78);
-}
 
 .player-list-modern {
   max-height: 320px;
@@ -6012,8 +5956,7 @@ body {
   gap: 6px;
   padding: 8px;
   border-radius: 16px;
-  background: rgba(255,255,255,0.045);
-  border: 1px solid rgba(255,255,255,0.09);
+
   margin-bottom: 12px;
 }
 
@@ -6024,16 +5967,12 @@ body {
   gap: 10px;
   padding: 9px 11px;
   border-radius: 13px;
-  background: rgba(255,255,255,0.08);
-  border: 1px solid rgba(255,255,255,0.08);
 }
 
 .mgmt-empty-state {
   padding: 14px;
   border-radius: 15px;
-  background: rgba(255,255,255,0.055);
-  border: 1px dashed rgba(255,255,255,0.14);
-  opacity: 0.78;
+
 }
 
 .mgmt-ready-card {
@@ -6041,8 +5980,7 @@ body {
   justify-content: space-between;
   gap: 14px;
   align-items: center;
-  background: rgba(34,197,94,0.10);
-  border-color: rgba(34,197,94,0.25);
+
 }
 
 .mgmt-ready-card p {
@@ -6087,16 +6025,4 @@ body {
     width: 100%;
   }
 }
-.mgmt-balanced-card {
-  background:
-    linear-gradient(
-      135deg,
-      rgba(255,255,255,0.095),
-      rgba(255,255,255,0.05)
-    );
-}
-.mgmt-action-primary,
-.mgmt-action-secondary {
-  box-shadow:
-    0 4px 12px rgba(0,0,0,0.15);
-}
+
