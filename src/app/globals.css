@@ -6526,3 +6526,206 @@ body {
     width: 100%;
   }
 }
+/* ===== Management tab upbeat polish ===== */
+
+.mgmt-clean-shell {
+  display: grid;
+  gap: 18px;
+}
+
+/* Cards: no heavy background, but clearer premium outline */
+.mgmt-clean-card,
+.mgmt-clean-ready {
+  background: transparent !important;
+  border: 1px solid rgba(255,255,255,0.18) !important;
+  box-shadow:
+    0 8px 24px rgba(0,0,0,0.16),
+    inset 0 1px 0 rgba(255,255,255,0.05);
+}
+
+/* Subtle top accent so every card looks alive but uniform */
+.mgmt-clean-card {
+  position: relative;
+  overflow: hidden;
+}
+
+.mgmt-clean-card::before {
+  content: "";
+  position: absolute;
+  left: 16px;
+  right: 16px;
+  top: 0;
+  height: 3px;
+  border-radius: 999px;
+  background: linear-gradient(
+    90deg,
+    rgba(34,197,94,0.75),
+    rgba(59,130,246,0.65),
+    rgba(168,85,247,0.55)
+  );
+}
+
+/* Headings/text: crisp, not faded */
+.mgmt-clean-head h3 {
+  color: rgba(255,255,255,0.98);
+}
+
+.mgmt-clean-head p {
+  color: rgba(255,255,255,0.84) !important;
+}
+
+/* Labels */
+.mgmt-field > span {
+  color: rgba(255,255,255,0.96) !important;
+  opacity: 1 !important;
+}
+
+/* Selects/inputs: more readable, classier contrast */
+.mgmt-field select,
+.mgmt-field input {
+  background:
+    linear-gradient(
+      135deg,
+      rgba(255,255,255,0.18),
+      rgba(255,255,255,0.105)
+    ) !important;
+  border: 1px solid rgba(255,255,255,0.28) !important;
+  color: rgba(255,255,255,0.98) !important;
+  font-weight: 750 !important;
+  box-shadow:
+    inset 0 1px 0 rgba(255,255,255,0.12),
+    0 6px 16px rgba(0,0,0,0.12);
+}
+
+.mgmt-field select:focus,
+.mgmt-field input:focus {
+  outline: none;
+  border-color: rgba(96,165,250,0.75) !important;
+  box-shadow:
+    0 0 0 3px rgba(96,165,250,0.18),
+    inset 0 1px 0 rgba(255,255,255,0.12);
+}
+
+/* Dropdown option readability */
+.mgmt-field select option {
+  background: #0f172a;
+  color: #f8fafc;
+}
+
+/* Buttons: more upbeat but still elegant */
+.mgmt-clean-btn {
+  background:
+    linear-gradient(
+      135deg,
+      rgba(34,197,94,0.25),
+      rgba(59,130,246,0.18)
+    ) !important;
+  border: 1px solid rgba(125,211,252,0.32) !important;
+  color: rgba(255,255,255,0.98) !important;
+  box-shadow:
+    0 7px 18px rgba(0,0,0,0.16),
+    inset 0 1px 0 rgba(255,255,255,0.10);
+}
+
+.mgmt-clean-btn:hover {
+  transform: translateY(-1px);
+  background:
+    linear-gradient(
+      135deg,
+      rgba(34,197,94,0.32),
+      rgba(59,130,246,0.24)
+    ) !important;
+}
+
+.mgmt-clean-btn:disabled {
+  background: rgba(255,255,255,0.06) !important;
+  border-color: rgba(255,255,255,0.10) !important;
+  color: rgba(255,255,255,0.45) !important;
+  box-shadow: none;
+}
+
+/* Danger buttons: readable but not loud */
+.mgmt-clean-danger {
+  background: rgba(239,68,68,0.18) !important;
+  border-color: rgba(248,113,113,0.38) !important;
+  box-shadow: 0 7px 18px rgba(0,0,0,0.14);
+}
+
+.mgmt-clean-danger:hover {
+  background: rgba(239,68,68,0.25) !important;
+  transform: translateY(-1px);
+}
+
+/* Help / empty boxes: no faded gray background */
+.mgmt-clean-help,
+.mgmt-clean-empty {
+  background: transparent !important;
+  border: 1px dashed rgba(255,255,255,0.24) !important;
+}
+
+.mgmt-clean-help strong {
+  color: rgba(255,255,255,0.96) !important;
+}
+
+.mgmt-clean-help span,
+.mgmt-clean-empty {
+  color: rgba(255,255,255,0.82) !important;
+}
+
+/* Players list: remove washed-out feel */
+.mgmt-clean-player-list {
+  background: transparent !important;
+}
+
+.mgmt-clean-player-row {
+  background:
+    linear-gradient(
+      135deg,
+      rgba(255,255,255,0.105),
+      rgba(255,255,255,0.055)
+    ) !important;
+  border: 1px solid rgba(255,255,255,0.16) !important;
+  box-shadow: inset 0 1px 0 rgba(255,255,255,0.06);
+}
+
+.mgmt-clean-player-row span {
+  color: rgba(255,255,255,0.96) !important;
+}
+
+/* Setup complete row */
+.mgmt-clean-ready {
+  border-color: rgba(34,197,94,0.35) !important;
+}
+
+.mgmt-clean-ready strong {
+  color: rgba(255,255,255,0.98);
+}
+
+.mgmt-clean-ready p {
+  color: rgba(255,255,255,0.82) !important;
+}
+
+/* Mobile polish */
+@media (max-width: 700px) {
+  .mgmt-clean-shell {
+    gap: 16px;
+  }
+
+  .mgmt-clean-card,
+  .mgmt-clean-ready {
+    border-radius: 18px;
+    box-shadow:
+      0 6px 18px rgba(0,0,0,0.14),
+      inset 0 1px 0 rgba(255,255,255,0.05);
+  }
+
+  .mgmt-field select,
+  .mgmt-field input {
+    font-size: 14px;
+    padding: 12px;
+  }
+
+  .mgmt-clean-btn {
+    padding: 10px 14px;
+  }
+}
