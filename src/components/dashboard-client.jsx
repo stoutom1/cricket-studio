@@ -4916,7 +4916,18 @@ return (
             >
               ➕ Create League
             </button>
-
+            {selectedLeague && permissions?.canDeleteLeague && (
+              <button
+                type="button"
+                className="mgmt-clean-danger"
+                title={`Delete ${selectedLeague.name}`}
+                onClick={() =>
+                  handleDeleteLeague(selectedLeague.id, selectedLeague.name)
+                }
+              >
+                🗑️
+              </button>
+            )}
             {activeLeague && (
               <button
                 type="button"
@@ -4942,19 +4953,6 @@ return (
                   🌐 Copy Public View Link
                 </button>
               )}
-
-            {selectedLeague && permissions?.canDeleteLeague && (
-              <button
-                type="button"
-                className="mgmt-clean-danger"
-                title={`Delete ${selectedLeague.name}`}
-                onClick={() =>
-                  handleDeleteLeague(selectedLeague.id, selectedLeague.name)
-                }
-              >
-                🗑️
-              </button>
-            )}
           </div>
         </section>
 
