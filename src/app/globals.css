@@ -1723,7 +1723,7 @@ body {
 
   padding: 12px 14px;
 
-  background: rgba(255,255,255,0.05);
+
   color: inherit;
 }
 
@@ -5920,7 +5920,7 @@ body {
 
 .mgmt-balanced-card select,
 .mgmt-balanced-card input {
-  background: rgba(255,255,255,0.14);
+
 
   color: rgba(255,255,255,0.96);
 
