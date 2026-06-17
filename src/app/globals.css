@@ -5920,7 +5920,7 @@ body {
 
 .mgmt-balanced-card select,
 .mgmt-balanced-card input {
-  background: rgba(255,255,255,0.11);
+  background: rgba(255,255,255,0.14);
 
   color: rgba(255,255,255,0.96);
 
@@ -6124,9 +6124,13 @@ body {
 }
 .mgmt-balanced-card,
 .mgmt-ready-card {
-  background: rgba(255,255,255,0.02);
+  background: transparent;
 
-  border: 1px solid rgba(255,255,255,0.08);
+  border-left: 4px solid currentColor;
+
+  border-top: 1px solid rgba(255,255,255,0.06);
+  border-right: 1px solid rgba(255,255,255,0.06);
+  border-bottom: 1px solid rgba(255,255,255,0.06);
 
   box-shadow: none;
 }
