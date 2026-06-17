@@ -44,6 +44,12 @@ const leagues = await prisma.league.findMany({
       },
 
   include: {
+    series: {
+      orderBy: [
+        { year: "desc" },
+        { createdAt: "desc" }
+      ]
+    },
     teams: {
       include: {
         players: true
@@ -119,11 +125,20 @@ if (!user) {
         { status: 409 }
       );
     }
+function slugify(text) {
+  return String(text || "")
+    .toLowerCase()
+    .trim()
+    .replace(/[^a-z0-9]+/g, "-")
+    .replace(/(^-|-$)/g, "");
+}
 
 const league = await prisma.league.create({
   data: {
     name: body.name.trim(),
-    ownerId: user.id
+    ownerId: user.id,
+    visibility: body.visibility || "PRIVATE",
+    slug: slugify(body.name)
   }
 });
 

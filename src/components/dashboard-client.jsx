@@ -184,10 +184,15 @@ const [aiAnalysisLoading, setAiAnalysisLoading] = useState(false);
 const [showAiAnalysisModal, setShowAiAnalysisModal] = useState(false);
 const [showMatchCreatedModal, setShowMatchCreatedModal] = useState(false);
 const [createdMatchInfo, setCreatedMatchInfo] = useState(null);
-const [contextFilters, setContextFilters] = useState({teamIds: [],matchIds: [],playerNames: [],statuses: [],roles: []});
+const [contextFilters, setContextFilters] = useState({teamIds: [],matchIds: [],playerNames: [],statuses: [],roles: [],seriesIds: [],years: []});
 const [openFilter, setOpenFilter] = useState(null);
 const [filterSearch, setFilterSearch] = useState("");
 const [filterCategory, setFilterCategory] = useState("teams");
+const [seriesList, setSeriesList] = useState([]);
+const [selectedSeriesId, setSelectedSeriesId] = useState("");
+const [selectedYear, setSelectedYear] = useState(String(new Date().getFullYear()));
+const [seriesForm, setSeriesForm] = useState({name: "",year: new Date().getFullYear(),description: ""});
+const [showSeriesModal, setShowSeriesModal] = useState(false);
 const isSuperAdmin =
   session?.user?.email ===
   "surprisecricket11@gmail.com";
@@ -282,11 +287,20 @@ useEffect(() => {
     matchIds: [],
     playerNames: [],
     statuses: [],
-    roles: []
+    roles: [],
+    seriesIds: [],
+    years: []
   });
 
   setOpenFilter(null);
 }, [activeLeagueId]);
+useEffect(() => {
+  loadSeries();
+}, [activeLeagueId]);
+
+const selectedSeries = seriesList.find(
+  (s) => Number(s.id) === Number(selectedSeriesId)
+);
 
 async function loadAiAnalysis(matchId) {
   try {
@@ -302,7 +316,13 @@ async function loadAiAnalysis(matchId) {
     setAiAnalysisLoading(false);
   }
 }
+async function loadSeries() {
+  if (!activeLeagueId) return;
 
+  const data = await api(`/api/series?leagueId=${activeLeagueId}`);
+
+  setSeriesList(data || []);
+}
 async function loadPermissions(member) {
   try {
     if (!activeLeague?.id || !member?.id) {
@@ -1486,7 +1506,8 @@ status: "SCHEDULED",
   maxOversPerBowler:
     matchForm.maxOversPerBowler
       ? Number(matchForm.maxOversPerBowler)
-      : null
+      : null,
+  seriesId: matchForm.seriesId || selectedSeriesId || null,
 })
       });
 
@@ -2535,19 +2556,51 @@ function toggleFilterValue(type, value) {
   });
 }
 
+async function handleDeleteSeries(seriesId, seriesName) {
+  const ok = window.confirm(
+    `Delete series "${seriesName}"? This cannot be undone.`
+  );
+
+  if (!ok) return;
+
+  try {
+    await api(`/api/series/${seriesId}`, {
+      method: "DELETE"
+    });
+
+    setSelectedSeriesId("");
+
+    setContextFilters((prev) => ({
+      ...prev,
+      seriesIds: [],
+      years: []
+    }));
+
+    await loadSeries();
+
+    setMessage(`Series "${seriesName}" deleted successfully.`);
+  } catch (err) {
+    setError(err.message || "Failed to delete series.");
+  }
+}
+
 function clearContextFilters() {
   setContextFilters({
     teamIds: [],
     matchIds: [],
     playerNames: [],
     statuses: [],
-    roles: []
+    roles: [],
+    seriesIds: [],
+    years: []
   });
 }
 function matchPassesContextFilters(match) {
-  const teamIds = contextFilters.teamIds.map(Number);
-  const matchIds = contextFilters.matchIds.map(Number);
-  const statuses = contextFilters.statuses.map(normalizeStatus);
+  const teamIds = (contextFilters.teamIds || []).map(Number);
+  const matchIds = (contextFilters.matchIds || []).map(Number);
+  const statuses = (contextFilters.statuses || []).map(normalizeStatus);
+  const seriesIds = (contextFilters.seriesIds || []).map(Number);
+  const years = (contextFilters.years || []).map(Number);
 
   if (
     teamIds.length &&
@@ -2557,18 +2610,27 @@ function matchPassesContextFilters(match) {
     return false;
   }
 
-  if (
-    matchIds.length &&
-    !matchIds.includes(Number(match.id))
-  ) {
+  if (matchIds.length && !matchIds.includes(Number(match.id))) {
     return false;
   }
 
-  if (
-    statuses.length &&
-    !statuses.includes(normalizeStatus(match.status))
-  ) {
+  if (statuses.length && !statuses.includes(normalizeStatus(match.status))) {
     return false;
+  }
+
+  if (seriesIds.length && !seriesIds.includes(Number(match.seriesId))) {
+    return false;
+  }
+
+  if (years.length) {
+    const matchYear =
+      Number(match.year) ||
+      Number(match.seriesYear) ||
+      new Date(match.createdAt).getFullYear();
+
+    if (!years.includes(matchYear)) {
+      return false;
+    }
   }
 
   return true;
@@ -2764,13 +2826,70 @@ const filteredFielding =
 const filteredPointsTable =
   pointsTable?.filter(pointsPassesContextFilters) || [];
 
+const uniqueMatchesForFilter = (() => {
+  const map = new Map();
+
+  (matches || []).forEach((match) => {
+    if (!match?.id) return;
+    map.set(Number(match.id), match);
+  });
+
+  return [...map.values()];
+})();  
+const selectedYears = (contextFilters.years || []).map(Number);
+const selectedSeriesIds = (contextFilters.seriesIds || []).map(Number);
+const selectedTeamIds = (contextFilters.teamIds || []).map(Number);
+
+const filteredSeriesForContextLens = (seriesList || [])
+  .filter((series) => {
+    if (
+      selectedYears.length &&
+      !selectedYears.includes(Number(series.year))
+    ) {
+      return false;
+    }
+
+    return true;
+  });
+
+const filteredMatchesForContextLens = uniqueMatchesForFilter
+  .filter((match) => {
+    if (
+      selectedYears.length &&
+      !selectedYears.includes(
+        Number(match.seriesYear) ||
+          new Date(match.createdAt).getFullYear()
+      )
+    ) {
+      return false;
+    }
+
+    if (
+      selectedSeriesIds.length &&
+      !selectedSeriesIds.includes(Number(match.seriesId))
+    ) {
+      return false;
+    }
+
+    if (
+      selectedTeamIds.length &&
+      !selectedTeamIds.includes(Number(match.teamAId)) &&
+      !selectedTeamIds.includes(Number(match.teamBId))
+    ) {
+      return false;
+    }
+
+    return true;
+  });
 function ContextLens() {
   const totalFilters =
     (contextFilters.teamIds?.length || 0) +
     (contextFilters.matchIds?.length || 0) +
     (contextFilters.playerNames?.length || 0) +
     (contextFilters.statuses?.length || 0) +
-    (contextFilters.roles?.length || 0);
+    (contextFilters.roles?.length || 0) +
+    (contextFilters.seriesIds?.length || 0) +
+    (contextFilters.years?.length || 0);
 
   return (
     <div className="smart-filter-pill">
@@ -2811,6 +2930,7 @@ function ContextLens() {
     </div>
   );
 }
+
 return (
   <>
 <div className="dashboard-tabs">
@@ -4265,8 +4385,41 @@ return (
           </strong>
 
         </div>
-
+        <div className="optional-series-tip">
+  <strong>💡 Series are optional</strong>
+  <span>
+    Use a series only when this match belongs to a tournament, cup, season, or year.
+  </span>
+</div>
+        <div>
         <form className="form create-match-form" onSubmit={handleCreateMatch}>
+          <div>
+ <label>
+  <span>Series / Season</span>
+
+  <select
+    value={matchForm.seriesId || ""}
+    onChange={(e) =>
+      setMatchForm((prev) => ({
+        ...prev,
+        seriesId: e.target.value,
+      }))
+    }
+  >
+    <option value="">No Series (Optional)</option>
+
+    {seriesList.map((series) => (
+      <option key={series.id} value={series.id}>
+        {series.name} • {series.year}
+      </option>
+    ))}
+  </select>
+
+  <small className="field-help">
+    Optional. Leave as No Series for friendly, practice, or standalone matches.
+  </small>
+</label>
+          </div>
           <div className="form-two-col">
             <label>
               <span>Team A</span>
@@ -4427,6 +4580,7 @@ return (
             </button>
           )}
         </form>
+        </div>
       </Card>
     )}
 
@@ -4702,365 +4856,292 @@ return (
   </div>
 )}
 {activeTab === "management" && (
- <div className="scoring-layout">
+  <div className="management-page">
+    <Card title="🏏 League Management">
+      <div className="mgmt-balanced-shell">
 
-      <Card title="🏏 League Management">
-<div
-  style={{
-    display: "flex",
-    flexDirection: "column",
-    gap: 20,
-  }}
->
+        {/* LEAGUE */}
+        <section className="mgmt-balanced-card mgmt-league-card">
+          <div className="mgmt-card-head">
+            <div>
+              <h3>🏆 League</h3>
+              <p>Select your active league and invite users.</p>
+            </div>
+          </div>
 
-  {/* LEAGUE CARD */}
+          <label>
+            <span>Active League</span>
+            <select
+              value={activeLeagueId || ""}
+              onChange={(e) => {
+                setActiveLeagueId(e.target.value);
+                setSelectedTeamId("");
+                setSelectedSeriesId("");
+              }}
+            >
+              <option value="">Select League</option>
 
-  <div
-    style={{
-      border: "1px solid var(--border)",
-      borderRadius: 12,
-      padding: 16,
-    }}
-  >
-    <h3
-      style={{
-        marginTop: 0,
-        marginBottom: 12,
-      }}
-    >
-      🏆 Leagues
-    </h3>
+              {leagues.map((league) => (
+                <option key={league.id} value={league.id}>
+                  {league.name} • {league.visibility || "PRIVATE"}
+                </option>
+              ))}
+            </select>
+          </label>
 
-    <select
-      value={activeLeagueId || ""}
-      onChange={(e) => {
-        setActiveLeagueId(e.target.value);
-        setSelectedTeamId("");
-      }}
-      style={{
-        width: "100%",
-      }}
-    >
-      <option value="">
-        Select League
-      </option>
+          <div className="mgmt-action-row-balanced">
+            <button
+              type="button"
+              className="mgmt-action-primary"
+              onClick={() => setShowLeagueModal(true)}
+            >
+              ➕ Create League
+            </button>
 
-      {leagues.map((league) => (
-        <option
-          key={league.id}
-          value={league.id}
-        >
-          {league.name}
-        </option>
-      ))}
-    </select>
+            {activeLeague && (
+              <button
+                type="button"
+                className="mgmt-action-secondary"
+                onClick={() => generateInviteLink(activeLeague.id)}
+              >
+                🔗 Copy Invite Link
+              </button>
+            )}
 
-<div
-  style={{
-    display: "flex",
-    gap: 10,
-    marginTop: 12,
-  }}
->
-  <button
-    className="btn"
-    style={{
-      flex: 1,
-    }}
-    onClick={() =>
-      setShowLeagueModal(true)
-    }
-  >
-    ➕ Create League
-  </button>
+            {selectedLeague && permissions?.canDeleteLeague && (
+              <button
+                type="button"
+                className="mgmt-action-danger"
+                title={`Delete ${selectedLeague.name}`}
+                onClick={() =>
+                  handleDeleteLeague(selectedLeague.id, selectedLeague.name)
+                }
+              >
+                🗑️
+              </button>
+            )}
+          </div>
+        </section>
 
-  {selectedLeague &&
-    permissions?.canDeleteLeague && (
-      <button
-        className="btn btn-danger"
-        title={`Delete ${selectedLeague.name}`}
-        onClick={() =>
-          handleDeleteLeague(
-            selectedLeague.id,
-            selectedLeague.name
-          )
-        }
-      >
-        🗑️
-      </button>
-    )}
-</div>
- <div
-  className="success-banner"
-  style={{
-    marginTop:5,
-    display: "flex",
-    justifyContent: "flex-end",
-  }}
->
-{activeLeague && (
-  <button
-    className="btn btn-outline"
-    title="Copy registration link"
-    onClick={() =>
-      generateInviteLink(activeLeague.id)
-    }
-  >
-    🔗 Invitation link to{" "}
-    <strong>{activeLeague.name}</strong>
-  </button>
-)}
-</div>
-  </div>
+        {/* SERIES */}
+        <section className="mgmt-balanced-card">
+          <div className="mgmt-card-head">
+            <div>
+              <h3>📅 Series / Season</h3>
+              <p>Select, create, or delete a series under this league.</p>
+            </div>
+          </div>
 
-  {/* TEAM CARD */}
+          <label>
+            <span>Selected Series</span>
+            <select
+              value={selectedSeriesId || ""}
+              onChange={(e) => {
+                const seriesId = e.target.value;
+                setSelectedSeriesId(seriesId);
 
-  <div
-    style={{
-      border: "1px solid var(--border)",
-      borderRadius: 12,
-      padding: 16,
-    }}
-  >
-    <h3
-      style={{
-        marginTop: 0,
-        marginBottom: 12,
-      }}
-    >
-      👥 Teams
-    </h3>
+                const selected = seriesList.find(
+                  (s) => Number(s.id) === Number(seriesId)
+                );
 
-    <select
-      value={selectedTeamId || ""}
-      onChange={(e) =>
-        setSelectedTeamId(
-          e.target.value
-        )
-      }
-      disabled={!selectedLeague}
-      style={{
-        width: "100%",
-      }}
-    >
-      <option value="">
-        Select Team
-      </option>
+                setContextFilters((prev) => ({
+                  ...prev,
+                  seriesIds: seriesId ? [Number(seriesId)] : [],
+                  years: selected ? [Number(selected.year)] : []
+                }));
+              }}
+              disabled={!activeLeagueId}
+            >
+<option value="">
+  No Series Selected (Optional)
+</option>
 
-      {selectedLeague?.teams?.map(
-        (team) => (
-          <option
-            key={team.id}
-            value={team.id}
-          >
-            {team.name}
-          </option>
-        )
-      )}
-    </select>
 
-    <div
-      style={{
-        display: "flex",
-        gap: 10,
-        marginTop: 12,
-      }}
-    >
-      <button
-        className="btn"
-        style={{ flex: 1 }}
-        disabled={!selectedLeague}
-        onClick={() => {
-          setTeamForm({
-            name: "",
-            leagueId:
-              selectedLeague.id,
-          });
+              {seriesList.map((series) => (
+                <option key={series.id} value={series.id}>
+                  {series.name} • {series.year} • {series.status || "ACTIVE"}
+                </option>
+              ))}
+            </select>
+            <small className="field-help">
+    <strong>Series are optional.</strong>
+    <span>
+      Create a series only if you want to group matches into a tournament,
+      cup, season, or year. You can still create matches without a series.
+    </span>
+</small>
+          </label>
+          <div className="mgmt-action-row-balanced">
+            <button
+              type="button"
+              className="mgmt-action-primary"
+              disabled={!activeLeagueId}
+              onClick={() => setShowSeriesModal(true)}
+            >
+              ➕ Create Series
+            </button>
 
-          setShowAddTeam(true);
-        }}
-      >
-        ➕ Add Team
-      </button>
+            {selectedSeries && (
+              <button
+                type="button"
+                className="mgmt-action-danger"
+                title={`Delete ${selectedSeries.name}`}
+                onClick={() =>
+                  handleDeleteSeries(selectedSeries.id, selectedSeries.name)
+                }
+              >
+                🗑️
+              </button>
+            )}
+          </div>
+        </section>
 
-      {selectedTeam &&
-        permissions?.canDeleteTeam && (
-          <button
-            className="btn btn-danger"
-            onClick={() =>
-              handleDeleteTeam(
-                selectedTeam.id,
-                selectedTeam.name
-              )
-            }
-          >
-            🗑️
-          </button>
-        )}
-    </div>
-  </div>
+        {/* TEAMS */}
+        <section className="mgmt-balanced-card">
+          <div className="mgmt-card-head">
+            <div>
+              <h3>👥 Teams</h3>
+              <p>Select or add teams under the active league.</p>
+            </div>
+          </div>
 
-  {/* PLAYER CARD */}
+          <label>
+            <span>Selected Team</span>
+            <select
+              value={selectedTeamId || ""}
+              onChange={(e) => setSelectedTeamId(e.target.value)}
+              disabled={!selectedLeague}
+            >
+              <option value="">
+                {selectedLeague ? "Select Team" : "Select league first"}
+              </option>
 
-  <div
-    style={{
-      border: "1px solid var(--border)",
-      borderRadius: 12,
-      padding: 16,
-    }}
-  >
-    <h3
-      style={{
-        marginTop: 0,
-        marginBottom: 12,
-      }}
-    >
-      🏏 Players
-    </h3>
+              {selectedLeague?.teams?.map((team) => (
+                <option key={team.id} value={team.id}>
+                  {team.name}
+                </option>
+              ))}
+            </select>
+          </label>
 
-    {!selectedTeam && (
-      <div
-        style={{
-          color: "#64748b",
-        }}
-      >
-        Select a team to view players
-      </div>
-    )}
+          <div className="mgmt-action-row-balanced">
+            <button
+              type="button"
+              className="mgmt-action-primary"
+              disabled={!selectedLeague}
+              onClick={() => {
+                setTeamForm({
+                  name: "",
+                  leagueId: selectedLeague.id
+                });
 
-    {selectedTeam && (
-      <>
-        <div
-          style={{
-            maxHeight: 350,
-            overflowY: "auto",
-            border:
-              "1px solid var(--border)",
-            borderRadius: 8,
-            padding: 10,
-            marginBottom: 12,
-          }}
-        >
-          {selectedTeam.players?.map(
-            (player) => (
-              <div
-                key={player.id}
-                style={{
-                  display: "flex",
-                  justifyContent:
-                    "space-between",
-                  alignItems: "center",
-                  padding: "6px 0",
-                  borderBottom:
-                    "1px solid rgba(0,0,0,0.05)",
+                setShowAddTeam(true);
+              }}
+            >
+              ➕ Add Team
+            </button>
+
+            {selectedTeam && permissions?.canDeleteTeam && (
+              <button
+                type="button"
+                className="mgmt-action-danger"
+                onClick={() =>
+                  handleDeleteTeam(selectedTeam.id, selectedTeam.name)
+                }
+              >
+                🗑️
+              </button>
+            )}
+          </div>
+        </section>
+
+        {/* PLAYERS */}
+        <section className="mgmt-balanced-card">
+          <div className="mgmt-card-head">
+            <div>
+              <h3>🏏 Players</h3>
+              <p>
+                {selectedTeam
+                  ? `${selectedTeam.players?.length || 0} players in ${selectedTeam.name}`
+                  : "Select a team to view players."}
+              </p>
+            </div>
+          </div>
+
+          {!selectedTeam ? (
+            <div className="mgmt-empty-state">
+              Select a team to view players.
+            </div>
+          ) : (
+            <>
+              <div className="player-list-modern">
+                {selectedTeam.players?.map((player) => (
+                  <div key={player.id} className="player-row-modern">
+                    <span>{player.name}</span>
+
+                    {permissions?.canDeletePlayer && (
+                      <button
+                        type="button"
+                        className="icon-btn danger"
+                        title={`Delete ${player.name}`}
+                        onClick={() =>
+                          handleDeletePlayer(player.id, player.name)
+                        }
+                      >
+                        🗑️
+                      </button>
+                    )}
+                  </div>
+                ))}
+              </div>
+
+              <button
+                type="button"
+                className="mgmt-action-primary full"
+                onClick={() => {
+                  setPlayerLeagueId(activeLeagueId);
+
+                  setPlayerForm({
+                    names: "",
+                    leagueId: activeLeagueId,
+                    teamId: selectedTeamId
+                  });
+
+                  setShowPlayerModal(true);
                 }}
               >
-                <span>
-                  {player.name}
-                </span>
-
-                {permissions?.canDeletePlayer && (
-                  <button
-                    className="icon-btn danger"
-                    title={`Delete ${player.name}`}
-                    onClick={() =>
-                      handleDeletePlayer(
-                        player.id,
-                        player.name
-                      )
-                    }
-                  >
-                    🗑️
-                  </button>
-                )}
-              </div>
-            )
+                ➕ Add Players
+              </button>
+            </>
           )}
-        </div>
+        </section>
 
-        <button
-          className="btn"
-          style={{
-            width: "100%",
-          }}
-          onClick={() => {
-            setPlayerLeagueId(
-              activeLeagueId
-            );
+        {canCreateMatch && (
+          <section className="mgmt-ready-card">
+            <div>
+              <strong>✅ League setup complete</strong>
+              <p>You can now schedule matches from the Matches tab.</p>
+            </div>
 
-            setPlayerForm({
-              names: "",
-              leagueId:
-                activeLeagueId,
-              teamId:
-                selectedTeamId,
-            });
+            <button
+              type="button"
+              className="mgmt-action-primary"
+              onClick={() => setActiveTab("matches")}
+            >
+              🏏 Create Match
+            </button>
+          </section>
+        )}
+      </div>
+    </Card>
 
-            setShowPlayerModal(true);
-          }}
-        >
-          ➕ Add Players
-        </button>
-      </>
+    {(message || error) && (
+      <Card title="ℹ️ Notifications" defaultCollapsed={false}>
+        {message ? <p className="success">{message}</p> : null}
+        {error ? <p className="error">{error}</p> : null}
+      </Card>
     )}
   </div>
-
-  {/* CREATE MATCH CARD */}
-
-  {canCreateMatch && (
-    <div
-      style={{
-        padding: 18,
-        borderRadius: 12,
-        border:
-          "1px solid #86efac",
-        background:
-          "rgba(34,197,94,0.10)",
-      }}
-    >
-      <div
-        style={{
-          fontWeight: 600,
-          marginBottom: 6,
-        }}
-      >
-        ✅ League setup complete
-      </div>
-
-      <div
-        style={{
-          marginBottom: 14,
-        }}
-      >
-        You can now schedule matches
-        from the Matches tab.
-      </div>
-
-      <button
-        className="btn btn-primary"
-        style={{
-          width: "100%",
-        }}
-        onClick={() =>
-          setActiveTab("matches")
-        }
-      >
-        🏏 Create Match
-      </button>
-    </div>
-  )}
-
-</div>
-</Card>
-    <div className="grid-side">
-        {(message || error) && (
-          <Card title="ℹ️ Notifications" defaultCollapsed={false}>
-            {message ? <p className="success">{message}</p> : null}
-            {error ? <p className="error">{error}</p> : null}
-          </Card>
-        )}
-    </div>
-</div>    
 )}
 {activeTab === "Points" && (
   
@@ -6428,7 +6509,7 @@ return (
 )}
 {showLeagueModal && (
   <div className="league-modal-backdrop">
-    <div className="league-modal">
+    <div className="modal-card app-modal-card">
 
       <div className="league-modal-header">
         <div>
@@ -6465,7 +6546,24 @@ return (
           autoFocus
         />
       </div>
-
+      <div className="league-modal-body">
+<label className="league-label">
+  <span>League Visibility</span>
+</label>  
+  <select
+    value={leagueForm.visibility || "PRIVATE"}
+    onChange={(e) =>
+      setLeagueForm((prev) => ({
+        ...prev,
+        visibility: e.target.value.replace
+      }))
+    }
+  >
+    <option value="PRIVATE">🔒 Private - Members only</option>
+    <option value="UNLISTED">🔗 Unlisted - Anyone with link</option>
+    <option value="PUBLIC">🌐 Public - Everyone can view</option>
+  </select>
+</div>
       <div className="league-modal-actions">
         <button
           type="button"
@@ -6574,7 +6672,7 @@ return (
 )}
 {showAddTeam && (
   <div className="modal-backdrop">
-    <div className="modal-card">
+    <div className="modal-card app-modal-card">
 
       <h3>🏏 Add Team</h3>
 
@@ -6628,7 +6726,7 @@ return (
 )}
 {showPlayerModal && (
   <div className="modal-backdrop">
-    <div className="modal-card">
+    <div className="modal-card app-modal-card">
 
 <h3>👥 Add Players</h3>
 
@@ -7050,7 +7148,7 @@ KL Rahul`}
 )}
 {showPlayerModal && (
   <div className="modal-backdrop">
-    <div className="modal-card">
+    <div className="modal-card app-modal-card">
 
       <h3>👥 Add Players</h3>
 
@@ -7303,7 +7401,7 @@ KL Rahul`}
       />
 
       <div className="filter-category-tabs">
-        {["teams", "players", "matches", "statuses"].map((cat) => (
+        {["teams", "players", "matches", "series", "years", "statuses"].map((cat) => (
           <button
             key={cat}
             type="button"
@@ -7332,7 +7430,15 @@ KL Rahul`}
             ? "filter-row active"
             : "filter-row"
         }
-        onClick={() => toggleFilterValue("teamIds", Number(team.id))}
+onClick={() => {
+  toggleFilterValue("teamIds", Number(team.id));
+
+  setContextFilters((prev) => ({
+    ...prev,
+    playerNames: [],
+    matchIds: []
+  }));
+}}
       >
         <span>🏏 {team.name}</span>
         <small>{team.players?.length || 0} players</small>
@@ -7359,10 +7465,10 @@ KL Rahul`}
         <span>👤 {player.name}</span>
       </button>
     ))}
-    {filterCategory === "matches" &&
-  matches
+{filterCategory === "matches" &&
+  filteredMatchesForContextLens
     .filter((m) =>
-      `${m.teamAName} ${m.teamBName} ${m.id}`
+      `${m.teamAName} ${m.teamBName} ${m.id} ${m.seriesName || ""}`
         .toLowerCase()
         .includes(filterSearch.toLowerCase())
     )
@@ -7377,30 +7483,85 @@ KL Rahul`}
         }
         onClick={() => toggleFilterValue("matchIds", Number(match.id))}
       >
-        <span>#{match.id} {match.teamAName} vs {match.teamBName}</span>
-        <small>{match.status}</small>
+        <span>
+          #{match.id} {match.teamAName} vs {match.teamBName}
+        </span>
+        <small>
+          {match.seriesName ? `${match.seriesName} • ` : ""}
+          {match.status}
+        </small>
       </button>
     ))}
-       {filterCategory === "matches" &&
-  matches
-    .filter((m) =>
-      `${m.teamAName} ${m.teamBName} ${m.id}`
+{filterCategory === "series" &&
+  filteredSeriesForContextLens
+    .filter((s) =>
+      `${s.name} ${s.year}`
         .toLowerCase()
         .includes(filterSearch.toLowerCase())
     )
-    .map((match) => (
+    .map((series) => (
       <button
-        key={match.id}
+        key={series.id}
         type="button"
         className={
-          contextFilters.matchIds.includes(Number(match.id))
+          contextFilters.seriesIds.includes(Number(series.id))
             ? "filter-row active"
             : "filter-row"
         }
-        onClick={() => toggleFilterValue("matchIds", Number(match.id))}
+onClick={() => {
+  const seriesId = Number(series.id);
+
+  setContextFilters((prev) => {
+    const seriesIds = prev.seriesIds.includes(seriesId)
+      ? prev.seriesIds.filter((id) => Number(id) !== seriesId)
+      : [...prev.seriesIds, seriesId];
+
+    return {
+      ...prev,
+      seriesIds,
+      matchIds: []
+    };
+  });
+
+  setFilterCategory("matches");
+}}
       >
-        <span>#{match.id} {match.teamAName} vs {match.teamBName}</span>
-        <small>{match.status}</small>
+        <span>🏆 {series.name}</span>
+        <small>{series.year}</small>
+      </button>
+    ))}
+    {filterCategory === "years" &&
+  [...new Set(seriesList.map((s) => Number(s.year)))]
+    .sort((a, b) => b - a)
+    .map((year) => (
+      <button
+        key={year}
+        type="button"
+        className={
+          contextFilters.years.includes(Number(year))
+            ? "filter-row active"
+            : "filter-row"
+        }
+onClick={() => {
+  const yearNumber = Number(year);
+
+  setContextFilters((prev) => {
+    const years = prev.years.includes(yearNumber)
+      ? prev.years.filter((y) => Number(y) !== yearNumber)
+      : [...prev.years, yearNumber];
+
+    return {
+      ...prev,
+      years,
+      seriesIds: [],
+      matchIds: []
+    };
+  });
+
+  setFilterCategory("series");
+}}
+      >
+        <span>📅 {year}</span>
       </button>
     ))}
     {filterCategory === "statuses" &&
@@ -7437,6 +7598,96 @@ KL Rahul`}
 
         <button type="button" className="btn" onClick={() => setOpenFilter(null)}>
           Apply Filters
+        </button>
+      </div>
+    </div>
+  </div>
+)}
+{showSeriesModal && (
+  <div className="modal-backdrop">
+    <div className="modal-card app-modal-card">
+      <h3>📅 Create Series</h3>
+
+      <p className="muted">
+        Create a tournament, season, cup, or yearly series under the selected league.
+      </p>
+
+      <label>
+        <span>Series Name</span>
+        <input
+          value={seriesForm.name}
+          onChange={(e) =>
+            setSeriesForm((prev) => ({
+              ...prev,
+              name: e.target.value
+            }))
+          }
+          placeholder="Summer Cup"
+        />
+      </label>
+
+      <label>
+        <span>Year</span>
+        <input
+          type="number"
+          value={seriesForm.year}
+          onChange={(e) =>
+            setSeriesForm((prev) => ({
+              ...prev,
+              year: e.target.value
+            }))
+          }
+        />
+      </label>
+
+      <label>
+        <span>Description</span>
+        <input
+          value={seriesForm.description}
+          onChange={(e) =>
+            setSeriesForm((prev) => ({
+              ...prev,
+              description: e.target.value
+            }))
+          }
+          placeholder="Optional"
+        />
+      </label>
+
+      <div className="modal-actions">
+        <button
+          type="button"
+          className="btn btn-outline"
+          onClick={() => setShowSeriesModal(false)}
+        >
+          Cancel
+        </button>
+
+        <button
+          type="button"
+          className="btn"
+          onClick={async () => {
+            const created = await api("/api/series", {
+              method: "POST",
+              body: JSON.stringify({
+                ...seriesForm,
+                leagueId: activeLeagueId
+              })
+            });
+
+            setSeriesForm({
+              name: "",
+              year: new Date().getFullYear(),
+              description: ""
+            });
+
+            setShowSeriesModal(false);
+            await loadSeries();
+
+            setSelectedSeriesId(String(created.id));
+          }}
+        >
+          Create Series
         </button>
       </div>
     </div>

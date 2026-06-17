@@ -75,6 +75,8 @@ model Match {
   events                MatchEvent[]
   aiAnalysis            String?
   aiAnalysisAt          DateTime?
+  seriesId              Int?
+  series                Series?      @relation(fields: [seriesId], references: [id])
 }
 
 model Ball {
@@ -133,6 +135,9 @@ model League {
   members       LeagueMember[]
   invites       LeagueInvite[]
   matches       Match[]
+  visibility    String               @default("PRIVATE")
+  slug          String?              @unique
+  series        Series[]
 }
 
 model LeagueRegistration {
@@ -239,4 +244,17 @@ model MatchEvent {
   match Match @relation(fields: [matchId], references: [id], onDelete: Cascade)
 
   @@index([matchId, inningsNo])
+}
+
+model Series {
+  id          Int      @id @default(autoincrement())
+  leagueId    Int
+  name        String
+  year        Int
+  description String?
+  status      String   @default("ACTIVE")
+  createdAt   DateTime @default(now())
+
+  league  League  @relation(fields: [leagueId], references: [id], onDelete: Cascade)
+  matches Match[]
 }

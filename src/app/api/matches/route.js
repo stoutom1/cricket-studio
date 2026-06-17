@@ -148,6 +148,7 @@ export async function GET(request) {
       league: true,
       teamA: true,
       teamB: true,
+      series: true,
       battingFirstTeam: true,
       balls: {
         orderBy: [
@@ -269,9 +270,19 @@ if (canAutoComplete && shouldComplete) {
       scoreSummary: `${firstInningsScore} • ${secondInningsScore}`,
       finalScore: `${firstInningsScore} • ${secondInningsScore}`,
       resultText,
+      seriesId: m.seriesId,
+      seriesName: m.series?.name || "",
+      seriesYear: m.series?.year || null,
     };
   });
-
+/*
+  console.log("MATCH SERIES DEBUG", formatted.map((m) => ({
+  id: m.id,
+  match: `${m.teamAName} vs ${m.teamBName}`,
+  seriesId: m.seriesId,
+  seriesName: m.seriesName,
+})));
+*/
   return NextResponse.json(formatted);
 }
 
@@ -425,7 +436,7 @@ const match = await prisma.match.create({
       powerplayOversInnings: Number(
       body.powerplayOversInnings
     ),
-
+    seriesId: body.seriesId ? Number(body.seriesId) : null,
     maxWicketsPerInnings:
       body.maxWicketsPerInnings
         ? Number(body.maxWicketsPerInnings)
