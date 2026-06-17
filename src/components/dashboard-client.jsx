@@ -4884,7 +4884,7 @@ return (
           </div>
 
           <label className="mgmt-field">
-            <span>Active League</span>
+            <span>👇 Choose a league to manage</span>
             <select
               value={activeLeagueId || ""}
               onChange={(e) => {
@@ -4963,7 +4963,7 @@ return (
           </div>
 
           <label className="mgmt-field">
-            <span>Selected Series</span>
+            <span>👇 Choose a series or leave optional</span>
             <select
               value={selectedSeriesId || ""}
               disabled={!activeLeagueId}
@@ -5035,7 +5035,7 @@ return (
           </div>
 
           <label className="mgmt-field">
-            <span>Selected Team</span>
+            <span>👇 Choose a team to manage players</span>
             <select
               value={selectedTeamId || ""}
               disabled={!selectedLeague}
