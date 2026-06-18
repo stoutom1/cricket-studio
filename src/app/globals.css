@@ -7349,3 +7349,49 @@ body {
     margin-bottom: 16px !important;
   }
 }
+@media (max-width: 700px) {
+  .topbar-inner {
+    display: grid !important;
+    gap: 8px !important;
+  }
+
+  .brand-title {
+    font-size: 20px !important;
+    line-height: 1.1 !important;
+  }
+
+  .auth-nav {
+    display: flex !important;
+    align-items: center !important;
+    gap: 12px !important;
+    flex-wrap: nowrap !important;
+    overflow-x: auto !important;
+    white-space: nowrap !important;
+    width: 100% !important;
+  }
+
+  .auth-nav .nav-home {
+    flex: 0 0 auto !important;
+  }
+
+  .auth-nav .nav-right {
+    display: flex !important;
+    align-items: center !important;
+    gap: 12px !important;
+    flex-wrap: nowrap !important;
+    white-space: nowrap !important;
+  }
+
+  .auth-nav a,
+  .auth-nav span,
+  .auth-nav button {
+    flex: 0 0 auto !important;
+    font-size: 14px !important;
+  }
+
+  .logout-btn,
+  .login-btn {
+    padding: 6px 11px !important;
+    border-radius: 999px !important;
+  }
+}
