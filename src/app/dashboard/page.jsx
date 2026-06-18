@@ -17,23 +17,23 @@ export default async function DashboardPage() {
   return (
     <main className="dashboard-page">
 
-  <section className="dashboard-hero">
-    <h2 className="dashboard-title">
-        <Link
-          href="/"
-          style={{
-            textDecoration: "none",
-            color: "inherit",
-          }}
-        >📊 Dashboard
-  </Link>
+<section className="dashboard-hero dashboard-hero-compact">
+  <h2 className="dashboard-title">
+    <Link
+      href="/"
+      style={{
+        textDecoration: "none",
+        color: "inherit",
+      }}
+    >
+      📊 Dashboard
+    </Link>
   </h2>
-                      <div className="dashboard-subtitle">
-                        Advanced scoring • custom overs • custom wickets • custom powerplay overs • player stats • league permissions • and more! 
-                      </div>
-  </section>
 
-
+  <div className="dashboard-subtitle">
+    Score matches. Manage leagues. Track stats.
+  </div>
+</section>
       <section className="dashboard-content">
         <DashboardClient />
       </section>
