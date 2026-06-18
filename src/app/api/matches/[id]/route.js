@@ -26,25 +26,35 @@ export async function GET(request, { params }) {
 
   const match = await prisma.match.findUnique({
     where: { id: matchId },
+ include: {
+  teamA: {
     include: {
-      teamA: {
-include: {
-  league: true,
-  players: {
-    orderBy: { name: "asc" }
-  }
-}
-      },
-      teamB: {
-include: {
-  league: true,
-  players: {
-    orderBy: { name: "asc" }
-  }
-}
-      },
-      battingFirstTeam: true
+      league: true,
+      players: {
+        orderBy: { name: "asc" }
+      }
     }
+  },
+
+  teamB: {
+    include: {
+      league: true,
+      players: {
+        orderBy: { name: "asc" }
+      }
+    }
+  },
+
+  battingFirstTeam: true,
+
+  balls: {
+    orderBy: [
+      { inningsNo: "asc" },
+      { sequence: "asc" },
+      { id: "asc" }
+    ],
+  },
+}
   });
 
  

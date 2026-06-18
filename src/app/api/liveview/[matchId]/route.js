@@ -7,6 +7,45 @@ import {
   buildMatchStats
 } from "@/lib/scoring";
 
+function normalizeBattingStatsForRetiredHurt(battingStats, balls) {
+  const retiredHurtIds = new Set();
+
+  for (const ball of balls || []) {
+    const wicketType = String(ball.wicketType || "")
+      .trim()
+      .toUpperCase();
+
+    if (wicketType === "RETIRED_HURT" && ball.dismissedPlayerId) {
+      retiredHurtIds.add(Number(ball.dismissedPlayerId));
+    }
+
+    // If the same retired-hurt player bats again later, remove retired hurt status
+    if (ball.strikerId) {
+      retiredHurtIds.delete(Number(ball.strikerId));
+    }
+
+    if (ball.nonStrikerId) {
+      retiredHurtIds.delete(Number(ball.nonStrikerId));
+    }
+
+    if (ball.newBatterId) {
+      retiredHurtIds.delete(Number(ball.newBatterId));
+    }
+  }
+
+  return (battingStats || []).map((row) => {
+    const isRetiredHurt = retiredHurtIds.has(Number(row.playerId));
+
+    return {
+      ...row,
+      isRetiredHurt,
+      dismissal: isRetiredHurt
+        ? "Retired hurt"
+        : row.dismissal || "not out",
+    };
+  });
+}
+
 export async function GET(request, { params }) {
 const { matchId: matchIdParam } = await params;
 
@@ -116,14 +155,20 @@ const inningsData = [
     number: 1,
     teamName: innings1TeamName,
     ...innings1Summary,
-    battingStats: innings1MatchStats.batting,
+    battingStats: normalizeBattingStatsForRetiredHurt(
+      innings1MatchStats.batting,
+      innings1Balls
+    ),
     bowlingStats: innings1MatchStats.bowling
   },
   {
     number: 2,
     teamName: innings2TeamName,
     ...innings2Summary,
-    battingStats: innings2MatchStats.batting,
+    battingStats: normalizeBattingStatsForRetiredHurt(
+      innings2MatchStats.batting,
+      innings2Balls
+    ),
     bowlingStats: innings2MatchStats.bowling
   }
 ];

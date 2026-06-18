@@ -7492,3 +7492,58 @@ body {
     max-width: 280px;
   }
 }
+.runout-btn {
+  min-width: 72px;
+  padding: 10px 12px;
+  border-radius: 14px;
+  border: 1px solid rgba(255,255,255,.18);
+  background: transparent;
+  color: inherit;
+  font-weight: 700;
+  cursor: pointer;
+  transition: all .18s ease;
+}
+
+.runout-btn:hover {
+  transform: translateY(-1px);
+  border-color: rgba(59,130,246,.55);
+}
+
+.runout-btn.selected {
+  background: linear-gradient(
+    135deg,
+    rgba(34,197,94,.25),
+    rgba(59,130,246,.20)
+  );
+  border-color: rgba(34,197,94,.65);
+  color: #fff;
+  box-shadow: 0 0 0 2px rgba(34,197,94,.18);
+  transform: scale(1.03);
+}
+
+.runout-btn:active {
+  transform: scale(.96);
+}
+@media (max-width: 700px) {
+  .quick-run-grid {
+    grid-template-columns: repeat(3, 1fr);
+  }
+}
+.match-ended-banner {
+  display: grid;
+  gap: 5px;
+  padding: 13px 14px;
+  border-radius: 16px;
+  border: 1px solid rgba(34,197,94,0.32);
+  background: rgba(34,197,94,0.09);
+  margin-bottom: 12px;
+}
+
+.match-ended-banner strong {
+  color: rgba(255,255,255,0.96);
+}
+
+.match-ended-banner span {
+  color: rgba(255,255,255,0.78);
+  line-height: 1.4;
+}

@@ -625,8 +625,9 @@ export function buildMatchStats(match) {
     players.map((p) => [Number(p.id), p])
   );
 
-  const batting = new Map();
-  const bowling = new Map();
+const batting = new Map();
+const bowling = new Map();
+const currentlyRetiredHurt = new Set();
 
   function battingKey(inningsNo, playerId) {
     return `${inningsNo}-${playerId}`;
@@ -652,6 +653,7 @@ export function buildMatchStats(match) {
         sixes: 0,
         outs: 0,
         dismissal: "not out",
+        isRetiredHurt: false,
         firstSequence: 999999
       });
     }
@@ -683,6 +685,16 @@ export function buildMatchStats(match) {
   for (const ball of match.balls || []) {
     const inningsNo = Number(ball.inningsNo || 1);
     const sequence = Number(ball.sequence || 0);
+    const strikerId = Number(ball.strikerId);
+const nonStrikerId = Number(ball.nonStrikerId);
+
+if (strikerId) {
+  currentlyRetiredHurt.delete(`${inningsNo}-${strikerId}`);
+}
+
+if (nonStrikerId) {
+  currentlyRetiredHurt.delete(`${inningsNo}-${nonStrikerId}`);
+}
     const isRetiredHurt =
       ball.wicketType === "RETIRED_HURT";
 
@@ -732,16 +744,25 @@ export function buildMatchStats(match) {
         row.firstSequence,
         sequence
       );
+const wicketType = String(ball.wicketType || "").toUpperCase();
 
-      if (ball.wicketType !== "RETIRED_HURT") {
-        row.outs += 1;
-        row.dismissal = formatDismissal(
-          ball,
-          playerMap
-        );
-      } else {
-        row.dismissal = "retired hurt";
-      }
+const isDismissalEvent =
+  Boolean(ball.isWicket) ||
+  wicketType === "RETIRED_HURT";
+
+if (isDismissalEvent && ball.dismissedPlayerId) {
+ if (wicketType === "RETIRED_HURT") {
+  currentlyRetiredHurt.add(`${inningsNo}-${Number(ball.dismissedPlayerId)}`);
+
+  row.dismissal = "Retired hurt";
+  row.isRetiredHurt = true;
+  row.outs = 0;
+} else {
+    row.dismissal = formatDismissal(ball, playerMap);
+    row.isRetiredHurt = false;
+    row.outs += 1;
+  }
+}
     }
 
     const bowlerPlayer =
@@ -775,7 +796,19 @@ export function buildMatchStats(match) {
       row.wickets += wicketsForBowler(ball);
     }
   }
+for (const row of batting.values()) {
+  const key = `${row.inningsNo}-${row.playerId}`;
 
+  if (currentlyRetiredHurt.has(key)) {
+    row.dismissal = "Retired hurt";
+    row.isRetiredHurt = true;
+    row.outs = 0;
+  } else if (row.isRetiredHurt) {
+    row.dismissal = "not out";
+    row.isRetiredHurt = false;
+    row.outs = 0;
+  }
+}
   const battingRows = [...batting.values()]
     .map((row) => ({
       ...row,
@@ -788,6 +821,7 @@ export function buildMatchStats(match) {
         row.runs > 0 ||
         row.balls > 0 ||
         row.outs > 0 ||
+        row.isRetiredHurt ||
         row.dismissal !== "not out"
     )
     .sort(

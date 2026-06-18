@@ -631,9 +631,8 @@ else if (isWicket) {
                   <td style={tdStyle}>
                     {batter.strikeRate}
                   </td>
-
                   <td style={tdStyle}>
-                    {batter.dismissal}
+                    {batter.isRetiredHurt? "Retired hurt": batter.dismissal || "not out"}
                   </td>
                 </tr>
               ))}
