@@ -6090,47 +6090,64 @@ return (
 {activeTab === "help" && (
   <Card title="❓ Cric4All Help Center">
     <div className="help-page">
-      {/* Hero */}
       <div className="help-hero">
         <div>
           <h2>🏏 Welcome to Cric4All</h2>
           <p>
-            Create leagues, manage teams, schedule matches, score live games,
-            view professional scorecards, commentary, stats, points table, and
-            AI-powered post-match insights.
+            Create leagues, add teams and players, organize series, schedule
+            matches, score live games, share public scorecards, track points,
+            view rankings, and generate AI-powered match insights.
           </p>
         </div>
       </div>
 
-      {/* Quick Start */}
       <h3 className="help-section-title">🚀 Quick Start Guide</h3>
 
       <div className="help-grid">
         <div className="help-card">
           <h3>🏆 Step 1</h3>
-          <h4>Create League</h4>
+          <h4>Create or Select League</h4>
           <p>
-            Open the <strong>Management</strong> tab and create your league.
-            Every team, player, match, points table, and stats record belongs
-            to a league.
+            Open the <strong>Leagues</strong> tab and choose your active league.
+            Every team, player, series, match, points table, and stat belongs to
+            a league.
           </p>
         </div>
 
         <div className="help-card">
-          <h3>👥 Step 2</h3>
+          <h3>🌐 Step 2</h3>
+          <h4>Choose League Visibility</h4>
+          <p>
+            Keep leagues <strong>Private</strong>, make them{" "}
+            <strong>Unlisted</strong> for people with the link, or make them{" "}
+            <strong>Public</strong> so they can appear on the Explore page.
+          </p>
+        </div>
+
+        <div className="help-card">
+          <h3>📅 Step 3</h3>
+          <h4>Create Series / Season</h4>
+          <p>
+            Series are optional. Use them to group matches by tournament, cup,
+            season, or year. You can still create matches without a series.
+          </p>
+        </div>
+
+        <div className="help-card">
+          <h3>👥 Step 4</h3>
           <h4>Add Teams</h4>
           <p>
-            Select your active league and add teams. You need at least two
-            teams before creating a match.
+            Select your active league and add teams. You need at least two teams
+            before creating a match.
           </p>
         </div>
 
         <div className="help-card">
-          <h3>🏏 Step 3</h3>
+          <h3>🏏 Step 5</h3>
           <h4>Add Players</h4>
           <p>
-            Add players individually or paste multiple player names, one per
-            line.
+            Select a team and use the Add Players popup. Paste multiple player
+            names, one per line.
           </p>
 
           <div className="help-code-box">
@@ -6145,17 +6162,17 @@ return (
         </div>
 
         <div className="help-card">
-          <h3>📅 Step 4</h3>
+          <h3>📋 Step 6</h3>
           <h4>Create / Schedule Match</h4>
           <p>
-            Go to <strong>Matches → Create Match</strong>. You can create a
-            future scheduled match without selecting batting first immediately.
+            Go to <strong>Matches → Create Match</strong>. Series is optional.
+            Scheduled matches can be created first and started later.
           </p>
         </div>
 
         <div className="help-card">
-          <h3>▶ Step 5</h3>
-          <h4>Start Scheduled Match</h4>
+          <h3>▶ Step 7</h3>
+          <h4>Start Match</h4>
           <p>
             Open the <strong>Scheduled</strong> tab, click{" "}
             <strong>Start Match</strong>, select batting first, and begin live
@@ -6164,79 +6181,148 @@ return (
         </div>
 
         <div className="help-card">
-          <h3>🎯 Step 6</h3>
-          <h4>Live Scoring</h4>
+          <h3>🎯 Step 8</h3>
+          <h4>Score Live</h4>
           <p>
-            Use the <strong>Scoring</strong> subtab for runs, extras, wickets,
-            retired hurt, run outs, bowler changes, and striker rotation.
+            Use the <strong>Scoring</strong> tab for runs, extras, wickets, run
+            outs, retired hurt, bowler changes, and striker rotation.
           </p>
         </div>
       </div>
 
-      {/* Main Tabs */}
       <h3 className="help-section-title">🧭 Main Tabs</h3>
 
       <div className="help-grid">
         <div className="help-card">
+          <h3>🏆 Leagues</h3>
+          <p>
+            Manage leagues, series, teams, players, invite links, public view
+            links, and league visibility.
+          </p>
+        </div>
+
+        <div className="help-card">
           <h3>📋 Matches</h3>
           <p>
-            Matches are separated into <strong>Create Match</strong>,{" "}
+            Matches are separated into <strong>Create</strong>,{" "}
             <strong>Active</strong>, <strong>Scheduled</strong>, and{" "}
             <strong>Completed</strong>.
-          </p>
-          <p>
-            Completed matches show final scores, result text, AI insights, and
-            quick access to the match center.
           </p>
         </div>
 
         <div className="help-card">
           <h3>🎯 Scoring</h3>
           <p>
-            Score live balls, extras, wickets, bowler changes, retired hurt,
-            run outs, and striker/non-striker rotation.
-          </p>
-          <p>
-            For completed matches, scoring is hidden and the scorecard opens
-            automatically.
+            Score live balls, extras, wickets, fielding details, retired hurt,
+            run outs, bowler changes, and striker rotation.
           </p>
         </div>
 
         <div className="help-card">
-          <h3>🏟️ Scoreboard</h3>
+          <h3>📈 Points</h3>
           <p>
-            View innings-wise professional scorecards with batting, bowling,
-            wickets, partnerships, recent balls, and match result.
-          </p>
-        </div>
-
-        <div className="help-card">
-          <h3>🎙️ Commentary</h3>
-          <p>
-            Ball-by-ball commentary shows runs, wides, no-balls, byes, leg
-            byes, wickets, stumping, run outs, retired hurt, and over summaries.
+            Track standings with matches played, wins, losses, ties, points, and
+            team performance.
           </p>
         </div>
 
         <div className="help-card">
           <h3>📊 Stats</h3>
           <p>
-            League stats include batting records, bowling records, fielding
-            records, and rankings such as top run scorers, wicket takers, six
-            hitters, strike rate, economy, and all-rounders.
+            View batting, bowling, fielding, and rankings including top run
+            scorers, wicket takers, six hitters, strike rate, economy, and
+            all-rounders.
           </p>
         </div>
 
         <div className="help-card">
-          <h3>📈 Points Table</h3>
+          <h3>🔐 Access</h3>
           <p>
-            Track league standings with wins, losses, points, net run rate, and
-            team performance.
+            Manage league members, roles, and permissions for owners, admins,
+            captains, scorers, analysts, and viewers.
           </p>
         </div>
       </div>
 
-      {/* Scoring Details */}
+      <h3 className="help-section-title">🔎 Smart Filters</h3>
+
+      <div className="help-grid">
+        <div className="help-card">
+          <h3>🎛️ Context Lens</h3>
+          <p>
+            Use Smart Filters to filter by teams, matches, players, status,
+            series, and year across Matches, Points, and Stats.
+          </p>
+        </div>
+
+        <div className="help-card">
+          <h3>📅 Series & Year Filters</h3>
+          <p>
+            Selecting a year filters series. Selecting a series filters matches,
+            points, stats, and rankings where applicable.
+          </p>
+        </div>
+
+        <div className="help-card">
+          <h3>👥 Team & Player Filters</h3>
+          <p>
+            Team filters narrow matches, points, player stats, and rankings.
+            Player filters work by player name across teams.
+          </p>
+        </div>
+      </div>
+
+      <h3 className="help-section-title">🌐 Public League Features</h3>
+
+      <div className="help-grid">
+        <div className="help-card">
+          <h3>🔒 Private</h3>
+          <p>
+            Private leagues are visible only to authorized league members.
+          </p>
+        </div>
+
+        <div className="help-card">
+          <h3>🔗 Unlisted</h3>
+          <p>
+            Unlisted leagues are view-only public pages that open only when
+            someone has the direct link.
+          </p>
+        </div>
+
+        <div className="help-card">
+          <h3>🌐 Public</h3>
+          <p>
+            Public leagues can appear on the Explore page and can be viewed by
+            everyone.
+          </p>
+        </div>
+
+        <div className="help-card">
+          <h3>🧭 Explore</h3>
+          <p>
+            The Explore page shows public leagues and supports searching by
+            league, team, series, or year.
+          </p>
+        </div>
+
+        <div className="help-card">
+          <h3>📈 Public Points Table</h3>
+          <p>
+            Public league pages show standings so spectators can follow team
+            performance.
+          </p>
+        </div>
+
+        <div className="help-card">
+          <h3>🏆 Public Leaders</h3>
+          <p>
+            Public league pages can show top performers such as most runs, most
+            wickets, most sixes, strike rate, and economy.
+          </p>
+        </div>
+      </div>
+
       <h3 className="help-section-title">🏏 Scoring Features</h3>
 
       <div className="help-grid">
@@ -6244,8 +6330,7 @@ return (
           <h3>➕ Extras</h3>
           <p>
             Supports wides, no-balls, byes, and leg-byes. No-ball runs off the
-            bat are credited to the striker, while wide runs are counted as
-            extras.
+            bat are credited to the striker.
           </p>
         </div>
 
@@ -6261,22 +6346,22 @@ return (
           <h3>🧤 Fielding Details</h3>
           <p>
             Capture caught by, stumped by, run out by, and assisted fielder
-            details so scorecards and stats are more accurate.
+            details for better scorecards and stats.
           </p>
         </div>
 
         <div className="help-card">
           <h3>🎯 Bowler Change</h3>
           <p>
-            At the end of an over, the app prompts for a new bowler and prevents
-            illegal consecutive overs when required.
+            At the end of an over, the app prompts for a new bowler and helps
+            prevent invalid consecutive overs.
           </p>
         </div>
 
         <div className="help-card">
           <h3>🤝 Partnerships</h3>
           <p>
-            Scoreboard shows partnership runs, balls, current partnership, and
+            Scoreboards show partnership runs, balls, current partnerships, and
             wicket-ending partnerships.
           </p>
         </div>
@@ -6284,38 +6369,33 @@ return (
         <div className="help-card">
           <h3>💥 Fall of Wickets</h3>
           <p>
-            Each wicket is shown with score, wicket number, player out, and
-            over.
+            Fall of wickets shows score, wicket number, player out, and over.
           </p>
         </div>
       </div>
 
-      {/* AI and Sharing */}
-      <h3 className="help-section-title">✨ Premium Match Tools</h3>
+      <h3 className="help-section-title">✨ Match Tools</h3>
 
       <div className="help-grid">
         <div className="help-card">
           <h3>🤖 AI Match Insights</h3>
           <p>
-            For completed or locked matches, generate post-match AI analysis
-            covering match summary, turning point, top batting, bowling,
-            partnerships, pressure moments, and team takeaways.
-          </p>
-          <p>
-            Once generated, the analysis is saved and can be opened again later.
+            For completed or locked matches, generate AI analysis covering match
+            summary, turning points, top performers, partnerships, pressure
+            moments, and team takeaways.
           </p>
         </div>
 
         <div className="help-card">
-          <h3>📤 Share Live Match</h3>
+          <h3>📤 Share Match</h3>
           <p>
-            Share live scores, scoreboard, commentary, match status, and stats
-            with spectators using the match sharing link.
+            Share live scores, commentary, scorecards, match status, and stats
+            using match sharing links.
           </p>
         </div>
 
         <div className="help-card">
-          <h3>🔒 Completed Locked</h3>
+          <h3>🔒 Lock Match</h3>
           <p>
             Locked matches prevent further scoring changes and are treated as
             finalized scorecards.
@@ -6323,29 +6403,31 @@ return (
         </div>
       </div>
 
-      {/* Pro Tips */}
       <div className="help-tip-box">
         <h3>💡 Pro Tips</h3>
 
         <ul>
+          <li>Use the Leagues tab first: league → series → teams → players.</li>
+          <li>Series are optional. Use them only for cups, seasons, tournaments, or years.</li>
           <li>Create at least two teams before creating a match.</li>
           <li>Add players before starting a match for accurate stats.</li>
           <li>Use Scheduled matches for future games.</li>
-          <li>Use Commentary to review every ball after the match.</li>
-          <li>Use AI Match Insights only after the match is completed.</li>
+          <li>Use Smart Filters to focus on a team, player, series, year, or match status.</li>
+          <li>Use public league links when you want spectators to view league pages.</li>
+          <li>Use Explore only for leagues you are comfortable making public.</li>
           <li>Completed matches automatically open the scoreboard instead of scoring.</li>
-          <li>Use League Permissions to assign owners, admins, scorers, captains, analysts, and viewers.</li>
+          <li>Use AI Match Insights only after the match is completed.</li>
         </ul>
       </div>
 
-      {/* Roles */}
       <div className="help-card full">
         <h3>🔐 Roles & Permissions</h3>
 
         <p>
           League Owners and Admins can manage users, teams, matches, scoring,
-          and access levels. Scorers can score matches, captains can help manage
-          team-related actions, and viewers can follow match information.
+          series, public visibility, and access levels. Scorers can score
+          matches, captains can help manage team-related actions, analysts can
+          review stats, and viewers can follow league information.
         </p>
 
         <div className="help-badges">
@@ -6358,11 +6440,23 @@ return (
         </div>
       </div>
 
-      {/* FAQ */}
       <div className="help-card full">
         <h3>❓ Frequently Asked Questions</h3>
 
         <div className="help-faq">
+          <div>
+            <strong>Where do I create leagues and teams?</strong>
+            <br />
+            Use the <strong>Leagues</strong> tab.
+          </div>
+
+          <div>
+            <strong>Is Series required?</strong>
+            <br />
+            No. Series is optional. Leave it blank for friendly, practice, or
+            standalone matches.
+          </div>
+
           <div>
             <strong>Why don't I see my teams?</strong>
             <br />
@@ -6390,22 +6484,23 @@ return (
           </div>
 
           <div>
-            <strong>Why are stats empty?</strong>
+            <strong>What is the difference between Public and Unlisted?</strong>
             <br />
-            Stats appear after balls are scored and players are linked correctly
-            to teams.
+            Unlisted opens only by direct link. Public can appear on the Explore
+            page.
           </div>
 
           <div>
-            <strong>Can spectators view the match?</strong>
+            <strong>Can spectators view the league?</strong>
             <br />
-            Yes. Use the share match option to send the live match link.
+            Yes. Set the league to Unlisted or Public and copy the public view
+            link.
           </div>
 
           <div>
             <strong>Can I add players in bulk?</strong>
             <br />
-            Yes. Paste one player name per line in the Add Players area.
+            Yes. Paste one player name per line in the Add Players popup.
           </div>
 
           <div>
@@ -6426,8 +6521,9 @@ return (
         <div>
           <h2>🏏 Cric4All</h2>
           <p>
-            A modern cricket league management and live scoring platform built
-            for clubs, leagues, academies, tournaments, and community cricket.
+            A modern cricket scoring, league management, public score sharing,
+            and statistics platform built for clubs, leagues, academies,
+            tournaments, and community cricket.
           </p>
         </div>
       </div>
@@ -6435,13 +6531,15 @@ return (
       <div className="about-card about-mission">
         <h3>🎯 Our Mission</h3>
         <p>
-          Cric4All makes cricket scoring, league management, match scheduling,
-          statistics, commentary, and score sharing simple for everyone.
+          Cric4All makes cricket easier to organize, score, follow, and share.
+          It brings leagues, teams, players, matches, series, points tables,
+          rankings, scorecards, commentary, and public league pages into one
+          simple platform.
         </p>
         <p>
-          Whether you are running a weekend tournament, a local league, or a
-          casual match, Cric4All helps organizers, scorers, captains, players,
-          and spectators stay connected to the game.
+          Whether you are running a weekend tournament, a yearly league, an
+          academy game, or a friendly match, Cric4All helps organizers, scorers,
+          captains, players, and spectators stay connected to the game.
         </p>
       </div>
 
@@ -6449,16 +6547,20 @@ return (
 
       <div className="about-feature-grid">
         <div className="about-feature">🏆 League Management</div>
+        <div className="about-feature">📅 Series / Season Management</div>
         <div className="about-feature">👥 Team Management</div>
         <div className="about-feature">🏏 Player Management</div>
-        <div className="about-feature">📅 Match Scheduling</div>
+        <div className="about-feature">📋 Match Scheduling</div>
         <div className="about-feature">🎯 Live Ball-by-Ball Scoring</div>
-        <div className="about-feature">🏟️ Professional Scoreboards</div>
+        <div className="about-feature">🏟️ Professional Match Center</div>
         <div className="about-feature">🎙️ Ball-by-Ball Commentary</div>
         <div className="about-feature">📊 Player & League Statistics</div>
+        <div className="about-feature">🏆 Rankings Hub</div>
         <div className="about-feature">📈 Points Table</div>
+        <div className="about-feature">🔎 Smart Filters / Context Lens</div>
+        <div className="about-feature">🌐 Public League Pages</div>
+        <div className="about-feature">🧭 Explore Public Leagues</div>
         <div className="about-feature">🤖 AI Post-Match Insights</div>
-        <div className="about-feature">📤 Spectator Sharing Links</div>
         <div className="about-feature">🔐 Role-Based Access</div>
       </div>
 
@@ -6468,6 +6570,7 @@ return (
         <div className="release-badge-row">
           <span className="release-badge">MVP 1.0</span>
           <span className="release-badge">Live Scoring Ready</span>
+          <span className="release-badge">Public Pages Ready</span>
           <span className="release-badge">Mobile Friendly</span>
         </div>
 
@@ -6475,17 +6578,56 @@ return (
 
         <div className="about-list-grid">
           <span>✅ League creation</span>
+          <span>✅ Private, Unlisted, and Public leagues</span>
+          <span>✅ Public league view links</span>
+          <span>✅ Explore page for public leagues</span>
+          <span>✅ Series / season creation</span>
           <span>✅ Team creation</span>
-          <span>✅ Bulk player imports</span>
+          <span>✅ Beautiful bulk player imports</span>
           <span>✅ Scheduled matches</span>
           <span>✅ Start match workflow</span>
+          <span>✅ Optional series while creating matches</span>
           <span>✅ Live scoring</span>
           <span>✅ Wides, no-balls, byes, leg-byes</span>
           <span>✅ Wickets, run outs, stumpings, retired hurt</span>
-          <span>✅ Scoreboard</span>
+          <span>✅ Scoreboard and match center</span>
           <span>✅ Commentary timeline</span>
-          <span>✅ League stats and rankings</span>
+          <span>✅ Points table</span>
+          <span>✅ Batting, bowling, fielding stats</span>
+          <span>✅ Rankings and league leaders</span>
+          <span>✅ Smart Filters / Context Lens</span>
           <span>✅ AI match insights</span>
+        </div>
+      </div>
+
+      <div className="about-card">
+        <h3>🌐 Public Cricket Experience</h3>
+
+        <p>
+          Cric4All now supports public-facing cricket pages so leagues can share
+          scores, teams, series, results, standings, and leaders with spectators.
+        </p>
+
+        <div className="about-workflow-grid">
+          <div>
+            <strong>Private Leagues</strong>
+            <p>Visible only to league members with proper access.</p>
+          </div>
+
+          <div>
+            <strong>Unlisted Leagues</strong>
+            <p>View-only public pages that open only with a direct link.</p>
+          </div>
+
+          <div>
+            <strong>Public Leagues</strong>
+            <p>Can appear on the Explore page for anyone to discover.</p>
+          </div>
+
+          <div>
+            <strong>Explore Page</strong>
+            <p>Find public leagues by league name, team, series, or year.</p>
+          </div>
         </div>
       </div>
 
@@ -6495,22 +6637,34 @@ return (
         <div className="about-workflow-grid">
           <div>
             <strong>For Organizers</strong>
-            <p>Create leagues, teams, matches, roles, permissions, and schedules.</p>
+            <p>
+              Create leagues, series, teams, matches, invite links, visibility
+              settings, roles, and permissions.
+            </p>
           </div>
 
           <div>
             <strong>For Scorers</strong>
-            <p>Score every ball with extras, wickets, bowler changes, and innings tracking.</p>
+            <p>
+              Score every ball with runs, extras, wickets, fielders, bowler
+              changes, retired hurt, innings tracking, and commentary.
+            </p>
           </div>
 
           <div>
             <strong>For Players</strong>
-            <p>Track batting, bowling, fielding records, rankings, and performance history.</p>
+            <p>
+              Track batting, bowling, fielding records, rankings, leaders, and
+              performance history.
+            </p>
           </div>
 
           <div>
             <strong>For Spectators</strong>
-            <p>Follow live scores, match status, commentary, scorecards, and stats using shared links.</p>
+            <p>
+              Follow public league pages, live scores, match status,
+              commentary, scorecards, results, points, and leaders.
+            </p>
           </div>
         </div>
       </div>
@@ -6519,9 +6673,9 @@ return (
         <h3>🧠 Smart Match Features</h3>
 
         <p>
-          Cric4All is designed to go beyond basic scoring. Completed matches can
-          include AI-powered post-match analysis, professional scorecards,
-          innings-wise data, player rankings, fielding records, and detailed
+          Cric4All goes beyond basic scoring. Completed matches can include
+          AI-powered analysis, professional scorecards, innings-wise data,
+          player rankings, fielding records, public leaders, and detailed
           ball-by-ball commentary.
         </p>
 
@@ -6531,6 +6685,8 @@ return (
           <span>🎙️ Commentary</span>
           <span>🏆 Rankings</span>
           <span>📈 Points Table</span>
+          <span>🔎 Smart Filters</span>
+          <span>🌐 Public Pages</span>
         </div>
       </div>
 
@@ -6543,7 +6699,10 @@ return (
           <span>🏆 Tournament brackets</span>
           <span>🎥 Match highlights</span>
           <span>📺 Public scoreboard upgrades</span>
+          <span>👥 Public team pages</span>
+          <span>🏏 Public player profiles</span>
           <span>📊 Advanced analytics dashboard</span>
+          <span>🔍 SEO upgrades for public league pages</span>
           <span>📲 Android app packaging</span>
           <span>🍎 iOS app packaging</span>
         </div>
@@ -6559,6 +6718,7 @@ return (
           <span className="badge">PostgreSQL</span>
           <span className="badge">NextAuth</span>
           <span className="badge">OpenAI</span>
+          <span className="badge">Vercel</span>
           <span className="badge">Capacitor</span>
         </div>
       </div>
