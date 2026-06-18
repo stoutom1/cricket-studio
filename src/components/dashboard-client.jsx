@@ -1746,10 +1746,13 @@ const updatedIsFinalBallBowled =
   updatedMaxLegalBalls > 0 &&
   Number(updatedActiveInnings?.legalBalls || 0) >= updatedMaxLegalBalls;
 
+const updatedTarget = Number(updatedBoard?.summary?.target || 0);
+const updatedRuns = Number(updatedActiveInnings?.runs || 0);
+
 const updatedIsChaseComplete =
   updatedIsSecondInnings &&
-  updatedBoard?.summary?.target &&
-  Number(updatedActiveInnings?.runs || 0) >= Number(updatedBoard.summary.target);
+  updatedTarget > 0 &&
+  updatedRuns >= updatedTarget;
 
 if (updatedIsFinalBallBowled || updatedIsChaseComplete) {
   setShowBowlerModal(false);
@@ -1758,6 +1761,8 @@ if (updatedIsFinalBallBowled || updatedIsChaseComplete) {
   setMessage(
     "🏁 Match ended. Review the scorecard, then click Lock Match to preserve the final scoreboard."
   );
+  await loadSelectedMatch(selectedMatchId);
+  await loadMatches();
   return;
 }
 
