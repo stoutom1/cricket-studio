@@ -193,6 +193,10 @@ const [selectedSeriesId, setSelectedSeriesId] = useState("");
 const [selectedYear, setSelectedYear] = useState(String(new Date().getFullYear()));
 const [seriesForm, setSeriesForm] = useState({name: "",year: new Date().getFullYear(),description: ""});
 const [showSeriesModal, setShowSeriesModal] = useState(false);
+const [showDeliverySetupModal, setShowDeliverySetupModal] = useState(false);
+const [deliverySetupReason, setDeliverySetupReason] = useState("");
+const [pendingDeliverySetupAfterStart, setPendingDeliverySetupAfterStart] = useState(false);
+const [pendingSecondInningsSetup, setPendingSecondInningsSetup] = useState(false);
 const isSuperAdmin =
   session?.user?.email ===
   "surprisecricket11@gmail.com";
@@ -645,6 +649,7 @@ const selectedRanking =
 
 const currentRankingConfig =
   rankingConfig[rankingType];
+
 async function loadMatches() {
   try {
     if (!activeLeagueId) {
@@ -1693,7 +1698,13 @@ async function submitBall(data) {
     setError("Please select a match");
     return;
   }
-
+if (!ballForm.strikerId || !ballForm.nonStrikerId || !ballForm.bowlerId) {
+  setDeliverySetupReason(
+    "Please select striker, non-striker, and bowler before scoring this ball."
+  );
+  setShowDeliverySetupModal(true);
+  return;
+}
   try {
     await api("/api/balls", {
       method: "POST",
@@ -1766,11 +1777,44 @@ if (updatedIsFinalBallBowled || updatedIsChaseComplete) {
   return;
 }
 
+
+
+const updatedCurrentInningsNo =
+  Number(updatedBoard?.currentInnings || data.inningsNo);
+
+
+
+const firstInningsJustEnded =
+  Number(data.inningsNo) === 1 &&
+  updatedCurrentInningsNo === 2;
+
+if (firstInningsJustEnded) {
+  setShowBowlerModal(false);
+  setMustChangeBowler(false);
+  setPendingBallData(null);
+
+  setBallForm((prev) => ({
+    ...prev,
+    inningsNo: "2",
+    strikerId: "",
+    nonStrikerId: "",
+    bowlerId: "",
+  }));
+
+  setDeliverySetupReason(
+    "🏏 2nd innings is ready. Select the opening striker, non-striker, and bowler before scoring."
+  );
+
+  setPendingSecondInningsSetup(true);
+  return;
+}
+
 if (wasLegalLastBallOfOver) {
   setPendingBallData(null);
   setMustChangeBowler(true);
   setShowBowlerModal(true);
 }
+
   } catch (err) {
     if (
       err.message?.includes(
@@ -2617,7 +2661,32 @@ async function confirmStartMatch() {
   await loadMatches();
 
   setActiveTab("scoring");
+  setPendingDeliverySetupAfterStart(true);
 }
+useEffect(() => {
+  if (!pendingDeliverySetupAfterStart) return;
+  if (!scoreboard) return;
+  if (!matchDetail) return;
+  if (showStartMatchModal) return;
+
+  setDeliverySetupReason(
+    "Select opening striker, non-striker, and bowler before scoring the first ball."
+  );
+
+  setShowDeliverySetupModal(true);
+  setPendingDeliverySetupAfterStart(false);
+}, [
+  pendingDeliverySetupAfterStart,
+  scoreboard,
+  matchDetail,
+  showStartMatchModal
+]);
+useEffect(() => {
+  if (!pendingSecondInningsSetup) return;
+
+  setShowDeliverySetupModal(true);
+  setPendingSecondInningsSetup(false);
+}, [pendingSecondInningsSetup]);
 
 function triggerQuickAction(actionKey, callback) {
   setActiveQuickAction(actionKey);
@@ -2678,7 +2747,40 @@ const isMatchReadyToLock =
     String(scoreboard?.match?.status || "").toUpperCase()
   );
 
+const currentInningsNo = Number(scoreboard?.currentInnings || ballForm.inningsNo || 1);
 
+const activeInningsBalls =
+  scoreboard?.innings?.[currentInningsNo - 1]?.balls || 0;
+
+const needsDeliverySetup =
+  matchDetail &&
+  scoreboard &&
+  !isMatchReadyToLock &&
+  (
+    !ballForm.strikerId ||
+    !ballForm.nonStrikerId ||
+    !ballForm.bowlerId
+  );
+  
+useEffect(() => {
+if (!needsDeliverySetup) return;
+if (showStartMatchModal) return;
+if (pendingDeliverySetupAfterStart) return;
+
+  const reason =
+    currentInningsNo === 1 && activeInningsBalls === 0
+      ? "Select opening striker, non-striker, and bowler before scoring the first ball."
+      : currentInningsNo === 2 && activeInningsBalls === 0
+      ? "Select 2nd innings striker, non-striker, and bowler before scoring."
+      : "Select striker, non-striker, and bowler before the next delivery.";
+
+  setDeliverySetupReason(reason);
+  setShowDeliverySetupModal(true);
+}, [
+  needsDeliverySetup,
+  currentInningsNo,
+  activeInningsBalls
+]);
 
 const canCreateMatch =
   activeLeague?.teams?.length >= 2;
@@ -3768,20 +3870,35 @@ return (
       )
     </span>
   </div>
-  {isMatchReadyToLock ? (
+{needsDeliverySetup ? (
   <div className="match-ended-banner">
-    <strong>🏁 Match complete</strong>
+    <strong>🎯 Setup required</strong>
     <span>
-      Review the scorecard and click <b>Lock Match</b> to preserve the final result.
+      {Number(ballForm.inningsNo) === 2
+        ? "2nd innings is ready. Select striker, non-striker, and bowler before scoring."
+        : "Select striker, non-striker, and bowler before scoring the next ball."}
     </span>
+
+    <button
+      type="button"
+      className="mgmt-clean-btn"
+      onClick={() => setShowDeliverySetupModal(true)}
+    >
+      Setup Delivery
+    </button>
   </div>
-) : (
+) : (!(
+  selectedMatch &&
+  ["COMPLETED","COMPLETED_LOCKED"].includes(
+    String(selectedMatch.status || "").toUpperCase()
+  )
+) && (
   <div className="ready-delivery live-feed-banner">
   {error ||
     message ||
     "🏏 Ready for next delivery"}
   </div>
-)}
+))}
 <div className="recent-balls-row">
   <span className="recent-label">Recent: </span>
 
@@ -7990,6 +8107,108 @@ onClick={() => {
         <button type="button" className="btn" onClick={() => confirmWicket()}>
           Confirm Wicket
         </button>
+      </div>
+    </div>
+  </div>
+)}
+{showDeliverySetupModal && (
+  <div className="modal-backdrop">
+    <div className="add-player-pro-modal">
+      <div className="add-player-pro-hero">
+        <div className="add-player-pro-icon">🎯</div>
+
+        <div>
+          <h3>Setup Next Delivery</h3>
+          <p>{deliverySetupReason}</p>
+        </div>
+
+        <button
+          type="button"
+          className="add-player-pro-close"
+          onClick={() => setShowDeliverySetupModal(false)}
+        >
+          ✕
+        </button>
+      </div>
+
+      <div className="add-player-pro-form">
+        <label className="player-modal-field">
+          <span>🏏 Striker</span>
+          <select
+            value={ballForm.strikerId || ""}
+            onChange={(e) =>
+              setBallForm((prev) => ({
+                ...prev,
+                strikerId: e.target.value,
+              }))
+            }
+          >
+            <option value="">Choose striker</option>
+            {battingTeam?.players?.map((p) => (
+              <option key={p.id} value={p.id}>
+                {p.name}
+              </option>
+            ))}
+          </select>
+        </label>
+
+        <label className="player-modal-field">
+          <span>🏏 Non-striker</span>
+          <select
+            value={ballForm.nonStrikerId || ""}
+            onChange={(e) =>
+              setBallForm((prev) => ({
+                ...prev,
+                nonStrikerId: e.target.value,
+              }))
+            }
+          >
+            <option value="">Choose non-striker</option>
+            {battingTeam?.players
+              ?.filter((p) => String(p.id) !== String(ballForm.strikerId))
+              .map((p) => (
+                <option key={p.id} value={p.id}>
+                  {p.name}
+                </option>
+              ))}
+          </select>
+        </label>
+
+        <label className="player-modal-field">
+          <span>🎯 Bowler</span>
+          <select
+            value={ballForm.bowlerId || ""}
+            onChange={(e) =>
+              setBallForm((prev) => ({
+                ...prev,
+                bowlerId: e.target.value,
+              }))
+            }
+          >
+            <option value="">Choose bowler</option>
+            {bowlingTeam?.players?.map((p) => (
+              <option key={p.id} value={p.id}>
+                {p.name}
+              </option>
+            ))}
+          </select>
+        </label>
+
+        <div className="player-modal-actions">
+          <button
+            type="button"
+            className="player-modal-save"
+            disabled={
+              !ballForm.strikerId ||
+              !ballForm.nonStrikerId ||
+              !ballForm.bowlerId ||
+              String(ballForm.strikerId) === String(ballForm.nonStrikerId)
+            }
+            onClick={() => setShowDeliverySetupModal(false)}
+          >
+            ✅ Ready to Score
+          </button>
+        </div>
       </div>
     </div>
   </div>
