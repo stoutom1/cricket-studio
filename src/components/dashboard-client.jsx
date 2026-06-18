@@ -5,6 +5,7 @@ import { EXTRA_TYPES, getPlayerName, WICKET_TYPES } from "@/lib/scoring";
 import "@/app/globals.css";
 import { useRouter } from "next/navigation";
 import { Analytics } from "@vercel/analytics/next"
+import { SpeedInsights } from "@vercel/speed-insights/next"
 
 function Card({
   title,
@@ -3232,6 +3233,7 @@ return (
   <>
 <div className="dashboard-tabs">
 <Analytics />
+<SpeedInsights/>
   {permissionsLoading ? (
     <span>Loading permissions...</span>
   ) : (
