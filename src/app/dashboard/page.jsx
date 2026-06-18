@@ -18,7 +18,7 @@ export default async function DashboardPage() {
     <main className="dashboard-page">
 
   <section className="dashboard-hero">
-    <h2>
+    <h2 className="dashboard-title">
         <Link
           href="/"
           style={{
@@ -28,7 +28,7 @@ export default async function DashboardPage() {
         >📊 Dashboard
   </Link>
   </h2>
-                      <div className="brand-sub">
+                      <div className="dashboard-subtitle">
                         Advanced scoring • custom overs • custom wickets • custom powerplay overs • player stats • league permissions • and more! 
                       </div>
   </section>

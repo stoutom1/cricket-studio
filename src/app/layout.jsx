@@ -14,7 +14,7 @@ export default function RootLayout({ children }) {
         <Providers>
           <div className="app-shell">
             <header className="topbar">
-              <div className="topbar-inner">
+              <div className="topbar-inner mobile-header-layout">
                 <div>
 <div className="brand-section">
   <div className="brand-title">
