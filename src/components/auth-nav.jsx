@@ -7,13 +7,18 @@ export default function AuthNav() {
   const { data: session, status } = useSession();
 
   return (
-    <nav className="auth-nav">
-      <Link href="/" className="nav-home">
-        ← Home -
+    <nav className="auth-nav auth-nav-compact">
+      <Link href="/" className="nav-link nav-home">
+        ← Home
       </Link>
 
-      <Link href="/explore">Explore -</Link>
-      <Link href="/contact">Contact -</Link>
+      <Link href="/explore" className="nav-link">
+        Explore
+      </Link>
+
+      <Link href="/contact" className="nav-link">
+        Contact
+      </Link>
 
       {status === "loading" ? (
         <span className="loading-text">Loading...</span>
@@ -24,6 +29,7 @@ export default function AuthNav() {
           </span>
 
           <button
+            type="button"
             className="logout-btn"
             onClick={() =>
               signOut({
