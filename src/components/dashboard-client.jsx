@@ -3892,7 +3892,7 @@ return (
 <button
   type="button"
   className="advanced-sheet-btn"
-  onClick={() => setShowAdvancedSheet(true)}
+  onClick={() => setShowAdvancedSheet(false)}
 >
   <span className="advanced-sheet-icon">⚙️</span>
 
