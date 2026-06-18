@@ -7210,3 +7210,9 @@ body {
     width: 100%;
   }
 }
+@media (max-width: 700px) {
+  .dashboard-title {
+    font-size: 30px !important;
+    margin: 18px 0 8px !important;
+  }
+}
