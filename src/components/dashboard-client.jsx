@@ -5254,7 +5254,7 @@ return (
                   type="button"
                   className="mgmt-clean-btn"
                   onClick={() => {
-                    const url = `${window.location.origin}/public/leagues/${activeLeague.slug}`;
+                    const url = `${window.location.origin}/leagues/${activeLeague.slug}`;
                     navigator.clipboard.writeText(url);
                     setMessage("Public league link copied.");
                     showToast("success", "✅ Public league link copied.");

@@ -63,7 +63,7 @@ export default function ExploreClient({ leagues }) {
             return (
               <Link
                 key={league.id}
-                href={`/public/leagues/${league.slug}`}
+                href={`/leagues/${league.slug}`}
                 className="explore-league-card"
               >
                 <div className="explore-card-top">

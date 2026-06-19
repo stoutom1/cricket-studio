@@ -7543,3 +7543,845 @@ body {
   color: rgba(255,255,255,0.78);
   line-height: 1.4;
 }
+.public-league-portal {
+  display: grid;
+  gap: 18px;
+  color: white;
+}
+
+.public-league-hero {
+  padding: 24px;
+  border-radius: 24px;
+  border: 1px solid rgba(255,255,255,0.12);
+  background:
+    radial-gradient(circle at top left, rgba(34,197,94,0.18), transparent 32%),
+    radial-gradient(circle at top right, rgba(59,130,246,0.18), transparent 30%),
+    rgba(255,255,255,0.03);
+}
+
+.public-league-hero h1 {
+  margin: 10px 0 8px;
+  font-size: clamp(28px, 5vw, 46px);
+}
+
+.public-league-hero p {
+  margin: 0;
+  color: rgba(255,255,255,0.78);
+  max-width: 720px;
+}
+
+.spectator-pill {
+  display: inline-flex;
+  padding: 7px 11px;
+  border-radius: 999px;
+  border: 1px solid rgba(34,197,94,0.28);
+  background: rgba(34,197,94,0.10);
+  font-weight: 900;
+  font-size: 13px;
+}
+
+.public-league-badges {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px;
+  margin-top: 16px;
+}
+
+.public-league-badges span {
+  padding: 7px 10px;
+  border-radius: 999px;
+  border: 1px solid rgba(255,255,255,0.14);
+  background: rgba(255,255,255,0.06);
+  font-size: 12px;
+  font-weight: 800;
+}
+
+.public-league-filters {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 12px;
+  padding: 16px;
+  border-radius: 20px;
+  border: 1px solid rgba(255,255,255,0.10);
+}
+
+.public-league-filters label {
+  display: grid;
+  gap: 6px;
+  min-width: 180px;
+  flex: 1;
+}
+
+.public-league-filters span {
+  font-size: 12px;
+  font-weight: 900;
+  color: rgba(255,255,255,0.84);
+}
+
+.public-league-filters select {
+  border-radius: 14px;
+  padding: 11px 12px;
+  background: transparent;
+  border: 1px solid rgba(255,255,255,0.22);
+  color: white;
+  font-weight: 800;
+}
+
+.public-league-filters select option {
+  background: #0f172a;
+  color: white;
+}
+
+.public-league-filters button {
+  align-self: end;
+  border-radius: 999px;
+  padding: 10px 14px;
+  border: 1px solid rgba(255,255,255,0.18);
+  background: rgba(255,255,255,0.08);
+  color: white;
+  font-weight: 900;
+}
+
+.public-league-tabs {
+  display: flex;
+  gap: 8px;
+  overflow-x: auto;
+  white-space: nowrap;
+  padding-bottom: 4px;
+}
+
+.public-league-tabs button {
+  flex: 0 0 auto;
+  border-radius: 999px;
+  padding: 9px 13px;
+  border: 1px solid rgba(255,255,255,0.14);
+  background: transparent;
+  color: rgba(255,255,255,0.82);
+  font-weight: 900;
+  cursor: pointer;
+}
+
+.public-league-tabs button.active {
+  background: linear-gradient(
+    135deg,
+    rgba(34,197,94,0.24),
+    rgba(59,130,246,0.18)
+  );
+  border-color: rgba(34,197,94,0.32);
+  color: white;
+}
+
+.public-section {
+  padding: 18px;
+  border-radius: 22px;
+  border: 1px solid rgba(255,255,255,0.10);
+}
+
+.public-section h2 {
+  margin: 0 0 14px;
+}
+
+.public-card-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(190px, 1fr));
+  gap: 12px;
+}
+
+.public-card {
+  padding: 16px;
+  border-radius: 18px;
+  border: 1px solid rgba(255,255,255,0.12);
+  background: transparent;
+  display: grid;
+  gap: 6px;
+}
+
+.public-card span {
+  color: rgba(255,255,255,0.68);
+  font-size: 12px;
+  font-weight: 800;
+  text-transform: uppercase;
+}
+
+.public-card strong {
+  font-size: 20px;
+}
+
+.public-card small {
+  color: rgba(255,255,255,0.68);
+}
+
+.public-match-list {
+  display: grid;
+  gap: 10px;
+}
+
+.public-match-card {
+  display: flex;
+  justify-content: space-between;
+  gap: 14px;
+  align-items: center;
+  padding: 14px;
+  border-radius: 18px;
+  border: 1px solid rgba(255,255,255,0.12);
+}
+
+.public-match-card div {
+  display: grid;
+  gap: 4px;
+}
+
+.public-match-card span {
+  color: rgba(255,255,255,0.68);
+  font-size: 13px;
+}
+
+.public-match-card a {
+  color: white;
+  text-decoration: none;
+  border-radius: 999px;
+  padding: 8px 11px;
+  border: 1px solid rgba(34,197,94,0.30);
+  background: rgba(34,197,94,0.10);
+  font-weight: 900;
+  white-space: nowrap;
+}
+
+@media (max-width: 700px) {
+  .public-league-hero {
+    padding: 18px;
+    border-radius: 20px;
+  }
+
+  .public-league-filters {
+    display: grid;
+  }
+
+  .public-league-filters label {
+    min-width: 100%;
+  }
+
+  .public-league-filters button {
+    width: 100%;
+  }
+
+  .public-match-card {
+    display: grid;
+  }
+
+  .public-match-card a {
+    text-align: center;
+  }
+}
+.table-scroll {
+  overflow-x: auto;
+  -webkit-overflow-scrolling: touch;
+}
+
+.score-table {
+  width: 100%;
+  border-collapse: collapse;
+}
+
+.score-table th,
+.score-table td {
+  padding: 10px;
+  border-bottom: 1px solid rgba(255,255,255,0.1);
+  white-space: nowrap;
+  text-align: left;
+}
+.public-status-tabs {
+  display: flex;
+  gap: 8px;
+  overflow-x: auto;
+  white-space: nowrap;
+  margin-bottom: 14px;
+  padding-bottom: 4px;
+}
+
+.public-status-tabs button {
+  flex: 0 0 auto;
+  border-radius: 999px;
+  padding: 8px 12px;
+  border: 1px solid rgba(255,255,255,0.14);
+  background: transparent;
+  color: rgba(255,255,255,0.78);
+  font-weight: 900;
+  cursor: pointer;
+}
+
+.public-status-tabs button.active {
+  background: linear-gradient(
+    135deg,
+    rgba(34,197,94,0.24),
+    rgba(59,130,246,0.18)
+  );
+  border-color: rgba(34,197,94,0.34);
+  color: white;
+}
+
+.public-empty-state {
+  padding: 18px;
+  border-radius: 16px;
+  border: 1px dashed rgba(255,255,255,0.18);
+  color: rgba(255,255,255,0.72);
+  text-align: center;
+}
+.public-empty-state {
+  display: grid;
+  gap: 6px;
+  padding: 22px;
+  border-radius: 18px;
+  border: 1px dashed rgba(255,255,255,0.20);
+  color: rgba(255,255,255,0.76);
+  text-align: center;
+}
+
+.public-empty-state strong {
+  color: rgba(255,255,255,0.95);
+  font-size: 17px;
+}
+
+.public-empty-state span {
+  font-size: 13px;
+  line-height: 1.4;
+}
+.public-owner-actions {
+  margin-top: 16px;
+}
+
+.public-owner-actions a {
+  display: inline-flex;
+  border-radius: 999px;
+  padding: 10px 14px;
+  border: 1px solid rgba(34,197,94,0.32);
+  background: rgba(34,197,94,0.10);
+  color: white;
+  text-decoration: none;
+  font-weight: 900;
+}
+.public-share-actions {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 10px;
+  margin-top: 16px;
+}
+
+.public-share-actions button,
+.public-share-actions a {
+  border-radius: 999px;
+  padding: 10px 14px;
+  border: 1px solid rgba(255,255,255,0.18);
+  background: rgba(255,255,255,0.08);
+  color: white;
+  font-weight: 900;
+  text-decoration: none;
+  cursor: pointer;
+}
+
+.public-share-actions button:hover,
+.public-share-actions a:hover {
+  background: rgba(255,255,255,0.13);
+}
+.public-card-link {
+  color: white;
+  text-decoration: none;
+}
+
+.public-card-link:hover {
+  border-color: rgba(34,197,94,0.35);
+  transform: translateY(-1px);
+}
+.public-breadcrumb {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px;
+  align-items: center;
+  margin-bottom: 12px;
+  font-size: 13px;
+  font-weight: 800;
+}
+
+.public-breadcrumb a {
+  color: rgba(255,255,255,0.82);
+  text-decoration: none;
+}
+
+.public-breadcrumb a:hover {
+  color: white;
+}
+
+.public-breadcrumb span {
+  color: rgba(255,255,255,0.45);
+}
+.public-search-box {
+  display: grid;
+  gap: 8px;
+  padding: 14px;
+  border-radius: 18px;
+  border: 1px solid rgba(255,255,255,0.12);
+}
+
+.public-search-box span {
+  font-size: 13px;
+  font-weight: 900;
+  color: rgba(255,255,255,0.84);
+}
+
+.public-search-box input {
+  width: 100%;
+  border-radius: 14px;
+  padding: 12px;
+  background: transparent;
+  border: 1px solid rgba(255,255,255,0.22);
+  color: white;
+  font-weight: 800;
+}
+
+.public-search-box button {
+  border-radius: 999px;
+  padding: 8px 12px;
+  border: 1px solid rgba(255,255,255,0.18);
+  background: rgba(255,255,255,0.08);
+  color: white;
+  font-weight: 900;
+}
+.public-search-results {
+  display: grid;
+  gap: 14px;
+  margin-top: 10px;
+}
+
+.public-search-group {
+  display: grid;
+  gap: 8px;
+}
+
+.public-search-group > strong {
+  font-size: 13px;
+  color: rgba(255,255,255,0.9);
+}
+
+.public-search-result {
+  display: flex;
+  justify-content: space-between;
+  gap: 12px;
+  align-items: center;
+  padding: 11px 12px;
+  border-radius: 14px;
+  border: 1px solid rgba(255,255,255,0.12);
+  color: white;
+  text-decoration: none;
+}
+
+.public-search-result:hover {
+  border-color: rgba(34,197,94,0.35);
+  background: rgba(255,255,255,0.04);
+}
+
+.public-search-result span {
+  font-weight: 900;
+}
+
+.public-search-result small {
+  color: rgba(255,255,255,0.65);
+  text-align: right;
+}
+.public-league-portal {
+  max-width: 980px;
+  margin: 0 auto;
+  display: grid;
+  gap: 22px;
+}
+
+.public-league-hero {
+  display: grid;
+  grid-template-columns: 1.35fr 0.85fr;
+  gap: 24px;
+  align-items: center;
+  padding: 26px;
+  border-radius: 28px;
+  background:
+    radial-gradient(circle at top left, rgba(34,197,94,0.22), transparent 34%),
+    radial-gradient(circle at bottom right, rgba(59,130,246,0.22), transparent 35%),
+    linear-gradient(135deg, rgba(15,23,42,0.98), rgba(17,24,39,0.94));
+  border: 1px solid rgba(255,255,255,0.12);
+  box-shadow: 0 24px 70px rgba(0,0,0,0.28);
+}
+
+.public-league-hero h1 {
+  font-size: clamp(30px, 5vw, 44px);
+  line-height: 1.05;
+  margin: 28px 0 22px;
+}
+
+.public-league-hero p {
+  color: rgba(255,255,255,0.82);
+  line-height: 1.55;
+}
+
+.spectator-pill {
+  justify-self: start;
+  padding: 8px 14px;
+  min-width: 220px;
+  justify-content: center;
+}
+
+.public-command-center {
+  padding: 18px;
+  border-radius: 24px;
+  border: 1px solid rgba(255,255,255,0.12);
+  background:
+    linear-gradient(135deg, rgba(34,197,94,0.10), rgba(59,130,246,0.08)),
+    rgba(255,255,255,0.035);
+}
+
+.public-command-head {
+  display: flex;
+  justify-content: space-between;
+  gap: 14px;
+  align-items: center;
+  margin-bottom: 12px;
+}
+
+.public-command-head div {
+  display: grid;
+  gap: 3px;
+}
+
+.public-command-head strong {
+  font-size: 18px;
+}
+
+.public-command-head span {
+  color: rgba(255,255,255,0.68);
+  font-size: 13px;
+}
+
+.public-command-head button {
+  border-radius: 999px;
+  padding: 8px 12px;
+  border: 1px solid rgba(255,255,255,0.16);
+  background: rgba(255,255,255,0.08);
+  color: white;
+  font-weight: 900;
+}
+
+.public-command-center input {
+  width: 100%;
+  border-radius: 18px;
+  padding: 15px 16px;
+  border: 1px solid rgba(255,255,255,0.18);
+  background: rgba(255,255,255,0.06);
+  color: white;
+  font-weight: 900;
+  font-size: 15px;
+}
+
+.public-search-results-pro {
+  margin-top: 14px;
+  display: grid;
+  gap: 16px;
+}
+
+.public-search-group-pro {
+  display: grid;
+  gap: 9px;
+}
+
+.public-search-group-pro h4 {
+  margin: 0;
+  font-size: 14px;
+  color: rgba(255,255,255,0.88);
+}
+
+.public-search-result-pro {
+  display: flex;
+  justify-content: space-between;
+  gap: 16px;
+  align-items: center;
+  padding: 13px 14px;
+  border-radius: 18px;
+  border: 1px solid rgba(255,255,255,0.12);
+  background: rgba(255,255,255,0.045);
+  color: white;
+  text-decoration: none;
+}
+
+.public-search-result-pro:hover {
+  border-color: rgba(34,197,94,0.4);
+  background: rgba(34,197,94,0.08);
+}
+
+.public-search-result-pro div {
+  display: grid;
+  gap: 3px;
+}
+
+.public-search-result-pro span {
+  color: rgba(255,255,255,0.65);
+  font-size: 13px;
+}
+
+.public-search-result-pro b {
+  white-space: nowrap;
+  font-size: 13px;
+  color: rgba(134,239,172,0.95);
+}
+
+.public-league-tabs {
+  justify-content: center;
+  background: rgba(255,255,255,0.035);
+  padding: 10px;
+  border-radius: 999px;
+  border: 1px solid rgba(255,255,255,0.08);
+}
+
+.public-section {
+  background: rgba(255,255,255,0.035);
+  border-radius: 26px;
+  padding: 22px;
+}
+
+.public-card {
+  background:
+    linear-gradient(135deg, rgba(255,255,255,0.055), rgba(255,255,255,0.025));
+}
+
+@media (max-width: 700px) {
+  .public-league-portal {
+    gap: 16px;
+  }
+
+  .public-league-hero {
+    grid-template-columns: 1fr;
+    padding: 20px;
+  }
+
+  .public-league-hero h1 {
+    margin: 18px 0 14px;
+    font-size: 32px;
+  }
+
+  .spectator-pill {
+    min-width: 100%;
+  }
+
+  .public-command-head {
+    display: grid;
+  }
+
+  .public-command-head button {
+    width: 100%;
+  }
+
+  .public-search-result-pro {
+    display: grid;
+  }
+
+  .public-search-result-pro b {
+    justify-self: start;
+  }
+
+  .public-league-tabs {
+    justify-content: flex-start;
+    border-radius: 18px;
+  }
+}
+.public-action-strip {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 10px;
+}
+
+.public-action-strip a,
+.public-action-strip button {
+  border-radius: 999px;
+  padding: 10px 14px;
+  border: 1px solid rgba(255,255,255,0.14);
+  background: rgba(255,255,255,0.06);
+  color: white;
+  text-decoration: none;
+  font-weight: 900;
+}
+
+.public-action-strip .public-action-primary {
+  border-color: rgba(34,197,94,0.32);
+  background: rgba(34,197,94,0.12);
+}
+.public-league-portal {
+  max-width: 1040px;
+  margin: 0 auto;
+  display: grid;
+  gap: 18px;
+}
+
+.public-league-hero {
+  padding: 22px;
+  border-radius: 26px;
+  background:
+    radial-gradient(circle at top left, rgba(34,197,94,0.20), transparent 35%),
+    radial-gradient(circle at bottom right, rgba(59,130,246,0.18), transparent 38%),
+    linear-gradient(135deg, #0f172a, #111827);
+  border: 1px solid rgba(255,255,255,0.12);
+}
+
+.public-league-hero h1 {
+  font-size: clamp(28px, 4vw, 42px);
+  line-height: 1.08;
+  margin: 14px 0 10px;
+}
+
+.public-league-hero p {
+  max-width: 680px;
+  color: rgba(255,255,255,0.78);
+  line-height: 1.45;
+}
+
+.public-league-badges {
+  margin-top: 14px;
+}
+
+.public-section {
+  background: rgba(255,255,255,0.04);
+  border-radius: 24px;
+  border: 1px solid rgba(255,255,255,0.10);
+  padding: 20px;
+}
+
+.public-card {
+  background: rgba(255,255,255,0.055);
+  border: 1px solid rgba(255,255,255,0.12);
+}
+
+@media (max-width: 700px) {
+  .public-league-portal {
+    gap: 14px;
+  }
+
+  .public-league-hero {
+    padding: 18px;
+    border-radius: 22px;
+  }
+
+  .public-league-hero h1 {
+    font-size: 30px;
+  }
+}
+.public-card-button {
+  color: white;
+  text-align: left;
+  cursor: pointer;
+}
+
+.public-card-button:hover {
+  transform: translateY(-2px);
+  border-color: rgba(34,197,94,0.38);
+  background: rgba(34,197,94,0.08);
+}
+.public-mini-tab-btn {
+  justify-self: start;
+  border-radius: 999px;
+  padding: 7px 11px;
+  border: 1px solid rgba(34,197,94,0.25);
+  background: rgba(34,197,94,0.08);
+  color: white;
+  font-weight: 900;
+  cursor: pointer;
+  font-size: 12px;
+}
+
+.public-mini-tab-btn:hover {
+  background: rgba(34,197,94,0.14);
+}
+.public-match-card-pro {
+  align-items: center;
+}
+
+.public-match-main {
+  display: grid;
+  gap: 6px;
+}
+
+.public-match-main strong {
+  font-size: 16px;
+}
+
+.public-match-main small,
+.public-muted-action {
+  color: rgba(255,255,255,0.65);
+}
+
+.public-match-status {
+  width: fit-content;
+  padding: 5px 9px;
+  border-radius: 999px;
+  font-size: 11px;
+  font-weight: 900;
+  border: 1px solid rgba(255,255,255,0.16);
+  color: white;
+}
+
+.public-match-status.live,
+.public-match-status.in_progress {
+  background: rgba(34,197,94,0.16);
+  border-color: rgba(34,197,94,0.35);
+}
+
+.public-match-status.scheduled {
+  background: rgba(59,130,246,0.14);
+  border-color: rgba(59,130,246,0.32);
+}
+
+.public-match-status.completed,
+.public-match-status.completed_locked {
+  background: rgba(168,85,247,0.14);
+  border-color: rgba(168,85,247,0.32);
+}
+
+.public-match-status.abandoned {
+  background: rgba(239,68,68,0.14);
+  border-color: rgba(239,68,68,0.32);
+}
+.public-rank-badge {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  min-width: 34px;
+  padding: 5px 8px;
+  border-radius: 999px;
+  background: rgba(34,197,94,0.12);
+  border: 1px solid rgba(34,197,94,0.28);
+  font-weight: 900;
+}
+
+.score-table th {
+  color: rgba(255,255,255,0.72);
+  font-size: 12px;
+  text-transform: uppercase;
+  letter-spacing: 0.04em;
+}
+
+.score-table td {
+  color: rgba(255,255,255,0.9);
+}
+.public-status-tabs {
+  display: flex;
+  gap: 10px;
+  margin-bottom: 16px;
+}
+
+.public-status-tabs button {
+  border: 1px solid rgba(255,255,255,0.12);
+  background: rgba(255,255,255,0.05);
+  color: white;
+  border-radius: 999px;
+  padding: 10px 14px;
+  cursor: pointer;
+  font-weight: 700;
+}
+
+.public-status-tabs button.active {
+  background: rgba(34,197,94,0.15);
+  border-color: rgba(34,197,94,0.35);
+}
