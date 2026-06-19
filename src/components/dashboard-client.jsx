@@ -200,6 +200,8 @@ const [pendingDeliverySetupAfterStart, setPendingDeliverySetupAfterStart] = useS
 const [pendingSecondInningsSetup, setPendingSecondInningsSetup] = useState(false);
 const [isSavingBall, setIsSavingBall] = useState(false);
 const [pressedScoreKey, setPressedScoreKey] = useState("");
+const [optimisticScoreboard, setOptimisticScoreboard] = useState(null);
+const [selectedExtraOption, setSelectedExtraOption] = useState("");
 const isSuperAdmin =
   session?.user?.email ===
   "surprisecricket11@gmail.com";
@@ -983,6 +985,138 @@ callback();
     setPressedScoreKey("");
   }, 180);
 }
+function previewScoreboardAfterBall(board, data) {
+  if (!board?.innings?.length) return board;
+
+  const inningsNo =
+    Number(data.inningsNo || board.currentInnings || 1);
+
+  const inningsIndex = inningsNo - 1;
+
+  const totalRuns =
+    Number(data.runsOffBat || 0) +
+    Number(data.extras || 0);
+
+  const isLegal =
+    data.extraType !== "WIDE" &&
+    data.extraType !== "NOBALL" &&
+    data.wicketType !== "RETIRED_HURT";
+
+  const isRealWicket =
+    Number(data.isWicket) &&
+    data.wicketType !== "RETIRED_HURT";
+
+  const copy =
+    typeof structuredClone === "function"
+      ? structuredClone(board)
+      : JSON.parse(JSON.stringify(board));
+
+  const innings = copy.innings?.[inningsIndex];
+
+  if (!innings) return board;
+
+  const nextBallLabel = (() => {
+  const legalBalls = Number(innings.legalBalls || 0);
+  const nextLegalBall = isLegal ? legalBalls + 1 : legalBalls;
+
+  const over = Math.floor(nextLegalBall / 6);
+  const ball = nextLegalBall % 6 || 6;
+
+  let result = String(totalRuns);
+
+  if (data.wicketType === "RETIRED_HURT") {
+    result = "RH";
+  } else if (isRealWicket) {
+    result = "W";
+  } else if (data.extraType === "WIDE") {
+    result = totalRuns > 1 ? `WD+${totalRuns - 1}` : "WD";
+  } else if (data.extraType === "NOBALL") {
+    result = Number(data.runsOffBat || 0) > 0
+      ? `NB+${data.runsOffBat}`
+      : "NB";
+  } else if (data.extraType === "BYE") {
+    result = `B${data.extras || ""}`;
+  } else if (data.extraType === "LEGBYE") {
+    result = `LB${data.extras || ""}`;
+  }
+
+  return `${over}.${ball} ${result}`;
+})();
+
+  innings.runs = Number(innings.runs || 0) + totalRuns;
+
+  if (isRealWicket) {
+    innings.wickets = Number(innings.wickets || 0) + 1;
+  }
+
+  if (isLegal) {
+    innings.legalBalls = Number(innings.legalBalls || 0) + 1;
+
+    const overs = Math.floor(innings.legalBalls / 6);
+    const balls = innings.legalBalls % 6;
+
+    innings.oversDisplay = `${overs}.${balls}`;
+  }
+const currentState = copy.currentState;
+
+if (currentState) {
+  const batRuns = Number(data.runsOffBat || 0);
+  const extras = Number(data.extras || 0);
+
+  if (currentState.strikerStats) {
+    currentState.strikerStats.runs =
+      Number(currentState.strikerStats.runs || 0) + batRuns;
+
+    if (isLegal) {
+      currentState.strikerStats.balls =
+        Number(currentState.strikerStats.balls || 0) + 1;
+    }
+
+    currentState.strikerStats.strikeRate =
+      currentState.strikerStats.balls
+        ? (
+            (Number(currentState.strikerStats.runs || 0) /
+              Number(currentState.strikerStats.balls || 1)) *
+            100
+          ).toFixed(2)
+        : "0.00";
+  }
+
+  if (currentState.bowlerStats) {
+    const bowlerRuns =
+      data.extraType === "BYE" || data.extraType === "LEGBYE"
+        ? 0
+        : batRuns + extras;
+
+    currentState.bowlerStats.runs =
+      Number(currentState.bowlerStats.runs || 0) + bowlerRuns;
+
+    if (isLegal) {
+      const currentBalls =
+        Number(currentState.bowlerStats.balls || 0) + 1;
+
+      currentState.bowlerStats.balls = currentBalls;
+      currentState.bowlerStats.overs =
+        `${Math.floor(currentBalls / 6)}.${currentBalls % 6}`;
+    }
+
+    if (isRealWicket) {
+      currentState.bowlerStats.wickets =
+        Number(currentState.bowlerStats.wickets || 0) + 1;
+    }
+  }
+}
+copy.recentBalls = [
+  {
+    id: `optimistic-${Date.now()}`,
+    label: nextBallLabel,
+    optimistic: true,
+  },
+  ...(copy.recentBalls || []),
+].slice(0, 20);
+
+  return copy;
+}
 async function loadPointsTable(leagueId) {
   if (!leagueId) return;
 
@@ -1127,7 +1261,6 @@ async function updateRole(
       api(`/api/matches/${matchId}`),
       api(`/api/scoreboard/${matchId}`),
       api(`/api/stats/${matchId}`),
-      api(`/api/liveview/${matchId}`),
     ]);
 
     setMatchDetail(detail);
@@ -1719,7 +1852,11 @@ async function submitBall(data) {
 
   if (isSavingBall) return;
 
-  setIsSavingBall(true);
+setIsSavingBall(true);
+
+setOptimisticScoreboard(
+  previewScoreboardAfterBall(scoreboard, data)
+);
 
   try {
     await api("/api/balls", {
@@ -1784,7 +1921,8 @@ async function submitBall(data) {
       Number(data.inningsNo) === 1 &&
       updatedCurrentInningsNo === 2;
 
-    await loadSelectedMatch(selectedMatchId);
+await loadSelectedMatch(selectedMatchId);
+setOptimisticScoreboard(null);
 
     if (updatedIsFinalBallBowled || updatedIsChaseComplete) {
       setShowBowlerModal(false);
@@ -1828,6 +1966,7 @@ async function submitBall(data) {
       setShowBowlerModal(true);
     }
   } catch (err) {
+    setOptimisticScoreboard(null);
     if (err.message?.includes("BOWLER_CONSECUTIVE_OVER")) {
       setPendingBallData({
         matchId: Number(selectedMatchId),
@@ -1909,12 +2048,13 @@ function quickExtra(type) {
   }));
   setShowExtrasModal(true);
 }
+
 async function confirmExtra(extraRuns) {
   try {
     let runsOffBat = Number(ballForm.runsOffBat || 0);
     let extras = Number(ballForm.extras || 0);
     let displayLabel = String(extraRuns);
-
+setSelectedExtraOption(String(extraRuns));
     // Handles WD, WD+1, WD+2...
     if (typeof extraRuns === "string" && extraRuns.startsWith("WD")) {
       const additionalRuns = extraRuns.includes("+")
@@ -2003,6 +2143,7 @@ if (
     );
 
     setShowExtrasModal(false);
+    setSelectedExtraOption("");
   } catch (err) {
     setError(err.message);
   }
@@ -2697,6 +2838,9 @@ function triggerQuickAction(actionKey, callback) {
     setActiveQuickAction(null);
   }, 100); // was 400
 }
+const displayScoreboard =
+  optimisticScoreboard || scoreboard;
+
 const normalizedMatchStatus = String(
   scoreboard?.match?.status || ""
 )
@@ -2709,18 +2853,19 @@ const canShowAiAnalysis =
   normalizedMatchStatus === "COMPLETED_LOCKED";
 
 const activeInnings = useMemo(() => {
-  const innings = scoreboard?.innings || [];
+  const innings = displayScoreboard?.innings || [];
 
   if (!innings.length) return null;
 
   const currentInningsNo =
-    Number(scoreboard?.currentInnings) ||
+    Number(displayScoreboard?.currentInnings) ||
     Number(ballForm?.inningsNo) ||
     1;
 
   return innings[currentInningsNo - 1] || innings[0];
-}, [scoreboard, ballForm?.inningsNo]);
-
+}, [displayScoreboard, ballForm?.inningsNo]);
+const recentBalls =
+  displayScoreboard?.recentBalls || [];
 const maxLegalBalls =
   Number(matchDetail?.oversPerInnings || scoreboard?.match?.oversPerInnings || 0) * 6;
 
@@ -3826,7 +3971,7 @@ return (
 <div className="score-summary-panel">
 <div className="single-line-scoreboard">
   <span className="status-chip">
-    📌 {scoreboard?.summary?.statusText}
+    📌 {displayScoreboard?.summary?.statusText}
   </span>
 </div>
   <div className="single-line-scoreboard">
@@ -3844,29 +3989,29 @@ return (
 
     <span>
       <strong>Striker:</strong>{" "}
-      {scoreboard?.currentState?.strikerName || "-"}{" "}
+      {displayScoreboard?.currentState?.strikerName || "-"}{" "}
       (
-      {scoreboard?.currentState?.strikerStats
-        ? `${scoreboard.currentState.strikerStats.runs} (${scoreboard.currentState.strikerStats.balls})`
+      {displayScoreboard?.currentState?.strikerStats
+        ? `${displayScoreboard.currentState.strikerStats.runs} (${displayScoreboard.currentState.strikerStats.balls})`
         : "0 (0)"}
       )
     </span>
 
     <span>
       <strong>Non-Striker:</strong>{" "}
-      {scoreboard?.currentState?.nonStrikerName || "-"}{" "}
+      {displayScoreboard?.currentState?.nonStrikerName || "-"}{" "}
       (
-      {scoreboard?.currentState?.nonStrikerStats
-        ? `${scoreboard.currentState.nonStrikerStats.runs} (${scoreboard.currentState.nonStrikerStats.balls})`
+      {displayScoreboard?.currentState?.nonStrikerStats
+        ? `${displayScoreboard.currentState.nonStrikerStats.runs} (${displayScoreboard.currentState.nonStrikerStats.balls})`
         : "0 (0)"}
       )
     </span>
     <span>
       <strong>Bowler:</strong>{" "}
-      {scoreboard?.currentState?.bowlerName || "-"}{" "}
+      {displayScoreboard?.currentState?.bowlerName || "-"}{" "}
       (
-      {scoreboard?.currentState?.bowlerStats
-        ? `${scoreboard.currentState.bowlerStats.wickets}/${scoreboard.currentState.bowlerStats.runs} in ${scoreboard.currentState.bowlerStats.overs} ov`
+      {displayScoreboard?.currentState?.bowlerStats
+        ? `${displayScoreboard.currentState.bowlerStats.wickets}/${displayScoreboard.currentState.bowlerStats.runs} in ${displayScoreboard.currentState.bowlerStats.overs} ov`
         : "0/0"}
       )
     </span>
@@ -3900,27 +4045,26 @@ return (
     "🏏 Ready for next delivery"}
   </div>
 ))}
+
 <div className="recent-balls-row">
   <span className="recent-label">Recent: </span>
 
-  {scoreboard?.recentBalls?.length ? (
-    scoreboard.recentBalls.slice(-20).map((ball, index) => {
+  {recentBalls.length ? (
+recentBalls.slice(0, 20).map((ball, index) => {
       const label = ball.label || "";
 
-      // Detect over change
+  const recent20 = recentBalls.slice(0, 20);
+
       const currentOver = label.split(".")[0];
+
       const prevOver =
         index > 0
-          ? scoreboard.recentBalls
-              .slice(-20)
-              [index - 1]?.label?.split(".")[0]
+          ? recent20[index - 1]?.label?.split(".")[0]
           : currentOver;
 
-      // Extract only result after over.ball
-      // Example:
-      // "12.3 4" => "4"
-      // "14.5 W" => "W"
-      const ballResult = (label.split(" ").slice(1).join(" ") || label).replace(/[()]/g, "");
+      const ballResult = (
+        label.split(" ").slice(1).join(" ") || label
+      ).replace(/[()]/g, "");
 
       return (
         <React.Fragment key={ball.id}>
@@ -7392,7 +7536,26 @@ KL Rahul`}
       <p style={{ opacity: 0.75 }}>
         Select total extra runs
       </p>
-
+{selectedExtraOption && (
+  <div className="selected-extra-preview">
+    <strong>Selected:</strong>
+    <span>
+      {selectedExtraType === "WIDE"
+        ? selectedExtraOption === "WD"
+          ? "Wide"
+          : `Wide + ${selectedExtraOption.replace("WD+", "")}`
+        : selectedExtraType === "NOBALL"
+        ? selectedExtraOption === "NB"
+          ? "No Ball"
+          : `No Ball + ${selectedExtraOption.replace("NB+", "")} bat run(s)`
+        : selectedExtraType === "BYE"
+        ? `${selectedExtraOption} Bye run(s)`
+        : selectedExtraType === "LEGBYE"
+        ? `${selectedExtraOption} Leg Bye run(s)`
+        : selectedExtraOption}
+    </span>
+  </div>
+)}
       <div
         style={{
           display: "grid",
@@ -7411,7 +7574,9 @@ KL Rahul`}
           <button
             key={runs}
             type="button"
-            className="btn"
+              className={`extra-choice-btn ${
+    selectedExtraOption === "WD+1" ? "selected" : ""
+  }`}
             onClick={() => confirmExtra(runs)}
           >
             {runs}
