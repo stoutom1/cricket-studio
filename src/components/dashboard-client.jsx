@@ -4172,9 +4172,14 @@ recentBalls.slice(0, 20).map((ball, index) => {
                         onClick={handleEndFirstInnings}
                       >
                         🛑 End 1st Innings
-                      </button><small className="field-help">
-                          Use this when the batting side is finished before all scheduled overs are bowled.
-                        </small></>
+                      </button>  
+                      <span
+                      className="info-icon"
+                      title="Use when the batting side is finished before the scheduled overs are completed."
+                    >
+                      ℹ️
+                    </span>
+                    </>
 )}
 {(isMatchCompleted || isMatchLocked) && (
   <button
