@@ -1,8 +1,5 @@
 "use client";
-import { useSession } from "next-auth/react";
 import { useMemo, useState } from "react";
-
-
 
 function normalizeStatus(status) {
   return String(status || "SCHEDULED").toUpperCase();
@@ -176,7 +173,6 @@ function buildPublicStats(matches) {
 }
 
 export default function PublicLeagueViewClient({ league }) {
-  const { data: session } = useSession();
   const [activeTab, setActiveTab] = useState("overview");
   const [selectedYear, setSelectedYear] = useState("");
   const [selectedSeriesId, setSelectedSeriesId] = useState("");
@@ -348,12 +344,6 @@ const { battingRows, bowlingRows } = useMemo(
         </div>
       </section>
 <section className="public-action-strip">
-  {session?.user?.email ? (
-    <a href="/dashboard" className="public-action-primary">
-      ⚙️ Manage this League
-    </a>
-  ) : null}
-
   <button type="button" onClick={copyLeagueLink}>
     🔗 Copy League Link
   </button>
