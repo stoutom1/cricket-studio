@@ -3953,8 +3953,8 @@ return (
 )}
 {permissions?.canScoreMatch && (
 <div className="quick-actions">
-  <button type="button" disabled={isSavingBall || isMatchCompleted || isMatchLocked || isMatchAbandoned} className={`chip ${activeQuickAction === "0" ? "chip-active" : ""}`} onClick={() => flashScoreButton("0", () => quickNormalBall(0))}>0</button>
-  <button type="button" disabled={isSavingBall || isMatchCompleted || isMatchLocked || isMatchAbandoned} className={`chip ${activeQuickAction === "1" ? "chip-active" : ""}`} onClick={() => flashScoreButton("1", () => quickNormalBall(1))}>1</button>
+  <button type="button" disabled={isSavingBall || isMatchCompleted || isMatchLocked || isMatchAbandoned} className={`chip ${activeQuickAction === "0" ? "chip-active" : ""}`} onClick={() => triggerQuickAction("0", () => quickNormalBall(0))}>0</button>
+  <button type="button" disabled={isSavingBall || isMatchCompleted || isMatchLocked || isMatchAbandoned} className={`chip ${activeQuickAction === "1" ? "chip-active" : ""}`} onClick={() => triggerQuickAction("1", () => quickNormalBall(1))}>1</button>
   <button type="button" disabled={isSavingBall || isMatchCompleted || isMatchLocked || isMatchAbandoned} className={`chip ${activeQuickAction === "2" ? "chip-active" : ""}`} onClick={() => triggerQuickAction("2", () => quickNormalBall(2))}>2</button>
   <button type="button" disabled={isSavingBall || isMatchCompleted || isMatchLocked || isMatchAbandoned} className={`chip ${activeQuickAction === "3" ? "chip-active" : ""}`} onClick={() => triggerQuickAction("3", () => quickNormalBall(3))}>3</button>
   <button type="button" disabled={isSavingBall || isMatchCompleted || isMatchLocked || isMatchAbandoned} className={`chip ${activeQuickAction === "4" ? "chip-active" : ""}`} onClick={() => triggerQuickAction("4", () => quickNormalBall(4))}>4</button>
