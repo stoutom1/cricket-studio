@@ -173,8 +173,10 @@ const inningsData = [
   }
 ];
  const currentInningsNo =
+  match.innings1EndedManually ||
   innings2Summary.legalBalls > 0 ||
-  match.status === "COMPLETED"
+  match.status === "COMPLETED" ||
+  match.status === "COMPLETED_LOCKED"
     ? 2
     : 1;
 

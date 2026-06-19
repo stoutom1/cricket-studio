@@ -1759,7 +1759,41 @@ const isMatchAbandoned = scoreboard?.match?.status ===  "ABANDONED";
     acc[row.teamName].push(row);
     return acc;
   }, {});
+async function handleEndFirstInnings() {
+  if (!selectedMatchId) return;
 
+  const confirmed = window.confirm(
+    "End the 1st innings now and start the 2nd innings setup?"
+  );
+
+  if (!confirmed) return;
+
+  try {
+    await api(`/api/matches/${selectedMatchId}/end-innings`, {
+      method: "POST",
+    });
+
+    await loadSelectedMatch(selectedMatchId);
+
+    setBallForm((prev) => ({
+      ...prev,
+      inningsNo: "2",
+      strikerId: "",
+      nonStrikerId: "",
+      bowlerId: "",
+    }));
+
+    setDeliverySetupReason(
+      "🏏 2nd innings is ready. Select the opening striker, non-striker, and bowler before scoring."
+    );
+
+    setShowDeliverySetupModal(true);
+
+    setMessage("✅ First innings ended. Set up the 2nd innings.");
+  } catch (err) {
+    setError(err.message);
+  }
+}
   async function quickNormalBall(runs) {
   
   try{  
@@ -4045,7 +4079,19 @@ return (
     "🏏 Ready for next delivery"}
   </div>
 ))}
-
+{Number(ballForm.inningsNo) === 1 &&
+  scoreboard?.match?.status !== "COMPLETED" &&
+  scoreboard?.match?.status !== "COMPLETED_LOCKED" && (
+    <><button
+                        type="button"
+                        className="btn btn-outline"
+                        onClick={handleEndFirstInnings}
+                      >
+                        🛑 End 1st Innings
+                      </button><small className="field-help">
+                          Use this when the batting side is finished before all scheduled overs are bowled.
+                        </small></>
+)}
 <div className="recent-balls-row">
   <span className="recent-label">Recent: </span>
 
