@@ -1092,8 +1092,20 @@ if (currentState) {
       Number(currentState.bowlerStats.runs || 0) + bowlerRuns;
 
     if (isLegal) {
-      const currentBalls =
-        Number(currentState.bowlerStats.balls || 0) + 1;
+function oversToBalls(oversValue) {
+  const [oversPart, ballsPart] = String(oversValue || "0.0")
+    .split(".")
+    .map(Number);
+
+  return (oversPart || 0) * 6 + (ballsPart || 0);
+}
+
+const previousBowlerBalls =
+  currentState.bowlerStats.balls != null
+    ? Number(currentState.bowlerStats.balls)
+    : oversToBalls(currentState.bowlerStats.overs);
+
+const currentBalls = previousBowlerBalls + 1;
 
       currentState.bowlerStats.balls = currentBalls;
       currentState.bowlerStats.overs =
@@ -1763,8 +1775,11 @@ async function handleEndFirstInnings() {
   if (!selectedMatchId) return;
 
   const confirmed = window.confirm(
+  "End 1st innings and start 2nd innings setup?\n\nUse this when the batting side is finished before all scheduled overs are bowled."
+);
+ /* const confirmed = window.confirm(
     "End the 1st innings now and start the 2nd innings setup?"
-  );
+  );*/
 
   if (!confirmed) return;
 
@@ -4163,23 +4178,17 @@ recentBalls.slice(0, 20).map((ball, index) => {
   >
     ↩ Undo Ball
   </button>
-  {Number(ballForm.inningsNo) === 1 &&
+{Number(ballForm.inningsNo) === 1 &&
   scoreboard?.match?.status !== "COMPLETED" &&
   scoreboard?.match?.status !== "COMPLETED_LOCKED" && (
-    <><button
-                        type="button"
-                        className="btn btn-outline"
-                        onClick={handleEndFirstInnings}
-                      >
-                        🛑 End 1st Innings
-                      </button>  
-                      <span
-                      className="info-icon"
-                      title="Use when the batting side is finished before the scheduled overs are completed."
-                    >
-                      ℹ️
-                    </span>
-                    </>
+    <button
+      type="button"
+      className="end-innings-pill"
+      onClick={handleEndFirstInnings}
+    >
+      <span>🛑 End 1st Innings</span>
+      <small>Finished batting?</small>
+    </button>
 )}
 {(isMatchCompleted || isMatchLocked) && (
   <button
