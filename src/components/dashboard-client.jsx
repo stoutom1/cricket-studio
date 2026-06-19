@@ -198,6 +198,8 @@ const [showDeliverySetupModal, setShowDeliverySetupModal] = useState(false);
 const [deliverySetupReason, setDeliverySetupReason] = useState("");
 const [pendingDeliverySetupAfterStart, setPendingDeliverySetupAfterStart] = useState(false);
 const [pendingSecondInningsSetup, setPendingSecondInningsSetup] = useState(false);
+const [isSavingBall, setIsSavingBall] = useState(false);
+const [pressedScoreKey, setPressedScoreKey] = useState("");
 const isSuperAdmin =
   session?.user?.email ===
   "surprisecricket11@gmail.com";
@@ -974,6 +976,13 @@ function showToast(type, text) {
     setToast(null);
   }, 3000);
 }
+function flashScoreButton(key, callback) {
+  setPressedScoreKey(key);
+callback();
+  window.setTimeout(() => {
+    setPressedScoreKey("");
+  }, 180);
+}
 async function loadPointsTable(leagueId) {
   if (!leagueId) return;
 
@@ -1699,17 +1708,23 @@ async function submitBall(data) {
     setError("Please select a match");
     return;
   }
-if (!ballForm.strikerId || !ballForm.nonStrikerId || !ballForm.bowlerId) {
-  setDeliverySetupReason(
-    "Please select striker, non-striker, and bowler before scoring this ball."
-  );
-  setShowDeliverySetupModal(true);
-  return;
-}
+
+  if (!ballForm.strikerId || !ballForm.nonStrikerId || !ballForm.bowlerId) {
+    setDeliverySetupReason(
+      "Please select striker, non-striker, and bowler before scoring this ball."
+    );
+    setShowDeliverySetupModal(true);
+    return;
+  }
+
+  if (isSavingBall) return;
+
+  setIsSavingBall(true);
+
   try {
     await api("/api/balls", {
       method: "POST",
-      body: JSON.stringify(data)
+      body: JSON.stringify(data),
     });
 
     const wasLegalLastBallOfOver =
@@ -1730,98 +1745,90 @@ if (!ballForm.strikerId || !ballForm.nonStrikerId || !ballForm.bowlerId) {
       dismissal: "",
       fielderId: "",
       assistantFielderId: "",
-      wicketNote: ""
+      wicketNote: "",
     }));
 
     setShowAdvancedSheet(false);
 
-await Promise.all([
-  loadSelectedMatch(selectedMatchId),
-  loadMatches()
-]);
+    const updatedBoard = await api(`/api/scoreboard/${selectedMatchId}`);
 
-const updatedBoard = await api(`/api/scoreboard/${selectedMatchId}`);
+    const updatedCurrentInningsNo =
+      Number(updatedBoard?.currentInnings || data.inningsNo);
 
-const updatedActiveInnings =
-  updatedBoard?.innings?.[
-    Number(updatedBoard?.currentInnings || data.inningsNo) - 1
-  ];
+    const updatedActiveInnings =
+      updatedBoard?.innings?.[updatedCurrentInningsNo - 1];
 
-const updatedMaxLegalBalls =
-  Number(updatedBoard?.match?.oversPerInnings || 0) * 6;
+    const updatedMaxLegalBalls =
+      Number(updatedBoard?.match?.oversPerInnings || 0) * 6;
 
-const updatedIsSecondInnings =
-  Number(updatedBoard?.currentInnings || data.inningsNo) === 2;
+    const updatedIsSecondInnings =
+      updatedCurrentInningsNo === 2;
 
-const updatedIsFinalBallBowled =
-  updatedIsSecondInnings &&
-  updatedMaxLegalBalls > 0 &&
-  Number(updatedActiveInnings?.legalBalls || 0) >= updatedMaxLegalBalls;
+    const updatedIsFinalBallBowled =
+      updatedIsSecondInnings &&
+      updatedMaxLegalBalls > 0 &&
+      Number(updatedActiveInnings?.legalBalls || 0) >= updatedMaxLegalBalls;
 
-const updatedTarget = Number(updatedBoard?.summary?.target || 0);
-const updatedRuns = Number(updatedActiveInnings?.runs || 0);
+    const updatedTarget =
+      Number(updatedBoard?.summary?.target || 0);
 
-const updatedIsChaseComplete =
-  updatedIsSecondInnings &&
-  updatedTarget > 0 &&
-  updatedRuns >= updatedTarget;
+    const updatedRuns =
+      Number(updatedActiveInnings?.runs || 0);
 
-if (updatedIsFinalBallBowled || updatedIsChaseComplete) {
-  setShowBowlerModal(false);
-  setMustChangeBowler(false);
-  setPendingBallData(null);
-  setMessage(
-    "🏁 Match ended. Review the scorecard, then click Lock Match to preserve the final scoreboard."
-  );
-  await loadSelectedMatch(selectedMatchId);
-  await loadMatches();
-  return;
-}
+    const updatedIsChaseComplete =
+      updatedIsSecondInnings &&
+      updatedTarget > 0 &&
+      updatedRuns >= updatedTarget;
 
+    const firstInningsJustEnded =
+      Number(data.inningsNo) === 1 &&
+      updatedCurrentInningsNo === 2;
 
+    await loadSelectedMatch(selectedMatchId);
 
-const updatedCurrentInningsNo =
-  Number(updatedBoard?.currentInnings || data.inningsNo);
+    if (updatedIsFinalBallBowled || updatedIsChaseComplete) {
+      setShowBowlerModal(false);
+      setMustChangeBowler(false);
+      setPendingBallData(null);
 
+      setMessage(
+        "🏁 Match ended. Review the scorecard, then click Lock Match to preserve the final scoreboard."
+      );
 
+      await loadMatches();
+      return;
+    }
 
-const firstInningsJustEnded =
-  Number(data.inningsNo) === 1 &&
-  updatedCurrentInningsNo === 2;
+    if (firstInningsJustEnded) {
+      setShowBowlerModal(false);
+      setMustChangeBowler(false);
+      setPendingBallData(null);
 
-if (firstInningsJustEnded) {
-  setShowBowlerModal(false);
-  setMustChangeBowler(false);
-  setPendingBallData(null);
+      setBallForm((prev) => ({
+        ...prev,
+        inningsNo: "2",
+        strikerId: "",
+        nonStrikerId: "",
+        bowlerId: "",
+      }));
 
-  setBallForm((prev) => ({
-    ...prev,
-    inningsNo: "2",
-    strikerId: "",
-    nonStrikerId: "",
-    bowlerId: "",
-  }));
+      setDeliverySetupReason(
+        "🏏 2nd innings is ready. Select the opening striker, non-striker, and bowler before scoring."
+      );
 
-  setDeliverySetupReason(
-    "🏏 2nd innings is ready. Select the opening striker, non-striker, and bowler before scoring."
-  );
+      setPendingSecondInningsSetup(true);
 
-  setPendingSecondInningsSetup(true);
-  return;
-}
+      await loadMatches();
+      return;
+    }
 
-if (wasLegalLastBallOfOver) {
-  setPendingBallData(null);
-  setMustChangeBowler(true);
-  setShowBowlerModal(true);
-}
-
+    if (wasLegalLastBallOfOver) {
+      setPendingBallData(null);
+      setMustChangeBowler(true);
+      setShowBowlerModal(true);
+    }
   } catch (err) {
-    if (
-      err.message?.includes(
-        "BOWLER_CONSECUTIVE_OVER"
-      )
-    ) {
+    if (err.message?.includes("BOWLER_CONSECUTIVE_OVER")) {
       setPendingBallData({
         matchId: Number(selectedMatchId),
         inningsNo: Number(data.inningsNo),
@@ -1833,30 +1840,20 @@ if (wasLegalLastBallOfOver) {
         extras: Number(data.extras),
 
         isWicket:
-          data.isWicket &&
-          data.wicketType !== "RETIRED_HURT"
-            ? 1
-            : 0,
+          data.isWicket && data.wicketType !== "RETIRED_HURT" ? 1 : 0,
 
-        wicketType: data.isWicket
-          ? data.wicketType
-          : "NONE",
+        wicketType: data.isWicket ? data.wicketType : "NONE",
 
-        dismissedPlayerId:
-          data.isWicket
-            ? Number(
-                data.dismissedPlayerId ||
-                  data.strikerId
-              )
-            : null,
+        dismissedPlayerId: data.isWicket
+          ? Number(data.dismissedPlayerId || data.strikerId)
+          : null,
 
-        newBatterId:
-          data.newBatterId
-            ? Number(data.newBatterId)
-            : null,
+        newBatterId: data.newBatterId
+          ? Number(data.newBatterId)
+          : null,
 
         note: data.note,
-        matchStatus: data.matchStatus
+        matchStatus: data.matchStatus,
       });
 
       setShowBowlerModal(true);
@@ -1865,6 +1862,8 @@ if (wasLegalLastBallOfOver) {
 
     setError(err.message);
     showToast("error", err.message);
+  } finally {
+    setIsSavingBall(false);
   }
 }
 
@@ -2696,7 +2695,7 @@ function triggerQuickAction(actionKey, callback) {
 
   setTimeout(() => {
     setActiveQuickAction(null);
-  }, 600); // was 400
+  }, 100); // was 400
 }
 const normalizedMatchStatus = String(
   scoreboard?.match?.status || ""
@@ -3954,27 +3953,27 @@ return (
 )}
 {permissions?.canScoreMatch && (
 <div className="quick-actions">
-  <button type="button" disabled={isMatchCompleted || isMatchLocked || isMatchAbandoned} className={`chip ${activeQuickAction === "0" ? "chip-active" : ""}`} onClick={() => triggerQuickAction("0", () => quickNormalBall(0))}>0</button>
-  <button type="button" disabled={isMatchCompleted || isMatchLocked || isMatchAbandoned} className={`chip ${activeQuickAction === "1" ? "chip-active" : ""}`} onClick={() => triggerQuickAction("1", () => quickNormalBall(1))}>1</button>
-  <button type="button" disabled={isMatchCompleted || isMatchLocked || isMatchAbandoned} className={`chip ${activeQuickAction === "2" ? "chip-active" : ""}`} onClick={() => triggerQuickAction("2", () => quickNormalBall(2))}>2</button>
-  <button type="button" disabled={isMatchCompleted || isMatchLocked || isMatchAbandoned} className={`chip ${activeQuickAction === "3" ? "chip-active" : ""}`} onClick={() => triggerQuickAction("3", () => quickNormalBall(3))}>3</button>
-  <button type="button" disabled={isMatchCompleted || isMatchLocked || isMatchAbandoned} className={`chip ${activeQuickAction === "4" ? "chip-active" : ""}`} onClick={() => triggerQuickAction("4", () => quickNormalBall(4))}>4</button>
-  <button type="button" disabled={isMatchCompleted || isMatchLocked || isMatchAbandoned} className={`chip ${activeQuickAction === "6" ? "chip-active" : ""}`} onClick={() => triggerQuickAction("6", () => quickNormalBall(6))}>6</button>
+  <button type="button" disabled={isSavingBall || isMatchCompleted || isMatchLocked || isMatchAbandoned} className={`chip ${activeQuickAction === "0" ? "chip-active" : ""}`} onClick={() => flashScoreButton("0", () => quickNormalBall(0))}>0</button>
+  <button type="button" disabled={isSavingBall || isMatchCompleted || isMatchLocked || isMatchAbandoned} className={`chip ${activeQuickAction === "1" ? "chip-active" : ""}`} onClick={() => flashScoreButton("1", () => quickNormalBall(1))}>1</button>
+  <button type="button" disabled={isSavingBall || isMatchCompleted || isMatchLocked || isMatchAbandoned} className={`chip ${activeQuickAction === "2" ? "chip-active" : ""}`} onClick={() => triggerQuickAction("2", () => quickNormalBall(2))}>2</button>
+  <button type="button" disabled={isSavingBall || isMatchCompleted || isMatchLocked || isMatchAbandoned} className={`chip ${activeQuickAction === "3" ? "chip-active" : ""}`} onClick={() => triggerQuickAction("3", () => quickNormalBall(3))}>3</button>
+  <button type="button" disabled={isSavingBall || isMatchCompleted || isMatchLocked || isMatchAbandoned} className={`chip ${activeQuickAction === "4" ? "chip-active" : ""}`} onClick={() => triggerQuickAction("4", () => quickNormalBall(4))}>4</button>
+  <button type="button" disabled={isSavingBall || isMatchCompleted || isMatchLocked || isMatchAbandoned} className={`chip ${activeQuickAction === "6" ? "chip-active" : ""}`} onClick={() => triggerQuickAction("6", () => quickNormalBall(6))}>6</button>
 
-  <button type="button" disabled={isMatchCompleted || isMatchLocked || isMatchAbandoned} className={`chip ${activeQuickAction === "Wd" ? "chip-active" : ""}`} onClick={() => triggerQuickAction("Wd", () => quickExtra("WIDE"))}>Wd</button>
+  <button type="button" disabled={isSavingBall || isMatchCompleted || isMatchLocked || isMatchAbandoned} className={`chip ${activeQuickAction === "Wd" ? "chip-active" : ""}`} onClick={() => triggerQuickAction("Wd", () => quickExtra("WIDE"))}>Wd</button>
 
-  <button type="button" disabled={isMatchCompleted || isMatchLocked || isMatchAbandoned} className={`chip ${activeQuickAction === "Nb" ? "chip-active" : ""}`} onClick={() => triggerQuickAction("Nb", () => quickExtra("NOBALL"))}>Nb</button>
+  <button type="button" disabled={isSavingBall || isMatchCompleted || isMatchLocked || isMatchAbandoned} className={`chip ${activeQuickAction === "Nb" ? "chip-active" : ""}`} onClick={() => triggerQuickAction("Nb", () => quickExtra("NOBALL"))}>Nb</button>
 
-  <button type="button" disabled={isMatchCompleted || isMatchLocked || isMatchAbandoned} className={`chip ${activeQuickAction === "B" ? "chip-active" : ""}`} onClick={() => triggerQuickAction("B", () => quickExtra("BYE"))}>B</button>
+  <button type="button" disabled={isSavingBall || isMatchCompleted || isMatchLocked || isMatchAbandoned} className={`chip ${activeQuickAction === "B" ? "chip-active" : ""}`} onClick={() => triggerQuickAction("B", () => quickExtra("BYE"))}>B</button>
 
-  <button type="button" disabled={isMatchCompleted || isMatchLocked || isMatchAbandoned} className={`chip ${activeQuickAction === "LB" ? "chip-active" : ""}`} onClick={() => triggerQuickAction("LB", () => quickExtra("LEGBYE"))}>LB</button>
+  <button type="button" disabled={isSavingBall || isMatchCompleted || isMatchLocked || isMatchAbandoned} className={`chip ${activeQuickAction === "LB" ? "chip-active" : ""}`} onClick={() => triggerQuickAction("LB", () => quickExtra("LEGBYE"))}>LB</button>
 
-  <button type="button" disabled={isMatchCompleted || isMatchLocked || isMatchAbandoned} className={`chip ${activeQuickAction === "W" ? "chip-active" : ""}`} onClick={() => triggerQuickAction("W", () => quickWicket("BOWLED"))}>Wkt</button>
-  <button type="button" className="chip" disabled={isMatchCompleted || isMatchLocked || isMatchAbandoned} onClick={() => setShowRetiredHurtModal(true)}>RH</button>
+  <button type="button" disabled={isSavingBall || isMatchCompleted || isMatchLocked || isMatchAbandoned} className={`chip ${activeQuickAction === "W" ? "chip-active" : ""}`} onClick={() => triggerQuickAction("W", () => quickWicket("BOWLED"))}>Wkt</button>
+  <button type="button" className="chip" disabled={isSavingBall || isMatchCompleted || isMatchLocked || isMatchAbandoned} onClick={() => setShowRetiredHurtModal(true)}>RH</button>
  <button
     type="button"
     className="btn btn-outline"
-    disabled={isMatchCompleted || isMatchLocked || isMatchAbandoned}
+    disabled={isSavingBall || isMatchCompleted || isMatchLocked || isMatchAbandoned}
     onClick={swapBatters}
   >
     ⇄ Swap
