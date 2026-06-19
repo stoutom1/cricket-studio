@@ -4079,19 +4079,6 @@ return (
     "🏏 Ready for next delivery"}
   </div>
 ))}
-{Number(ballForm.inningsNo) === 1 &&
-  scoreboard?.match?.status !== "COMPLETED" &&
-  scoreboard?.match?.status !== "COMPLETED_LOCKED" && (
-    <><button
-                        type="button"
-                        className="btn btn-outline"
-                        onClick={handleEndFirstInnings}
-                      >
-                        🛑 End 1st Innings
-                      </button><small className="field-help">
-                          Use this when the batting side is finished before all scheduled overs are bowled.
-                        </small></>
-)}
 <div className="recent-balls-row">
   <span className="recent-label">Recent: </span>
 
@@ -4176,6 +4163,19 @@ recentBalls.slice(0, 20).map((ball, index) => {
   >
     ↩ Undo Ball
   </button>
+  {Number(ballForm.inningsNo) === 1 &&
+  scoreboard?.match?.status !== "COMPLETED" &&
+  scoreboard?.match?.status !== "COMPLETED_LOCKED" && (
+    <><button
+                        type="button"
+                        className="btn btn-outline"
+                        onClick={handleEndFirstInnings}
+                      >
+                        🛑 End 1st Innings
+                      </button><small className="field-help">
+                          Use this when the batting side is finished before all scheduled overs are bowled.
+                        </small></>
+)}
 {(isMatchCompleted || isMatchLocked) && (
   <button
     type="submit"
