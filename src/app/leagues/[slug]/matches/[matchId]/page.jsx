@@ -43,7 +43,9 @@ export async function generateMetadata({ params }) {
 const totalWickets = match.balls?.filter(
   (ball) => ball.isWicket && ball.wicketType !== "RETIRED_HURT"
 ).length;
-
+const balls = await prisma.ball.findMany({
+  where: { matchId: match.id },
+});
 const totalBalls = match.balls?.filter((ball) => ball.legalDelivery).length;
 
 const overs = `${Math.floor((totalBalls || 0) / 6)}.${(totalBalls || 0) % 6}`;
