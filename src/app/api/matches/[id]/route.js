@@ -6,6 +6,7 @@ import { getPermissions } from "@/lib/permissions";
 
 export const runtime = "nodejs";
 
+
 export async function GET(request, { params }) {
   const session = await getServerSession(authOptions);
   if (!session) {
@@ -63,6 +64,46 @@ export async function GET(request, { params }) {
   }
 
   return NextResponse.json(match);
+}
+
+export async function PATCH(request, { params }) {
+  const { id } = await params;
+  const matchId = Number(id);
+  const body = await request.json();
+
+  const match = await prisma.match.findUnique({
+    where: { id: matchId },
+  });
+
+  if (!match) {
+    return NextResponse.json({ error: "Match not found" }, { status: 404 });
+  }
+
+  if (match.status !== "SCHEDULED") {
+    return NextResponse.json(
+      { error: "Only scheduled matches can be edited" },
+      { status: 400 }
+    );
+  }
+
+  const updated = await prisma.match.update({
+    where: { id: matchId },
+    data: {
+      scheduledAt: body.scheduledAt ? new Date(body.scheduledAt) : null,
+      oversPerInnings: Number(body.oversPerInnings),
+      powerplayOversInnings: Number(body.powerplayOversInnings || 0),
+      maxWicketsPerInnings: body.maxWicketsPerInnings ?? null,
+      maxOversPerBowler: body.maxOversPerBowler ?? null,
+      seriesId: body.seriesId ? Number(body.seriesId) : null,
+
+      teamACaptainId: body.teamACaptainId ?? null,
+      teamBCaptainId: body.teamBCaptainId ?? null,
+      teamAWicketKeeperId: body.teamAWicketKeeperId ?? null,
+      teamBWicketKeeperId: body.teamBWicketKeeperId ?? null,
+    },
+  });
+
+  return NextResponse.json(updated);
 }
 
 export async function DELETE(

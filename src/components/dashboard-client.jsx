@@ -202,6 +202,20 @@ const [isSavingBall, setIsSavingBall] = useState(false);
 const [pressedScoreKey, setPressedScoreKey] = useState("");
 const [optimisticScoreboard, setOptimisticScoreboard] = useState(null);
 const [selectedExtraOption, setSelectedExtraOption] = useState("");
+const [showEditMatchModal, setShowEditMatchModal] = useState(false);
+const [editingMatch, setEditingMatch] = useState(null);
+const [editMatchForm, setEditMatchForm] = useState({
+  scheduledAt: "",
+  oversPerInnings: 20,
+  powerplayOversInnings: 6,
+  maxWicketsPerInnings: "",
+  maxOversPerBowler: "",
+  seriesId: "",
+  teamACaptainId: "",
+  teamBCaptainId: "",
+  teamAWicketKeeperId: "",
+  teamBWicketKeeperId: "",
+});
 const isSuperAdmin =
   session?.user?.email ===
   "surprisecricket11@gmail.com";
@@ -828,6 +842,84 @@ const handleAddPlayers = async (e) => {
     setError(error.message);
   }
 };
+
+function openEditMatchModal(match) {
+  setEditingMatch(match);
+
+  setEditMatchForm({
+    scheduledAt: match.scheduledAt
+      ? new Date(match.scheduledAt).toISOString().slice(0, 16)
+      : "",
+
+    oversPerInnings: match.oversPerInnings || 20,
+    powerplayOversInnings: match.powerplayOversInnings || 0,
+    maxWicketsPerInnings: match.maxWicketsPerInnings || "",
+    maxOversPerBowler: match.maxOversPerBowler || "",
+    seriesId: match.seriesId || "",
+
+    teamACaptainId: match.teamACaptainId || "",
+    teamBCaptainId: match.teamBCaptainId || "",
+    teamAWicketKeeperId: match.teamAWicketKeeperId || "",
+    teamBWicketKeeperId: match.teamBWicketKeeperId || "",
+  });
+console.log("EDIT MATCH PLAYERS DEBUG", {
+  teamA: match.teamA?.name,
+  teamAPlayers: match.teamA?.players?.length,
+  teamB: match.teamB?.name,
+  teamBPlayers: match.teamB?.players?.length,
+});
+  setShowEditMatchModal(true);
+}
+async function handleUpdateScheduledMatch(e) {
+  e.preventDefault();
+
+  if (!editingMatch?.id) return;
+
+  try {
+    await api(`/api/matches/${editingMatch.id}`, {
+      method: "PATCH",
+      body: JSON.stringify({
+        scheduledAt: editMatchForm.scheduledAt
+          ? new Date(editMatchForm.scheduledAt).toISOString()
+          : null,
+        oversPerInnings: Number(editMatchForm.oversPerInnings),
+        powerplayOversInnings: Number(editMatchForm.powerplayOversInnings || 0),
+        maxWicketsPerInnings: editMatchForm.maxWicketsPerInnings
+          ? Number(editMatchForm.maxWicketsPerInnings)
+          : null,
+        maxOversPerBowler: editMatchForm.maxOversPerBowler
+          ? Number(editMatchForm.maxOversPerBowler)
+          : null,
+        seriesId: editMatchForm.seriesId || null,
+
+        teamACaptainId: editMatchForm.teamACaptainId
+          ? Number(editMatchForm.teamACaptainId)
+          : null,
+        teamBCaptainId: editMatchForm.teamBCaptainId
+          ? Number(editMatchForm.teamBCaptainId)
+          : null,
+        teamAWicketKeeperId: editMatchForm.teamAWicketKeeperId
+          ? Number(editMatchForm.teamAWicketKeeperId)
+          : null,
+        teamBWicketKeeperId: editMatchForm.teamBWicketKeeperId
+          ? Number(editMatchForm.teamBWicketKeeperId)
+          : null,
+      }),
+    });
+
+    await loadMatches();
+
+    if (selectedMatchId && Number(selectedMatchId) === Number(editingMatch.id)) {
+      await loadSelectedMatch(selectedMatchId);
+    }
+
+    setShowEditMatchModal(false);
+    setEditingMatch(null);
+    setMessage("✅ Scheduled match updated");
+  } catch (err) {
+    setError(err.message);
+  }
+}
 async function openPermissionEditor(member) {
   try {
     setSelectedMember(member);
@@ -3033,6 +3125,14 @@ function triggerQuickAction(actionKey, callback) {
     setActiveQuickAction(null);
   }, 100); // was 400
 }
+const editTeamA =
+  editingMatch?.teamA ||
+  teams.find((t) => Number(t.id) === Number(editingMatch?.teamAId));
+
+const editTeamB =
+  editingMatch?.teamB ||
+  teams.find((t) => Number(t.id) === Number(editingMatch?.teamBId));
+
 const displayScoreboard =
   optimisticScoreboard || scoreboard;
 
@@ -5472,7 +5572,15 @@ recentBalls.slice(0, 20).map((ball, index) => {
                       ▶ Start Match
                     </button>
                   )}
-
+{normalizeStatus(match.status) === "SCHEDULED" && (
+  <button
+    type="button"
+    className="btn btn-outline"
+    onClick={() => openEditMatchModal(match)}
+  >
+    ✏️ Edit
+  </button>
+)}
                   {permissions?.canDeleteMatch && (
                     <button
                       type="button"
@@ -8731,6 +8839,243 @@ onClick={() => {
           </button>
         </div>
       </div>
+    </div>
+  </div>
+)}
+{showEditMatchModal && editingMatch && (
+  <div className="modal-backdrop">
+<div className="edit-match-modal edit-match-modal-light">
+      <div className="edit-match-header">
+        <div>
+          <h2>✏️ Edit Scheduled Match</h2>
+          <p>
+{editTeamA?.name || editingMatch.teamAName || "Team A"} vs{" "}
+{editTeamB?.name || editingMatch.teamBName || "Team B"}
+          </p>
+        </div>
+
+        <button
+          type="button"
+          className="edit-modal-close"
+          onClick={() => {
+            setShowEditMatchModal(false);
+            setEditingMatch(null);
+          }}
+        >
+          ✕
+        </button>
+      </div>
+
+      <form onSubmit={handleUpdateScheduledMatch}>
+        <div className="edit-match-grid">
+          <label>
+            <span>Scheduled Date/Time</span>
+            <input
+              type="datetime-local"
+              value={editMatchForm.scheduledAt}
+              onChange={(e) =>
+                setEditMatchForm((prev) => ({
+                  ...prev,
+                  scheduledAt: e.target.value,
+                }))
+              }
+            />
+          </label>
+
+          <label>
+            <span>Series</span>
+            <select
+              value={editMatchForm.seriesId}
+              onChange={(e) =>
+                setEditMatchForm((prev) => ({
+                  ...prev,
+                  seriesId: e.target.value,
+                }))
+              }
+            >
+              <option value="">No Series</option>
+              {seriesList.map((series) => (
+                <option key={series.id} value={series.id}>
+                  {series.name} {series.year ? `(${series.year})` : ""}
+                </option>
+              ))}
+            </select>
+          </label>
+
+          <label>
+            <span>Overs Per Innings</span>
+            <input
+              type="number"
+              min="1"
+              value={editMatchForm.oversPerInnings}
+              onChange={(e) =>
+                setEditMatchForm((prev) => ({
+                  ...prev,
+                  oversPerInnings: e.target.value,
+                }))
+              }
+            />
+          </label>
+
+          <label>
+            <span>Powerplay Overs</span>
+            <input
+              type="number"
+              min="0"
+              value={editMatchForm.powerplayOversInnings}
+              onChange={(e) =>
+                setEditMatchForm((prev) => ({
+                  ...prev,
+                  powerplayOversInnings: e.target.value,
+                }))
+              }
+            />
+          </label>
+
+          <label>
+            <span>Max Wickets</span>
+            <input
+              type="number"
+              min="1"
+              placeholder="Optional"
+              value={editMatchForm.maxWicketsPerInnings}
+              onChange={(e) =>
+                setEditMatchForm((prev) => ({
+                  ...prev,
+                  maxWicketsPerInnings: e.target.value,
+                }))
+              }
+            />
+          </label>
+
+          <label>
+            <span>Max Overs Per Bowler</span>
+            <input
+              type="number"
+              min="1"
+              placeholder="Optional"
+              value={editMatchForm.maxOversPerBowler}
+              onChange={(e) =>
+                setEditMatchForm((prev) => ({
+                  ...prev,
+                  maxOversPerBowler: e.target.value,
+                }))
+              }
+            />
+          </label>
+        </div>
+
+        <div className="edit-role-section">
+          <h3>🧢 Captains & Wicketkeepers</h3>
+
+          <div className="edit-role-grid">
+<div className="edit-team-role-card edit-team-role-card-light">
+<h4>{editTeamA?.name || editingMatch.teamAName || "Team A"}</h4>
+
+              <label>
+                <span>Captain-team A</span>
+                <select
+                  value={editMatchForm.teamACaptainId}
+                  onChange={(e) =>
+                    setEditMatchForm((prev) => ({
+                      ...prev,
+                      teamACaptainId: e.target.value,
+                    }))
+                  }
+                >
+                  <option value="">Select team A Captain</option>
+                  {(editTeamA?.players || []).map((player) => (
+                    <option key={player.id} value={player.id}>
+                      {player.name}
+                    </option>
+                  ))}
+                </select>
+              </label>
+
+              <label>
+                <span>Wicketkeeper-Team A</span>
+                <select
+                  value={editMatchForm.teamAWicketKeeperId}
+                  onChange={(e) =>
+                    setEditMatchForm((prev) => ({
+                      ...prev,
+                      teamAWicketKeeperId: e.target.value,
+                    }))
+                  }
+                >
+                  <option value="">Select team A Wicketkeeper</option>
+                  {(editTeamA?.players || []).map((player) => (
+                    <option key={player.id} value={player.id}>
+                      {player.name}
+                    </option>
+                  ))}
+                </select>
+              </label>
+            </div>
+
+            <div className="edit-team-role-card">
+<h4>{editTeamB?.name || editingMatch.teamBName || "Team B"}</h4>
+
+              <label>
+                <span>Captain-Team B</span>
+                <select
+                  value={editMatchForm.teamBCaptainId}
+                  onChange={(e) =>
+                    setEditMatchForm((prev) => ({
+                      ...prev,
+                      teamBCaptainId: e.target.value,
+                    }))
+                  }
+                >
+                  <option value="">Select team B Captain</option>
+                  {(editTeamB?.players || []).map((player) => (
+                    <option key={player.id} value={player.id}>
+                      {player.name}
+                    </option>
+                  ))}
+                </select>
+              </label>
+
+              <label>
+                <span>Wicketkeeper-Team B</span>
+                <select
+                  value={editMatchForm.teamBWicketKeeperId}
+                  onChange={(e) =>
+                    setEditMatchForm((prev) => ({
+                      ...prev,
+                      teamBWicketKeeperId: e.target.value,
+                    }))
+                  }
+                >
+                  <option value="">Select team B Wicketkeeper</option>
+                  {(editTeamB?.players || []).map((player) => (
+                    <option key={player.id} value={player.id}>
+                      {player.name}
+                    </option>
+                  ))}
+                </select>
+              </label>
+            </div>
+          </div>
+        </div>
+
+        <div className="edit-match-actions">
+          <button type="submit" className="btn btn-primary">
+            💾 Save Changes
+          </button>
+
+          <button
+            type="button"
+            className="btn btn-outline"
+            onClick={() => {
+              setShowEditMatchModal(false);
+              setEditingMatch(null);
+            }}
+          >
+            Cancel
+          </button>
+        </div>
+      </form>
     </div>
   </div>
 )}

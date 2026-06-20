@@ -30,7 +30,7 @@ function formatOversFromLegalBalls(legalBalls) {
 }
 
 function getInningsSummary(match, inningsNo) {
-  const balls = match.balls.filter(
+const balls = (match.balls || []).filter(
     (b) => Number(b.inningsNo) === Number(inningsNo)
   );
 
@@ -143,24 +143,41 @@ export async function GET(request) {
   }
 
   const matches = await prisma.match.findMany({
-    where,
-    include: {
-      league: true,
-      teamA: true,
-      teamB: true,
-      series: true,
-      battingFirstTeam: true,
-      balls: {
-        orderBy: [
-          { inningsNo: "asc" },
-          { sequence: "asc" },
-        ],
+  where: {
+    leagueId: Number(leagueId),
+  },
+  include: {
+    teamA: {
+      include: {
+        players: {
+          orderBy: {
+            name: "asc",
+          },
+        },
       },
     },
-    orderBy: {
-      createdAt: "desc",
+    teamB: {
+      include: {
+        players: {
+          orderBy: {
+            name: "asc",
+          },
+        },
+      },
     },
-  });
+      balls: {
+    orderBy: [
+      { inningsNo: "asc" },
+      { sequence: "asc" },
+    ],
+  },
+    battingFirstTeam: true,
+    series: true,
+  },
+  orderBy: {
+    createdAt: "desc",
+  },
+});
 
   for (const match of matches) {
     const innings1 = getInningsSummary(match, 1);
