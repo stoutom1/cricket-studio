@@ -8740,3 +8740,206 @@ body {
     width: 100%;
   }
 }
+.edit-match-modal-v2 {
+  width: min(860px, calc(100vw - 22px));
+  max-height: 92vh;
+  overflow-y: auto;
+  border-radius: 22px;
+  background: #ffffff;
+  color: #0f172a;
+  border: 1px solid #dbeafe;
+  box-shadow: 0 30px 90px rgba(15, 23, 42, 0.28);
+}
+
+.edit-match-header-v2 {
+  display: flex;
+  justify-content: space-between;
+  gap: 16px;
+  padding: 18px 20px;
+  background: linear-gradient(135deg, #f8fafc, #eefdf5);
+  border-bottom: 1px solid #e2e8f0;
+}
+
+.edit-match-kicker {
+  font-size: 11px;
+  font-weight: 900;
+  color: #16a34a;
+  text-transform: uppercase;
+  letter-spacing: 0.08em;
+}
+
+.edit-match-header-v2 h2 {
+  margin: 4px 0 10px;
+  font-size: 22px;
+  line-height: 1.1;
+  color: #0f172a;
+}
+
+.edit-match-vs-pill {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 7px;
+  font-size: 13px;
+  font-weight: 900;
+}
+
+.edit-match-vs-pill span {
+  padding: 6px 10px;
+  border-radius: 999px;
+  background: #e0f2fe;
+  color: #075985;
+}
+
+.edit-match-vs-pill b {
+  color: #64748b;
+  font-size: 11px;
+}
+
+.edit-modal-close-v2 {
+  width: 36px;
+  height: 36px;
+  border-radius: 999px;
+  border: 1px solid #cbd5e1;
+  background: #ffffff;
+  color: #0f172a;
+  font-weight: 900;
+  cursor: pointer;
+}
+
+.edit-match-modal-v2 form {
+  padding: 18px 20px 20px;
+}
+
+.edit-section-title {
+  margin: 0 0 10px;
+  font-size: 13px;
+  font-weight: 950;
+  color: #334155;
+}
+
+.edit-match-grid-v2 {
+  display: grid;
+  grid-template-columns: repeat(3, minmax(0, 1fr));
+  gap: 12px;
+}
+
+.edit-match-grid-v2 label,
+.edit-team-role-card-v2 label {
+  display: grid;
+  gap: 6px;
+}
+
+.edit-match-grid-v2 label span,
+.edit-team-role-card-v2 label span {
+  font-size: 10.5px;
+  font-weight: 950;
+  color: #64748b;
+  text-transform: uppercase;
+  letter-spacing: 0.045em;
+}
+
+.edit-match-grid-v2 input,
+.edit-match-grid-v2 select,
+.edit-team-role-card-v2 select {
+  width: 100%;
+  min-height: 42px;
+  border-radius: 12px;
+  border: 1px solid #cbd5e1;
+  background: #ffffff;
+  color: #0f172a;
+  padding: 9px 11px;
+  font-weight: 800;
+}
+
+.edit-role-section-v2 {
+  margin-top: 18px;
+  padding-top: 15px;
+  border-top: 1px solid #e2e8f0;
+}
+
+.edit-role-grid-v2 {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 12px;
+}
+
+.edit-team-role-card-v2 {
+  display: grid;
+  gap: 12px;
+  padding: 14px;
+  border-radius: 18px;
+  background: #f8fafc;
+  border: 1px solid #dbeafe;
+}
+
+.team-role-card-head {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  padding-bottom: 8px;
+  border-bottom: 1px solid #e2e8f0;
+}
+
+.team-role-card-head strong {
+  font-size: 14px;
+  color: #0f172a;
+}
+
+.team-badge {
+  width: 28px;
+  height: 28px;
+  border-radius: 999px;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  background: #dcfce7;
+  color: #166534;
+  font-size: 12px;
+  font-weight: 950;
+}
+
+.edit-match-actions-v2 {
+  display: flex;
+  justify-content: flex-end;
+  gap: 10px;
+  margin-top: 18px;
+  padding-top: 15px;
+  border-top: 1px solid #e2e8f0;
+}
+
+@media (max-width: 760px) {
+  .edit-match-modal-v2 {
+    width: calc(100vw - 14px);
+    max-height: 94vh;
+    border-radius: 18px;
+  }
+
+  .edit-match-header-v2 {
+    padding: 15px;
+  }
+
+  .edit-match-header-v2 h2 {
+    font-size: 20px;
+  }
+
+  .edit-match-modal-v2 form {
+    padding: 15px;
+  }
+
+  .edit-match-grid-v2,
+  .edit-role-grid-v2 {
+    grid-template-columns: 1fr;
+  }
+
+  .edit-match-actions-v2 {
+    position: sticky;
+    bottom: 0;
+    background: #ffffff;
+    display: grid;
+  }
+
+  .edit-match-actions-v2 button {
+    width: 100%;
+  }
+}

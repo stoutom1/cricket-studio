@@ -8844,19 +8844,21 @@ onClick={() => {
 )}
 {showEditMatchModal && editingMatch && (
   <div className="modal-backdrop">
-<div className="edit-match-modal edit-match-modal-light">
-      <div className="edit-match-header">
+    <div className="edit-match-modal-v2">
+      <div className="edit-match-header-v2">
         <div>
-          <h2>✏️ Edit Scheduled Match</h2>
-          <p>
-{editTeamA?.name || editingMatch.teamAName || "Team A"} vs{" "}
-{editTeamB?.name || editingMatch.teamBName || "Team B"}
-          </p>
+          <div className="edit-match-kicker">Scheduled Match</div>
+          <h2>Edit Match Details</h2>
+          <div className="edit-match-vs-pill">
+            <span>{editTeamA?.name || editingMatch.teamAName || "Team A"}</span>
+            <b>vs</b>
+            <span>{editTeamB?.name || editingMatch.teamBName || "Team B"}</span>
+          </div>
         </div>
 
         <button
           type="button"
-          className="edit-modal-close"
+          className="edit-modal-close-v2"
           onClick={() => {
             setShowEditMatchModal(false);
             setEditingMatch(null);
@@ -8867,7 +8869,9 @@ onClick={() => {
       </div>
 
       <form onSubmit={handleUpdateScheduledMatch}>
-        <div className="edit-match-grid">
+        <div className="edit-section-title">Match Settings</div>
+
+        <div className="edit-match-grid-v2">
           <label>
             <span>Scheduled Date/Time</span>
             <input
@@ -8903,7 +8907,7 @@ onClick={() => {
           </label>
 
           <label>
-            <span>Overs Per Innings</span>
+            <span>Overs</span>
             <input
               type="number"
               min="1"
@@ -8918,7 +8922,7 @@ onClick={() => {
           </label>
 
           <label>
-            <span>Powerplay Overs</span>
+            <span>Powerplay</span>
             <input
               type="number"
               min="0"
@@ -8949,7 +8953,7 @@ onClick={() => {
           </label>
 
           <label>
-            <span>Max Overs Per Bowler</span>
+            <span>Max Overs/Bowler</span>
             <input
               type="number"
               min="1"
@@ -8965,15 +8969,18 @@ onClick={() => {
           </label>
         </div>
 
-        <div className="edit-role-section">
-          <h3>🧢 Captains & Wicketkeepers</h3>
+        <div className="edit-role-section-v2">
+          <div className="edit-section-title">Captains & Wicketkeepers</div>
 
-          <div className="edit-role-grid">
-<div className="edit-team-role-card edit-team-role-card-light">
-<h4>{editTeamA?.name || editingMatch.teamAName || "Team A"}</h4>
+          <div className="edit-role-grid-v2">
+            <div className="edit-team-role-card-v2">
+              <div className="team-role-card-head">
+                <span className="team-badge">A</span>
+                <strong>{editTeamA?.name || editingMatch.teamAName || "Team A"}</strong>
+              </div>
 
               <label>
-                <span>Captain-team A</span>
+                <span>Captain</span>
                 <select
                   value={editMatchForm.teamACaptainId}
                   onChange={(e) =>
@@ -8983,7 +8990,7 @@ onClick={() => {
                     }))
                   }
                 >
-                  <option value="">Select team A Captain</option>
+                  <option value="">Select Captain</option>
                   {(editTeamA?.players || []).map((player) => (
                     <option key={player.id} value={player.id}>
                       {player.name}
@@ -8993,7 +9000,7 @@ onClick={() => {
               </label>
 
               <label>
-                <span>Wicketkeeper-Team A</span>
+                <span>Wicketkeeper</span>
                 <select
                   value={editMatchForm.teamAWicketKeeperId}
                   onChange={(e) =>
@@ -9003,7 +9010,7 @@ onClick={() => {
                     }))
                   }
                 >
-                  <option value="">Select team A Wicketkeeper</option>
+                  <option value="">Select Wicketkeeper</option>
                   {(editTeamA?.players || []).map((player) => (
                     <option key={player.id} value={player.id}>
                       {player.name}
@@ -9013,11 +9020,14 @@ onClick={() => {
               </label>
             </div>
 
-            <div className="edit-team-role-card">
-<h4>{editTeamB?.name || editingMatch.teamBName || "Team B"}</h4>
+            <div className="edit-team-role-card-v2">
+              <div className="team-role-card-head">
+                <span className="team-badge">B</span>
+                <strong>{editTeamB?.name || editingMatch.teamBName || "Team B"}</strong>
+              </div>
 
               <label>
-                <span>Captain-Team B</span>
+                <span>Captain</span>
                 <select
                   value={editMatchForm.teamBCaptainId}
                   onChange={(e) =>
@@ -9027,7 +9037,7 @@ onClick={() => {
                     }))
                   }
                 >
-                  <option value="">Select team B Captain</option>
+                  <option value="">Select Captain</option>
                   {(editTeamB?.players || []).map((player) => (
                     <option key={player.id} value={player.id}>
                       {player.name}
@@ -9037,7 +9047,7 @@ onClick={() => {
               </label>
 
               <label>
-                <span>Wicketkeeper-Team B</span>
+                <span>Wicketkeeper</span>
                 <select
                   value={editMatchForm.teamBWicketKeeperId}
                   onChange={(e) =>
@@ -9047,7 +9057,7 @@ onClick={() => {
                     }))
                   }
                 >
-                  <option value="">Select team B Wicketkeeper</option>
+                  <option value="">Select Wicketkeeper</option>
                   {(editTeamB?.players || []).map((player) => (
                     <option key={player.id} value={player.id}>
                       {player.name}
@@ -9059,20 +9069,16 @@ onClick={() => {
           </div>
         </div>
 
-        <div className="edit-match-actions">
-          <button type="submit" className="btn btn-primary">
-            💾 Save Changes
+        <div className="edit-match-actions-v2">
+          <button type="button" className="btn btn-outline" onClick={() => {
+            setShowEditMatchModal(false);
+            setEditingMatch(null);
+          }}>
+            Cancel
           </button>
 
-          <button
-            type="button"
-            className="btn btn-outline"
-            onClick={() => {
-              setShowEditMatchModal(false);
-              setEditingMatch(null);
-            }}
-          >
-            Cancel
+          <button type="submit" className="btn btn-primary">
+            💾 Save Changes
           </button>
         </div>
       </form>
