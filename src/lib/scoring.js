@@ -849,10 +849,134 @@ for (const row of batting.values()) {
         Number(a.inningsNo) - Number(b.inningsNo) ||
         a.firstSequence - b.firstSequence
     );
+const getSafePlayerName = (playerId) =>
+  playerMap.get(Number(playerId))?.name || `Player ${playerId}`;
 
+let winningTeamId = null;
+
+if (
+  ["COMPLETED", "COMPLETED_LOCKED"].includes(
+    String(match.status || "").toUpperCase()
+  )
+) {
+  const innings1 = summarizeInningsDetailed(
+    (match.balls || []).filter((b) => Number(b.inningsNo) === 1),
+    playerMap,
+    match.oversPerInnings
+  );
+
+  const innings2 = summarizeInningsDetailed(
+    (match.balls || []).filter((b) => Number(b.inningsNo) === 2),
+    playerMap,
+    match.oversPerInnings
+  );
+
+  const innings1TeamId = getBattingTeamId(match, 1);
+  const innings2TeamId = getBattingTeamId(match, 2);
+
+  if (innings2.runs > innings1.runs) {
+    winningTeamId = innings2TeamId;
+  } else if (innings1.runs > innings2.runs) {
+    winningTeamId = innings1TeamId;
+  }
+}
+
+const captaincy = [
+  {
+    playerId: match.teamACaptainId,
+    teamId: match.teamAId,
+    teamName: match.teamA?.name || "",
+  },
+  {
+    playerId: match.teamBCaptainId,
+    teamId: match.teamBId,
+    teamName: match.teamB?.name || "",
+  },
+]
+  .filter((row) => row.playerId)
+  .map((row) => ({
+    playerId: Number(row.playerId),
+    playerName: getSafePlayerName(row.playerId),
+    teamId: row.teamId,
+    teamName: row.teamName,
+    played: 1,
+    won: Number(row.teamId) === Number(winningTeamId) ? 1 : 0,
+    lost:
+      winningTeamId && Number(row.teamId) !== Number(winningTeamId)
+        ? 1
+        : 0,
+  }));
+
+const wicketkeepingMap = new Map();
+
+[
+  {
+    playerId: match.teamAWicketKeeperId,
+    teamId: match.teamAId,
+    teamName: match.teamA?.name || "",
+  },
+  {
+    playerId: match.teamBWicketKeeperId,
+    teamId: match.teamBId,
+    teamName: match.teamB?.name || "",
+  },
+]
+  .filter((row) => row.playerId)
+  .forEach((row) => {
+    wicketkeepingMap.set(Number(row.playerId), {
+      playerId: Number(row.playerId),
+      playerName: getSafePlayerName(row.playerId),
+      teamId: row.teamId,
+      teamName: row.teamName,
+      catches: 0,
+      stumpings: 0,
+      runOuts: 0,
+      dismissals: 0,
+    });
+  });
+
+for (const ball of match.balls || []) {
+  const wicketType = String(ball.wicketType || "").toUpperCase();
+  const fielderId = Number(ball.fielderId || 0);
+  const assistantFielderId = Number(ball.assistantFielderId || 0);
+
+  if (wicketkeepingMap.has(fielderId)) {
+    const row = wicketkeepingMap.get(fielderId);
+
+    if (wicketType === "CAUGHT") row.catches += 1;
+    if (wicketType === "STUMPED") row.stumpings += 1;
+    if (wicketType === "RUN_OUT") row.runOuts += 1;
+  }
+
+  if (wicketType === "RUN_OUT" && wicketkeepingMap.has(assistantFielderId)) {
+    wicketkeepingMap.get(assistantFielderId).runOuts += 1;
+  }
+}
+
+const wicketkeeping = [...wicketkeepingMap.values()].map((row) => ({
+  ...row,
+  dismissals: row.catches + row.stumpings + row.runOuts,
+}));
+/*
+console.log("CAPTAIN WK DEBUG", {
+  teamACaptainId: match.teamACaptainId,
+  teamBCaptainId: match.teamBCaptainId,
+  teamAWicketKeeperId: match.teamAWicketKeeperId,
+  teamBWicketKeeperId: match.teamBWicketKeeperId,
+  captaincy,
+  wicketkeeping,
+  balls: match.balls?.map((b) => ({
+    wicketType: b.wicketType,
+    fielderId: b.fielderId,
+    assistantFielderId: b.assistantFielderId,
+  })),
+  });
+  */
   return {
     batting: battingRows,
     bowling: bowlingRows,
+    captaincy,
+    wicketkeeping,
 
     // Added for professional scoreboard
     battingRows,

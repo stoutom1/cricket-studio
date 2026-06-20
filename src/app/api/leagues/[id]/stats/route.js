@@ -3,6 +3,7 @@ import prisma from "@/lib/prisma";
 import { getServerSession } from "next-auth";
 import { authOptions } from "@/lib/auth";
 import { isSuperAdmin } from "@/lib/superAdmin";
+import { buildMatchStats } from "@/lib/scoring";
 
 export const runtime = "nodejs";
 
@@ -154,6 +155,68 @@ function playerStatsKey(player, shouldMergePlayersByName) {
 
   return String(player.id);
 }
+function mergeCaptaincy(allStats) {
+  const map = new Map();
+
+  for (const stat of allStats) {
+    for (const row of stat.captaincy || []) {
+      const key = Number(row.playerId);
+
+      if (!map.has(key)) {
+        map.set(key, {
+          playerId: key,
+          playerName: row.playerName,
+          teamName: row.teamName,
+          played: 0,
+          won: 0,
+          lost: 0,
+        });
+      }
+
+      const existing = map.get(key);
+
+      existing.played += Number(row.played || 0);
+      existing.won += Number(row.won || 0);
+      existing.lost += Number(row.lost || 0);
+    }
+  }
+
+  return [...map.values()].sort(
+    (a, b) => b.won - a.won || b.played - a.played
+  );
+}
+function mergeWicketkeeping(allStats) {
+  const map = new Map();
+
+  for (const stat of allStats) {
+    for (const row of stat.wicketkeeping || []) {
+      const key = Number(row.playerId);
+
+      if (!map.has(key)) {
+        map.set(key, {
+          playerId: key,
+          playerName: row.playerName,
+          teamName: row.teamName,
+          catches: 0,
+          stumpings: 0,
+          runOuts: 0,
+          dismissals: 0,
+        });
+      }
+
+      const existing = map.get(key);
+
+      existing.catches += Number(row.catches || 0);
+      existing.stumpings += Number(row.stumpings || 0);
+      existing.runOuts += Number(row.runOuts || 0);
+      existing.dismissals += Number(row.dismissals || 0);
+    }
+  }
+
+  return [...map.values()].sort(
+    (a, b) => b.dismissals - a.dismissals
+  );
+}
 export async function GET(req, { params }) {
   try {
     const session = await getServerSession(authOptions);
@@ -220,21 +283,22 @@ const shouldMergePlayersByName =
       }
     });
 
-    const matches = await prisma.match.findMany({
-      where: { leagueId },
-      include: {
-        balls: {
-          orderBy: [
-            { inningsNo: "asc" },
-            { sequence: "asc" }
-          ]
-        },
-        teamA: true,
-        teamB: true,
-        battingFirstTeam: true
-      }
-    });
-
+const matches = await prisma.match.findMany({
+  where: {
+    leagueId: Number(leagueId),
+    status: {
+      in: ["COMPLETED", "COMPLETED_LOCKED"],
+    },
+  },
+  include: {
+    teamA: { include: { players: true } },
+    teamB: { include: { players: true } },
+    balls: true,
+  },
+});
+const allStats = matches.map((match) =>
+  buildMatchStats(match)
+);
     const allPlayers = teams.flatMap((team) => team.players || []);
 
     const playerMap = new Map();
@@ -543,13 +607,19 @@ const rankings = {
     .filter((r) => r.allRounderPoints > 0)
     .sort((a, b) => b.allRounderPoints - a.allRounderPoints)
 };
+const captaincy = mergeCaptaincy(allStats);
+const wicketkeeping = mergeWicketkeeping(allStats);
+
+
     return NextResponse.json({
       leagueId,
       matchesCount: eligibleMatches.length,
       batting,
       bowling,
       fielding,
-      rankings
+      rankings,
+      captaincy,
+      wicketkeeping,
     });
   } catch (error) {
     console.error("League stats failed:", error);

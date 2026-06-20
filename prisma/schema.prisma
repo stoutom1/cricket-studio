@@ -78,6 +78,10 @@ model Match {
   seriesId              Int?
   series                Series?      @relation(fields: [seriesId], references: [id])
   innings1EndedManually Boolean      @default(false)
+  teamACaptainId        Int?
+  teamBCaptainId        Int?
+  teamAWicketKeeperId   Int?
+  teamBWicketKeeperId   Int?
 }
 
 model Ball {

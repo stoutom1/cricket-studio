@@ -451,6 +451,10 @@ const match = await prisma.match.create({
       scheduledAt: scheduledAt
         ? new Date(scheduledAt)
         : null,
+      teamACaptainId: body.teamACaptainId ? Number(body.teamACaptainId) : null,
+      teamBCaptainId: body.teamBCaptainId ? Number(body.teamBCaptainId) : null,
+      teamAWicketKeeperId: body.teamAWicketKeeperId ? Number(body.teamAWicketKeeperId) : null,
+      teamBWicketKeeperId: body.teamBWicketKeeperId ? Number(body.teamBWicketKeeperId) : null,  
       shareCode
     }
   });

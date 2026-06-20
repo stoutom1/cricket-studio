@@ -469,6 +469,10 @@ useEffect(() => {
 ]);
 useEffect(() => {
   if (!activeLeagueId) {
+    setShowDeliverySetupModal(false);
+setPendingDeliverySetupAfterStart(false);
+setPendingSecondInningsSetup(false);
+setDeliverySetupReason("");
     setMatches([]);
     setSelectedMatchId("");
     setMatchDetail(null);
@@ -559,6 +563,16 @@ async function loadLeagueStats(leagueId) {
   const data = await api(`/api/leagues/${leagueId}/stats`);
   setLeagueStats(data);
 }
+const captaincyRows =
+  leagueStats?.captaincy?.length
+    ? leagueStats.captaincy
+    : stats?.captaincy || [];
+
+const wicketkeepingRows =
+  leagueStats?.wicketkeeping?.length
+    ? leagueStats.wicketkeeping
+    : stats?.wicketkeeping || [];
+    
 const filteredTeams = teams.filter(
   (team) =>
     String(team.leagueId) ===
@@ -590,7 +604,11 @@ const teamsForMatch =
   maxOversPerBowler: "",
 
   // NEW
-  status: "SCHEDULED"
+  status: "SCHEDULED",
+  teamACaptainId: "",
+  teamBCaptainId: "",
+  teamAWicketKeeperId: "",
+  teamBWicketKeeperId: ""
 });
 
 const [ballForm, setBallForm] = useState({
@@ -977,6 +995,98 @@ function showToast(type, text) {
   setTimeout(() => {
     setToast(null);
   }, 3000);
+}
+function buildCaptainStats(matches) {
+  const captainMap = new Map();
+
+  for (const match of matches || []) {
+    const status = String(match.status || "").toUpperCase();
+
+    if (!["COMPLETED", "COMPLETED_LOCKED"].includes(status)) continue;
+
+    const statusText = String(match.statusText || "").toLowerCase();
+
+    const captains = [
+      {
+        playerId: match.teamACaptainId,
+        teamName: match.teamA?.name,
+      },
+      {
+        playerId: match.teamBCaptainId,
+        teamName: match.teamB?.name,
+      },
+    ].filter((c) => c.playerId);
+
+    for (const captain of captains) {
+      if (!captainMap.has(Number(captain.playerId))) {
+        captainMap.set(Number(captain.playerId), {
+          playerId: Number(captain.playerId),
+          played: 0,
+          won: 0,
+          lost: 0,
+        });
+      }
+
+      const row = captainMap.get(Number(captain.playerId));
+      row.played += 1;
+
+      if (statusText.includes(String(captain.teamName || "").toLowerCase())) {
+        row.won += 1;
+      } else if (!statusText.includes("tied")) {
+        row.lost += 1;
+      }
+    }
+  }
+
+  return [...captainMap.values()];
+}
+function buildWicketKeeperStats(matches) {
+  const keeperMap = new Map();
+
+  for (const match of matches || []) {
+    const keepers = [
+      match.teamAWicketKeeperId,
+      match.teamBWicketKeeperId,
+    ].filter(Boolean);
+
+    for (const keeperId of keepers) {
+      if (!keeperMap.has(Number(keeperId))) {
+        keeperMap.set(Number(keeperId), {
+          playerId: Number(keeperId),
+          catches: 0,
+          stumpings: 0,
+          runOuts: 0,
+          dismissals: 0,
+        });
+      }
+    }
+
+    for (const ball of match.balls || []) {
+      const wicketType = String(ball.wicketType || "").toUpperCase();
+
+      const fielderId = Number(ball.fielderId || 0);
+      const assistantFielderId = Number(ball.assistantFielderId || 0);
+
+      if (keeperMap.has(fielderId)) {
+        const row = keeperMap.get(fielderId);
+
+        if (wicketType === "CAUGHT") row.catches += 1;
+        if (wicketType === "STUMPED") row.stumpings += 1;
+        if (wicketType === "RUN_OUT") row.runOuts += 1;
+      }
+
+      if (keeperMap.has(assistantFielderId)) {
+        const row = keeperMap.get(assistantFielderId);
+
+        if (wicketType === "RUN_OUT") row.runOuts += 1;
+      }
+    }
+  }
+
+  return [...keeperMap.values()].map((row) => ({
+    ...row,
+    dismissals: row.catches + row.stumpings + row.runOuts,
+  }));
 }
 function flashScoreButton(key, callback) {
   setPressedScoreKey(key);
@@ -1670,6 +1780,21 @@ status: "SCHEDULED",
       ? Number(matchForm.maxOversPerBowler)
       : null,
   seriesId: matchForm.seriesId || selectedSeriesId || null,
+  teamACaptainId: matchForm.teamACaptainId
+  ? Number(matchForm.teamACaptainId)
+  : null,
+
+teamBCaptainId: matchForm.teamBCaptainId
+  ? Number(matchForm.teamBCaptainId)
+  : null,
+
+teamAWicketKeeperId: matchForm.teamAWicketKeeperId
+  ? Number(matchForm.teamAWicketKeeperId)
+  : null,
+
+teamBWicketKeeperId: matchForm.teamBWicketKeeperId
+  ? Number(matchForm.teamBWicketKeeperId)
+  : null,
 })
       });
 
@@ -2056,6 +2181,10 @@ setOptimisticScoreboard(null);
 }
 
 async function selectLeague(league) {
+  setShowDeliverySetupModal(false);
+setPendingDeliverySetupAfterStart(false);
+setPendingSecondInningsSetup(false);
+setDeliverySetupReason("");
   setActiveLeagueId(league.id);
   setSelectedMatchId("");
   setMatches([]);
@@ -2826,6 +2955,10 @@ function handleStartMatch(match) {
     matchId: String(match.id),
     teamAId: String(match.teamAId),
     teamBId: String(match.teamBId),
+    teamACaptainId: String(match.teamACaptainId),
+    teamBCaptainId: String(match.teamBCaptainId),
+    teamAWicketKeeperId: String(match.teamAWicketKeeperId),
+    teamBWicketKeeperId: String(match.teamBWicketKeeperId),
     battingFirstTeamId: ""
   }));
   setShowStartMatchModal(true);
@@ -2855,9 +2988,19 @@ async function confirmStartMatch() {
 }
 useEffect(() => {
   if (!pendingDeliverySetupAfterStart) return;
-  if (!scoreboard) return;
+  if (activeTab !== "scoring") return;
+  if (!selectedMatchId) return;
+  if (!scoreboard?.match) return;
   if (!matchDetail) return;
   if (showStartMatchModal) return;
+
+  const hasBalls =
+    (matchDetail?.balls || []).length > 0;
+
+  if (hasBalls) {
+    setPendingDeliverySetupAfterStart(false);
+    return;
+  }
 
   setDeliverySetupReason(
     "Select opening striker, non-striker, and bowler before scoring the first ball."
@@ -2867,10 +3010,13 @@ useEffect(() => {
   setPendingDeliverySetupAfterStart(false);
 }, [
   pendingDeliverySetupAfterStart,
-  scoreboard,
-  matchDetail,
-  showStartMatchModal
+  activeTab,
+  selectedMatchId,
+  scoreboard?.match?.id,
+  matchDetail?.id,
+  showStartMatchModal,
 ]);
+
 useEffect(() => {
   if (!pendingSecondInningsSetup) return;
 
@@ -2947,6 +3093,8 @@ const activeInningsBalls =
   scoreboard?.innings?.[currentInningsNo - 1]?.balls || 0;
 
 const needsDeliverySetup =
+  activeTab === "scoring" &&
+  scoringSubTab === "ADVANCED" &&
   matchDetail &&
   scoreboard &&
   !isMatchReadyToLock &&
@@ -2955,26 +3103,6 @@ const needsDeliverySetup =
     !ballForm.nonStrikerId ||
     !ballForm.bowlerId
   );
-  
-useEffect(() => {
-if (!needsDeliverySetup) return;
-if (showStartMatchModal) return;
-if (pendingDeliverySetupAfterStart) return;
-
-  const reason =
-    currentInningsNo === 1 && activeInningsBalls === 0
-      ? "Select opening striker, non-striker, and bowler before scoring the first ball."
-      : currentInningsNo === 2 && activeInningsBalls === 0
-      ? "Select 2nd innings striker, non-striker, and bowler before scoring."
-      : "Select striker, non-striker, and bowler before the next delivery.";
-
-  setDeliverySetupReason(reason);
-  setShowDeliverySetupModal(true);
-}, [
-  needsDeliverySetup,
-  currentInningsNo,
-  activeInningsBalls
-]);
 
 const canCreateMatch =
   activeLeague?.teams?.length >= 2;
@@ -4993,8 +5121,91 @@ recentBalls.slice(0, 20).map((ball, index) => {
                 ))}
               </select>
             </label>
+                <label>
+      <span>Team A Captain Optional</span>
+      <select
+        value={matchForm.teamACaptainId || ""}
+        onChange={(e) =>
+          setMatchForm((prev) => ({
+            ...prev,
+            teamACaptainId: e.target.value,
+          }))
+        }
+      >
+        <option value="">Select Captain</option>
+        {teams
+          .find((t) => Number(t.id) === Number(matchForm.teamAId))
+          ?.players?.map((player) => (
+            <option key={player.id} value={player.id}>
+              {player.name}
+            </option>
+          ))}
+      </select>
+    </label>
+    <label>
+      <span>Team B Captain Optional</span>
+      <select
+        value={matchForm.teamBCaptainId || ""}
+        onChange={(e) =>
+          setMatchForm((prev) => ({
+            ...prev,
+            teamBCaptainId: e.target.value,
+          }))
+        }
+      >
+        <option value="">Select Captain</option>
+        {teams
+          .find((t) => Number(t.id) === Number(matchForm.teamBId))
+          ?.players?.map((player) => (
+            <option key={player.id} value={player.id}>
+              {player.name}
+            </option>
+          ))}
+      </select>
+    </label>
+    <label>
+      <span>Team A Wicketkeeper Optional</span>
+      <select
+        value={matchForm.teamAWicketKeeperId || ""}
+        onChange={(e) =>
+          setMatchForm((prev) => ({
+            ...prev,
+            teamAWicketKeeperId: e.target.value,
+          }))
+        }
+      >
+        <option value="">Select Wicketkeeper</option>
+        {teams
+          .find((t) => Number(t.id) === Number(matchForm.teamAId))
+          ?.players?.map((player) => (
+            <option key={player.id} value={player.id}>
+              {player.name}
+            </option>
+          ))}
+      </select>
+    </label>
+    <label>
+      <span>Team B Wicketkeeper Optional</span>
+      <select
+        value={matchForm.teamBWicketKeeperId || ""}
+        onChange={(e) =>
+          setMatchForm((prev) => ({
+            ...prev,
+            teamBWicketKeeperId: e.target.value,
+          }))
+        }
+      >
+        <option value="">Select Wicketkeeper</option>
+        {teams
+          .find((t) => Number(t.id) === Number(matchForm.teamBId))
+          ?.players?.map((player) => (
+            <option key={player.id} value={player.id}>
+              {player.name}
+            </option>
+          ))}
+      </select>
+    </label>
           </div>
-
           <label>
             <span>Batting First</span>
             <select
@@ -5800,6 +6011,20 @@ recentBalls.slice(0, 20).map((ball, index) => {
         >
           🧤 Fielding
         </button>
+        <button
+          type="button"
+          className={statsSubTab === "CAPTAINCY" ? "active" : ""}
+          onClick={() => setStatsSubTab("CAPTAINCY")}
+        >
+          🧢 Captaincy
+        </button>
+        <button
+          type="button"
+          className={statsSubTab === "WICKETKEEPING" ? "active" : ""}
+          onClick={() => setStatsSubTab("WICKETKEEPING")}
+        >
+          🧤 Wicketkeeping
+        </button>
 
         <button
           type="button"
@@ -6013,6 +6238,76 @@ recentBalls.slice(0, 20).map((ball, index) => {
       </>
     )}
   </Card>
+)}
+{statsSubTab === "CAPTAINCY" && (
+  <div className="table-scroll">
+    {statsSubTab === "CAPTAINCY" && !leagueStats?.captaincy?.length && (
+  <div className="mgmt-clean-empty">
+    No captaincy stats yet.
+  </div>
+)}
+    <table className="score-table">
+      <thead>
+        <tr>
+          <th>Captain</th>
+          <th>Team</th>
+          <th>Matches</th>
+          <th>Won</th>
+          <th>Lost</th>
+          <th>Win %</th>
+        </tr>
+      </thead>
+
+      <tbody>
+        {(leagueStats?.captaincy || []).map((row) => (
+          <tr key={row.playerId}>
+            <td>{row.playerName}</td>
+            <td>{row.teamName}</td>
+            <td>{row.played}</td>
+            <td>{row.won}</td>
+            <td>{row.lost}</td>
+            <td>{row.played ? ((row.won / row.played) * 100).toFixed(1) : "0.0"}%</td>
+          </tr>
+        ))}
+      </tbody>
+    </table>
+  </div>
+)}
+{statsSubTab === "WICKETKEEPING" && (
+  <div className="table-scroll">
+    {statsSubTab === "WICKETKEEPING" && !leagueStats?.wicketkeeping?.length && (
+  <div className="mgmt-clean-empty">
+    No wicketkeeping stats yet.
+  </div>
+)}
+    <table className="score-table">
+      <thead>
+        <tr>
+          <th>Keeper</th>
+          <th>Team</th>
+          <th>Catches</th>
+          <th>Stumpings</th>
+          <th>Run Outs</th>
+          <th>Total</th>
+        </tr>
+      </thead>
+
+      <tbody>
+        {(leagueStats?.wicketkeeping || []).map((row) => (
+          <tr key={row.playerId}>
+            <td>{row.playerName}</td>
+            <td>{row.teamName}</td>
+            <td>{row.catches}</td>
+            <td>{row.stumpings}</td>
+            <td>{row.runOuts}</td>
+            <td>
+              <strong>{row.dismissals}</strong>
+            </td>
+          </tr>
+        ))}
+      </tbody>
+    </table>
+  </div>
 )}
       </>
     )}
