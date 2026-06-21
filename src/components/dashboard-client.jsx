@@ -271,7 +271,8 @@ const [correctionForm, setCorrectionForm] = useState({
   newBatterAfterReplacementId: "",
 });
 const [lastCorrectionId, setLastCorrectionId] = useState(null);
-
+const [showKeeperChangeModal, setShowKeeperChangeModal] = useState(false);
+const [keeperChangeForm, setKeeperChangeForm] = useState({newKeeperId: "",note: "",});
 const [showEditMatchModal, setShowEditMatchModal] = useState(false);
 const [editingMatch, setEditingMatch] = useState(null);
 const [editMatchForm, setEditMatchForm] = useState({
@@ -3790,7 +3791,70 @@ const filteredMatchesForContextLens = uniqueMatchesForFilter
 
     return true;
   });
-  
+  async function handleWicketKeeperChange() {
+  try {
+    const bowlingTeamId =
+      Number(ballForm.inningsNo) === 1
+        ? Number(matchDetail?.teamAId) === Number(matchDetail?.battingFirstTeamId)
+          ? matchDetail?.teamBId
+          : matchDetail?.teamAId
+        : Number(matchDetail?.teamAId) === Number(matchDetail?.battingFirstTeamId)
+        ? matchDetail?.teamAId
+        : matchDetail?.teamBId;
+
+    await api(`/api/matches/${selectedMatchId}/wicketkeeper-change`, {
+      method: "POST",
+      body: JSON.stringify({
+        inningsNo: keeperChangeForm.inningsNo,
+        afterSequence: keeperChangeForm.afterSequence || scoreboard?.currentState?.lastSequence || 0,
+        teamId: bowlingTeamId,
+        newKeeperId: keeperChangeForm.newKeeperId,
+        note: keeperChangeForm.note,
+      }),
+    });
+
+    await loadSelectedMatch(selectedMatchId);
+    setShowKeeperChangeModal(false);
+    setMessage("✅ Wicketkeeper changed successfully.");
+  } catch (err) {
+    setError(err.message);
+  }
+}
+async function handleLiveWicketKeeperChange() {
+  try {
+    if (!selectedMatchId) {
+      setError("Please select a match first.");
+      return;
+    }
+
+    if (!keeperChangeForm.newKeeperId) {
+      setError("Please select the new wicketkeeper.");
+      return;
+    }
+
+    await api(`/api/matches/${selectedMatchId}/wicketkeeper-change`, {
+      method: "POST",
+      body: JSON.stringify({
+        inningsNo: ballForm.inningsNo,
+        newKeeperId: keeperChangeForm.newKeeperId,
+        note: keeperChangeForm.note,
+      }),
+    });
+
+    await loadSelectedMatch(selectedMatchId);
+    await loadMatches();
+
+    setShowKeeperChangeModal(false);
+    setKeeperChangeForm({
+      newKeeperId: "",
+      note: "",
+    });
+
+    setMessage("✅ Wicketkeeper changed from this point onward.");
+  } catch (err) {
+    setError(err.message);
+  }
+}
 function ContextLens() {
   const totalFilters =
     (contextFilters.teamIds?.length || 0) +
@@ -4604,6 +4668,14 @@ recentBalls.slice(0, 20).map((ball, index) => {
   >
     ⇄ Swap
   </button>
+<button
+  type="button"
+  className="btn btn-outline"
+  disabled={isSavingBall || isMatchCompleted || isMatchLocked || isMatchAbandoned}
+  onClick={() => setShowKeeperChangeModal(true)}
+>
+  🧤 Change WK
+</button>
     <button
   type="button"
   className="btn btn-outline"
@@ -9514,6 +9586,77 @@ onClick={() => {
     ? "Recalculating..."
     : "Apply Correction"}
 </button>
+      </div>
+    </div>
+  </div>
+)}
+{showKeeperChangeModal && (
+  <div className="modal-backdrop">
+    <div className="correction-modal">
+      <div className="correction-header">
+        <h2>🧤 Change Wicketkeeper</h2>
+
+        <button
+          type="button"
+          className="edit-modal-close-v2"
+          onClick={() => setShowKeeperChangeModal(false)}
+        >
+          ✕
+        </button>
+      </div>
+
+      <div className="form-grid">
+        <label>
+          <span>New Wicketkeeper</span>
+          <select
+            value={keeperChangeForm.newKeeperId}
+            onChange={(e) =>
+              setKeeperChangeForm((prev) => ({
+                ...prev,
+                newKeeperId: e.target.value,
+              }))
+            }
+          >
+            <option value="">Select wicketkeeper</option>
+            {(bowlingTeam?.players || []).map((p) => (
+              <option key={p.id} value={p.id}>
+                {p.name}
+              </option>
+            ))}
+          </select>
+        </label>
+
+        <label>
+          <span>Note</span>
+          <input
+            value={keeperChangeForm.note}
+            onChange={(e) =>
+              setKeeperChangeForm((prev) => ({
+                ...prev,
+                note: e.target.value,
+              }))
+            }
+            placeholder="Optional"
+          />
+        </label>
+      </div>
+
+      <div className="edit-match-actions-v2">
+        <button
+          type="button"
+          className="btn btn-outline"
+          onClick={() => setShowKeeperChangeModal(false)}
+        >
+          Cancel
+        </button>
+
+        <button
+          type="button"
+          className="btn btn-primary"
+          onClick={handleLiveWicketKeeperChange}
+        >
+          Save WK Change
+        </button>
       </div>
     </div>
   </div>

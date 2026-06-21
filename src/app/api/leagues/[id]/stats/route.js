@@ -155,6 +155,54 @@ function playerStatsKey(player, shouldMergePlayersByName) {
 
   return String(player.id);
 }
+function getKeeperForBall(match, ball, keeperChanges = []) {
+  const inningsNo = Number(ball.inningsNo);
+  const sequence = Number(ball.sequence);
+
+  const bowlingTeamId =
+    inningsNo === 1
+      ? Number(match.teamAId) === Number(match.battingFirstTeamId)
+        ? match.teamBId
+        : match.teamAId
+      : Number(match.teamAId) === Number(match.battingFirstTeamId)
+      ? match.teamAId
+      : match.teamBId;
+
+  const changesForTeam = (keeperChanges || [])
+    .filter(
+      (change) =>
+        Number(change.inningsNo) === inningsNo &&
+        Number(change.teamId) === Number(bowlingTeamId)
+    )
+    .sort(
+      (a, b) =>
+        Number(a.afterSequence) - Number(b.afterSequence)
+    );
+
+  const latestChangeBeforeBall = changesForTeam
+    .filter(
+      (change) =>
+        Number(change.afterSequence) < sequence
+    )
+    .sort(
+      (a, b) =>
+        Number(b.afterSequence) - Number(a.afterSequence)
+    )[0];
+
+  if (latestChangeBeforeBall) {
+    return Number(latestChangeBeforeBall.newKeeperId);
+  }
+
+  const firstChange = changesForTeam[0];
+
+  if (firstChange?.oldKeeperId) {
+    return Number(firstChange.oldKeeperId);
+  }
+
+  return Number(match.teamAId) === Number(bowlingTeamId)
+    ? Number(match.teamAWicketKeeperId)
+    : Number(match.teamBWicketKeeperId);
+}
 function mergeCaptaincy(allStats) {
   const map = new Map();
 
@@ -294,6 +342,7 @@ const matches = await prisma.match.findMany({
     teamA: { include: { players: true } },
     teamB: { include: { players: true } },
     balls: true,
+    wicketKeeperChanges: true,
   },
 });
 const allStats = matches.map((match) =>

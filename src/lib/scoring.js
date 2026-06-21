@@ -202,6 +202,54 @@ export function getNextAvailableBatter(
     ) || null
   );
 }
+function getKeeperForBall(match, ball, keeperChanges = []) {
+  const inningsNo = Number(ball.inningsNo);
+  const sequence = Number(ball.sequence);
+
+  const bowlingTeamId =
+    inningsNo === 1
+      ? Number(match.teamAId) === Number(match.battingFirstTeamId)
+        ? match.teamBId
+        : match.teamAId
+      : Number(match.teamAId) === Number(match.battingFirstTeamId)
+      ? match.teamAId
+      : match.teamBId;
+
+  const changesForTeam = (keeperChanges || [])
+    .filter(
+      (change) =>
+        Number(change.inningsNo) === inningsNo &&
+        Number(change.teamId) === Number(bowlingTeamId)
+    )
+    .sort(
+      (a, b) =>
+        Number(a.afterSequence) - Number(b.afterSequence)
+    );
+
+  const latestChangeBeforeBall = changesForTeam
+    .filter(
+      (change) =>
+        Number(change.afterSequence) < sequence
+    )
+    .sort(
+      (a, b) =>
+        Number(b.afterSequence) - Number(a.afterSequence)
+    )[0];
+
+  if (latestChangeBeforeBall) {
+    return Number(latestChangeBeforeBall.newKeeperId);
+  }
+
+  const firstChange = changesForTeam[0];
+
+  if (firstChange?.oldKeeperId) {
+    return Number(firstChange.oldKeeperId);
+  }
+
+  return Number(match.teamAId) === Number(bowlingTeamId)
+    ? Number(match.teamAWicketKeeperId)
+    : Number(match.teamBWicketKeeperId);
+}
 function runsCompleted(ball) {
   switch (ball.extraType) {
     case "WIDE":
@@ -946,56 +994,97 @@ const captaincy = [
         : 0,
   }));
 
-const wicketkeepingMap = new Map();
+const wicketKeeperMap = new Map();
 
-[
-  {
-    playerId: match.teamAWicketKeeperId,
-    teamId: match.teamAId,
-    teamName: match.teamA?.name || "",
-  },
-  {
-    playerId: match.teamBWicketKeeperId,
-    teamId: match.teamBId,
-    teamName: match.teamB?.name || "",
-  },
-]
-  .filter((row) => row.playerId)
-  .forEach((row) => {
-    wicketkeepingMap.set(Number(row.playerId), {
-      playerId: Number(row.playerId),
-      playerName: getSafePlayerName(row.playerId),
-      teamId: row.teamId,
-      teamName: row.teamName,
+function ensureKeeperRow(playerId, teamId, teamName) {
+  if (!playerId) return;
+
+  const id = Number(playerId);
+
+  if (!wicketKeeperMap.has(id)) {
+    wicketKeeperMap.set(id, {
+      playerId: id,
+      playerName: getSafePlayerName(id),
+      teamId,
+      teamName,
       catches: 0,
       stumpings: 0,
       runOuts: 0,
       dismissals: 0,
     });
-  });
+  }
+}
+ensureKeeperRow(
+  match.teamAWicketKeeperId,
+  match.teamAId,
+  match.teamA?.name || ""
+);
 
+ensureKeeperRow(
+  match.teamBWicketKeeperId,
+  match.teamBId,
+  match.teamB?.name || ""
+);
+
+for (const change of match.wicketKeeperChanges || []) {
+  ensureKeeperRow(
+    change.oldKeeperId,
+    change.teamId,
+    Number(change.teamId) === Number(match.teamAId)
+      ? match.teamA?.name || ""
+      : match.teamB?.name || ""
+  );
+
+  ensureKeeperRow(
+    change.newKeeperId,
+    change.teamId,
+    Number(change.teamId) === Number(match.teamAId)
+      ? match.teamA?.name || ""
+      : match.teamB?.name || ""
+  );
+}
 for (const ball of match.balls || []) {
   const wicketType = String(ball.wicketType || "").toUpperCase();
+
+  const activeKeeperId = getKeeperForBall(
+    match,
+    ball,
+    match.wicketKeeperChanges || []
+  );
+
+  ensureKeeperRow(
+    activeKeeperId,
+    null,
+    ""
+  );
+
+  const keeperRow = wicketKeeperMap.get(Number(activeKeeperId));
+
+  if (wicketType === "STUMPED" && keeperRow) {
+    keeperRow.stumpings += 1;
+  }
+
   const fielderId = Number(ball.fielderId || 0);
   const assistantFielderId = Number(ball.assistantFielderId || 0);
 
-  if (wicketkeepingMap.has(fielderId)) {
-    const row = wicketkeepingMap.get(fielderId);
-
-    if (wicketType === "CAUGHT") row.catches += 1;
-    if (wicketType === "STUMPED") row.stumpings += 1;
-    if (wicketType === "RUN_OUT") row.runOuts += 1;
+  if (wicketType === "CAUGHT" && wicketKeeperMap.has(fielderId)) {
+    wicketKeeperMap.get(fielderId).catches += 1;
   }
 
-  if (wicketType === "RUN_OUT" && wicketkeepingMap.has(assistantFielderId)) {
-    wicketkeepingMap.get(assistantFielderId).runOuts += 1;
+  if (wicketType === "RUN_OUT" && wicketKeeperMap.has(fielderId)) {
+    wicketKeeperMap.get(fielderId).runOuts += 1;
+  }
+
+  if (wicketType === "RUN_OUT" && wicketKeeperMap.has(assistantFielderId)) {
+    wicketKeeperMap.get(assistantFielderId).runOuts += 1;
   }
 }
 
-const wicketkeeping = [...wicketkeepingMap.values()].map((row) => ({
+const wicketkeeping = [...wicketKeeperMap.values()].map((row) => ({
   ...row,
   dismissals: row.catches + row.stumpings + row.runOuts,
 }));
+
   return {
     batting: battingRows,
     bowling: bowlingRows,

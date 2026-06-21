@@ -52,36 +52,37 @@ model Player {
 }
 
 model Match {
-  id                    Int          @id @default(autoincrement())
-  shareCode             String?      @unique
+  id                    Int                  @id @default(autoincrement())
+  shareCode             String?              @unique
   teamAId               Int
   teamBId               Int
   battingFirstTeamId    Int?
   oversPerInnings       Int
-  powerplayOversInnings Int          @default(0)
-  status                String       @default("in_progress")
-  createdAt             DateTime     @default(now())
+  powerplayOversInnings Int                  @default(0)
+  status                String               @default("in_progress")
+  createdAt             DateTime             @default(now())
   scheduledAt           DateTime?
-  statusText            String?      @default("LIVE")
+  statusText            String?              @default("LIVE")
   maxOversPerBowler     Int?
   maxWicketsPerInnings  Int?
   balls                 Ball[]
-  battingFirstTeam      Team?        @relation("BattingFirstTeam", fields: [battingFirstTeamId], references: [id])
-  teamA                 Team         @relation("TeamA", fields: [teamAId], references: [id])
-  teamB                 Team         @relation("TeamB", fields: [teamBId], references: [id])
+  battingFirstTeam      Team?                @relation("BattingFirstTeam", fields: [battingFirstTeamId], references: [id])
+  teamA                 Team                 @relation("TeamA", fields: [teamAId], references: [id])
+  teamB                 Team                 @relation("TeamB", fields: [teamBId], references: [id])
   state                 MatchState?
   leagueId              Int?
-  league                League?      @relation(fields: [leagueId], references: [id])
+  league                League?              @relation(fields: [leagueId], references: [id])
   events                MatchEvent[]
   aiAnalysis            String?
   aiAnalysisAt          DateTime?
   seriesId              Int?
-  series                Series?      @relation(fields: [seriesId], references: [id])
-  innings1EndedManually Boolean      @default(false)
+  series                Series?              @relation(fields: [seriesId], references: [id])
+  innings1EndedManually Boolean              @default(false)
   teamACaptainId        Int?
   teamBCaptainId        Int?
   teamAWicketKeeperId   Int?
   teamBWicketKeeperId   Int?
+  wicketKeeperChanges   WicketKeeperChange[]
 }
 
 model Ball {
@@ -273,4 +274,17 @@ model CorrectionLog {
   beforeBalls      Json?
   createdAt        DateTime  @default(now())
   revertedAt       DateTime?
+}
+
+model WicketKeeperChange {
+  id            Int      @id @default(autoincrement())
+  matchId       Int
+  inningsNo     Int
+  afterSequence Int      @default(0)
+  teamId        Int
+  oldKeeperId   Int?
+  newKeeperId   Int
+  note          String?
+  createdAt     DateTime @default(now())
+  match         Match    @relation(fields: [matchId], references: [id], onDelete: Cascade)
 }
