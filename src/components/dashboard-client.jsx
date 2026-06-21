@@ -2920,6 +2920,7 @@ await api("/api/balls", {
   }  
 }
 async function loadMyLeaguePermissions(leagueId) {
+    if (!leagueId) return;
   try {
     setPermissionsLoading(true);
 
