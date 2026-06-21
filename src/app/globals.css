@@ -9060,7 +9060,6 @@ body {
   .mobile-player-card {
     border-radius: 16px;
     padding: 12px 14px;
-    background: rgba(255, 255, 255, 0.055);
     border: 1px solid rgba(255, 255, 255, 0.11);
   }
 
@@ -9073,12 +9072,10 @@ body {
 
   .mobile-player-top strong {
     font-size: 15px;
-    color: #f8fafc;
   }
 
   .mobile-player-top span {
     font-weight: 900;
-    color: #ffffff;
     white-space: nowrap;
   }
 
