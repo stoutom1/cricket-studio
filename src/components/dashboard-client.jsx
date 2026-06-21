@@ -4343,7 +4343,7 @@ return (
                           <td>
                             {p.ongoing
                               ? "Current"
-                              : `Ended at wicket ${p.wicketNumber}`}
+                              : `wicket ${p.wicketNumber}`}
                           </td>
                         </tr>
                       ))}

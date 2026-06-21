@@ -9134,15 +9134,12 @@ body {
   align-items: baseline;
   padding: 8px 6px;
   border-radius: 999px;
-  background: rgba(15, 23, 42, 0.56);
-  color: #cbd5e1;
   font-size: 13px;
   font-weight: 800;
   white-space: nowrap;
 }
 
 .mobile-stat-rail b {
-  color: #ffffff;
   font-size: 15px;
   font-weight: 950;
 }
