@@ -4183,11 +4183,11 @@ return (
             </div>
 
             <CollapsibleSection title="🏏 Batting Scorecard" defaultOpen={true}>
-<div className="table-scroll desktop-score-table">
-                <MobileBattingCards
-  rows={inn.battingRows || inn.batting || []}
-  currentStrikerId={scoreboard.currentState?.strikerId}
-/>
+              <MobileBattingCards
+    rows={inn.battingRows || inn.batting || []}
+    currentStrikerId={scoreboard.currentState?.strikerId}
+  />
+              <div className="table-scroll desktop-score-table">
                 <table className="score-table pro-table">
                   <thead>
                     <tr>
@@ -4241,10 +4241,10 @@ return (
             </CollapsibleSection>
 
             <CollapsibleSection title="🎯 Bowling Scorecard" defaultOpen={true}>
-<div className="table-scroll desktop-score-table">
-                <MobileBowlingCards
-  rows={inn.bowlingRows || inn.bowling || []}
-/>
+  <MobileBowlingCards
+    rows={inn.bowlingRows || inn.bowling || []}
+  />
+              <div className="table-scroll desktop-score-table">
                 <table className="score-table pro-table bowling-table">
                   <thead>
                     <tr>

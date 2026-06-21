@@ -9106,3 +9106,17 @@ body {
     font-weight: 800;
   }
 }
+.mobile-scorecard-list {
+  display: none;
+}
+
+@media (max-width: 700px) {
+  .desktop-score-table {
+    display: none !important;
+  }
+
+  .mobile-scorecard-list {
+    display: grid !important;
+    gap: 10px;
+  }
+}

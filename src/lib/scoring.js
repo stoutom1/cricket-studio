@@ -996,21 +996,6 @@ const wicketkeeping = [...wicketkeepingMap.values()].map((row) => ({
   ...row,
   dismissals: row.catches + row.stumpings + row.runOuts,
 }));
-/*
-console.log("CAPTAIN WK DEBUG", {
-  teamACaptainId: match.teamACaptainId,
-  teamBCaptainId: match.teamBCaptainId,
-  teamAWicketKeeperId: match.teamAWicketKeeperId,
-  teamBWicketKeeperId: match.teamBWicketKeeperId,
-  captaincy,
-  wicketkeeping,
-  balls: match.balls?.map((b) => ({
-    wicketType: b.wicketType,
-    fielderId: b.fielderId,
-    assistantFielderId: b.assistantFielderId,
-  })),
-  });
-  */
   return {
     batting: battingRows,
     bowling: bowlingRows,
