@@ -162,9 +162,6 @@ function MobileBowlingCards({ rows = [] }) {
           </div>
 
  <div className="mobile-stat-rail">
-  <span><b>{row.overs}</b> Ov</span>
-  <span><b>{row.runs}</b> R</span>
-  <span><b>{row.wickets}</b> W</span>
   <span><b>{row.wides || 0}</b> Wd</span>
   <span><b>{row.noBalls || 0}</b> Nb</span>
   <span><b>{row.economy}</b> Eco</span>
@@ -528,11 +525,7 @@ useEffect(() => {
 
       setActiveLeagueId(data.activeLeagueId ?? null);
 
-      setSelectedMatchId(
-        data.activeMatchId
-          ? String(data.activeMatchId)
-          : ""
-      );
+setSelectedMatchId("");
 
       setPreferencesLoaded(true);
     }
@@ -795,9 +788,6 @@ async function loadMatches() {
       return;
     }
 
-    if (!selectedMatchId && leagueMatches.length > 0) {
-      setSelectedMatchId(String(leagueMatches[0].id));
-    }
   } catch (error) {
     console.error("Load Matches Error:", error);
   }
@@ -3276,6 +3266,22 @@ useEffect(() => {
 ]);
 
 useEffect(() => {
+  if (activeTab !== "scoring") return;
+
+  if (!selectedMatchId) {
+    setMatchDetail(null);
+    setScoreboard(null);
+    setStats({ batting: [], bowling: [] });
+    setOptimisticScoreboard(null);
+    setShowAdvancedSheet(false);
+    setShowBowlerModal(false);
+    setShowWicketModal(false);
+    setShowExtrasModal(false);
+    setShowRetiredHurtModal(false);
+  }
+}, [activeTab, selectedMatchId]);
+
+useEffect(() => {
   if (!pendingSecondInningsSetup) return;
 
   setShowDeliverySetupModal(true);
@@ -4435,14 +4441,14 @@ return (
     )}
   </Card>
 )}
-{!isSelectedMatchCompleted && scoringSubTab === "ADVANCED" &&(          
+{selectedMatchId && !isSelectedMatchCompleted && scoringSubTab === "ADVANCED" && ( 
 <Card
   className="scoring-console"
   title="🎯 Advanced Scoring"
   defaultCollapsed={false}
 >
           {!matchDetail ? (
-            <p className="muted">Select a match first.</p>
+            <p className="muted">Please select a match to view scoring, scoreboard, and commentary.</p>
           ) : (
             <>
 <div className="score-summary-panel">
@@ -5248,7 +5254,7 @@ recentBalls.slice(0, 20).map((ball, index) => {
           )}
         </Card>
 )}        
-{permissions?.canScoreMatch && !(
+{selectedMatchId && permissions?.canScoreMatch && !(
   selectedMatch &&
   ["COMPLETED_LOCKED"].includes(
     String(selectedMatch.status || "").toUpperCase()
