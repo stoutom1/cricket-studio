@@ -134,11 +134,11 @@ function MobileBattingCards({ rows = [], currentStrikerId }) {
               : "not out"}
           </div>
 
-          <div className="mobile-stat-row">
-            <span>4s {row.fours}</span>
-            <span>6s {row.sixes}</span>
-            <span>SR {row.strikeRate}</span>
-          </div>
+<div className="mobile-stat-rail">
+  <span><b>{row.fours}</b> 4s</span>
+  <span><b>{row.sixes}</b> 6s</span>
+  <span><b>{row.strikeRate}</b> SR</span>
+</div>
         </div>
       ))}
     </div>
@@ -161,15 +161,14 @@ function MobileBowlingCards({ rows = [] }) {
             </span>
           </div>
 
-          <div className="mobile-dismissal">
-            Overs-Maidens-Runs-Wickets
-          </div>
-
-          <div className="mobile-stat-row">
-            <span>Wd {row.wides || 0}</span>
-            <span>Nb {row.noBalls || 0}</span>
-            <span>Eco {row.economy}</span>
-          </div>
+ <div className="mobile-stat-rail">
+  <span><b>{row.overs}</b> Ov</span>
+  <span><b>{row.runs}</b> R</span>
+  <span><b>{row.wickets}</b> W</span>
+  <span><b>{row.wides || 0}</b> Wd</span>
+  <span><b>{row.noBalls || 0}</b> Nb</span>
+  <span><b>{row.economy}</b> Eco</span>
+</div>
         </div>
       ))}
     </div>

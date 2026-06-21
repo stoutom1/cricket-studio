@@ -9120,3 +9120,44 @@ body {
     gap: 10px;
   }
 }
+.mobile-stat-rail {
+  display: grid;
+  grid-template-columns: repeat(3, 1fr);
+  gap: 7px;
+  margin-top: 10px;
+}
+
+.mobile-stat-rail span {
+  display: flex;
+  justify-content: center;
+  gap: 4px;
+  align-items: baseline;
+  padding: 8px 6px;
+  border-radius: 999px;
+  background: rgba(15, 23, 42, 0.56);
+  color: #cbd5e1;
+  font-size: 13px;
+  font-weight: 800;
+  white-space: nowrap;
+}
+
+.mobile-stat-rail b {
+  color: #ffffff;
+  font-size: 15px;
+  font-weight: 950;
+}
+
+@media (max-width: 430px) {
+  .mobile-stat-rail {
+    gap: 6px;
+  }
+
+  .mobile-stat-rail span {
+    padding: 7px 4px;
+    font-size: 12px;
+  }
+
+  .mobile-stat-rail b {
+    font-size: 14px;
+  }
+}
