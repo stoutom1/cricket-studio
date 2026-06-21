@@ -9043,3 +9043,66 @@ body {
     min-width: 96px;
   }
 }
+.mobile-scorecard-list {
+  display: none;
+}
+
+@media (max-width: 700px) {
+  .desktop-score-table {
+    display: none;
+  }
+
+  .mobile-scorecard-list {
+    display: grid;
+    gap: 10px;
+  }
+
+  .mobile-player-card {
+    border-radius: 16px;
+    padding: 12px 14px;
+    background: rgba(255, 255, 255, 0.055);
+    border: 1px solid rgba(255, 255, 255, 0.11);
+  }
+
+  .mobile-player-top {
+    display: flex;
+    justify-content: space-between;
+    gap: 12px;
+    align-items: center;
+  }
+
+  .mobile-player-top strong {
+    font-size: 15px;
+    color: #f8fafc;
+  }
+
+  .mobile-player-top span {
+    font-weight: 900;
+    color: #ffffff;
+    white-space: nowrap;
+  }
+
+  .mobile-dismissal {
+    margin-top: 5px;
+    color: rgba(226, 232, 240, 0.78);
+    font-size: 13px;
+  }
+
+  .mobile-stat-row {
+    display: flex;
+    justify-content: space-between;
+    gap: 8px;
+    margin-top: 10px;
+    font-size: 12px;
+  }
+
+  .mobile-stat-row span {
+    flex: 1;
+    text-align: center;
+    padding: 6px 8px;
+    border-radius: 999px;
+    background: rgba(15, 23, 42, 0.5);
+    color: #dbeafe;
+    font-weight: 800;
+  }
+}

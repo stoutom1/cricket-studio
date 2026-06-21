@@ -111,7 +111,70 @@ function formatDate(value) {
     return value;
   }
 }
+function MobileBattingCards({ rows = [], currentStrikerId }) {
+  if (!rows.length) {
+    return <p className="muted">Batting details not available yet.</p>;
+  }
 
+  return (
+    <div className="mobile-scorecard-list">
+      {rows.map((row, index) => (
+        <div className="mobile-player-card" key={`mobile-bat-${row.playerId || index}`}>
+          <div className="mobile-player-top">
+            <strong>
+              {row.playerName}
+              {Number(currentStrikerId) === Number(row.playerId) ? " *" : ""}
+            </strong>
+            <span>{row.runs} ({row.balls})</span>
+          </div>
+
+          <div className="mobile-dismissal">
+            {row.dismissal && row.dismissal !== "not out"
+              ? row.dismissal
+              : "not out"}
+          </div>
+
+          <div className="mobile-stat-row">
+            <span>4s {row.fours}</span>
+            <span>6s {row.sixes}</span>
+            <span>SR {row.strikeRate}</span>
+          </div>
+        </div>
+      ))}
+    </div>
+  );
+}
+
+function MobileBowlingCards({ rows = [] }) {
+  if (!rows.length) {
+    return <p className="muted">Bowling details not available yet.</p>;
+  }
+
+  return (
+    <div className="mobile-scorecard-list">
+      {rows.map((row, index) => (
+        <div className="mobile-player-card" key={`mobile-bowl-${row.playerId || index}`}>
+          <div className="mobile-player-top">
+            <strong>{row.playerName}</strong>
+            <span>
+              {row.overs}-{row.maidens || 0}-{row.runs}-{row.wickets}
+            </span>
+          </div>
+
+          <div className="mobile-dismissal">
+            Overs-Maidens-Runs-Wickets
+          </div>
+
+          <div className="mobile-stat-row">
+            <span>Wd {row.wides || 0}</span>
+            <span>Nb {row.noBalls || 0}</span>
+            <span>Eco {row.economy}</span>
+          </div>
+        </div>
+      ))}
+    </div>
+  );
+}
 export default function DashboardClient() {
   const { data: session } = useSession();
   const [teams, setTeams] = useState([]);
@@ -4120,7 +4183,11 @@ return (
             </div>
 
             <CollapsibleSection title="🏏 Batting Scorecard" defaultOpen={true}>
-              <div className="table-scroll">
+<div className="table-scroll desktop-score-table">
+                <MobileBattingCards
+  rows={inn.battingRows || inn.batting || []}
+  currentStrikerId={scoreboard.currentState?.strikerId}
+/>
                 <table className="score-table pro-table">
                   <thead>
                     <tr>
@@ -4174,7 +4241,10 @@ return (
             </CollapsibleSection>
 
             <CollapsibleSection title="🎯 Bowling Scorecard" defaultOpen={true}>
-              <div className="table-scroll">
+<div className="table-scroll desktop-score-table">
+                <MobileBowlingCards
+  rows={inn.bowlingRows || inn.bowling || []}
+/>
                 <table className="score-table pro-table bowling-table">
                   <thead>
                     <tr>
