@@ -202,6 +202,17 @@ const [isSavingBall, setIsSavingBall] = useState(false);
 const [pressedScoreKey, setPressedScoreKey] = useState("");
 const [optimisticScoreboard, setOptimisticScoreboard] = useState(null);
 const [selectedExtraOption, setSelectedExtraOption] = useState("");
+const [showCorrectionModal, setShowCorrectionModal] =useState(false);
+const [correctionForm, setCorrectionForm] = useState({
+  inningsNo: "1",
+  afterBallId: "",
+  retiredPlayerId: "",
+  replacementPlayerId: "",
+  replacementOutBallId: "",
+  newBatterAfterReplacementId: "",
+});
+const [lastCorrectionId, setLastCorrectionId] = useState(null);
+
 const [showEditMatchModal, setShowEditMatchModal] = useState(false);
 const [editingMatch, setEditingMatch] = useState(null);
 const [editMatchForm, setEditMatchForm] = useState({
@@ -216,6 +227,9 @@ const [editMatchForm, setEditMatchForm] = useState({
   teamAWicketKeeperId: "",
   teamBWicketKeeperId: "",
 });
+const [correctionStatus, setCorrectionStatus] = useState("");
+const [correctionSaving, setCorrectionSaving] = useState(false);
+const [rollbackSaving, setRollbackSaving] = useState(false);
 const isSuperAdmin =
   session?.user?.email ===
   "surprisecricket11@gmail.com";
@@ -1336,6 +1350,95 @@ async function loadPointsTable(leagueId) {
 
   const data = await api(`/api/leagues/${leagueId}/points-table`);
   setPointsTable(data);
+}
+
+async function applyRetiredHurtCorrection({
+  inningsNo,
+  afterSequence,
+  retiredPlayerId,
+  replacementPlayerId,
+}) {
+  try {
+    setCorrectionSaving(true);
+
+setCorrectionStatus(
+  "🏏 Replaying innings..."
+);
+    const result = await api(
+      `/api/matches/${selectedMatchId}/corrections/retired-hurt`,
+      {
+        method: "POST",
+body: JSON.stringify({
+  inningsNo: correctionForm.inningsNo,
+  afterBallId: correctionForm.afterBallId,
+  retiredPlayerId: correctionForm.retiredPlayerId,
+  replacementPlayerId: correctionForm.replacementPlayerId,
+  replacementOutBallId: correctionForm.replacementOutBallId,
+  newBatterAfterReplacementId: correctionForm.newBatterAfterReplacementId,
+}),
+      }
+    );
+    setCorrectionStatus(
+  "✅ Scorecard recalculated."
+);
+setTimeout(() => {
+  setShowCorrectionModal(false);
+}, 1500);
+setLastCorrectionId(result.correctionId);
+    await loadSelectedMatch(selectedMatchId);
+    await loadMatches();
+    setShowCorrectionModal(false);
+
+setMessage(
+  `✅ Correction applied
+
+• ${result.updatedBalls} deliveries replayed
+• Trinadh retired hurt inserted
+• Batting order recalculated
+
+Rollback available.`
+);
+    showToast?.(
+  "success",
+  "Correction completed successfully."
+);
+
+  } catch (err) {
+    setError(err.message);
+  } finally{
+    setCorrectionSaving(false);
+  }
+}
+
+async function rollbackCorrection(correctionId) {
+  try {
+    setRollbackSaving(true);
+
+setCorrectionStatus(
+  "↩️ Restoring original scorecard..."
+);
+    await api(
+      `/api/matches/${selectedMatchId}/corrections/${correctionId}/rollback`,
+      { method: "POST" }
+    );
+    setCorrectionStatus(
+  "✅ Rollback completed."
+);
+
+setRollbackSaving(false);
+
+setLastCorrectionId(null);
+    await loadSelectedMatch(selectedMatchId);
+    await loadMatches();
+
+    setMessage("↩️ Correction rolled back successfully.");
+    showToast?.(
+  "success",
+  "Rollback completed successfully."
+);
+  } catch (err) {
+    setError(err.message);
+  }
 }
   async function handleShareMatch() {
       if (!scoreboard) return;
@@ -3546,6 +3649,25 @@ const selectedYears = (contextFilters.years || []).map(Number);
 const selectedSeriesIds = (contextFilters.seriesIds || []).map(Number);
 const selectedTeamIds = (contextFilters.teamIds || []).map(Number);
 
+const correctionInningsNo = Number(correctionForm.inningsNo || 1);
+
+const correctionBattingTeamId =
+  correctionInningsNo === 1
+    ? matchDetail?.battingFirstTeamId
+    : matchDetail?.teamAId === matchDetail?.battingFirstTeamId
+    ? matchDetail?.teamBId
+    : matchDetail?.teamAId;
+
+const correctionBattingTeam =
+  Number(matchDetail?.teamAId) === Number(correctionBattingTeamId)
+    ? matchDetail?.teamA
+    : matchDetail?.teamB;
+
+const correctionPlayers =
+  (correctionBattingTeam?.players || []).sort((a, b) =>
+    a.name.localeCompare(b.name)
+  );
+
 const filteredSeriesForContextLens = (seriesList || [])
   .filter((series) => {
     if (
@@ -4389,7 +4511,7 @@ recentBalls.slice(0, 20).map((ball, index) => {
   <button type="button" disabled={isSavingBall || isMatchCompleted || isMatchLocked || isMatchAbandoned} className={`chip ${activeQuickAction === "LB" ? "chip-active" : ""}`} onClick={() => triggerQuickAction("LB", () => quickExtra("LEGBYE"))}>LB</button>
 
   <button type="button" disabled={isSavingBall || isMatchCompleted || isMatchLocked || isMatchAbandoned} className={`chip ${activeQuickAction === "W" ? "chip-active" : ""}`} onClick={() => triggerQuickAction("W", () => quickWicket("BOWLED"))}>Wkt</button>
-  <button type="button" className="chip" disabled={isSavingBall || isMatchCompleted || isMatchLocked || isMatchAbandoned} onClick={() => setShowRetiredHurtModal(true)}>RH</button>
+  <button type="button" className="chip" disabled={isSavingBall || isMatchCompleted || isMatchLocked || isMatchAbandoned} onClick={() => setShowRetiredHurtModal(true)}>Retired Hurt</button>
  <button
     type="button"
     className="btn btn-outline"
@@ -4398,6 +4520,30 @@ recentBalls.slice(0, 20).map((ball, index) => {
   >
     ⇄ Swap
   </button>
+    <button
+  type="button"
+  className="btn btn-outline"
+  disabled={isMatchLocked || isMatchAbandoned}
+  onClick={() => setShowCorrectionModal(true)}
+>
+  🛠️ RH Corrections
+</button>
+{lastCorrectionId && (
+<button
+  type="button"
+  className={`btn btn-outline ${
+    rollbackSaving ? "btn-loading" : ""
+  }`}
+  disabled={rollbackSaving}
+  onClick={() =>
+    rollbackCorrection(lastCorrectionId)
+  }
+>
+  {rollbackSaving
+    ? "Restoring..."
+    : "Rollback"}
+</button>
+)}
   <button
     type="button"
     className="btn btn-danger scoring-btn"
@@ -4643,7 +4789,9 @@ recentBalls.slice(0, 20).map((ball, index) => {
                     }
                     disabled={!ballForm.isWicket}
                   >
-                    {WICKET_TYPES.map((type) => (
+                    {WICKET_TYPES
+  .filter((type) => type !== "RETIRED_HURT")
+  .map((type) => (
                       <option key={type} value={type}>{type}</option>
                     ))}
                   </select>
@@ -4909,7 +5057,9 @@ recentBalls.slice(0, 20).map((ball, index) => {
                     }
                     disabled={!ballForm.isWicket}
                   >
-                    {WICKET_TYPES.map((type) => (
+                    {WICKET_TYPES
+  .filter((type) => type !== "RETIRED_HURT")
+  .map((type) => (
                       <option key={type} value={type}>{type}</option>
                     ))}
                   </select>
@@ -8556,7 +8706,13 @@ onClick={() => {
             }))
           }
         >
-          {WICKET_TYPES.filter((x) => x !== "NONE").map((type) => (
+ {WICKET_TYPES
+  .filter(
+    (x) =>
+      x !== "NONE" &&
+      x !== "RETIRED_HURT"
+  )
+  .map((type) => (
             <option key={type} value={type}>
               {type.replaceAll("_", " ")}
             </option>
@@ -9085,6 +9241,199 @@ onClick={() => {
     </div>
   </div>
 )}
+{showCorrectionModal && (
+  <div className="modal-backdrop">
+    <div className="correction-modal">
+      <div className="correction-header">
+        <h2>🛠 Match Corrections</h2>
+
+        <button
+          type="button"
+          className="edit-modal-close-v2"
+          onClick={() =>
+            setShowCorrectionModal(false)
+          }
+        >
+          ✕
+        </button>
+      </div>
+{correctionStatus && (
+  <div className="correction-status">
+    {correctionStatus}
+  </div>
+)}
+      <div className="form-grid">
+        <label>
+          <span>Innings</span>
+
+          <select
+            value={correctionForm.inningsNo}
+            onChange={(e) =>
+              setCorrectionForm((prev) => ({
+                ...prev,
+                inningsNo: e.target.value,
+              }))
+            }
+          >
+            <option value="1">
+              1st Innings
+            </option>
+            <option value="2">
+              2nd Innings
+            </option>
+          </select>
+        </label>
+
+<label>
+  <span>Retired Hurt happened after</span>
+  <select
+    value={correctionForm.afterBallId || ""}
+    onChange={(e) =>
+      setCorrectionForm((prev) => ({
+        ...prev,
+        afterBallId: e.target.value,
+      }))
+    }
+  >
+    <option value="">Select ball</option>
+
+    {(matchDetail?.balls || [])
+      .filter(
+        (ball) =>
+          Number(ball.inningsNo) === Number(correctionForm.inningsNo)
+      )
+      .map((ball) => (
+        <option key={ball.id} value={ball.id}>
+          {ball.overNo}.{ball.ballInOver} — Seq {ball.sequence}
+        </option>
+      ))}
+  </select>
+</label>
+        <label>
+          <span>Retired Player</span>
+
+          <select
+            value={
+              correctionForm.retiredPlayerId
+            }
+            onChange={(e) =>
+              setCorrectionForm((prev) => ({
+                ...prev,
+                retiredPlayerId:
+                  e.target.value,
+              }))
+            }
+          >
+            <option value="">
+              Select Player
+            </option>
+
+{correctionPlayers.map((player) => (
+  <option key={player.id} value={player.id}>
+    {player.name}
+  </option>
+))}
+          </select>
+        </label>
+
+        <label>
+          <span>Replacement Batter</span>
+
+          <select
+            value={
+              correctionForm.replacementPlayerId
+            }
+            onChange={(e) =>
+              setCorrectionForm((prev) => ({
+                ...prev,
+                replacementPlayerId:
+                  e.target.value,
+              }))
+            }
+          >
+            <option value="">
+              Select Batter
+            </option>
+
+{correctionPlayers.map((player) => (
+  <option key={player.id} value={player.id}>
+    {player.name}
+  </option>
+))}
+          </select>
+        </label>
+ <label>
+  <span>Replacement got out at</span>
+  <select
+    value={correctionForm.replacementOutBallId}
+    onChange={(e) =>
+      setCorrectionForm((prev) => ({
+        ...prev,
+        replacementOutBallId: e.target.value,
+      }))
+    }
+  >
+    <option value="">Select ball where Kasa got out</option>
+
+    {(matchDetail?.balls || [])
+      .filter((ball) => Number(ball.inningsNo) === Number(correctionForm.inningsNo))
+      .map((ball) => (
+        <option key={ball.id} value={ball.id}>
+          {ball.overNo}.{ball.ballInOver} — Seq {ball.sequence}
+        </option>
+      ))}
+  </select>
+</label>
+
+<label>
+  <span>New batter after replacement</span>
+  <select
+    value={correctionForm.newBatterAfterReplacementId}
+    onChange={(e) =>
+      setCorrectionForm((prev) => ({
+        ...prev,
+        newBatterAfterReplacementId: e.target.value,
+      }))
+    }
+  >
+    <option value="">Select player who came after Kasa</option>
+
+    {correctionPlayers.map((player) => (
+      <option key={player.id} value={player.id}>
+        {player.name}
+      </option>
+    ))}
+  </select>
+</label>
+      </div>
+
+      <div className="edit-match-actions-v2">
+        <button
+          type="button"
+          className="btn btn-outline"
+          onClick={() =>
+            setShowCorrectionModal(false)
+          }
+        >
+          Cancel
+        </button>
+
+<button
+  type="button"
+  className={`btn btn-primary ${
+    correctionSaving ? "btn-loading" : ""
+  }`}
+  disabled={correctionSaving}
+  onClick={applyRetiredHurtCorrection}
+>
+  {correctionSaving
+    ? "Recalculating..."
+    : "Apply Correction"}
+</button>
+      </div>
+    </div>
+  </div>
+)}
 {showRetiredHurtModal && (
   <div className="modal-backdrop">
     <div className="modal-card">
@@ -9188,6 +9537,19 @@ onClick={() => {
     Confirm Replacement
   </button>
 </div>
+    </div>
+  </div>
+)}
+{correctionSaving && (
+  <div className="correction-overlay">
+    <div className="correction-card">
+      <div className="spinner" />
+
+      <h3>Recalculating Scorecard</h3>
+
+      <p>
+        Replaying deliveries from 7.1 onwards.
+      </p>
     </div>
   </div>
 )}

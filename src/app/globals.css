@@ -8943,3 +8943,63 @@ body {
     width: 100%;
   }
 }
+.correction-modal {
+  width: min(650px, calc(100vw - 20px));
+  border-radius: 22px;
+  background: white;
+  padding: 24px;
+  box-shadow: 0 30px 80px rgba(0,0,0,0.25);
+}
+
+.correction-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 20px;
+}
+
+.correction-header h2 {
+  margin: 0;
+  font-size: 22px;
+}
+
+@media (max-width: 700px) {
+  .correction-modal {
+    width: calc(100vw - 14px);
+    padding: 18px;
+  }
+}
+.correction-overlay {
+  position: fixed;
+  inset: 0;
+  background: rgba(0,0,0,.45);
+  z-index: 9999;
+
+  display:flex;
+  align-items:center;
+  justify-content:center;
+}
+
+.correction-card {
+  width:320px;
+  background:white;
+  border-radius:20px;
+  padding:30px;
+  text-align:center;
+}
+
+.spinner {
+  width:42px;
+  height:42px;
+  border:4px solid #ddd;
+  border-top-color:#0d6efd;
+  border-radius:50%;
+  animation:spin 1s linear infinite;
+  margin:auto;
+}
+
+@keyframes spin {
+  to {
+    transform:rotate(360deg);
+  }
+}

@@ -263,3 +263,14 @@ model Series {
   league  League  @relation(fields: [leagueId], references: [id], onDelete: Cascade)
   matches Match[]
 }
+
+model CorrectionLog {
+  id               Int       @id @default(autoincrement())
+  matchId          Int
+  type             String
+  correctionBallId Int?
+  payload          Json?
+  beforeBalls      Json?
+  createdAt        DateTime  @default(now())
+  revertedAt       DateTime?
+}
