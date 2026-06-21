@@ -9003,3 +9003,43 @@ body {
     transform:rotate(360deg);
   }
 }
+.extras-line {
+  margin-top: 4px;
+  font-size: 12px;
+}
+
+.innings-card-meta {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px;
+}
+
+.innings-card-meta span {
+  white-space: nowrap;
+}
+
+.score-table th,
+.score-table td {
+  white-space: nowrap;
+}
+
+@media (max-width: 700px) {
+  .innings-card-meta {
+    font-size: 11px;
+    gap: 6px;
+  }
+
+  .score-table.pro-table {
+    font-size: 12px;
+  }
+
+  .score-table.pro-table th,
+  .score-table.pro-table td {
+    padding: 7px 6px;
+  }
+
+  .bowling-table th:first-child,
+  .bowling-table td:first-child {
+    min-width: 96px;
+  }
+}

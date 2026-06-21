@@ -285,6 +285,30 @@ export function summarizeInningsDetailed(balls, playerMap, oversPerInnings) {
   const legalBalls = sorted.filter((b) => b.legalDelivery).length;
   const runs = sorted.reduce((sum, b) => sum + b.totalRuns, 0);
   const wickets = sorted.reduce((sum, b) =>sum +(b.isWicket && b.wicketType !== "RETIRED_HURT" ? 1 : 0),0);
+  const extrasTotal = sorted.reduce(
+  (sum, b) => sum + Number(b.extras || 0),
+  0
+  );
+
+  const wides = sorted.reduce(
+    (sum, b) => sum + (b.extraType === "WIDE" ? Number(b.extras || 0) : 0),
+    0
+  );
+
+  const noBalls = sorted.reduce(
+    (sum, b) => sum + (b.extraType === "NOBALL" ? Number(b.extras || 0) : 0),
+    0
+  );
+
+  const byes = sorted.reduce(
+    (sum, b) => sum + (b.extraType === "BYE" ? Number(b.extras || 0) : 0),
+    0
+  );
+
+  const legByes = sorted.reduce(
+    (sum, b) => sum + (b.extraType === "LEGBYE" ? Number(b.extras || 0) : 0),
+    0
+  );
 
   const powerplayBalls = sorted.filter((b) => b.isPowerPlay);
   const powerplayRuns = powerplayBalls.reduce((sum, b) => sum + b.totalRuns, 0);
@@ -549,7 +573,13 @@ return {
     runs: powerplayRuns,
     wickets: powerplayWickets
   },
-
+  extras: {
+    total: extrasTotal,
+    wides,
+    noBalls,
+    byes,
+    legByes
+  },
   partnerships,
 
   fallOfWickets,
@@ -675,6 +705,8 @@ const currentlyRetiredHurt = new Set();
         dots: 0,
         runs: 0,
         wickets: 0,
+        wides: 0,
+        noBalls: 0,
         firstSequence: 999999
       });
     }
@@ -794,6 +826,13 @@ if (isDismissalEvent && ball.dismissedPlayerId) {
 
       row.runs += runsChargedToBowler(ball);
       row.wickets += wicketsForBowler(ball);
+      if (ball.extraType === "WIDE") {
+        row.wides += 1;
+      }
+
+      if (ball.extraType === "NOBALL") {
+        row.noBalls += 1;
+      }
     }
   }
 for (const row of batting.values()) {

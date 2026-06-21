@@ -4044,8 +4044,9 @@ return (
               </div>
 
               <div className="innings-card-meta">
-                <span>Overs: {inn.oversDisplay}</span>
+                <span>Ov: {inn.oversDisplay}</span>
                 <span>RR: {inn.runRate}</span>
+                <span>Ext: {inn.extras?.total ?? 0}</span>
                 <span>
                   PP: {inn.powerplay?.runs ?? 0}/{inn.powerplay?.wickets ?? 0}
                 </span>
@@ -4107,6 +4108,13 @@ return (
                   {inn.runs}/{inn.wickets} in {inn.oversDisplay} overs • RR{" "}
                   {inn.runRate}
                 </p>
+                <p className="muted small extras-line">
+                Extras: {inn.extras?.total ?? 0}
+                {" "}• Wd {inn.extras?.wides ?? 0}
+                {" "}• Nb {inn.extras?.noBalls ?? 0}
+                {" "}• B {inn.extras?.byes ?? 0}
+                {" "}• LB {inn.extras?.legByes ?? 0}
+              </p>
               </div>
             </div>
 
@@ -4171,10 +4179,10 @@ return (
                     <tr>
                       <th>Bowler</th>
                       <th>O</th>
-                      <th>M</th>
                       <th>R</th>
                       <th>W</th>
-                      <th>Dots</th>
+                      <th>Wd</th>
+                      <th>Nb</th>
                       <th>Eco</th>
                     </tr>
                   </thead>
@@ -4191,12 +4199,12 @@ return (
                             <td>
                               <strong>{row.playerName}</strong>
                             </td>
-                            <td>{row.overs}</td>
-                            <td>{row.maidens || 0}</td>
-                            <td>{row.runs}</td>
-                            <td>{row.wickets}</td>
-                            <td>{row.dots}</td>
-                            <td>{row.economy}</td>
+                              <td>{row.overs}</td>
+                              <td>{row.runs}</td>
+                              <td>{row.wickets}</td>
+                              <td>{row.wides || 0}</td>
+                              <td>{row.noBalls || 0}</td>
+                              <td>{row.economy}</td>
                           </tr>
                         )
                       )
