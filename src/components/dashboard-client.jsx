@@ -4067,8 +4067,12 @@ onClick={() => {
     </div>
   ) : (
     <div className="match-center">
-      <label className="match-select-label">
-        <span>Select Match</span>
+      <label className="mgmt-field mgmt-select-field">
+            <span>👇 Choose an active/scheduled/completed match </span>
+            <div className="select-action-hint">
+            <span>Tap to choose</span>
+            <b>⌄</b>
+          </div>
 
         <select
           value={selectedMatchId || ""}
@@ -5395,8 +5399,12 @@ recentBalls.slice(0, 20).map((ball, index) => {
       </div>
     )}
     <Card title="🏆 League">
-      <label>
-        <span>Active League</span>
+      <label className="mgmt-field mgmt-select-field">
+            <span>👇 Choose an active league </span>
+            <div className="select-action-hint">
+            <span>Tap to choose</span>
+            <b>⌄</b>
+          </div>
         <select
           value={activeLeagueId || ""}
           onChange={(e) => {
