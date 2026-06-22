@@ -10931,3 +10931,352 @@ body:has(.login-shell) .dashboard-content {
     clear: both;
   }
 }
+/* ADVANCED SCORING - PROFESSIONAL MOBILE/LAPTOP POLISH */
+
+.tv-score-console {
+  margin: 14px 0 18px;
+  padding: 18px;
+  border-radius: 24px;
+  background: #111827;
+  border: 1px solid rgba(148, 163, 184, 0.22);
+  color: #f8fafc;
+  box-shadow: 0 14px 34px rgba(0, 0, 0, 0.24);
+}
+
+.tv-score-header {
+  text-align: center;
+  padding-bottom: 14px;
+  border-bottom: 1px solid rgba(148, 163, 184, 0.16);
+}
+
+.tv-live-pill {
+  color: #22c55e;
+  font-size: 12px;
+  font-weight: 950;
+  letter-spacing: 0.08em;
+}
+
+.tv-main-score {
+  margin-top: 6px;
+  font-size: clamp(40px, 7vw, 56px);
+  line-height: 1;
+  font-weight: 950;
+  letter-spacing: -0.05em;
+}
+
+.tv-score-sub {
+  max-width: 520px;
+  margin: 8px auto 0;
+  color: #cbd5e1;
+  font-size: 15px;
+  line-height: 1.35;
+  font-weight: 850;
+}
+
+.tv-player-board {
+  display: grid;
+  grid-template-columns: repeat(3, 1fr);
+  gap: 10px;
+  margin-top: 16px;
+}
+
+.tv-player-board div {
+  padding: 12px 14px;
+  border-radius: 18px;
+  background: rgba(255, 255, 255, 0.045);
+  border: 1px solid rgba(255, 255, 255, 0.075);
+}
+
+.tv-player-board span {
+  display: block;
+  color: #93c5fd;
+  font-size: 12px;
+  font-weight: 900;
+}
+
+.tv-player-board strong {
+  display: block;
+  margin-top: 4px;
+  color: #ffffff;
+  font-size: 19px;
+  line-height: 1.15;
+  font-weight: 950;
+}
+
+.tv-player-board small {
+  display: block;
+  margin-top: 4px;
+  color: #e2e8f0;
+  font-size: 15px;
+  font-weight: 900;
+}
+
+.tv-metric-strip {
+  display: grid;
+  grid-template-columns: repeat(4, 1fr);
+  gap: 8px;
+  margin-top: 12px;
+}
+
+.tv-metric-strip span {
+  padding: 9px 8px;
+  border-radius: 999px;
+  background: rgba(37, 99, 235, 0.13);
+  border: 1px solid rgba(96, 165, 250, 0.20);
+  text-align: center;
+  color: #bfdbfe;
+  font-size: 13px;
+  font-weight: 900;
+}
+
+.tv-metric-strip b {
+  color: #ffffff;
+  font-weight: 950;
+}
+
+.tv-status-banner {
+  margin-top: 14px;
+  padding: 13px 15px;
+  border-radius: 17px;
+  background: rgba(255, 255, 255, 0.055);
+  border: 1px solid rgba(255, 255, 255, 0.085);
+  font-size: 16px;
+  font-weight: 900;
+}
+
+.tv-bottom-row {
+  margin-top: 14px;
+  display: grid;
+  grid-template-columns: 1fr auto;
+  gap: 12px;
+  align-items: center;
+}
+
+.tv-recent-inline {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  min-width: 0;
+}
+
+.tv-recent-inline > span {
+  flex: 0 0 auto;
+  color: #93c5fd;
+  font-size: 14px;
+  font-weight: 950;
+}
+
+.tv-recent-balls {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 7px;
+  align-items: center;
+  min-width: 0;
+}
+
+.tv-ball {
+  min-width: 31px;
+  height: 31px;
+  padding: 0 8px;
+  display: grid;
+  place-items: center;
+  border-radius: 999px;
+  background: rgba(255, 255, 255, 0.14);
+  color: #ffffff;
+  font-size: 13px;
+  font-weight: 950;
+}
+
+.tv-ball-boundary {
+  background: #2563eb;
+}
+
+.tv-ball-wicket {
+  background: #dc2626;
+}
+
+.tv-ball-extra {
+  background: #f59e0b;
+  color: #111827;
+}
+
+.tv-over-separator {
+  color: #64748b;
+  font-style: normal;
+  font-weight: 950;
+}
+
+.tv-chase-mini {
+  display: grid;
+  grid-template-columns: repeat(3, 1fr);
+  gap: 6px;
+  min-width: 230px;
+  padding: 10px;
+  border-radius: 16px;
+  background: rgba(250, 204, 21, 0.10);
+  border: 1px solid rgba(250, 204, 21, 0.24);
+}
+
+.tv-chase-mini span {
+  display: grid;
+  gap: 2px;
+  text-align: center;
+  color: #fef3c7;
+  font-size: 12px;
+  font-weight: 900;
+}
+
+.tv-chase-mini b {
+  color: #ffffff;
+  font-size: 15px;
+}
+
+.quick-actions {
+  margin-top: 16px;
+}
+@media (max-width: 700px) {
+  .tv-score-console {
+    padding: 14px;
+    border-radius: 22px;
+  }
+
+  .tv-score-header {
+    padding-bottom: 12px;
+  }
+
+  .tv-main-score {
+    font-size: 46px;
+  }
+
+  .tv-score-sub {
+    font-size: 14px;
+  }
+
+  .tv-player-board {
+    grid-template-columns: 1fr;
+    gap: 9px;
+    margin-top: 14px;
+  }
+
+  .tv-player-board div {
+    display: grid;
+    grid-template-columns: 96px minmax(0, 1fr) auto;
+    align-items: center;
+    gap: 10px;
+    padding: 11px 13px;
+  }
+
+  .tv-player-board span {
+    font-size: 13px;
+  }
+
+  .tv-player-board strong {
+    margin-top: 0;
+    font-size: 22px;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+  }
+
+  .tv-player-board small {
+    margin-top: 0;
+    font-size: 19px;
+    color: #ffffff;
+  }
+
+  .tv-metric-strip {
+    grid-template-columns: repeat(2, 1fr);
+    gap: 8px;
+  }
+
+  .tv-metric-strip span {
+    padding: 10px 8px;
+    font-size: 14px;
+  }
+
+  .tv-status-banner {
+    font-size: 18px;
+    padding: 13px 15px;
+  }
+
+  .tv-bottom-row {
+    grid-template-columns: 1fr;
+    gap: 11px;
+  }
+
+  .tv-recent-inline {
+    display: grid;
+    grid-template-columns: 70px 1fr;
+    align-items: start;
+    gap: 8px;
+  }
+
+  .tv-recent-inline > span {
+    padding-top: 5px;
+    font-size: 15px;
+  }
+
+  .tv-recent-balls {
+    gap: 7px;
+    padding-bottom: 4px;
+  }
+
+  .tv-ball {
+    min-width: 31px;
+    height: 31px;
+    font-size: 13px;
+  }
+
+  .tv-chase-mini {
+    min-width: 0;
+    width: 100%;
+  }
+
+  .quick-actions {
+    margin-top: 18px;
+    display: flex !important;
+    flex-wrap: wrap;
+    gap: 10px;
+    align-items: stretch;
+  }
+
+  .quick-actions .chip {
+    flex: 1 1 calc(20% - 8px);
+    min-width: 54px;
+    min-height: 52px;
+    border-radius: 15px;
+    font-size: 16px;
+    font-weight: 950;
+  }
+
+  .quick-actions .chip-wide {
+    flex: 1 1 calc(40% - 8px);
+  }
+
+  .mobile-secondary-actions {
+    display: grid !important;
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+    gap: 9px;
+    width: 100%;
+    margin-top: 4px;
+  }
+
+  .mobile-secondary-actions > button {
+    width: 100%;
+    min-height: 48px !important;
+    padding: 9px 10px !important;
+    border-radius: 15px !important;
+    font-size: 14px !important;
+    font-weight: 900 !important;
+    justify-content: center;
+  }
+
+  .mobile-secondary-actions .end-innings-pill {
+    grid-column: span 2;
+  }
+
+  .advanced-sheet-btn {
+    width: 100%;
+    margin-top: 4px;
+  }
+}
