@@ -292,6 +292,7 @@ const [correctionSaving, setCorrectionSaving] = useState(false);
 const [rollbackSaving, setRollbackSaving] = useState(false);
 const [leagueStatsLoading, setLeagueStatsLoading] = useState(false);
 const [pendingMatchesSubTab, setPendingMatchesSubTab] = useState("");
+const [instantDeliveryStatus, setInstantDeliveryStatus] = useState("");
 const isSuperAdmin =
   session?.user?.email ===
   "surprisecricket11@gmail.com";
@@ -935,6 +936,49 @@ const handleAddPlayers = async (e) => {
     setError(error.message);
   }
 };
+function getInstantDeliveryStatus(data) {
+  const runs = Number(data.runsOffBat || 0);
+  const extras = Number(data.extras || 0);
+  const extraType = String(data.extraType || "NONE");
+
+  if (data.isWicket) {
+    if (data.wicketType === "RETIRED_HURT") {
+      return "🏥 Retired hurt recorded. Recalculating batting order...";
+    }
+
+    return "☝️ Wicket recorded. Updating scorecard...";
+  }
+
+  if (extraType === "WIDE") {
+    return "⚪ Wide recorded. Updating live score...";
+  }
+
+  if (extraType === "NOBALL") {
+    return "🟡 No-ball recorded. Updating live score...";
+  }
+
+  if (extraType === "BYE") {
+    return "🏃 Bye recorded. Updating score...";
+  }
+
+  if (extraType === "LEGBYE") {
+    return "🦵 Leg bye recorded. Updating score...";
+  }
+
+  if (runs === 0) {
+    return "🟢 Dot ball recorded. Preparing next delivery...";
+  }
+
+  if (runs === 4) {
+    return "🔥 FOUR! Updating scoreboard...";
+  }
+
+  if (runs === 6) {
+    return "🚀 SIX! Updating scoreboard...";
+  }
+
+  return `🏏 ${runs} run${runs > 1 ? "s" : ""} recorded. Updating score...`;
+}
 
 function openEditMatchModal(match) {
   setEditingMatch(match);
@@ -2309,6 +2353,7 @@ setOptimisticScoreboard(
 );
 
   try {
+    setInstantDeliveryStatus(getInstantDeliveryStatus(data));
     await api("/api/balls", {
       method: "POST",
       body: JSON.stringify(data),
@@ -2372,6 +2417,7 @@ setOptimisticScoreboard(
       updatedCurrentInningsNo === 2;
 
 await loadSelectedMatch(selectedMatchId);
+setInstantDeliveryStatus("");
 setOptimisticScoreboard(null);
 
     if (updatedIsFinalBallBowled || updatedIsChaseComplete) {
@@ -2418,6 +2464,7 @@ setOptimisticScoreboard(null);
     }
   } catch (err) {
     setOptimisticScoreboard(null);
+    setInstantDeliveryStatus("");
     if (err.message?.includes("BOWLER_CONSECUTIVE_OVER")) {
       setPendingBallData({
         matchId: Number(selectedMatchId),
@@ -2454,6 +2501,7 @@ setOptimisticScoreboard(null);
     showToast("error", err.message);
   } finally {
     setIsSavingBall(false);
+    setInstantDeliveryStatus("");
   }
 }
 
@@ -4621,10 +4669,15 @@ onClick={() => {
     String(selectedMatch.status || "").toUpperCase()
   )
 ) && (
-  <div className="ready-delivery live-feed-banner">
-  {error ||
-    message ||
-    "🏏 Ready for next delivery"}
+<div
+  className={`ready-delivery live-feed-banner ${
+    instantDeliveryStatus ? "delivery-processing" : ""
+  }`}
+>
+{error ||
+  instantDeliveryStatus ||
+  message ||
+  "🏏 Ready for next delivery"}
   </div>
 ))}
 <div className="recent-balls-row">

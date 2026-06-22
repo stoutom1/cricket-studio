@@ -10031,7 +10031,7 @@ body:has(.login-shell) .dashboard-content {
     font-size: 0;
     box-shadow: none;
   }
-  
+
   .matches-subtabs button.active {
     background: linear-gradient(135deg, #2563eb, #1d4ed8);
     color: white;
@@ -10167,5 +10167,31 @@ body:has(.login-shell) .dashboard-content {
 
   .matches-subtabs button::first-letter {
     font-size: inherit !important;
+  }
+}
+.delivery-processing {
+  position: relative;
+  overflow: hidden;
+  border-color: rgba(96, 165, 250, 0.85) !important;
+  box-shadow: 0 0 0 3px rgba(96, 165, 250, 0.14);
+}
+
+.delivery-processing::after {
+  content: "";
+  position: absolute;
+  inset: 0;
+  background: linear-gradient(
+    90deg,
+    transparent,
+    rgba(255,255,255,0.16),
+    transparent
+  );
+  transform: translateX(-100%);
+  animation: deliveryShimmer 1s infinite;
+}
+
+@keyframes deliveryShimmer {
+  to {
+    transform: translateX(100%);
   }
 }
