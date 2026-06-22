@@ -4866,7 +4866,7 @@ onClick={() => {
  <div className="mobile-secondary-actions">
     <button
     type="button"
-    className="btn btn-danger scoring-btn"
+    className="btn btn-danger scoring-btn action-undo-compact"
     disabled={isMatchLocked}
     onClick={handleUndoBall}
   >
@@ -4874,7 +4874,7 @@ onClick={() => {
   </button>
 <button
   type="button"
-  className="btn btn-outline"
+  className="btn btn-outline action-change-wk"
   disabled={isSavingBall || isMatchCompleted || isMatchLocked || isMatchAbandoned}
   onClick={() => setShowKeeperChangeModal(true)}
 >
@@ -4882,7 +4882,7 @@ onClick={() => {
 </button>
     <button
   type="button"
-  className="btn btn-outline"
+  className="btn btn-outline action-rh-corrections"
   disabled={isMatchLocked || isMatchAbandoned}
   onClick={() => setShowCorrectionModal(true)}
 >
@@ -4909,7 +4909,7 @@ onClick={() => {
   scoreboard?.match?.status !== "COMPLETED_LOCKED" && (
     <button
       type="button"
-      className="end-innings-pill"
+      className="end-innings-pill action-end-innings"
       onClick={handleEndFirstInnings}
     >
       <span>🛑 End 1st Innings</span>
