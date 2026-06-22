@@ -60,8 +60,8 @@ export default function LoginForm({ callbackUrl = "/dashboard" }) {
           <div className="login-hero-copy">
             <h3>Score matches. Track stats. Share live updates.</h3>
             <p>
-              Manage leagues, teams, scorecards, captaincy stats,
-              wicketkeeping stats, and public live score links from one secure
+              Manage leagues, teams, scorecards, player stats, captaincy stats,
+              wicketkeeping stats, league permissions and public live score links from one secure
               dashboard.
             </p>
           </div>
@@ -165,6 +165,9 @@ export default function LoginForm({ callbackUrl = "/dashboard" }) {
                   Create account
                 </Link>
               </div>
+              <div className="login-trust-line">
+  🔒 Secure sign in powered by Cric4All
+</div>
             </form>
           </div>
         </div>

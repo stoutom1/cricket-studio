@@ -9886,3 +9886,14 @@ body:has(.login-shell) .dashboard-content {
     color: #94a3b8;
   }
 }
+.login-trust-line {
+  margin-top: 14px;
+  text-align: center;
+  color: #94a3b8;
+  font-size: 12px;
+  font-weight: 800;
+}
+
+.login-register-row::after {
+  content: none !important;
+}
