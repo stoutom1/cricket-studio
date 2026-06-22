@@ -10006,3 +10006,61 @@ body:has(.login-shell) .dashboard-content {
     top: 47px;
   }
 }
+@media (max-width: 700px) {
+  .matches-subtabs {
+    display: grid;
+    grid-template-columns: repeat(4, 1fr);
+    gap: 6px;
+    padding: 8px;
+    margin-top: 14px;
+    border-radius: 18px;
+    background: rgba(15, 23, 42, 0.55);
+    border: 1px solid rgba(148, 163, 184, 0.22);
+  }
+
+  .matches-subtabs button {
+    min-width: 0;
+    height: 54px;
+    padding: 6px 4px;
+    border-radius: 14px;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    gap: 3px;
+    font-size: 0;
+    box-shadow: none;
+  }
+
+  .matches-subtabs button::first-letter {
+    font-size: 22px;
+  }
+
+  .matches-subtabs button:nth-child(1)::after {
+    content: "Create";
+  }
+
+  .matches-subtabs button:nth-child(2)::after {
+    content: "Active";
+  }
+
+  .matches-subtabs button:nth-child(3)::after {
+    content: "Scheduled";
+  }
+
+  .matches-subtabs button:nth-child(4)::after {
+    content: "Done";
+  }
+
+  .matches-subtabs button::after {
+    font-size: 11px;
+    font-weight: 900;
+    line-height: 1;
+  }
+
+  .matches-subtabs button.active {
+    background: linear-gradient(135deg, #2563eb, #1d4ed8);
+    color: white;
+    transform: translateY(-1px);
+  }
+}
