@@ -4675,207 +4675,167 @@ onClick={() => {
             <p className="muted">Please select a match to view scoring, scoreboard, and commentary.</p>
           ) : (
             <>
-{liveMatchCenter && (
-  <div className="live-match-center">
-    <div className="live-center-top">
-      <div>
-        <span className="live-dot">● LIVE</span>
-        <strong>
-          Innings {liveMatchCenter.inningsNo} • Over{" "}
-          {liveMatchCenter.oversDisplay}
-        </strong>
+<div className="tv-score-console">
+  {liveMatchCenter && (
+    <>
+      <div className="tv-score-header">
+        <span className="tv-live-pill">● LIVE</span>
+
+        <div className="tv-main-score">
+          {liveMatchCenter.runs}/{liveMatchCenter.wickets}
+        </div>
+
+        <div className="tv-score-sub">
+          Innings {liveMatchCenter.inningsNo} • {liveMatchCenter.oversDisplay} ov
+          {displayScoreboard?.summary?.statusText
+            ? ` • ${displayScoreboard.summary.statusText}`
+            : ""}
+        </div>
       </div>
 
-      <div className="live-score-mini">
-        {liveMatchCenter.runs}/{liveMatchCenter.wickets}
+      <div className="tv-player-board">
+        <div>
+          <span>Striker</span>
+          <strong>
+            {displayScoreboard?.currentState?.strikerName || "-"} *
+          </strong>
+          <small>
+            {displayScoreboard?.currentState?.strikerStats
+              ? `${displayScoreboard.currentState.strikerStats.runs} (${displayScoreboard.currentState.strikerStats.balls})`
+              : "0 (0)"}
+          </small>
+        </div>
+
+        <div>
+          <span>Non-Striker</span>
+          <strong>
+            {displayScoreboard?.currentState?.nonStrikerName || "-"}
+          </strong>
+          <small>
+            {displayScoreboard?.currentState?.nonStrikerStats
+              ? `${displayScoreboard.currentState.nonStrikerStats.runs} (${displayScoreboard.currentState.nonStrikerStats.balls})`
+              : "0 (0)"}
+          </small>
+        </div>
+
+        <div>
+          <span>Bowler</span>
+          <strong>
+            {displayScoreboard?.currentState?.bowlerName || "-"}
+          </strong>
+          <small>
+            {displayScoreboard?.currentState?.bowlerStats
+              ? `${displayScoreboard.currentState.bowlerStats.wickets}/${displayScoreboard.currentState.bowlerStats.runs} in ${displayScoreboard.currentState.bowlerStats.overs} ov`
+              : "0/0"}
+          </small>
+        </div>
       </div>
-    </div>
 
-    <div className="live-center-grid">
-      <div>
-        <span>CRR</span>
-        <strong>{liveMatchCenter.crr}</strong>
+      <div className="tv-metric-strip">
+        <span>CRR <b>{liveMatchCenter.crr}</b></span>
+        <span>RRR <b>{liveMatchCenter.rrr}</b></span>
+        <span>Proj <b>{liveMatchCenter.projected}</b></span>
+        <span>
+          P’ship{" "}
+          <b>
+            {liveMatchCenter.partnershipRuns} ({liveMatchCenter.partnershipBalls})
+          </b>
+        </span>
       </div>
 
-      <div>
-        <span>RRR</span>
-        <strong>{liveMatchCenter.rrr}</strong>
-      </div>
-
-      <div>
-        <span>Projected</span>
-        <strong>{liveMatchCenter.projected}</strong>
-      </div>
-
-      <div>
-        <span>Partnership</span>
-        <strong>
-          {liveMatchCenter.partnershipRuns}
-          <small> ({liveMatchCenter.partnershipBalls})</small>
-        </strong>
-      </div>
-    </div>
-
-    {liveMatchCenter.isSecondInnings && liveMatchCenter.target > 0 && (
-      <div className="live-chase-strip">
-        Need{" "}
-        <strong>{liveMatchCenter.runsRequired}</strong> from{" "}
-        <strong>{liveMatchCenter.ballsRemaining}</strong> balls
-      </div>
-    )}
-
-    <div className="live-last-six">
-      <span>Last 6</span>
-
-      <div>
-        {liveMatchCenter.recentBalls.length ? (
-          liveMatchCenter.recentBalls.map((ball, index) => (
-            <b
-              key={`live-last-${index}`}
-              className={
-                ball === "W"
-                  ? "last-ball-wicket"
-                  : ball === "4" || ball === "6"
-                  ? "last-ball-boundary"
-                  : ""
-              }
-            >
-              {ball}
-            </b>
-          ))
-        ) : (
-          <small>No balls yet</small>
-        )}
-      </div>
-    </div>
-  </div>
-)}            
-<div className="score-summary-panel">
-<div className="single-line-scoreboard">
-  <span className="status-chip">
-    📌 {displayScoreboard?.summary?.statusText}
-  </span>
-</div>
-  <div className="single-line-scoreboard">
-    <span>
-      <strong>Score:</strong>{" "}
-      {activeInnings
-        ? `${activeInnings.runs}/${activeInnings.wickets}`
-        : "-"}
-    </span>
-
-    <span>
-      <strong>Overs:</strong>{" "}
-      {activeInnings?.oversDisplay || "0.0"}
-    </span>
-
-    <span>
-      <strong>Striker:</strong>{" "}
-      {displayScoreboard?.currentState?.strikerName || "-"}{" "}
-      (
-      {displayScoreboard?.currentState?.strikerStats
-        ? `${displayScoreboard.currentState.strikerStats.runs} (${displayScoreboard.currentState.strikerStats.balls})`
-        : "0 (0)"}
-      )
-    </span>
-
-    <span>
-      <strong>Non-Striker:</strong>{" "}
-      {displayScoreboard?.currentState?.nonStrikerName || "-"}{" "}
-      (
-      {displayScoreboard?.currentState?.nonStrikerStats
-        ? `${displayScoreboard.currentState.nonStrikerStats.runs} (${displayScoreboard.currentState.nonStrikerStats.balls})`
-        : "0 (0)"}
-      )
-    </span>
-    <span>
-      <strong>Bowler:</strong>{" "}
-      {displayScoreboard?.currentState?.bowlerName || "-"}{" "}
-      (
-      {displayScoreboard?.currentState?.bowlerStats
-        ? `${displayScoreboard.currentState.bowlerStats.wickets}/${displayScoreboard.currentState.bowlerStats.runs} in ${displayScoreboard.currentState.bowlerStats.overs} ov`
-        : "0/0"}
-      )
-    </span>
-  </div>
-{needsDeliverySetup ? (
-  <div className="match-ended-banner">
-    <strong>🎯 Setup required</strong>
-    <span>
-      {Number(ballForm.inningsNo) === 2
-        ? "2nd innings is ready. Select striker, non-striker, and bowler before scoring."
-        : "Select striker, non-striker, and bowler before scoring the next ball."}
-    </span>
-
-    <button
-      type="button"
-      className="mgmt-clean-btn"
-      onClick={() => setShowDeliverySetupModal(true)}
-    >
-      Setup Delivery
-    </button>
-  </div>
-) : (!(
-  selectedMatch &&
-  ["COMPLETED","COMPLETED_LOCKED"].includes(
-    String(selectedMatch.status || "").toUpperCase()
-  )
-) && (
-<div
-  className={`ready-delivery live-feed-banner ${
-    instantDeliveryStatus ? "delivery-processing" : ""
-  }`}
->
-{error ||
-  instantDeliveryStatus ||
-  message ||
-  "🏏 Ready for next delivery"}
-  </div>
-))}
-<div className="recent-balls-row">
-  <span className="recent-label">Recent: </span>
-
-  {recentBalls.length ? (
-recentBalls.slice(0, 20).map((ball, index) => {
-      const label = ball.label || "";
-
-  const recent20 = recentBalls.slice(0, 20);
-
-      const currentOver = label.split(".")[0];
-
-      const prevOver =
-        index > 0
-          ? recent20[index - 1]?.label?.split(".")[0]
-          : currentOver;
-
-      const ballResult = (
-        label.split(" ").slice(1).join(" ") || label
-      ).replace(/[()]/g, "");
-
-      return (
-        <React.Fragment key={ball.id}>
-          {index > 0 && currentOver !== prevOver && (
-            <span className="over-separator">|</span>
-          )}
-
-          <span
-            className={`ball-chip ${
-              ballResult === "W"
-                ? "ball-wicket"
-                : ballResult === "4" || ballResult === "6"
-                ? "ball-boundary"
-                : ""
-            }`}
-          >
-            {ballResult}
-          </span>
-        </React.Fragment>
-      );
-    })
-  ) : (
-    <span className="muted">No recent balls</span>
+      {liveMatchCenter.isSecondInnings && liveMatchCenter.target > 0 && (
+        <div className="tv-chase-line">
+          Need <strong>{liveMatchCenter.runsRequired}</strong> from{" "}
+          <strong>{liveMatchCenter.ballsRemaining}</strong> balls
+        </div>
+      )}
+    </>
   )}
-</div>
+
+  {needsDeliverySetup ? (
+    <div className="tv-status-banner setup">
+      <strong>🎯 Setup required</strong>
+      <span>
+        {Number(ballForm.inningsNo) === 2
+          ? "2nd innings is ready. Select striker, non-striker, and bowler."
+          : "Select striker, non-striker, and bowler before scoring."}
+      </span>
+
+      <button
+        type="button"
+        className="mgmt-clean-btn"
+        onClick={() => setShowDeliverySetupModal(true)}
+      >
+        Setup Delivery
+      </button>
+    </div>
+  ) : (
+    !(
+      selectedMatch &&
+      ["COMPLETED", "COMPLETED_LOCKED"].includes(
+        String(selectedMatch.status || "").toUpperCase()
+      )
+    ) && (
+      <div
+        className={`tv-status-banner ${
+          instantDeliveryStatus ? "delivery-processing" : ""
+        }`}
+      >
+        {error ||
+          instantDeliveryStatus ||
+          message ||
+          "🏏 Ready for next delivery"}
+      </div>
+    )
+  )}
+
+  <div className="tv-recent-section">
+    <span>Recent</span>
+
+    <div className="tv-recent-balls">
+      {recentBalls.length ? (
+        recentBalls.slice(0, 20).map((ball, index) => {
+          const label = ball.label || "";
+          const recent20 = recentBalls.slice(0, 20);
+          const currentOver = label.split(".")[0];
+
+          const prevOver =
+            index > 0
+              ? recent20[index - 1]?.label?.split(".")[0]
+              : currentOver;
+
+          const ballResult = (
+            label.split(" ").slice(1).join(" ") || label
+          ).replace(/[()]/g, "");
+
+          return (
+            <React.Fragment key={ball.id}>
+              {index > 0 && currentOver !== prevOver && (
+                <i className="tv-over-separator">|</i>
+              )}
+
+              <b
+                className={`tv-ball ${
+                  ballResult === "W"
+                    ? "tv-ball-wicket"
+                    : ballResult === "4" || ballResult === "6"
+                    ? "tv-ball-boundary"
+                    : ballResult === "WD" || ballResult === "Wd"
+                    ? "tv-ball-extra"
+                    : ""
+                }`}
+              >
+                {ballResult}
+              </b>
+            </React.Fragment>
+          );
+        })
+      ) : (
+        <small>No recent balls</small>
+      )}
+    </div>
+  </div>
+
 {!permissions?.canScoreMatch && (
 <div>
    👉 You do not have permissions to score a match. Please check with your league owner to give you access to score for this match.
