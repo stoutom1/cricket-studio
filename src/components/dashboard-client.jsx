@@ -4792,7 +4792,7 @@ onClick={() => {
   <div className="tv-recent-section">
     <span>Recent</span>
 
-    <div className="tv-recent-balls">
+    <div className="recent-balls-row compact">
       {recentBalls.length ? (
         recentBalls.slice(0, 20).map((ball, index) => {
           const label = ball.label || "";
@@ -4811,27 +4811,25 @@ onClick={() => {
           return (
             <React.Fragment key={ball.id}>
               {index > 0 && currentOver !== prevOver && (
-                <i className="tv-over-separator">|</i>
+                <span className="over-separator">|</span>
               )}
 
-              <b
-                className={`tv-ball ${
+              <span
+                className={`ball-chip ${
                   ballResult === "W"
-                    ? "tv-ball-wicket"
+                    ? "ball-wicket"
                     : ballResult === "4" || ballResult === "6"
-                    ? "tv-ball-boundary"
-                    : ballResult === "WD" || ballResult === "Wd"
-                    ? "tv-ball-extra"
+                    ? "ball-boundary"
                     : ""
                 }`}
               >
                 {ballResult}
-              </b>
+              </span>
             </React.Fragment>
           );
         })
       ) : (
-        <small>No recent balls</small>
+        <span className="muted">No recent balls</span>
       )}
     </div>
   </div>
