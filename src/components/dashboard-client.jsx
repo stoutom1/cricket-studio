@@ -291,6 +291,7 @@ const [correctionStatus, setCorrectionStatus] = useState("");
 const [correctionSaving, setCorrectionSaving] = useState(false);
 const [rollbackSaving, setRollbackSaving] = useState(false);
 const [leagueStatsLoading, setLeagueStatsLoading] = useState(false);
+const [pendingMatchesSubTab, setPendingMatchesSubTab] = useState("");
 const isSuperAdmin =
   session?.user?.email ===
   "surprisecricket11@gmail.com";
@@ -395,7 +396,13 @@ useEffect(() => {
 useEffect(() => {
   loadSeries();
 }, [activeLeagueId]);
+useEffect(() => {
+  if (activeTab !== "matches") return;
+  if (!pendingMatchesSubTab) return;
 
+  setMatchesSubTab(pendingMatchesSubTab);
+  setPendingMatchesSubTab("");
+}, [activeTab, pendingMatchesSubTab]);
 const selectedSeries = seriesList.find(
   (s) => Number(s.id) === Number(selectedSeriesId)
 );
@@ -573,6 +580,15 @@ setDeliverySetupReason("");
 
   loadMatches();
 }, [activeLeagueId]);
+
+useEffect(() => {
+  if (
+    activeTab === "matches" &&
+    !matchesSubTab
+  ) {
+    setMatchesSubTab("SCHEDULED");
+  }
+}, [activeTab]);
 
 useEffect(() => {
   if (
@@ -6362,7 +6378,10 @@ recentBalls.slice(0, 20).map((ball, index) => {
             <button
               type="button"
               className="mgmt-clean-btn"
-              onClick={() => setActiveTab("matches")}
+onClick={() => {
+  setPendingMatchesSubTab("CREATE MATCH");
+  setActiveTab("matches");
+}}
             >
               🏏 Create Match
             </button>
