@@ -4683,6 +4683,14 @@ recentBalls.slice(0, 20).map((ball, index) => {
   >
     ⇄ Swap
   </button>
+    <button
+    type="button"
+    className="btn btn-danger scoring-btn"
+    disabled={isMatchLocked}
+    onClick={handleUndoBall}
+  >
+    ↩ Undo Ball
+  </button>
 <button
   type="button"
   className="btn btn-outline"
@@ -4715,14 +4723,6 @@ recentBalls.slice(0, 20).map((ball, index) => {
     : "Rollback"}
 </button>
 )}
-  <button
-    type="button"
-    className="btn btn-danger scoring-btn"
-    disabled={isMatchLocked}
-    onClick={handleUndoBall}
-  >
-    ↩ Undo Ball
-  </button>
 {Number(ballForm.inningsNo) === 1 &&
   scoreboard?.match?.status !== "COMPLETED" &&
   scoreboard?.match?.status !== "COMPLETED_LOCKED" && (
