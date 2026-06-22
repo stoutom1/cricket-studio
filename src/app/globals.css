@@ -9834,3 +9834,55 @@ body:has(.login-shell) .dashboard-content {
     max-height: none !important;
   }
 }
+@media (min-width: 901px) {
+  .login-shell {
+    height: calc(100vh - 72px) !important;
+    padding: 24px !important;
+    align-items: center !important;
+  }
+
+  .login-card-pro {
+    width: min(1180px, calc(100vw - 80px)) !important;
+    height: 600px !important;
+    max-height: 600px !important;
+    grid-template-columns: 57% 43% !important;
+  }
+
+  .login-brand-side,
+  .login-form-side {
+    height: 600px !important;
+    padding: 42px !important;
+  }
+
+  .login-form-side {
+    background:
+      radial-gradient(circle at top right, rgba(96,165,250,.14), transparent 36%),
+      linear-gradient(145deg, #101827, #162033) !important;
+  }
+
+  .login-form-card {
+    max-width: 430px !important;
+  }
+
+  .login-hero-copy h2 {
+    font-size: 38px !important;
+    line-height: 1.08 !important;
+  }
+
+  .login-qr-card {
+    transform: scale(.92);
+    transform-origin: left bottom;
+  }
+
+  .login-submit-btn {
+    margin-top: 4px;
+  }
+
+  .login-register-row::after {
+    content: "Secure login powered by Cric4All";
+    display: block;
+    margin-top: 14px;
+    font-size: 12px;
+    color: #94a3b8;
+  }
+}
