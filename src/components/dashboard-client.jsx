@@ -936,6 +936,80 @@ const handleAddPlayers = async (e) => {
     setError(error.message);
   }
 };
+function buildLiveMatchCenter(scoreboard) {
+  if (!scoreboard) return null;
+
+  const currentInningsNo = Number(scoreboard.currentInnings || 1);
+
+  const innings =
+    scoreboard.innings?.find(
+      (inn) => Number(inn.number) === currentInningsNo
+    ) || scoreboard.innings?.[currentInningsNo - 1];
+
+  if (!innings) return null;
+
+  const runs = Number(innings.runs || 0);
+  const wickets = Number(innings.wickets || 0);
+  const legalBalls = Number(innings.legalBalls || 0);
+  const oversPerInnings = Number(scoreboard.match?.oversPerInnings || 0);
+  const maxBalls = oversPerInnings * 6;
+
+  const oversDisplay = innings.oversDisplay || "0.0";
+  const crr =
+    legalBalls > 0 ? ((runs / legalBalls) * 6).toFixed(2) : "0.00";
+
+  const target = Number(scoreboard.summary?.target || 0);
+  const isSecondInnings = currentInningsNo === 2;
+
+  const ballsRemaining =
+    maxBalls > 0 ? Math.max(maxBalls - legalBalls, 0) : 0;
+
+  const runsRequired =
+    isSecondInnings && target > 0
+      ? Math.max(target - runs, 0)
+      : 0;
+
+  const rrr =
+    isSecondInnings && ballsRemaining > 0 && runsRequired > 0
+      ? ((runsRequired / ballsRemaining) * 6).toFixed(2)
+      : "-";
+
+  const projected =
+    legalBalls > 0 && maxBalls > 0
+      ? Math.round((runs / legalBalls) * maxBalls)
+      : runs;
+
+  const currentPartnership =
+    [...(innings.partnerships || [])]
+      .reverse()
+      .find((p) => p.ongoing) ||
+    [...(innings.partnerships || [])].at(-1);
+
+  const recentBalls =
+    scoreboard.recentBalls?.slice(0, 6)?.map((ball) => {
+      const label = ball.label || "";
+      return (
+        label.split(" ").slice(1).join(" ") || label
+      ).replace(/[()]/g, "");
+    }) || [];
+
+  return {
+    inningsNo: currentInningsNo,
+    runs,
+    wickets,
+    oversDisplay,
+    crr,
+    rrr,
+    projected,
+    target,
+    ballsRemaining,
+    runsRequired,
+    recentBalls,
+    partnershipRuns: currentPartnership?.runs ?? 0,
+    partnershipBalls: currentPartnership?.balls ?? 0,
+    isSecondInnings,
+  };
+}
 function getInstantDeliveryStatus(data) {
   const runs = Number(data.runsOffBat || 0);
   const extras = Number(data.extras || 0);
@@ -3386,6 +3460,9 @@ const editTeamB =
 const displayScoreboard =
   optimisticScoreboard || scoreboard;
 
+const liveMatchCenter =
+  buildLiveMatchCenter(displayScoreboard || scoreboard);
+
 const normalizedMatchStatus = String(
   scoreboard?.match?.status || ""
 )
@@ -4598,6 +4675,81 @@ onClick={() => {
             <p className="muted">Please select a match to view scoring, scoreboard, and commentary.</p>
           ) : (
             <>
+{liveMatchCenter && (
+  <div className="live-match-center">
+    <div className="live-center-top">
+      <div>
+        <span className="live-dot">● LIVE</span>
+        <strong>
+          Innings {liveMatchCenter.inningsNo} • Over{" "}
+          {liveMatchCenter.oversDisplay}
+        </strong>
+      </div>
+
+      <div className="live-score-mini">
+        {liveMatchCenter.runs}/{liveMatchCenter.wickets}
+      </div>
+    </div>
+
+    <div className="live-center-grid">
+      <div>
+        <span>CRR</span>
+        <strong>{liveMatchCenter.crr}</strong>
+      </div>
+
+      <div>
+        <span>RRR</span>
+        <strong>{liveMatchCenter.rrr}</strong>
+      </div>
+
+      <div>
+        <span>Projected</span>
+        <strong>{liveMatchCenter.projected}</strong>
+      </div>
+
+      <div>
+        <span>Partnership</span>
+        <strong>
+          {liveMatchCenter.partnershipRuns}
+          <small> ({liveMatchCenter.partnershipBalls})</small>
+        </strong>
+      </div>
+    </div>
+
+    {liveMatchCenter.isSecondInnings && liveMatchCenter.target > 0 && (
+      <div className="live-chase-strip">
+        Need{" "}
+        <strong>{liveMatchCenter.runsRequired}</strong> from{" "}
+        <strong>{liveMatchCenter.ballsRemaining}</strong> balls
+      </div>
+    )}
+
+    <div className="live-last-six">
+      <span>Last 6</span>
+
+      <div>
+        {liveMatchCenter.recentBalls.length ? (
+          liveMatchCenter.recentBalls.map((ball, index) => (
+            <b
+              key={`live-last-${index}`}
+              className={
+                ball === "W"
+                  ? "last-ball-wicket"
+                  : ball === "4" || ball === "6"
+                  ? "last-ball-boundary"
+                  : ""
+              }
+            >
+              {ball}
+            </b>
+          ))
+        ) : (
+          <small>No balls yet</small>
+        )}
+      </div>
+    </div>
+  </div>
+)}            
 <div className="score-summary-panel">
 <div className="single-line-scoreboard">
   <span className="status-chip">
