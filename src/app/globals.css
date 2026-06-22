@@ -9610,3 +9610,96 @@ body {
     min-height: 46px;
   }
 }
+@media (max-width: 700px) {
+  .login-card-pro {
+    background:
+      linear-gradient(145deg, #06122d, #0b234f, #13366f) !important;
+    border: 1px solid rgba(255,255,255,0.28);
+  }
+
+  .login-form-side {
+    background: transparent !important;
+    padding: 16px !important;
+  }
+
+  .login-form-head h2,
+  .login-form-clean label span {
+    color: #ffffff !important;
+  }
+
+  .login-form-head p,
+  .login-register-row {
+    color: #cbd5e1 !important;
+  }
+
+  .login-form-clean input {
+    background: rgba(255,255,255,0.96) !important;
+  }
+
+  .login-form-clean {
+    gap: 10px !important;
+  }
+
+  .login-register-row {
+    margin-top: 2px !important;
+  }
+
+  .login-feature-grid {
+    display: grid !important;
+    grid-template-columns: repeat(4, 1fr);
+    gap: 6px;
+    overflow: visible !important;
+  }
+
+  .login-feature-grid span {
+    padding: 7px 6px !important;
+    font-size: 10px !important;
+    text-align: center;
+    white-space: nowrap;
+  }
+
+  .login-feature-grid span:nth-child(1)::before {
+    content: "Scoring";
+    font-size: 0;
+  }
+
+  .login-feature-grid span:nth-child(1) {
+    font-size: 0 !important;
+  }
+
+  .login-feature-grid span:nth-child(1)::after {
+    content: "Scoring";
+    font-size: 10px;
+  }
+
+  .login-feature-grid span:nth-child(2) {
+    font-size: 0 !important;
+  }
+
+  .login-feature-grid span:nth-child(2)::after {
+    content: "Scores";
+    font-size: 10px;
+  }
+
+  .login-feature-grid span:nth-child(3) {
+    font-size: 0 !important;
+  }
+
+  .login-feature-grid span:nth-child(3)::after {
+    content: "Stats";
+    font-size: 10px;
+  }
+
+  .login-feature-grid span:nth-child(4) {
+    font-size: 0 !important;
+  }
+
+  .login-feature-grid span:nth-child(4)::after {
+    content: "Mobile";
+    font-size: 10px;
+  }
+
+  .login-shell {
+    padding: 8px !important;
+  }
+}
