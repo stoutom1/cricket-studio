@@ -10793,11 +10793,7 @@ body:has(.login-shell) .dashboard-content {
     grid-column: span 2;
   }
 }@media (max-width: 700px) {
-  .quick-actions {
-    display: grid !important;
-    grid-template-columns: repeat(5, 1fr);
-    gap: 10px;
-  }
+
 
   .quick-actions .chip,
   .quick-actions .btn,
@@ -10869,5 +10865,69 @@ body:has(.login-shell) .dashboard-content {
 
   .tv-status-banner {
     padding: 10px 12px !important;
+  }
+}
+@media (max-width: 700px) {
+  .quick-actions {
+    display: flex !important;
+    flex-wrap: wrap;
+    gap: 10px;
+    align-items: stretch;
+  }
+
+  .quick-actions .chip {
+    width: calc(20% - 8px);
+    min-width: 0;
+    min-height: 54px;
+    border-radius: 14px;
+    font-size: 16px;
+    font-weight: 950;
+  }
+
+  .quick-actions .chip:nth-of-type(11) {
+    width: calc(20% - 8px);
+  }
+
+  .quick-actions button:not(.chip) {
+    width: auto;
+  }
+
+  .quick-actions .btn,
+  .quick-actions .advanced-sheet-btn,
+  .quick-actions .end-innings-pill {
+    flex: 1 1 calc(50% - 8px);
+    min-height: 52px;
+    border-radius: 16px;
+  }
+
+  .quick-actions .btn-danger {
+    flex: 1 1 calc(50% - 8px);
+  }
+
+  .quick-actions .advanced-sheet-btn {
+    flex-basis: 100%;
+  }
+
+  .quick-actions .end-innings-pill {
+    flex-basis: 100%;
+  }
+}
+@media (max-width: 700px) {
+  .quick-actions .chip-wide {
+    width: calc(40% - 6px);
+  }
+}
+@media (max-width: 700px) {
+  .quick-actions > * {
+    position: relative;
+    z-index: 1;
+  }
+
+  .quick-actions {
+    overflow: visible;
+  }
+
+  .advanced-sheet-btn {
+    clear: both;
   }
 }

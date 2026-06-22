@@ -4868,7 +4868,7 @@ onClick={() => {
   <button type="button" className="chip" disabled={isSavingBall || isMatchCompleted || isMatchLocked || isMatchAbandoned} onClick={() => setShowRetiredHurtModal(true)}>Retired Hurt</button>
  <button
     type="button"
-    className="btn btn-outline"
+    className="chip chip-wide"
     disabled={isSavingBall || isMatchCompleted || isMatchLocked || isMatchAbandoned}
     onClick={swapBatters}
   >
