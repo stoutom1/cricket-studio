@@ -8902,7 +8902,6 @@ body {
   .edit-match-actions-v2 {
     position: sticky;
     bottom: 0;
-    background: #ffffff;
     display: grid;
   }
 
