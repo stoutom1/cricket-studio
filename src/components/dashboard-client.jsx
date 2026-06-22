@@ -6040,8 +6040,12 @@ recentBalls.slice(0, 20).map((ball, index) => {
             </div>
           </div>
 
-          <label className="mgmt-field">
+<label className="mgmt-field mgmt-select-field">
             <span>👇 Choose a league to manage</span>
+            <div className="select-action-hint">
+  <span>Tap to choose</span>
+  <b>⌄</b>
+</div>
             <select
               value={activeLeagueId || ""}
               onChange={(e) => {
@@ -6118,8 +6122,12 @@ recentBalls.slice(0, 20).map((ball, index) => {
             </div>
           </div>
 
-          <label className="mgmt-field">
+<label className="mgmt-field mgmt-select-field">
             <span>👇 Choose a series or leave optional</span>
+            <div className="select-action-hint">
+  <span>Tap to choose</span>
+  <b>⌄</b>
+</div>
             <select
               value={selectedSeriesId || ""}
               disabled={!activeLeagueId}
@@ -6190,8 +6198,12 @@ recentBalls.slice(0, 20).map((ball, index) => {
             </div>
           </div>
 
-          <label className="mgmt-field">
+<label className="mgmt-field mgmt-select-field">
             <span>👇 Choose a team to manage players</span>
+            <div className="select-action-hint">
+  <span>Tap to choose</span>
+  <b>⌄</b>
+</div>
             <select
               value={selectedTeamId || ""}
               disabled={!selectedLeague}
