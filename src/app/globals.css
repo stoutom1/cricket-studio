@@ -9742,3 +9742,95 @@ body {
     height: auto !important;
   }
 }
+/* FINAL LOGIN PAGE OVERRIDE */
+html:has(.login-shell),
+body:has(.login-shell) {
+  height: 100%;
+  overflow: hidden !important;
+}
+
+body:has(.login-shell) .site-main,
+body:has(.login-shell) main:not(.login-shell),
+body:has(.login-shell) .page-shell,
+body:has(.login-shell) .dashboard-content {
+  padding: 0 !important;
+  margin: 0 !important;
+  max-width: none !important;
+}
+
+.login-shell {
+  height: calc(100vh - 72px) !important;
+  min-height: 0 !important;
+  padding: 0 24px !important;
+  overflow: hidden !important;
+}
+
+.login-card-pro {
+  height: 520px !important;
+  min-height: 0 !important;
+  max-height: 520px !important;
+  width: min(1050px, calc(100vw - 48px)) !important;
+}
+
+.login-brand-side,
+.login-form-side {
+  height: 520px !important;
+  min-height: 0 !important;
+  overflow: hidden !important;
+}
+
+.login-brand-side {
+  padding: 34px !important;
+}
+
+.login-form-side {
+  padding: 34px !important;
+}
+
+.login-hero-copy h2 {
+  font-size: 28px !important;
+  line-height: 1.12 !important;
+}
+
+.login-hero-copy p {
+  font-size: 14px !important;
+  line-height: 1.45 !important;
+}
+
+.login-qr-card {
+  margin-top: 8px !important;
+}
+
+.login-form-head h2 {
+  font-size: 28px !important;
+}
+
+.login-form-clean {
+  gap: 11px !important;
+}
+
+.login-register-row {
+  margin: 0 !important;
+}
+
+@media (max-width: 700px) {
+  html:has(.login-shell),
+  body:has(.login-shell) {
+    height: auto;
+    overflow: auto !important;
+  }
+
+  .login-shell {
+    height: auto !important;
+    min-height: calc(100vh - 72px) !important;
+    padding: 8px !important;
+    overflow: visible !important;
+  }
+
+  .login-card-pro,
+  .login-brand-side,
+  .login-form-side {
+    height: auto !important;
+    max-height: none !important;
+  }
+}
