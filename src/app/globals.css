@@ -10792,4 +10792,82 @@ body:has(.login-shell) .dashboard-content {
   .mobile-secondary-actions .end-innings-pill {
     grid-column: span 2;
   }
+}@media (max-width: 700px) {
+  .quick-actions {
+    display: grid !important;
+    grid-template-columns: repeat(5, 1fr);
+    gap: 10px;
+  }
+
+  .quick-actions .chip,
+  .quick-actions .btn,
+  .quick-actions .scoring-btn {
+    width: 100%;
+    min-width: 0;
+    min-height: 56px;
+    justify-content: center;
+    border-radius: 14px;
+  }
+
+  .quick-actions button {
+    font-size: 16px;
+    font-weight: 900;
+  }
+}
+@media (max-width: 700px) {
+  .tv-player-board div {
+    grid-template-columns: 92px 1fr auto !important;
+  }
+
+  .tv-player-board strong {
+    font-size: 24px !important;
+    font-weight: 950;
+  }
+
+  .tv-player-board small {
+    font-size: 18px !important;
+    font-weight: 950;
+    color: #f8fafc !important;
+  }
+}
+@media (max-width: 700px) {
+  .mobile-secondary-actions {
+    display: grid !important;
+    grid-template-columns: repeat(3, 1fr);
+    gap: 8px;
+    margin-top: 10px;
+  }
+
+  .mobile-secondary-actions > button {
+    min-height: 48px !important;
+    padding: 8px 10px !important;
+    font-size: 13px !important;
+    border-radius: 14px !important;
+  }
+
+  .mobile-secondary-actions .btn-danger {
+    grid-column: auto !important;
+  }
+
+  .mobile-secondary-actions .end-innings-pill {
+    grid-column: span 3;
+    min-height: 46px !important;
+  }
+}
+@media (max-width: 700px) {
+  .tv-score-console {
+    padding: 12px !important;
+  }
+
+  .tv-player-board {
+    gap: 7px !important;
+  }
+
+  .tv-player-board div {
+    padding: 9px 11px !important;
+  }
+
+  .tv-status-banner {
+    padding: 10px 12px !important;
+  }
 }
