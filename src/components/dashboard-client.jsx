@@ -290,6 +290,7 @@ const [editMatchForm, setEditMatchForm] = useState({
 const [correctionStatus, setCorrectionStatus] = useState("");
 const [correctionSaving, setCorrectionSaving] = useState(false);
 const [rollbackSaving, setRollbackSaving] = useState(false);
+const [leagueStatsLoading, setLeagueStatsLoading] = useState(false);
 const isSuperAdmin =
   session?.user?.email ===
   "surprisecricket11@gmail.com";
@@ -641,12 +642,21 @@ async function handleCreateLeague() {
   setShowLeagueModal(false);
   setLeagueName("");
 }
-async function loadLeagueStats(leagueId) {
+async function loadLeagueStats(leagueId = activeLeagueId) {
   if (!leagueId) return;
 
-  const data = await api(`/api/leagues/${leagueId}/stats`);
-  setLeagueStats(data);
+  try {
+    setLeagueStatsLoading(true);
+    const data = await api(`/api/leagues/${leagueId}/stats`);
+    setLeagueStats(data);
+  } catch (err) {
+    console.error("Load league stats failed:", err);
+    setError("Failed to load league stats");
+  } finally {
+    setLeagueStatsLoading(false);
+  }
 }
+
 const captaincyRows =
   leagueStats?.captaincy?.length
     ? leagueStats.captaincy
@@ -975,6 +985,7 @@ async function handleUpdateScheduledMatch(e) {
     });
 
     await loadMatches();
+    await loadLeagueStats(activeLeagueId);
 
     if (selectedMatchId && Number(selectedMatchId) === Number(editingMatch.id)) {
       await loadSelectedMatch(selectedMatchId);
@@ -1440,6 +1451,7 @@ setTimeout(() => {
 setLastCorrectionId(result.correctionId);
     await loadSelectedMatch(selectedMatchId);
     await loadMatches();
+    await loadLeagueStats(activeLeagueId);
     setShowCorrectionModal(false);
 
 setMessage(
@@ -2356,6 +2368,7 @@ setOptimisticScoreboard(null);
       );
 
       await loadMatches();
+      await loadLeagueStats(activeLeagueId);
       return;
     }
 
@@ -3843,6 +3856,7 @@ async function handleLiveWicketKeeperChange() {
 
     await loadSelectedMatch(selectedMatchId);
     await loadMatches();
+    await loadLeagueStats(activeLeagueId);
 
     setShowKeeperChangeModal(false);
     setKeeperChangeForm({
@@ -3978,9 +3992,10 @@ return (
               ? "active"
               : ""
           }`}
-          onClick={() =>
-            setActiveTab("stats")
-          }
+onClick={() => {
+  setActiveTab("stats");
+  loadLeagueStats(activeLeagueId);
+}}
         >
           📊 Stats
         </button>
@@ -6393,6 +6408,11 @@ recentBalls.slice(0, 20).map((ball, index) => {
 )}
 {activeTab === "stats" && (
   <div className="stats-page">
+    {leagueStatsLoading && (
+  <div className="live-feed-banner">
+    📊 Refreshing latest stats...
+  </div>
+)}
     <Card title="📊 League Statistics" defaultCollapsed={false}>
       <div className="active-league-banner">
         Active League:{" "}
