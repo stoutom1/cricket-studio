@@ -4693,43 +4693,37 @@ onClick={() => {
         </div>
       </div>
 
-      <div className="tv-player-board">
-        <div>
-          <span>Striker</span>
-          <strong>
-            {displayScoreboard?.currentState?.strikerName || "-"} *
-          </strong>
-          <small>
-            {displayScoreboard?.currentState?.strikerStats
-              ? `${displayScoreboard.currentState.strikerStats.runs} (${displayScoreboard.currentState.strikerStats.balls})`
-              : "0 (0)"}
-          </small>
-        </div>
+<div className="tv-player-compact">
+  <div>
+    <span>🏏</span>
+    <strong>{displayScoreboard?.currentState?.strikerName || "-"} *</strong>
+    <small>
+      {displayScoreboard?.currentState?.strikerStats
+        ? `${displayScoreboard.currentState.strikerStats.runs} (${displayScoreboard.currentState.strikerStats.balls})`
+        : "0 (0)"}
+    </small>
+  </div>
 
-        <div>
-          <span>Non-Striker</span>
-          <strong>
-            {displayScoreboard?.currentState?.nonStrikerName || "-"}
-          </strong>
-          <small>
-            {displayScoreboard?.currentState?.nonStrikerStats
-              ? `${displayScoreboard.currentState.nonStrikerStats.runs} (${displayScoreboard.currentState.nonStrikerStats.balls})`
-              : "0 (0)"}
-          </small>
-        </div>
+  <div>
+    <span>🏃</span>
+    <strong>{displayScoreboard?.currentState?.nonStrikerName || "-"}</strong>
+    <small>
+      {displayScoreboard?.currentState?.nonStrikerStats
+        ? `${displayScoreboard.currentState.nonStrikerStats.runs} (${displayScoreboard.currentState.nonStrikerStats.balls})`
+        : "0 (0)"}
+    </small>
+  </div>
 
-        <div>
-          <span>Bowler</span>
-          <strong>
-            {displayScoreboard?.currentState?.bowlerName || "-"}
-          </strong>
-          <small>
-            {displayScoreboard?.currentState?.bowlerStats
-              ? `${displayScoreboard.currentState.bowlerStats.wickets}/${displayScoreboard.currentState.bowlerStats.runs} in ${displayScoreboard.currentState.bowlerStats.overs} ov`
-              : "0/0"}
-          </small>
-        </div>
-      </div>
+  <div>
+    <span>🎯</span>
+    <strong>{displayScoreboard?.currentState?.bowlerName || "-"}</strong>
+    <small>
+      {displayScoreboard?.currentState?.bowlerStats
+        ? `${displayScoreboard.currentState.bowlerStats.wickets}/${displayScoreboard.currentState.bowlerStats.runs} • ${displayScoreboard.currentState.bowlerStats.overs} ov`
+        : "0/0"}
+    </small>
+  </div>
+</div>
 
       <div className="tv-metric-strip">
         <span>CRR <b>{liveMatchCenter.crr}</b></span>
@@ -4786,16 +4780,16 @@ onClick={() => {
   <div className="tv-recent-inline">
     <span>Recent</span>
 
-    <div className="tv-recent-balls">
+    <div className="recent-balls-row compact">
       {recentBalls.length ? (
-        recentBalls.slice(0, 14).map((ball, index) => {
+        recentBalls.slice(0, 20).map((ball, index) => {
           const label = ball.label || "";
-          const recent14 = recentBalls.slice(0, 14);
+          const recent20 = recentBalls.slice(0, 20);
           const currentOver = label.split(".")[0];
 
           const prevOver =
             index > 0
-              ? recent14[index - 1]?.label?.split(".")[0]
+              ? recent20[index - 1]?.label?.split(".")[0]
               : currentOver;
 
           const ballResult = (
@@ -4805,30 +4799,25 @@ onClick={() => {
           return (
             <React.Fragment key={ball.id}>
               {index > 0 && currentOver !== prevOver && (
-                <i className="tv-over-separator">|</i>
+                <span className="over-separator">|</span>
               )}
 
-              <b
-                className={`tv-ball ${
+              <span
+                className={`ball-chip ${
                   ballResult === "W"
-                    ? "tv-ball-wicket"
+                    ? "ball-wicket"
                     : ballResult === "4" || ballResult === "6"
-                    ? "tv-ball-boundary"
-                    : ballResult === "WD" ||
-                      ballResult === "Wd" ||
-                      ballResult === "NB" ||
-                      ballResult === "Nb"
-                    ? "tv-ball-extra"
+                    ? "ball-boundary"
                     : ""
                 }`}
               >
                 {ballResult}
-              </b>
+              </span>
             </React.Fragment>
           );
         })
       ) : (
-        <small>No recent balls</small>
+        <span className="muted">No recent balls</span>
       )}
     </div>
   </div>
