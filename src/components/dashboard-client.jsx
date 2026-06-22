@@ -4870,7 +4870,7 @@ onClick={() => {
     disabled={isMatchLocked}
     onClick={handleUndoBall}
   >
-    ↩ Undo Ball
+    ↩ Undo
   </button>
 <button
   type="button"
@@ -4886,7 +4886,7 @@ onClick={() => {
   disabled={isMatchLocked || isMatchAbandoned}
   onClick={() => setShowCorrectionModal(true)}
 >
-  🛠️ RH Corrections
+  🛠️ RH
 </button>
 {lastCorrectionId && (
 <button
