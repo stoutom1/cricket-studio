@@ -11471,3 +11471,144 @@ body:has(.login-shell) .dashboard-content {
     background: #dc2626;
   }
 }
+/* FINAL ADVANCED SCORING ACTION GRID FIX */
+
+.quick-actions {
+  margin-top: 14px;
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px;
+  align-items: stretch;
+}
+
+.quick-actions .chip {
+  min-height: 36px;
+  padding: 7px 13px;
+  border-radius: 10px;
+  white-space: nowrap;
+}
+
+.mobile-secondary-actions {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px;
+  width: 100%;
+}
+
+@media (max-width: 700px) {
+  .quick-actions {
+    display: grid !important;
+    grid-template-columns: repeat(6, minmax(0, 1fr));
+    gap: 8px;
+    width: 100%;
+  }
+
+  .quick-actions > .chip,
+  .quick-actions > .btn,
+  .quick-actions > .advanced-sheet-btn,
+  .quick-actions > .scoring-btn {
+    width: 100%;
+    min-width: 0;
+    min-height: 48px;
+    padding: 7px 6px;
+    border-radius: 14px;
+    font-size: 15px;
+    font-weight: 950;
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    white-space: nowrap;
+  }
+
+  /* Row 1: 0 1 2 3 4 6 */
+  .quick-actions > .chip:nth-of-type(1),
+  .quick-actions > .chip:nth-of-type(2),
+  .quick-actions > .chip:nth-of-type(3),
+  .quick-actions > .chip:nth-of-type(4),
+  .quick-actions > .chip:nth-of-type(5),
+  .quick-actions > .chip:nth-of-type(6) {
+    grid-column: span 1;
+  }
+
+  /* Row 2: Wd Nb B LB Wkt */
+  .quick-actions > .chip:nth-of-type(7),
+  .quick-actions > .chip:nth-of-type(8),
+  .quick-actions > .chip:nth-of-type(9),
+  .quick-actions > .chip:nth-of-type(10) {
+    grid-column: span 1;
+  }
+
+  .quick-actions > .chip:nth-of-type(11) {
+    grid-column: span 2;
+  }
+
+  /* Row 3: Retired Hurt | Swap */
+  .quick-actions > .chip-retired-hurt {
+    grid-column: span 4;
+  }
+
+  .quick-actions > .chip-swap {
+    grid-column: span 2;
+  }
+
+  /* IMPORTANT: nested action wrapper becomes its own grid row */
+  .quick-actions > .mobile-secondary-actions {
+    grid-column: 1 / -1;
+    display: grid !important;
+    grid-template-columns: repeat(6, minmax(0, 1fr));
+    gap: 8px;
+    width: 100%;
+  }
+
+  .mobile-secondary-actions > button {
+    width: 100%;
+    min-width: 0;
+    min-height: 48px !important;
+    padding: 7px 6px !important;
+    border-radius: 14px !important;
+    font-size: 14px !important;
+    font-weight: 950 !important;
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    white-space: nowrap;
+  }
+
+  /* Row 4: Undo | Change WK | RH */
+  .mobile-secondary-actions > .action-undo-compact {
+    grid-column: span 2;
+  }
+
+  .mobile-secondary-actions > .action-change-wk {
+    grid-column: span 2;
+  }
+
+  .mobile-secondary-actions > .action-rh-corrections {
+    grid-column: span 2;
+  }
+
+  /* Rollback if visible */
+  .mobile-secondary-actions > button:not(.action-undo-compact):not(.action-change-wk):not(.action-rh-corrections):not(.action-end-innings) {
+    grid-column: span 3;
+  }
+
+  /* End innings gets full row because it is dangerous/important */
+  .mobile-secondary-actions > .action-end-innings {
+    grid-column: 1 / -1;
+    min-height: 50px !important;
+  }
+
+  .mobile-secondary-actions > .action-end-innings small {
+    display: none;
+  }
+
+  .quick-actions > .advanced-sheet-btn {
+    grid-column: 1 / -1;
+    min-height: 58px;
+    margin-top: 2px;
+  }
+
+  .quick-actions > .scoring-btn-primary {
+    grid-column: 1 / -1;
+  }
+}
