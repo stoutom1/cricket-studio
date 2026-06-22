@@ -4778,18 +4778,18 @@ onClick={() => {
 
   <div className="tv-bottom-row">
   <div className="tv-recent-inline">
-    <span>Recent</span>
+    <span>Recent <small>last 10</small></span>
 
     <div className="recent-balls-row compact">
       {recentBalls.length ? (
-        recentBalls.slice(0, 20).map((ball, index) => {
+        recentBalls.slice(0, 10).map((ball, index) => {
           const label = ball.label || "";
-          const recent20 = recentBalls.slice(0, 20);
+          const recent10 = recentBalls.slice(0, 10);
           const currentOver = label.split(".")[0];
 
           const prevOver =
             index > 0
-              ? recent20[index - 1]?.label?.split(".")[0]
+              ? recent10[index - 1]?.label?.split(".")[0]
               : currentOver;
 
           const ballResult = (
