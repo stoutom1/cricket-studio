@@ -11361,3 +11361,18 @@ body:has(.login-shell) .dashboard-content {
     color: #ffffff;
   }
 }
+@media (max-width: 700px) {
+  .quick-actions .chip {
+    white-space: nowrap;
+  }
+
+  .quick-actions .chip-retired-hurt {
+    flex: 1 1 calc(60% - 8px) !important;
+    min-width: 170px;
+  }
+
+  .quick-actions .chip-swap {
+    flex: 1 1 calc(40% - 8px) !important;
+    min-width: 96px;
+  }
+}
