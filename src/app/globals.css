@@ -750,22 +750,6 @@ select:focus {
   }
 }
 
-.quick-actions .chip {
-  min-width: 46px;
-  height: 40px;
-  padding: 6px 10px;
-  font-size: 13px;
-  font-weight: 600;
-  border-radius: 10px;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-}
-
-.quick-actions .chip:last-child {
-  min-width: 130px; /* Retired Hurt button */
-}
-
 .chip:hover {
   transform: translateY(-2px);
 }
@@ -816,22 +800,7 @@ select:focus {
     transform: scale(1.18);
   }
 }
-@media (max-width: 768px) {
-  .quick-actions {
-    gap: 4px;
-  }
-}  
-.quick-actions .chip-primary {
-  min-width: 120px;
-  font-weight: 700;
-}
 
-.quick-actions {
-  display: flex;
-  flex-wrap: wrap;
-  gap: 10px;
-  align-items: center;
-}
 .scoring-action-bar {
   display: grid;
   grid-template-columns: 1fr 2fr;
@@ -1858,15 +1827,6 @@ body {
 
   padding: 20px;
 }
-.advanced-sheet-btn {
-  width: 100%;
-
-  margin-top: 12px;
-
-  border-radius: 12px;
-
-  font-weight: 600;
-}
 .sheet-backdrop {
   position: fixed;
 
@@ -1942,34 +1902,6 @@ body {
   font-size: 20px;
 
   cursor: pointer;
-}
-.advanced-sheet-btn {
-  width: 100%;
-
-  display: flex;
-  align-items: center;
-  gap: 14px;
-
-  padding: 16px 18px;
-
-  border: 1px solid rgba(85, 214, 255, 0.25);
-  border-radius: 16px;
-
-  background:
-    linear-gradient(
-      135deg,
-      rgba(85, 214, 255, 0.15),
-      rgba(124, 133, 255, 0.12)
-    );
-
-  color: white;
-
-  cursor: pointer;
-
-  transition: all 0.2s ease;
-
-  box-shadow:
-    0 8px 24px rgba(0,0,0,.18);
 }
 
 .advanced-sheet-btn:hover {
@@ -10735,10 +10667,6 @@ body:has(.login-shell) .dashboard-content {
   font-size: 11px;
 }
 
-.mobile-secondary-actions {
-  display: contents;
-}
-
 @media (max-width: 700px) {
   .tv-bottom-row {
     grid-template-columns: 1fr;
@@ -10775,40 +10703,6 @@ body:has(.login-shell) .dashboard-content {
     align-items: center;
     gap: 2px;
   }
-
-  .mobile-secondary-actions {
-    display: grid;
-    grid-template-columns: repeat(2, minmax(0, 1fr));
-    gap: 10px;
-    margin-top: 10px;
-  }
-
-  .mobile-secondary-actions > button {
-    width: 100%;
-    min-height: 54px;
-    justify-content: center;
-  }
-
-  .mobile-secondary-actions .end-innings-pill {
-    grid-column: span 2;
-  }
-}@media (max-width: 700px) {
-
-
-  .quick-actions .chip,
-  .quick-actions .btn,
-  .quick-actions .scoring-btn {
-    width: 100%;
-    min-width: 0;
-    min-height: 56px;
-    justify-content: center;
-    border-radius: 14px;
-  }
-
-  .quick-actions button {
-    font-size: 16px;
-    font-weight: 900;
-  }
 }
 @media (max-width: 700px) {
   .tv-player-board div {
@@ -10824,30 +10718,6 @@ body:has(.login-shell) .dashboard-content {
     font-size: 18px !important;
     font-weight: 950;
     color: #f8fafc !important;
-  }
-}
-@media (max-width: 700px) {
-  .mobile-secondary-actions {
-    display: grid !important;
-    grid-template-columns: repeat(3, 1fr);
-    gap: 8px;
-    margin-top: 10px;
-  }
-
-  .mobile-secondary-actions > button {
-    min-height: 48px !important;
-    padding: 8px 10px !important;
-    font-size: 13px !important;
-    border-radius: 14px !important;
-  }
-
-  .mobile-secondary-actions .btn-danger {
-    grid-column: auto !important;
-  }
-
-  .mobile-secondary-actions .end-innings-pill {
-    grid-column: span 3;
-    min-height: 46px !important;
   }
 }
 @media (max-width: 700px) {
@@ -10867,70 +10737,7 @@ body:has(.login-shell) .dashboard-content {
     padding: 10px 12px !important;
   }
 }
-@media (max-width: 700px) {
-  .quick-actions {
-    display: flex !important;
-    flex-wrap: wrap;
-    gap: 10px;
-    align-items: stretch;
-  }
 
-  .quick-actions .chip {
-    width: calc(20% - 8px);
-    min-width: 0;
-    min-height: 54px;
-    border-radius: 14px;
-    font-size: 16px;
-    font-weight: 950;
-  }
-
-  .quick-actions .chip:nth-of-type(11) {
-    width: calc(20% - 8px);
-  }
-
-  .quick-actions button:not(.chip) {
-    width: auto;
-  }
-
-  .quick-actions .btn,
-  .quick-actions .advanced-sheet-btn,
-  .quick-actions .end-innings-pill {
-    flex: 1 1 calc(50% - 8px);
-    min-height: 52px;
-    border-radius: 16px;
-  }
-
-  .quick-actions .btn-danger {
-    flex: 1 1 calc(50% - 8px);
-  }
-
-  .quick-actions .advanced-sheet-btn {
-    flex-basis: 100%;
-  }
-
-  .quick-actions .end-innings-pill {
-    flex-basis: 100%;
-  }
-}
-@media (max-width: 700px) {
-  .quick-actions .chip-wide {
-    width: calc(40% - 6px);
-  }
-}
-@media (max-width: 700px) {
-  .quick-actions > * {
-    position: relative;
-    z-index: 1;
-  }
-
-  .quick-actions {
-    overflow: visible;
-  }
-
-  .advanced-sheet-btn {
-    clear: both;
-  }
-}
 /* ADVANCED SCORING - PROFESSIONAL MOBILE/LAPTOP POLISH */
 
 .tv-score-console {
@@ -11131,9 +10938,7 @@ body:has(.login-shell) .dashboard-content {
   font-size: 15px;
 }
 
-.quick-actions {
-  margin-top: 16px;
-}
+
 @media (max-width: 700px) {
   .tv-score-console {
     padding: 14px;
@@ -11231,54 +11036,6 @@ body:has(.login-shell) .dashboard-content {
     min-width: 0;
     width: 100%;
   }
-
-  .quick-actions {
-    margin-top: 18px;
-    display: flex !important;
-    flex-wrap: wrap;
-    gap: 10px;
-    align-items: stretch;
-  }
-
-  .quick-actions .chip {
-    flex: 1 1 calc(20% - 8px);
-    min-width: 54px;
-    min-height: 52px;
-    border-radius: 15px;
-    font-size: 16px;
-    font-weight: 950;
-  }
-
-  .quick-actions .chip-wide {
-    flex: 1 1 calc(40% - 8px);
-  }
-
-  .mobile-secondary-actions {
-    display: grid !important;
-    grid-template-columns: repeat(2, minmax(0, 1fr));
-    gap: 9px;
-    width: 100%;
-    margin-top: 4px;
-  }
-
-  .mobile-secondary-actions > button {
-    width: 100%;
-    min-height: 48px !important;
-    padding: 9px 10px !important;
-    border-radius: 15px !important;
-    font-size: 14px !important;
-    font-weight: 900 !important;
-    justify-content: center;
-  }
-
-  .mobile-secondary-actions .end-innings-pill {
-    grid-column: span 2;
-  }
-
-  .advanced-sheet-btn {
-    width: 100%;
-    margin-top: 4px;
-  }
 }
 .tv-main-score {
   font-size: clamp(34px, 5vw, 44px) !important;
@@ -11359,116 +11116,6 @@ body:has(.login-shell) .dashboard-content {
   .tv-player-compact small {
     font-size: 15px;
     color: #ffffff;
-  }
-}
-@media (max-width: 700px) {
-  .quick-actions .chip {
-    white-space: nowrap;
-  }
-
-  .quick-actions .chip-retired-hurt {
-    flex: 1 1 calc(60% - 8px) !important;
-    min-width: 170px;
-  }
-
-  .quick-actions .chip-swap {
-    flex: 1 1 calc(40% - 8px) !important;
-    min-width: 96px;
-  }
-}
-@media (max-width: 700px) {
-  .quick-actions {
-    display: grid !important;
-    grid-template-columns: repeat(6, minmax(0, 1fr));
-    gap: 8px;
-    margin-top: 14px;
-  }
-
-  .quick-actions .chip,
-  .quick-actions .btn,
-  .quick-actions .end-innings-pill {
-    width: 100%;
-    min-width: 0;
-    min-height: 48px;
-    padding: 8px 6px;
-    border-radius: 14px;
-    font-size: 15px;
-    font-weight: 950;
-    display: inline-flex;
-    align-items: center;
-    justify-content: center;
-    white-space: nowrap;
-  }
-
-  /* Row 1: 0 1 2 3 4 6 */
-  .quick-actions > .chip:nth-child(1),
-  .quick-actions > .chip:nth-child(2),
-  .quick-actions > .chip:nth-child(3),
-  .quick-actions > .chip:nth-child(4),
-  .quick-actions > .chip:nth-child(5),
-  .quick-actions > .chip:nth-child(6) {
-    grid-column: span 1;
-  }
-
-  /* Row 2: Wd Nb B LB Wkt */
-  .quick-actions > .chip:nth-child(7),
-  .quick-actions > .chip:nth-child(8),
-  .quick-actions > .chip:nth-child(9),
-  .quick-actions > .chip:nth-child(10) {
-    grid-column: span 1;
-  }
-
-  .quick-actions > .chip:nth-child(11) {
-    grid-column: span 2;
-  }
-
-  /* Row 3: Retired Hurt | Swap | Undo */
-  .quick-actions .chip-retired-hurt {
-    grid-column: span 3;
-  }
-
-  .quick-actions .chip-swap {
-    grid-column: span 1;
-  }
-
-  .quick-actions .action-undo-compact {
-    grid-column: span 2;
-  }
-
-  /* flatten wrapper so its children join the main grid */
-  .quick-actions .mobile-secondary-actions {
-    display: contents !important;
-  }
-
-  .quick-actions .action-change-wk,
-  .quick-actions .action-rh-corrections,
-  .quick-actions .action-end-innings {
-    min-height: 48px;
-  }
-
-  /* Row 4: Change WK | RH Corrections | End 1st Innings */
-  .quick-actions .action-change-wk {
-    grid-column: span 2;
-  }
-
-  .quick-actions .action-rh-corrections {
-    grid-column: span 2;
-  }
-
-  .quick-actions .action-end-innings {
-    grid-column: span 2;
-  }
-
-  .quick-actions .action-end-innings small {
-    display: none;
-  }
-
-  .quick-actions .action-end-innings span {
-    font-size: 14px;
-  }
-
-  .quick-actions .action-undo-compact {
-    background: #dc2626;
   }
 }
 /* FINAL ADVANCED SCORING ACTION GRID FIX */
