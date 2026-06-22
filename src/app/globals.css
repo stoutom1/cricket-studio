@@ -9703,3 +9703,42 @@ body {
     padding: 8px !important;
   }
 }
+.login-shell {
+  height: calc(100vh - 90px) !important;
+  min-height: 0 !important;
+  overflow: hidden !important;
+}
+
+.login-card-pro {
+  min-height: 0 !important;
+  height: min(620px, calc(100vh - 130px)) !important;
+}
+
+.login-brand-side,
+.login-form-side {
+  min-height: 0 !important;
+}
+
+.login-form-side {
+  align-items: center !important;
+}
+
+.login-form-clean {
+  gap: 12px !important;
+}
+
+.login-register-row {
+  margin-top: 0 !important;
+}
+
+@media (max-width: 700px) {
+  .login-shell {
+    height: auto !important;
+    min-height: calc(100vh - 72px) !important;
+    overflow: visible !important;
+  }
+
+  .login-card-pro {
+    height: auto !important;
+  }
+}
