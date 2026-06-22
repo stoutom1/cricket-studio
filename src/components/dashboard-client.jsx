@@ -4742,13 +4742,6 @@ onClick={() => {
           </b>
         </span>
       </div>
-
-      {liveMatchCenter.isSecondInnings && liveMatchCenter.target > 0 && (
-        <div className="tv-chase-line">
-          Need <strong>{liveMatchCenter.runsRequired}</strong> from{" "}
-          <strong>{liveMatchCenter.ballsRemaining}</strong> balls
-        </div>
-      )}
     </>
   )}
 
@@ -4789,19 +4782,20 @@ onClick={() => {
     )
   )}
 
-  <div className="tv-recent-section">
+  <div className="tv-bottom-row">
+  <div className="tv-recent-inline">
     <span>Recent</span>
 
-    <div className="recent-balls-row compact">
+    <div className="tv-recent-balls">
       {recentBalls.length ? (
-        recentBalls.slice(0, 20).map((ball, index) => {
+        recentBalls.slice(0, 14).map((ball, index) => {
           const label = ball.label || "";
-          const recent20 = recentBalls.slice(0, 20);
+          const recent14 = recentBalls.slice(0, 14);
           const currentOver = label.split(".")[0];
 
           const prevOver =
             index > 0
-              ? recent20[index - 1]?.label?.split(".")[0]
+              ? recent14[index - 1]?.label?.split(".")[0]
               : currentOver;
 
           const ballResult = (
@@ -4811,28 +4805,42 @@ onClick={() => {
           return (
             <React.Fragment key={ball.id}>
               {index > 0 && currentOver !== prevOver && (
-                <span className="over-separator">|</span>
+                <i className="tv-over-separator">|</i>
               )}
 
-              <span
-                className={`ball-chip ${
+              <b
+                className={`tv-ball ${
                   ballResult === "W"
-                    ? "ball-wicket"
+                    ? "tv-ball-wicket"
                     : ballResult === "4" || ballResult === "6"
-                    ? "ball-boundary"
+                    ? "tv-ball-boundary"
+                    : ballResult === "WD" ||
+                      ballResult === "Wd" ||
+                      ballResult === "NB" ||
+                      ballResult === "Nb"
+                    ? "tv-ball-extra"
                     : ""
                 }`}
               >
                 {ballResult}
-              </span>
+              </b>
             </React.Fragment>
           );
         })
       ) : (
-        <span className="muted">No recent balls</span>
+        <small>No recent balls</small>
       )}
     </div>
   </div>
+
+  {liveMatchCenter?.isSecondInnings && liveMatchCenter?.target > 0 && (
+    <div className="tv-chase-mini">
+      <span>Target <b>{liveMatchCenter.target}</b></span>
+      <span>Need <b>{liveMatchCenter.runsRequired}</b></span>
+      <span>Balls <b>{liveMatchCenter.ballsRemaining}</b></span>
+    </div>
+  )}
+</div>
 
 {!permissions?.canScoreMatch && (
 <div>
@@ -4866,6 +4874,7 @@ onClick={() => {
   >
     ⇄ Swap
   </button>
+ <div className="mobile-secondary-actions">
     <button
     type="button"
     className="btn btn-danger scoring-btn"
@@ -4918,6 +4927,7 @@ onClick={() => {
       <small>Finished batting?</small>
     </button>
 )}
+</div>
 {(isMatchCompleted || isMatchLocked) && (
   <button
     type="submit"
