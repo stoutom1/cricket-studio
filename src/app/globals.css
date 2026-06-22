@@ -10920,7 +10920,6 @@ body:has(.login-shell) .dashboard-content {
   min-width: 230px;
   padding: 10px;
   border-radius: 16px;
-  background: rgba(250, 204, 21, 0.10);
   border: 1px solid rgba(250, 204, 21, 0.24);
 }
 
@@ -10928,13 +10927,11 @@ body:has(.login-shell) .dashboard-content {
   display: grid;
   gap: 2px;
   text-align: center;
-  color: #fef3c7;
   font-size: 12px;
   font-weight: 900;
 }
 
 .tv-chase-mini b {
-  color: #ffffff;
   font-size: 15px;
 }
 
@@ -10986,7 +10983,6 @@ body:has(.login-shell) .dashboard-content {
   .tv-player-board small {
     margin-top: 0;
     font-size: 19px;
-    color: #ffffff;
   }
 
   .tv-metric-strip {
@@ -11061,7 +11057,6 @@ body:has(.login-shell) .dashboard-content {
   min-width: 0;
   padding: 9px 10px;
   border-radius: 14px;
-  background: rgba(255,255,255,.045);
   border: 1px solid rgba(255,255,255,.075);
   display: grid;
   grid-template-columns: auto 1fr;
@@ -11079,7 +11074,6 @@ body:has(.login-shell) .dashboard-content {
   min-width: 0;
   font-size: 14px;
   font-weight: 950;
-  color: #ffffff;
   white-space: nowrap;
   overflow: hidden;
   text-overflow: ellipsis;
@@ -11088,7 +11082,6 @@ body:has(.login-shell) .dashboard-content {
 .tv-player-compact small {
   font-size: 12px;
   font-weight: 850;
-  color: #cbd5e1;
 }
 
 @media (max-width: 700px) {
@@ -11115,7 +11108,6 @@ body:has(.login-shell) .dashboard-content {
 
   .tv-player-compact small {
     font-size: 15px;
-    color: #ffffff;
   }
 }
 /* FINAL ADVANCED SCORING ACTION GRID FIX */
