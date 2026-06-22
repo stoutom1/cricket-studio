@@ -5444,7 +5444,8 @@ recentBalls.slice(0, 20).map((ball, index) => {
         className={matchesSubTab === "CREATE MATCH" ? "active" : ""}
         onClick={() => setMatchesSubTab("CREATE MATCH")}
       >
-        ➕ Create
+      <span className="tab-icon">➕</span>
+<span className="tab-label">Create</span>
       </button>
 
       <button
@@ -5452,7 +5453,8 @@ recentBalls.slice(0, 20).map((ball, index) => {
         className={matchesSubTab === "ACTIVE" ? "active" : ""}
         onClick={() => setMatchesSubTab("ACTIVE")}
       >
-        🟢 Active
+        <span className="tab-icon">🟢</span>
+<span className="tab-label">Active</span>
       </button>
 
       <button
@@ -5460,7 +5462,8 @@ recentBalls.slice(0, 20).map((ball, index) => {
         className={matchesSubTab === "SCHEDULED" ? "active" : ""}
         onClick={() => setMatchesSubTab("SCHEDULED")}
       >
-        📅 Scheduled
+        <span className="tab-icon">📅</span>
+<span className="tab-label">Scheduled</span>
       </button>
 
       <button
@@ -5468,7 +5471,9 @@ recentBalls.slice(0, 20).map((ball, index) => {
         className={matchesSubTab === "COMPLETED" ? "active" : ""}
         onClick={() => setMatchesSubTab("COMPLETED")}
       >
-        ✅ Completed
+                <span className="tab-icon">✅</span>
+<span className="tab-label">Completed</span>
+         
       </button>
     </div>
     </Card>
