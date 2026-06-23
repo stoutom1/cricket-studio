@@ -11456,3 +11456,40 @@ body:has(.login-shell) .dashboard-content {
     grid-column: 1 / -1 !important;
   }
 }
+@media (max-width: 700px) {
+  .quick-actions {
+    display: grid !important;
+    grid-template-columns: repeat(6, minmax(0, 1fr)) !important;
+    gap: 8px !important;
+  }
+
+  .quick-actions .chip-retired-hurt {
+    grid-column: span 2 !important;
+    min-width: 0 !important;
+  }
+
+  .quick-actions .chip-swap {
+    grid-column: span 2 !important;
+    min-width: 0 !important;
+  }
+
+  .quick-actions > .mobile-secondary-actions {
+    grid-column: 5 / span 2 !important;
+    grid-row: auto !important;
+    display: contents !important;
+  }
+
+  .mobile-secondary-actions > .action-undo-compact {
+    grid-column: 5 / span 2 !important;
+    min-width: 0 !important;
+  }
+
+  .quick-actions .chip-retired-hurt,
+  .quick-actions .chip-swap,
+  .mobile-secondary-actions > .action-undo-compact {
+    height: 56px !important;
+    min-height: 56px !important;
+    font-size: 16px !important;
+    white-space: nowrap !important;
+  }
+}
