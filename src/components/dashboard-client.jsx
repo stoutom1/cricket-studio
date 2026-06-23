@@ -4858,7 +4858,7 @@ onClick={() => {
   <button type="button" disabled={isSavingBall || isMatchCompleted || isMatchLocked || isMatchAbandoned} className={`chip ${activeQuickAction === "LB" ? "chip-active" : ""}`} onClick={() => triggerQuickAction("LB", () => quickExtra("LEGBYE"))}>LB</button>
 
   <button type="button" disabled={isSavingBall || isMatchCompleted || isMatchLocked || isMatchAbandoned} className={`chip ${activeQuickAction === "W" ? "chip-active" : ""}`} onClick={() => triggerQuickAction("W", () => quickWicket("BOWLED"))}>Wkt</button>
-  <button type="button" className="chip chip-retired-hurt" disabled={isSavingBall || isMatchCompleted || isMatchLocked || isMatchAbandoned} onClick={() => setShowRetiredHurtModal(true)}>Retired Hurt</button>
+  <button type="button" className="chip chip-retired-hurt" disabled={isSavingBall || isMatchCompleted || isMatchLocked || isMatchAbandoned} onClick={() => setShowRetiredHurtModal(true)}>Rtd H</button>
  <button
     type="button"
     className="chip chip-swap"
@@ -4890,7 +4890,7 @@ onClick={() => {
   disabled={isMatchLocked || isMatchAbandoned}
   onClick={() => setShowCorrectionModal(true)}
 >
-  🛠️ RH
+  🛠️ Rtd. H
 </button>
 {lastCorrectionId && (
 <button
