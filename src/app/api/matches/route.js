@@ -210,7 +210,8 @@ if (canAutoComplete && shouldComplete) {
     where: { id: match.id },
     data: {
       status: "COMPLETED",
-      statusText: "MATCH COMPLETED"
+      statusText: "MATCH COMPLETED",
+      endedAt: match.endedAt || new Date(),
     },
   });
 
@@ -290,16 +291,11 @@ if (canAutoComplete && shouldComplete) {
       seriesId: m.seriesId,
       seriesName: m.series?.name || "",
       seriesYear: m.series?.year || null,
+      endedAt: m.endedAt,
+      startedAt: m.startedAt,
+      lockedAt: m.lockedAt,
     };
   });
-/*
-  console.log("MATCH SERIES DEBUG", formatted.map((m) => ({
-  id: m.id,
-  match: `${m.teamAName} vs ${m.teamBName}`,
-  seriesId: m.seriesId,
-  seriesName: m.seriesName,
-})));
-*/
   return NextResponse.json(formatted);
 }
 
@@ -465,6 +461,9 @@ const match = await prisma.match.create({
         : null,
         
       status: "SCHEDULED",
+      startedAt: null,
+      endedAt: null,
+      lockedAt: null,
       scheduledAt: scheduledAt
         ? new Date(scheduledAt)
         : null,

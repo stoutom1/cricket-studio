@@ -6,6 +6,7 @@ import "@/app/globals.css";
 import { useRouter } from "next/navigation";
 import { Analytics } from "@vercel/analytics/next"
 import { SpeedInsights } from "@vercel/speed-insights/next"
+import {formatMatchDateTime,getMatchTimelineText,} from "@/lib/date";
 
 function Card({
   title,
@@ -784,7 +785,7 @@ const selectedRanking =
 const currentRankingConfig =
   rankingConfig[rankingType];
 
-async function loadMatches() {
+async function loadMatches(leagueId = activeLeagueId) {
   try {
     if (!activeLeagueId) {
       setMatches([]);
@@ -793,8 +794,9 @@ async function loadMatches() {
     }
 
     const data = await api(
-      `/api/matches?leagueId=${activeLeagueId}`
+      `/api/matches?leagueId=${leagueId}`
     );
+    setMatches(Array.isArray(data) ? data : data.matches || []);
 
     const leagueMatches = data.filter(
       (m) =>
@@ -1074,12 +1076,7 @@ function openEditMatchModal(match) {
     teamAWicketKeeperId: match.teamAWicketKeeperId || "",
     teamBWicketKeeperId: match.teamBWicketKeeperId || "",
   });
-console.log("EDIT MATCH PLAYERS DEBUG", {
-  teamA: match.teamA?.name,
-  teamAPlayers: match.teamA?.players?.length,
-  teamB: match.teamB?.name,
-  teamBPlayers: match.teamB?.players?.length,
-});
+
   setShowEditMatchModal(true);
 }
 async function handleUpdateScheduledMatch(e) {
@@ -2192,33 +2189,37 @@ setMatchForm({
   powerplayOversInnings: 6,
   maxWicketsPerInnings: "",
   maxOversPerBowler: "",
-  status: "SCHEDULED"
+  status: "SCHEDULED",
+  seriesId: "",
+  teamACaptainId: "",
+  teamBCaptainId: "",
+  teamAWicketKeeperId: "",
+  teamBWicketKeeperId: "",
 });
 
-      setMessage("✅ Match created");
-      const teamA = teams.find(
-          (t) => Number(t.id) === Number(match.teamAId)
-        );
+const teamA = teams.find(
+  (t) => Number(t.id) === Number(match.teamAId)
+);
 
-        const teamB = teams.find(
-          (t) => Number(t.id) === Number(match.teamBId)
-        );
+const teamB = teams.find(
+  (t) => Number(t.id) === Number(match.teamBId)
+);
 
-        setCreatedMatchInfo({
-          ...match,
-          teamAName: teamA?.name,
-          teamBName: teamB?.name,
-        });
+const created = {
+  ...match,
+  teamAName: teamA?.name,
+  teamBName: teamB?.name,
+};
 
-      setShowMatchCreatedModal(true);
-      //setMatchesSubTab("SCHEDULED");
+setCreatedMatchInfo(created);
 
-      await Promise.all([
-        loadMatches(),
-        loadSelectedMatch(created.id)
-      ]);
-      //await loadMatches();
-      //setSelectedMatchId(String(match.id));
+await loadMatches(activeLeagueId);
+
+setShowMatchCreatedModal(true);
+setMessage("");
+setError("");
+
+showToast?.("success", "✅ Match created successfully.");
     } catch (err) {
       setError(err.message);
     }
@@ -2964,18 +2965,6 @@ const availableNewBatters = useMemo(() => {
   scoreboard,
 ]);
 
-/*console.log("NEW BATTER DEBUG", {
-  ballsCount: matchDetail?.balls?.length,
-  dismissed: matchDetail?.balls
-    ?.filter((b) => b.dismissedPlayerId)
-    ?.map((b) => ({
-      dismissedPlayerId: b.dismissedPlayerId,
-      wicketType: b.wicketType,
-      isWicket: b.isWicket,
-    })),
-  availableNewBatters: availableNewBatters.map((p) => p.name),
-});
-*/
 const availableReplacementBatters = useMemo(() => {
   if (!battingTeam?.players?.length) return [];
 
@@ -3339,20 +3328,39 @@ const completedMatches = matches.filter((m) =>
   isCompletedStatus(m.status)
 );
 
-function handleStartMatch(match) {
-  setSelectedMatchId(String(match.id));
-  setMatchForm((prev) => ({
-    ...prev,
-    matchId: String(match.id),
-    teamAId: String(match.teamAId),
-    teamBId: String(match.teamBId),
-    teamACaptainId: String(match.teamACaptainId),
-    teamBCaptainId: String(match.teamBCaptainId),
-    teamAWicketKeeperId: String(match.teamAWicketKeeperId),
-    teamBWicketKeeperId: String(match.teamBWicketKeeperId),
-    battingFirstTeamId: ""
-  }));
-  setShowStartMatchModal(true);
+async function handleStartMatch(match) {
+  if (!match?.id) {
+    setError("Match was not found.");
+    return;
+  }
+
+  try {
+    setMessage("");
+    setError("");
+
+    setSelectedMatchId(String(match.id));
+
+    await handleMatchSelect(match.id);
+
+    setEditingMatch(match);
+
+    const battingFirstTeamId =
+      match.battingFirstTeamId ||
+      match.battingFirstTeam?.id ||
+      "";
+
+    if (!battingFirstTeamId) {
+      setShowStartMatchModal(true);
+      return;
+    }
+    await loadMatches(activeLeagueId);
+    await handleMatchSelect(editingMatch.id);
+    setShowStartMatchModal(false);
+    await openScoringAfterBattingFirst(editingMatch.id);
+    //setActiveTab("scoring");
+  } catch (err) {
+    setError(err.message || "Unable to start match.");
+  }
 }
 
 async function confirmStartMatch() {
@@ -3430,6 +3438,52 @@ useEffect(() => {
   setShowDeliverySetupModal(true);
   setPendingSecondInningsSetup(false);
 }, [pendingSecondInningsSetup]);
+
+
+
+const scoringMatches = useMemo(() => {
+  let list = [...(matches || [])];
+
+  if (activeLeagueId) {
+    list = list.filter(
+      (match) => Number(match.leagueId) === Number(activeLeagueId)
+    );
+  }
+
+  if (contextFilters?.seriesIds?.length) {
+    list = list.filter((match) =>
+      contextFilters.seriesIds.includes(Number(match.seriesId))
+    );
+  }
+
+  if (contextFilters?.years?.length) {
+    list = list.filter((match) => {
+      const matchDate =
+        match.startedAt || match.scheduledAt || match.endedAt || match.createdAt;
+
+      if (!matchDate) return false;
+
+      return contextFilters.years.includes(new Date(matchDate).getFullYear());
+    });
+  }
+
+  return sortMatchesForSelection(list);
+}, [matches, activeLeagueId, contextFilters]);
+
+useEffect(() => {
+  if (!selectedMatchId) return;
+
+  const stillExists = scoringMatches.some(
+    (match) => Number(match.id) === Number(selectedMatchId)
+  );
+
+  if (!stillExists) {
+    setSelectedMatchId("");
+    setMatchDetail(null);
+    setScoreboard(null);
+    setOptimisticScoreboard(null);
+  }
+}, [scoringMatches, selectedMatchId]);
 
 function triggerQuickAction(actionKey, callback) {
   setActiveQuickAction(actionKey);
@@ -3623,6 +3677,89 @@ const previousOverInfo = (() => {
     balls,
   };
 })();
+
+function getMatchOptionLabel(match) {
+  const teams = `${match.teamAName || "Team A"} vs ${
+    match.teamBName || "Team B"
+  }`;
+
+  const status = String(match.status || "")
+    .replaceAll("_", " ")
+    .toUpperCase();
+
+/*    
+  const scheduledAt = String(match.scheduledAt || "");
+  const startedAt = String(match.startedAt || "");
+  const matchTime = "";
+if (status === "SCHEDULED"){
+  matchTime = scheduledAt;
+}
+
+if (status === "IN_PROGRESS"){
+  matchTime = startedAt;
+}*/
+  const timeline = getMatchTimelineText(match);
+
+  const score =
+    match.scoreSummary ||
+    match.liveScore ||
+    `${match.oversPerInnings || "-"} overs`;
+
+    if (match.status === "COMPLETED_LOCKED") {
+        return `${teams} • ${status} • ${score}`;
+    }
+    if (match.status === "COMPLETED") {
+        return `${teams} • ${status} • ${score}`;
+    }
+    if (match.status === "ABANDONED") {
+        return `${teams} • ${status}`;
+    }
+    if (match.status === "SCHEDULED") {
+        return `${teams} • ${status} • ${timeline}`;
+    }
+    if (match.status === "IN_PROGRESS") {
+        return `${teams} • ${status} • ${timeline} • ${score}`;
+    }else{
+            return `${teams} • ${status} • ${timeline}` // • ${score};
+    }   
+}
+
+function getMatchSortTime(match) {
+  return new Date(
+    match.startedAt ||
+      match.scheduledAt ||
+      match.endedAt ||
+      match.createdAt ||
+      0
+  ).getTime();
+}
+
+function sortMatchesForSelection(matches) {
+  const statusRank = {
+    IN_PROGRESS: 1,
+    ACTIVE: 1,
+    SCHEDULED: 2,
+    COMPLETED: 3,
+    COMPLETED_LOCKED: 3,
+    ABANDONED: 4,
+  };
+
+  return [...matches].sort((a, b) => {
+    const aStatus = String(a.status || "").toUpperCase();
+    const bStatus = String(b.status || "").toUpperCase();
+
+    const rankDiff =
+      (statusRank[aStatus] || 9) - (statusRank[bStatus] || 9);
+
+    if (rankDiff !== 0) return rankDiff;
+
+    if (aStatus === "SCHEDULED") {
+      return getMatchSortTime(a) - getMatchSortTime(b);
+    }
+
+    return getMatchSortTime(b) - getMatchSortTime(a);
+  });
+}
 
 function clearContextFilters() {
   setContextFilters({
@@ -4017,6 +4154,182 @@ async function handleLiveWicketKeeperChange() {
     setError(err.message);
   }
 }
+
+const scoringComboMatches = (() => {
+  let list = [...(matches || [])];
+
+  const seriesIds = contextFilters?.seriesIds || [];
+  const years = contextFilters?.years || [];
+  const statuses = contextFilters?.statuses || [];
+  const teamIds = contextFilters?.teamIds || [];
+  const matchIds = contextFilters?.matchIds || [];
+
+  if (activeLeagueId) {
+    list = list.filter(
+      (match) => Number(match.leagueId) === Number(activeLeagueId)
+    );
+  }
+
+  if (statuses.length) {
+    list = list.filter((match) =>
+      statuses
+        .map((s) => String(s).toUpperCase())
+        .includes(String(match.status || "").toUpperCase())
+    );
+  }
+
+  if (teamIds.length) {
+    list = list.filter(
+      (match) =>
+        teamIds.map(Number).includes(Number(match.teamAId)) ||
+        teamIds.map(Number).includes(Number(match.teamBId))
+    );
+  }
+
+  if (matchIds.length) {
+    list = list.filter((match) =>
+      matchIds.map(Number).includes(Number(match.id))
+    );
+  }
+
+  if (seriesIds.length) {
+    list = list.filter((match) =>
+      seriesIds.map(Number).includes(Number(match.seriesId))
+    );
+  }
+
+  if (years.length) {
+    list = list.filter((match) => {
+      const dateValue =
+        match.startedAt ||
+        match.scheduledAt ||
+        match.endedAt ||
+        match.createdAt;
+
+      if (!dateValue) return false;
+
+      return years.map(Number).includes(new Date(dateValue).getFullYear());
+    });
+  }
+
+  return sortMatchesForSelection(list);
+})();
+
+useEffect(() => {
+  if (!selectedMatchId) return;
+
+  const exists = scoringComboMatches.some(
+    (match) => Number(match.id) === Number(selectedMatchId)
+  );
+
+  if (!exists) {
+    setSelectedMatchId("");
+    setMatchDetail(null);
+    setScoreboard(null);
+    setOptimisticScoreboard(null);
+  }
+}, [contextFilters, activeLeagueId, selectedMatchId, matches]);
+
+async function handleScoringMatchSelect(matchId) {
+  if (!matchId) {
+    setSelectedMatchId("");
+    setMatchDetail(null);
+    setScoreboard(null);
+    setOptimisticScoreboard(null);
+    return;
+  }
+
+  const match = scoringComboMatches.find(
+    (m) => Number(m.id) === Number(matchId)
+  );
+
+  if (!match) {
+    setError("Selected match was not found.");
+    return;
+  }
+
+  const status = String(match.status || "").toUpperCase();
+  const isScheduled = status === "SCHEDULED";
+
+  if (isScheduled) {
+    setSelectedMatchId(String(match.id));
+    setEditingMatch(match);
+
+    const hasBattingFirst =
+      match.battingFirstTeamId ||
+      match.battingFirstTeam?.id;
+
+    if (!hasBattingFirst) {
+      setMatchDetail(null);
+      setScoreboard(null);
+      setOptimisticScoreboard(null);
+      setShowStartMatchModal(true);
+      return;
+    }
+  }
+
+  await handleMatchSelect(match.id);
+}
+async function openScoringAfterBattingFirst(matchId) {
+  if (!matchId) return;
+
+  setMessage("");
+  setError("");
+
+  setSelectedMatchId(String(matchId));
+
+  await loadMatches(activeLeagueId);
+
+  await handleMatchSelect(matchId);
+
+  setActiveTab("scoring");
+
+  // Give React one render cycle so matchDetail/team players are available.
+  setTimeout(() => {
+    setShowDeliverySetupModal(true);
+  }, 100);
+}
+
+const setupTeamA = matchDetail?.teamA;
+const setupTeamB = matchDetail?.teamB;
+
+const setupTeamAId =
+  Number(matchDetail?.teamAId || setupTeamA?.id);
+
+const setupTeamBId =
+  Number(matchDetail?.teamBId || setupTeamB?.id);
+
+const setupBattingFirstTeamId =
+  Number(matchDetail?.battingFirstTeamId);
+
+const setupBattingTeam =
+  Number(ballForm.inningsNo) === 1
+    ? setupBattingFirstTeamId === setupTeamAId
+      ? setupTeamA
+      : setupTeamB
+    : setupBattingFirstTeamId === setupTeamAId
+    ? setupTeamB
+    : setupTeamA;
+
+const setupBowlingTeam =
+  Number(setupBattingTeam?.id) === setupTeamAId
+    ? setupTeamB
+    : setupTeamA;
+
+const setupBatters = setupBattingTeam?.players || [];
+const setupBowlers = setupBowlingTeam?.players || [];
+
+function playerNameFromTeam(team, playerId) {
+  const id = Number(playerId);
+  const players = team?.players || [];
+
+  const player = players.find(
+    (p) => Number(p.id) === id
+  );
+
+  return player?.name || "-";
+}
+
 function ContextLens() {
   const totalFilters =
     (contextFilters.teamIds?.length || 0) +
@@ -4215,6 +4528,7 @@ onClick={() => {
     </div>
   ) : (
     <div className="match-center">
+                 <ContextLens />
       <label className="mgmt-field mgmt-select-field">
             <span>👇 Choose an active/scheduled/completed match </span>
             <div className="select-action-hint">
@@ -4224,21 +4538,17 @@ onClick={() => {
 
         <select
           value={selectedMatchId || ""}
-          onChange={(e) => {
-            setSelectedMatchId(e.target.value);
-            setScoringSubTab("ADVANCED");
-          }}
+          onChange={(e) => handleScoringMatchSelect(e.target.value)}
         >
           <option value="">Choose a match</option>
 
-          {matches.map((match) => (
+          {scoringComboMatches.map((match) => (
             <option key={match.id} value={match.id}>
-              #{match.id} • {match.teamAName} vs {match.teamBName}
+              {getMatchOptionLabel(match)}
             </option>
           ))}
         </select>
       </label>
-
       {selectedMatch && (
         <div className="selected-match-banner">
           <div>
@@ -4257,7 +4567,61 @@ onClick={() => {
           </span>
         </div>
       )}
+{matchDetail && (
+<details className="match-setup-card" open>
+    <summary>
+    <strong>⚙️ Match Setup</strong>
+  </summary>
 
+  <div className="match-setup-grid">
+    <div>
+      <span>Overs</span>
+      <strong>{matchDetail?.oversPerInnings || "-"}</strong>
+    </div>
+
+    <div>
+      <span>Wickets</span>
+      <strong>{matchDetail?.maxWicketsPerInnings || "Unlimited"}</strong>
+    </div>
+
+    <div>
+      <span>Powerplay</span>
+      <strong>{matchDetail?.powerplayOversInnings ?? 0}</strong>
+    </div>
+
+    <div>
+      <span>Max / Bowler</span>
+      <strong>{matchDetail?.maxOversPerBowler || "Unlimited"}</strong>
+    </div>
+  </div>
+
+<div className="match-officials-grid">
+  <div>
+    <strong>{matchDetail?.teamA?.name || "Team A"}</strong>
+    <p>
+      🧢 Captain:{" "}
+      {playerNameFromTeam(matchDetail?.teamA, matchDetail?.teamACaptainId)}
+    </p>
+    <p>
+      🧤 WK:{" "}
+      {playerNameFromTeam(matchDetail?.teamA, matchDetail?.teamAWicketKeeperId)}
+    </p>
+  </div>
+
+  <div>
+    <strong>{matchDetail?.teamB?.name || "Team B"}</strong>
+    <p>
+      🧢 Captain:{" "}
+      {playerNameFromTeam(matchDetail?.teamB, matchDetail?.teamBCaptainId)}
+    </p>
+    <p>
+      🧤 WK:{" "}
+      {playerNameFromTeam(matchDetail?.teamB, matchDetail?.teamBWicketKeeperId)}
+    </p>
+  </div>
+</div>
+</details>
+)}
       {selectedMatchId && (
         <div className="scoring-subtabs pretty">
 {!isSelectedMatchCompleted && (
@@ -4694,6 +5058,9 @@ onClick={() => {
 
         <div className="tv-score-sub">
           Innings {liveMatchCenter.inningsNo} • {liveMatchCenter.oversDisplay} ov
+          {selectedMatch?.startedAt
+            ? ` • Started ${formatMatchDateTime(selectedMatch.startedAt)}`
+            : ""}
           {displayScoreboard?.summary?.statusText
             ? ` • ${displayScoreboard.summary.statusText}`
             : ""}
@@ -5978,7 +6345,9 @@ onClick={() => {
       {match.status}
     </span>
   </div>
-
+<div className="match-timeline-line">
+  🕒 {getMatchTimelineText(match)}
+</div>
   <div className="match-meta compact">
     <span>
       🏏 Bat 1st: {match.battingFirstTeamName || "Not decided"}
@@ -6218,6 +6587,23 @@ onClick={() => {
                     ⚡ Powerplay: {match.powerplayOversInnings ?? "∞"}
                   </span>
                 </div>
+                                  <div className="completed-match-meta">
+                   <span>
+{match?.startedAt && (
+  <p>Started: {formatMatchDateTime(match.startedAt)}</p>
+)}
+</span>
+<span>
+{match?.endedAt && (
+  <p>Ended: {formatMatchDateTime(match.endedAt)}</p>
+)}
+</span>
+<span>
+{match?.lockedAt && (
+  <p>Locked: {formatMatchDateTime(match.lockedAt)}</p>
+)}
+</span>
+</div>
               </div>
             </div>
           );
@@ -8465,6 +8851,12 @@ onClick={() => {
       </div>
 
       <form onSubmit={handleAddPlayers} className="add-player-pro-form">
+        {!setupBatters.length || !setupBowlers.length ? (
+  <div className="match-ended-banner">
+    Loading players for setup...
+  </div>
+) : (
+  <>
         <div className="add-player-pro-grid">
           <label>
             <span>🏆 League</span>
@@ -8510,7 +8902,8 @@ onClick={() => {
             </select>
           </label>
         </div>
-
+          </>
+          )}
         <label className="add-player-pro-textarea-wrap">
           <div className="add-player-pro-label-row">
             <span>✍️ Player Names</span>
@@ -8746,48 +9139,67 @@ KL Rahul`}
     </div>
   </div>
 )}
-{showMatchCreatedModal && (
+{showMatchCreatedModal && createdMatchInfo && (
   <div className="modal-backdrop">
-    <div className="match-created-modal">
+    <div className="match-created-modal match-created-modal-pro">
+      <button
+        type="button"
+        className="edit-modal-close"
+        onClick={() => {
+          setShowMatchCreatedModal(false);
+          setCreatedMatchInfo(null);
+        }}
+      >
+        ✕
+      </button>
+
       <div className="match-created-icon">✅</div>
 
       <h3>Match Created Successfully!</h3>
 
       <p>
-        Your match has been added to the Scheduled tab.
+        {createdMatchInfo.teamAName || "Team A"} vs{" "}
+        {createdMatchInfo.teamBName || "Team B"} has been added to Scheduled matches.
       </p>
 
-      {createdMatchInfo && (
-        <div className="created-match-preview">
-          <strong>
-            {createdMatchInfo.teamAName || "Team A"} vs{" "}
-            {createdMatchInfo.teamBName || "Team B"}
-          </strong>
+      <div className="post-create-actions">
+<button
+  type="button"
+  className="btn btn-primary"
+  onClick={() => {
+    setShowMatchCreatedModal(false);
+    handleStartMatch(createdMatchInfo);
+  }}
+>
+  🏏 Start Scoring
+</button>
 
-          <span>
-            🎯 {createdMatchInfo.oversPerInnings} overs
-          </span>
-        </div>
-      )}
-
-      <div className="modal-actions">
         <button
           type="button"
           className="btn btn-outline"
-          onClick={() => setShowMatchCreatedModal(false)}
+          onClick={() => {
+            setShowMatchCreatedModal(false);
+            setCreatedMatchInfo(null);
+            setMatchesSubTab("SCHEDULED");
+            setActiveTab("matches");
+          }}
         >
-          Stay Here
+          📅 View Scheduled
         </button>
 
         <button
           type="button"
-          className="btn"
+          className="btn btn-outline"
           onClick={() => {
             setShowMatchCreatedModal(false);
-            setMatchesSubTab("SCHEDULED");
+            setCreatedMatchInfo(null);
+            setMessage("");
+            setError("");
+            setMatchesSubTab("CREATE MATCH");
+            setActiveTab("matches");
           }}
         >
-          Go to Scheduled Matches
+          ➕ Add Another Match
         </button>
       </div>
     </div>
@@ -9355,7 +9767,7 @@ onClick={() => {
             }
           >
             <option value="">Choose striker</option>
-            {battingTeam?.players?.map((p) => (
+            {setupBatters.map((p) => (
               <option key={p.id} value={p.id}>
                 {p.name}
               </option>
@@ -9375,8 +9787,7 @@ onClick={() => {
             }
           >
             <option value="">Choose non-striker</option>
-            {battingTeam?.players
-              ?.filter((p) => String(p.id) !== String(ballForm.strikerId))
+            {setupBatters.filter((p) => String(p.id) !== String(ballForm.strikerId))
               .map((p) => (
                 <option key={p.id} value={p.id}>
                   {p.name}
@@ -9397,7 +9808,7 @@ onClick={() => {
             }
           >
             <option value="">Choose bowler</option>
-            {bowlingTeam?.players?.map((p) => (
+            {setupBowlers.map((p) => (
               <option key={p.id} value={p.id}>
                 {p.name}
               </option>

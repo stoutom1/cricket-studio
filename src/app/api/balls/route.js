@@ -19,7 +19,7 @@ export async function POST(request) {
   }
 
   const body = await request.json();
-  const { matchId, inningsNo } = body;
+  //const { matchId, inningsNo } = body;
 
   const payload = {
     matchId: Number(body.matchId),
@@ -272,11 +272,12 @@ const dismissedPlayerId =
 
 const balls = await prisma.ball.findMany({
   where: {
-    matchId: Number(matchId)
-  }
+    matchId: payload.matchId,
+  },
 });
+
 const inningsBalls = balls.filter(
-  (b) => b.inningsNo === inningsNo
+  (b) => Number(b.inningsNo) === Number(payload.inningsNo)
 );
 const wicketCount = inningsBalls.filter(
   (b) => b.isWicket && b.wicketType !== "RETIRED_HURT"
@@ -356,7 +357,19 @@ const nextSequence = (lastBall?.sequence ?? 0) + 1;
 
   const isPowerPlay = overNo < match.powerplayOversInnings;
   const totalRuns = payload.runsOffBat + payload.extras;
+const existingBallCount = await prisma.ball.count({
+  where: { matchId: payload.matchId },
+});
 
+if (existingBallCount === 0) {
+  await prisma.match.update({
+    where: { id: payload.matchId },
+    data: {
+      startedAt: new Date(),
+      status: "IN_PROGRESS",
+    },
+  });
+}
 
   const ball = await prisma.ball.create({
     data: {
@@ -437,25 +450,50 @@ const nextSequence = (lastBall?.sequence ?? 0) + 1;
       payload.bowlerId
   }
 });
-
   const maxLegalBalls = match.oversPerInnings * 6;
-  const updatedLegalBallsCount =
-  legalDelivery
+const updatedLegalBallsCount =
+  !isRetiredHurt && legalDelivery
     ? legalBallsCount + 1
     : legalBallsCount;
 
   const inningsCompleted =
     updatedLegalBallsCount >= maxLegalBalls;
 
-  if (
+const innings2Runs = await prisma.ball.aggregate({
+  where: {
+    matchId: payload.matchId,
+    inningsNo: 2,
+  },
+  _sum: {
+    totalRuns: true,
+  },
+});
+
+const innings1Runs = await prisma.ball.aggregate({
+  where: {
+    matchId: payload.matchId,
+    inningsNo: 1,
+  },
+  _sum: {
+    totalRuns: true,
+  },
+});
+
+const targetReached =
   payload.inningsNo === 2 &&
-  inningsCompleted
+  Number(innings2Runs._sum.totalRuns || 0) >=
+    Number(innings1Runs._sum.totalRuns || 0) + 1;
+
+if (
+  payload.inningsNo === 2 &&
+  (inningsCompleted || targetReached)
 ) {
   await prisma.match.update({
-    where: { id: match.id },
+    where: { id: payload.matchId },
     data: {
-      status: "COMPLETED"
-    }
+      status: "COMPLETED",
+      endedAt: match.endedAt || new Date(),
+    },
   });
 }
 

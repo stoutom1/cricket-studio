@@ -13,20 +13,32 @@ export async function POST(
     const { matchEndType } = body;
     //const status = matchEndType === "Lock"? "COMPLETED_LOCKED": "COMPLETED";
     let status;
+    let endedAt;
+    let lockedAt;
+    let statusText;
 
     if (matchEndType === "Lock") {
       status = "COMPLETED_LOCKED";
+      statusText = "COMPLETED_LOCKED"
+      lockedAt = new Date();
     } else if (matchEndType === "Abandon") {
       status = "ABANDONED";
+      statusText = "ABANDONED"
+      endedAt = new Date();
     } else {
       status = "COMPLETED";
+      endedAt = new Date();
+      statusText = "MATCH COMPLETED"
     }
     await prisma.match.update({
       where: {
         id: matchId
       },
       data: {
-        status: status
+        status: status,
+        endedAt: endedAt,
+        lockedAt: lockedAt,
+        statusText: statusText,
       }
     });
     

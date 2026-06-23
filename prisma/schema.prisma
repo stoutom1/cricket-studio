@@ -83,6 +83,9 @@ model Match {
   teamAWicketKeeperId   Int?
   teamBWicketKeeperId   Int?
   wicketKeeperChanges   WicketKeeperChange[]
+  startedAt             DateTime?
+  endedAt               DateTime?
+  lockedAt              DateTime?
 }
 
 model Ball {
