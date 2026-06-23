@@ -1014,44 +1014,45 @@ function getInstantDeliveryStatus(data) {
   const runs = Number(data.runsOffBat || 0);
   const extras = Number(data.extras || 0);
   const extraType = String(data.extraType || "NONE");
+  const wicketType = String(data.wicketType || "NONE");
 
   if (data.isWicket) {
-    if (data.wicketType === "RETIRED_HURT") {
-      return "🏥 Retired hurt recorded. Recalculating batting order...";
+    if (wicketType === "RETIRED_HURT") {
+      return "🏥 Retired hurt recorded.";
     }
 
-    return "☝️ Wicket recorded. Updating scorecard...";
+    return "☝️ Wicket recorded.";
   }
 
   if (extraType === "WIDE") {
-    return "⚪ Wide recorded. Updating live score...";
+    return `⚪ Wide recorded${extras ? ` • ${extras} extra${extras > 1 ? "s" : ""}` : ""}.`;
   }
 
   if (extraType === "NOBALL") {
-    return "🟡 No-ball recorded. Updating live score...";
+    return `🟡 No-ball recorded${extras ? ` • ${extras} extra${extras > 1 ? "s" : ""}` : ""}.`;
   }
 
   if (extraType === "BYE") {
-    return "🏃 Bye recorded. Updating score...";
+    return `🏃 Bye recorded • ${extras} run${extras === 1 ? "" : "s"} added.`;
   }
 
   if (extraType === "LEGBYE") {
-    return "🦵 Leg bye recorded. Updating score...";
+    return `🦵 Leg bye recorded • ${extras} run${extras === 1 ? "" : "s"} added.`;
   }
 
   if (runs === 0) {
-    return "🟢 Dot ball recorded. Preparing next delivery...";
+    return "🟢 Dot ball recorded.";
   }
 
   if (runs === 4) {
-    return "🔥 FOUR! Updating scoreboard...";
+    return "🔥 FOUR! Ball recorded and 4 runs added.";
   }
 
   if (runs === 6) {
-    return "🚀 SIX! Updating scoreboard...";
+    return "🚀 SIX! Ball recorded and 6 runs added.";
   }
 
-  return `🏏 ${runs} run${runs > 1 ? "s" : ""} recorded. Updating score...`;
+  return `🏏 Ball recorded • ${runs} run${runs > 1 ? "s" : ""} added to the total.`;
 }
 
 function openEditMatchModal(match) {
@@ -2422,7 +2423,7 @@ setOptimisticScoreboard(
       method: "POST",
       body: JSON.stringify(data),
     });
-
+setMessage(getInstantDeliveryStatus(data));
     const wasLegalLastBallOfOver =
       data.extraType !== "WIDE" &&
       data.extraType !== "NOBALL" &&
@@ -2481,6 +2482,7 @@ setOptimisticScoreboard(
       updatedCurrentInningsNo === 2;
 
 await loadSelectedMatch(selectedMatchId);
+setMessage(getInstantDeliveryStatus(data));
 setInstantDeliveryStatus("");
 setOptimisticScoreboard(null);
 
