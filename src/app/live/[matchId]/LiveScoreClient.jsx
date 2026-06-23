@@ -2,30 +2,60 @@
 
 import { useEffect, useState } from "react";
 
-function StatCard({ title, children }) {
-  return (
-    <div
-      style={{
-        background:"linear-gradient(180deg,#111827,#0f172a)",
-        boxShadow:"0 4px 12px rgba(0,0,0,0.25)",
-        borderRadius: 18,
-        borderRadius: 16,
-        padding: 16,
-        marginBottom: 16,
-        border: "1px solid #1f2937"
-      }}
-    >
-      <h3
-        style={{
-          marginBottom: 12,
-          fontSize: 16,
-          fontWeight: 700
-        }}
-      >
-        {title}
-      </h3>
+function getBallDisplay(label) {
+  const raw =
+    String(label || "")
+      .split(" ")
+      .slice(1)
+      .join(" ")
+      .replace(/[()]/g, "")
+      .trim() || "-";
 
-      {children}
+  const upper = raw.toUpperCase();
+
+  if (raw === "4") return { text: "4", type: "four" };
+  if (raw === "6") return { text: "6", type: "six" };
+
+  if (upper.includes("W") && !upper.includes("WD")) {
+    return { text: "W", type: "wicket" };
+  }
+
+  if (
+    upper.includes("WD") ||
+    upper.includes("NB") ||
+    upper.includes("LB") ||
+    upper === "B" ||
+    upper.startsWith("B")
+  ) {
+    return { text: raw, type: "extra" };
+  }
+
+  return { text: raw, type: "normal" };
+}
+
+function InfoPill({ label, value }) {
+  return (
+    <div className="live-info-pill">
+      <span>{label}</span>
+      <strong>{value}</strong>
+    </div>
+  );
+}
+
+function PlayerCard({ label, name, value }) {
+  return (
+    <div className="live-player-card">
+      <span>{label}</span>
+      <strong>{name || "-"}</strong>
+      {value && <small>{value}</small>}
+    </div>
+  );
+}
+
+function ProTable({ children }) {
+  return (
+    <div className="live-table-wrap">
+      <table className="live-pro-table">{children}</table>
     </div>
   );
 }
@@ -36,25 +66,12 @@ export default function LiveScoreClient({ matchId }) {
   const [collapsedInnings, setCollapsedInnings] = useState({});
 
   function toggleInnings(inningsNo) {
-        setCollapsedInnings((prev) => ({
-        ...prev,
-        [inningsNo]: !prev[inningsNo]
-        }));
-      }
-      const [isMobile, setIsMobile] = useState(false);
+    setCollapsedInnings((prev) => ({
+      ...prev,
+      [inningsNo]: !prev[inningsNo],
+    }));
+  }
 
-useEffect(() => {
-  const checkMobile = () => {
-    setIsMobile(window.innerWidth < 768);
-  };
-
-  checkMobile();
-
-  window.addEventListener("resize", checkMobile);
-
-  return () =>
-    window.removeEventListener("resize", checkMobile);
-}, []);
   useEffect(() => {
     async function loadScorecard() {
       try {
@@ -65,7 +82,6 @@ useEffect(() => {
         }
 
         const data = await res.json();
-
         setScoreboard(data);
       } catch (err) {
         setError(err.message);
@@ -75,703 +91,303 @@ useEffect(() => {
     loadScorecard();
 
     const interval = setInterval(loadScorecard, 5000);
-
     return () => clearInterval(interval);
   }, [matchId]);
 
   if (error) {
     return (
-      <div style={{ padding: 40 }}>
-        <h2>Error</h2>
-        <p>{error}</p>
-      </div>
+      <main className="live-page-shell">
+        <div className="live-error-card">
+          <h2>Unable to load scorecard</h2>
+          <p>{error}</p>
+        </div>
+      </main>
     );
   }
 
   if (!scoreboard) {
     return (
-      <div style={{ padding: 40 }}>
-        <h2>Loading scorecard...</h2>
-      </div>
+      <main className="live-page-shell">
+        <div className="live-loading-card">
+          <div className="live-loading-dot" />
+          <h2>Loading live scorecard...</h2>
+        </div>
+      </main>
     );
   }
 
- const latestInnings =
-  scoreboard?.innings?.find(
-    (inn) => inn.number === scoreboard?.currentInnings
-  ) ??
-  scoreboard?.innings?.[scoreboard?.innings?.length - 1] ??
-  null;
-  
-  const ballsLeft = scoreboard?.summary?.remainingBalls
-  
-  return (
-    <div
-      style={{
-        minHeight: "100vh",
-background: "radial-gradient(circle at top left, rgba(37,99,235,0.16), transparent 32%), linear-gradient(180deg,#07111f,#0b1220 48%,#020617)",
-        color: "white",
-        padding: isMobile ? 8 : 24,
-        maxWidth: 1400,
-        margin: "0 auto",
-        fontFamily: "sans-serif"
-      }}
-    >
-      {/* HEADER */}
-<div className="live-hero-card">
-  <div className="live-hero-top">
-    <span className="live-pill">● LIVE SCORE</span>
-    <span className="live-refresh">Auto refreshes every 5s</span>
-  </div>
+  const latestInnings =
+    scoreboard?.innings?.find(
+      (inn) => inn.number === scoreboard?.currentInnings
+    ) ??
+    scoreboard?.innings?.[scoreboard?.innings?.length - 1] ??
+    null;
 
-  <h1>
-    {scoreboard?.match?.teamAName} vs {scoreboard?.match?.teamBName}
-  </h1>
+  const ballsLeft = scoreboard?.summary?.remainingBalls;
 
-  <div className="live-main-score">
-    {latestInnings
-      ? `${latestInnings.runs}/${latestInnings.wickets}`
-      : "-"}
-  </div>
+  const strikerValue = scoreboard?.currentState?.strikerStats
+    ? `${scoreboard.currentState.strikerStats.runs} (${scoreboard.currentState.strikerStats.balls})`
+    : "";
 
-  <p className="live-status-text">
-    {scoreboard?.summary?.statusText || "Match in progress"}
-  </p>
+  const nonStrikerValue = scoreboard?.currentState?.nonStrikerStats
+    ? `${scoreboard.currentState.nonStrikerStats.runs} (${scoreboard.currentState.nonStrikerStats.balls})`
+    : "";
 
-  <div className="live-hero-metrics">
-    <InfoPill label="Overs" value={latestInnings?.oversDisplay || "0.0"} />
-    <InfoPill label="Run Rate" value={latestInnings?.runRate || "0.00"} />
-    <InfoPill
-      label="Target"
-      value={
-        scoreboard?.currentInnings === 2 && scoreboard?.summary?.target
-          ? scoreboard.summary.target
-          : "—"
-      }
-    />
-    <InfoPill
-      label="Balls Left"
-      value={
-        scoreboard?.summary?.remainingBalls ?? "—"
-      }
-    />
-  </div>
-</div>
-
-      {/* CURRENT PLAYERS */}
-      <StatCard title="Current Players">
-        <div
-  style={{
-    overflowX: "auto",
-    WebkitOverflowScrolling: "touch"
-  }}
-></div>
-<div
-  style={{
-    overflowX: "auto",
-    WebkitOverflowScrolling: "touch"
-  }}
->
-        <table style={tableStyle}>
-          <tbody>
-            <tr>
-              <td style={thStyle}>Striker</td>
-              <td style={tdStyle}>
-                {
-                  scoreboard?.currentState?.strikerName
-                    ? scoreboard.currentState.strikerName
-                    : scoreboard?.currentState?.nextOverNo === undefined &&
-                      scoreboard?.currentState?.inningsNo === 2
-                    ? ("-")
-                    : (ballsLeft === 0 ? "-" : "Yet to bat")
-                }
-
-                {scoreboard?.currentState?.strikerStats && (
-                  <span
-                    style={{
-                      color: "#9ca3af",
-                      marginLeft: 8,
-                      fontSize: 14
-                    }}
-                  >
-                    ({scoreboard.currentState.strikerStats.runs}
-                    {" "}
-                    off
-                    {" "}
-                    {scoreboard.currentState.strikerStats.balls})
-                  </span>
-                )}
-              </td>
-            </tr>
-
-            <tr>
-              <td style={thStyle}>Non Striker</td>
-              <td style={tdStyle}>
-                {
-                  scoreboard?.currentState?.nonStrikerName
-                    ? scoreboard.currentState.nonStrikerName
-                  : scoreboard?.currentState?.nextOverNo === undefined &&
-                    scoreboard?.currentState?.inningsNo === 2
-                  ? ("-")
-                  : (ballsLeft === 0 ? "-" : "Yet to bat")
-                }
-
-                {scoreboard?.currentState?.nonStrikerStats && (
-                  <span
-                    style={{
-                      color: "#9ca3af",
-                      marginLeft: 8,
-                      fontSize: 14
-                    }}
-                  >
-                    ({scoreboard.currentState.nonStrikerStats.runs}
-                    {" "}
-                    off
-                    {" "}
-                    {scoreboard.currentState.nonStrikerStats.balls})
-                  </span>
-                )}
-              </td>
-            </tr>
-
-            <tr>
-              <td style={thStyle}>Bowler</td>
-              <td style={tdStyle}>
-                {
-                  scoreboard?.currentState?.bowlerName
-                    ? scoreboard.currentState.bowlerName
-                  : scoreboard?.currentState?.nextOverNo === undefined &&
-                    scoreboard?.currentState?.inningsNo === 2
-                  ? ("-")
-                  : (ballsLeft === 0 ? "-" : "Yet to bat")
-                }
-
-                {scoreboard?.currentState?.bowlerStats && (
-                  <span
-                    style={{
-                      color: "#9ca3af",
-                      marginLeft: 8,
-                      fontSize: 14
-                    }}
-                  >
-                    ({scoreboard.currentState.bowlerStats.wickets}/
-                    {scoreboard.currentState.bowlerStats.runs}
-                    {" "}
-                    in
-                    {" "}
-                    {scoreboard.currentState.bowlerStats.overs}
-                    {" "}
-                    overs)
-                  </span>
-                )}
-              </td>
-            </tr>
-
-            <tr>
-              <td style={thStyle}>Next Ball</td>
-              <td style={tdStyle}>
-                {scoreboard?.currentState?.nextOverNo !==
-                undefined
-                  ? `${scoreboard?.currentState?.nextOverNo}.${scoreboard?.currentState?.nextBallInOver}`
-                  : "-"}
-              </td>
-            </tr>
-            <tr>
-              <td style={thStyle}>Recent Balls</td>
-              <td style={tdStyle}>
-
-{/* RECENT BALLS */}
-<div
-  style={{
-    display: "flex",
-    alignItems: "center",
-    gap: 10,
-    flexWrap: "wrap",
-    padding: "6px 0"
-  }}
->
-  {scoreboard?.recentBalls
-    ?.slice(-20)
-    ?.map((ball, index, arr) => {
-
-      // Example label:
-      // "12.3 4"
-
-      const label = ball.label || "";
-
-      // Over number
-      const currentOver =
-        label.split(".")[0];
-
-      const prevOver =
-        index > 0
-          ? arr[index - 1]?.label
-              ?.split(".")[0]
-          : currentOver;
-
-      // Ball result only
-      const result =
-        label
-          .split(" ")
-          .slice(1)
-          .join(" ") || label;
-
-const clean =
-  result.replace(/[()]/g, "");
-
-const isBoundary =
-  clean === "4" || clean === "6";
-
-const isWicket =
-  (clean && !clean.includes("Wd") && clean.toUpperCase().includes("W"))
-  
-
-const isExtra =
-  clean.includes("Wd") ||
-  clean.includes("Nb") ||
-  clean.includes("B") ||
-  clean.includes("LB");
-
-let color = "#d1d5db";
-
-if (isBoundary) {
-  color = "#22c55e";
-}
-else if (isExtra) {
-  color = "#facc15";
-}
-else if (isWicket) {
-  color = "#ef4444";
-}
-      return (
-        <div
-          key={ball.id}
-          style={{
-            display: "flex",
-            alignItems: "center",
-            gap: 10
-          }}
-        >
-          {/* OVER SEPARATOR */}
-          {index > 0 &&
-            currentOver !== prevOver && (
-              <span
-                style={{
-                  color: "#6b7280",
-                  fontWeight: 700
-                }}
-              >
-                |
-              </span>
-          )}
-<span
-  style={{
-    width: isMobile ? 26 : 30,
-    height: isMobile ? 26 : 30,
-    borderRadius: "50%",
-    display: "flex",
-    alignItems: "center",
-    justifyContent: "center",
-    fontWeight: 700,
-    fontSize: isMobile ? 11 : 12,
-
-    background: isBoundary
-      ? "rgba(34,197,94,0.15)"
-      : isWicket
-      ? "rgba(239,68,68,0.15)"
-      : isExtra
-      ? "rgba(250,204,21,0.15)"
-      : "#111827",
-
-    border: isBoundary
-      ? "1px solid #22c55e"
-      : isWicket
-      ? "1px solid #ef4444"
-      : isExtra
-      ? "1px solid #facc15"
-      : "1px solid #374151",
-
-    color: color,
-    flexShrink: 0
-  }}
->
-  {clean}
-</span>
-        </div>
-      );
-    })}
-</div>
-              </td>    
-            </tr>
-
-          </tbody>
-        </table>
-        </div>
-      </StatCard>
-
-      {/* INNINGS */}
-      {scoreboard?.innings?.map((innings) => {
-  const isCollapsed =
-    collapsedInnings[innings.number];
+  const bowlerValue = scoreboard?.currentState?.bowlerStats
+    ? `${scoreboard.currentState.bowlerStats.wickets}/${scoreboard.currentState.bowlerStats.runs} in ${scoreboard.currentState.bowlerStats.overs} ov`
+    : "";
 
   return (
-    <div
-      key={innings.number}
-      style={{
-        background: "#111827",
-        borderRadius: 16,
-        marginBottom: 20,
-        border: "1px solid #1f2937",
-        overflow: "hidden"
-      }}
-    >
-      {/* COLLAPSIBLE HEADER */}
-      <div
-        onClick={() =>
-          toggleInnings(innings.number)
-        }
-        style={{
-          padding: isMobile ? 12 : 20,
-          cursor: "pointer",
-          display: "flex",
-          justifyContent: "space-between",
-          alignItems: "center",
-          background: "#111827",
-          userSelect: "none"
-        }}
-      >
-        <h3
-          style={{
-            margin: 0,
-            fontSize: isMobile ? 15 : 18,
-            fontWeight: 700
-          }}
-        >
-          Innings {innings.number} -{" "}
-          {innings.teamName}
-        </h3>
+    <main className="live-page-shell">
+      <section className="live-hero-card">
+        <div className="live-hero-top">
+          <span className="live-pill">● LIVE SCORE</span>
+          <span className="live-refresh">Auto refreshes every 5s</span>
+        </div>
 
-        <span
-          style={{
-            fontSize: 20,
-            fontWeight: 700,
-            color: "#9ca3af"
-          }}
-        >
-          {isCollapsed ? "+" : "−"}
-        </span>
-      </div>
+        <div className="live-match-title">
+          {scoreboard?.match?.teamAName} vs {scoreboard?.match?.teamBName}
+        </div>
 
-      {!isCollapsed && (
-        <div style={{ padding: 20 }}>
-
-          {/* INNINGS SUMMARY */}
-          <div
-  style={{
-    overflowX: "auto",
-    WebkitOverflowScrolling: "touch"
-  }}
->
-          <table
-            style={{
-              ...tableStyle,
-              marginBottom: 24
-            }}
-          >
-            <tbody>
-              <tr>
-                <td style={thStyle}>Score</td>
-                <td style={tdStyle}>
-                  {innings.runs}/{innings.wickets}
-                </td>
-              </tr>
-
-              <tr>
-                <td style={thStyle}>Overs</td>
-                <td style={tdStyle}>
-                  {innings.oversDisplay}
-                </td>
-              </tr>
-
-              <tr>
-                <td style={thStyle}>Run Rate</td>
-                <td style={tdStyle}>
-                  {innings.runRate}
-                </td>
-              </tr>
-
-              <tr>
-                <td style={thStyle}>Powerplay</td>
-                <td style={tdStyle}>
-                  {innings.powerplay?.runs}/
-                  {innings.powerplay?.wickets}
-                </td>
-              </tr>
-            </tbody>
-          </table>
-</div>
-          {/* BATTING STATS */}
-          <h3 style={sectionTitle}>
-            Batting Statistics
-          </h3>
-<div
-  style={{
-    overflowX: "auto",
-    WebkitOverflowScrolling: "touch"
-  }}
->
-          <table style={tableStyle}>
-            <thead>
-              <tr>
-                <th style={thStyle}>Player</th>
-                <th style={thStyle}>R</th>
-                <th style={thStyle}>B</th>
-                <th style={thStyle}>4s</th>
-                <th style={thStyle}>6s</th>
-                <th style={thStyle}>SR</th>
-                <th style={thStyle}>Dismissal</th>
-              </tr>
-            </thead>
-
-            <tbody>
-              {innings?.battingStats?.map((batter) => (
-                <tr key={batter.playerId}>
-                  <td style={tdStyle}>
-                    {batter.playerName}
-                  </td>
-
-                  <td style={tdStyle}>
-                    {batter.runs}
-                  </td>
-
-                  <td style={tdStyle}>
-                    {batter.balls}
-                  </td>
-
-                  <td style={tdStyle}>
-                    {batter.fours}
-                  </td>
-
-                  <td style={tdStyle}>
-                    {batter.sixes}
-                  </td>
-
-                  <td style={tdStyle}>
-                    {batter.strikeRate}
-                  </td>
-                  <td style={tdStyle}>
-                    {batter.isRetiredHurt? "Retired hurt": batter.dismissal || "not out"}
-                  </td>
-                </tr>
-              ))}
-            </tbody>
-          </table>
-</div>
-          {/* BOWLING STATS */}
-          <h3 style={sectionTitle}>
-            Bowling Statistics
-          </h3>
-<div
-  style={{
-    overflowX: "auto",
-    WebkitOverflowScrolling: "touch"
-  }}
->
-          <table style={tableStyle}>
-            <thead>
-              <tr>
-                <th style={thStyle}>Bowler</th>
-                <th style={thStyle}>Overs</th>
-                <th style={thStyle}>Runs</th>
-                <th style={thStyle}>Wickets</th>
-                <th style={thStyle}>Dots</th>
-                <th style={thStyle}>Economy</th>
-              </tr>
-            </thead>
-
-            <tbody>
-              {innings?.bowlingStats?.map((bowler) => (
-                <tr key={bowler.playerId}>
-                  <td style={tdStyle}>
-                    {bowler.playerName}
-                  </td>
-
-                  <td style={tdStyle}>
-                    {bowler.overs}
-                  </td>
-
-                  <td style={tdStyle}>
-                    {bowler.runs}
-                  </td>
-
-                  <td style={tdStyle}>
-                    {bowler.wickets}
-                  </td>
-
-                  <td style={tdStyle}>
-                    {bowler.dots}
-                  </td>
-
-                  <td style={tdStyle}>
-                    {bowler.economy}
-                  </td>
-                </tr>
-              ))}
-            </tbody>
-          </table>
-</div>
-          {/* PARTNERSHIPS */}
-          <h3 style={sectionTitle}>Partnerships</h3>
-<div
-  style={{
-    overflowX: "auto",
-    WebkitOverflowScrolling: "touch"
-  }}
->
-          <table style={tableStyle}>
-            <thead>
-              <tr>
-                <th style={thStyle}>Batters</th>
-                <th style={thStyle}>Runs</th>
-                <th style={thStyle}>Balls</th>
-                <th style={thStyle}>Status</th>
-              </tr>
-            </thead>
-
-            <tbody>
-              {innings.partnerships?.map((p, index) => (
-                <tr key={index}>
-                  <td style={tdStyle}>
-                    {p.batter1} & {p.batter2}
-                  </td>
-
-                  <td style={tdStyle}>{p.runs}</td>
-
-                  <td style={tdStyle}>{p.balls}</td>
-
-                  <td style={tdStyle}>
-                    {p.ongoing
-                      ? "Current"
-                      : `W${p.wicketNumber}`}
-                  </td>
-                </tr>
-              ))}
-            </tbody>
-          </table>
-</div>
-          {/* FALL OF WICKETS */}
-          <h3 style={sectionTitle}>
-            Fall Of Wickets
-          </h3>
-<div
-  style={{
-    overflowX: "auto",
-    WebkitOverflowScrolling: "touch"
-  }}
->
-          <table style={tableStyle}>
-            <thead>
-              <tr>
-                <th style={thStyle}>Wicket</th>
-                <th style={thStyle}>Score</th>
-                <th style={thStyle}>Player</th>
-                <th style={thStyle}>Over</th>
-              </tr>
-            </thead>
-
-            <tbody>
-              {innings.fallOfWickets?.map((w, index) => (
-                <tr key={index}>
-                  <td style={tdStyle}>
-                    {w.wicketNumber}
-                  </td>
-
-                  <td style={tdStyle}>
-                    {w.score}
-                  </td>
-
-                  <td style={tdStyle}>
-                    {w.playerOut}
-                  </td>
-
-                  <td style={tdStyle}>
-                    {w.over}
-                  </td>
-                </tr>
-              ))}
-            </tbody>
-          </table>
+        <div className="live-score-row">
+          <div className="live-main-score">
+            {latestInnings
+              ? `${latestInnings.runs}/${latestInnings.wickets}`
+              : "-"}
           </div>
-         </div>
-      )}
-    </div>
-  );
-})}
-    </div>
+
+          <div className="live-score-side">
+            <span>Current innings</span>
+            <strong>
+              {latestInnings
+                ? `Innings ${latestInnings.number} • ${latestInnings.oversDisplay} ov`
+                : "-"}
+            </strong>
+          </div>
+        </div>
+
+        <p className="live-status-text">
+          {scoreboard?.summary?.statusText || "Match in progress"}
+        </p>
+
+        <div className="live-recent-section">
+          <span>Recent</span>
+
+          <div className="live-recent-strip">
+            {scoreboard?.recentBalls?.slice(-12).map((ball, index) => {
+              const item = getBallDisplay(ball.label);
+
+              return (
+                <b
+                  key={ball.id || index}
+                  className={`live-ball live-ball-${item.type}`}
+                >
+                  {item.text}
+                </b>
+              );
+            })}
+          </div>
+        </div>
+
+        <div className="live-hero-metrics">
+          <InfoPill
+            label="Overs"
+            value={latestInnings?.oversDisplay || "0.0"}
+          />
+
+          <InfoPill
+            label="Run Rate"
+            value={latestInnings?.runRate || "0.00"}
+          />
+
+          <InfoPill
+            label="Target"
+            value={
+              scoreboard?.currentInnings === 2 && scoreboard?.summary?.target
+                ? scoreboard.summary.target
+                : "—"
+            }
+          />
+
+          <InfoPill label="Balls Left" value={ballsLeft ?? "—"} />
+        </div>
+      </section>
+
+      <section className="live-current-grid">
+        <PlayerCard
+          label="🏏 Striker"
+          name={scoreboard?.currentState?.strikerName || "-"}
+          value={strikerValue}
+        />
+
+        <PlayerCard
+          label="🏃 Non-striker"
+          name={scoreboard?.currentState?.nonStrikerName || "-"}
+          value={nonStrikerValue}
+        />
+
+        <PlayerCard
+          label="🎯 Bowler"
+          name={scoreboard?.currentState?.bowlerName || "-"}
+          value={bowlerValue}
+        />
+      </section>
+
+      {scoreboard?.innings?.map((innings) => {
+        const isCollapsed = collapsedInnings[innings.number];
+
+        return (
+          <section key={innings.number} className="live-innings-card">
+            <button
+              type="button"
+              className="live-innings-header"
+              onClick={() => toggleInnings(innings.number)}
+            >
+              <div>
+                <span>Innings {innings.number}</span>
+                <strong>{innings.teamName}</strong>
+              </div>
+
+              <b>
+                {innings.runs}/{innings.wickets} ({innings.oversDisplay})
+              </b>
+
+              <i>{isCollapsed ? "+" : "−"}</i>
+            </button>
+
+            {!isCollapsed && (
+              <div className="live-innings-body">
+                <div className="live-summary-grid">
+                  <InfoPill
+                    label="Score"
+                    value={`${innings.runs}/${innings.wickets}`}
+                  />
+                  <InfoPill label="Overs" value={innings.oversDisplay} />
+                  <InfoPill label="Run Rate" value={innings.runRate} />
+                  <InfoPill
+                    label="Powerplay"
+                    value={`${innings.powerplay?.runs || 0}/${
+                      innings.powerplay?.wickets || 0
+                    }`}
+                  />
+                </div>
+
+                <h3 className="live-section-title">🏏 Batting Scorecard</h3>
+
+                <ProTable>
+                  <thead>
+                    <tr>
+                      <th>Player</th>
+                      <th>R</th>
+                      <th>B</th>
+                      <th>4s</th>
+                      <th>6s</th>
+                      <th>SR</th>
+                      <th>Dismissal</th>
+                    </tr>
+                  </thead>
+
+                  <tbody>
+                    {innings?.battingStats?.map((batter) => (
+                      <tr key={batter.playerId}>
+                        <td className="name-cell">{batter.playerName}</td>
+                        <td>{batter.runs}</td>
+                        <td>{batter.balls}</td>
+                        <td>{batter.fours}</td>
+                        <td>{batter.sixes}</td>
+                        <td>{batter.strikeRate}</td>
+                        <td>
+                          {batter.isRetiredHurt
+                            ? "Retired hurt"
+                            : batter.dismissal || "not out"}
+                        </td>
+                      </tr>
+                    ))}
+                  </tbody>
+                </ProTable>
+
+                <h3 className="live-section-title">🎯 Bowling Scorecard</h3>
+
+                <ProTable>
+                  <thead>
+                    <tr>
+                      <th>Bowler</th>
+                      <th>Overs</th>
+                      <th>Runs</th>
+                      <th>Wickets</th>
+                      <th>Dots</th>
+                      <th>Economy</th>
+                    </tr>
+                  </thead>
+
+                  <tbody>
+                    {innings?.bowlingStats?.map((bowler) => (
+                      <tr key={bowler.playerId}>
+                        <td className="name-cell">{bowler.playerName}</td>
+                        <td>{bowler.overs}</td>
+                        <td>{bowler.runs}</td>
+                        <td>{bowler.wickets}</td>
+                        <td>{bowler.dots}</td>
+                        <td>{bowler.economy}</td>
+                      </tr>
+                    ))}
+                  </tbody>
+                </ProTable>
+
+                <h3 className="live-section-title">🤝 Partnerships</h3>
+
+                <ProTable>
+                  <thead>
+                    <tr>
+                      <th>Batters</th>
+                      <th>Runs</th>
+                      <th>Balls</th>
+                      <th>Status</th>
+                    </tr>
+                  </thead>
+
+                  <tbody>
+                    {innings.partnerships?.map((p, index) => (
+                      <tr key={index}>
+                        <td className="name-cell">
+                          {p.batter1} & {p.batter2}
+                        </td>
+                        <td>{p.runs}</td>
+                        <td>{p.balls}</td>
+                        <td>{p.ongoing ? "Current" : `W${p.wicketNumber}`}</td>
+                      </tr>
+                    ))}
+                  </tbody>
+                </ProTable>
+
+                <h3 className="live-section-title">☝️ Fall of Wickets</h3>
+
+                <ProTable>
+                  <thead>
+                    <tr>
+                      <th>Wicket</th>
+                      <th>Score</th>
+                      <th>Player</th>
+                      <th>Over</th>
+                    </tr>
+                  </thead>
+
+                  <tbody>
+                    {innings.fallOfWickets?.map((w, index) => (
+                      <tr key={index}>
+                        <td>{w.wicketNumber}</td>
+                        <td>{w.score}</td>
+                        <td className="name-cell">{w.playerOut}</td>
+                        <td>{w.over}</td>
+                      </tr>
+                    ))}
+                  </tbody>
+                </ProTable>
+              </div>
+            )}
+          </section>
+        );
+      })}
+    </main>
   );
 }
-
-function InfoPill({ label, value }) {
-  return (
-    <div
-      style={{
-        background: "#1f2937",
-        padding: "12px",
-        borderRadius: 14,
-        width: "100%",
-        border: "1px solid #374151"
-      }}
-    >
-      <div
-        style={{
-          fontSize: 10,
-          color: "#9ca3af",
-          textTransform: "uppercase",
-          letterSpacing: 0.5
-        }}
-      >
-        {label}
-      </div>
-
-      <div
-        style={{
-          fontSize: 15,
-          fontWeight: 700,
-          marginTop: 4,
-          overflowWrap: "break-word"
-        }}
-      >
-        {value}
-      </div>
-    </div>
-  );
-}
-
-const sectionTitle = {
-  marginTop: 30,
-  marginBottom: 12,
-  fontSize: 18,
-  fontWeight: 700
-};
-
-const tableStyle = {
-  width: "100%",
-  borderCollapse: "collapse",
-  marginBottom: 24
-};
-
-const thStyle = {
-  textAlign: "left",
-  padding: "8px",
-  fontSize: 12,
-  background: "#1f2937",
-  border: "1px solid #374151",
-  whiteSpace: "nowrap"
-};
-
-const tdStyle = {
-  padding: "8px",
-  fontSize: 12,
-  border: "1px solid #374151",
-  whiteSpace: "nowrap"
-};

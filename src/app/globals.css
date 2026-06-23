@@ -11954,18 +11954,7 @@ body:has(.login-shell) .dashboard-content {
   font-weight: 800;
 }
 
-.live-hero-card h1 {
-  margin: 14px 0 8px;
-  font-size: clamp(22px, 4vw, 38px);
-  font-weight: 950;
-}
 
-.live-main-score {
-  font-size: clamp(52px, 10vw, 92px);
-  line-height: .95;
-  font-weight: 950;
-  letter-spacing: -.06em;
-}
 
 .live-status-text {
   margin: 10px 0 18px;
@@ -12032,4 +12021,545 @@ body:has(.login-shell) .dashboard-content {
   border-radius: 22px;
   overflow: hidden;
   box-shadow: 0 14px 34px rgba(0,0,0,.25);
+}
+.live-current-grid {
+  display: grid;
+  grid-template-columns: repeat(3, 1fr);
+  gap: 14px;
+  margin-bottom: 20px;
+}
+
+.live-player-card {
+  padding: 18px;
+  border-radius: 22px;
+  background: linear-gradient(
+    180deg,
+    rgba(30,41,59,.95),
+    rgba(15,23,42,.95)
+  );
+  border: 1px solid rgba(96,165,250,.18);
+}
+
+.live-player-card span {
+  display: block;
+  color: #93c5fd;
+  font-size: 11px;
+  font-weight: 900;
+}
+
+.live-player-card strong {
+  display: block;
+  margin-top: 8px;
+  font-size: 28px;
+  font-weight: 950;
+}
+
+.live-player-card small {
+  display: block;
+  margin-top: 6px;
+  color: #cbd5e1;
+  font-size: 15px;
+  font-weight: 700;
+}
+
+.live-recent-strip {
+  display: flex;
+  gap: 10px;
+  flex-wrap: wrap;
+  margin-top: 18px;
+}
+
+.live-ball {
+  width: 38px;
+  height: 38px;
+  border-radius: 50%;
+  background: #111827;
+  border: 1px solid #374151;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-weight: 900;
+}
+
+@media (max-width: 768px) {
+  .live-current-grid {
+    grid-template-columns: 1fr;
+  }
+
+  .live-player-card strong {
+    font-size: 22px;
+  }
+
+  .live-ball {
+    width: 32px;
+    height: 32px;
+    font-size: 12px;
+  }
+}
+.live-page-shell {
+  min-height: 100vh;
+  max-width: 1180px;
+  margin: 0 auto;
+  padding: 22px;
+  color: #f8fafc;
+  background:
+    radial-gradient(circle at top left, rgba(37, 99, 235, 0.18), transparent 34%),
+    linear-gradient(180deg, #07111f, #0b1220 48%, #020617);
+  font-family: system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
+}
+
+.live-hero-card,
+.live-innings-card,
+.live-player-card,
+.live-loading-card,
+.live-error-card {
+  background: linear-gradient(145deg, rgba(15, 23, 42, 0.97), rgba(30, 41, 59, 0.9));
+  border: 1px solid rgba(96, 165, 250, 0.24);
+  box-shadow: 0 22px 60px rgba(0, 0, 0, 0.38);
+}
+
+.live-hero-card {
+  padding: 22px;
+  border-radius: 30px;
+  margin-bottom: 18px;
+}
+
+.live-hero-top {
+  display: flex;
+  justify-content: space-between;
+  gap: 12px;
+  align-items: center;
+}
+
+.live-pill {
+  color: #22c55e;
+  font-size: 12px;
+  font-weight: 950;
+  letter-spacing: 0.08em;
+}
+
+.live-refresh {
+  color: #94a3b8;
+  font-size: 12px;
+  font-weight: 800;
+}
+
+.live-match-title {
+  margin-top: 14px;
+  color: #dbeafe;
+  font-size: clamp(20px, 3vw, 30px);
+  line-height: 1.15;
+  font-weight: 900;
+  letter-spacing: -0.025em;
+}
+
+.live-score-row {
+  margin-top: 8px;
+  display: flex;
+  align-items: flex-end;
+  justify-content: space-between;
+  gap: 18px;
+}
+
+.live-main-score {
+  color: #f1f5f9;
+  font-size: clamp(46px, 7vw, 72px);
+  line-height: 0.95;
+  font-weight: 950;
+  letter-spacing: -0.06em;
+  text-shadow: 0 10px 34px rgba(96, 165, 250, 0.12);
+}
+
+.live-score-side {
+  padding: 10px 14px;
+  border-radius: 16px;
+  background: rgba(15, 23, 42, 0.72);
+  border: 1px solid rgba(148, 163, 184, 0.2);
+  text-align: right;
+}
+
+.live-score-side span {
+  display: block;
+  color: #93c5fd;
+  font-size: 11px;
+  font-weight: 950;
+  text-transform: uppercase;
+}
+
+.live-score-side strong {
+  display: block;
+  margin-top: 4px;
+  color: #ffffff;
+  font-size: 14px;
+  font-weight: 900;
+}
+
+.live-status-text {
+  margin: 12px 0 14px;
+  color: #cbd5e1;
+  font-size: 16px;
+  line-height: 1.35;
+  font-weight: 850;
+}
+
+.live-recent-section {
+  display: grid;
+  grid-template-columns: auto 1fr;
+  gap: 12px;
+  align-items: center;
+  margin: 12px 0 18px;
+}
+
+.live-recent-section > span {
+  color: #93c5fd;
+  font-size: 13px;
+  font-weight: 950;
+}
+
+.live-recent-strip {
+  display: flex;
+  gap: 8px;
+  overflow-x: auto;
+  white-space: nowrap;
+  scrollbar-width: none;
+}
+
+.live-recent-strip::-webkit-scrollbar {
+  display: none;
+}
+
+.live-ball {
+  min-width: 34px;
+  height: 34px;
+  padding: 0 8px;
+  border-radius: 999px;
+  background: rgba(148, 163, 184, 0.15);
+  border: 1px solid rgba(148, 163, 184, 0.24);
+  color: #f8fafc;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 13px;
+  font-weight: 950;
+  flex: 0 0 auto;
+}
+
+.live-ball-four {
+  background: rgba(37, 99, 235, 0.3);
+  border-color: rgba(96, 165, 250, 0.58);
+  color: #bfdbfe;
+}
+
+.live-ball-six {
+  background: rgba(22, 163, 74, 0.3);
+  border-color: rgba(74, 222, 128, 0.58);
+  color: #bbf7d0;
+}
+
+.live-ball-wicket {
+  background: rgba(220, 38, 38, 0.3);
+  border-color: rgba(248, 113, 113, 0.62);
+  color: #fecaca;
+}
+
+.live-ball-extra {
+  background: rgba(245, 158, 11, 0.27);
+  border-color: rgba(251, 191, 36, 0.58);
+  color: #fde68a;
+}
+
+.live-hero-metrics,
+.live-summary-grid {
+  display: grid;
+  grid-template-columns: repeat(4, 1fr);
+  gap: 10px;
+}
+
+.live-info-pill {
+  padding: 12px;
+  border-radius: 16px;
+  background: rgba(15, 23, 42, 0.76);
+  border: 1px solid rgba(148, 163, 184, 0.24);
+}
+
+.live-info-pill span {
+  display: block;
+  color: #93c5fd;
+  font-size: 11px;
+  font-weight: 950;
+  text-transform: uppercase;
+  letter-spacing: 0.06em;
+}
+
+.live-info-pill strong {
+  display: block;
+  margin-top: 4px;
+  color: #ffffff;
+  font-size: 17px;
+  font-weight: 950;
+}
+
+.live-current-grid {
+  display: grid;
+  grid-template-columns: repeat(3, 1fr);
+  gap: 14px;
+  margin-bottom: 20px;
+}
+
+.live-player-card {
+  padding: 17px;
+  border-radius: 22px;
+}
+
+.live-player-card span {
+  display: block;
+  color: #93c5fd;
+  font-size: 12px;
+  font-weight: 950;
+  text-transform: uppercase;
+}
+
+.live-player-card strong {
+  display: block;
+  margin-top: 8px;
+  color: #ffffff;
+  font-size: 24px;
+  line-height: 1.1;
+  font-weight: 950;
+}
+
+.live-player-card small {
+  display: block;
+  margin-top: 6px;
+  color: #cbd5e1;
+  font-size: 14px;
+  font-weight: 800;
+}
+
+.live-innings-card {
+  border-radius: 26px;
+  margin-bottom: 22px;
+  overflow: hidden;
+}
+
+.live-innings-header {
+  width: 100%;
+  border: 0;
+  color: #f8fafc;
+  cursor: pointer;
+  padding: 18px 20px;
+  background: linear-gradient(90deg, rgba(15, 23, 42, 0.96), rgba(30, 41, 59, 0.86));
+  display: grid;
+  grid-template-columns: 1fr auto auto;
+  gap: 14px;
+  align-items: center;
+  text-align: left;
+}
+
+.live-innings-header span {
+  color: #93c5fd;
+  font-size: 12px;
+  font-weight: 950;
+  text-transform: uppercase;
+}
+
+.live-innings-header strong {
+  display: block;
+  margin-top: 3px;
+  font-size: 19px;
+  font-weight: 950;
+}
+
+.live-innings-header b {
+  font-size: 22px;
+  font-weight: 950;
+}
+
+.live-innings-header i {
+  width: 34px;
+  height: 34px;
+  border-radius: 999px;
+  display: grid;
+  place-items: center;
+  background: rgba(96, 165, 250, 0.16);
+  border: 1px solid rgba(96, 165, 250, 0.28);
+  font-style: normal;
+  font-size: 20px;
+  font-weight: 950;
+}
+
+.live-innings-body {
+  padding: 18px;
+}
+
+.live-section-title {
+  margin: 26px 0 14px;
+  padding-left: 10px;
+  border-left: 4px solid #3b82f6;
+  color: #f8fafc;
+  font-size: 20px;
+  font-weight: 950;
+}
+
+.live-table-wrap {
+  overflow-x: auto;
+  -webkit-overflow-scrolling: touch;
+  border-radius: 18px;
+  border: 1px solid rgba(148, 163, 184, 0.18);
+  box-shadow: 0 14px 30px rgba(0, 0, 0, 0.22);
+  margin-bottom: 20px;
+}
+
+.live-pro-table {
+  width: 100%;
+  border-collapse: separate;
+  border-spacing: 0;
+  min-width: 720px;
+  background: rgba(15, 23, 42, 0.78);
+}
+
+.live-pro-table th {
+  position: sticky;
+  top: 0;
+  z-index: 1;
+  text-align: left;
+  padding: 12px 13px;
+  background: linear-gradient(180deg, #1e293b, #111827);
+  color: #bfdbfe;
+  border-bottom: 1px solid rgba(148, 163, 184, 0.22);
+  font-size: 13px;
+  font-weight: 950;
+  white-space: nowrap;
+}
+
+.live-pro-table td {
+  padding: 12px 13px;
+  border-bottom: 1px solid rgba(148, 163, 184, 0.14);
+  color: #e5e7eb;
+  font-size: 14px;
+  font-weight: 750;
+  white-space: nowrap;
+}
+
+.live-pro-table tbody tr:nth-child(even) {
+  background: rgba(255, 255, 255, 0.025);
+}
+
+.live-pro-table tbody tr:hover {
+  background: rgba(59, 130, 246, 0.08);
+}
+
+.live-pro-table .name-cell {
+  color: #ffffff;
+  font-weight: 950;
+}
+
+.live-loading-card,
+.live-error-card {
+  margin: 80px auto;
+  max-width: 460px;
+  padding: 28px;
+  border-radius: 26px;
+  text-align: center;
+}
+
+.live-loading-dot {
+  width: 14px;
+  height: 14px;
+  margin: 0 auto 14px;
+  border-radius: 999px;
+  background: #22c55e;
+  box-shadow: 0 0 18px rgba(34, 197, 94, 0.8);
+}
+
+@media (max-width: 768px) {
+  .live-page-shell {
+    padding: 10px;
+  }
+
+  .live-hero-card {
+    padding: 16px;
+    border-radius: 22px;
+  }
+
+  .live-hero-top {
+    align-items: flex-start;
+    flex-direction: column;
+  }
+
+  .live-match-title {
+    font-size: 22px;
+  }
+
+  .live-score-row {
+    align-items: flex-start;
+    flex-direction: column;
+  }
+
+  .live-main-score {
+    font-size: 54px;
+  }
+
+  .live-score-side {
+    width: 100%;
+    text-align: left;
+  }
+
+  .live-status-text {
+    font-size: 14px;
+  }
+
+  .live-recent-section {
+    grid-template-columns: 1fr;
+    gap: 7px;
+  }
+
+  .live-hero-metrics,
+  .live-summary-grid {
+    grid-template-columns: repeat(2, 1fr);
+  }
+
+  .live-current-grid {
+    grid-template-columns: 1fr;
+    gap: 10px;
+  }
+
+  .live-player-card {
+    padding: 14px;
+  }
+
+  .live-player-card strong {
+    font-size: 21px;
+  }
+
+  .live-innings-header {
+    padding: 15px;
+    grid-template-columns: 1fr auto;
+  }
+
+  .live-innings-header b {
+    font-size: 18px;
+  }
+
+  .live-innings-header i {
+    display: none;
+  }
+
+  .live-innings-body {
+    padding: 14px;
+  }
+
+  .live-section-title {
+    font-size: 17px;
+  }
+
+  .live-pro-table {
+    min-width: 660px;
+  }
+
+  .live-pro-table th,
+  .live-pro-table td {
+    padding: 10px 11px;
+    font-size: 13px;
+  }
 }
