@@ -11925,3 +11925,111 @@ body:has(.login-shell) .dashboard-content {
 .match-setup-card summary strong {
   font-size: 13px;
 }
+.live-hero-card {
+  margin-bottom: 18px;
+  padding: 22px;
+  border-radius: 28px;
+  background: linear-gradient(145deg, rgba(15,23,42,.96), rgba(30,41,59,.88));
+  border: 1px solid rgba(96,165,250,.25);
+  box-shadow: 0 22px 60px rgba(0,0,0,.38);
+}
+
+.live-hero-top {
+  display: flex;
+  justify-content: space-between;
+  gap: 12px;
+  align-items: center;
+}
+
+.live-pill {
+  color: #22c55e;
+  font-size: 12px;
+  font-weight: 950;
+  letter-spacing: .08em;
+}
+
+.live-refresh {
+  color: #94a3b8;
+  font-size: 12px;
+  font-weight: 800;
+}
+
+.live-hero-card h1 {
+  margin: 14px 0 8px;
+  font-size: clamp(22px, 4vw, 38px);
+  font-weight: 950;
+}
+
+.live-main-score {
+  font-size: clamp(52px, 10vw, 92px);
+  line-height: .95;
+  font-weight: 950;
+  letter-spacing: -.06em;
+}
+
+.live-status-text {
+  margin: 10px 0 18px;
+  color: #cbd5e1;
+  font-size: 16px;
+  font-weight: 850;
+}
+
+.live-hero-metrics {
+  display: grid;
+  grid-template-columns: repeat(4, 1fr);
+  gap: 10px;
+}
+
+.live-current-grid {
+  display: grid;
+  grid-template-columns: repeat(3, 1fr);
+  gap: 12px;
+  margin-bottom: 18px;
+}
+
+.live-mini-card {
+  padding: 14px;
+  border-radius: 18px;
+  background: rgba(15,23,42,.86);
+  border: 1px solid rgba(148,163,184,.18);
+}
+
+.live-mini-card span {
+  color: #93c5fd;
+  font-size: 12px;
+  font-weight: 900;
+}
+
+.live-mini-card strong {
+  display: block;
+  margin-top: 6px;
+  font-size: 20px;
+  font-weight: 950;
+}
+
+@media (max-width: 700px) {
+  .live-hero-card {
+    padding: 16px;
+    border-radius: 22px;
+  }
+
+  .live-hero-top {
+    align-items: flex-start;
+    flex-direction: column;
+  }
+
+  .live-hero-metrics {
+    grid-template-columns: repeat(2, 1fr);
+  }
+
+  .live-current-grid {
+    grid-template-columns: 1fr;
+  }
+}
+.live-innings-card {
+  background: rgba(15,23,42,.9);
+  border: 1px solid rgba(96,165,250,.18);
+  border-radius: 22px;
+  overflow: hidden;
+  box-shadow: 0 14px 34px rgba(0,0,0,.25);
+}

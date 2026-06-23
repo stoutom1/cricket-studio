@@ -4322,6 +4322,7 @@ const setupBowlers = setupBowlingTeam?.players || [];
 function playerNameFromTeam(team, playerId) {
   const id = Number(playerId);
   const players = team?.players || [];
+  console.log("players",players);
 
   const player = players.find(
     (p) => Number(p.id) === id
@@ -4596,7 +4597,8 @@ onClick={() => {
   </div>
 
 <div className="match-officials-grid">
-  <div>
+
+<div>
     <strong>{matchDetail?.teamA?.name || "Team A"}</strong>
     <p>
       🧢 Captain:{" "}

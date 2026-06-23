@@ -109,7 +109,7 @@ useEffect(() => {
     <div
       style={{
         minHeight: "100vh",
-        background: "#030712",
+background: "radial-gradient(circle at top left, rgba(37,99,235,0.16), transparent 32%), linear-gradient(180deg,#07111f,#0b1220 48%,#020617)",
         color: "white",
         padding: isMobile ? 8 : 24,
         maxWidth: 1400,
@@ -118,117 +118,45 @@ useEffect(() => {
       }}
     >
       {/* HEADER */}
-<div
-  style={{
-    position: "sticky",
-    top: 0,
-    zIndex: 9999,
-    background: "#030712",
-    paddingBottom: 12,
-    isolation: "isolate"
-  }}
->
-<div
-  style={{
-    background: "#111827", // remove transparency
-    padding: isMobile ? 14 : 24,
-    borderRadius: isMobile ? 14 : 20,
-    border: "1px solid #1f2937",
-    boxShadow: "0 10px 25px rgba(0,0,0,0.45)"
-  }}
->
-    {/* entire header content */}
-          <h1
-          style={{
-          fontSize: isMobile ? 18 : 32,
-          lineHeight: 1.25,
-          fontWeight: 800,
-          marginBottom: 10,
-          wordBreak: "break-word"
-          }}
-        >
-          {scoreboard?.match?.teamAName} vs{" "}
-          {scoreboard?.match?.teamBName}
-        </h1>
+<div className="live-hero-card">
+  <div className="live-hero-top">
+    <span className="live-pill">● LIVE SCORE</span>
+    <span className="live-refresh">Auto refreshes every 5s</span>
   </div>
-        {/* MATCH STATUS */}
-        <div
-          style={{
-            background: "#1f2937",
-            padding: isMobile ? 12 : 16,
-            border: "1px solid #374151",
-            fontSize: 18,
-            fontSize: isMobile ? 15 : 18,
-            borderRadius: 12,
-            marginBottom: 20
-          }}
-        >
-          <div
-            style={{
-              fontSize: 18,
-              fontWeight: 700,
-              marginBottom: 8
-            }}
-          >
-            Match Status
-          </div>
 
-          <div style={{ color: "#d1d5db" }}>
-            {scoreboard?.summary?.statusText ||
-              "Match in progress"}
-          </div>
-        </div>
+  <h1>
+    {scoreboard?.match?.teamAName} vs {scoreboard?.match?.teamBName}
+  </h1>
 
-        <div
-          style={{
-          display: "grid",
-          gridTemplateColumns:
-            isMobile
-              ? "repeat(2,1fr)"
-              : "repeat(auto-fit,minmax(140px,1fr))",
-          gap: 12,
-          whiteSpace: "pre-line"
-          }}
-        >
-          <InfoPill
-                  label="Current Score"
-                          value={latestInnings? `${latestInnings.runs}/${latestInnings.wickets}`: "-"}
-          />
+  <div className="live-main-score">
+    {latestInnings
+      ? `${latestInnings.runs}/${latestInnings.wickets}`
+      : "-"}
+  </div>
 
-          <InfoPill
-            label="Overs"
-            value={latestInnings?.oversDisplay || "0.0"}
-          />
+  <p className="live-status-text">
+    {scoreboard?.summary?.statusText || "Match in progress"}
+  </p>
 
-          <InfoPill
-            label="Run Rate"
-            value={latestInnings?.runRate || "0.00"}
-          />
-
-          <InfoPill
-            label="Target"
-                  value={
-                    scoreboard?.currentInnings === 2 &&
-                    scoreboard?.summary?.target
-                      ? `${scoreboard.summary.target}
-                  Need: ${Math.max(
-                    scoreboard.summary.target -
-                      (latestInnings?.runs || 0),
-                    0
-                  )}`
-                      : "Yet to be set"
-                  }          />
-          <InfoPill
-            label="Balls Left"
-            value={
-                    scoreboard?.summary?.remainingBalls !== null &&
-                    scoreboard?.summary?.remainingBalls !== undefined
-                      ? scoreboard.summary.remainingBalls
-                      : "-"
-                  }
-          />
-        </div>
-      </div>
+  <div className="live-hero-metrics">
+    <InfoPill label="Overs" value={latestInnings?.oversDisplay || "0.0"} />
+    <InfoPill label="Run Rate" value={latestInnings?.runRate || "0.00"} />
+    <InfoPill
+      label="Target"
+      value={
+        scoreboard?.currentInnings === 2 && scoreboard?.summary?.target
+          ? scoreboard.summary.target
+          : "—"
+      }
+    />
+    <InfoPill
+      label="Balls Left"
+      value={
+        scoreboard?.summary?.remainingBalls ?? "—"
+      }
+    />
+  </div>
+</div>
 
       {/* CURRENT PLAYERS */}
       <StatCard title="Current Players">
