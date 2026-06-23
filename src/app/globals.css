@@ -11338,3 +11338,39 @@ body:has(.login-shell) .dashboard-content {
   font-size: 14px !important;
   font-weight: 950 !important;
 }
+/* RECENT BALLS */
+
+.compact-recent-row {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  margin: 12px 0;
+}
+
+.recent-label {
+  flex-shrink: 0;
+  color: #93c5fd;
+  font-size: 17px;
+  font-weight: 800;
+}
+
+.recent-label small {
+  display: block;
+  font-size: 10px;
+  color: #94a3b8;
+  font-weight: 700;
+}
+
+.recent-ball-strip {
+  flex: 1;
+  display: flex;
+  gap: 8px;
+  align-items: center;
+  overflow-x: auto;
+  white-space: nowrap;
+  scrollbar-width: none;
+}
+
+.recent-ball-strip::-webkit-scrollbar {
+  display: none;
+}

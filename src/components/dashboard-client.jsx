@@ -4778,9 +4778,12 @@ onClick={() => {
 
   <div className="tv-bottom-row">
   <div className="tv-recent-inline">
-    <span>Recent <small>last 10</small></span>
-
-    <div className="recent-balls-row compact">
+<span className="recent-label">
+  Recent
+  <small>last 10</small>
+</span>
+    <div className="recent-balls-row compact-recent-row">
+      <div className="recent-ball-strip">
       {recentBalls.length ? (
         recentBalls.slice(0, 10).map((ball, index) => {
           const label = ball.label || "";
@@ -4819,6 +4822,7 @@ onClick={() => {
       ) : (
         <span className="muted">No recent balls</span>
       )}
+      </div>
     </div>
   </div>
 
