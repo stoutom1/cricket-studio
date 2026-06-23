@@ -59,19 +59,84 @@ function ProTable({ children }) {
     </div>
   );
 }
+function getTopRuns(battingStats = []) {
+  return Math.max(...battingStats.map((p) => Number(p.runs || 0)), 0);
+}
+
+function getBestWickets(bowlingStats = []) {
+  return Math.max(...bowlingStats.map((p) => Number(p.wickets || 0)), 0);
+}
+function getMatchStory(scoreboard) {
+  const story = [];
+
+  scoreboard?.innings?.forEach((innings) => {
+    const topBatter = [...(innings.battingStats || [])].sort(
+      (a, b) => Number(b.runs || 0) - Number(a.runs || 0)
+    )[0];
+
+    const bestBowler = [...(innings.bowlingStats || [])].sort((a, b) => {
+      const wicketDiff = Number(b.wickets || 0) - Number(a.wickets || 0);
+      if (wicketDiff !== 0) return wicketDiff;
+      return Number(a.runs || 0) - Number(b.runs || 0);
+    })[0];
+
+    story.push({
+      label: `Innings ${innings.number}`,
+      title: `${innings.teamName} scored ${innings.runs}/${innings.wickets}`,
+      detail: `${innings.oversDisplay} overs • RR ${innings.runRate}`,
+    });
+
+    if (topBatter?.runs > 0) {
+      story.push({
+        label: "Top batting",
+        title: `${topBatter.playerName} ${topBatter.runs} (${topBatter.balls})`,
+        detail: `${topBatter.fours || 0} fours • ${topBatter.sixes || 0} sixes`,
+      });
+    }
+
+    if (bestBowler?.wickets > 0) {
+      story.push({
+        label: "Best bowling",
+        title: `${bestBowler.playerName} ${bestBowler.wickets}/${bestBowler.runs}`,
+        detail: `${bestBowler.overs} overs • Econ ${bestBowler.economy}`,
+      });
+    }
+  });
+
+  return story;
+}
 
 export default function LiveScoreClient({ matchId }) {
   const [scoreboard, setScoreboard] = useState(null);
   const [error, setError] = useState("");
   const [collapsedInnings, setCollapsedInnings] = useState({});
   const [viewMode, setViewMode] = useState("full");
+
+  const matchStory = getMatchStory(scoreboard);
+
   function toggleInnings(inningsNo) {
     setCollapsedInnings((prev) => ({
       ...prev,
       [inningsNo]: !prev[inningsNo],
     }));
   }
+async function shareLiveScore() {
+  const shareUrl = window.location.href;
 
+  const text = `${scoreboard?.match?.teamAName} vs ${scoreboard?.match?.teamBName} • ${latestInnings?.runs}/${latestInnings?.wickets} in ${latestInnings?.oversDisplay} ov`;
+
+  if (navigator.share) {
+    await navigator.share({
+      title: "Cric4All Live Score",
+      text,
+      url: shareUrl,
+    });
+    return;
+  }
+
+  await navigator.clipboard.writeText(shareUrl);
+  alert("Live score link copied!");
+}
   useEffect(() => {
     async function loadScorecard() {
       try {
@@ -135,7 +200,7 @@ const chaseRunsNeeded =
         0
       )
     : null;
-
+console.log("chaseRunsNeeded",chaseRunsNeeded);
 const requiredRate =
   chaseRunsNeeded !== null && ballsLeft
     ? ((chaseRunsNeeded / ballsLeft) * 6).toFixed(2)
@@ -311,8 +376,28 @@ function getLastThreeOvers(scoreboard) {
       ))}
     </div>
   </div>
+  
 )}
+{/*}
+{matchStory.length > 0 && (
+  <section className="live-story-card">
+    <div className="live-story-head">
+      <strong>📖 Match Story</strong>
+      <span>Quick highlights</span>
+    </div>
 
+    <div className="live-story-list">
+      {matchStory.slice(0, 6).map((item, index) => (
+        <div key={`${item.label}-${index}`} className="live-story-item">
+          <span>{item.label}</span>
+          <strong>{item.title}</strong>
+          <small>{item.detail}</small>
+        </div>
+      ))}
+    </div>
+  </section>
+)}
+*/}
         <div className="live-hero-metrics">
           <InfoPill
             label="Overs"
@@ -336,6 +421,15 @@ function getLastThreeOvers(scoreboard) {
           <InfoPill label="Balls Left" value={ballsLeft ?? "—"} />
         </div>
       </section>
+      <div className="live-action-bar">
+  <button type="button" onClick={shareLiveScore}>
+    📤 Share Live Score
+  </button>
+
+  <button type="button" onClick={() => window.location.reload()}>
+    🔄 Refresh
+  </button>
+</div>
 <div className="live-view-toggle">
   <button
     type="button"
@@ -429,21 +523,37 @@ function getLastThreeOvers(scoreboard) {
                   </thead>
 
                   <tbody>
-                    {innings?.battingStats?.map((batter) => (
-                      <tr key={batter.playerId}>
+{innings?.battingStats?.map((batter) => {
+  const isTopScorer =
+    Number(batter.runs || 0) === getTopRuns(innings.battingStats) &&
+    Number(batter.runs || 0) > 0;
+
+  const isNotOut =
+    !batter.dismissal && !batter.isRetiredHurt;
+
+  return (
+    <tr
+      key={batter.playerId}
+      className={isTopScorer ? "highlight-top-batter" : ""}
+    >
                         <td className="name-cell">{batter.playerName}</td>
                         <td>{batter.runs}</td>
                         <td>{batter.balls}</td>
                         <td>{batter.fours}</td>
                         <td>{batter.sixes}</td>
                         <td>{batter.strikeRate}</td>
-                        <td>
-                          {batter.isRetiredHurt
-                            ? "Retired hurt"
-                            : batter.dismissal || "not out"}
-                        </td>
+<td>
+  {batter.isRetiredHurt ? (
+    <span className="score-badge retired">Retired hurt</span>
+  ) : isNotOut ? (
+    <span className="score-badge notout">not out</span>
+  ) : (
+    batter.dismissal || "-"
+  )}
+</td>
                       </tr>
-                    ))}
+                    );
+                    })}
                   </tbody>
                 </ProTable>
 
@@ -462,16 +572,31 @@ function getLastThreeOvers(scoreboard) {
                   </thead>
 
                   <tbody>
-                    {innings?.bowlingStats?.map((bowler) => (
-                      <tr key={bowler.playerId}>
+{innings?.bowlingStats?.map((bowler) => {
+  const isBestBowler =
+    Number(bowler.wickets || 0) === getBestWickets(innings.bowlingStats) &&
+    Number(bowler.wickets || 0) > 0;
+
+  return (
+    <tr
+      key={bowler.playerId}
+      className={isBestBowler ? "highlight-best-bowler" : ""}
+    >
                         <td className="name-cell">{bowler.playerName}</td>
                         <td>{bowler.overs}</td>
                         <td>{bowler.runs}</td>
-                        <td>{bowler.wickets}</td>
+  <td>
+  {Number(bowler.wickets || 0) > 0 ? (
+    <span className="score-badge wicket">{bowler.wickets}</span>
+  ) : (
+    bowler.wickets
+  )}
+</td>
                         <td>{bowler.dots}</td>
                         <td>{bowler.economy}</td>
                       </tr>
-                    ))}
+                       );
+                    })}
                   </tbody>
                 </ProTable>
 
