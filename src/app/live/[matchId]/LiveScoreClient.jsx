@@ -105,12 +105,40 @@ function getMatchStory(scoreboard) {
 
   return story;
 }
+function getRunRateTrend(scoreboard, latestInnings, ballsLeft) {
+  const crr = Number(latestInnings?.runRate || 0);
+
+  const target = Number(scoreboard?.summary?.target || 0);
+  const currentRuns = Number(latestInnings?.runs || 0);
+
+  const runsNeeded =
+    scoreboard?.currentInnings === 2 && target
+      ? Math.max(target - currentRuns, 0)
+      : 0;
+
+  const rrr =
+    scoreboard?.currentInnings === 2 && ballsLeft
+      ? Number(((runsNeeded / ballsLeft) * 6).toFixed(2))
+      : 0;
+
+  const maxRate = Math.max(crr, rrr, 12);
+  const crrPct = Math.min((crr / maxRate) * 100, 100);
+  const rrrPct = Math.min((rrr / maxRate) * 100, 100);
+
+  return {
+    crr: crr.toFixed(2),
+    rrr: rrr ? rrr.toFixed(2) : "—",
+    crrPct,
+    rrrPct,
+  };
+}
 
 export default function LiveScoreClient({ matchId }) {
   const [scoreboard, setScoreboard] = useState(null);
   const [error, setError] = useState("");
   const [collapsedInnings, setCollapsedInnings] = useState({});
   const [viewMode, setViewMode] = useState("full");
+  const [tvMode, setTvMode] = useState(false);
 
   const matchStory = getMatchStory(scoreboard);
 
@@ -172,7 +200,7 @@ async function shareLiveScore() {
 
   if (!scoreboard) {
     return (
-      <main className="live-page-shell">
+    <main className="live-page-shell">
         <div className="live-loading-card">
           <div className="live-loading-dot" />
           <h2>Loading live scorecard...</h2>
@@ -189,7 +217,7 @@ async function shareLiveScore() {
     null;
 
   const ballsLeft = scoreboard?.summary?.remainingBalls;
-
+const rateTrend = getRunRateTrend(scoreboard, latestInnings, ballsLeft);
   const topBatter = getTopBatter(scoreboard);
 const bestBowler = getBestBowler(scoreboard);
 const lastThreeOvers = getLastThreeOvers(scoreboard);
@@ -282,7 +310,16 @@ function getLastThreeOvers(scoreboard) {
 }
 
   return (
-    <main className="live-page-shell">
+<main className={`live-page-shell ${tvMode ? "live-tv-mode" : ""}`}>
+  {tvMode && (
+  <button
+    type="button"
+    className="live-tv-exit-btn"
+    onClick={() => setTvMode(false)}
+  >
+    ✕ Exit TV Mode
+  </button>
+)}
       <section className="live-hero-card">
         <div className="live-hero-top">
           <span className="live-pill">● LIVE SCORE</span>
@@ -420,12 +457,32 @@ function getLastThreeOvers(scoreboard) {
 
           <InfoPill label="Balls Left" value={ballsLeft ?? "—"} />
         </div>
+        <div className="live-rate-trend">
+  <div className="rate-row">
+    <span>CRR {rateTrend.crr}</span>
+    <div className="rate-track">
+      <i style={{ width: `${rateTrend.crrPct}%` }} />
+    </div>
+  </div>
+
+  <div className="rate-row rrr">
+    <span>RRR {rateTrend.rrr}</span>
+    <div className="rate-track">
+      <i style={{ width: `${rateTrend.rrrPct}%` }} />
+    </div>
+  </div>
+</div>
       </section>
       <div className="live-action-bar">
   <button type="button" onClick={shareLiveScore}>
     📤 Share Live Score
   </button>
-
+<button
+  type="button"
+  onClick={() => setTvMode((prev) => !prev)}
+>
+  📺 {tvMode ? "Exit TV Mode" : "TV Mode"}
+</button>
   <button type="button" onClick={() => window.location.reload()}>
     🔄 Refresh
   </button>
@@ -467,7 +524,8 @@ function getLastThreeOvers(scoreboard) {
         />
       </section>
 
- {viewMode === "full" &&
+{viewMode === "full" &&
+  !tvMode &&
   scoreboard?.innings?.map((innings) => {
         const isCollapsed = collapsedInnings[innings.number];
 
