@@ -125,6 +125,23 @@ export default function LiveScoreClient({ matchId }) {
 
   const ballsLeft = scoreboard?.summary?.remainingBalls;
 
+  const topBatter = getTopBatter(scoreboard);
+const bestBowler = getBestBowler(scoreboard);
+
+const chaseRunsNeeded =
+  scoreboard?.currentInnings === 2 && scoreboard?.summary?.target
+    ? Math.max(
+        Number(scoreboard.summary.target) - Number(latestInnings?.runs || 0),
+        0
+      )
+    : null;
+
+const requiredRate =
+  chaseRunsNeeded !== null && ballsLeft
+    ? ((chaseRunsNeeded / ballsLeft) * 6).toFixed(2)
+    : null;
+
+
   const strikerValue = scoreboard?.currentState?.strikerStats
     ? `${scoreboard.currentState.strikerStats.runs} (${scoreboard.currentState.strikerStats.balls})`
     : "";
@@ -136,6 +153,28 @@ export default function LiveScoreClient({ matchId }) {
   const bowlerValue = scoreboard?.currentState?.bowlerStats
     ? `${scoreboard.currentState.bowlerStats.wickets}/${scoreboard.currentState.bowlerStats.runs} in ${scoreboard.currentState.bowlerStats.overs} ov`
     : "";
+
+    function getTopBatter(scoreboard) {
+  const rows =
+    scoreboard?.innings?.flatMap((inn) => inn.battingStats || []) || [];
+
+  return rows
+    .filter((p) => Number(p.runs || 0) > 0)
+    .sort((a, b) => Number(b.runs || 0) - Number(a.runs || 0))[0];
+}
+
+function getBestBowler(scoreboard) {
+  const rows =
+    scoreboard?.innings?.flatMap((inn) => inn.bowlingStats || []) || [];
+
+  return rows
+    .filter((p) => Number(p.wickets || 0) > 0 || Number(p.runs || 0) > 0)
+    .sort((a, b) => {
+      const wicketDiff = Number(b.wickets || 0) - Number(a.wickets || 0);
+      if (wicketDiff !== 0) return wicketDiff;
+      return Number(a.runs || 0) - Number(b.runs || 0);
+    })[0];
+}
 
   return (
     <main className="live-page-shell">
@@ -169,7 +208,37 @@ export default function LiveScoreClient({ matchId }) {
         <p className="live-status-text">
           {scoreboard?.summary?.statusText || "Match in progress"}
         </p>
+{scoreboard?.currentInnings === 2 && chaseRunsNeeded !== null && (
+  <div className="live-chase-card">
+    <span>Chase Equation</span>
+    <strong>
+      Need {chaseRunsNeeded} from {ballsLeft ?? "-"} balls
+    </strong>
+    <small>Required rate {requiredRate || "—"}</small>
+  </div>
+)}
 
+<div className="live-stars-grid">
+  <div className="live-star-card">
+    <span>🔥 Top Batter</span>
+    <strong>{topBatter?.playerName || "-"}</strong>
+    <small>
+      {topBatter
+        ? `${topBatter.runs} (${topBatter.balls})`
+        : "No runs yet"}
+    </small>
+  </div>
+
+  <div className="live-star-card">
+    <span>🎯 Best Bowler</span>
+    <strong>{bestBowler?.playerName || "-"}</strong>
+    <small>
+      {bestBowler
+        ? `${bestBowler.wickets}/${bestBowler.runs} in ${bestBowler.overs} ov`
+        : "No figures yet"}
+    </small>
+  </div>
+</div>
         <div className="live-recent-section">
           <span>Recent</span>
 

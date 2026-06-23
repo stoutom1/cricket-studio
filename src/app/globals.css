@@ -2928,7 +2928,6 @@ body {
 .current-match-strip div {
   padding: 12px;
   border-radius: 14px;
-  background: rgba(255,255,255,0.06);
   border: 1px solid rgba(255,255,255,0.08);
 }
 
@@ -6361,7 +6360,6 @@ body {
   border-radius: 999px;
   border: 1px solid rgba(255,255,255,0.14);
   color: rgba(255,255,255,0.95);
-  background: rgba(255,255,255,0.075);
   font-weight: 900;
   cursor: pointer;
 }
@@ -11706,7 +11704,6 @@ body:has(.login-shell) .dashboard-content {
 .match-officials-grid div {
   padding: 10px;
   border-radius: 14px;
-  background: rgba(255,255,255,0.055);
   border: 1px solid rgba(255,255,255,0.07);
 }
 
@@ -12561,5 +12558,71 @@ body:has(.login-shell) .dashboard-content {
   .live-pro-table td {
     padding: 10px 11px;
     font-size: 13px;
+  }
+}
+.live-chase-card {
+  margin: 14px 0;
+  padding: 14px 16px;
+  border-radius: 20px;
+  background: linear-gradient(135deg, rgba(245, 158, 11, 0.22), rgba(15, 23, 42, 0.85));
+  border: 1px solid rgba(251, 191, 36, 0.38);
+}
+
+.live-chase-card span,
+.live-star-card span {
+  display: block;
+  color: #93c5fd;
+  font-size: 11px;
+  font-weight: 950;
+  text-transform: uppercase;
+  letter-spacing: 0.06em;
+}
+
+.live-chase-card strong {
+  display: block;
+  margin-top: 5px;
+  color: #fef3c7;
+  font-size: 22px;
+  font-weight: 950;
+}
+
+.live-chase-card small,
+.live-star-card small {
+  display: block;
+  margin-top: 5px;
+  color: #cbd5e1;
+  font-size: 13px;
+  font-weight: 850;
+}
+
+.live-stars-grid {
+  display: grid;
+  grid-template-columns: repeat(2, 1fr);
+  gap: 10px;
+  margin: 14px 0;
+}
+
+.live-star-card {
+  padding: 14px;
+  border-radius: 18px;
+  background: rgba(15, 23, 42, 0.78);
+  border: 1px solid rgba(96, 165, 250, 0.22);
+}
+
+.live-star-card strong {
+  display: block;
+  margin-top: 6px;
+  color: #ffffff;
+  font-size: 18px;
+  font-weight: 950;
+}
+
+@media (max-width: 768px) {
+  .live-stars-grid {
+    grid-template-columns: 1fr;
+  }
+
+  .live-chase-card strong {
+    font-size: 18px;
   }
 }
