@@ -1920,16 +1920,6 @@ async function handleDeleteLeague(
     return battingTeam.id === matchDetail.teamA.id ? matchDetail.teamB : matchDetail.teamA;
   }, [matchDetail, battingTeam]);
 
-
- /* const availableNewBatters = useMemo(() => {
-    if (!battingTeam) return [];
-    return battingTeam.players.filter(
-      (p) =>
-        String(p.id) !== String(ballForm.strikerId) &&
-        String(p.id) !== String(ballForm.nonStrikerId)
-    );
-  }, [battingTeam, ballForm.strikerId, ballForm.nonStrikerId]);
-*/
   useEffect(() => {
     if (!battingTeam || !bowlingTeam) return;
 
@@ -2829,7 +2819,6 @@ async function confirmWicket() {
   }
 }
 
-
 async function swapBatters() {
   if (!selectedMatchId) return;
 
@@ -3550,25 +3539,7 @@ const effectiveScoringSubTab =
   isSelectedMatchCompleted && scoringSubTab === "ADVANCED"
     ? "SCOREBOARD"
     : scoringSubTab;
-/*useEffect(() => {
-  const status = String(selectedMatch?.status || "")
-    .trim()
-    .replace(/[\s-]+/g, "_")
-    .toUpperCase();
 
-  const isCompleted =
-    status === "COMPLETED" ||
-    status === "COMPLETED_LOCKED";
-
-  if (isCompleted && scoringSubTab === "ADVANCED") {
-    setScoringSubTab("SCOREBOARD");
-  }
-}, [selectedMatch, scoringSubTab]); 
-*/
-/*const isMobile =
-  typeof window !== "undefined" &&
-  window.innerWidth < 768;
-*/
 function normalizeStatus(status) {
   return String(status || "")
     .trim()
@@ -3616,6 +3587,40 @@ async function handleDeleteSeries(seriesId, seriesName) {
     setError(err.message || "Failed to delete series.");
   }
 }
+const currentBowlerStats =
+  displayScoreboard?.currentState?.bowlerStats;
+const bowlerChangeScore = {
+  score: activeInnings
+    ? `${activeInnings.runs}/${activeInnings.wickets}`
+    : "-",
+  overs: activeInnings?.oversDisplay || "0.0",
+  crr: liveMatchCenter?.crr || "-",
+};
+const previousOverInfo = (() => {
+  const latestBall = recentBalls?.[0];
+
+  if (!latestBall) {
+    return {
+      overNo: "",
+      balls: [],
+    };
+  }
+
+  const label = String(latestBall.label || "");
+  const overNo = label.split(".")[0];
+
+  const balls = (recentBalls || [])
+    .filter((ball) => {
+      const ballLabel = String(ball.label || "");
+      return ballLabel.split(".")[0] === overNo;
+    })
+    .reverse();
+
+  return {
+    overNo,
+    balls,
+  };
+})();
 
 function clearContextFilters() {
   setContextFilters({
@@ -8271,7 +8276,40 @@ onClick={() => {
 {showBowlerModal && (
   <div className="bowler-modal-backdrop">
     <div className="bowler-modal">
+<div className="bowler-change-score-card">
+  <div>
+    <span>Current Score</span>
+    <strong>{bowlerChangeScore.score}</strong>
+  </div>
 
+  <div>
+    <span>Overs</span>
+    <strong>{bowlerChangeScore.overs}</strong>
+  </div>
+
+  <div>
+    <span>CRR</span>
+    <strong>{bowlerChangeScore.crr}</strong>
+  </div>
+
+  <div className="bowler-change-recent">
+    <span>Previous Over • {previousOverInfo.overNo}</span>
+    <div>
+      {previousOverInfo.balls.length ? (
+        previousOverInfo.balls.map((ball) => {
+          const label = ball.label || "";
+          const result = (
+            label.split(" ").slice(1).join(" ") || label
+          ).replace(/[()]/g, "");
+
+          return <b key={ball.id}>{result}</b>;
+        })
+      ) : (
+        <small>No balls yet</small>
+      )}
+    </div>
+  </div>
+</div>
       <div className="bowler-modal-header">
         <div>
           <h3>🏏 Change Bowler</h3>

@@ -11096,7 +11096,7 @@ body:has(.login-shell) .dashboard-content {
 
 .tv-player-compact div {
   min-width: 0;
-  padding: 9px 10px;
+  padding: 12px 12px;
   border-radius: 14px;
   background: rgba(255,255,255,.045);
   border: 1px solid rgba(255,255,255,.075);
@@ -11109,12 +11109,12 @@ body:has(.login-shell) .dashboard-content {
 
 .tv-player-compact span {
   grid-row: span 2;
-  font-size: 16px;
+  font-size: 20px;
 }
 
 .tv-player-compact strong {
   min-width: 0;
-  font-size: 14px;
+  font-size: 18px;
   font-weight: 950;
   color: #ffffff;
   white-space: nowrap;
@@ -11123,9 +11123,9 @@ body:has(.login-shell) .dashboard-content {
 }
 
 .tv-player-compact small {
-  font-size: 12px;
-  font-weight: 850;
-  color: #cbd5e1;
+  font-size: 17px;
+  font-weight: 900;
+  color: #f8fafc;
 }
 
 @media (max-width: 700px) {
@@ -11152,7 +11152,7 @@ body:has(.login-shell) .dashboard-content {
 
   .tv-player-compact small {
     font-size: 15px;
-    color: #ffffff;
+    color: #bfdbfe;
   }
 }
 /* FINAL ADVANCED SCORING ACTION GRID FIX */
@@ -11492,4 +11492,68 @@ body:has(.login-shell) .dashboard-content {
     font-size: 16px !important;
     white-space: nowrap !important;
   }
+}
+.bowler-change-score-card {
+  margin: 12px 0 16px;
+  padding: 12px;
+  border-radius: 18px;
+  background: #111827;
+  border: 1px solid rgba(96, 165, 250, 0.28);
+  display: grid;
+  grid-template-columns: repeat(3, 1fr);
+  gap: 10px;
+}
+
+.bowler-change-score-card span {
+  display: block;
+  color: #93c5fd;
+  font-size: 11px;
+  font-weight: 900;
+}
+
+.bowler-change-score-card strong {
+  display: block;
+  margin-top: 3px;
+  color: #ffffff;
+  font-size: 18px;
+  font-weight: 950;
+}
+
+.bowler-change-recent {
+  grid-column: 1 / -1;
+}
+
+.bowler-change-recent > div {
+  display: flex;
+  gap: 6px;
+  margin-top: 6px;
+  flex-wrap: wrap;
+}
+
+.bowler-change-recent b {
+  min-width: 28px;
+  height: 28px;
+  border-radius: 999px;
+  display: grid;
+  place-items: center;
+  background: rgba(255,255,255,0.12);
+  color: #fff;
+  font-size: 12px;
+  font-weight: 950;
+}
+
+@media (max-width: 700px) {
+  .bowler-change-score-card {
+    grid-template-columns: repeat(3, 1fr);
+  }
+
+  .bowler-change-score-card strong {
+    font-size: 16px;
+  }
+}
+.bowler-popup-over-header {
+  color: #93c5fd;
+  font-size: 13px;
+  font-weight: 900;
+  margin-bottom: 8px;
 }
