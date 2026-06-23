@@ -64,7 +64,7 @@ export default function LiveScoreClient({ matchId }) {
   const [scoreboard, setScoreboard] = useState(null);
   const [error, setError] = useState("");
   const [collapsedInnings, setCollapsedInnings] = useState({});
-
+  const [viewMode, setViewMode] = useState("full");
   function toggleInnings(inningsNo) {
     setCollapsedInnings((prev) => ({
       ...prev,
@@ -127,7 +127,7 @@ export default function LiveScoreClient({ matchId }) {
 
   const topBatter = getTopBatter(scoreboard);
 const bestBowler = getBestBowler(scoreboard);
-
+const lastThreeOvers = getLastThreeOvers(scoreboard);
 const chaseRunsNeeded =
   scoreboard?.currentInnings === 2 && scoreboard?.summary?.target
     ? Math.max(
@@ -174,6 +174,46 @@ function getBestBowler(scoreboard) {
       if (wicketDiff !== 0) return wicketDiff;
       return Number(a.runs || 0) - Number(b.runs || 0);
     })[0];
+}
+function getLastThreeOvers(scoreboard) {
+  const balls = scoreboard?.recentBalls || [];
+  const overMap = new Map();
+
+  balls.forEach((ball) => {
+    const label = String(ball.label || "");
+    const overNo = label.split(".")[0];
+    const result =
+      label.split(" ").slice(1).join(" ").replace(/[()]/g, "") || "";
+
+    if (!overMap.has(overNo)) {
+      overMap.set(overNo, {
+        overNo,
+        runs: 0,
+        wickets: 0,
+        balls: [],
+      });
+    }
+
+    const over = overMap.get(overNo);
+
+    const runs =
+      result.includes("Wd") || result.includes("Nb")
+        ? Number(result.replace(/\D/g, "") || 1)
+        : Number(result) || 0;
+
+    over.runs += runs;
+
+    if (
+      result.toUpperCase().includes("W") &&
+      !result.toUpperCase().includes("WD")
+    ) {
+      over.wickets += 1;
+    }
+
+    over.balls.push(result);
+  });
+
+  return Array.from(overMap.values()).slice(-3);
 }
 
   return (
@@ -258,6 +298,21 @@ function getBestBowler(scoreboard) {
           </div>
         </div>
 
+        {lastThreeOvers.length > 0 && (
+  <div className="live-momentum-strip">
+    <span>Momentum</span>
+
+    <div>
+      {lastThreeOvers.map((over) => (
+        <b key={over.overNo}>
+          Over {over.overNo}: {over.runs}
+          {over.wickets ? `/${over.wickets}` : ""}
+        </b>
+      ))}
+    </div>
+  </div>
+)}
+
         <div className="live-hero-metrics">
           <InfoPill
             label="Overs"
@@ -281,7 +336,23 @@ function getBestBowler(scoreboard) {
           <InfoPill label="Balls Left" value={ballsLeft ?? "—"} />
         </div>
       </section>
+<div className="live-view-toggle">
+  <button
+    type="button"
+    className={viewMode === "compact" ? "active" : ""}
+    onClick={() => setViewMode("compact")}
+  >
+    ⚡ Compact
+  </button>
 
+  <button
+    type="button"
+    className={viewMode === "full" ? "active" : ""}
+    onClick={() => setViewMode("full")}
+  >
+    📋 Full Scorecard
+  </button>
+</div>
       <section className="live-current-grid">
         <PlayerCard
           label="🏏 Striker"
@@ -302,7 +373,8 @@ function getBestBowler(scoreboard) {
         />
       </section>
 
-      {scoreboard?.innings?.map((innings) => {
+ {viewMode === "full" &&
+  scoreboard?.innings?.map((innings) => {
         const isCollapsed = collapsedInnings[innings.number];
 
         return (
