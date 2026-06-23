@@ -12689,7 +12689,6 @@ body:has(.login-shell) .dashboard-content {
 }
 
 .live-view-toggle button.active {
-  background: #f8fafc;
   color: white;
   box-shadow: 0 10px 24px rgba(37, 99, 235, 0.32);
 }
