@@ -11557,3 +11557,46 @@ body:has(.login-shell) .dashboard-content {
   font-weight: 900;
   margin-bottom: 8px;
 }
+/* Secondary action buttons */
+
+.mobile-secondary-actions button,
+.mobile-secondary-actions .btn,
+.mobile-secondary-actions .action-btn {
+  height: 44px !important;
+  min-height: 44px !important;
+
+  padding: 0 14px !important;
+
+  border-radius: 14px !important;
+
+  font-size: 15px !important;
+  font-weight: 800 !important;
+
+  white-space: nowrap;
+
+  display: flex;
+  align-items: center;
+  justify-content: center;
+
+  gap: 6px;
+}
+.action-undo-compact {
+  background: #dc2626 !important;
+
+  min-width: 110px !important;
+  max-width: 120px !important;
+}
+.action-change-wk {
+  min-width: 150px !important;
+}
+.action-rh-corrections {
+  min-width: 90px !important;
+}
+.action-end-innings {
+  height: 48px !important;
+  padding: 0 18px !important;
+}
+
+.action-end-innings small {
+  display: none;
+}
