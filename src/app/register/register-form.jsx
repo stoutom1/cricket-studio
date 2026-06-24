@@ -75,110 +75,99 @@ if (result?.ok) {
 }
   }
 
-  return (
-    <div
-      style={{
-        minHeight: "100vh",
-        display: "flex",
-        justifyContent: "center",
-        alignItems: "center",
-        background: "#030712",
-        color: "white"
-      }}
-    >
-      <form
-        onSubmit={handleRegister}
-        style={{
-          width: 420,
-          background: "#111827",
-          padding: 30,
-          borderRadius: 16
-        }}
-      >
-        <h1
-          style={{
-            fontSize: 32,
-            marginBottom: 24
-          }}
-        >
-          Create Account
-        </h1>
+return (
+  <main className="auth-page">
+    <section className="auth-card">
+      <div className="auth-left">
+        <div className="auth-brand">
+          <div className="auth-logo">🏏</div>
+          <div>
+            <h2>Cric4All</h2>
+            <p>Live cricket scoring made simple.</p>
+          </div>
+        </div>
 
-        <input
-          type="text"
-          placeholder="Full name"
-          value={name}
-          onChange={(e) =>
-            setName(e.target.value)
-          }
-          required
-          style={inputStyle}
-        />
+        <h3>Start scoring matches in minutes.</h3>
 
-        <input
-          type="email"
-          placeholder="Email"
-          value={email}
-          onChange={(e) =>
-            setEmail(e.target.value)
-          }
-          required
-          style={inputStyle}
-        />
+        <p className="auth-description">
+          Create leagues, teams, live scorecards, player stats, captaincy stats,
+          wicketkeeping stats and public spectator links from one secure dashboard.
+        </p>
 
-        <input
-          type="password"
-          placeholder="Password"
-          value={password}
-          onChange={(e) =>
-            setPassword(e.target.value)
-          }
-          required
-          style={inputStyle}
-        />
+        <div className="auth-feature-grid">
+          <span>Live scoring</span>
+          <span>Public scorecards</span>
+          <span>Player statistics</span>
+          <span>Mobile friendly</span>
+        </div>
+      </div>
 
-        <button
-          type="submit"
-          disabled={loading}
-          style={buttonStyle}
-        >
-          {loading
-            ? "Creating account..."
-            : "Register"}
-        </button>
+      <div className="auth-right">
+        <h1>Create account</h1>
+        <p className="auth-subtitle">
+          Join Cric4All and start managing cricket matches.
+        </p>
 
-        {message ? (
-          <p
-            style={{
-              marginTop: 16,
-              color: "#d1d5db"
-            }}
+        <form onSubmit={handleRegister}>
+          <label className="auth-field">
+            <span>Full name</span>
+            <input
+              type="text"
+              placeholder="Your full name"
+              value={name}
+              onChange={(e) => setName(e.target.value)}
+              required
+            />
+          </label>
+
+          <label className="auth-field">
+            <span>Email</span>
+            <input
+              type="email"
+              placeholder="you@example.com"
+              value={email}
+              onChange={(e) => setEmail(e.target.value)}
+              required
+            />
+          </label>
+
+          <label className="auth-field">
+            <span>Password</span>
+            <input
+              type="password"
+              placeholder="Create a secure password"
+              value={password}
+              onChange={(e) => setPassword(e.target.value)}
+              required
+            />
+          </label>
+
+          <button type="submit" disabled={loading} className="auth-primary-btn">
+            {loading ? "Creating account..." : "Create Account"}
+          </button>
+        </form>
+
+        {message && (
+          <div
+            className={
+              message.includes("successful")
+                ? "auth-message success"
+                : "auth-message error"
+            }
           >
             {message}
-          </p>
-        ) : null}
-      </form>
-    </div>
-  );
+          </div>
+        )}
+
+        <p className="auth-footer">
+          Already have an account? <a href="/login">Sign in</a>
+        </p>
+
+        <p className="auth-secure-note">
+          🔒 Secure account creation powered by Cric4All
+        </p>
+      </div>
+    </section>
+  </main>
+);
 }
-
-const inputStyle = {
-  width: "100%",
-  padding: 12,
-  marginBottom: 16,
-  borderRadius: 10,
-  border: "1px solid #374151",
-  background: "#1f2937",
-  color: "white"
-};
-
-const buttonStyle = {
-  width: "100%",
-  padding: 12,
-  borderRadius: 10,
-  border: "none",
-  background: "#2563eb",
-  color: "white",
-  fontWeight: 700,
-  cursor: "pointer"
-};
