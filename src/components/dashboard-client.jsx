@@ -2402,7 +2402,11 @@ async function submitBall(data) {
     return;
   }
 
-  if (!ballForm.strikerId || !ballForm.nonStrikerId || !ballForm.bowlerId) {
+  if (
+    !ballForm.strikerId ||
+    !ballForm.nonStrikerId ||
+    !ballForm.bowlerId
+  ) {
     setDeliverySetupReason(
       "Please select striker, non-striker, and bowler before scoring this ball."
     );
@@ -2412,23 +2416,101 @@ async function submitBall(data) {
 
   if (isSavingBall) return;
 
-setIsSavingBall(true);
-
-setOptimisticScoreboard(
-  previewScoreboardAfterBall(scoreboard, data)
-);
+  setIsSavingBall(true);
+  setOptimisticScoreboard(previewScoreboardAfterBall(scoreboard, data));
 
   try {
-    setInstantDeliveryStatus(getInstantDeliveryStatus(data));
-    await api("/api/balls", {
+    const instantMessage = getInstantDeliveryStatus(data);
+    setInstantDeliveryStatus(instantMessage);
+
+    const savedBall = await api("/api/balls", {
       method: "POST",
       body: JSON.stringify(data),
     });
-setMessage(getInstantDeliveryStatus(data));
-    const wasLegalLastBallOfOver =
-      data.extraType !== "WIDE" &&
-      data.extraType !== "NOBALL" &&
-      Number(scoreboard?.currentState?.nextBallInOver) === 6;
+
+    setShowAdvancedSheet(false);
+
+    const updatedBoard = await api(`/api/scoreboard/${selectedMatchId}`);
+
+    const updatedCurrentInningsNo = Number(
+      updatedBoard?.currentInnings || data.inningsNo
+    );
+
+    const updatedActiveInnings =
+      updatedBoard?.innings?.[updatedCurrentInningsNo - 1];
+
+    const updatedMaxLegalBalls =
+      Number(updatedBoard?.match?.oversPerInnings || 0) * 6;
+
+    const updatedIsSecondInnings = updatedCurrentInningsNo === 2;
+
+    const updatedIsFinalBallBowled =
+      updatedIsSecondInnings &&
+      updatedMaxLegalBalls > 0 &&
+      Number(updatedActiveInnings?.legalBalls || 0) >= updatedMaxLegalBalls;
+
+    const updatedTarget = Number(updatedBoard?.summary?.target || 0);
+    const updatedRuns = Number(updatedActiveInnings?.runs || 0);
+
+    const updatedIsChaseComplete =
+      updatedIsSecondInnings &&
+      updatedTarget > 0 &&
+      updatedRuns >= updatedTarget;
+
+    const firstInningsJustEnded =
+      savedBall?.inningsEnded &&
+      Number(savedBall?.nextInningsNo) === 2;
+
+    await loadSelectedMatch(selectedMatchId);
+
+    setOptimisticScoreboard(null);
+    setInstantDeliveryStatus("");
+
+if (firstInningsJustEnded) {
+  setShowBowlerModal(false);
+  setShowDeliverySetupModal(false);
+  setMustChangeBowler(false);
+  setPendingBallData(null);
+  setOptimisticScoreboard(null);
+  setInstantDeliveryStatus("");
+
+  await loadSelectedMatch(selectedMatchId);
+  await loadMatches();
+
+  setPendingSecondInningsSetup(true);
+
+  setBallForm((prev) => ({
+    ...prev,
+    inningsNo: 2,
+    strikerId: "",
+    nonStrikerId: "",
+    bowlerId: "",
+    extraType: "NONE",
+    runsOffBat: "0",
+    extras: "0",
+    isWicket: false,
+    wicketType: "NONE",
+    newBatterId: "",
+    dismissedPlayerId: "",
+    note: "",
+    dismissal: "",
+    fielderId: "",
+    assistantFielderId: "",
+    wicketNote: "",
+  }));
+
+  setDeliverySetupReason(
+    "🏏 2nd innings is ready. Select the opening striker, non-striker, and bowler before scoring."
+  );
+
+  setMessage("✅ 1st innings ended. Setup 2nd innings to continue scoring.");
+
+  setTimeout(() => {
+    setShowDeliverySetupModal(true);
+  }, 200);
+
+  return;
+}
 
     setBallForm((prev) => ({
       ...prev,
@@ -2446,47 +2528,6 @@ setMessage(getInstantDeliveryStatus(data));
       wicketNote: "",
     }));
 
-    setShowAdvancedSheet(false);
-
-    const updatedBoard = await api(`/api/scoreboard/${selectedMatchId}`);
-
-    const updatedCurrentInningsNo =
-      Number(updatedBoard?.currentInnings || data.inningsNo);
-
-    const updatedActiveInnings =
-      updatedBoard?.innings?.[updatedCurrentInningsNo - 1];
-
-    const updatedMaxLegalBalls =
-      Number(updatedBoard?.match?.oversPerInnings || 0) * 6;
-
-    const updatedIsSecondInnings =
-      updatedCurrentInningsNo === 2;
-
-    const updatedIsFinalBallBowled =
-      updatedIsSecondInnings &&
-      updatedMaxLegalBalls > 0 &&
-      Number(updatedActiveInnings?.legalBalls || 0) >= updatedMaxLegalBalls;
-
-    const updatedTarget =
-      Number(updatedBoard?.summary?.target || 0);
-
-    const updatedRuns =
-      Number(updatedActiveInnings?.runs || 0);
-
-    const updatedIsChaseComplete =
-      updatedIsSecondInnings &&
-      updatedTarget > 0 &&
-      updatedRuns >= updatedTarget;
-
-    const firstInningsJustEnded =
-      Number(data.inningsNo) === 1 &&
-      updatedCurrentInningsNo === 2;
-
-await loadSelectedMatch(selectedMatchId);
-setMessage(getInstantDeliveryStatus(data));
-setInstantDeliveryStatus("");
-setOptimisticScoreboard(null);
-
     if (updatedIsFinalBallBowled || updatedIsChaseComplete) {
       setShowBowlerModal(false);
       setMustChangeBowler(false);
@@ -2501,37 +2542,23 @@ setOptimisticScoreboard(null);
       return;
     }
 
-    if (firstInningsJustEnded) {
-      setShowBowlerModal(false);
-      setMustChangeBowler(false);
-      setPendingBallData(null);
-
-      setBallForm((prev) => ({
-        ...prev,
-        inningsNo: "2",
-        strikerId: "",
-        nonStrikerId: "",
-        bowlerId: "",
-      }));
-
-      setDeliverySetupReason(
-        "🏏 2nd innings is ready. Select the opening striker, non-striker, and bowler before scoring."
-      );
-
-      setPendingSecondInningsSetup(true);
-
-      await loadMatches();
-      return;
-    }
+    const wasLegalLastBallOfOver =
+      data.extraType !== "WIDE" &&
+      data.extraType !== "NOBALL" &&
+      Number(scoreboard?.currentState?.nextBallInOver) === 6;
 
     if (wasLegalLastBallOfOver) {
       setPendingBallData(null);
       setMustChangeBowler(true);
       setShowBowlerModal(true);
+      return;
     }
+
+    setMessage(instantMessage);
   } catch (err) {
     setOptimisticScoreboard(null);
     setInstantDeliveryStatus("");
+
     if (err.message?.includes("BOWLER_CONSECUTIVE_OVER")) {
       setPendingBallData({
         matchId: Number(selectedMatchId),
@@ -2552,9 +2579,7 @@ setOptimisticScoreboard(null);
           ? Number(data.dismissedPlayerId || data.strikerId)
           : null,
 
-        newBatterId: data.newBatterId
-          ? Number(data.newBatterId)
-          : null,
+        newBatterId: data.newBatterId ? Number(data.newBatterId) : null,
 
         note: data.note,
         matchStatus: data.matchStatus,
@@ -2571,7 +2596,7 @@ setOptimisticScoreboard(null);
     setInstantDeliveryStatus("");
   }
 }
-
+  
 async function selectLeague(league) {
   setShowDeliverySetupModal(false);
 setPendingDeliverySetupAfterStart(false);
@@ -2729,14 +2754,17 @@ async function quickWicket(type = "BOWLED") {
   setShowWicketModal(true);
 }
 async function confirmWicket() {
+  console.log("inside Confirm Wicket");
+
   try {
     if (mustChangeBowler) {
-  setError("Please select a new bowler before scoring the next ball.");
-  setShowWicketModal(false);
-  setShowRetiredHurtModal(false);
-  setShowBowlerModal(true);
-  return;
-}
+      setError("Please select a new bowler before scoring the next ball.");
+      setShowWicketModal(false);
+      setShowRetiredHurtModal(false);
+      setShowBowlerModal(true);
+      return;
+    }
+
     const isRunOut = ballForm.wicketType === "RUN_OUT";
 
     if (isRunOut && runOutRuns === null) {
@@ -2748,12 +2776,16 @@ async function confirmWicket() {
       ? Number(ballForm.dismissedPlayerId)
       : Number(ballForm.dismissedPlayerId || ballForm.strikerId);
 
-    if (isRunOut && !dismissedPlayerId) {
+    if (!dismissedPlayerId) {
       setError("Please select who is out.");
       return;
     }
 
-    if (!ballForm.newBatterId) {
+    const noMoreBattersAvailable =
+      Array.isArray(availableNewBatters) &&
+      availableNewBatters.length === 0;
+
+    if (!ballForm.newBatterId && !noMoreBattersAvailable) {
       setError("Please select a new batter.");
       return;
     }
@@ -2766,9 +2798,11 @@ async function confirmWicket() {
       (p) => Number(p.id) === dismissedPlayerId
     );
 
-    const newBatter = battingTeam?.players?.find(
-      (p) => Number(p.id) === Number(ballForm.newBatterId)
-    );
+    const newBatter = noMoreBattersAvailable
+      ? null
+      : battingTeam?.players?.find(
+          (p) => Number(p.id) === Number(ballForm.newBatterId)
+        );
 
     await submitBall({
       matchId: Number(selectedMatchId),
@@ -2781,39 +2815,48 @@ async function confirmWicket() {
       extras: 0,
 
       isWicket:
-        ballForm.isWicket &&
-        ballForm.wicketType !== "RETIRED_HURT"
-          ? 1
-          : 0,
+        ballForm.isWicket && ballForm.wicketType !== "RETIRED_HURT" ? 1 : 0,
 
-      wicketType: ballForm.isWicket
-        ? ballForm.wicketType
-        : "NONE",
+      wicketType: ballForm.isWicket ? ballForm.wicketType : "NONE",
 
       dismissedPlayerId,
-      newBatterId: Number(ballForm.newBatterId),
+      newBatterId: noMoreBattersAvailable
+        ? null
+        : Number(ballForm.newBatterId),
 
       note: ballForm.note,
       matchStatus: scoreboard?.match?.status,
 
-      fielderId: ballForm.fielderId
-          ? Number(ballForm.fielderId)
-          : null,
+      fielderId: ballForm.fielderId ? Number(ballForm.fielderId) : null,
 
       assistantFielderId: ballForm.assistantFielderId
-          ? Number(ballForm.assistantFielderId)
-          : null,
+        ? Number(ballForm.assistantFielderId)
+        : null,
 
-      wicketNote: ballForm.wicketNote || null
+      wicketNote: ballForm.wicketNote || null,
     });
 
-    setMessage(
-      `🚨 ${dismissedPlayer?.name || "Batter"} is out (${ballForm.wicketType
-        ?.replaceAll("_", " ")
-        ?.toLowerCase()}). ${runsOffBat} ${
-        runsOffBat === 1 ? "run" : "runs"
-      } awarded. ${newBatter?.name || "New batter"} comes in.`
-    );
+    const wicketText = ballForm.wicketType
+      ?.replaceAll("_", " ")
+      ?.toLowerCase();
+
+    if (noMoreBattersAvailable) {
+      setMessage(
+        `🚨 ${dismissedPlayer?.name || "Batter"} is out (${wicketText}). ${
+          runsOffBat
+        } ${runsOffBat === 1 ? "run" : "runs"} awarded. Innings ended.`
+      );
+      await loadMatches();
+      await loadSelectedMatch(selectedMatchId);
+    } else {
+      setMessage(
+        `🚨 ${dismissedPlayer?.name || "Batter"} is out (${wicketText}). ${
+          runsOffBat
+        } ${runsOffBat === 1 ? "run" : "runs"} awarded. ${
+          newBatter?.name || "New batter"
+        } comes in.`
+      );
+    }
 
     setShowWicketModal(false);
     setRunOutRuns(null);
@@ -4293,17 +4336,16 @@ async function openScoringAfterBattingFirst(matchId) {
 const setupTeamA = matchDetail?.teamA;
 const setupTeamB = matchDetail?.teamB;
 
-const setupTeamAId =
-  Number(matchDetail?.teamAId || setupTeamA?.id);
+const setupTeamAId = Number(matchDetail?.teamAId || setupTeamA?.id);
+const setupTeamBId = Number(matchDetail?.teamBId || setupTeamB?.id);
+const setupBattingFirstTeamId = Number(matchDetail?.battingFirstTeamId);
 
-const setupTeamBId =
-  Number(matchDetail?.teamBId || setupTeamB?.id);
-
-const setupBattingFirstTeamId =
-  Number(matchDetail?.battingFirstTeamId);
+const setupInningsNo = pendingSecondInningsSetup
+  ? 2
+  : Number(ballForm.inningsNo || 1);
 
 const setupBattingTeam =
-  Number(ballForm.inningsNo) === 1
+  setupInningsNo === 1
     ? setupBattingFirstTeamId === setupTeamAId
       ? setupTeamA
       : setupTeamB
@@ -4322,14 +4364,45 @@ const setupBowlers = setupBowlingTeam?.players || [];
 function playerNameFromTeam(team, playerId) {
   const id = Number(playerId);
   const players = team?.players || [];
-  console.log("players",players);
-
   const player = players.find(
     (p) => Number(p.id) === id
   );
 
   return player?.name || "-";
 }
+
+function getAvailableNewBatters(battingTeam, ballForm, recentBalls = []) {
+  const unavailableIds = new Set();
+
+  recentBalls.forEach((ball) => {
+    if (ball.dismissedPlayerId) {
+      unavailableIds.add(Number(ball.dismissedPlayerId));
+    }
+  });
+
+  if (ballForm?.dismissedPlayerId) {
+    unavailableIds.add(Number(ballForm.dismissedPlayerId));
+  }
+
+  return (battingTeam?.players || []).filter((player) => {
+    const id = Number(player.id);
+
+    return (
+      id !== Number(ballForm.strikerId) &&
+      id !== Number(ballForm.nonStrikerId) &&
+      !unavailableIds.has(id)
+    );
+  });
+}
+const availableNewBatters1 = getAvailableNewBatters(
+  battingTeam,
+  ballForm,
+  recentBalls
+);
+
+const noNewBatterAvailable =
+  ballForm?.dismissedPlayerId &&
+  availableNewBatters.length === 0;
 
 function ContextLens() {
   const totalFilters =
@@ -9523,7 +9596,7 @@ onClick={() => {
 )}
 {showWicketModal && (
   <div className="modal-backdrop">
-    <div className="modal-card app-modal-card">
+  <div className="modal-card app-modal-card">
       <h3>🏏 Wicket Details</h3>
 
       <p style={{ opacity: 0.75, marginBottom: 16 }}>
@@ -9681,13 +9754,17 @@ onClick={() => {
           }
         >
           <option value="">Select New Batter</option>
-
           {availableNewBatters.map((p) => (
             <option key={p.id} value={p.id}>
               {p.name}
             </option>
           ))}
         </select>
+        {noNewBatterAvailable && (
+  <div className="wicket-final-batter-note">
+    🏁 No new batter available. This wicket will end the innings.
+  </div>
+)}
       </label>
 
       <label style={{ marginTop: 12 }}>
@@ -9729,7 +9806,7 @@ onClick={() => {
           Cancel
         </button>
 
-        <button type="button" className="btn" onClick={() => confirmWicket()}>
+        <button type="button" className="btn"  onClick={() => confirmWicket()}>
           Confirm Wicket
         </button>
       </div>
@@ -9828,7 +9905,16 @@ onClick={() => {
               !ballForm.bowlerId ||
               String(ballForm.strikerId) === String(ballForm.nonStrikerId)
             }
-            onClick={() => setShowDeliverySetupModal(false)}
+onClick={() => {
+  setPendingSecondInningsSetup(false);
+
+  setBallForm((prev) => ({
+    ...prev,
+    inningsNo: 2,
+  }));
+
+  setShowDeliverySetupModal(false);
+}}
           >
             ✅ Ready to Score
           </button>

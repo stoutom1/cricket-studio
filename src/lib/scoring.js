@@ -300,7 +300,10 @@ export function applyBallOutcome(ball) {
 
 if (ball.isWicket) {
   if (!ball.newBatterId) {
-    throw new Error("Replacement batter required");
+    return {
+      strikerId: ball.strikerId,
+      nonStrikerId: ball.nonStrikerId,
+    };
   }
 
   if (

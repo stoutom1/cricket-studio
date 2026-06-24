@@ -12915,3 +12915,13 @@ body:has(.login-shell) .dashboard-content {
   cursor: pointer;
   box-shadow: 0 12px 30px rgba(0,0,0,.35);
 }
+.wicket-final-batter-note {
+  margin-top: 10px;
+  padding: 10px 12px;
+  border-radius: 14px;
+  background: rgba(245, 158, 11, 0.16);
+  border: 1px solid rgba(251, 191, 36, 0.34);
+  color: #fde68a;
+  font-size: 13px;
+  font-weight: 850;
+}

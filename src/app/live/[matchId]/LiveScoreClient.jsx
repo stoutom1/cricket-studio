@@ -228,7 +228,7 @@ const chaseRunsNeeded =
         0
       )
     : null;
-console.log("chaseRunsNeeded",chaseRunsNeeded);
+
 const requiredRate =
   chaseRunsNeeded !== null && ballsLeft
     ? ((chaseRunsNeeded / ballsLeft) * 6).toFixed(2)
@@ -350,7 +350,11 @@ function getLastThreeOvers(scoreboard) {
         <p className="live-status-text">
           {scoreboard?.summary?.statusText || "Match in progress"}
         </p>
-{scoreboard?.currentInnings === 2 && chaseRunsNeeded !== null && (
+{scoreboard?.currentInnings === 2 &&
+  chaseRunsNeeded !== null &&
+  !["COMPLETED", "ABANDONED", "COMPLETED_LOCKED"].includes(
+    String(scoreboard?.match?.status || "").toUpperCase()
+  ) && (
   <div className="live-chase-card">
     <span>Chase Equation</span>
     <strong>

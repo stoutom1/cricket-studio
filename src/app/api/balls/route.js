@@ -7,20 +7,20 @@ import {
   getBowlingTeamId,
   isLegalDelivery,
   validateBallInput,
-  applyBallOutcome
+  applyBallOutcome,
 } from "@/lib/scoring";
 
 export const runtime = "nodejs";
 
 export async function POST(request) {
   const session = await getServerSession(authOptions);
+
   if (!session) {
     return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
   }
 
   const body = await request.json();
-  //const { matchId, inningsNo } = body;
-
+console.log(body);
   const payload = {
     matchId: Number(body.matchId),
     inningsNo: Number(body.inningsNo),
@@ -35,76 +35,132 @@ export async function POST(request) {
     dismissedPlayerId: body.dismissedPlayerId
       ? Number(body.dismissedPlayerId)
       : null,
-    newBatterId: body.newBatterId
-      ? Number(body.newBatterId)
-      : null,
+    newBatterId: body.newBatterId ? Number(body.newBatterId) : null,
     note: body.note?.trim() || null,
-    matchStatus: String(body.matchStatus),
-    fielderId: body.fielderId || null,
-    assistantFielderId: body.assistantFielderId || null,
+    matchStatus: String(body.matchStatus || ""),
+    fielderId: body.fielderId ? Number(body.fielderId) : null,
+    assistantFielderId: body.assistantFielderId
+      ? Number(body.assistantFielderId)
+      : null,
     wicketNote: body.wicketNote || null,
   };
 
-if (
-  Number.isNaN(payload.matchId) ||
-  payload.matchId <= 0
-) {
-  return NextResponse.json(
-    { error: "Match is required" },
-    { status: 400 }
-  );
-}
-if (payload.extraType === "WIDE" && payload.extras < 1) {
-  payload.extras = 1;
-}
+  if (!Number.isInteger(payload.matchId) || payload.matchId <= 0) {
+    return NextResponse.json({ error: "Match is required" }, { status: 400 });
+  }
 
-if (payload.extraType === "NOBALL" && payload.extras < 1) {
-  payload.extras = 1;
-}
+  if (payload.extraType === "WIDE" && payload.extras < 1) {
+    payload.extras = 1;
+  }
+
+  if (payload.extraType === "NOBALL" && payload.extras < 1) {
+    payload.extras = 1;
+  }
+
   const validationErrors = validateBallInput(payload);
+
   if (validationErrors.length) {
     return NextResponse.json({ error: validationErrors[0] }, { status: 400 });
   }
 
   const match = await prisma.match.findUnique({
-    where: { id: payload.matchId }
+    where: { id: payload.matchId },
   });
-
-
 
   if (!match) {
     return NextResponse.json({ error: "Match not found" }, { status: 404 });
   }
-const currentState =
-  await prisma.matchState.findUnique({
+
+  const currentState = await prisma.matchState.findUnique({
+    where: { matchId: payload.matchId },
+  });
+
+  const ballsInInnings = await prisma.ball.count({
     where: {
-      matchId: payload.matchId
+      matchId: payload.matchId,
+      inningsNo: payload.inningsNo,
+    },
+  });
+
+  if (ballsInInnings > 0 && currentState) {
+    payload.strikerId = currentState.strikerId;
+    payload.nonStrikerId = currentState.nonStrikerId;
+  }
+
+  const battingTeamId = getBattingTeamId(match, payload.inningsNo);
+  const bowlingTeamId = getBowlingTeamId(match, payload.inningsNo);
+
+  const battingTeamPlayers = await prisma.player.findMany({
+    where: { teamId: battingTeamId },
+    select: { id: true, name: true },
+  });
+
+  const balls = await prisma.ball.findMany({
+    where: { matchId: payload.matchId },
+  });
+
+  const inningsBalls = balls.filter(
+    (b) => Number(b.inningsNo) === Number(payload.inningsNo)
+  );
+
+  const wicketCount = inningsBalls.filter(
+    (b) => b.isWicket && b.wicketType !== "RETIRED_HURT"
+  ).length;
+
+  const maxWickets = match.maxWicketsPerInnings;
+
+  if (
+    maxWickets !== null &&
+    maxWickets !== undefined &&
+    wicketCount >= Number(maxWickets)
+  ) {
+    return NextResponse.json(
+      { error: "Maximum wickets reached for this innings" },
+      { status: 400 }
+    );
+  }
+
+  const isRetiredHurt = payload.wicketType === "RETIRED_HURT";
+
+  const isCountingWicket =
+    payload.isWicket && payload.wicketType !== "RETIRED_HURT";
+
+  const unavailableBatterIds = new Set();
+
+  inningsBalls.forEach((b) => {
+    if (b.dismissedPlayerId) {
+      unavailableBatterIds.add(Number(b.dismissedPlayerId));
     }
   });
 
-const ballsInInnings = await prisma.ball.count({
-  where: {
-    matchId: payload.matchId,
-    inningsNo: payload.inningsNo
+  const dismissedThisBallId = payload.dismissedPlayerId
+    ? Number(payload.dismissedPlayerId)
+    : null;
+
+  const unavailableAfterThisBall = new Set(unavailableBatterIds);
+
+  if ((isCountingWicket || isRetiredHurt) && dismissedThisBallId) {
+    unavailableAfterThisBall.add(dismissedThisBallId);
   }
-});
 
-if (ballsInInnings > 0 && currentState) {
-  payload.strikerId = currentState.strikerId;
-  payload.nonStrikerId = currentState.nonStrikerId;
-//  payload.bowlerId = currentState.bowlerId;
-}
-const battingTeamId =
-  getBattingTeamId(
-    match,
-    payload.inningsNo
-  );
+  const availableNewBatters = battingTeamPlayers.filter((p) => {
+    const id = Number(p.id);
 
-const bowlingTeamId =
-  getBowlingTeamId(
-    match,
-    payload.inningsNo
-  );
+    return (
+      id !== Number(payload.strikerId) &&
+      id !== Number(payload.nonStrikerId) &&
+      !unavailableAfterThisBall.has(id)
+    );
+  });
+
+  const noMoreBattersAvailable =
+    isCountingWicket && availableNewBatters.length === 0;
+
+  const isFinalAllowedWicket =
+    isCountingWicket &&
+    maxWickets !== null &&
+    maxWickets !== undefined &&
+    wicketCount + 1 >= Number(maxWickets);
 
   const playerIds = [
     payload.strikerId,
@@ -120,11 +176,8 @@ const bowlingTeamId =
     },
   });
 
-  const playerMap = new Map(
-    players.map((p) => [p.id, p])
-  );
+  const playerMap = new Map(players.map((p) => [p.id, p]));
 
-  // striker validation
   if (
     !playerMap.has(payload.strikerId) ||
     playerMap.get(payload.strikerId).teamId !== battingTeamId
@@ -135,7 +188,6 @@ const bowlingTeamId =
     );
   }
 
-  // non-striker validation
   if (
     !playerMap.has(payload.nonStrikerId) ||
     playerMap.get(payload.nonStrikerId).teamId !== battingTeamId
@@ -146,7 +198,6 @@ const bowlingTeamId =
     );
   }
 
-  // bowler validation
   if (
     !playerMap.has(payload.bowlerId) ||
     playerMap.get(payload.bowlerId).teamId !== bowlingTeamId
@@ -157,19 +208,15 @@ const bowlingTeamId =
     );
   }
 
-const dismissedPlayerId =
-  payload.isWicket ||
-  payload.wicketType === "RETIRED_HURT"
-    ? payload.dismissedPlayerId
-    : null;
+  const dismissedPlayerId =
+    payload.isWicket || payload.wicketType === "RETIRED_HURT"
+      ? payload.dismissedPlayerId
+      : null;
 
   if (dismissedPlayerId) {
     const dismissedPlayer = playerMap.get(dismissedPlayerId);
 
-    if (
-      !dismissedPlayer ||
-      dismissedPlayer.teamId !== battingTeamId
-    ) {
+    if (!dismissedPlayer || dismissedPlayer.teamId !== battingTeamId) {
       return NextResponse.json(
         { error: "Dismissed player must belong to batting team" },
         { status: 400 }
@@ -180,33 +227,32 @@ const dismissedPlayerId =
   if (payload.newBatterId) {
     const newBatter = playerMap.get(payload.newBatterId);
 
-    if (
-      !newBatter ||
-      newBatter.teamId !== battingTeamId
-    ) {
+    if (!newBatter || newBatter.teamId !== battingTeamId) {
       return NextResponse.json(
         { error: "New batter must belong to batting team" },
         { status: 400 }
       );
     }
   }
-    if (
+
+  if (
     payload.isWicket &&
-    ["BOWLED", "CAUGHT", "LBW", "STUMPED", "HIT_WICKET", "OTHER"]
-      .includes(payload.wicketType) &&
-    !payload.newBatterId
+    ["BOWLED", "CAUGHT", "LBW", "STUMPED", "HIT_WICKET", "OTHER"].includes(
+      payload.wicketType
+    ) &&
+    !payload.newBatterId &&
+    !noMoreBattersAvailable &&
+    !isFinalAllowedWicket
   ) {
     return NextResponse.json(
       { error: "New batter is required after wicket" },
       { status: 400 }
     );
   }
-    if (
+
+  if (
     payload.newBatterId &&
-    [
-      payload.strikerId,
-      payload.nonStrikerId,
-    ].includes(payload.newBatterId)
+    [payload.strikerId, payload.nonStrikerId].includes(payload.newBatterId)
   ) {
     return NextResponse.json(
       { error: "New batter must not already be at the crease" },
@@ -220,156 +266,96 @@ const dismissedPlayerId =
     where: {
       matchId: payload.matchId,
       inningsNo: payload.inningsNo,
-      legalDelivery: true
-    }
+      legalDelivery: true,
+    },
   });
 
-  const isNewOver =
-  legalBallsCount > 0 &&
-  legalBallsCount % 6 === 0;
+  const isNewOver = legalBallsCount > 0 && legalBallsCount % 6 === 0;
 
   if (isNewOver) {
     const previousOverBowler = await prisma.ball.findFirst({
       where: {
         matchId: payload.matchId,
         inningsNo: payload.inningsNo,
-        legalDelivery: true
+        legalDelivery: true,
       },
-      orderBy: [
-        { overNo: "desc" },
-        { ballInOver: "desc" }
-      ],
-      select: {
-        bowlerId: true
-      }
+      orderBy: [{ overNo: "desc" }, { ballInOver: "desc" }],
+      select: { bowlerId: true },
     });
 
-    if (
-      previousOverBowler &&
-      previousOverBowler.bowlerId === payload.bowlerId
-    ) {
-        //setPendingBallData(ballForm);
-
-        //setShowBowlerModal(true);
+    if (previousOverBowler?.bowlerId === payload.bowlerId) {
       return NextResponse.json(
         {
           error: "BOWLER_CONSECUTIVE_OVER",
-      message:
-        "Bowler cannot bowl consecutive overs"
+          message: "Bowler cannot bowl consecutive overs",
         },
         { status: 400 }
       );
     }
   }
-  const totalBallsCount = await prisma.ball.count({
+
+  const bowlerBalls = inningsBalls.filter(
+    (b) =>
+      b.bowlerId === Number(payload.bowlerId) &&
+      b.extraType !== "WIDE" &&
+      b.extraType !== "NOBALL" &&
+      b.extraType !== "RETIRED_HURT"
+  );
+
+  const legalBalls = bowlerBalls.length;
+
+  if (match.maxOversPerBowler) {
+    const maxBallsPerBowler = match.maxOversPerBowler * 6;
+
+    if (legalBalls >= maxBallsPerBowler) {
+      return NextResponse.json(
+        {
+          error: `Bowler exceeded max overs limit of ${match.maxOversPerBowler}`,
+        },
+        { status: 400 }
+      );
+    }
+  }
+
+  const lastBall = await prisma.ball.findFirst({
     where: {
       matchId: payload.matchId,
-      inningsNo: payload.inningsNo
-    }
+      inningsNo: payload.inningsNo,
+    },
+    orderBy: { sequence: "desc" },
+    select: {
+      sequence: true,
+      overNo: true,
+      ballInOver: true,
+    },
   });
 
-  // CURRENT INNINGS
-
-const balls = await prisma.ball.findMany({
-  where: {
-    matchId: payload.matchId,
-  },
-});
-
-const inningsBalls = balls.filter(
-  (b) => Number(b.inningsNo) === Number(payload.inningsNo)
-);
-const wicketCount = inningsBalls.filter(
-  (b) => b.isWicket && b.wicketType !== "RETIRED_HURT"
-).length;
-
-const maxWickets =
-  match.maxWicketsPerInnings;
-
-if (
-  maxWickets !== null &&
-  maxWickets !== undefined &&
-  wicketCount >= maxWickets
-) {
-  return Response.json(
-    {
-      error: "Maximum wickets reached for this innings"
-    },
-    { status: 400 }
-  );
-}
-const bowlerBalls = inningsBalls.filter(
-  (b) =>
-    b.bowlerId === Number(payload.bowlerId) &&
-    b.extraType !== "WIDE" &&
-    b.extraType !== "NOBALL" &&
-    b.extraType !== "RETIRED_HURT"
-);
-
-const legalBalls = bowlerBalls.length;
-
-if (match.maxOversPerBowler) {
-  const maxBallsPerBowler =
-    match.maxOversPerBowler * 6;
-
-  if (legalBalls >= maxBallsPerBowler) {
-    return Response.json(
-      {
-        error: `Bowler exceeded max overs limit of ${match.maxOversPerBowler}`
-      },
-      { status: 400 }
-    );
-  }
-}
-
-const innings = {
-  legalBalls,
-  wickets: wicketCount
-};
-const lastBall = await prisma.ball.findFirst({
-  where: {
-    matchId: payload.matchId,
-    inningsNo: payload.inningsNo,
-  },
-  orderBy: {
-    sequence: "desc",
-  },
-  select: {
-    sequence: true,
-    overNo: true,
-    ballInOver: true
-  },
-});
-const isRetiredHurt = payload.wicketType === "RETIRED_HURT";
-
-const overNo =
-  isRetiredHurt
+  const overNo = isRetiredHurt
     ? lastBall?.overNo ?? 0
     : Math.floor(legalBallsCount / 6);
 
-const ballInOver =
-  isRetiredHurt
+  const ballInOver = isRetiredHurt
     ? lastBall?.ballInOver ?? 1
     : (legalBallsCount % 6) + 1;
-    
-const nextSequence = (lastBall?.sequence ?? 0) + 1;
 
+  const nextSequence = (lastBall?.sequence ?? 0) + 1;
 
   const isPowerPlay = overNo < match.powerplayOversInnings;
   const totalRuns = payload.runsOffBat + payload.extras;
-const existingBallCount = await prisma.ball.count({
-  where: { matchId: payload.matchId },
-});
 
-if (existingBallCount === 0) {
-  await prisma.match.update({
-    where: { id: payload.matchId },
-    data: {
-      startedAt: new Date(),
-      status: "IN_PROGRESS",
-    },
+  const existingBallCount = await prisma.ball.count({
+    where: { matchId: payload.matchId },
   });
-}
+
+  if (existingBallCount === 0) {
+    await prisma.match.update({
+      where: { id: payload.matchId },
+      data: {
+        startedAt: new Date(),
+        status: "IN_PROGRESS",
+      },
+    });
+  }
 
   const ball = await prisma.ball.create({
     data: {
@@ -378,124 +364,118 @@ if (existingBallCount === 0) {
       sequence: nextSequence,
       overNo,
       ballInOver,
-      legalDelivery: isRetiredHurt
-      ? false
-      : legalDelivery,
+      legalDelivery: isRetiredHurt ? false : legalDelivery,
       strikerId: payload.strikerId,
       nonStrikerId: payload.nonStrikerId,
       bowlerId: payload.bowlerId,
       dismissedPlayerId,
-      newBatterId: payload.newBatterId,
-      runsOffBat: isRetiredHurt
-      ? 0
-      : payload.runsOffBat,
-    extras: isRetiredHurt
-      ? 0
-      : payload.extras,
-
-    extraType: isRetiredHurt
-      ? "RETIRED_HURT"
-      : payload.extraType,
-
-    totalRuns: isRetiredHurt
-      ? 0
-      : totalRuns,
-
-    isWicket: isRetiredHurt
-      ? 0
-      : payload.isWicket,
-
-    wicketType: payload.wicketType
-        ? payload.wicketType
-        : "NONE",
+      newBatterId: noMoreBattersAvailable ? null : payload.newBatterId,
+      runsOffBat: isRetiredHurt ? 0 : payload.runsOffBat,
+      extras: isRetiredHurt ? 0 : payload.extras,
+      extraType: isRetiredHurt ? "RETIRED_HURT" : payload.extraType,
+      totalRuns: isRetiredHurt ? 0 : totalRuns,
+      isWicket: isRetiredHurt ? 0 : payload.isWicket,
+      wicketType: payload.wicketType || "NONE",
       isPowerPlay,
       note: payload.note,
-      fielderId: payload.fielderId || null,
-      assistantFielderId: payload.assistantFielderId || null,
-      wicketNote: payload.wicketNote || null,
+      fielderId: payload.fielderId,
+      assistantFielderId: payload.assistantFielderId,
+      wicketNote: payload.wicketNote,
     },
   });
-  const nextState =
-  applyBallOutcome(ball);
-  
+
+  const inningsAllOut = noMoreBattersAvailable || isFinalAllowedWicket;
+
+  const nextState = inningsAllOut
+    ? {
+        strikerId: payload.strikerId,
+        nonStrikerId: payload.nonStrikerId,
+      }
+    : applyBallOutcome(ball);
+
   await prisma.matchState.upsert({
-  where: {
-    matchId: payload.matchId
-  },
+    where: { matchId: payload.matchId },
+    update: {
+      strikerId: nextState.strikerId,
+      nonStrikerId: nextState.nonStrikerId,
+      bowlerId: payload.bowlerId,
+    },
+    create: {
+      matchId: payload.matchId,
+      inningsNo: payload.inningsNo,
+      strikerId: nextState.strikerId,
+      nonStrikerId: nextState.nonStrikerId,
+      bowlerId: payload.bowlerId,
+    },
+  });
 
-  update: {
-    strikerId:
-      nextState.strikerId,
-
-    nonStrikerId:
-      nextState.nonStrikerId,
-
-    bowlerId:
-      payload.bowlerId
-  },
-
-  create: {
-    matchId: payload.matchId,
-
-    inningsNo:
-      payload.inningsNo,
-
-    strikerId:
-      nextState.strikerId,
-
-    nonStrikerId:
-      nextState.nonStrikerId,
-
-    bowlerId:
-      payload.bowlerId
-  }
-});
   const maxLegalBalls = match.oversPerInnings * 6;
-const updatedLegalBallsCount =
-  !isRetiredHurt && legalDelivery
-    ? legalBallsCount + 1
-    : legalBallsCount;
 
-  const inningsCompleted =
-    updatedLegalBallsCount >= maxLegalBalls;
+  const updatedLegalBallsCount =
+    !isRetiredHurt && legalDelivery ? legalBallsCount + 1 : legalBallsCount;
 
-const innings2Runs = await prisma.ball.aggregate({
-  where: {
-    matchId: payload.matchId,
-    inningsNo: 2,
-  },
-  _sum: {
-    totalRuns: true,
-  },
-});
+  const inningsCompleted = updatedLegalBallsCount >= maxLegalBalls;
 
-const innings1Runs = await prisma.ball.aggregate({
-  where: {
-    matchId: payload.matchId,
-    inningsNo: 1,
-  },
-  _sum: {
-    totalRuns: true,
-  },
-});
+  const innings2Runs = await prisma.ball.aggregate({
+    where: {
+      matchId: payload.matchId,
+      inningsNo: 2,
+    },
+    _sum: { totalRuns: true },
+  });
 
-const targetReached =
-  payload.inningsNo === 2 &&
-  Number(innings2Runs._sum.totalRuns || 0) >=
-    Number(innings1Runs._sum.totalRuns || 0) + 1;
+  const innings1Runs = await prisma.ball.aggregate({
+    where: {
+      matchId: payload.matchId,
+      inningsNo: 1,
+    },
+    _sum: { totalRuns: true },
+  });
+
+  const targetReached =
+    payload.inningsNo === 2 &&
+    Number(innings2Runs._sum.totalRuns || 0) >=
+      Number(innings1Runs._sum.totalRuns || 0) + 1;
+   let inningsEnded = false;
+    let nextInningsNo = payload.inningsNo;
 
 if (
+  payload.inningsNo === 1 &&
+  (inningsCompleted || noMoreBattersAvailable)
+) {
+  inningsEnded = true;
+  nextInningsNo = 2;
+
+  await prisma.match.update({
+    where: { id: payload.matchId },
+    data: { status: "IN_PROGRESS" },
+    data: { statusText: "LIVE" },
+  });
+
+  await prisma.matchState.deleteMany({
+    where: { matchId: payload.matchId },
+  });
+}
+      if (
   payload.inningsNo === 2 &&
-  (inningsCompleted || targetReached)
+  (inningsCompleted || targetReached || noMoreBattersAvailable)
 ) {
   await prisma.match.update({
     where: { id: payload.matchId },
     data: {
       status: "COMPLETED",
       endedAt: match.endedAt || new Date(),
+      statusText: "MATCH COMPLETED"
     },
   });
 }
 
-  return NextResponse.json(ball, { status: 201 });
+return NextResponse.json(
+  {
+    ...ball,
+    inningsEnded,
+    nextInningsNo,
+  },
+  { status: 201 }
+);
 }
