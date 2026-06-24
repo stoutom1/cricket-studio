@@ -68,16 +68,17 @@ export default async function PublicMatchPage({ params }) {
       },
     },
     include: {
-      matches: {
-        where: {
-          id: Number(matchId),
-        },
-        include: {
-          teamA: true,
-          teamB: true,
-          series: true,
-        },
-      },
+ matches: {
+  where: {
+    id: Number(matchId),
+  },
+  include: {
+    teamA: true,
+    teamB: true,
+    series: true,
+    balls: true,
+  },
+},
     },
   });
 
@@ -100,77 +101,198 @@ const totalBalls = (match.balls || []).filter(
 ).length;
 
 const overs = `${Math.floor(totalBalls / 6)}.${totalBalls % 6}`;
+const matchResultText =
+  match.statusText ||
+  (String(match.status || "").toUpperCase().includes("COMPLETED")
+    ? "Match completed"
+    : "Match details will update as scoring progresses.");
 
-  return (
-    <main className="public-league-portal">
-      <section className="public-league-hero">
+const matchInfoItems = [
+  ["League", league.name],
+  ["Series", match.series?.name || "No Series"],
+  ["Status", match.status || "SCHEDULED"],
+  ["Scorecard", match.shareCode ? "Available" : "Not shared yet"],
+];
+
+return (
+  <main className="public-league-portal public-wow-page">
+    <section className="public-wow-hero public-one-piece-card">
+      <div className="public-wow-top">
         <div className="public-breadcrumb">
           <Link href="/explore">Explore</Link>
           <span>/</span>
-          <Link href={`/leagues/${league.slug}`}>{league.name}</Link>
+          <Link href={`/leagues/${league.slug}`}>
+            {league.name}
+          </Link>
           <span>/</span>
           <strong>
             {match.teamA?.name} vs {match.teamB?.name}
           </strong>
         </div>
 
-        <h1>
-          {match.teamA?.name} vs {match.teamB?.name}
-        </h1>
-
-        <p>
-          {match.series?.name || "No Series"} • {match.status || "SCHEDULED"}
-        </p>
-
-        <div className="public-league-badges">
-          <span>{match.status || "SCHEDULED"}</span>
-          {match.series?.year ? <span>{match.series.year}</span> : null}
+        <div className="spectator-pill">
+          🏏 Match Center
         </div>
-      </section>
+      </div>
 
-      <section className="public-section">
-        <h2>Match Center</h2>
-<section className="public-section">
-  <h2>Match Summary</h2>
+      <div className="public-wow-hero-main">
+        <div>
+          <h2>
+            {match.teamA?.name} vs {match.teamB?.name}
+          </h2>
 
-  <div className="public-card-grid">
-    <div className="public-card">
-      <span>Status</span>
-      <strong>{match.status || "SCHEDULED"}</strong>
-    </div>
+          <p>
+            {match.series?.name || "No Series"}
+            {match.series?.year
+              ? ` • ${match.series.year}`
+              : ""}
+            {" • "}
+            {match.status || "SCHEDULED"}
+          </p>
+        </div>
 
-    <div className="public-card">
-      <span>Series</span>
-      <strong>{match.series?.name || "No Series"}</strong>
-    </div>
+        <div className="public-wow-stats">
+          <div>
+            <span>Status</span>
+            <strong>
+              {match.status || "SCHEDULED"}
+            </strong>
+          </div>
 
-    <div className="public-card">
-      <span>Total Runs</span>
-      <strong>{totalRuns || 0}</strong>
-    </div>
+          <div>
+            <span>Runs</span>
+            <strong>{totalRuns}</strong>
+          </div>
 
-    <div className="public-card">
-      <span>Overs Bowled</span>
-      <strong>{overs}</strong>
-    </div>
+          <div>
+            <span>Overs</span>
+            <strong>{overs}</strong>
+          </div>
 
-    <div className="public-card">
-      <span>Wickets</span>
-      <strong>{totalWickets || 0}</strong>
-    </div>
-  </div>
-</section>
-        {match.shareCode ? (
-          <a className="public-action-primary" href={`/live/${match.shareCode}`}>
-            🏏 Open Live Scorecard
+          <div>
+            <span>Wickets</span>
+            <strong>{totalWickets}</strong>
+          </div>
+        </div>
+      </div>
+
+      <div className="public-wow-controls match-actions">
+        <Link href={`/leagues/${league.slug}`}>
+          🏆 League
+        </Link>
+
+        <Link href="/explore">
+          🧭 Explore
+        </Link>
+
+        {match.shareCode && (
+          <a href={`/live/${match.shareCode}`}>
+            🏏 Live Scorecard
           </a>
+        )}
+      </div>
+
+      <div className="public-tab-content">
+        <div className="public-section-head">
+          <h2>Match Summary</h2>
+        </div>
+
+        <div className="public-card-grid match-summary-grid">
+          <div className="public-card">
+            <span>Status</span>
+            <strong>
+              {match.status || "SCHEDULED"}
+            </strong>
+            <small>Current state</small>
+          </div>
+
+          <div className="public-card">
+            <span>Series</span>
+            <strong>
+              {match.series?.name || "No Series"}
+            </strong>
+            <small>Tournament</small>
+          </div>
+
+          <div className="public-card">
+            <span>Total Runs</span>
+            <strong>{totalRuns}</strong>
+            <small>Match runs</small>
+          </div>
+
+          <div className="public-card">
+            <span>Overs</span>
+            <strong>{overs}</strong>
+            <small>Legal deliveries</small>
+          </div>
+
+          <div className="public-card">
+            <span>Wickets</span>
+            <strong>{totalWickets}</strong>
+            <small>Dismissals</small>
+          </div>
+        </div>
+
+        {match.shareCode ? (
+          <>
+            <div className="public-section-head match-center-head">
+              <h2>Live Match Center</h2>
+            </div>
+
+            <div className="match-live-card">
+              <div>
+                <strong>
+                  {match.teamA?.name}
+                </strong>
+
+                <span>vs</span>
+
+                <strong>
+                  {match.teamB?.name}
+                </strong>
+              </div>
+
+              <a
+                className="public-action-primary"
+                href={`/live/${match.shareCode}`}
+              >
+                🏏 Open Live Scorecard
+              </a>
+            </div>
+            <div className="match-extra-panel">
+  <div className="match-story-card">
+    <span>🏁 Match Result</span>
+    <strong>{matchResultText}</strong>
+    <p>
+      This public match center gives spectators quick access to the match status,
+      summary, scorecard, league context, and live scoring link when available.
+    </p>
+  </div>
+
+  <div className="match-info-grid">
+    {matchInfoItems.map(([label, value]) => (
+      <div key={label}>
+        <span>{label}</span>
+        <strong>{value}</strong>
+      </div>
+    ))}
+  </div>
+</div>
+          </>
         ) : (
           <div className="public-empty-state">
-            <strong>No scorecard yet</strong>
-            <span>This match has not been shared or scored yet.</span>
+            <strong>
+              📭 No scorecard yet
+            </strong>
+
+            <span>
+              This match has not been scored or
+              shared yet.
+            </span>
           </div>
         )}
-      </section>
-    </main>
-  );
+      </div>
+    </section>
+  </main>
+);
 }

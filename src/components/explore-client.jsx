@@ -4,101 +4,150 @@ import { useMemo, useState } from "react";
 import Link from "next/link";
 
 export default function ExploreClient({ leagues }) {
-  const [search, setSearch] = useState("");
+  const [query, setQuery] = useState("");
 
   const filteredLeagues = useMemo(() => {
-    const q = search.trim().toLowerCase();
+    const q = query.trim().toLowerCase();
 
     if (!q) return leagues;
 
-    return leagues.filter((league) => {
-      const teamNames = (league.teams || [])
-        .map((t) => t.name)
-        .join(" ");
-
-      const seriesNames = (league.series || [])
-        .map((s) => `${s.name} ${s.year}`)
-        .join(" ");
-
-      return `${league.name} ${teamNames} ${seriesNames}`
+    return leagues.filter((league) =>
+      [
+        league.name,
+        league.description,
+        league.visibility,
+        ...(league.teams || []).map((t) => t.name),
+        ...(league.series || []).map((s) => s.name),
+      ]
+        .filter(Boolean)
+        .join(" ")
         .toLowerCase()
-        .includes(q);
-    });
-  }, [leagues, search]);
+        .includes(q)
+    );
+  }, [query, leagues]);
+
+  const totalTeams = leagues.reduce(
+    (sum, league) => sum + (league.teams?.length || 0),
+    0
+  );
+
+  const totalMatches = leagues.reduce(
+    (sum, league) => sum + (league.matches?.length || 0),
+    0
+  );
+
+  const totalSeries = leagues.reduce(
+    (sum, league) => sum + (league.series?.length || 0),
+    0
+  );
 
   return (
-    <>
-      <section className="explore-search-card">
-        <div>
-          <strong>🔎 Find a league</strong>
-          <small>Search by league, team, series, or year.</small>
+    <main className="public-league-portal public-wow-page">
+      <section className="public-wow-hero public-one-piece-card">
+        <div className="public-wow-top">
+          <div className="public-breadcrumb">
+            <strong>Explore</strong>
+          </div>
+
+          <div className="spectator-pill">🌐 Public Leagues</div>
         </div>
 
-        <input
-          value={search}
-          onChange={(e) => setSearch(e.target.value)}
-          placeholder="Search public leagues..."
-        />
+        <div className="public-wow-hero-main">
+          <div>
+            <h2>Explore Cricket Leagues</h2>
+            <p>
+              Discover public cricket leagues, live matches, teams, series,
+              standings, and scoreboards powered by Cric4All.
+            </p>
+          </div>
 
-        {search && (
-          <button type="button" onClick={() => setSearch("")}>
-            Clear
-          </button>
-        )}
-      </section>
+          <div className="public-wow-stats">
+            <div>
+              <span>Leagues</span>
+              <strong>{leagues.length}</strong>
+            </div>
 
-      {!filteredLeagues.length ? (
-        <section className="explore-empty">
-          <h2>No matching leagues found</h2>
-          <p>Try searching by league name, team name, series, or year.</p>
-        </section>
-      ) : (
-        <section className="explore-grid">
-          {filteredLeagues.map((league) => {
-            const totalPlayers = league.teams.reduce(
-              (sum, team) => sum + (team.players?.length || 0),
-              0
-            );
+            <div>
+              <span>Teams</span>
+              <strong>{totalTeams}</strong>
+            </div>
 
-            return (
-              <Link
-                key={league.id}
-                href={`/leagues/${league.slug}`}
-                className="explore-league-card"
-              >
-                <div className="explore-card-top">
-                  <span>🏏 Public League</span>
-                  <strong>{league.name}</strong>
-                </div>
+            <div>
+              <span>Matches</span>
+              <strong>{totalMatches}</strong>
+            </div>
 
-                <div className="explore-card-stats">
-                  <div>
-                    <strong>{league.teams.length}</strong>
+            <div>
+              <span>Series</span>
+              <strong>{totalSeries}</strong>
+            </div>
+          </div>
+        </div>
+
+        <div className="public-wow-search">
+          <span>🔎 Search</span>
+
+          <input
+            value={query}
+            onChange={(e) => setQuery(e.target.value)}
+            placeholder="Search league, team, series..."
+          />
+
+          {query && (
+            <button type="button" onClick={() => setQuery("")}>
+              Clear
+            </button>
+          )}
+        </div>
+
+        <div className="public-tab-content">
+          {!filteredLeagues.length ? (
+            <div className="public-empty-state">
+              <strong>🔍 No leagues found</strong>
+              <span>Try searching by league, team, or series name.</span>
+            </div>
+          ) : (
+            <div className="explore-league-list">
+              {filteredLeagues.map((league) => (
+                <Link
+                  key={league.id}
+                  href={`/leagues/${league.slug}`}
+                  className="explore-league-row"
+                >
+                  <div className="league-main">
+                    <strong>{league.name}</strong>
+                    <small>
+                      {league.description || "Public cricket league"}
+                    </small>
+                  </div>
+
+                  <div className="league-stat">
                     <span>Teams</span>
+                    <strong>{league.teams?.length || 0}</strong>
                   </div>
 
-                  <div>
-                    <strong>{totalPlayers}</strong>
-                    <span>Players</span>
-                  </div>
-
-                  <div>
-                    <strong>{league.series.length}</strong>
-                    <span>Series</span>
-                  </div>
-
-                  <div>
-                    <strong>{league.matches.length}</strong>
+                  <div className="league-stat">
                     <span>Matches</span>
+                    <strong>{league.matches?.length || 0}</strong>
                   </div>
-                </div>
 
-                <div className="explore-open">Open League →</div>
-              </Link>
-            );
-          })}
-        </section>
-      )}
-    </>
+                  <div className="league-stat">
+                    <span>Series</span>
+                    <strong>{league.series?.length || 0}</strong>
+                  </div>
+
+                  <div className="league-stat">
+                    <span>Status</span>
+                    <strong>{league.visibility}</strong>
+                  </div>
+
+                  <div className="league-arrow">→</div>
+                </Link>
+              ))}
+            </div>
+          )}
+        </div>
+      </section>
+    </main>
   );
 }
