@@ -11096,7 +11096,6 @@ body:has(.login-shell) .dashboard-content {
   min-width: 0;
   padding: 12px 12px;
   border-radius: 14px;
-  background: rgba(255,255,255,.045);
   border: 1px solid rgba(255,255,255,.075);
   display: grid;
   grid-template-columns: auto 1fr;
