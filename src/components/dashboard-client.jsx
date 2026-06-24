@@ -4890,35 +4890,64 @@ onClick={() => {
     String(selectedMatch.status || "").toUpperCase()
   )
 ) &&(
-          <div className="current-match-strip">
-            <div>
-              <span>Current Innings</span>
-              <strong>{scoreboard.currentInnings}</strong>
-            </div>
+           <><div className="innings-state-grid">
+                        <div className="current-match-strip">
+                          <div>
+                            <span>Current Innings</span>
+                            <strong>{scoreboard.currentInnings}</strong>
+                          </div>
 
-            <div>
-              <span>Striker</span>
-              <strong>{scoreboard.currentState.strikerName}</strong>
-            </div>
+                          <div>
+                            <span>Striker</span>
+                            <strong>{scoreboard.currentState.strikerName}</strong>
+                          </div>
 
-            <div>
-              <span>Non-Striker</span>
-              <strong>{scoreboard.currentState.nonStrikerName}</strong>
-            </div>
+                          <div>
+                            <span>Non-Striker</span>
+                            <strong>{scoreboard.currentState.nonStrikerName}</strong>
+                          </div>
 
-            <div>
-              <span>Bowler</span>
-              <strong>{scoreboard.currentState.bowlerName || "-"}</strong>
-            </div>
+                          <div>
+                            <span>Bowler</span>
+                            <strong>{scoreboard.currentState.bowlerName || "-"}</strong>
+                          </div>
 
-            <div>
-              <span>Next Ball</span>
-              <strong>
-                {scoreboard.currentState.nextOverNo}.
-                {scoreboard.currentState.nextBallInOver}
-              </strong>
-            </div>
-          </div>
+                          <div>
+                            <span>Next Ball</span>
+                            <strong>
+                              {scoreboard.currentState.nextOverNo}.
+                              {scoreboard.currentState.nextBallInOver}
+                            </strong>
+                          </div>
+                        </div>
+                      </div><div className="live-match-state">
+                          <div className="live-state-header">
+                            <div>
+                              <span>🏏 INNINGS</span>
+                              <strong>{scoreboard?.currentState?.inningsNo}</strong>
+                            </div>
+
+                            <div>
+                              <span>NEXT BALL</span>
+                              <strong>{scoreboard?.currentState?.nextOver}.{scoreboard?.currentState?.nextBallInOver}</strong>
+                            </div>
+                          </div>
+
+                          <div className="live-player-card striker">
+                            <span>⚡ STRIKER</span>
+                            <strong>{scoreboard?.strikerName}</strong>
+                          </div>
+
+                          <div className="live-player-card non-striker">
+                            <span>🏃 NON-STRIKER</span>
+                            <strong>{scoreboard?.nonStrikerName}</strong>
+                          </div>
+
+                          <div className="live-player-card bowler">
+                            <span>🎯 BOWLER</span>
+                            <strong>{scoreboard?.bowlerName}</strong>
+                          </div>
+                        </div></>
         )}
 
         {(scoreboard.innings || []).map((inn, innIdx) => (
