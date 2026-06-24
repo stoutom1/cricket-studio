@@ -4996,10 +4996,10 @@ onClick={() => {
   </div>
 </div>
                       {/*below one is for mobile*/}
-<div className="live-match-state">
-  <div className="live-state-header">
+<div className="live-match-state compact-live-state">
+  <div className="live-top-strip">
     <div>
-      <span>🏏 INNINGS</span>
+      <span>🏏 Inn</span>
       <strong>
         {scoreboard?.currentState?.inningsNo ||
           scoreboard?.currentInnings ||
@@ -5009,67 +5009,46 @@ onClick={() => {
     </div>
 
     <div>
-      <span>NEXT BALL</span>
+      <span>Next</span>
       <strong>
-<strong>
-  {scoreboard?.currentState?.nextBallLabel ||
-    `${scoreboard?.currentState?.nextOverNo ?? scoreboard?.currentState?.nextOver ?? 0}.${
-      scoreboard?.currentState?.nextBallInOver ?? scoreboard?.currentState?.nextBallNo ?? 0
-    }`}
-</strong>
+        {scoreboard?.currentState?.nextBallLabel ||
+          `${scoreboard?.currentState?.nextOverNo ?? scoreboard?.currentState?.nextOver ?? 0}.${
+            scoreboard?.currentState?.nextBallInOver ??
+            scoreboard?.currentState?.nextBallNo ??
+            0
+          }`}
       </strong>
     </div>
   </div>
 
-  <div className="live-player-card striker">
-    <span>⚡ STRIKER</span>
-<div className="live-player-row">
-  <strong>
-    {scoreboard?.currentState?.strikerName || "-"}
-  </strong>
-
-  <span className="live-player-stats">
-    {scoreboard?.currentState?.strikerStats
-      ? `${scoreboard.currentState.strikerStats.runs || 0} (${
-          scoreboard.currentState.strikerStats.balls || 0
-        })`
-      : ""}
-  </span>
-</div>
+  <div className="compact-player-row striker">
+    <span>⚡ Striker</span>
+    <strong>{scoreboard?.currentState?.strikerName || "-"}</strong>
+    <b>
+      {scoreboard?.currentState?.strikerStats
+        ? `${scoreboard.currentState.strikerStats.runs || 0} (${scoreboard.currentState.strikerStats.balls || 0})`
+        : ""}
+    </b>
   </div>
 
-  <div className="live-player-card non-striker">
-    <span>🏃 NON-STRIKER</span>
-<div className="live-player-row">
-  <strong>
-    {scoreboard?.currentState?.nonStrikerName || "-"}
-  </strong>
-
-  <span className="live-player-stats">
-    {scoreboard?.currentState?.nonStrikerStats
-      ? `${scoreboard.currentState.nonStrikerStats.runs || 0} (${
-          scoreboard.currentState.nonStrikerStats.balls || 0
-        })`
-      : ""}
-  </span>
-</div>
+  <div className="compact-player-row non-striker">
+    <span>🏃 Non-striker</span>
+    <strong>{scoreboard?.currentState?.nonStrikerName || "-"}</strong>
+    <b>
+      {scoreboard?.currentState?.nonStrikerStats
+        ? `${scoreboard.currentState.nonStrikerStats.runs || 0} (${scoreboard.currentState.nonStrikerStats.balls || 0})`
+        : ""}
+    </b>
   </div>
 
-  <div className="live-player-card bowler">
-    <span>🎯 BOWLER</span>
-<div className="live-player-row">
-  <strong>
-    {scoreboard?.currentState?.bowlerName || "-"}
-  </strong>
-
-  <span className="live-player-stats">
-    {scoreboard?.currentState?.bowlerStats
-      ? `${scoreboard.currentState.bowlerStats.wickets || 0}/${
-          scoreboard.currentState.bowlerStats.runs || 0
-        } (${scoreboard.currentState.bowlerStats.overs || "0.0"})`
-      : ""}
-  </span>
-</div>
+  <div className="compact-player-row bowler">
+    <span>🎯 Bowler</span>
+    <strong>{scoreboard?.currentState?.bowlerName || "-"}</strong>
+    <b>
+      {scoreboard?.currentState?.bowlerStats
+        ? `${scoreboard.currentState.bowlerStats.wickets || 0}/${scoreboard.currentState.bowlerStats.runs || 0} (${scoreboard.currentState.bowlerStats.overs || "0.0"})`
+        : ""}
+    </b>
   </div>
 </div>
 </>
