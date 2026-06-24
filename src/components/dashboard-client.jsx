@@ -3153,7 +3153,38 @@ await api("/api/balls", {
   }  
 }
 async function loadMyLeaguePermissions(leagueId) {
-    if (!leagueId) return;
+  if (!leagueId) return;
+
+  const selected = leagues.find(
+    (l) => String(l.id) === String(leagueId)
+  );
+
+  if (!selected) {
+    setPermissions(null);
+    return;
+  }
+
+  if (selected.isFollowing && !selected.role && !selected.membershipRole) {
+    setPermissions({
+      canViewDashboard: true,
+      canViewStats: true,
+      canViewMatches: true,
+      canViewManagement: false,
+      canCreateLeague: false,
+      canCreateTeam: false,
+      canCreateMatch: false,
+      canDeleteLeague: false,
+      canDeleteTeam: false,
+      canDeletePlayer: false,
+      canDeleteMatch: false,
+      canScoreMatch: false,
+      canEditScore: false,
+      canUndoBall: false,
+    });
+
+    return;
+  }
+
   try {
     setPermissionsLoading(true);
 
