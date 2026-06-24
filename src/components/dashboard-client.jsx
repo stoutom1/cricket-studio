@@ -4702,20 +4702,22 @@ onClick={() => {
 {matchDetail && (
 <details className="match-setup-card" open>
 <summary className="match-setup-summary">
-  <strong>⚙️ Match Setup</strong>
+  <div className="match-setup-title">
+    ⚙️ Match Setup
+  </div>
 
-  {selectedMatchId ? (
+  {selectedMatchId && (
     <button
       type="button"
-      className="share-score-btn"
+      className="share-score-btn compact-share-btn"
       onClick={(e) => {
-        e.preventDefault(); // prevents details from toggling
+        e.preventDefault();
         handleShareMatch();
       }}
     >
       📤 Share - Spectator View
     </button>
-  ) : null}
+  )}
 </summary>
 
   <div className="match-setup-grid">

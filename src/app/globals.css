@@ -15393,14 +15393,42 @@ body:has(.login-shell) .dashboard-content {
   align-items: center;
   justify-content: space-between;
   gap: 12px;
+  padding-bottom: 12px;
   cursor: pointer;
 }
-
+.match-setup-title {
+  color: white;
+  font-size: 22px;
+  font-weight: 900;
+  letter-spacing: -0.02em;
+}
+.compact-share-btn {
+  padding: 8px 14px;
+  min-height: auto;
+  border-radius: 999px;
+  font-size: 13px;
+  font-weight: 800;
+  white-space: nowrap;
+}
 .match-setup-summary strong {
   font-size: 18px;
   font-weight: 800;
 }
+.match-setup-grid span {
+  display: block;
+  color: #93c5fd;
+  font-size: 12px;
+  font-weight: 800;
+  text-transform: uppercase;
+}
 
+.match-setup-grid strong {
+  display: block;
+  margin-top: 4px;
+  color: white;
+  font-size: 24px;
+  font-weight: 900;
+}
 .match-setup-summary .share-score-btn {
   margin-left: auto;
   white-space: nowrap;
@@ -15456,5 +15484,24 @@ body:has(.login-shell) .dashboard-content {
 
   .team-official-pill {
     border-radius: 18px;
+  }
+}
+@media (max-width: 768px) {
+  .match-setup-title {
+    font-size: 20px;
+  }
+
+  .compact-share-btn {
+    font-size: 12px;
+    padding: 7px 12px;
+  }
+
+  .match-setup-grid {
+    grid-template-columns: repeat(2, 1fr);
+    gap: 10px;
+  }
+
+  .match-setup-grid strong {
+    font-size: 20px;
   }
 }
