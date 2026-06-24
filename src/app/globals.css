@@ -15090,3 +15090,50 @@ body:has(.login-shell) .dashboard-content {
     min-width: auto;
   }
 }
+/* Public league mobile table overflow fix */
+@media (max-width: 700px) {
+  .public-tab-content {
+    width: 100%;
+    max-width: 100%;
+    overflow-x: hidden;
+  }
+
+  .public-tab-content .table-scroll {
+    width: 100%;
+    max-width: 100%;
+    overflow-x: auto !important;
+    overflow-y: hidden;
+    -webkit-overflow-scrolling: touch;
+    border-radius: 18px;
+  }
+
+  .public-tab-content .score-table {
+    width: max-content;
+    min-width: 680px;
+    table-layout: auto;
+  }
+
+  .public-tab-content .score-table th,
+  .public-tab-content .score-table td {
+    white-space: nowrap;
+  }
+
+  .public-tab-content .score-table th:first-child,
+  .public-tab-content .score-table td:first-child {
+    position: sticky;
+    left: 0;
+    z-index: 2;
+    background: #111827;
+  }
+
+  .public-tab-content .score-table th:first-child {
+    z-index: 3;
+  }
+
+  .public-one-piece-card,
+  .public-wow-hero,
+  .public-wow-page {
+    max-width: 100%;
+    overflow-x: hidden;
+  }
+}
