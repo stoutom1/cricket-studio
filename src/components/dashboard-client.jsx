@@ -4647,17 +4647,6 @@ onClick={() => {
 <Card
   title="🏏 Match Center"
   defaultCollapsed={false}
-  right={
-    selectedMatchId ? (
-      <button
-        type="button"
-        className="share-score-btn"
-        onClick={handleShareMatch}
-      >
-        📤 Share - Spectator View
-      </button>
-    ) : null
-  }
 >
           <div className="active-league-banner">
           Active League:{" "}
@@ -4714,6 +4703,17 @@ onClick={() => {
 <details className="match-setup-card" open>
     <summary>
     <strong>⚙️ Match Setup</strong>
+{
+    selectedMatchId ? (
+      <button
+        type="button"
+        className="share-score-btn"
+        onClick={handleShareMatch}
+      >
+        📤 Share - Spectator View
+      </button>
+    ) : null
+  }
   </summary>
 
   <div className="match-setup-grid">
@@ -4801,7 +4801,19 @@ onClick={() => {
   )}
 </Card>
 {selectedMatchId && effectiveScoringSubTab === "SCOREBOARD" && (
-  <Card title="🏟️ Professional Scoreboard" defaultCollapsed={false}>
+  <Card title="🏟️ Professional Scoreboard" defaultCollapsed={false}
+    right={
+    selectedMatchId ? (
+      <button
+        type="button"
+        className="share-score-btn"
+        onClick={handleShareMatch}
+      >
+        📤 Share - Spectator View
+      </button>
+    ) : null
+  }
+  >
     {!scoreboard ? (
       <p className="muted">Select a match to view scoreboard.</p>
     ) : (
@@ -4921,37 +4933,68 @@ onClick={() => {
     String(selectedMatch.status || "").toUpperCase()
   )
 ) &&(
-           <><div className="innings-state-grid">
-                        <div className="current-match-strip">
-                          <div>
-                            <span>Current Innings</span>
-                            <strong>{scoreboard.currentInnings}</strong>
-                          </div>
+           <>
+<div className="innings-state-grid compact-innings-state">
+  <div className="innings-mini-box">
+    <span>🏏 Innings</span>
+    <strong>
+      {scoreboard?.currentState?.inningsNo ||
+        scoreboard?.currentInnings ||
+        ballForm?.inningsNo ||
+        "-"}
+    </strong>
+  </div>
 
-                          <div>
-                            <span>Striker</span>
-                            <strong>{scoreboard.currentState.strikerName}</strong>
-                          </div>
+  <div className="innings-mini-box">
+    <span>Next Ball</span>
+    <strong>
+      {scoreboard?.currentState?.nextBallLabel ||
+        `${scoreboard?.currentState?.nextOverNo ?? scoreboard?.currentState?.nextOver ?? 0}.${
+          scoreboard?.currentState?.nextBallInOver ?? scoreboard?.currentState?.nextBallNo ?? 0
+        }`}
+    </strong>
+  </div>
 
-                          <div>
-                            <span>Non-Striker</span>
-                            <strong>{scoreboard.currentState.nonStrikerName}</strong>
-                          </div>
+  <div className="innings-mini-box striker-box">
+    <span>⚡ Striker</span>
+    <strong>
+      {scoreboard?.currentState?.strikerName || "-"}
+      {scoreboard?.currentState?.strikerStats && (
+        <b>
+          {scoreboard.currentState.strikerStats.runs || 0} (
+          {scoreboard.currentState.strikerStats.balls || 0})
+        </b>
+      )}
+    </strong>
+  </div>
 
-                          <div>
-                            <span>Bowler</span>
-                            <strong>{scoreboard.currentState.bowlerName || "-"}</strong>
-                          </div>
+  <div className="innings-mini-box striker-box">
+    <span>🏃 Non-Striker</span>
+    <strong>
+      {scoreboard?.currentState?.nonStrikerName || "-"}
+      {scoreboard?.currentState?.nonStrikerStats && (
+        <b>
+          {scoreboard.currentState.nonStrikerStats.runs || 0} (
+          {scoreboard.currentState.nonStrikerStats.balls || 0})
+        </b>
+      )}
+    </strong>
+  </div>
 
-                          <div>
-                            <span>Next Ball</span>
-                            <strong>
-                              {scoreboard.currentState.nextOverNo}.
-                              {scoreboard.currentState.nextBallInOver}
-                            </strong>
-                          </div>
-                        </div>
-                      </div>
+  <div className="innings-mini-box bowler-box">
+    <span>🎯 Bowler</span>
+    <strong>
+      {scoreboard?.currentState?.bowlerName || "-"}
+      {scoreboard?.currentState?.bowlerStats && (
+        <b>
+          {scoreboard.currentState.bowlerStats.wickets || 0}/
+          {scoreboard.currentState.bowlerStats.runs || 0} (
+          {scoreboard.currentState.bowlerStats.overs || "0.0"})
+        </b>
+      )}
+    </strong>
+  </div>
+</div>
                       {/*below one is for mobile*/}
 <div className="live-match-state">
   <div className="live-state-header">
@@ -4980,56 +5023,53 @@ onClick={() => {
 
   <div className="live-player-card striker">
     <span>⚡ STRIKER</span>
-    <strong>
-      {scoreboard?.currentState?.strikerName ||
-        battingTeam?.players?.find(
-          (p) => String(p.id) === String(ballForm?.strikerId)
-        )?.name ||
-        "-"}
-    </strong>
-<small>
-  {scoreboard?.currentState?.strikerStats
-    ? `${scoreboard.currentState.strikerStats.runs || 0}(${
-        scoreboard.currentState.strikerStats.balls || 0
-      })`
-    : ""}
-</small>
+<div className="live-player-row">
+  <strong>
+    {scoreboard?.currentState?.strikerName || "-"}
+  </strong>
+
+  <span className="live-player-stats">
+    {scoreboard?.currentState?.strikerStats
+      ? `${scoreboard.currentState.strikerStats.runs || 0} (${
+          scoreboard.currentState.strikerStats.balls || 0
+        })`
+      : ""}
+  </span>
+</div>
   </div>
 
   <div className="live-player-card non-striker">
     <span>🏃 NON-STRIKER</span>
-    <strong>
-      {scoreboard?.currentState?.nonStrikerName ||
-        battingTeam?.players?.find(
-          (p) => String(p.id) === String(ballForm?.nonStrikerId)
-        )?.name ||
-        "-"}
-    </strong>
-<small>
-  {scoreboard?.currentState?.nonStrikerStats
-    ? `${scoreboard.currentState.nonStrikerStats.runs || 0}(${
-        scoreboard.currentState.nonStrikerStats.balls || 0
-      })`
-    : ""}
-</small>
+<div className="live-player-row">
+  <strong>
+    {scoreboard?.currentState?.nonStrikerName || "-"}
+  </strong>
+
+  <span className="live-player-stats">
+    {scoreboard?.currentState?.nonStrikerStats
+      ? `${scoreboard.currentState.nonStrikerStats.runs || 0} (${
+          scoreboard.currentState.nonStrikerStats.balls || 0
+        })`
+      : ""}
+  </span>
+</div>
   </div>
 
   <div className="live-player-card bowler">
     <span>🎯 BOWLER</span>
-    <strong>
-      {scoreboard?.currentState?.bowlerName ||
-        bowlingTeam?.players?.find(
-          (p) => String(p.id) === String(ballForm?.bowlerId)
-        )?.name ||
-        "-"}
-    </strong>
-<small>
-  {scoreboard?.currentState?.bowlerStats
-    ? `${scoreboard.currentState.bowlerStats.wickets || 0}/${
-        scoreboard.currentState.bowlerStats.runs || 0
-      } (${scoreboard.currentState.bowlerStats.overs || "0.0"} ov)`
-    : ""}
-</small>
+<div className="live-player-row">
+  <strong>
+    {scoreboard?.currentState?.bowlerName || "-"}
+  </strong>
+
+  <span className="live-player-stats">
+    {scoreboard?.currentState?.bowlerStats
+      ? `${scoreboard.currentState.bowlerStats.wickets || 0}/${
+          scoreboard.currentState.bowlerStats.runs || 0
+        } (${scoreboard.currentState.bowlerStats.overs || "0.0"})`
+      : ""}
+  </span>
+</div>
   </div>
 </div>
 </>
@@ -5240,7 +5280,19 @@ onClick={() => {
   </Card>
 )}
 {selectedMatchId && effectiveScoringSubTab === "COMMENTARY" && (
-  <Card title="🎙️ Live Match Commentary" defaultCollapsed={false}>
+  <Card title="🎙️ Live Match Commentary" defaultCollapsed={false}
+    right={
+    selectedMatchId ? (
+      <button
+        type="button"
+        className="share-score-btn"
+        onClick={handleShareMatch}
+      >
+        📤 Share - Spectator View
+      </button>
+    ) : null
+  }
+  >
     {!scoreboard ? (
       <p className="muted">Select a match to view commentary.</p>
     ) : !scoreboard.commentary?.length ? (
@@ -5371,6 +5423,17 @@ onClick={() => {
   className="scoring-console"
   title="🎯 Advanced Scoring"
   defaultCollapsed={false}
+    right={
+    selectedMatchId ? (
+      <button
+        type="button"
+        className="share-score-btn"
+        onClick={handleShareMatch}
+      >
+        📤 Share - Spectator View
+      </button>
+    ) : null
+  }
 >
           {!matchDetail ? (
             <p className="muted">Please select a match to view scoring, scoreboard, and commentary.</p>
