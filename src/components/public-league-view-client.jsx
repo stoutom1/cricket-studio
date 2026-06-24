@@ -187,8 +187,7 @@ export default function PublicLeagueViewClient({ league }) {
 async function toggleFollowLeague() {
   try {
     setFollowBusy(true);
-console.log("FOLLOW LEAGUE", league);
-console.log("FOLLOW LEAGUE ID", league.id);
+
     const res = await fetch(`/api/leagues/${league.id}/follow`, {
       method: isFollowing ? "DELETE" : "POST",
       credentials: "include",

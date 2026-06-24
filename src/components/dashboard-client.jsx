@@ -2761,7 +2761,6 @@ async function quickWicket(type = "BOWLED") {
   setShowWicketModal(true);
 }
 async function confirmWicket() {
-  console.log("inside Confirm Wicket");
 
   try {
     if (mustChangeBowler) {
@@ -3555,13 +3554,7 @@ const editTeamB =
 const displayScoreboard = optimisticScoreboard || scoreboard;
 
 const matchInsights = buildMatchInsights(displayScoreboard);
-console.log("DASHBOARD INSIGHTS DEBUG", {
-  hasScoreboard: !!displayScoreboard,
-  innings: displayScoreboard?.innings?.length,
-  battingStats: displayScoreboard?.innings?.[0]?.battingStats?.length,
-  bowlingStats: displayScoreboard?.innings?.[0]?.bowlingStats?.length,
-  matchInsights,
-});
+
 const liveMatchCenter =
   buildLiveMatchCenter(displayScoreboard || scoreboard);
 

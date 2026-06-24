@@ -15039,3 +15039,44 @@ body:has(.login-shell) .dashboard-content {
     font-size: 26px !important;
   }
 }
+.following-badge {
+  background: rgba(250,204,21,.18);
+  color: #fde68a;
+  border: 1px solid rgba(250,204,21,.3);
+
+  padding: 6px 12px;
+  border-radius: 999px;
+
+  font-size: 12px;
+  font-weight: 900;
+}
+.league-follow-cell {
+  display: flex;
+  justify-content: center;
+  align-items: center;
+}
+
+.following-pill,
+.follow-muted-pill {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  min-width: 112px;
+  padding: 7px 12px;
+  border-radius: 999px;
+  font-size: 12px;
+  font-weight: 950;
+  white-space: nowrap;
+}
+
+.following-pill {
+  background: rgba(250, 204, 21, 0.18);
+  color: #fde68a;
+  border: 1px solid rgba(250, 204, 21, 0.35);
+}
+
+.follow-muted-pill {
+  background: rgba(148, 163, 184, 0.12);
+  color: #cbd5e1;
+  border: 1px solid rgba(148, 163, 184, 0.2);
+}

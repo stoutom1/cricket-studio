@@ -60,19 +60,41 @@ export async function DELETE(request, { params }) {
   const session = await getServerSession(authOptions);
 
   if (!session?.user?.email) {
-    return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
+    return NextResponse.json(
+      { error: "Unauthorized" },
+      { status: 401 }
+    );
   }
 
-  const { leagueId } = await params;
-  const id = Number(leagueId);
+  const resolvedParams = await params;
 
-const user = await prisma.user.findUnique({
-  where: { email: session.user.email },
-  select: { id: true },
-});
+  const leagueParam =
+    resolvedParams.id ??
+    resolvedParams.leagueId;
+
+  const id = Number(leagueParam);
+
+  if (!Number.isInteger(id) || id <= 0) {
+    return NextResponse.json(
+      { error: "Invalid league id" },
+      { status: 400 }
+    );
+  }
+
+  const user = await prisma.user.findUnique({
+    where: {
+      email: session.user.email,
+    },
+    select: {
+      id: true,
+    },
+  });
 
   if (!user) {
-    return NextResponse.json({ error: "User not found" }, { status: 404 });
+    return NextResponse.json(
+      { error: "User not found" },
+      { status: 404 }
+    );
   }
 
   await prisma.leagueFollower.deleteMany({
@@ -82,5 +104,7 @@ const user = await prisma.user.findUnique({
     },
   });
 
-  return NextResponse.json({ followed: false });
+  return NextResponse.json({
+    followed: false,
+  });
 }

@@ -20,7 +20,7 @@ export async function POST(request) {
   }
 
   const body = await request.json();
-console.log(body);
+
   const payload = {
     matchId: Number(body.matchId),
     inningsNo: Number(body.inningsNo),

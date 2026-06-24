@@ -136,10 +136,13 @@ export default function ExploreClient({ leagues }) {
                     <strong>{league.series?.length || 0}</strong>
                   </div>
 
-                  <div className="league-stat">
-                    <span>Status</span>
-                    <strong>{league.visibility}</strong>
-                  </div>
+<div className="league-follow-cell">
+  {league.isFollowing ? (
+    <span className="following-pill">⭐ Following</span>
+  ) : (
+    <span className="follow-muted-pill">☆ Not following</span>
+  )}
+</div>
 
                   <div className="league-arrow">→</div>
                 </Link>
