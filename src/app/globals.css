@@ -15080,3 +15080,13 @@ body:has(.login-shell) .dashboard-content {
   color: #cbd5e1;
   border: 1px solid rgba(148, 163, 184, 0.2);
 }
+@media (max-width: 900px) {
+  .league-follow-cell {
+    justify-content: flex-start;
+  }
+
+  .following-pill,
+  .follow-muted-pill {
+    min-width: auto;
+  }
+}
