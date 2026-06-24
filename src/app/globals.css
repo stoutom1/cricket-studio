@@ -14793,3 +14793,201 @@ body:has(.login-shell) .dashboard-content {
     grid-template-columns: 1fr;
   }
 }
+.public-league-drawer-backdrop {
+  position: fixed;
+  inset: 0;
+  z-index: 9999;
+  background: rgba(2, 6, 23, 0.68);
+  backdrop-filter: blur(8px);
+  display: flex;
+  justify-content: flex-end;
+}
+
+.public-league-drawer {
+  width: min(440px, 92vw);
+  height: 100%;
+  padding: 22px;
+  background: linear-gradient(145deg, #0f172a, #1e293b);
+  border-left: 1px solid rgba(96,165,250,.24);
+  box-shadow: -24px 0 60px rgba(0,0,0,.45);
+  color: white;
+}
+
+.public-league-drawer-head {
+  display: flex;
+  justify-content: space-between;
+  gap: 12px;
+  margin-bottom: 18px;
+}
+
+.public-league-drawer-head h3 {
+  margin: 0;
+  font-size: 24px;
+  font-weight: 950;
+}
+
+.public-league-drawer-head p {
+  margin: 6px 0 0;
+  color: #cbd5e1;
+  font-size: 14px;
+}
+
+.public-league-drawer-head button {
+  width: 36px;
+  height: 36px;
+  border-radius: 999px;
+  border: 1px solid rgba(148,163,184,.28);
+  background: rgba(15,23,42,.72);
+  color: white;
+  cursor: pointer;
+}
+
+.public-league-explore-card {
+  display: block;
+  padding: 18px;
+  border-radius: 22px;
+  background: rgba(15,23,42,.72);
+  border: 1px solid rgba(96,165,250,.22);
+  color: white;
+  text-decoration: none;
+}
+
+.public-league-explore-card strong,
+.public-league-explore-card span,
+.public-league-explore-card b {
+  display: block;
+}
+
+.public-league-explore-card span {
+  margin-top: 8px;
+  color: #cbd5e1;
+}
+
+.public-league-explore-card b {
+  margin-top: 14px;
+  color: #60a5fa;
+}
+/* FIX PUBLIC PAGES ON MOBILE */
+@media (max-width: 700px) {
+  .public-wow-page {
+    padding: 10px;
+    overflow-x: hidden;
+  }
+
+  .public-one-piece-card,
+  .public-wow-hero {
+    width: 100%;
+    padding: 18px;
+    border-radius: 24px;
+  }
+
+  .public-wow-hero-main {
+    grid-template-columns: 1fr !important;
+    gap: 16px;
+  }
+
+  .public-wow-controls {
+    grid-template-columns: 1fr !important;
+    gap: 10px;
+  }
+
+  .public-wow-controls button,
+  .public-wow-controls a,
+  .public-wow-controls select {
+    width: 100%;
+    min-height: 48px;
+    justify-content: center;
+    text-align: center;
+  }
+
+  .public-wow-search {
+    grid-template-columns: 1fr !important;
+    gap: 8px;
+  }
+
+  .public-wow-search span {
+    width: 100%;
+  }
+
+  .public-wow-search input {
+    width: 100%;
+    font-size: 15px;
+  }
+
+  /* IMPORTANT: fix ugly overlapping tabs */
+  .public-wow-tabs,
+  .public-league-tabs {
+    width: 100%;
+    display: grid !important;
+    grid-template-columns: repeat(2, minmax(0, 1fr)) !important;
+    gap: 8px !important;
+    padding: 8px !important;
+    border-radius: 22px !important;
+    overflow: visible !important;
+  }
+
+  .public-wow-tabs button,
+  .public-league-tabs button {
+    width: 100% !important;
+    height: 44px !important;
+    min-height: 44px !important;
+    padding: 0 8px !important;
+    border-radius: 16px !important;
+    font-size: 13px !important;
+    line-height: 1 !important;
+    white-space: nowrap !important;
+    overflow: hidden !important;
+    text-overflow: ellipsis !important;
+    transform: none !important;
+  }
+
+  .public-wow-tabs button.active,
+  .public-league-tabs button.active {
+    width: 100% !important;
+    height: 44px !important;
+    min-height: 44px !important;
+    border-radius: 16px !important;
+    transform: none !important;
+  }
+
+  .public-tab-content {
+    padding: 14px;
+    border-radius: 20px;
+  }
+
+  .public-card-grid,
+  .player-stat-grid,
+  .team-player-grid,
+  .match-summary-grid {
+    grid-template-columns: 1fr 1fr !important;
+    gap: 10px;
+  }
+
+  .public-card {
+    min-height: 110px;
+    padding: 14px;
+  }
+
+  .public-card strong {
+    font-size: 20px;
+    word-break: break-word;
+  }
+
+  .public-card small {
+    font-size: 12px;
+  }
+}
+
+@media (max-width: 420px) {
+  .public-card-grid,
+  .player-stat-grid,
+  .team-player-grid,
+  .match-summary-grid {
+    grid-template-columns: 1fr !important;
+  }
+
+  .public-wow-tabs,
+  .public-league-tabs {
+    grid-template-columns: repeat(2, minmax(0, 1fr)) !important;
+  }
+}

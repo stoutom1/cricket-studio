@@ -295,6 +295,7 @@ const [rollbackSaving, setRollbackSaving] = useState(false);
 const [leagueStatsLoading, setLeagueStatsLoading] = useState(false);
 const [pendingMatchesSubTab, setPendingMatchesSubTab] = useState("");
 const [instantDeliveryStatus, setInstantDeliveryStatus] = useState("");
+const [showPublicLeagueDrawer, setShowPublicLeagueDrawer] = useState(false);
 const isSuperAdmin =
   session?.user?.email ===
   "surprisecricket11@gmail.com";
@@ -6936,6 +6937,13 @@ onClick={() => {
                   🌐 Copy Public View Link
                 </button>
               )}
+              <button
+  type="button"
+  className="mgmt-clean-btn public-discover-btn"
+  onClick={() => setShowPublicLeagueDrawer(true)}
+>
+  🌐 Discover Public Leagues
+</button>
           </div>
         </section>
 
@@ -10591,6 +10599,31 @@ onClick={() => {
         </button>
       </div>
     </div>
+  </div>
+)}
+{showPublicLeagueDrawer && (
+  <div className="public-league-drawer-backdrop">
+    <aside className="public-league-drawer">
+      <div className="public-league-drawer-head">
+        <div>
+          <h3>🌐 Public Leagues</h3>
+          <p>Browse public leagues without adding them to your workspace.</p>
+        </div>
+
+        <button
+          type="button"
+          onClick={() => setShowPublicLeagueDrawer(false)}
+        >
+          ✕
+        </button>
+      </div>
+
+      <a href="/explore" className="public-league-explore-card">
+        <strong>Explore all public leagues</strong>
+        <span>View leagues, teams, matches, stats, and live scorecards.</span>
+        <b>Open Explore →</b>
+      </a>
+    </aside>
   </div>
 )}
 {showRetiredHurtModal && (
