@@ -15426,7 +15426,7 @@ body:has(.login-shell) .dashboard-content {
   display: block;
   margin-top: 4px;
   color: white;
-  font-size: 24px;
+  font-size: 12px;
   font-weight: 900;
 }
 .match-setup-summary .share-score-btn {
@@ -15502,6 +15502,6 @@ body:has(.login-shell) .dashboard-content {
   }
 
   .match-setup-grid strong {
-    font-size: 20px;
+    font-size: 10px;
   }
 }

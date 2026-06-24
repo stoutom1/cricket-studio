@@ -107,7 +107,10 @@ export async function POST(request) {
     (b) => b.isWicket && b.wicketType !== "RETIRED_HURT"
   ).length;
 
-  const maxWickets = match.maxWicketsPerInnings;
+const rawMaxWickets = Number(match.maxWicketsPerInnings || 0);
+
+const maxWickets =
+  rawMaxWickets > 0 ? rawMaxWickets : Infinity;
 
   if (
     maxWickets !== null &&

@@ -76,8 +76,14 @@ function buildResultText(match, innings1, innings2) {
   }
 
   if (innings2.runs > innings1.runs) {
-    const maxWickets = match.maxWicketsPerInnings || 10;
+    const rawMaxWickets = Number(match.maxWicketsPerInnings || 0);
+    const maxWickets = rawMaxWickets > 0 ? rawMaxWickets : Infinity;
+    //const maxWickets = match.maxWicketsPerInnings || 10;
+    if(maxWickets != "Infinity"){
     return `${secondTeamName} won by ${maxWickets - innings2.wickets} wickets`;
+    }else{
+          return `${secondTeamName} won this game`;
+    }  
   }
 
   if (innings1.legalBalls > 0 && innings2.legalBalls > 0) {
