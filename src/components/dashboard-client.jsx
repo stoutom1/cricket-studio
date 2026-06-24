@@ -3696,7 +3696,38 @@ function toggleFilterValue(type, value) {
     };
   });
 }
+function getNextBallLabel() {
+  const state = scoreboard?.currentState;
 
+  if (!state) return "-";
+
+  if (state.nextBallLabel) {
+    return state.nextBallLabel;
+  }
+
+  if (
+    state.nextOver !== undefined &&
+    state.nextBallInOver !== undefined
+  ) {
+    return `${state.nextOver}.${state.nextBallInOver}`;
+  }
+
+  if (
+    state.nextOverNo !== undefined &&
+    state.nextBallInOver !== undefined
+  ) {
+    return `${state.nextOverNo}.${state.nextBallInOver}`;
+  }
+
+  if (
+    state.nextOverNo !== undefined &&
+    state.nextBallNo !== undefined
+  ) {
+    return `${state.nextOverNo}.${state.nextBallNo}`;
+  }
+
+  return "-";
+}
 async function handleDeleteSeries(seriesId, seriesName) {
   const ok = window.confirm(
     `Delete series "${seriesName}"? This cannot be undone.`
@@ -4920,34 +4951,77 @@ onClick={() => {
                             </strong>
                           </div>
                         </div>
-                      </div><div className="live-match-state">
-                          <div className="live-state-header">
-                            <div>
-                              <span>🏏 INNINGS</span>
-                              <strong>{scoreboard?.currentState?.inningsNo}</strong>
-                            </div>
+                      </div>
+                      {/*below one is for mobile*/}
+<div className="live-match-state">
+  <div className="live-state-header">
+    <div>
+      <span>🏏 INNINGS</span>
+      <strong>
+        {scoreboard?.currentState?.inningsNo ||
+          scoreboard?.currentInnings ||
+          ballForm?.inningsNo ||
+          "-"}
+      </strong>
+    </div>
 
-                            <div>
-                              <span>NEXT BALL</span>
-                              <strong>{scoreboard?.currentState?.nextOver}.{scoreboard?.currentState?.nextBallInOver}</strong>
-                            </div>
-                          </div>
+    <div>
+      <span>NEXT BALL</span>
+      <strong>
+<strong>{getNextBallLabel()}</strong>
+      </strong>
+    </div>
+  </div>
 
-                          <div className="live-player-card striker">
-                            <span>⚡ STRIKER</span>
-                            <strong>{scoreboard?.strikerName}</strong>
-                          </div>
+  <div className="live-player-card striker">
+    <span>⚡ STRIKER</span>
+    <strong>
+      {scoreboard?.currentState?.strikerName ||
+        battingTeam?.players?.find(
+          (p) => String(p.id) === String(ballForm?.strikerId)
+        )?.name ||
+        "-"}
+    </strong>
+    <small>
+      {scoreboard?.currentState?.strikerStats ||
+        scoreboard?.currentState?.strikerScore ||
+        ""}
+    </small>
+  </div>
 
-                          <div className="live-player-card non-striker">
-                            <span>🏃 NON-STRIKER</span>
-                            <strong>{scoreboard?.nonStrikerName}</strong>
-                          </div>
+  <div className="live-player-card non-striker">
+    <span>🏃 NON-STRIKER</span>
+    <strong>
+      {scoreboard?.currentState?.nonStrikerName ||
+        battingTeam?.players?.find(
+          (p) => String(p.id) === String(ballForm?.nonStrikerId)
+        )?.name ||
+        "-"}
+    </strong>
+    <small>
+      {scoreboard?.currentState?.nonStrikerStats ||
+        scoreboard?.currentState?.nonStrikerScore ||
+        ""}
+    </small>
+  </div>
 
-                          <div className="live-player-card bowler">
-                            <span>🎯 BOWLER</span>
-                            <strong>{scoreboard?.bowlerName}</strong>
-                          </div>
-                        </div></>
+  <div className="live-player-card bowler">
+    <span>🎯 BOWLER</span>
+    <strong>
+      {scoreboard?.currentState?.bowlerName ||
+        bowlingTeam?.players?.find(
+          (p) => String(p.id) === String(ballForm?.bowlerId)
+        )?.name ||
+        "-"}
+    </strong>
+    <small>
+      {scoreboard?.currentState?.bowlerStats ||
+        scoreboard?.currentState?.bowlerFigures ||
+        ""}
+    </small>
+  </div>
+</div>
+</>
         )}
 
         {(scoreboard.innings || []).map((inn, innIdx) => (
