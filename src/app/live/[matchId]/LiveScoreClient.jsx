@@ -1,6 +1,7 @@
 "use client";
 
 import { useEffect, useState } from "react";
+import { buildMatchInsights } from "@/lib/match-insights";
 
 function getBallDisplay(label) {
   const raw =
@@ -141,6 +142,8 @@ export default function LiveScoreClient({ matchId }) {
   const [tvMode, setTvMode] = useState(false);
 
   const matchStory = getMatchStory(scoreboard);
+  const matchInsights = buildMatchInsights(scoreboard);
+  
 
   function toggleInnings(inningsNo) {
     setCollapsedInnings((prev) => ({
@@ -350,6 +353,56 @@ function getLastThreeOvers(scoreboard) {
         <p className="live-status-text">
           {scoreboard?.summary?.statusText || "Match in progress"}
         </p>
+{matchInsights && (
+  <div className="match-insights-card">
+    {matchInsights.resultText && (
+      <div className="insight-result">
+        <span>🏆 Match Result</span>
+        <strong>{matchInsights.resultText}</strong>
+      </div>
+    )}
+
+    {matchInsights.potm && (
+      <div className="insight-mini">
+        <span>⭐ Player of the Match</span>
+        <strong>{matchInsights.potm.playerName}</strong>
+        <small>
+          {matchInsights.potm.summary?.join(" & ") || "Top performer"}
+        </small>
+      </div>
+    )}
+
+    {matchInsights.winProbability && (
+      <div className="insight-mini">
+        <span>📈 Win Probability</span>
+
+        <div className="win-prob-row">
+          <b>{matchInsights.winProbability.bowlingTeam}</b>
+          <div className="win-prob-track">
+            <i
+              style={{
+                width: `${matchInsights.winProbability.bowlingChance}%`,
+              }}
+            />
+          </div>
+          <b>{matchInsights.winProbability.bowlingChance}%</b>
+        </div>
+
+        <div className="win-prob-row">
+          <b>{matchInsights.winProbability.battingTeam}</b>
+          <div className="win-prob-track chase">
+            <i
+              style={{
+                width: `${matchInsights.winProbability.battingChance}%`,
+              }}
+            />
+          </div>
+          <b>{matchInsights.winProbability.battingChance}%</b>
+        </div>
+      </div>
+    )}
+  </div>
+)}
 {scoreboard?.currentInnings === 2 &&
   chaseRunsNeeded !== null &&
   !["COMPLETED", "ABANDONED", "COMPLETED_LOCKED"].includes(

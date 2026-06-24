@@ -12925,3 +12925,89 @@ body:has(.login-shell) .dashboard-content {
   font-size: 13px;
   font-weight: 850;
 }
+.match-insights-card {
+  margin: 12px 0 16px;
+  display: grid;
+  grid-template-columns: 1.2fr 1fr 1.4fr;
+  gap: 10px;
+}
+
+.insight-result,
+.insight-mini {
+  padding: 14px;
+  border-radius: 20px;
+  background: linear-gradient(145deg, rgba(15,23,42,.94), rgba(30,41,59,.86));
+  border: 1px solid rgba(96,165,250,.22);
+  box-shadow: 0 14px 34px rgba(0,0,0,.24);
+}
+
+.insight-result span,
+.insight-mini span {
+  display: block;
+  color: #93c5fd;
+  font-size: 11px;
+  font-weight: 950;
+  text-transform: uppercase;
+}
+
+.insight-result strong {
+  display: block;
+  margin-top: 6px;
+  color: #fef3c7;
+  font-size: 18px;
+  font-weight: 950;
+}
+
+.insight-mini strong {
+  display: block;
+  margin-top: 6px;
+  color: white;
+  font-size: 17px;
+  font-weight: 950;
+}
+
+.insight-mini small {
+  display: block;
+  margin-top: 4px;
+  color: #cbd5e1;
+  font-size: 13px;
+  font-weight: 800;
+}
+
+.win-prob-row {
+  margin-top: 8px;
+  display: grid;
+  grid-template-columns: 80px 1fr 42px;
+  gap: 8px;
+  align-items: center;
+}
+
+.win-prob-row b {
+  color: #e5e7eb;
+  font-size: 12px;
+  font-weight: 900;
+}
+
+.win-prob-track {
+  height: 9px;
+  border-radius: 999px;
+  background: rgba(148,163,184,.18);
+  overflow: hidden;
+}
+
+.win-prob-track i {
+  display: block;
+  height: 100%;
+  border-radius: 999px;
+  background: linear-gradient(90deg, #60a5fa, #2563eb);
+}
+
+.win-prob-track.chase i {
+  background: linear-gradient(90deg, #22c55e, #16a34a);
+}
+
+@media (max-width: 800px) {
+  .match-insights-card {
+    grid-template-columns: 1fr;
+  }
+}

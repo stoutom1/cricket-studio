@@ -7,6 +7,7 @@ import { useRouter } from "next/navigation";
 import { Analytics } from "@vercel/analytics/next"
 import { SpeedInsights } from "@vercel/speed-insights/next"
 import {formatMatchDateTime,getMatchTimelineText,} from "@/lib/date";
+import { buildMatchInsights } from "@/lib/match-insights";
 
 function Card({
   title,
@@ -298,6 +299,7 @@ const isSuperAdmin =
   session?.user?.email ===
   "surprisecricket11@gmail.com";
 
+  
 useEffect(() => {
   fetch("/api/me")
     .then((r) => r.json())
@@ -1012,6 +1014,7 @@ function buildLiveMatchCenter(scoreboard) {
     isSecondInnings,
   };
 }
+
 function getInstantDeliveryStatus(data) {
   const runs = Number(data.runsOffBat || 0);
   const extras = Number(data.extras || 0);
@@ -3545,9 +3548,16 @@ const editTeamB =
   editingMatch?.teamB ||
   teams.find((t) => Number(t.id) === Number(editingMatch?.teamBId));
 
-const displayScoreboard =
-  optimisticScoreboard || scoreboard;
+const displayScoreboard = optimisticScoreboard || scoreboard;
 
+const matchInsights = buildMatchInsights(displayScoreboard);
+console.log("DASHBOARD INSIGHTS DEBUG", {
+  hasScoreboard: !!displayScoreboard,
+  innings: displayScoreboard?.innings?.length,
+  battingStats: displayScoreboard?.innings?.[0]?.battingStats?.length,
+  bowlingStats: displayScoreboard?.innings?.[0]?.bowlingStats?.length,
+  matchInsights,
+});
 const liveMatchCenter =
   buildLiveMatchCenter(displayScoreboard || scoreboard);
 
@@ -4737,6 +4747,57 @@ onClick={() => {
       <p className="muted">Select a match to view scoreboard.</p>
     ) : (
             <>
+            {matchInsights && (
+  <div className="match-insights-card">
+    {matchInsights.resultText && (
+      <div className="insight-result">
+        <span>🏆 Match Result</span>
+        <strong>{matchInsights.resultText}</strong>
+      </div>
+    )}
+
+    {matchInsights.potm && (
+      <div className="insight-mini">
+        <span>⭐ Player of the Match</span>
+        <strong>{matchInsights.potm.playerName}</strong>
+        <small>
+          {matchInsights.potm.summary?.join(" & ") || "Top performer"}
+        </small>
+      </div>
+    )}
+
+    {matchInsights.winProbability && (
+      <div className="insight-mini">
+        <span>📈 Win Probability</span>
+
+        <div className="win-prob-row">
+          <b>{matchInsights.winProbability.bowlingTeam}</b>
+          <div className="win-prob-track">
+            <i
+              style={{
+                width: `${matchInsights.winProbability.bowlingChance}%`,
+              }}
+            />
+          </div>
+          <b>{matchInsights.winProbability.bowlingChance}%</b>
+        </div>
+
+        <div className="win-prob-row">
+          <b>{matchInsights.winProbability.battingTeam}</b>
+          <div className="win-prob-track chase">
+            <i
+              style={{
+                width: `${matchInsights.winProbability.battingChance}%`,
+              }}
+            />
+          </div>
+          <b>{matchInsights.winProbability.battingChance}%</b>
+        </div>
+      </div>
+    )}
+  </div>
+)}  
+{/*
               {scoreboard?.summary?.statusText && (
           <div className="single-line-scoreboard">
             <span className="status-chip">
@@ -4744,7 +4805,8 @@ onClick={() => {
             </span>
           </div>
         )}
-      <div className="pro-scoreboard">
+*/}
+        <div className="pro-scoreboard">
         <div className="pro-score-hero">
           <div>
             <h2>
@@ -5045,6 +5107,57 @@ onClick={() => {
       </div>
     ) : (
       <>
+      {matchInsights && (
+  <div className="match-insights-card">
+    {matchInsights.resultText && (
+      <div className="insight-result">
+        <span>🏆 Match Result</span>
+        <strong>{matchInsights.resultText}</strong>
+      </div>
+    )}
+
+    {matchInsights.potm && (
+      <div className="insight-mini">
+        <span>⭐ Player of the Match</span>
+        <strong>{matchInsights.potm.playerName}</strong>
+        <small>
+          {matchInsights.potm.summary?.join(" & ") || "Top performer"}
+        </small>
+      </div>
+    )}
+
+    {matchInsights.winProbability && (
+      <div className="insight-mini">
+        <span>📈 Win Probability</span>
+
+        <div className="win-prob-row">
+          <b>{matchInsights.winProbability.bowlingTeam}</b>
+          <div className="win-prob-track">
+            <i
+              style={{
+                width: `${matchInsights.winProbability.bowlingChance}%`,
+              }}
+            />
+          </div>
+          <b>{matchInsights.winProbability.bowlingChance}%</b>
+        </div>
+
+        <div className="win-prob-row">
+          <b>{matchInsights.winProbability.battingTeam}</b>
+          <div className="win-prob-track chase">
+            <i
+              style={{
+                width: `${matchInsights.winProbability.battingChance}%`,
+              }}
+            />
+          </div>
+          <b>{matchInsights.winProbability.battingChance}%</b>
+        </div>
+      </div>
+    )}
+  </div>
+)}  
+{/*}
         {scoreboard?.summary?.statusText && (
           <div className="single-line-scoreboard">
             <span className="status-chip">
@@ -5052,7 +5165,7 @@ onClick={() => {
             </span>
           </div>
         )}
-
+*/}
         <div className="commentary-feed pretty-commentary">
           {scoreboard.commentary.map((section, sectionIndex) => (
             <div
@@ -5123,8 +5236,58 @@ onClick={() => {
             <>
 <div className="tv-score-console">
   {liveMatchCenter && (
-    <>
-      <div className="tv-score-header">
+<>
+{displayScoreboard && (
+  <div className="match-insights-card">
+    {matchInsights.resultText && (
+      <div className="insight-result">
+        <span>🏆 Match Result</span>
+        <strong>{matchInsights.resultText}</strong>
+      </div>
+    )}
+
+    {matchInsights.potm && (
+      <div className="insight-mini">
+        <span>⭐ Player of the Match</span>
+        <strong>{matchInsights.potm.playerName}</strong>
+        <small>
+          {matchInsights.potm.summary?.join(" & ") || "Top performer"}
+        </small>
+      </div>
+    )}
+
+    {matchInsights.winProbability && (
+      <div className="insight-mini">
+        <span>📈 Win Probability</span>
+
+        <div className="win-prob-row">
+          <b>{matchInsights.winProbability.bowlingTeam}</b>
+          <div className="win-prob-track">
+            <i
+              style={{
+                width: `${matchInsights.winProbability.bowlingChance}%`,
+              }}
+            />
+          </div>
+          <b>{matchInsights.winProbability.bowlingChance}%</b>
+        </div>
+
+        <div className="win-prob-row">
+          <b>{matchInsights.winProbability.battingTeam}</b>
+          <div className="win-prob-track chase">
+            <i
+              style={{
+                width: `${matchInsights.winProbability.battingChance}%`,
+              }}
+            />
+          </div>
+          <b>{matchInsights.winProbability.battingChance}%</b>
+        </div>
+      </div>
+    )}
+  </div>
+)}
+      <div className="tv-score-header">      
         <span className="tv-live-pill">● LIVE</span>
 
         <div className="tv-main-score">
@@ -5136,9 +5299,9 @@ onClick={() => {
           {selectedMatch?.startedAt
             ? ` • Started ${formatMatchDateTime(selectedMatch.startedAt)}`
             : ""}
-          {displayScoreboard?.summary?.statusText
+          {/*{displayScoreboard?.summary?.statusText
             ? ` • ${displayScoreboard.summary.statusText}`
-            : ""}
+            : ""}*/}
         </div>
       </div>
 
