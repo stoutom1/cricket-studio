@@ -4968,7 +4968,12 @@ onClick={() => {
     <div>
       <span>NEXT BALL</span>
       <strong>
-<strong>{getNextBallLabel()}</strong>
+<strong>
+  {scoreboard?.currentState?.nextBallLabel ||
+    `${scoreboard?.currentState?.nextOverNo ?? scoreboard?.currentState?.nextOver ?? 0}.${
+      scoreboard?.currentState?.nextBallInOver ?? scoreboard?.currentState?.nextBallNo ?? 0
+    }`}
+</strong>
       </strong>
     </div>
   </div>
@@ -4982,11 +4987,13 @@ onClick={() => {
         )?.name ||
         "-"}
     </strong>
-    <small>
-      {scoreboard?.currentState?.strikerStats ||
-        scoreboard?.currentState?.strikerScore ||
-        ""}
-    </small>
+<small>
+  {scoreboard?.currentState?.strikerStats
+    ? `${scoreboard.currentState.strikerStats.runs || 0}(${
+        scoreboard.currentState.strikerStats.balls || 0
+      })`
+    : ""}
+</small>
   </div>
 
   <div className="live-player-card non-striker">
@@ -4998,11 +5005,13 @@ onClick={() => {
         )?.name ||
         "-"}
     </strong>
-    <small>
-      {scoreboard?.currentState?.nonStrikerStats ||
-        scoreboard?.currentState?.nonStrikerScore ||
-        ""}
-    </small>
+<small>
+  {scoreboard?.currentState?.nonStrikerStats
+    ? `${scoreboard.currentState.nonStrikerStats.runs || 0}(${
+        scoreboard.currentState.nonStrikerStats.balls || 0
+      })`
+    : ""}
+</small>
   </div>
 
   <div className="live-player-card bowler">
@@ -5014,11 +5023,13 @@ onClick={() => {
         )?.name ||
         "-"}
     </strong>
-    <small>
-      {scoreboard?.currentState?.bowlerStats ||
-        scoreboard?.currentState?.bowlerFigures ||
-        ""}
-    </small>
+<small>
+  {scoreboard?.currentState?.bowlerStats
+    ? `${scoreboard.currentState.bowlerStats.wickets || 0}/${
+        scoreboard.currentState.bowlerStats.runs || 0
+      } (${scoreboard.currentState.bowlerStats.overs || "0.0"} ov)`
+    : ""}
+</small>
   </div>
 </div>
 </>
