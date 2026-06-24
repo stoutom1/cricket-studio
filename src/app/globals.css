@@ -14991,3 +14991,51 @@ body:has(.login-shell) .dashboard-content {
     grid-template-columns: repeat(2, minmax(0, 1fr)) !important;
   }
 }
+@media (max-width: 700px) {
+  .public-one-piece-card .public-wow-tabs {
+    display: grid !important;
+    grid-template-columns: 1fr 1fr !important;
+    gap: 10px !important;
+    width: 100% !important;
+    height: auto !important;
+    padding: 10px !important;
+    margin: 16px 0 !important;
+    border-radius: 22px !important;
+  }
+
+  .public-one-piece-card .public-wow-tabs button {
+    position: static !important;
+    width: 100% !important;
+    height: 48px !important;
+    min-height: 48px !important;
+    padding: 0 10px !important;
+    border-radius: 16px !important;
+    display: flex !important;
+    align-items: center !important;
+    justify-content: center !important;
+    gap: 6px !important;
+    font-size: 14px !important;
+    font-weight: 950 !important;
+    white-space: nowrap !important;
+    overflow: hidden !important;
+    text-overflow: ellipsis !important;
+    transform: none !important;
+  }
+
+  .public-one-piece-card .public-wow-tabs button.active {
+    width: 100% !important;
+    height: 48px !important;
+    min-height: 48px !important;
+    transform: none !important;
+    box-shadow: 0 10px 22px rgba(37, 99, 235, 0.28) !important;
+  }
+
+  .public-one-piece-card .public-tab-content {
+    margin-top: 10px !important;
+  }
+
+  .public-one-piece-card .public-tab-content h2 {
+    margin-top: 0 !important;
+    font-size: 26px !important;
+  }
+}
