@@ -8,6 +8,7 @@ import { Analytics } from "@vercel/analytics/next"
 import { SpeedInsights } from "@vercel/speed-insights/next"
 import {formatMatchDateTime,getMatchTimelineText,} from "@/lib/date";
 import { buildMatchInsights } from "@/lib/match-insights";
+//import { useState } from "react";
 
 function Card({
   title,
@@ -296,6 +297,8 @@ const [leagueStatsLoading, setLeagueStatsLoading] = useState(false);
 const [pendingMatchesSubTab, setPendingMatchesSubTab] = useState("");
 const [instantDeliveryStatus, setInstantDeliveryStatus] = useState("");
 const [showPublicLeagueDrawer, setShowPublicLeagueDrawer] = useState(false);
+const [showFollowedLeaguesDrawer, setShowFollowedLeaguesDrawer] =
+  useState(false);
 const isSuperAdmin =
   session?.user?.email ===
   "surprisecricket11@gmail.com";
@@ -6938,12 +6941,19 @@ onClick={() => {
                 </button>
               )}
               <button
-  type="button"
-  className="mgmt-clean-btn public-discover-btn"
-  onClick={() => setShowPublicLeagueDrawer(true)}
->
-  🌐 Discover Public Leagues
-</button>
+                type="button"
+                className="mgmt-clean-btn"
+                onClick={() => setShowFollowedLeaguesDrawer(true)}
+              >
+                ⭐ Followed Leagues
+              </button>
+            <button
+              type="button"
+              className="mgmt-clean-btn public-discover-btn"
+              onClick={() => setShowPublicLeagueDrawer(true)}
+            >
+            🌐 Discover Public Leagues
+          </button>
           </div>
         </section>
 
@@ -10599,6 +10609,31 @@ onClick={() => {
         </button>
       </div>
     </div>
+  </div>
+)}
+{showFollowedLeaguesDrawer && (
+  <div className="public-league-drawer-backdrop">
+    <aside className="public-league-drawer">
+      <div className="public-league-drawer-head">
+        <div>
+          <h3>⭐ Followed Leagues</h3>
+          <p>Your followed public leagues will appear here.</p>
+        </div>
+
+        <button
+          type="button"
+          onClick={() => setShowFollowedLeaguesDrawer(false)}
+        >
+          ✕
+        </button>
+      </div>
+
+      <a href="/explore" className="public-league-explore-card">
+        <strong>Explore public leagues</strong>
+        <span>Find leagues to follow from the public Explore page.</span>
+        <b>Open Explore →</b>
+      </a>
+    </aside>
   </div>
 )}
 {showPublicLeagueDrawer && (

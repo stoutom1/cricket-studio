@@ -182,6 +182,31 @@ export default function PublicLeagueViewClient({ league }) {
   const [publicSearch, setPublicSearch] = useState("");
   const [publicStatsTab, setPublicStatsTab] = useState("batting");
   const [publicLeadersTab, setPublicLeadersTab] = useState("batting");
+  const [isFollowing, setIsFollowing] = useState(Boolean(league.isFollowing));
+  const [followBusy, setFollowBusy] = useState(false);
+async function toggleFollowLeague() {
+  try {
+    setFollowBusy(true);
+console.log("FOLLOW LEAGUE", league);
+console.log("FOLLOW LEAGUE ID", league.id);
+    const res = await fetch(`/api/leagues/${league.id}/follow`, {
+      method: isFollowing ? "DELETE" : "POST",
+      credentials: "include",
+    });
+
+    const data = await res.json().catch(() => ({}));
+
+    if (!res.ok) {
+      throw new Error(data.error || "Unable to follow league.");
+    }
+
+    setIsFollowing(Boolean(data.followed));
+  } catch (err) {
+    alert(err.message);
+  } finally {
+    setFollowBusy(false);
+  }
+}
 
   const years = useMemo(
     () =>
@@ -333,6 +358,17 @@ return (
 
       <div className="public-wow-controls">
         <button type="button" onClick={copyLeagueLink}>🔗 Copy League Link</button>
+<button
+  type="button"
+  onClick={toggleFollowLeague}
+  disabled={followBusy}
+>
+  {followBusy
+    ? "Saving..."
+    : isFollowing
+    ? "⭐ Following"
+    : "☆ Follow League"}
+</button>
         <a href="/explore">🧭 Explore Leagues</a>
 
       </div>

@@ -1,6 +1,8 @@
 import prisma from "@/lib/prisma";
 import { notFound } from "next/navigation";
 import PublicLeagueViewClient from "@/components/public-league-view-client";
+import { getServerSession } from "next-auth";
+import { authOptions } from "@/lib/auth";
 import {
   buildMatchStats,
   summarizeInningsDetailed,
@@ -96,7 +98,36 @@ balls: {
     notFound();
   }
 
+  const session = await getServerSession(authOptions);
+
+let isFollowing = false;
+
+if (session?.user?.email && league?.id) {
+  const user = await prisma.user.findUnique({
+    where: { email: session.user.email },
+    select: { id: true },
+  });
+
+  if (user) {
+    const follow = await prisma.leagueFollower.findUnique({
+      where: {
+        userId_leagueId: {
+          userId: user.id,
+          leagueId: league.id,
+        },
+      },
+    });
+
+    isFollowing = Boolean(follow);
+  }
+}
+
+const leagueForClient = {
+  ...league,
+  isFollowing,
+};
+
   const safeLeague = JSON.parse(JSON.stringify(league));
 
-  return <PublicLeagueViewClient league={safeLeague} />;
+  return <PublicLeagueViewClient league={leagueForClient} />;
 }

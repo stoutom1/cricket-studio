@@ -19,6 +19,7 @@ model User {
   resetToken          String?
   resetTokenExpiry    DateTime?
   createdAt           DateTime             @default(now())
+  leagueFollowers     LeagueFollower[]
 }
 
 model Team {
@@ -134,19 +135,20 @@ model MatchState {
 }
 
 model League {
-  id            Int                  @id @default(autoincrement())
-  name          String               @unique
-  createdAt     DateTime             @default(now())
-  ownerId       String?
-  owner         User?                @relation(fields: [ownerId], references: [id])
-  teams         Team[]
-  registrations LeagueRegistration[]
-  members       LeagueMember[]
-  invites       LeagueInvite[]
-  matches       Match[]
-  visibility    String               @default("PRIVATE")
-  slug          String?              @unique
-  series        Series[]
+  id              Int                  @id @default(autoincrement())
+  name            String               @unique
+  createdAt       DateTime             @default(now())
+  ownerId         String?
+  owner           User?                @relation(fields: [ownerId], references: [id])
+  teams           Team[]
+  registrations   LeagueRegistration[]
+  members         LeagueMember[]
+  invites         LeagueInvite[]
+  matches         Match[]
+  visibility      String               @default("PRIVATE")
+  slug            String?              @unique
+  series          Series[]
+  leagueFollowers LeagueFollower[]
 }
 
 model LeagueRegistration {
@@ -290,4 +292,16 @@ model WicketKeeperChange {
   note          String?
   createdAt     DateTime @default(now())
   match         Match    @relation(fields: [matchId], references: [id], onDelete: Cascade)
+}
+
+model LeagueFollower {
+  id        Int      @id @default(autoincrement())
+  userId    String
+  leagueId  Int
+  createdAt DateTime @default(now())
+
+  user   User   @relation(fields: [userId], references: [id], onDelete: Cascade)
+  league League @relation(fields: [leagueId], references: [id], onDelete: Cascade)
+
+  @@unique([userId, leagueId])
 }
