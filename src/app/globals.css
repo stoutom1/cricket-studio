@@ -2371,7 +2371,6 @@ body {
 .permission-warning {
   padding: 14px;
   border-radius: 12px;
-  background: rgba(255,255,255,0.06);
 }
 
 @media (max-width: 700px) {
@@ -10875,7 +10874,6 @@ body:has(.login-shell) .dashboard-content {
   margin-top: 14px;
   padding: 13px 15px;
   border-radius: 17px;
-  background: rgba(255, 255, 255, 0.055);
   border: 1px solid rgba(255, 255, 255, 0.085);
   font-size: 16px;
   font-weight: 900;
@@ -11752,7 +11750,6 @@ body:has(.login-shell) .dashboard-content {
 .match-officials-grid div {
   padding: 9px 10px;
   border-radius: 14px;
-  background: rgba(255,255,255,0.055);
   border: 1px solid rgba(255,255,255,0.07);
 }
 
@@ -11851,7 +11848,6 @@ body:has(.login-shell) .dashboard-content {
 .match-officials-grid div {
   padding: 8px 10px;
   border-radius: 14px;
-  background: rgba(255, 255, 255, 0.045);
   border: 1px solid rgba(255, 255, 255, 0.07);
 }
 
@@ -15390,5 +15386,75 @@ body:has(.login-shell) .dashboard-content {
 
   .compact-player-row.bowler {
     border-left: 4px solid #f59e0b;
+  }
+}
+.match-setup-summary {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 12px;
+  cursor: pointer;
+}
+
+.match-setup-summary strong {
+  font-size: 18px;
+  font-weight: 800;
+}
+
+.match-setup-summary .share-score-btn {
+  margin-left: auto;
+  white-space: nowrap;
+}
+@media (max-width: 768px) {
+  .match-setup-summary {
+    flex-direction: column;
+    align-items: flex-start;
+  }
+
+  .match-setup-summary .share-score-btn {
+    width: 100%;
+    margin-left: 0;
+  }
+}
+.match-officials-pills {
+  margin-top: 12px;
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 10px;
+}
+
+.team-official-pill {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  flex-wrap: wrap;
+  padding: 10px 12px;
+  border-radius: 999px;
+  background: rgba(15, 23, 42, 0.72);
+  border: 1px solid rgba(96, 165, 250, 0.22);
+}
+
+.team-official-pill strong {
+  color: #ffffff;
+  font-size: 13px;
+  font-weight: 950;
+}
+
+.team-official-pill span {
+  padding: 5px 9px;
+  border-radius: 999px;
+  background: rgba(37, 99, 235, 0.16);
+  color: #bfdbfe;
+  font-size: 12px;
+  font-weight: 850;
+}
+
+@media (max-width: 768px) {
+  .match-officials-pills {
+    grid-template-columns: 1fr;
+  }
+
+  .team-official-pill {
+    border-radius: 18px;
   }
 }

@@ -4701,20 +4701,22 @@ onClick={() => {
       )}
 {matchDetail && (
 <details className="match-setup-card" open>
-    <summary>
-    <strong>⚙️ Match Setup</strong>
-{
-    selectedMatchId ? (
-      <button
-        type="button"
-        className="share-score-btn"
-        onClick={handleShareMatch}
-      >
-        📤 Share - Spectator View
-      </button>
-    ) : null
-  }
-  </summary>
+<summary className="match-setup-summary">
+  <strong>⚙️ Match Setup</strong>
+
+  {selectedMatchId ? (
+    <button
+      type="button"
+      className="share-score-btn"
+      onClick={(e) => {
+        e.preventDefault(); // prevents details from toggling
+        handleShareMatch();
+      }}
+    >
+      📤 Share - Spectator View
+    </button>
+  ) : null}
+</summary>
 
   <div className="match-setup-grid">
     <div>
@@ -4738,30 +4740,25 @@ onClick={() => {
     </div>
   </div>
 
-<div className="match-officials-grid">
-
-<div>
+<div className="match-officials-pills">
+  <div className="team-official-pill">
     <strong>{matchDetail?.teamA?.name || "Team A"}</strong>
-    <p>
-      🧢 Captain:{" "}
-      {playerNameFromTeam(matchDetail?.teamA, matchDetail?.teamACaptainId)}
-    </p>
-    <p>
-      🧤 WK:{" "}
-      {playerNameFromTeam(matchDetail?.teamA, matchDetail?.teamAWicketKeeperId)}
-    </p>
+    <span>
+      🧢 {playerNameFromTeam(matchDetail?.teamA, matchDetail?.teamACaptainId)}
+    </span>
+    <span>
+      🧤 {playerNameFromTeam(matchDetail?.teamA, matchDetail?.teamAWicketKeeperId)}
+    </span>
   </div>
 
-  <div>
+  <div className="team-official-pill">
     <strong>{matchDetail?.teamB?.name || "Team B"}</strong>
-    <p>
-      🧢 Captain:{" "}
-      {playerNameFromTeam(matchDetail?.teamB, matchDetail?.teamBCaptainId)}
-    </p>
-    <p>
-      🧤 WK:{" "}
-      {playerNameFromTeam(matchDetail?.teamB, matchDetail?.teamBWicketKeeperId)}
-    </p>
+    <span>
+      🧢 {playerNameFromTeam(matchDetail?.teamB, matchDetail?.teamBCaptainId)}
+    </span>
+    <span>
+      🧤 {playerNameFromTeam(matchDetail?.teamB, matchDetail?.teamBWicketKeeperId)}
+    </span>
   </div>
 </div>
 </details>
