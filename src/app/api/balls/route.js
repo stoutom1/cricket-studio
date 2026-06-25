@@ -505,7 +505,7 @@ if (inningsEndedByOvers) {
 if (inningsEndedByWickets || noMoreBattersAvailable) {
   inningsEndedReason = "ALL_OUT";
 }
-
+/*
 console.log("BALL SAVE RESULT", {
   inningsNo: payload.inningsNo,
   updatedLegalBallsCount,
@@ -516,6 +516,7 @@ console.log("BALL SAVE RESULT", {
   inningsEndedReason,
   nextInningsNo,
 });
+*/
 
 return NextResponse.json(
   {
