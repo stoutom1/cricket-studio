@@ -82,7 +82,7 @@ function buildResultText(match, innings1, innings2) {
     if(maxWickets != "Infinity"){
     return `${secondTeamName} won by ${maxWickets - innings2.wickets} wickets`;
     }else{
-          return `${secondTeamName} won this game`;
+          return `${secondTeamName} won by chasing the target`;
     }  
   }
 

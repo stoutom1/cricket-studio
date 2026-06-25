@@ -61,10 +61,18 @@ export function buildMatchInsights(scoreboard) {
     const maxWickets = Number(scoreboard?.match?.maxWicketsPerInnings || 10);
 
     if (secondRuns > firstRuns) {
+    const rawMaxWickets = Number(scoreboard?.maxWicketsPerInnings || 0);
+    const maxWickets = rawMaxWickets > 0 ? rawMaxWickets : Infinity;
+    //const maxWickets = match.maxWicketsPerInnings || 10;
+    if(maxWickets != "Infinity"){
       const wicketsLeft = Math.max(maxWickets - secondWickets, 0);
-      resultText = `${secondTeam} won by ${wicketsLeft} wicket${
+   resultText = `${secondTeam} won by ${wicketsLeft} wicket${
         wicketsLeft === 1 ? "" : "s"
       }`;
+    }else{
+   resultText = `${secondTeam} won by chasing the target`;
+    }  
+
     } else if (firstRuns > secondRuns) {
       const margin = firstRuns - secondRuns;
       resultText = `${firstTeam} won by ${margin} run${

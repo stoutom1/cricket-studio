@@ -631,6 +631,8 @@ const response = {
     oversPerInnings: match.oversPerInnings,
     powerplayOversInnings: match.powerplayOversInnings,
     status: match.status,
+    maxWicketsPerInnings: match.maxWicketsPerInnings,
+    maxOversPerBowler: match.maxOversPerBowler,
     shareCode: match.shareCode,
   },
 innings: [

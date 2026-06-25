@@ -462,12 +462,12 @@ function getLastThreeOvers(scoreboard) {
     <span>Momentum</span>
 
     <div>
-      {lastThreeOvers.map((over) => (
-        <b key={over.overNo}>
-          Over {over.overNo}: {over.runs}
-          {over.wickets ? `/${over.wickets}` : ""}
-        </b>
-      ))}
+{lastThreeOvers.map((over, index) => (
+  <b key={over.overNo}>
+    Over {Number(over.overNo) + 1}: {over.runs}
+    {over.wickets ? `/${over.wickets}` : ""}
+  </b>
+))}
     </div>
   </div>
   

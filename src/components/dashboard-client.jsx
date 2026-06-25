@@ -4722,57 +4722,36 @@ onClick={() => {
   title="🏏 Match Center"
   defaultCollapsed={false}
 >
-          <div className="active-league-banner">
-          Active League:{" "}
-          <strong>
-    {leagues.find((l) => Number(l.id) === Number(activeLeagueId))?.name || "No league selected"}
-          </strong>
-        </div>
-  {matches.length === 0 ? (
-    <div className="match-empty-state">
-      No matches yet. Create or start a match first.
+<div className="match-center compact-match-center">
+  <div className="match-control-strip">
+    <div className="active-league-mini">
+      <span>League</span>
+      <strong>
+        {leagues.find((l) => Number(l.id) === Number(activeLeagueId))?.name ||
+          "No league selected"}
+      </strong>
     </div>
-  ) : (
-    <div className="match-center">
-                 <ContextLens />
-      <label className="mgmt-field mgmt-select-field">
-            <span>👇 Choose an active/scheduled/completed match </span>
-            <div className="select-action-hint">
-            <span>Tap to choose</span>
-            <b>⌄</b>
-          </div>
+ <label className="match-picker-compact match-picker-pop">
+  <span>Match</span>
 
-        <select
-          value={selectedMatchId || ""}
-          onChange={(e) => handleScoringMatchSelect(e.target.value)}
-        >
-          <option value="">Choose a match</option>
+  <div className="match-picker-select-shell">
+    <select
+      value={selectedMatchId || ""}
+      onChange={(e) => handleScoringMatchSelect(e.target.value)}
+    >
+      <option value="">Choose a match</option>
 
-          {scoringComboMatches.map((match) => (
-            <option key={match.id} value={match.id}>
-              {getMatchOptionLabel(match)}
-            </option>
-          ))}
-        </select>
-      </label>
-      {selectedMatch && (
-        <div className="selected-match-banner">
-          <div>
-            <strong>
-              {selectedMatch.teamAName} vs {selectedMatch.teamBName}
-            </strong>
-            <span>
-              {selectedMatch.battingFirstTeamName
-                ? `Batting first: ${selectedMatch.battingFirstTeamName}`
-                : "Batting first not decided"}
-            </span>
-          </div>
+      {scoringComboMatches.map((match) => (
+        <option key={match.id} value={match.id}>
+          {getMatchOptionLabel(match)}
+        </option>
+      ))}
+    </select>
+  </div>
+</label>
+    <ContextLens />
 
-          <span className="pill">
-            {selectedMatch.status}
-          </span>
-        </div>
-      )}
+  </div>
 {matchDetail && (
 <details className="match-setup-card" open>
 <summary className="match-setup-summary">
@@ -4793,7 +4772,24 @@ onClick={() => {
     </button>
   )}
 </summary>
+      {selectedMatch && (
+        <div className="selected-match-banner">
+          <div>
+            <strong>
+              {selectedMatch.teamAName} vs {selectedMatch.teamBName}
+            </strong>
+            <span>
+              {selectedMatch.battingFirstTeamName
+                ? `Batting first: ${selectedMatch.battingFirstTeamName}`
+                : "Batting first not decided"}
+            </span>
+          </div>
 
+          <span className="pill">
+            {selectedMatch.status}
+          </span>
+        </div>
+      )}
   <div className="match-setup-grid">
     <div>
       <span>Overs</span>
@@ -4871,7 +4867,6 @@ onClick={() => {
         </div>
       )}
 </div>
-  )}
 </Card>
 {selectedMatchId && effectiveScoringSubTab === "SCOREBOARD" && (
   <Card title="🏟️ Professional Scoreboard" defaultCollapsed={false}
@@ -4957,11 +4952,20 @@ onClick={() => {
               {scoreboard.match?.teamAName} vs {scoreboard.match?.teamBName}
             </h2>
 
-            <p>
-              Batting first: {scoreboard.match?.battingFirstTeamName} •{" "}
-              {scoreboard.match?.oversPerInnings} overs • Powerplay:{" "}
-              {scoreboard.match?.powerplayOversInnings}
-            </p>
+<p>
+  Batting first: {scoreboard.match?.battingFirstTeamName || "-"} •{" "}
+  {scoreboard.match?.oversPerInnings || "-"} overs a side •{" "}
+  Powerplay: {scoreboard.match?.powerplayOversInnings ?? 0} overs •{" "}
+  Wickets:{" "}
+  {Number(scoreboard.match?.maxWicketsPerInnings || 0) > 0
+    ? scoreboard.match.maxWicketsPerInnings
+    : "Unlimited"}{" "}
+  • Max bowler:{" "}
+  {Number(scoreboard.match?.maxOversPerBowler || 0) > 0
+    ? `${scoreboard.match.maxOversPerBowler} overs`
+    : "Unlimited"}
+</p>
+
           </div>
 
           <span className="pill">{scoreboard.match?.status}</span>
