@@ -6570,384 +6570,392 @@ onClick={() => {
     )}
 
     {activeLeagueId && matchesSubTab === "CREATE MATCH" && (
-      <Card title="➕ Create Match">
-        <div className="active-league-banner">
-          Active League:{" "}
-          <strong>
-    {leagues.find((l) => Number(l.id) === Number(activeLeagueId))?.name || "No league selected"}
-          </strong>
+<Card title="➕ Create Match">
+  <form className="form create-match-form pro-create-match-form" onSubmit={handleCreateMatch}>
+    <div className="create-match-topbar">
+      <div>
+        <span>Active League</span>
+        <strong>
+          {leagues.find((l) => Number(l.id) === Number(activeLeagueId))?.name ||
+            "No league selected"}
+        </strong>
+      </div>
 
-        </div>
-        <div className="optional-series-tip">
-  <strong>💡 Series are optional</strong>
-  <span>
-    Use a series only when this match belongs to a tournament, cup, season, or year.
-  </span>
-</div>
-        <div>
-        <form className="form create-match-form" onSubmit={handleCreateMatch}>
-          <div>
- <label>
-  <span>Series / Season</span>
+      <div>
+        <span>Series</span>
+        <small>Optional for tournaments, cups, seasons, or years.</small>
+      </div>
+    </div>
 
-  <select
-    value={matchForm.seriesId || ""}
-    onChange={(e) =>
-      setMatchForm((prev) => ({
-        ...prev,
-        seriesId: e.target.value,
-      }))
-    }
-  >
-    <option value="">No Series (Optional)</option>
+    <section className="create-match-section">
+      <h3>🏆 Match Info</h3>
 
-    {seriesList.map((series) => (
-      <option key={series.id} value={series.id}>
-        {series.name} • {series.year}
-      </option>
-    ))}
-  </select>
-
-  <small className="field-help">
-    Optional. Leave as No Series for friendly, practice, or standalone matches.
-  </small>
-</label>
-          </div>
-          <div className="form-two-col">
-            <label>
-              <span>Team A</span>
-              <select
-                value={matchForm.teamAId || ""}
-                onChange={(e) =>
-                  setMatchForm((prev) => ({
-                    ...prev,
-                    teamAId: e.target.value
-                  }))
-                }
-                required
-              >
-                <option value="">Select Team A</option>
-                {teamsForMatch.map((team) => (
-                  <option key={team.id} value={team.id}>
-                    {team.name}
-                  </option>
-                ))}
-              </select>
-            </label>
-
-            <label>
-              <span>Team B</span>
-              <select
-                value={matchForm.teamBId || ""}
-                onChange={(e) =>
-                  setMatchForm((prev) => ({
-                    ...prev,
-                    teamBId: e.target.value
-                  }))
-                }
-                required
-              >
-                <option value="">Select Team B</option>
-                {teamsForMatch.map((team) => (
-                  <option key={team.id} value={team.id}>
-                    {team.name}
-                  </option>
-                ))}
-              </select>
-            </label>
-                <label>
-      <span>Team A Captain Optional</span>
-      <select
-        value={matchForm.teamACaptainId || ""}
-        onChange={(e) =>
-          setMatchForm((prev) => ({
-            ...prev,
-            teamACaptainId: e.target.value,
-          }))
-        }
-      >
-        <option value="">Select Captain</option>
-        {teams
-          .find((t) => Number(t.id) === Number(matchForm.teamAId))
-          ?.players?.map((player) => (
-            <option key={player.id} value={player.id}>
-              {player.name}
+      <label>
+        <span>Series / Season</span>
+        <select
+          value={matchForm.seriesId || ""}
+          onChange={(e) =>
+            setMatchForm((prev) => ({
+              ...prev,
+              seriesId: e.target.value,
+            }))
+          }
+        >
+          <option value="">No Series (Optional)</option>
+          {seriesList.map((series) => (
+            <option key={series.id} value={series.id}>
+              {series.name} • {series.year}
             </option>
           ))}
-      </select>
-    </label>
-    <label>
-      <span>Team B Captain Optional</span>
-      <select
-        value={matchForm.teamBCaptainId || ""}
-        onChange={(e) =>
-          setMatchForm((prev) => ({
-            ...prev,
-            teamBCaptainId: e.target.value,
-          }))
-        }
-      >
-        <option value="">Select Captain</option>
-        {teams
-          .find((t) => Number(t.id) === Number(matchForm.teamBId))
-          ?.players?.map((player) => (
-            <option key={player.id} value={player.id}>
-              {player.name}
-            </option>
-          ))}
-      </select>
-    </label>
-    <label>
-      <span>Team A Wicketkeeper Optional</span>
-      <select
-        value={matchForm.teamAWicketKeeperId || ""}
-        onChange={(e) =>
-          setMatchForm((prev) => ({
-            ...prev,
-            teamAWicketKeeperId: e.target.value,
-          }))
-        }
-      >
-        <option value="">Select Wicketkeeper</option>
-        {teams
-          .find((t) => Number(t.id) === Number(matchForm.teamAId))
-          ?.players?.map((player) => (
-            <option key={player.id} value={player.id}>
-              {player.name}
-            </option>
-          ))}
-      </select>
-    </label>
-    <label>
-      <span>Team B Wicketkeeper Optional</span>
-      <select
-        value={matchForm.teamBWicketKeeperId || ""}
-        onChange={(e) =>
-          setMatchForm((prev) => ({
-            ...prev,
-            teamBWicketKeeperId: e.target.value,
-          }))
-        }
-      >
-        <option value="">Select Wicketkeeper</option>
-        {teams
-          .find((t) => Number(t.id) === Number(matchForm.teamBId))
-          ?.players?.map((player) => (
-            <option key={player.id} value={player.id}>
-              {player.name}
-            </option>
-          ))}
-      </select>
-    </label>
-          </div>
-          <label>
-            <span>Batting First</span>
-            <select
-              value={matchForm.battingFirstTeamId || ""}
-              onChange={(e) =>
-                setMatchForm((prev) => ({
-                  ...prev,
-                  battingFirstTeamId: e.target.value
-                }))
-              }
-            >
-              <option value="">Decide when match starts</option>
-              {teams
-                .filter((t) =>
-                  [matchForm.teamAId, matchForm.teamBId].includes(String(t.id))
-                )
-                .map((team) => (
-                  <option key={team.id} value={team.id}>
-                    {team.name}
-                  </option>
-                ))}
-            </select>
-            <small className="muted">Optional for scheduled matches</small>
-          </label>
+        </select>
+      </label>
 
-          <label>
-            <span>Scheduled Start</span>
-            <input
-              type="datetime-local"
-              value={matchForm.scheduledAt || ""}
-              onChange={(e) =>
-                setMatchForm((prev) => ({
-                  ...prev,
-                  scheduledAt: e.target.value
-                }))
-              }
-            />
-            <small className="muted">Leave empty if date is not decided yet</small>
-          </label>
+      <div className="form-two-col">
+        <label>
+          <span>Team A</span>
+          <select
+            value={matchForm.teamAId || ""}
+            onChange={(e) =>
+              setMatchForm((prev) => ({
+                ...prev,
+                teamAId: e.target.value,
+              }))
+            }
+            required
+          >
+            <option value="">Select Team A</option>
+            {teamsForMatch.map((team) => (
+              <option key={team.id} value={team.id}>
+                {team.name}
+              </option>
+            ))}
+          </select>
+        </label>
 
-          <div className="form-two-col">
-            <label>
-              <span>Overs per innings</span>
-              <input
-                type="number"
-                min="1"
-                value={matchForm.oversPerInnings}
-                onChange={(e) =>
-                  setMatchForm((prev) => ({
-                    ...prev,
-                    oversPerInnings: e.target.value
-                  }))
-                }
-                required
-              />
-            </label>
+        <label>
+          <span>Team B</span>
+          <select
+            value={matchForm.teamBId || ""}
+            onChange={(e) =>
+              setMatchForm((prev) => ({
+                ...prev,
+                teamBId: e.target.value,
+              }))
+            }
+            required
+          >
+            <option value="">Select Team B</option>
+            {teamsForMatch.map((team) => (
+              <option key={team.id} value={team.id}>
+                {team.name}
+              </option>
+            ))}
+          </select>
+        </label>
+      </div>
 
-            <label>
-              <span>Powerplay overs</span>
-              <input
-                type="number"
-                min="0"
-                value={matchForm.powerplayOversInnings}
-                onChange={(e) =>
-                  setMatchForm((prev) => ({
-                    ...prev,
-                    powerplayOversInnings: e.target.value
-                  }))
-                }
-              />
-            </label>
-          </div>
+      <div className="form-two-col">
+        <label>
+          <span>Batting First</span>
+          <select
+            value={matchForm.battingFirstTeamId || ""}
+            onChange={(e) =>
+              setMatchForm((prev) => ({
+                ...prev,
+                battingFirstTeamId: e.target.value,
+              }))
+            }
+          >
+            <option value="">Decide when match starts</option>
+            {teams
+              .filter((t) =>
+                [matchForm.teamAId, matchForm.teamBId].includes(String(t.id))
+              )
+              .map((team) => (
+                <option key={team.id} value={team.id}>
+                  {team.name}
+                </option>
+              ))}
+          </select>
+        </label>
 
-          <div className="form-two-col">
-            <label>
-              <span>Maximum wickets</span>
-              <input
-                type="number"
-                value={matchForm.maxWicketsPerInnings}
-                onChange={(e) =>
-                  setMatchForm((prev) => ({
-                    ...prev,
-                    maxWicketsPerInnings: e.target.value
-                  }))
-                }
-              />
-              <small className="muted">Leave empty for unlimited</small>
-            </label>
+        <label>
+          <span>Scheduled Start</span>
+          <input
+            type="datetime-local"
+            value={matchForm.scheduledAt || ""}
+            onChange={(e) =>
+              setMatchForm((prev) => ({
+                ...prev,
+                scheduledAt: e.target.value,
+              }))
+            }
+          />
+        </label>
+      </div>
+    </section>
 
-            <label>
-              <span>Max overs per bowler</span>
-              <input
-                type="number"
-                min="1"
-                value={matchForm.maxOversPerBowler}
-                onChange={(e) =>
-                  setMatchForm((prev) => ({
-                    ...prev,
-                    maxOversPerBowler: e.target.value
-                  }))
-                }
-              />
-              <small className="muted">Example: 4 in T20</small>
-            </label>
-          </div>
+    <section className="create-match-section">
+      <h3>👥 Captains & Wicketkeepers</h3>
 
-          {!permissions?.canScoreMatch ? (
-            <div className="permission-warning">
-              👉 You do not have permission to create a match.
-            </div>
-          ) : (
-            <button type="submit" className="btn create-match-btn">
-              Create Match
-            </button>
-          )}
-        </form>
-        </div>
-      </Card>
+      <div className="form-two-col">
+        <label>
+          <span>Team A Captain</span>
+          <select
+            value={matchForm.teamACaptainId || ""}
+            onChange={(e) =>
+              setMatchForm((prev) => ({
+                ...prev,
+                teamACaptainId: e.target.value,
+              }))
+            }
+          >
+            <option value="">Optional</option>
+            {teams
+              .find((t) => Number(t.id) === Number(matchForm.teamAId))
+              ?.players?.map((player) => (
+                <option key={player.id} value={player.id}>
+                  {player.name}
+                </option>
+              ))}
+          </select>
+        </label>
+
+        <label>
+          <span>Team B Captain</span>
+          <select
+            value={matchForm.teamBCaptainId || ""}
+            onChange={(e) =>
+              setMatchForm((prev) => ({
+                ...prev,
+                teamBCaptainId: e.target.value,
+              }))
+            }
+          >
+            <option value="">Optional</option>
+            {teams
+              .find((t) => Number(t.id) === Number(matchForm.teamBId))
+              ?.players?.map((player) => (
+                <option key={player.id} value={player.id}>
+                  {player.name}
+                </option>
+              ))}
+          </select>
+        </label>
+
+        <label>
+          <span>Team A Wicketkeeper</span>
+          <select
+            value={matchForm.teamAWicketKeeperId || ""}
+            onChange={(e) =>
+              setMatchForm((prev) => ({
+                ...prev,
+                teamAWicketKeeperId: e.target.value,
+              }))
+            }
+          >
+            <option value="">Optional</option>
+            {teams
+              .find((t) => Number(t.id) === Number(matchForm.teamAId))
+              ?.players?.map((player) => (
+                <option key={player.id} value={player.id}>
+                  {player.name}
+                </option>
+              ))}
+          </select>
+        </label>
+
+        <label>
+          <span>Team B Wicketkeeper</span>
+          <select
+            value={matchForm.teamBWicketKeeperId || ""}
+            onChange={(e) =>
+              setMatchForm((prev) => ({
+                ...prev,
+                teamBWicketKeeperId: e.target.value,
+              }))
+            }
+          >
+            <option value="">Optional</option>
+            {teams
+              .find((t) => Number(t.id) === Number(matchForm.teamBId))
+              ?.players?.map((player) => (
+                <option key={player.id} value={player.id}>
+                  {player.name}
+                </option>
+              ))}
+          </select>
+        </label>
+      </div>
+    </section>
+
+    <section className="create-match-section">
+      <h3>⚙️ Match Rules</h3>
+
+      <div className="form-two-col">
+        <label>
+          <span>Overs / Innings</span>
+          <input
+            type="number"
+            min="1"
+            value={matchForm.oversPerInnings}
+            onChange={(e) =>
+              setMatchForm((prev) => ({
+                ...prev,
+                oversPerInnings: e.target.value,
+              }))
+            }
+            required
+          />
+        </label>
+
+        <label>
+          <span>Powerplay Overs</span>
+          <input
+            type="number"
+            min="0"
+            value={matchForm.powerplayOversInnings}
+            onChange={(e) =>
+              setMatchForm((prev) => ({
+                ...prev,
+                powerplayOversInnings: e.target.value,
+              }))
+            }
+          />
+        </label>
+
+        <label>
+          <span>Max Wickets</span>
+          <input
+            type="number"
+            value={matchForm.maxWicketsPerInnings}
+            onChange={(e) =>
+              setMatchForm((prev) => ({
+                ...prev,
+                maxWicketsPerInnings: e.target.value,
+              }))
+            }
+          />
+          <small className="muted">Empty = unlimited</small>
+        </label>
+
+        <label>
+          <span>Max/Bowler</span>
+          <input
+            type="number"
+            min="1"
+            value={matchForm.maxOversPerBowler}
+            onChange={(e) =>
+              setMatchForm((prev) => ({
+                ...prev,
+                maxOversPerBowler: e.target.value,
+              }))
+            }
+          />
+          <small className="muted">Example: 4 in T20</small>
+        </label>
+      </div>
+    </section>
+
+    {!permissions?.canScoreMatch ? (
+      <div className="permission-warning">
+        👉 You do not have permission to create a match.
+      </div>
+    ) : (
+      <button type="submit" className="btn create-match-btn pro-create-submit">
+        ✅ Create Match
+      </button>
+    )}
+  </form>
+</Card>
     )}
 
     {activeLeagueId && matchesSubTab === "ACTIVE" && (
-      <Card title="🟢 Active Matches">
-        {activeMatches.length === 0 ? (
-          <div className="empty-state">No active matches found.</div>
-        ) : (
-          <div className="match-card-list">
-            {filteredActiveMatches.map((match) => {
-              const isSelected = String(selectedMatchId) === String(match.id);
+<Card title="🟢 Active Matches">
+  {activeMatches.length === 0 ? (
+    <div className="empty-state">No active matches found.</div>
+  ) : (
+    <div className="pro-active-list">
+      {filteredActiveMatches.map((match) => {
+        const isSelected = String(selectedMatchId) === String(match.id);
 
-              return (
-                <div key={match.id} className={`match-tile ${isSelected ? "selected" : ""}`}>
-                  <button
-                    type="button"
-                    className="match-tile-main"
-                    onClick={() => {
-                      setSelectedMatchId(String(match.id));
-                      handleMatchSelect(match.id);
-                    }}
-                  >
-<div className="match-tile-main">
-  <div className="match-tile-top">
-    <strong>
-      {match.teamAName} vs {match.teamBName}
-    </strong>
+        return (
+          <article
+            key={match.id}
+            className={`pro-active-card ${isSelected ? "selected" : ""}`}
+          >
+            <button
+              type="button"
+              className="pro-active-main"
+              onClick={() => {
+                setSelectedMatchId(String(match.id));
+                handleMatchSelect(match.id);
+              }}
+            >
+              <div className="pro-active-header">
+                <div>
+                  <span className="status-pill live-status-pill">
+                    ● {match.status}
+                  </span>
 
-    <span className="pill">
-      {match.status}
-    </span>
-  </div>
-<div className="match-timeline-line">
-  🕒 {getMatchTimelineText(match)}
-</div>
-  <div className="match-meta compact">
-    <span>
-      🏏 Bat 1st: {match.battingFirstTeamName || "Not decided"}
-    </span>
+                  <h3>
+                    {match.teamAName}
+                    <b>vs</b>
+                    {match.teamBName}
+                  </h3>
 
-    <span>
-      🎯 {match.oversPerInnings} overs match
-    </span>
-
-    <span>
-      ⚾ Max wkts allowed: {match.maxWicketsPerInnings ?? "∞"}
-    </span>
-
-    <span>
-      ⚡ Powerplay overs: {match.powerplayOversInnings ?? "∞"}
-    </span>
-  </div>
-</div>
-                    <div className="match-live-score">
-                      🏏 Live Score:{" "}
-                      <strong>
-                        {match.scoreSummary || match.liveScore || "Open match to view score"}
-                      </strong>
-                    </div>
-                  </button>
-
-                  <div className="match-tile-actions">
-                    {permissions?.canScoreMatch && (
-                      <button
-                        type="button"
-                        className="btn"
-                        onClick={() => {
-                          setSelectedMatchId(String(match.id));
-                          handleMatchSelect(match.id);
-                        }}
-                      >
-                        {isSelected ? "Scoring Open" : "Open Scoring"}
-                      </button>
-                    )}
-
-                    {permissions?.canDeleteMatch && (
-                      <button
-                        type="button"
-                        className="btn btn-outline"
-                        onClick={() => handleDeleteMatch(match.id)}
-                      >
-                        Delete
-                      </button>
-                    )}
-                  </div>
+                  <p>🕒 {getMatchTimelineText(match)}</p>
                 </div>
-              );
-            })}
-          </div>
-        )}
-      </Card>
+
+                <div className="pro-live-score-box">
+                  <span>Live Score</span>
+                  <strong>
+                    {match.scoreSummary ||
+                      match.liveScore ||
+                      "Open match to view"}
+                  </strong>
+                </div>
+              </div>
+
+              <div className="pro-match-facts">
+                <span>🏏 Bat 1st: {match.battingFirstTeamName || "Not decided"}</span>
+                <span>🎯 Ov: {match.oversPerInnings}</span>
+                <span>⚾ Wkts: {match.maxWicketsPerInnings ?? "∞"}</span>
+                <span>⚡ PP: {match.powerplayOversInnings ?? 0}</span>
+                <span>🎳 Max/Bwl: {match.maxOversPerBowler ?? "∞"}</span>
+              </div>
+            </button>
+
+            <div className="pro-active-actions">
+              {permissions?.canScoreMatch && (
+                <button
+                  type="button"
+                  className={`start-match-btn ${isSelected ? "is-open" : ""}`}
+                  onClick={() => {
+                    setSelectedMatchId(String(match.id));
+                    handleMatchSelect(match.id);
+                  }}
+                >
+                  {isSelected ? "✅ Scoring Open" : "🏏 Open Scoring"}
+                </button>
+              )}
+
+              {permissions?.canDeleteMatch && (
+                <button
+                  type="button"
+                  className="mini-action-btn danger-mini-btn"
+                  onClick={() => handleDeleteMatch(match.id)}
+                >
+                  🗑️
+                </button>
+              )}
+            </div>
+          </article>
+        );
+      })}
+    </div>
+  )}
+</Card>
     )}
 
     {activeLeagueId && matchesSubTab === "SCHEDULED" && (
@@ -6955,206 +6963,204 @@ onClick={() => {
         {scheduledMatches.length === 0 ? (
           <div className="empty-state">No scheduled matches found.</div>
         ) : (
-          <div className="match-card-list">
-            {filteredScheduledMatches.map((match) => (
-              <div key={match.id} className="match-tile">
-                <div className="match-tile-main">
-  <div className="match-tile-top">
-    <strong>
-      {match.teamAName} vs {match.teamBName}
-    </strong>
+<div className="pro-scheduled-list">
+  {filteredScheduledMatches.map((match) => (
+    <article
+      key={match.id}
+      className="pro-scheduled-card"
+    >
+      <div className="pro-scheduled-header">
+        <div>
+          <span className="status-pill">
+            {match.status}
+          </span>
 
-    <span className="pill">
-      {match.status}
-    </span>
-  </div>
+          <h3>
+            {match.teamAName}
+            <b>vs</b>
+            {match.teamBName}
+          </h3>
 
-  <div className="match-meta compact">
-    <span>
-      🏏 Bat 1st: {match.battingFirstTeamName || "Not decided"}
-    </span>
+          <p>
+            📅 {match.scheduledAt
+              ? formatDate(match.scheduledAt)
+              : "Schedule not decided"}
+          </p>
+        </div>
 
-    <span>
-      🎯 {match.oversPerInnings} overs match
-    </span>
+        <div className="pro-scheduled-actions">
+          {permissions?.canScoreMatch && (
+            <button
+              type="button"
+              className="start-match-btn"
+              onClick={() =>
+                handleStartMatch(match)
+              }
+            >
+              ▶ Start Match
+            </button>
+          )}
 
-    <span>
-      ⚾ Max wkts allowed: {match.maxWicketsPerInnings ?? "∞"}
-    </span>
+          {normalizeStatus(match.status) === "SCHEDULED" && (
+            <button
+              type="button"
+              className="mini-action-btn"
+              onClick={() =>
+                openEditMatchModal(match)
+              }
+            >
+              ✏️ Edit
+            </button>
+          )}
 
-    <span>
-      ⚡ Powerplay overs: {match.powerplayOversInnings ?? "∞"}
-    </span>
-  </div>
-                  <div className="match-scheduled-time">
-                    📅 Scheduled:{" "}
-                    <strong>
-                      {match.scheduledAt
-                        ? formatDate(match.scheduledAt)
-                        : "Not decided yet"}
-                    </strong>
-                  </div>
+          {permissions?.canDeleteMatch && (
+            <button
+              type="button"
+              className="mini-action-btn danger-mini-btn"
+              onClick={() =>
+                handleDeleteMatch(match.id)
+              }
+            >
+              🗑️
+            </button>
+          )}
+        </div>
+      </div>
 
+      <div className="pro-match-facts">
+        <span>
+          🏏 Bat 1st:{" "}
+          {match.battingFirstTeamName ||
+            "Not decided"}
+        </span>
 
-                </div>
+        <span>
+          🎯 Ov: {match.oversPerInnings}
+        </span>
 
-                <div className="match-tile-actions">
-                  {permissions?.canScoreMatch && (
-                    <button
-                      type="button"
-                      className="btn"
-                      onClick={() => handleStartMatch(match)}
-                    >
-                      ▶ Start Match
-                    </button>
-                  )}
-{normalizeStatus(match.status) === "SCHEDULED" && (
-  <button
-    type="button"
-    className="btn btn-outline"
-    onClick={() => openEditMatchModal(match)}
-  >
-    ✏️ Edit
-  </button>
-)}
-                  {permissions?.canDeleteMatch && (
-                    <button
-                      type="button"
-                      className="btn btn-outline"
-                      onClick={() => handleDeleteMatch(match.id)}
-                    >
-                      Delete
-                    </button>
-                  )}
-                </div>
-              </div>
-            ))}
-          </div>
+        <span>
+          ⚾ Wkts:{" "}
+          {match.maxWicketsPerInnings ?? "∞"}
+        </span>
+
+        <span>
+          ⚡ PP:{" "}
+          {match.powerplayOversInnings ?? 0}
+        </span>
+
+        <span>
+          🎳 Max/Bwl:{" "}
+          {match.maxOversPerBowler ?? "∞"}
+        </span>
+      </div>
+    </article>
+  ))}
+</div>
         )}
       </Card>
     )}
 
 {activeLeagueId && matchesSubTab === "COMPLETED" && (
-  <Card title="✅ Completed Matches">
-    {completedMatches.length === 0 ? (
-      <div className="empty-state">No completed matches found.</div>
-    ) : (
-      <div className="completed-match-list">
-        {filteredCompletedMatches.map((match) => {
-          const normalizedStatus = String(match.status || "")
-            .trim()
-            .replace(/[\s-]+/g, "_")
-            .toUpperCase();
+<Card title="✅ Completed Matches">
+  {completedMatches.length === 0 ? (
+    <div className="empty-state">No completed matches found.</div>
+  ) : (
+    <div className="completed-match-list pro-completed-list">
+      {filteredCompletedMatches.map((match) => {
+        const normalizedStatus = String(match.status || "")
+          .trim()
+          .replace(/[\s-]+/g, "_")
+          .toUpperCase();
 
-          const canShowAi =
-            normalizedStatus === "COMPLETED" ||
-            normalizedStatus === "COMPLETED_LOCKED";
+        const canShowAi =
+          normalizedStatus === "COMPLETED" ||
+          normalizedStatus === "COMPLETED_LOCKED";
 
-          return (
-            <div key={match.id} className="completed-match-card">
-              <div className="completed-match-main">
-                <div className="completed-match-header">
-                  <div>
-                    <h3>
-                      {match.teamAName} <span>vs</span> {match.teamBName}
-                    </h3>
+        return (
+          <article key={match.id} className="completed-match-card pro-completed-card">
+            <div className="pro-completed-top">
+              <div className="pro-completed-title">
+                <span className="status-pill">{match.status}</span>
 
-                    <div className="completed-match-status-row">
-                      <span className="status-pill">{match.status}</span>
-                      <span className="mini-pill">
-                        🎯 {match.oversPerInnings} overs
-                      </span>
-                    </div>
-                  </div>
+                <h3>
+                  {match.teamAName}
+                  <b>vs</b>
+                  {match.teamBName}
+                </h3>
 
-                  <div className="completed-match-actions">
-                    <button
-                      type="button"
-                      className="view-match-btn"
-                      onClick={() => {
-                        setSelectedMatchId(String(match.id));
-                        handleMatchSelect(match.id);
-                      }}
-                    >
-                      🏟️ View
-                    </button>
+                <p>🏆 {match.resultText || "Result unavailable"}</p>
+              </div>
 
-                    {canShowAi && (
-                      <button
-                        type="button"
-                        className="mini-action-btn ai-mini-btn"
-                        disabled={aiAnalysisLoading}
-                        onClick={() => loadAiAnalysis(match.id)}
-                      >
-                        {aiAnalysisLoading
-                          ? "⏳ Generating..."
-                          : "🤖 AI Insights"}
-                      </button>
-                    )}
+              <div className="pro-completed-actions">
+                <button
+                  type="button"
+                  className="view-match-btn"
+                  onClick={() => {
+                    setSelectedMatchId(String(match.id));
+                    handleMatchSelect(match.id);
+                  }}
+                >
+                  🏟️ View
+                </button>
 
-                    {permissions?.canDeleteMatch && (
-                      <button
-                        type="button"
-                        className="mini-action-btn danger-mini-btn"
-                        onClick={() => handleDeleteMatch(match.id)}
-                      >
-                        🗑️ Delete
-                      </button>
-                    )}
-                  </div>
-                </div>
+                {canShowAi && (
+                  <button
+                    type="button"
+                    className="mini-action-btn ai-mini-btn"
+                    disabled={aiAnalysisLoading}
+                    onClick={() => loadAiAnalysis(match.id)}
+                  >
+                    {aiAnalysisLoading ? "⏳ AI..." : "🤖 AI"}
+                  </button>
+                )}
 
-                <div className="completed-score-box">
-                  <div className="innings-score-line">
-                    <span>1st Innings</span>
-                    <strong>{match.firstInningsScore}</strong>
-                  </div>
-
-                  <div className="innings-score-line">
-                    <span>2nd Innings</span>
-                    <strong>{match.secondInningsScore}</strong>
-                  </div>
-                </div>
-
-                <div className="completed-result-strip">
-                  🏆 <strong>{match.resultText}</strong>
-                </div>
-
-                <div className="completed-match-meta">
-                  <span>
-                    🏏 Bat 1st: {match.battingFirstTeamName || "Not decided"}
-                  </span>
-                  <span>
-                    ⚾ Max wkts: {match.maxWicketsPerInnings ?? "∞"}
-                  </span>
-                  <span>
-                    ⚡ Powerplay: {match.powerplayOversInnings ?? "∞"}
-                  </span>
-                </div>
-                                  <div className="completed-match-meta">
-                   <span>
-{match?.startedAt && (
-  <p>Started: {formatMatchDateTime(match.startedAt)}</p>
-)}
-</span>
-<span>
-{match?.endedAt && (
-  <p>Ended: {formatMatchDateTime(match.endedAt)}</p>
-)}
-</span>
-<span>
-{match?.lockedAt && (
-  <p>Locked: {formatMatchDateTime(match.lockedAt)}</p>
-)}
-</span>
-</div>
+                {permissions?.canDeleteMatch && (
+                  <button
+                    type="button"
+                    className="mini-action-btn danger-mini-btn"
+                    onClick={() => handleDeleteMatch(match.id)}
+                  >
+                    🗑️
+                  </button>
+                )}
               </div>
             </div>
-          );
-        })}
-      </div>
-    )}
-  </Card>
+
+            <div className="pro-score-strip">
+              <div>
+                <span>1st Innings</span>
+                <strong>{match.firstInningsScore}</strong>
+              </div>
+
+              <div>
+                <span>2nd Innings</span>
+                <strong>{match.secondInningsScore}</strong>
+              </div>
+            </div>
+
+<div className="pro-match-facts">
+  <span>🏏 Bat 1st: {match.battingFirstTeamName || "Not decided"}</span>
+
+  <span>🎯 Ov: {match.oversPerInnings}</span>
+
+  <span>⚾ Wkts: {match.maxWicketsPerInnings ?? "∞"}</span>
+
+  <span>⚡ PP: {match.powerplayOversInnings ?? 0}</span>
+
+  <span>🎳 Max/Bwl: {match.maxOversPerBowler ?? "∞"}</span>
+</div>
+
+            <div className="pro-match-timeline">
+              {match?.startedAt && <span>Started {formatMatchDateTime(match.startedAt)}</span>}
+              {match?.endedAt && <span>Ended {formatMatchDateTime(match.endedAt)}</span>}
+              {match?.lockedAt && <span>Locked {formatMatchDateTime(match.lockedAt)}</span>}
+            </div>
+          </article>
+        );
+      })}
+    </div>
+  )}
+</Card>
 )}
   </div>
 )}
