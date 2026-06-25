@@ -7081,58 +7081,53 @@ onClick={() => {
             key={match.id}
             className="completed-match-card pro-completed-card"
           >
-            <div className="pro-completed-top">
-              <div className="pro-completed-title">
-                <span className="status-pill">{match.status}</span>
+<div className="completed-card-headline">
+  <div className="pro-completed-title">
+    <span className="status-pill">{match.status}</span>
 
-                <h3>
-                  {match.teamAName}
-                  <b>vs</b>
-                  {match.teamBName}
-                </h3>
+    <h3>
+      {match.teamAName}
+      <b>vs</b>
+      {match.teamBName}
+    </h3>
 
-                <p>🏆 {match.resultText || "Result unavailable"}</p>
+    <p>🏆 {match.resultText || "Result unavailable"}</p>
+  </div>
 
-                {canShowAi && (
-                  <button
-                    type="button"
-                    className="ai-compact-pill"
-                    disabled={aiAnalysisLoading}
-                    onClick={() => loadAiAnalysis(match.id)}
-                  >
-                    <span>🤖 AI Review</span>
-                    <small>Summary • MVP • Momentum</small>
-                    <strong>
-                      {aiAnalysisLoading ? "Generating..." : "Generate →"}
-                    </strong>
-                  </button>
-                )}
-              </div>
+  <div className="completed-top-actions">
+    {canShowAi && (
+      <button
+        type="button"
+        className="ai-top-action-btn"
+        disabled={aiAnalysisLoading}
+        onClick={() => loadAiAnalysis(match.id)}
+      >
+        🤖 {aiAnalysisLoading ? "Generating..." : "AI Review"}
+      </button>
+    )}
 
-              <div className="pro-completed-actions">
-                <button
-                  type="button"
-                  className="view-match-btn"
-                  onClick={() => {
-                    setSelectedMatchId(String(match.id));
-                    handleMatchSelect(match.id);
-                  }}
-                >
-                  🏟️ View
-                </button>
+    <button
+      type="button"
+      className="view-match-btn compact-view-btn"
+      onClick={() => {
+        setSelectedMatchId(String(match.id));
+        handleMatchSelect(match.id);
+      }}
+    >
+      🏟️ View Scoreboard
+    </button>
 
-                {permissions?.canDeleteMatch && (
-                  <button
-                    type="button"
-                    className="mini-action-btn danger-mini-btn"
-                    onClick={() => handleDeleteMatch(match.id)}
-                  >
-                    🗑️
-                  </button>
-                )}
-              </div>
-            </div>
-
+    {permissions?.canDeleteMatch && (
+      <button
+        type="button"
+        className="mini-action-btn danger-mini-btn"
+        onClick={() => handleDeleteMatch(match.id)}
+      >
+        🗑️
+      </button>
+    )}
+  </div>
+</div>
             <div className="pro-score-strip">
               <div>
                 <span>1st Innings</span>
@@ -7154,9 +7149,17 @@ onClick={() => {
             </div>
 
             <div className="pro-match-timeline">
-              {match?.startedAt && <span>Started {formatMatchDateTime(match.startedAt)}</span>}
-              {match?.endedAt && <span>Ended {formatMatchDateTime(match.endedAt)}</span>}
-              {match?.lockedAt && <span>Locked {formatMatchDateTime(match.lockedAt)}</span>}
+              {match?.startedAt && (
+                <span>Started {formatMatchDateTime(match.startedAt)}</span>
+              )}
+
+              {match?.endedAt && (
+                <span>Ended {formatMatchDateTime(match.endedAt)}</span>
+              )}
+
+              {match?.lockedAt && (
+                <span>Locked {formatMatchDateTime(match.lockedAt)}</span>
+              )}
             </div>
           </article>
         );
