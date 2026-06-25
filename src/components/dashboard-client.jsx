@@ -297,8 +297,8 @@ const [leagueStatsLoading, setLeagueStatsLoading] = useState(false);
 const [pendingMatchesSubTab, setPendingMatchesSubTab] = useState("");
 const [instantDeliveryStatus, setInstantDeliveryStatus] = useState("");
 const [showPublicLeagueDrawer, setShowPublicLeagueDrawer] = useState(false);
-const [showFollowedLeaguesDrawer, setShowFollowedLeaguesDrawer] =
-  useState(false);
+const [showFollowedLeaguesDrawer, setShowFollowedLeaguesDrawer] =  useState(false);
+const [showMatchPicker, setShowMatchPicker] = useState(false);
 const isSuperAdmin =
   session?.user?.email ===
   "surprisecricket11@gmail.com";
@@ -4731,24 +4731,69 @@ onClick={() => {
           "No league selected"}
       </strong>
     </div>
- <label className="match-picker-compact match-picker-pop">
-  <span>Match</span>
+<div className="match-picker-pro">
+  <div className="match-picker-pro-head">
+    <span>Match</span>
 
-  <div className="match-picker-select-shell">
-    <select
-      value={selectedMatchId || ""}
-      onChange={(e) => handleScoringMatchSelect(e.target.value)}
+    <button
+      type="button"
+      onClick={() => setShowMatchPicker((prev) => !prev)}
     >
-      <option value="">Choose a match</option>
-
-      {scoringComboMatches.map((match) => (
-        <option key={match.id} value={match.id}>
-          {getMatchOptionLabel(match)}
-        </option>
-      ))}
-    </select>
+      {showMatchPicker ? "Close" : "Change Match"} ⌄
+    </button>
   </div>
-</label>
+
+  <button
+    type="button"
+    className="selected-match-pro-card"
+    onClick={() => setShowMatchPicker((prev) => !prev)}
+  >
+    <div>
+      <strong>
+        {selectedMatch
+          ? `${selectedMatch.teamAName} vs ${selectedMatch.teamBName}`
+          : "Choose a match"}
+      </strong>
+
+      <span>
+        {selectedMatch
+          ? `${selectedMatch.status || "SCHEDULED"} • ${
+              selectedMatch.battingFirstTeamName
+                ? `Batting first: ${selectedMatch.battingFirstTeamName}`
+                : "Batting first not decided"
+            }`
+          : "Tap to choose active, scheduled, or completed match"}
+      </span>
+    </div>
+
+    <b>⌄</b>
+  </button>
+
+  {showMatchPicker && (
+    <div className="match-choice-panel">
+      {scoringComboMatches.map((match) => (
+        <button
+          key={match.id}
+          type="button"
+          className={`match-choice-card ${
+            String(selectedMatchId) === String(match.id) ? "active" : ""
+          }`}
+          onClick={() => {
+            handleScoringMatchSelect(match.id);
+            setShowMatchPicker(false);
+          }}
+        >
+          <div>
+            <strong>{match.teamAName} vs {match.teamBName}</strong>
+            <span>{getMatchOptionLabel(match)}</span>
+          </div>
+
+          <b>{String(selectedMatchId) === String(match.id) ? "✓" : "→"}</b>
+        </button>
+      ))}
+    </div>
+  )}
+</div>
     <ContextLens />
 
   </div>
