@@ -7114,7 +7114,7 @@ onClick={() => {
         handleMatchSelect(match.id);
       }}
     >
-      🏟️ View Scoreboard
+      📋 View
     </button>
 
     {permissions?.canDeleteMatch && (
