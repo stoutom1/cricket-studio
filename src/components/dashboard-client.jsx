@@ -6187,33 +6187,41 @@ onClick={() => {
 )}  
 {permissions?.canScoreMatch && (
   <div className="scorer-actions-panel">
-    <div className="quick-actions scorer-run-buttons">
-      {[0, 1, 2, 3, 4, 6].map((run) => (
-        <button
-          key={run}
-          type="button"
-          disabled={isSavingBall || isMatchCompleted || isMatchLocked || isMatchAbandoned}
-          className={`chip ${activeQuickAction === String(run) ? "chip-active" : ""}`}
-          onClick={() => triggerQuickAction(String(run), () => quickNormalBall(run))}
-        >
-          {run}
-        </button>
-      ))}
+<div className="quick-actions scorer-run-buttons scorer-mobile-pad">
+  {[0, 1, 2, 3, 4, 6].map((run) => (
+    <button
+      key={run}
+      type="button"
+      disabled={isSavingBall || isMatchCompleted || isMatchLocked || isMatchAbandoned}
+      className={`chip score-chip ${activeQuickAction === String(run) ? "chip-active" : ""}`}
+      onClick={() => triggerQuickAction(String(run), () => quickNormalBall(run))}
+    >
+      {run}
+    </button>
+  ))}
 
-      <button type="button" disabled={isSavingBall || isMatchCompleted || isMatchLocked || isMatchAbandoned} className={`chip ${activeQuickAction === "Wd" ? "chip-active" : ""}`} onClick={() => triggerQuickAction("Wd", () => quickExtra("WIDE"))}>Wd</button>
-      <button type="button" disabled={isSavingBall || isMatchCompleted || isMatchLocked || isMatchAbandoned} className={`chip ${activeQuickAction === "Nb" ? "chip-active" : ""}`} onClick={() => triggerQuickAction("Nb", () => quickExtra("NOBALL"))}>Nb</button>
-      <button type="button" disabled={isSavingBall || isMatchCompleted || isMatchLocked || isMatchAbandoned} className={`chip ${activeQuickAction === "B" ? "chip-active" : ""}`} onClick={() => triggerQuickAction("B", () => quickExtra("BYE"))}>B</button>
-      <button type="button" disabled={isSavingBall || isMatchCompleted || isMatchLocked || isMatchAbandoned} className={`chip ${activeQuickAction === "LB" ? "chip-active" : ""}`} onClick={() => triggerQuickAction("LB", () => quickExtra("LEGBYE"))}>LB</button>
-      <button type="button" disabled={isSavingBall || isMatchCompleted || isMatchLocked || isMatchAbandoned} className={`chip ${activeQuickAction === "W" ? "chip-active" : ""}`} onClick={() => triggerQuickAction("W", () => quickWicket("BOWLED"))}>Wkt</button>
-      <button type="button" className="chip chip-retired-hurt" disabled={isSavingBall || isMatchCompleted || isMatchLocked || isMatchAbandoned} onClick={() => setShowRetiredHurtModal(true)}>Rtd H</button>
-      <button type="button" className="chip chip-swap" disabled={isSavingBall || isMatchCompleted || isMatchLocked || isMatchAbandoned} onClick={swapBatters}>⇄ Swap</button>
-    </div>
+  <button type="button" className={`chip score-chip ${activeQuickAction === "Wd" ? "chip-active" : ""}`} disabled={isSavingBall || isMatchCompleted || isMatchLocked || isMatchAbandoned} onClick={() => triggerQuickAction("Wd", () => quickExtra("WIDE"))}>Wd</button>
+  <button type="button" className={`chip score-chip ${activeQuickAction === "Nb" ? "chip-active" : ""}`} disabled={isSavingBall || isMatchCompleted || isMatchLocked || isMatchAbandoned} onClick={() => triggerQuickAction("Nb", () => quickExtra("NOBALL"))}>Nb</button>
+  <button type="button" className={`chip score-chip ${activeQuickAction === "B" ? "chip-active" : ""}`} disabled={isSavingBall || isMatchCompleted || isMatchLocked || isMatchAbandoned} onClick={() => triggerQuickAction("B", () => quickExtra("BYE"))}>B</button>
+  <button type="button" className={`chip score-chip ${activeQuickAction === "LB" ? "chip-active" : ""}`} disabled={isSavingBall || isMatchCompleted || isMatchLocked || isMatchAbandoned} onClick={() => triggerQuickAction("LB", () => quickExtra("LEGBYE"))}>LB</button>
+
+  <button type="button" className={`chip score-chip score-wide ${activeQuickAction === "W" ? "chip-active" : ""}`} disabled={isSavingBall || isMatchCompleted || isMatchLocked || isMatchAbandoned} onClick={() => triggerQuickAction("W", () => quickWicket("BOWLED"))}>Wkt</button>
+
+  <button type="button" className="chip score-chip score-wide chip-retired-hurt" disabled={isSavingBall || isMatchCompleted || isMatchLocked || isMatchAbandoned} onClick={() => setShowRetiredHurtModal(true)}>Rtd H</button>
+
+  <button type="button" className="chip score-chip score-wide chip-swap" disabled={isSavingBall || isMatchCompleted || isMatchLocked || isMatchAbandoned} onClick={swapBatters}>⇄ Swap</button>
+
+  <button
+    type="button"
+    className="chip score-chip score-wide score-undo"
+    disabled={isMatchLocked}
+    onClick={handleUndoBall}
+  >
+    ↩ Undo
+  </button>
+</div>
 
     <div className="mobile-secondary-actions scorer-secondary-row">
-      <button type="button" className="btn btn-danger scoring-btn action-undo-compact" disabled={isMatchLocked} onClick={handleUndoBall}>
-        ↩ Undo
-      </button>
-
       <button type="button" className="btn btn-outline action-change-wk" disabled={isSavingBall || isMatchCompleted || isMatchLocked || isMatchAbandoned} onClick={() => setShowKeeperChangeModal(true)}>
         🧤 Change WK
       </button>

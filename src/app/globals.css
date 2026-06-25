@@ -18004,3 +18004,48 @@ body {
     padding: 8px !important;
   }
 }
+@media (max-width: 768px) {
+  .scorer-mobile-pad {
+    display: grid !important;
+    grid-template-columns: repeat(5, minmax(0, 1fr)) !important;
+    gap: 7px !important;
+  }
+
+  .score-chip {
+    width: 100% !important;
+    height: 42px !important;
+    min-width: 0 !important;
+    border-radius: 12px !important;
+    font-size: 13px !important;
+    font-weight: 950 !important;
+    background: linear-gradient(180deg, rgba(30, 41, 59, .96), rgba(15, 23, 42, .96)) !important;
+    border: 1px solid rgba(96, 165, 250, .28) !important;
+    box-shadow: 0 6px 14px rgba(0,0,0,.22), inset 0 1px 0 rgba(255,255,255,.06);
+    touch-action: manipulation;
+  }
+
+  .score-wide {
+    grid-column: span 2;
+  }
+
+  .score-undo {
+    background: linear-gradient(135deg, #ef4444, #dc2626) !important;
+    border-color: rgba(248, 113, 113, .65) !important;
+    color: white !important;
+  }
+
+  .chip-active {
+    transform: scale(.96);
+    box-shadow: inset 0 0 0 2px rgba(250,204,21,.45) !important;
+  }
+
+  .scorer-secondary-row {
+    display: grid !important;
+    grid-template-columns: 1fr 1fr !important;
+    gap: 7px !important;
+  }
+
+  .scorer-secondary-row .end-innings-pill {
+    grid-column: 1 / -1;
+  }
+}
