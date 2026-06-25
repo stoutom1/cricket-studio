@@ -17578,3 +17578,122 @@ body:has(.login-shell) .dashboard-content {
     font-size: 24px;
   }
 }
+.over-summary-flash {
+  position: sticky;
+  bottom: 86px;
+  z-index: 40;
+  margin: 12px auto;
+  width: min(420px, 100%);
+  padding: 16px;
+  border-radius: 24px;
+  text-align: center;
+  background: linear-gradient(135deg, rgba(37,99,235,.95), rgba(56,189,248,.85));
+  color: white;
+  box-shadow: 0 24px 60px rgba(37,99,235,.35);
+  animation: overFlashPop .25s ease;
+}
+
+.over-summary-flash span {
+  display: block;
+  font-size: 13px;
+  font-weight: 950;
+}
+
+.over-summary-flash strong {
+  display: block;
+  margin-top: 4px;
+  font-size: 34px;
+  font-weight: 950;
+}
+
+.over-summary-flash small {
+  display: block;
+  margin-top: 4px;
+  font-weight: 850;
+}
+
+@keyframes overFlashPop {
+  from {
+    opacity: 0;
+    transform: translateY(12px) scale(.96);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0) scale(1);
+  }
+}
+.tv-status-banner.over-complete-status {
+  border-color: rgba(250, 204, 21, 0.4);
+  background:
+    linear-gradient(
+      135deg,
+      rgba(250, 204, 21, 0.16),
+      rgba(15, 23, 42, 0.88)
+    );
+  color: #fef3c7;
+  font-weight: 950;
+}
+html,
+body {
+  max-width: 100%;
+  overflow-x: hidden;
+}
+
+@media (max-width: 768px) {
+  .scoring-console,
+  .scorer-mode-shell,
+  .scorer-wow-console,
+  .scorer-live-hud,
+  .match-insights-card,
+  .tv-score-console {
+    max-width: 100%;
+    overflow-x: hidden;
+    box-sizing: border-box;
+  }
+
+  .scorer-hud-status {
+    max-width: 100%;
+    text-align: left;
+    white-space: normal;
+    overflow-wrap: anywhere;
+  }
+
+  .scorer-hud-players > div {
+    min-width: 0;
+  }
+
+  .scorer-hud-players strong,
+  .scorer-hud-players b {
+    min-width: 0;
+    overflow: hidden;
+    text-overflow: ellipsis;
+  }
+
+  .match-insights-card {
+    grid-template-columns: 1fr !important;
+  }
+}
+.score-table-scroll {
+  width: 100%;
+  overflow-x: auto;
+  -webkit-overflow-scrolling: touch;
+}
+
+.sticky-first-col {
+  min-width: 760px;
+  border-collapse: separate;
+  border-spacing: 0;
+}
+
+.sticky-first-col th:first-child,
+.sticky-first-col td:first-child {
+  position: sticky;
+  left: 0;
+  z-index: 2;
+  background: #0f172a;
+  box-shadow: 10px 0 18px rgba(0, 0, 0, 0.22);
+}
+
+.sticky-first-col th:first-child {
+  z-index: 3;
+}

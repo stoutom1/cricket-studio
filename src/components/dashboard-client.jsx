@@ -301,6 +301,7 @@ const [instantDeliveryStatus, setInstantDeliveryStatus] = useState("");
 const [showPublicLeagueDrawer, setShowPublicLeagueDrawer] = useState(false);
 const [showFollowedLeaguesDrawer, setShowFollowedLeaguesDrawer] =  useState(false);
 const [showMatchPicker, setShowMatchPicker] = useState(false);
+const [overCompleteNotice, setOverCompleteNotice] = useState("");
 const isSuperAdmin =
   session?.user?.email ===
   "surprisecricket11@gmail.com";
@@ -2400,7 +2401,7 @@ wicketNote: ballForm.wicketNote || null
 async function submitBall(data) {
   setMessage("");
   setError("");
-
+setOverCompleteNotice("");
   if (scoreboard?.match?.status === "COMPLETED") {
     setError("Match has already ended");
     return;
@@ -2501,6 +2502,20 @@ setBallForm((prev) => ({
   ["OVERS_COMPLETED", "ALL_OUT"].includes(savedBall?.inningsEndedReason);
 
     await loadSelectedMatch(selectedMatchId);
+const overJustCompleted =
+  data.extraType !== "WIDE" &&
+  data.extraType !== "NOBALL" &&
+  Number(scoreboard?.currentState?.nextBallInOver) === 6;
+console.log("liveMatchCenter?.runs",liveMatchCenter?.runs);
+console.log("liveMatchCenter?.wickets",liveMatchCenter?.wickets);
+console.log("liveMatchCenter?.oversDisplay",liveMatchCenter?.oversDisplay);
+if (scorerMode && overJustCompleted) {
+  setOverCompleteNotice(
+    `✅ Over complete • ${liveMatchCenter?.runs ?? 0}/${liveMatchCenter?.wickets ?? 0} • ${liveMatchCenter?.oversDisplay || ""} ov`
+  );
+} else {
+  setOverCompleteNotice("");
+}
 
     setOptimisticScoreboard(null);
     setInstantDeliveryStatus("");
@@ -5261,8 +5276,8 @@ onClick={() => {
     rows={inn.battingRows || inn.batting || []}
     currentStrikerId={scoreboard.currentState?.strikerId}
   />
-              <div className="table-scroll desktop-score-table">
-                <table className="score-table pro-table">
+              <div className="score-table-scroll desktop-score-table">
+                <table className="score-table sticky-first-col pro-table">
                   <thead>
                     <tr>
                       <th>Batter</th>
@@ -5318,8 +5333,8 @@ onClick={() => {
   <MobileBowlingCards
     rows={inn.bowlingRows || inn.bowling || []}
   />
-              <div className="table-scroll desktop-score-table">
-                <table className="score-table pro-table bowling-table">
+              <div className="score-table-scroll desktop-score-table">
+                <table className="score-table sticky-first-col pro-table bowling-table">
                   <thead>
                     <tr>
                       <th>Bowler</th>
@@ -5392,8 +5407,8 @@ onClick={() => {
               {!inn.partnerships?.length ? (
                 <p className="muted">No partnerships yet.</p>
               ) : (
-                <div className="table-scroll">
-                  <table className="score-table pro-table">
+                <div className="score-table-scroll">
+                  <table className="score-table sticky-first-col pro-table">
                     <thead>
                       <tr>
                         <th>Batters</th>
@@ -5723,13 +5738,14 @@ onClick={() => {
           <div
             className={`tv-status-banner ${
               instantDeliveryStatus ? "delivery-processing" : ""
-            }`}
+            } ${overCompleteNotice ? "over-complete-status" : ""}`}
           >
             {error ||
               instantDeliveryStatus ||
               message ||
+              overCompleteNotice ||
               "🏏 Ready for next delivery"}
-          </div>
+                      </div>
         )
       )}
 
@@ -5808,7 +5824,7 @@ onClick={() => {
       </div>
 
       <div className="scorer-workspace-body">
-{scorerDrawer === "scoreboard" && (
+  {scorerDrawer === "scoreboard" && (
   <div className="scorer-scoreboard-panel">
     {(() => {
       const currentInningsNo = Number(scoreboard?.currentInnings || 1);
@@ -6161,7 +6177,7 @@ onClick={() => {
       </div>
     </div>
   </div>
-)}
+)}  
 {permissions?.canScoreMatch && (
   <div className="scorer-actions-panel">
     <div className="quick-actions scorer-run-buttons">
@@ -7958,9 +7974,9 @@ onClick={() => {
   {pointsTable.length === 0 ? (
     <p className="muted">No points table available yet.</p>
   ) : (
-    <div className="table-scroll">
+    <div className="score-table-scroll">
             <ContextLens />
-      <table className="score-table">
+      <table className="score-table sticky-first-col">
         <thead>
           <tr>
             <th>Team</th>
@@ -8225,8 +8241,8 @@ onClick={() => {
           <span>{filteredSelectedRanking.length} players</span>
         </div>
 
-        <div className="table-scroll">
-          <table className="score-table ranking-table">
+        <div className="score-table-scroll">
+          <table className="score-table sticky-first-col ranking-table">
             <thead>
               <tr>
                 <th>Rank</th>
@@ -8261,13 +8277,13 @@ onClick={() => {
   </Card>
 )}
 {statsSubTab === "CAPTAINCY" && (
-  <div className="table-scroll">
+  <div className="score-table-scroll">
     {statsSubTab === "CAPTAINCY" && !leagueStats?.captaincy?.length && (
   <div className="mgmt-clean-empty">
     No captaincy stats yet.
   </div>
 )}
-    <table className="score-table">
+    <table className="score-table sticky-first-col">
       <thead>
         <tr>
           <th>Captain</th>
@@ -8295,13 +8311,13 @@ onClick={() => {
   </div>
 )}
 {statsSubTab === "WICKETKEEPING" && (
-  <div className="table-scroll">
+  <div className="score-table-scroll">
     {statsSubTab === "WICKETKEEPING" && !leagueStats?.wicketkeeping?.length && (
   <div className="mgmt-clean-empty">
     No wicketkeeping stats yet.
   </div>
 )}
-    <table className="score-table">
+    <table className="score-table sticky-first-col">
       <thead>
         <tr>
           <th>Keeper</th>
