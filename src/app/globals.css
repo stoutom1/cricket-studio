@@ -3570,11 +3570,6 @@ body {
 .completed-match-card {
   border-radius: 20px;
   padding: 14px;
-  background: linear-gradient(
-    135deg,
-    rgba(22, 163, 74, 0.12),
-    rgba(15, 23, 42, 0.72)
-  );
   border: 1px solid rgba(255,255,255,0.1);
 }
 
@@ -3658,7 +3653,6 @@ body {
 .innings-score-line {
   padding: 12px;
   border-radius: 16px;
-  background: rgba(255,255,255,0.06);
   border: 1px solid rgba(255,255,255,0.08);
 }
 
@@ -3683,7 +3677,6 @@ body {
 .completed-match-meta span {
   padding: 6px 9px;
   border-radius: 999px;
-  background: rgba(255,255,255,0.055);
   font-size: 12px;
 }
 
@@ -3763,7 +3756,6 @@ body {
 .completed-match-card {
   border-radius: 18px;
   padding: 14px;
-  background: rgba(255,255,255,0.055);
   border: 1px solid rgba(255,255,255,0.1);
 }
 
