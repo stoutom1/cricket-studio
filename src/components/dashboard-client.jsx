@@ -2408,7 +2408,15 @@ async function submitBall(data) {
     setError("Please select a match");
     return;
   }
+const safeInningsNo =
+  pendingSecondInningsSetup || Number(ballForm?.inningsNo) === 2
+    ? 2
+    : getSafeScoringInningsNo(scoreboard, data);
 
+data = {
+  ...data,
+  inningsNo: safeInningsNo,
+};
   if (
     !ballForm.strikerId ||
     !ballForm.nonStrikerId ||
@@ -2429,12 +2437,31 @@ async function submitBall(data) {
   try {
     const instantMessage = getInstantDeliveryStatus(data);
     setInstantDeliveryStatus(instantMessage);
-
+console.log("SUBMIT BALL INNINGS DEBUG", {
+  formInningsNo: ballForm?.inningsNo,
+  dataInningsNo: data?.inningsNo,
+  boardCurrentInnings: scoreboard?.currentInnings,
+  boardStateInningsNo: scoreboard?.currentState?.inningsNo,
+});
     const savedBall = await api("/api/balls", {
       method: "POST",
       body: JSON.stringify(data),
     });
-
+setBallForm((prev) => ({
+  ...prev,
+  inningsNo: Number(data.inningsNo),
+  extraType: "NONE",
+  runsOffBat: "0",
+  extras: "0",
+  isWicket: false,
+  wicketType: "NONE",
+  newBatterId: "",
+  dismissedPlayerId: "",
+  note: "",
+  fielderId: "",
+  assistantFielderId: "",
+  wicketNote: "",
+}));
     setShowAdvancedSheet(false);
 
     const updatedBoard = await api(`/api/scoreboard/${selectedMatchId}`);
@@ -2465,8 +2492,10 @@ async function submitBall(data) {
       updatedRuns >= updatedTarget;
 
     const firstInningsJustEnded =
-      savedBall?.inningsEnded &&
-      Number(savedBall?.nextInningsNo) === 2;
+  Number(data.inningsNo) === 1 &&
+  savedBall?.inningsEnded === true &&
+  Number(savedBall?.nextInningsNo) === 2 &&
+  ["OVERS_COMPLETED", "ALL_OUT"].includes(savedBall?.inningsEndedReason);
 
     await loadSelectedMatch(selectedMatchId);
 
@@ -2521,6 +2550,7 @@ if (firstInningsJustEnded) {
 
     setBallForm((prev) => ({
       ...prev,
+      inningsNo: Number(data.inningsNo),
       extraType: "NONE",
       runsOffBat: "0",
       extras: "0",
@@ -3312,7 +3342,10 @@ async function confirmBowlerChange() {
     await api(`/api/matches/${selectedMatchId}/change-bowler`, {
       method: "POST",
       body: JSON.stringify({
-        bowlerId: newBowlerId
+          bowlerId: newBowlerId,
+          inningsNo: Number(ballForm.inningsNo),
+          strikerId: Number(ballForm.strikerId),
+          nonStrikerId: Number(ballForm.nonStrikerId),
       })
     });
 
@@ -3463,6 +3496,20 @@ async function confirmStartMatch() {
   await loadMatches();
 
   setActiveTab("scoring");
+  setBallForm((prev) => ({
+  ...prev,
+  inningsNo: 1,
+  strikerId: "",
+  nonStrikerId: "",
+  bowlerId: "",
+  extraType: "NONE",
+  runsOffBat: "0",
+  extras: "0",
+  isWicket: false,
+  wicketType: "NONE",
+  dismissedPlayerId: "",
+  newBatterId: "",
+}));
   setPendingDeliverySetupAfterStart(true);
 }
 useEffect(() => {
@@ -4409,26 +4456,33 @@ const setupTeamAId = Number(matchDetail?.teamAId || setupTeamA?.id);
 const setupTeamBId = Number(matchDetail?.teamBId || setupTeamB?.id);
 const setupBattingFirstTeamId = Number(matchDetail?.battingFirstTeamId);
 
-const setupInningsNo = pendingSecondInningsSetup
-  ? 2
-  : Number(ballForm.inningsNo || 1);
+const setupInningsNo = Number(ballForm?.inningsNo || 1);
 
-const setupBattingTeam =
+const setupBattingTeamId =
   setupInningsNo === 1
-    ? setupBattingFirstTeamId === setupTeamAId
-      ? setupTeamA
-      : setupTeamB
-    : setupBattingFirstTeamId === setupTeamAId
-    ? setupTeamB
-    : setupTeamA;
+    ? Number(matchDetail?.battingFirstTeamId)
+    : Number(matchDetail?.battingFirstTeamId) === Number(matchDetail?.teamAId)
+    ? Number(matchDetail?.teamBId)
+    : Number(matchDetail?.teamAId);
 
-const setupBowlingTeam =
-  Number(setupBattingTeam?.id) === setupTeamAId
-    ? setupTeamB
-    : setupTeamA;
+const setupBowlingTeamId =
+  setupInningsNo === 1
+    ? setupBattingTeamId === Number(matchDetail?.teamAId)
+      ? Number(matchDetail?.teamBId)
+      : Number(matchDetail?.teamAId)
+    : setupBattingTeamId === Number(matchDetail?.teamAId)
+    ? Number(matchDetail?.teamBId)
+    : Number(matchDetail?.teamAId);
 
-const setupBatters = setupBattingTeam?.players || [];
-const setupBowlers = setupBowlingTeam?.players || [];
+const setupBatters =
+  Number(matchDetail?.teamAId) === setupBattingTeamId
+    ? matchDetail?.teamA?.players || []
+    : matchDetail?.teamB?.players || [];
+
+const setupBowlers =
+  Number(matchDetail?.teamAId) === setupBowlingTeamId
+    ? matchDetail?.teamA?.players || []
+    : matchDetail?.teamB?.players || [];
 
 function playerNameFromTeam(team, playerId) {
   const id = Number(playerId);
@@ -4472,6 +4526,26 @@ const availableNewBatters1 = getAvailableNewBatters(
 const noNewBatterAvailable =
   ballForm?.dismissedPlayerId &&
   availableNewBatters.length === 0;
+function getSafeScoringInningsNo(board, form) {
+  const inningsFromBoard = Number(
+    board?.currentInnings ||
+      board?.currentState?.inningsNo ||
+      board?.activeInningsNo ||
+      0
+  );
+
+  if (inningsFromBoard === 1 || inningsFromBoard === 2) {
+    return inningsFromBoard;
+  }
+
+  const inningsFromForm = Number(form?.inningsNo || 0);
+
+  if (inningsFromForm === 1 || inningsFromForm === 2) {
+    return inningsFromForm;
+  }
+
+  return 1;
+}
 
 function ContextLens() {
   const totalFilters =
@@ -10187,7 +10261,16 @@ onClick={() => {
         <button
           type="button"
           className="add-player-pro-close"
-          onClick={() => setShowDeliverySetupModal(false)}
+          onClick={() => {
+  const safeInningsNo = getSafeScoringInningsNo(scoreboard, ballForm);
+
+  setBallForm((prev) => ({
+    ...prev,
+    inningsNo: safeInningsNo,
+  }));
+
+  setShowDeliverySetupModal(false);
+}}
         >
           ✕
         </button>
@@ -10266,13 +10349,17 @@ onClick={() => {
               String(ballForm.strikerId) === String(ballForm.nonStrikerId)
             }
 onClick={() => {
-  setPendingSecondInningsSetup(false);
+  const setupInningsNo = Number(ballForm?.inningsNo || 1);
 
   setBallForm((prev) => ({
     ...prev,
-    inningsNo: 2,
+    inningsNo: setupInningsNo,
+    strikerId: String(prev.strikerId || ballForm.strikerId),
+    nonStrikerId: String(prev.nonStrikerId || ballForm.nonStrikerId),
+    bowlerId: String(prev.bowlerId || ballForm.bowlerId),
   }));
 
+  setPendingSecondInningsSetup(false);
   setShowDeliverySetupModal(false);
 }}
           >

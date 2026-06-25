@@ -130,11 +130,14 @@ const maxWickets =
 
   const unavailableBatterIds = new Set();
 
-  inningsBalls.forEach((b) => {
-    if (b.dismissedPlayerId) {
-      unavailableBatterIds.add(Number(b.dismissedPlayerId));
-    }
-  });
+inningsBalls.forEach((b) => {
+  if (
+    b.dismissedPlayerId &&
+    b.wicketType !== "RETIRED_HURT"
+  ) {
+    unavailableBatterIds.add(Number(b.dismissedPlayerId));
+  }
+});
 
   const dismissedThisBallId = payload.dismissedPlayerId
     ? Number(payload.dismissedPlayerId)
@@ -142,9 +145,9 @@ const maxWickets =
 
   const unavailableAfterThisBall = new Set(unavailableBatterIds);
 
-  if ((isCountingWicket || isRetiredHurt) && dismissedThisBallId) {
-    unavailableAfterThisBall.add(dismissedThisBallId);
-  }
+if (isCountingWicket && dismissedThisBallId) {
+  unavailableAfterThisBall.add(dismissedThisBallId);
+}
 
   const availableNewBatters = battingTeamPlayers.filter((p) => {
     const id = Number(p.id);
@@ -387,96 +390,138 @@ const maxWickets =
     },
   });
 
-  const inningsAllOut = noMoreBattersAvailable || isFinalAllowedWicket;
+ const inningsAllOut =
+  noMoreBattersAvailable || isFinalAllowedWicket;
 
-  const nextState = inningsAllOut
-    ? {
-        strikerId: payload.strikerId,
-        nonStrikerId: payload.nonStrikerId,
-      }
-    : applyBallOutcome(ball);
+const nextState = inningsAllOut
+  ? {
+      strikerId: payload.strikerId,
+      nonStrikerId: payload.nonStrikerId,
+    }
+  : applyBallOutcome(ball);
 
-  await prisma.matchState.upsert({
-    where: { matchId: payload.matchId },
-    update: {
-      strikerId: nextState.strikerId,
-      nonStrikerId: nextState.nonStrikerId,
-      bowlerId: payload.bowlerId,
-    },
-    create: {
-      matchId: payload.matchId,
-      inningsNo: payload.inningsNo,
-      strikerId: nextState.strikerId,
-      nonStrikerId: nextState.nonStrikerId,
-      bowlerId: payload.bowlerId,
-    },
-  });
+await prisma.matchState.upsert({
+  where: { matchId: payload.matchId },
+  update: {
+    inningsNo: payload.inningsNo,
+    strikerId: nextState.strikerId,
+    nonStrikerId: nextState.nonStrikerId,
+    bowlerId: payload.bowlerId,
+  },
+  create: {
+    matchId: payload.matchId,
+    inningsNo: payload.inningsNo,
+    strikerId: nextState.strikerId,
+    nonStrikerId: nextState.nonStrikerId,
+    bowlerId: payload.bowlerId,
+  },
+});
 
-  const maxLegalBalls = match.oversPerInnings * 6;
+const rawOversPerInnings = Number(match.oversPerInnings || 0);
+const maxLegalBalls =
+  rawOversPerInnings > 0 ? rawOversPerInnings * 6 : Infinity;
 
-  const updatedLegalBallsCount =
-    !isRetiredHurt && legalDelivery ? legalBallsCount + 1 : legalBallsCount;
+const updatedLegalBallsCount =
+  !isRetiredHurt && legalDelivery
+    ? legalBallsCount + 1
+    : legalBallsCount;
 
-  const inningsCompleted = updatedLegalBallsCount >= maxLegalBalls;
+const updatedWicketCount =
+  isCountingWicket ? wicketCount + 1 : wicketCount;
 
-  const innings2Runs = await prisma.ball.aggregate({
-    where: {
-      matchId: payload.matchId,
-      inningsNo: 2,
-    },
-    _sum: { totalRuns: true },
-  });
+const inningsEndedByOvers =
+  Number.isFinite(maxLegalBalls) &&
+  updatedLegalBallsCount >= maxLegalBalls;
 
-  const innings1Runs = await prisma.ball.aggregate({
-    where: {
-      matchId: payload.matchId,
-      inningsNo: 1,
-    },
-    _sum: { totalRuns: true },
-  });
+const inningsEndedByWickets =
+  Number.isFinite(maxWickets) &&
+  updatedWicketCount >= maxWickets;
 
-  const targetReached =
-    payload.inningsNo === 2 &&
-    Number(innings2Runs._sum.totalRuns || 0) >=
-      Number(innings1Runs._sum.totalRuns || 0) + 1;
-   let inningsEnded = false;
-    let nextInningsNo = payload.inningsNo;
+let inningsEnded =
+  inningsEndedByOvers ||
+  inningsEndedByWickets ||
+  noMoreBattersAvailable;
 
-if (
-  payload.inningsNo === 1 &&
-  (inningsCompleted || noMoreBattersAvailable)
-) {
-  inningsEnded = true;
+let nextInningsNo = payload.inningsNo;
+
+const innings1Runs = await prisma.ball.aggregate({
+  where: {
+    matchId: payload.matchId,
+    inningsNo: 1,
+  },
+  _sum: { totalRuns: true },
+});
+
+const innings2Runs = await prisma.ball.aggregate({
+  where: {
+    matchId: payload.matchId,
+    inningsNo: 2,
+  },
+  _sum: { totalRuns: true },
+});
+
+const targetReached =
+  payload.inningsNo === 2 &&
+  Number(innings2Runs._sum.totalRuns || 0) >=
+    Number(innings1Runs._sum.totalRuns || 0) + 1;
+
+if (payload.inningsNo === 1 && inningsEnded) {
   nextInningsNo = 2;
 
   await prisma.match.update({
     where: { id: payload.matchId },
-    data: { status: "IN_PROGRESS" },
-    data: { statusText: "LIVE" },
+    data: {
+      status: "IN_PROGRESS",
+      statusText: "1st innings completed",
+    },
   });
 
   await prisma.matchState.deleteMany({
     where: { matchId: payload.matchId },
   });
 }
-      if (
+
+if (
   payload.inningsNo === 2 &&
-  (inningsCompleted || targetReached || noMoreBattersAvailable)
+  (inningsEnded || targetReached)
 ) {
+  inningsEnded = true;
+
   await prisma.match.update({
     where: { id: payload.matchId },
     data: {
       status: "COMPLETED",
       endedAt: match.endedAt || new Date(),
-      statusText: "MATCH COMPLETED"
+      statusText: "MATCH COMPLETED",
     },
   });
 }
+let inningsEndedReason = null;
+
+if (inningsEndedByOvers) {
+  inningsEndedReason = "OVERS_COMPLETED";
+}
+
+if (inningsEndedByWickets || noMoreBattersAvailable) {
+  inningsEndedReason = "ALL_OUT";
+}
+
+console.log("BALL SAVE RESULT", {
+  inningsNo: payload.inningsNo,
+  updatedLegalBallsCount,
+  maxLegalBalls,
+  updatedWicketCount,
+  maxWickets,
+  inningsEnded,
+  inningsEndedReason,
+  nextInningsNo,
+});
 
 return NextResponse.json(
   {
     ...ball,
     inningsEnded,
+    inningsEndedReason,
     nextInningsNo,
   },
   { status: 201 }
