@@ -15139,7 +15139,9 @@ body:has(.login-shell) .dashboard-content {
   .innings-state-grid {
     display: none;
   }
-
+  .compact-innings-state {
+    display: none;
+  }
   .live-match-state {
     display: flex;
     flex-direction: column;
@@ -15300,9 +15302,7 @@ body:has(.login-shell) .dashboard-content {
 }
 
 @media (max-width: 900px) {
-  .compact-innings-state {
-    grid-template-columns: 1fr;
-  }
+
 
   .innings-mini-box strong {
     justify-content: space-between;
@@ -15988,4 +15988,13 @@ body:has(.login-shell) .dashboard-content {
 .match-choice-panel {
   display: grid;
   gap: 10px;
+}
+@media (max-width: 768px) {
+
+  .innings-state-grid {
+    display: none;
+  }
+  .compact-innings-state {
+    display: none;
+  }
 }
