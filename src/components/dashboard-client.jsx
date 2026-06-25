@@ -4548,6 +4548,57 @@ function getSafeScoringInningsNo(board, form) {
 
   return 1;
 }
+  useEffect(() => {
+  if (!scorerMode) return;
+
+  window.addEventListener("keydown", handleScorerKeyPress);
+
+  return () => {
+    window.removeEventListener("keydown", handleScorerKeyPress);
+  };
+}, [
+  scorerMode,
+  isSavingBall,
+  isMatchCompleted,
+  isMatchLocked,
+  isMatchAbandoned,
+  ballForm,
+  scoreboard,
+]);
+const lastScoredBall = recentBalls?.[0];
+
+const lastBallText = lastScoredBall?.label
+  ? String(lastScoredBall.label)
+      .split(" ")
+      .slice(1)
+      .join(" ")
+      .replace(/[()]/g, "") || lastScoredBall.label
+  : "Waiting for first ball";
+
+  function handleScorerKeyPress(e) {
+  if (!scorerMode) return;
+  if (isSavingBall || isMatchCompleted || isMatchLocked || isMatchAbandoned) return;
+
+  const tag = document.activeElement?.tagName?.toLowerCase();
+  if (["input", "select", "textarea"].includes(tag)) return;
+
+  const key = e.key.toLowerCase();
+
+  if (key === "0") quickNormalBall(0);
+  if (key === "1") quickNormalBall(1);
+  if (key === "2") quickNormalBall(2);
+  if (key === "3") quickNormalBall(3);
+  if (key === "4") quickNormalBall(4);
+  if (key === "6") quickNormalBall(6);
+
+  if (key === "w") quickWicket("BOWLED");
+  if (key === "d") quickExtra("WIDE");
+  if (key === "n") quickExtra("NOBALL");
+  if (key === "b") quickExtra("BYE");
+  if (key === "l") quickExtra("LEGBYE");
+
+  if (key === "u") handleUndoBall();
+}
 
 function ContextLens() {
   const totalFilters =
@@ -5553,371 +5604,375 @@ onClick={() => {
             <>
 <div className={scorerMode ? "scorer-mode-shell active" : ""}>
   {scorerMode && (
-    <div className="scorer-mode-topbar">
-      <strong>🎯 Scorer Mode</strong>
-
-      <div>
-        <button type="button" onClick={() => setScorerDrawer("scoreboard")}>
-          📊 Scoreboard
-        </button>
-
-        <button type="button" onClick={() => setScorerDrawer("commentary")}>
-          📝 Commentary
-        </button>
-
-        <button type="button" onClick={() => setScorerDrawer("setup")}>
-          ⚙️ Setup
-        </button>
-
-        <button type="button" onClick={() => setScorerMode(false)}>
-          ✕ Exit
-        </button>
-      </div>
-    </div>
+<div className="scorer-mode-banner">
+  🎯 Scorer Mode Active
+</div>
   )}          
-<div className="tv-score-console">
+<div className="tv-score-console scorer-wow-console">
   {liveMatchCenter && (
-<>
-{displayScoreboard && (
-  <div className="match-insights-card">
-    {matchInsights.resultText && (
-      <div className="insight-result">
-        <span>🏆 Match Result</span>
-        <strong>{matchInsights.resultText}</strong>
-      </div>
-    )}
+    <>
+      {displayScoreboard && (
+        <div className="match-insights-card scorer-insights-strip">
+          {matchInsights.resultText && (
+            <div className="insight-result">
+              <span>🏆 Match Result</span>
+              <strong>{matchInsights.resultText}</strong>
+            </div>
+          )}
 
-    {matchInsights.potm && (
-      <div className="insight-mini">
-        <span>⭐ Player of the Match</span>
-        <strong>{matchInsights.potm.playerName}</strong>
-        <small>
-          {matchInsights.potm.summary?.join(" & ") || "Top performer"}
-        </small>
-      </div>
-    )}
+          {matchInsights.potm && (
+            <div className="insight-mini">
+              <span>⭐ POTM</span>
+              <strong>{matchInsights.potm.playerName}</strong>
+            </div>
+          )}
 
-    {matchInsights.winProbability && (
-      <div className="insight-mini">
-        <span>📈 Win Probability</span>
+          {matchInsights.winProbability && (
+            <div className="insight-mini">
+              <span>📈 Win Probability</span>
+              <strong>
+                {matchInsights.winProbability.battingTeam}{" "}
+                {matchInsights.winProbability.battingChance}%
+              </strong>
+            </div>
+          )}
+        </div>
+      )}
 
-        <div className="win-prob-row">
-          <b>{matchInsights.winProbability.bowlingTeam}</b>
-          <div className="win-prob-track">
-            <i
-              style={{
-                width: `${matchInsights.winProbability.bowlingChance}%`,
-              }}
-            />
+      <div className="scorer-live-hud">
+        <div className="scorer-hud-main">
+          <div>
+            <span className="tv-live-pill">● LIVE</span>
+            <strong>
+              {liveMatchCenter.runs}/{liveMatchCenter.wickets}
+            </strong>
+            <small>
+              Inn {liveMatchCenter.inningsNo} • {liveMatchCenter.oversDisplay} ov
+            </small>
           </div>
-          <b>{matchInsights.winProbability.bowlingChance}%</b>
+
+          <div className="scorer-hud-status">
+            {displayScoreboard?.summary?.statusText || "Ready for next ball"}
+          </div>
         </div>
 
-        <div className="win-prob-row">
-          <b>{matchInsights.winProbability.battingTeam}</b>
-          <div className="win-prob-track chase">
-            <i
-              style={{
-                width: `${matchInsights.winProbability.battingChance}%`,
-              }}
-            />
+        <div className="scorer-hud-players">
+          <div className="striker">
+            <span>⚡ Striker</span>
+            <strong>{displayScoreboard?.currentState?.strikerName || "-"}</strong>
+            <b>
+              {displayScoreboard?.currentState?.strikerStats
+                ? `${displayScoreboard.currentState.strikerStats.runs} (${displayScoreboard.currentState.strikerStats.balls})`
+                : "0 (0)"}
+            </b>
           </div>
-          <b>{matchInsights.winProbability.battingChance}%</b>
+
+          <div>
+            <span>🏃 Non-striker</span>
+            <strong>{displayScoreboard?.currentState?.nonStrikerName || "-"}</strong>
+            <b>
+              {displayScoreboard?.currentState?.nonStrikerStats
+                ? `${displayScoreboard.currentState.nonStrikerStats.runs} (${displayScoreboard.currentState.nonStrikerStats.balls})`
+                : "0 (0)"}
+            </b>
+          </div>
+
+          <div className="bowler">
+            <span>🎯 Bowler</span>
+            <strong>{displayScoreboard?.currentState?.bowlerName || "-"}</strong>
+            <b>
+              {displayScoreboard?.currentState?.bowlerStats
+                ? `${displayScoreboard.currentState.bowlerStats.wickets}/${displayScoreboard.currentState.bowlerStats.runs} (${displayScoreboard.currentState.bowlerStats.overs} ov)`
+                : "0/0"}
+            </b>
+          </div>
+        </div>
+
+        <div className="scorer-hud-metrics">
+          <span>CRR <b>{liveMatchCenter.crr}</b></span>
+          <span>RRR <b>{liveMatchCenter.rrr}</b></span>
+          <span>Proj <b>{liveMatchCenter.projected}</b></span>
+          <span>P’ship <b>{liveMatchCenter.partnershipRuns} ({liveMatchCenter.partnershipBalls})</b></span>
         </div>
       </div>
-    )}
+{scorerMode && scorerDrawer && (
+  <div className="scorer-drawer-backdrop">
+    <div className="scorer-drawer">
+      <div className="scorer-drawer-head">
+        <strong>
+          {scorerDrawer === "scoreboard"
+            ? "📊 Scoreboard"
+            : scorerDrawer === "commentary"
+            ? "📝 Commentary"
+            : "⚙️ Match Setup"}
+        </strong>
+
+        <button type="button" onClick={() => setScorerDrawer(null)}>
+          ✕
+        </button>
+      </div>
+
+      <div className="scorer-drawer-body">
+        {/* keep your existing scoreboard/commentary/setup drawer content here */}
+        {scorerDrawer === "scoreboard" && (
+  <div className="scorer-drawer-grid">
+    <div className="drawer-stat-card">
+      <span>Score</span>
+      <strong>
+        {scoreboard?.innings?.[Number(scoreboard?.currentInnings || 1) - 1]?.runs}/
+        {scoreboard?.innings?.[Number(scoreboard?.currentInnings || 1) - 1]?.wickets}
+      </strong>
+    </div>
+
+    <div className="drawer-stat-card">
+      <span>Overs</span>
+      <strong>
+        {scoreboard?.innings?.[Number(scoreboard?.currentInnings || 1) - 1]?.oversDisplay || "0.0"}
+      </strong>
+    </div>
+
+    <div className="drawer-stat-card">
+      <span>Run Rate</span>
+      <strong>
+        {scoreboard?.innings?.[Number(scoreboard?.currentInnings || 1) - 1]?.runRate || "0.00"}
+      </strong>
+    </div>
   </div>
 )}
-      <div className="tv-score-header">      
-        <span className="tv-live-pill">● LIVE</span>
-
-        <div className="tv-main-score">
-          {liveMatchCenter.runs}/{liveMatchCenter.wickets}
-        </div>
-
-        <div className="tv-score-sub">
-          Innings {liveMatchCenter.inningsNo} • {liveMatchCenter.oversDisplay} ov
-          {selectedMatch?.startedAt
-            ? ` • Started ${formatMatchDateTime(selectedMatch.startedAt)}`
-            : ""}
-          {/*{displayScoreboard?.summary?.statusText
-            ? ` • ${displayScoreboard.summary.statusText}`
-            : ""}*/}
-        </div>
+{scorerDrawer === "commentary" && (
+  <div className="drawer-commentary-list">
+    {scoreboard?.recentBalls?.slice(-12).reverse().map((ball, index) => (
+      <div key={ball.id || index} className="drawer-commentary-ball">
+        <strong>{ball.label}</strong>
+        <span>{ball.text || ball.note || ""}</span>
       </div>
+    ))}
+  </div>
+)}
+{scorerDrawer === "setup" && (
+  <div className="scorer-drawer-grid">
+    <div className="drawer-stat-card">
+      <span>Overs</span>
+      <strong>{matchDetail?.oversPerInnings || "-"}</strong>
+    </div>
 
-<div className="tv-player-compact">
-  <div>
-    <span>🏏</span>
-    <strong>{displayScoreboard?.currentState?.strikerName || "-"} *</strong>
-    <small>
-      {displayScoreboard?.currentState?.strikerStats
-        ? `${displayScoreboard.currentState.strikerStats.runs} (${displayScoreboard.currentState.strikerStats.balls})`
-        : "0 (0)"}
-    </small>
+    <div className="drawer-stat-card">
+      <span>Wickets</span>
+      <strong>{matchDetail?.maxWicketsPerInnings || "∞"}</strong>
+    </div>
+    <div className="drawer-stat-card">
+      <span>Powerplay</span>
+      <strong>{matchDetail?.powerplayOversInnings ?? 0}</strong>
+    </div>
+  <div className="team-official-pill">
+    <strong>{matchDetail?.teamA?.name || "Team A"}</strong>
+    <span>
+      🧢 {playerNameFromTeam(matchDetail?.teamA, matchDetail?.teamACaptainId)}
+    </span>
+    <span>
+      🧤 {playerNameFromTeam(matchDetail?.teamA, matchDetail?.teamAWicketKeeperId)}
+    </span>
   </div>
 
-  <div>
-    <span>🏃</span>
-    <strong>{displayScoreboard?.currentState?.nonStrikerName || "-"}</strong>
-    <small>
-      {displayScoreboard?.currentState?.nonStrikerStats
-        ? `${displayScoreboard.currentState.nonStrikerStats.runs} (${displayScoreboard.currentState.nonStrikerStats.balls})`
-        : "0 (0)"}
-    </small>
+  <div className="team-official-pill">
+    <strong>{matchDetail?.teamB?.name || "Team B"}</strong>
+    <span>
+      🧢 {playerNameFromTeam(matchDetail?.teamB, matchDetail?.teamBCaptainId)}
+    </span>
+    <span>
+      🧤 {playerNameFromTeam(matchDetail?.teamB, matchDetail?.teamBWicketKeeperId)}
+    </span>
   </div>
-
-  <div>
-    <span>🎯</span>
-    <strong>{displayScoreboard?.currentState?.bowlerName || "-"}</strong>
-    <small>
-      {displayScoreboard?.currentState?.bowlerStats
-        ? `${displayScoreboard.currentState.bowlerStats.wickets}/${displayScoreboard.currentState.bowlerStats.runs} • ${displayScoreboard.currentState.bowlerStats.overs} ov`
-        : "0/0"}
-    </small>
+      <div className="drawer-stat-card">
+      <span>Max/Bowler</span>
+      <strong>{matchDetail?.maxOversPerBowler || "∞"}</strong>
+    </div>
   </div>
-</div>
+)}
+      </div>
+    </div>
+  </div>
+)}
+      {needsDeliverySetup ? (
+        <div className="tv-status-banner setup">
+          <strong>🎯 Setup required</strong>
+          <span>
+            {Number(ballForm.inningsNo) === 2
+              ? "2nd innings is ready. Select striker, non-striker, and bowler."
+              : "Select striker, non-striker, and bowler before scoring."}
+          </span>
 
-      <div className="tv-metric-strip">
-        <span>CRR <b>{liveMatchCenter.crr}</b></span>
-        <span>RRR <b>{liveMatchCenter.rrr}</b></span>
-        <span>Proj <b>{liveMatchCenter.projected}</b></span>
+          <button
+            type="button"
+            className="mgmt-clean-btn"
+            onClick={() => setShowDeliverySetupModal(true)}
+          >
+            Setup Delivery
+          </button>
+        </div>
+      ) : (
+        !(
+          selectedMatch &&
+          ["COMPLETED", "COMPLETED_LOCKED"].includes(
+            String(selectedMatch.status || "").toUpperCase()
+          )
+        ) && (
+          <div
+            className={`tv-status-banner ${
+              instantDeliveryStatus ? "delivery-processing" : ""
+            }`}
+          >
+            {error ||
+              instantDeliveryStatus ||
+              message ||
+              "🏏 Ready for next delivery"}
+          </div>
+        )
+      )}
+
+      <div className="scorer-recent-wow">
         <span>
-          P’ship{" "}
-          <b>
-            {liveMatchCenter.partnershipRuns} ({liveMatchCenter.partnershipBalls})
-          </b>
+          Recent <small>last 10</small>
         </span>
+
+        <div className="recent-ball-strip">
+          {recentBalls.length ? (
+            recentBalls.slice(0, 10).map((ball, index) => {
+              const label = ball.label || "";
+              const recent10 = recentBalls.slice(0, 10);
+              const currentOver = label.split(".")[0];
+
+              const prevOver =
+                index > 0
+                  ? recent10[index - 1]?.label?.split(".")[0]
+                  : currentOver;
+
+              const ballResult = (
+                label.split(" ").slice(1).join(" ") || label
+              ).replace(/[()]/g, "");
+
+              return (
+                <React.Fragment key={ball.id || index}>
+                  {index > 0 && currentOver !== prevOver && (
+                    <span className="over-separator">|</span>
+                  )}
+
+                  <span
+                    className={`ball-chip ${
+                      ballResult === "W"
+                        ? "ball-wicket"
+                        : ballResult === "4" || ballResult === "6"
+                        ? "ball-boundary"
+                        : ""
+                    }`}
+                  >
+                    {ballResult}
+                  </span>
+                </React.Fragment>
+              );
+            })
+          ) : (
+            <span className="muted">No recent balls</span>
+          )}
+        </div>
       </div>
+      {liveMatchCenter?.isSecondInnings && liveMatchCenter?.target > 0 && (
+        <div className="tv-chase-mini scorer-chase-wow">
+          <span>Target <b>{liveMatchCenter.target}</b></span>
+          <span>Need <b>{liveMatchCenter.runsRequired}</b></span>
+          <span>Balls <b>{liveMatchCenter.ballsRemaining}</b></span>
+        </div>
+      )}
     </>
   )}
-
-  {needsDeliverySetup ? (
-    <div className="tv-status-banner setup">
-      <strong>🎯 Setup required</strong>
-      <span>
-        {Number(ballForm.inningsNo) === 2
-          ? "2nd innings is ready. Select striker, non-striker, and bowler."
-          : "Select striker, non-striker, and bowler before scoring."}
-      </span>
-
-      <button
-        type="button"
-        className="mgmt-clean-btn"
-        onClick={() => setShowDeliverySetupModal(true)}
-      >
-        Setup Delivery
-      </button>
-    </div>
-  ) : (
-    !(
-      selectedMatch &&
-      ["COMPLETED", "COMPLETED_LOCKED"].includes(
-        String(selectedMatch.status || "").toUpperCase()
-      )
-    ) && (
-      <div
-        className={`tv-status-banner ${
-          instantDeliveryStatus ? "delivery-processing" : ""
-        }`}
-      >
-        {error ||
-          instantDeliveryStatus ||
-          message ||
-          "🏏 Ready for next delivery"}
-      </div>
-    )
-  )}
-
-  <div className="tv-bottom-row">
-  <div className="tv-recent-inline">
-<span className="recent-label">
-  Recent
-  <small>last 10</small>
-</span>
-    <div className="recent-balls-row compact-recent-row">
-      <div className="recent-ball-strip">
-      {recentBalls.length ? (
-        recentBalls.slice(0, 10).map((ball, index) => {
-          const label = ball.label || "";
-          const recent10 = recentBalls.slice(0, 10);
-          const currentOver = label.split(".")[0];
-
-          const prevOver =
-            index > 0
-              ? recent10[index - 1]?.label?.split(".")[0]
-              : currentOver;
-
-          const ballResult = (
-            label.split(" ").slice(1).join(" ") || label
-          ).replace(/[()]/g, "");
-
-          return (
-            <React.Fragment key={ball.id}>
-              {index > 0 && currentOver !== prevOver && (
-                <span className="over-separator">|</span>
-              )}
-
-              <span
-                className={`ball-chip ${
-                  ballResult === "W"
-                    ? "ball-wicket"
-                    : ballResult === "4" || ballResult === "6"
-                    ? "ball-boundary"
-                    : ""
-                }`}
-              >
-                {ballResult}
-              </span>
-            </React.Fragment>
-          );
-        })
-      ) : (
-        <span className="muted">No recent balls</span>
-      )}
-      </div>
-    </div>
-  </div>
-
-  {liveMatchCenter?.isSecondInnings && liveMatchCenter?.target > 0 && (
-    <div className="tv-chase-mini">
-      <span>Target <b>{liveMatchCenter.target}</b></span>
-      <span>Need <b>{liveMatchCenter.runsRequired}</b></span>
-      <span>Balls <b>{liveMatchCenter.ballsRemaining}</b></span>
-    </div>
-  )}
-</div>
-
-{!permissions?.canScoreMatch && (
-<div>
-   👉 You do not have permissions to score a match. Please check with your league owner to give you access to score for this match.
-</div>
-)}
 {permissions?.canScoreMatch && (
-<div className="quick-actions">
-  <button type="button" disabled={isSavingBall || isMatchCompleted || isMatchLocked || isMatchAbandoned} className={`chip ${activeQuickAction === "0" ? "chip-active" : ""}`} onClick={() => triggerQuickAction("0", () => quickNormalBall(0))}>0</button>
-  <button type="button" disabled={isSavingBall || isMatchCompleted || isMatchLocked || isMatchAbandoned} className={`chip ${activeQuickAction === "1" ? "chip-active" : ""}`} onClick={() => triggerQuickAction("1", () => quickNormalBall(1))}>1</button>
-  <button type="button" disabled={isSavingBall || isMatchCompleted || isMatchLocked || isMatchAbandoned} className={`chip ${activeQuickAction === "2" ? "chip-active" : ""}`} onClick={() => triggerQuickAction("2", () => quickNormalBall(2))}>2</button>
-  <button type="button" disabled={isSavingBall || isMatchCompleted || isMatchLocked || isMatchAbandoned} className={`chip ${activeQuickAction === "3" ? "chip-active" : ""}`} onClick={() => triggerQuickAction("3", () => quickNormalBall(3))}>3</button>
-  <button type="button" disabled={isSavingBall || isMatchCompleted || isMatchLocked || isMatchAbandoned} className={`chip ${activeQuickAction === "4" ? "chip-active" : ""}`} onClick={() => triggerQuickAction("4", () => quickNormalBall(4))}>4</button>
-  <button type="button" disabled={isSavingBall || isMatchCompleted || isMatchLocked || isMatchAbandoned} className={`chip ${activeQuickAction === "6" ? "chip-active" : ""}`} onClick={() => triggerQuickAction("6", () => quickNormalBall(6))}>6</button>
+  <div className="scorer-actions-panel">
+    <div className="quick-actions scorer-run-buttons">
+      {[0, 1, 2, 3, 4, 6].map((run) => (
+        <button
+          key={run}
+          type="button"
+          disabled={isSavingBall || isMatchCompleted || isMatchLocked || isMatchAbandoned}
+          className={`chip ${activeQuickAction === String(run) ? "chip-active" : ""}`}
+          onClick={() => triggerQuickAction(String(run), () => quickNormalBall(run))}
+        >
+          {run}
+        </button>
+      ))}
 
-  <button type="button" disabled={isSavingBall || isMatchCompleted || isMatchLocked || isMatchAbandoned} className={`chip ${activeQuickAction === "Wd" ? "chip-active" : ""}`} onClick={() => triggerQuickAction("Wd", () => quickExtra("WIDE"))}>Wd</button>
+      <button type="button" disabled={isSavingBall || isMatchCompleted || isMatchLocked || isMatchAbandoned} className={`chip ${activeQuickAction === "Wd" ? "chip-active" : ""}`} onClick={() => triggerQuickAction("Wd", () => quickExtra("WIDE"))}>Wd</button>
+      <button type="button" disabled={isSavingBall || isMatchCompleted || isMatchLocked || isMatchAbandoned} className={`chip ${activeQuickAction === "Nb" ? "chip-active" : ""}`} onClick={() => triggerQuickAction("Nb", () => quickExtra("NOBALL"))}>Nb</button>
+      <button type="button" disabled={isSavingBall || isMatchCompleted || isMatchLocked || isMatchAbandoned} className={`chip ${activeQuickAction === "B" ? "chip-active" : ""}`} onClick={() => triggerQuickAction("B", () => quickExtra("BYE"))}>B</button>
+      <button type="button" disabled={isSavingBall || isMatchCompleted || isMatchLocked || isMatchAbandoned} className={`chip ${activeQuickAction === "LB" ? "chip-active" : ""}`} onClick={() => triggerQuickAction("LB", () => quickExtra("LEGBYE"))}>LB</button>
+      <button type="button" disabled={isSavingBall || isMatchCompleted || isMatchLocked || isMatchAbandoned} className={`chip ${activeQuickAction === "W" ? "chip-active" : ""}`} onClick={() => triggerQuickAction("W", () => quickWicket("BOWLED"))}>Wkt</button>
+      <button type="button" className="chip chip-retired-hurt" disabled={isSavingBall || isMatchCompleted || isMatchLocked || isMatchAbandoned} onClick={() => setShowRetiredHurtModal(true)}>Rtd H</button>
+      <button type="button" className="chip chip-swap" disabled={isSavingBall || isMatchCompleted || isMatchLocked || isMatchAbandoned} onClick={swapBatters}>⇄ Swap</button>
+    </div>
 
-  <button type="button" disabled={isSavingBall || isMatchCompleted || isMatchLocked || isMatchAbandoned} className={`chip ${activeQuickAction === "Nb" ? "chip-active" : ""}`} onClick={() => triggerQuickAction("Nb", () => quickExtra("NOBALL"))}>Nb</button>
+    <div className="mobile-secondary-actions scorer-secondary-row">
+      <button type="button" className="btn btn-danger scoring-btn action-undo-compact" disabled={isMatchLocked} onClick={handleUndoBall}>
+        ↩ Undo
+      </button>
 
-  <button type="button" disabled={isSavingBall || isMatchCompleted || isMatchLocked || isMatchAbandoned} className={`chip ${activeQuickAction === "B" ? "chip-active" : ""}`} onClick={() => triggerQuickAction("B", () => quickExtra("BYE"))}>B</button>
+      <button type="button" className="btn btn-outline action-change-wk" disabled={isSavingBall || isMatchCompleted || isMatchLocked || isMatchAbandoned} onClick={() => setShowKeeperChangeModal(true)}>
+        🧤 Change WK
+      </button>
 
-  <button type="button" disabled={isSavingBall || isMatchCompleted || isMatchLocked || isMatchAbandoned} className={`chip ${activeQuickAction === "LB" ? "chip-active" : ""}`} onClick={() => triggerQuickAction("LB", () => quickExtra("LEGBYE"))}>LB</button>
+      <button type="button" className="btn btn-outline action-rh-corrections" disabled={isMatchLocked || isMatchAbandoned} onClick={() => setShowCorrectionModal(true)}>
+        🛠️ Rtd H
+      </button>
 
-  <button type="button" disabled={isSavingBall || isMatchCompleted || isMatchLocked || isMatchAbandoned} className={`chip ${activeQuickAction === "W" ? "chip-active" : ""}`} onClick={() => triggerQuickAction("W", () => quickWicket("BOWLED"))}>Wkt</button>
-  <button type="button" className="chip chip-retired-hurt" disabled={isSavingBall || isMatchCompleted || isMatchLocked || isMatchAbandoned} onClick={() => setShowRetiredHurtModal(true)}>Rtd H</button>
- <button
-    type="button"
-    className="chip chip-swap"
-    disabled={isSavingBall || isMatchCompleted || isMatchLocked || isMatchAbandoned}
-    onClick={swapBatters}
-  >
-    ⇄ Swap
-  </button>
- <div className="mobile-secondary-actions">
-    <button
-    type="button"
-    className="btn btn-danger scoring-btn action-undo-compact"
-    disabled={isMatchLocked}
-    onClick={handleUndoBall}
-  >
-    ↩ Undo
-  </button>
-<button
-  type="button"
-  className="btn btn-outline action-change-wk"
-  disabled={isSavingBall || isMatchCompleted || isMatchLocked || isMatchAbandoned}
-  onClick={() => setShowKeeperChangeModal(true)}
->
-  🧤 Change WK
-</button>
-    <button
-  type="button"
-  className="btn btn-outline action-rh-corrections"
-  disabled={isMatchLocked || isMatchAbandoned}
-  onClick={() => setShowCorrectionModal(true)}
->
-  🛠️ Rtd H
-</button>
-{lastCorrectionId && (
-<button
-  type="button"
-  className={`btn btn-outline ${
-    rollbackSaving ? "btn-loading" : ""
-  }`}
-  disabled={rollbackSaving}
-  onClick={() =>
-    rollbackCorrection(lastCorrectionId)
-  }
->
-  {rollbackSaving
-    ? "Restoring..."
-    : "Rollback"}
-</button>
-)}
-{Number(ballForm.inningsNo) === 1 &&
-  scoreboard?.match?.status !== "COMPLETED" &&
-  scoreboard?.match?.status !== "COMPLETED_LOCKED" && (
-    <button
-      type="button"
-      className="end-innings-pill action-end-innings"
-      onClick={handleEndFirstInnings}
-    >
-      <span>🛑 End 1st Innings</span>
-      <small>Finished batting?</small>
-    </button>
-)}
-</div>
-{(isMatchCompleted || isMatchLocked) && (
-  <button
-    type="submit"
-    form="add-ball-form"
-    className="btn scoring-btn scoring-btn-primary"
-    disabled
-  >
-    ✅ Match Ended
-  </button>
-)}
-{(isMatchAbandoned) && (
-  <button
-    type="submit"
-    form="add-ball-form"
-    className="btn scoring-btn scoring-btn-primary"
-    disabled
-  >
-    ⛔ Match Abandoned
-  </button>
-)}
-{isMobile && (
-<button
-  type="button"
-  className="advanced-sheet-btn"
-  onClick={() => setShowAdvancedSheet(true)}
->
-  <span className="advanced-sheet-icon">⚙️</span>
+      {lastCorrectionId && (
+        <button type="button" className={`btn btn-outline ${rollbackSaving ? "btn-loading" : ""}`} disabled={rollbackSaving} onClick={() => rollbackCorrection(lastCorrectionId)}>
+          {rollbackSaving ? "Restoring..." : "Rollback"}
+        </button>
+      )}
 
-  <div className="advanced-sheet-text">
-    <span className="advanced-sheet-title">
-      Scoring Form
-    </span>
+      {Number(ballForm.inningsNo) === 1 &&
+        scoreboard?.match?.status !== "COMPLETED" &&
+        scoreboard?.match?.status !== "COMPLETED_LOCKED" && (
+          <button type="button" className="end-innings-pill action-end-innings" onClick={handleEndFirstInnings}>
+            <span>🛑 End 1st Innings</span>
+            <small>Finished batting?</small>
+          </button>
+        )}
+    </div>
 
-    <span className="advanced-sheet-subtitle">
-      Open advanced scoring screen
-    </span>
+    {(isMatchCompleted || isMatchLocked) && (
+      <button type="submit" form="add-ball-form" className="btn scoring-btn scoring-btn-primary" disabled>
+        ✅ Match Ended
+      </button>
+    )}
+
+    {isMatchAbandoned && (
+      <button type="submit" form="add-ball-form" className="btn scoring-btn scoring-btn-primary" disabled>
+        ⛔ Match Abandoned
+      </button>
+    )}
+
+    {scorerMode && (
+      <div className="scorer-dock-area">
+        <div className="scorer-quick-dock">
+          <button type="button" className={scorerDrawer === "scoreboard" ? "active" : ""}  onClick={() =>
+    setScorerDrawer((prev) => (prev === "scoreboard" ? null : "scoreboard"))}>📊 Scoreboard</button>
+          <button type="button" className={scorerDrawer === "commentary" ? "active" : ""}  onClick={() =>
+    setScorerDrawer((prev) => (prev === "commentary" ? null : "commentary"))}>📝 Commentary</button>
+          <button type="button" className={scorerDrawer === "setup" ? "active" : ""}  onClick={() =>
+    setScorerDrawer((prev) => (prev === "setup" ? null : "setup"))}>⚙️ Setup</button>
+          <button type="button" onClick={() => setScorerMode(false)}>✕ Exit</button>
+{/*}
+          <button type="button" onClick={() => setScorerDrawer("commentary")}>📝 Commentary</button>
+          <button type="button" onClick={() => setScorerDrawer("setup")}>⚙️ Setup</button>
+          <button type="button" onClick={() => setScorerMode(false)}>✕ Exit</button>
+          */}
+        </div>
+
+        <div className="scorer-shortcut-hint">
+          Keyboard: 0 1 2 3 4 6 • W wicket • D wide • N no-ball • U undo
+        </div>
+      </div>
+    )}
   </div>
-
-  <span className="advanced-sheet-arrow">
-    →
-  </span>
-</button>
-)}
-</div>
 )}
 <div className="scoring-action-bar">
 </div>
@@ -6495,32 +6550,7 @@ onClick={() => {
       </div>
 
       <div className="scorer-drawer-body">
-        {scorerDrawer === "scoreboard" && (
-          <div>
-            {/* Paste or reuse your existing scoreboard subtab JSX here */}
-            <p className="drawer-placeholder">
-              Scoreboard view goes here.
-            </p>
-          </div>
-        )}
 
-        {scorerDrawer === "commentary" && (
-          <div>
-            {/* Paste or reuse your existing commentary subtab JSX here */}
-            <p className="drawer-placeholder">
-              Commentary view goes here.
-            </p>
-          </div>
-        )}
-
-        {scorerDrawer === "setup" && (
-          <div>
-            {/* Paste compact match setup JSX here if desired */}
-            <p className="drawer-placeholder">
-              Match setup view goes here.
-            </p>
-          </div>
-        )}
       </div>
     </div>
   </div>

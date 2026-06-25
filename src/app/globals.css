@@ -16765,11 +16765,14 @@ body:has(.login-shell) .dashboard-content {
 
 @media (max-width: 768px) {
   .scorer-mode-shell.active {
+    position: fixed;
     inset: 0;
+    width: 100%;
+    max-height: 100vh;
+    overflow-y: auto;
+    z-index: 1000;
     border-radius: 0;
-    padding: 10px;
   }
-
   .scorer-mode-topbar {
     flex-direction: column;
   }
@@ -16777,4 +16780,426 @@ body:has(.login-shell) .dashboard-content {
   .scorer-mode-topbar button {
     flex: 1;
   }
+}
+.scorer-drawer-grid {
+  display: grid;
+  grid-template-columns: repeat(3, 1fr);
+  gap: 10px;
+}
+
+.drawer-stat-card,
+.drawer-commentary-ball {
+  padding: 14px;
+  border-radius: 18px;
+  background: rgba(15, 23, 42, 0.78);
+  border: 1px solid rgba(96, 165, 250, 0.18);
+}
+
+.drawer-stat-card span,
+.drawer-commentary-ball span {
+  display: block;
+  color: #93c5fd;
+  font-size: 12px;
+  font-weight: 850;
+}
+
+.drawer-stat-card strong {
+  display: block;
+  margin-top: 4px;
+  color: white;
+  font-size: 24px;
+  font-weight: 950;
+}
+
+.drawer-commentary-list {
+  display: grid;
+  gap: 8px;
+}
+
+.drawer-commentary-ball strong {
+  color: white;
+}
+
+@media (max-width: 768px) {
+  .scorer-drawer-grid {
+    grid-template-columns: 1fr;
+  }
+}
+.scorer-quick-dock {
+  position: sticky;
+  bottom: 0;
+  z-index: 20;
+  margin-top: 14px;
+  padding: 10px;
+  border-radius: 20px;
+  background: rgba(15, 23, 42, 0.96);
+  border: 1px solid rgba(96, 165, 250, 0.22);
+  display: grid;
+  grid-template-columns: repeat(4, 1fr);
+  gap: 8px;
+}
+
+.scorer-quick-dock button {
+  border: 1px solid rgba(96, 165, 250, 0.22);
+  border-radius: 999px;
+  padding: 10px 8px;
+  background: rgba(37, 99, 235, 0.16);
+  color: white;
+  font-size: 12px;
+  font-weight: 950;
+}
+.scorer-live-hud {
+  border-radius: 24px;
+  padding: 18px;
+  margin-bottom: 14px;
+
+  background:
+    linear-gradient(
+      135deg,
+      rgba(37,99,235,.20),
+      rgba(2,6,23,.95)
+    );
+
+  border: 1px solid rgba(96,165,250,.25);
+
+  box-shadow:
+    0 20px 50px rgba(0,0,0,.25);
+}
+.scorer-wow-console {
+  display: grid;
+  gap: 12px;
+}
+
+.scorer-insights-strip {
+  margin-bottom: 0;
+}
+
+.scorer-live-hud {
+  padding: 16px;
+  border-radius: 26px;
+  background:
+    radial-gradient(circle at top left, rgba(37,99,235,.22), transparent 38%),
+    rgba(2,6,23,.88);
+  border: 1px solid rgba(96,165,250,.25);
+  box-shadow: 0 20px 50px rgba(0,0,0,.28);
+}
+
+.scorer-hud-main {
+  display: flex;
+  justify-content: space-between;
+  gap: 14px;
+  align-items: flex-start;
+}
+
+.scorer-hud-main strong {
+  display: block;
+  margin-top: 6px;
+  color: white;
+  font-size: 42px;
+  font-weight: 950;
+  line-height: 1;
+}
+
+.scorer-hud-main small {
+  display: block;
+  margin-top: 5px;
+  color: #bfdbfe;
+  font-weight: 850;
+}
+
+.scorer-hud-status {
+  max-width: 42%;
+  color: #facc15;
+  font-size: 13px;
+  font-weight: 900;
+  text-align: right;
+}
+
+.scorer-hud-players {
+  margin-top: 14px;
+  display: grid;
+  grid-template-columns: repeat(3, 1fr);
+  gap: 10px;
+}
+
+.scorer-hud-players > div {
+  padding: 12px;
+  border-radius: 18px;
+  background: rgba(15,23,42,.68);
+  border: 1px solid rgba(148,163,184,.14);
+}
+
+.scorer-hud-players .striker {
+  border-left: 4px solid #22c55e;
+}
+
+.scorer-hud-players .bowler {
+  border-left: 4px solid #f59e0b;
+}
+
+.scorer-hud-players span {
+  display: block;
+  color: #93c5fd;
+  font-size: 11px;
+  font-weight: 950;
+  text-transform: uppercase;
+}
+
+.scorer-hud-players strong {
+  display: block;
+  margin-top: 5px;
+  color: white;
+  font-size: 18px;
+  font-weight: 950;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+.scorer-hud-players b {
+  display: block;
+  margin-top: 3px;
+  color: #facc15;
+  font-size: 14px;
+  font-weight: 950;
+}
+
+.scorer-hud-metrics {
+  margin-top: 12px;
+  display: flex;
+  gap: 8px;
+  flex-wrap: wrap;
+}
+
+.scorer-hud-metrics span,
+.last-ball-ribbon,
+.scorer-recent-wow,
+.scorer-chase-wow {
+  padding: 9px 12px;
+  border-radius: 999px;
+  background: rgba(15,23,42,.72);
+  border: 1px solid rgba(96,165,250,.16);
+  color: #cbd5e1;
+  font-size: 12px;
+  font-weight: 850;
+}
+
+.scorer-hud-metrics b {
+  color: white;
+}
+
+.last-ball-ribbon {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+}
+
+.last-ball-ribbon span {
+  color: #93c5fd;
+  font-weight: 950;
+  text-transform: uppercase;
+}
+
+.last-ball-ribbon strong {
+  color: #facc15;
+  font-size: 16px;
+  font-weight: 950;
+}
+
+.scorer-recent-wow {
+  border-radius: 20px;
+}
+
+.scorer-recent-wow > span {
+  display: block;
+  margin-bottom: 8px;
+  color: #93c5fd;
+  font-size: 11px;
+  font-weight: 950;
+  text-transform: uppercase;
+}
+
+.scorer-recent-wow small {
+  color: #64748b;
+  margin-left: 4px;
+}
+
+.scorer-chase-wow {
+  display: flex;
+  gap: 10px;
+  flex-wrap: wrap;
+  border-radius: 20px;
+}
+
+@media (max-width: 768px) {
+  .scorer-live-hud {
+    padding: 12px;
+    border-radius: 22px;
+  }
+
+  .scorer-hud-main {
+    align-items: flex-start;
+  }
+
+  .scorer-hud-main strong {
+    font-size: 34px;
+  }
+
+  .scorer-hud-status {
+    max-width: 48%;
+    font-size: 12px;
+  }
+
+  .scorer-hud-players {
+    grid-template-columns: 1fr;
+    gap: 8px;
+  }
+
+  .scorer-hud-players > div {
+    display: grid;
+    grid-template-columns: 92px minmax(0, 1fr) auto;
+    align-items: center;
+    gap: 8px;
+  }
+
+  .scorer-hud-players strong,
+  .scorer-hud-players b {
+    margin-top: 0;
+  }
+
+  .scorer-hud-players strong {
+    font-size: 16px;
+  }
+}
+.scorer-shortcut-hint {
+  display: block;
+  margin-top: 4px;
+  color: #93c5fd;
+  font-size: 11px;
+  font-weight: 800;
+}
+
+@media (max-width: 768px) {
+  .scorer-shortcut-hint {
+    display: none;
+  }
+}
+.scorer-mode-banner {
+  text-align: center;
+  padding: 6px 12px;
+  border-radius: 999px;
+  background: rgba(37,99,235,.12);
+  color: #93c5fd;
+  font-size: 12px;
+  font-weight: 900;
+  margin-bottom: 8px;
+}
+.scorer-actions-panel {
+  display: grid;
+  gap: 10px;
+  margin-top: 12px;
+}
+
+.scorer-run-buttons {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px;
+  align-items: center;
+}
+
+.scorer-secondary-row {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px;
+  align-items: center;
+}
+
+.scorer-dock-area {
+  width: 100%;
+  max-width: 520px;
+  display: grid;
+  gap: 6px;
+}
+
+.scorer-quick-dock {
+  display: grid;
+  grid-template-columns: repeat(4, minmax(0, 1fr));
+  gap: 8px;
+}
+
+.scorer-shortcut-hint {
+  text-align: center;
+  color: #93c5fd;
+  font-size: 11px;
+  font-weight: 850;
+}
+
+@media (min-width: 900px) {
+  .scorer-mode-shell.active {
+    position: fixed;
+    top: 24px;
+    left: 50%;
+    transform: translateX(-50%);
+    width: min(1180px, calc(100vw - 48px));
+    max-height: calc(100vh - 48px);
+    overflow-y: auto;
+    z-index: 1000;
+    border-radius: 28px;
+  }
+}
+
+@media (max-width: 768px) {
+  .scorer-dock-area {
+    max-width: 100%;
+  }
+
+  .scorer-shortcut-hint {
+    display: none;
+  }
+
+  .scorer-quick-dock {
+    grid-template-columns: repeat(2, 1fr);
+  }
+}
+@media (max-width: 768px) {
+  .scorer-mode-shell.active {
+    position: fixed;
+    inset: 0;
+    width: 100%;
+    max-height: 100vh;
+    overflow-y: auto;
+    z-index: 1000;
+    border-radius: 0;
+  }
+}
+.scorer-drawer-backdrop {
+  position: static !important;
+  inset: auto !important;
+  z-index: auto !important;
+  background: transparent !important;
+  display: block !important;
+  width: 100%;
+}
+
+.scorer-drawer {
+  width: 100%;
+  max-height: 42vh;
+  overflow-y: auto;
+  margin: 12px 0;
+  border-radius: 22px;
+  background: rgba(2, 6, 23, 0.88);
+  border: 1px solid rgba(96, 165, 250, 0.24);
+  box-shadow: inset 0 1px 0 rgba(255,255,255,.04);
+}
+
+.scorer-drawer-head {
+  position: sticky;
+  top: 0;
+  z-index: 2;
+  background: rgba(15, 23, 42, 0.96);
+}
+.scorer-quick-dock button.active {
+  background: linear-gradient(135deg, #2563eb, #38bdf8);
+  border-color: rgba(147, 197, 253, 0.7);
+  box-shadow: 0 10px 24px rgba(37, 99, 235, 0.28);
 }
