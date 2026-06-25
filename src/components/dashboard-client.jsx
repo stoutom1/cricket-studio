@@ -7077,7 +7077,10 @@ onClick={() => {
           normalizedStatus === "COMPLETED_LOCKED";
 
         return (
-          <article key={match.id} className="completed-match-card pro-completed-card">
+          <article
+            key={match.id}
+            className="completed-match-card pro-completed-card"
+          >
             <div className="pro-completed-top">
               <div className="pro-completed-title">
                 <span className="status-pill">{match.status}</span>
@@ -7089,6 +7092,21 @@ onClick={() => {
                 </h3>
 
                 <p>🏆 {match.resultText || "Result unavailable"}</p>
+
+                {canShowAi && (
+                  <button
+                    type="button"
+                    className="ai-compact-pill"
+                    disabled={aiAnalysisLoading}
+                    onClick={() => loadAiAnalysis(match.id)}
+                  >
+                    <span>🤖 AI Review</span>
+                    <small>Summary • MVP • Momentum</small>
+                    <strong>
+                      {aiAnalysisLoading ? "Generating..." : "Generate →"}
+                    </strong>
+                  </button>
+                )}
               </div>
 
               <div className="pro-completed-actions">
@@ -7102,17 +7120,6 @@ onClick={() => {
                 >
                   🏟️ View
                 </button>
-
-                {canShowAi && (
-                  <button
-                    type="button"
-                    className="mini-action-btn ai-mini-btn"
-                    disabled={aiAnalysisLoading}
-                    onClick={() => loadAiAnalysis(match.id)}
-                  >
-                    {aiAnalysisLoading ? "⏳ AI..." : "🤖 AI"}
-                  </button>
-                )}
 
                 {permissions?.canDeleteMatch && (
                   <button
@@ -7138,17 +7145,13 @@ onClick={() => {
               </div>
             </div>
 
-<div className="pro-match-facts">
-  <span>🏏 Bat 1st: {match.battingFirstTeamName || "Not decided"}</span>
-
-  <span>🎯 Ov: {match.oversPerInnings}</span>
-
-  <span>⚾ Wkts: {match.maxWicketsPerInnings ?? "∞"}</span>
-
-  <span>⚡ PP: {match.powerplayOversInnings ?? 0}</span>
-
-  <span>🎳 Max/Bwl: {match.maxOversPerBowler ?? "∞"}</span>
-</div>
+            <div className="pro-match-facts">
+              <span>🏏 Bat 1st: {match.battingFirstTeamName || "Not decided"}</span>
+              <span>🎯 Ov: {match.oversPerInnings}</span>
+              <span>⚾ Wkts: {match.maxWicketsPerInnings ?? "∞"}</span>
+              <span>⚡ PP: {match.powerplayOversInnings ?? 0}</span>
+              <span>🎳 Max/Bwl: {match.maxOversPerBowler ?? "∞"}</span>
+            </div>
 
             <div className="pro-match-timeline">
               {match?.startedAt && <span>Started {formatMatchDateTime(match.startedAt)}</span>}
