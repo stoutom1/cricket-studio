@@ -265,6 +265,8 @@ const [pressedScoreKey, setPressedScoreKey] = useState("");
 const [optimisticScoreboard, setOptimisticScoreboard] = useState(null);
 const [selectedExtraOption, setSelectedExtraOption] = useState("");
 const [showCorrectionModal, setShowCorrectionModal] =useState(false);
+const [scorerMode, setScorerMode] = useState(false);
+const [scorerDrawer, setScorerDrawer] = useState(null);
 const [correctionForm, setCorrectionForm] = useState({
   inningsNo: "1",
   afterBallId: "",
@@ -5525,14 +5527,23 @@ onClick={() => {
   title="🎯 Advanced Scoring"
   defaultCollapsed={false}
     right={
-    selectedMatchId ? (
-      <button
-        type="button"
-        className="share-score-btn"
-        onClick={handleShareMatch}
-      >
-        📤 Share - Spectator View
-      </button>
+    selectedMatchId && !isSelectedMatchCompleted ? (
+        <><button
+          type="button"
+          className="scorer-mode-btn"
+          onClick={() => {
+            setScorerMode(true);
+            setScorerDrawer(null);
+          } }
+        >
+          🎯 Scorer Mode
+        </button><button
+          type="button"
+          className="share-score-btn"
+          onClick={handleShareMatch}
+        >
+            📤 Share - Spectator View
+          </button></>
     ) : null
   }
 >
@@ -5540,6 +5551,30 @@ onClick={() => {
             <p className="muted">Please select a match to view scoring, scoreboard, and commentary.</p>
           ) : (
             <>
+<div className={scorerMode ? "scorer-mode-shell active" : ""}>
+  {scorerMode && (
+    <div className="scorer-mode-topbar">
+      <strong>🎯 Scorer Mode</strong>
+
+      <div>
+        <button type="button" onClick={() => setScorerDrawer("scoreboard")}>
+          📊 Scoreboard
+        </button>
+
+        <button type="button" onClick={() => setScorerDrawer("commentary")}>
+          📝 Commentary
+        </button>
+
+        <button type="button" onClick={() => setScorerDrawer("setup")}>
+          ⚙️ Setup
+        </button>
+
+        <button type="button" onClick={() => setScorerMode(false)}>
+          ✕ Exit
+        </button>
+      </div>
+    </div>
+  )}          
 <div className="tv-score-console">
   {liveMatchCenter && (
 <>
@@ -6440,9 +6475,60 @@ onClick={() => {
 </form>
               </CollapsibleSection>
 )
-    )}
+    )}          
+    </div>
+    {scorerMode && scorerDrawer && (
+  <div className="scorer-drawer-backdrop" onClick={() => setScorerDrawer(null)}>
+    <div className="scorer-drawer" onClick={(e) => e.stopPropagation()}>
+      <div className="scorer-drawer-head">
+        <strong>
+          {scorerDrawer === "scoreboard"
+            ? "📊 Scoreboard"
+            : scorerDrawer === "commentary"
+            ? "📝 Commentary"
+            : "⚙️ Match Setup"}
+        </strong>
+
+        <button type="button" onClick={() => setScorerDrawer(null)}>
+          ✕
+        </button>
+      </div>
+
+      <div className="scorer-drawer-body">
+        {scorerDrawer === "scoreboard" && (
+          <div>
+            {/* Paste or reuse your existing scoreboard subtab JSX here */}
+            <p className="drawer-placeholder">
+              Scoreboard view goes here.
+            </p>
+          </div>
+        )}
+
+        {scorerDrawer === "commentary" && (
+          <div>
+            {/* Paste or reuse your existing commentary subtab JSX here */}
+            <p className="drawer-placeholder">
+              Commentary view goes here.
+            </p>
+          </div>
+        )}
+
+        {scorerDrawer === "setup" && (
+          <div>
+            {/* Paste compact match setup JSX here if desired */}
+            <p className="drawer-placeholder">
+              Match setup view goes here.
+            </p>
+          </div>
+        )}
+      </div>
+    </div>
+  </div>
+)}
             </>
+            
           )}
+
         </Card>
 )}        
 {selectedMatchId && permissions?.canScoreMatch && !(
