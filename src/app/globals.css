@@ -17697,3 +17697,90 @@ body {
 .sticky-first-col th:first-child {
   z-index: 3;
 }
+@media (max-width: 768px) {
+  .scoring-console {
+    padding: 12px !important;
+  }
+
+  .scoring-console .card-body,
+  .tv-score-console,
+  .scorer-wow-console {
+    gap: 8px !important;
+  }
+
+  .match-insights-card {
+    gap: 8px !important;
+    margin-bottom: 8px !important;
+  }
+
+  .insight-result,
+  .insight-mini {
+    padding: 12px 14px !important;
+    border-radius: 18px !important;
+  }
+
+  .scorer-live-hud {
+    padding: 12px !important;
+    gap: 8px !important;
+  }
+
+  .scorer-hud-players {
+    margin-top: 8px !important;
+    gap: 8px !important;
+  }
+
+  .scorer-hud-players > div {
+    min-height: 58px !important;
+    padding: 9px 10px !important;
+  }
+
+  .scorer-hud-metrics {
+    margin-top: 8px !important;
+    gap: 6px !important;
+  }
+
+  .scorer-hud-metrics span,
+  .last-ball-ribbon,
+  .scorer-recent-wow,
+  .tv-status-banner {
+    padding: 8px 10px !important;
+  }
+
+  .quick-actions {
+    gap: 6px !important;
+  }
+
+  .chip {
+    min-width: 42px !important;
+    height: 38px !important;
+    padding: 0 10px !important;
+  }
+
+  .mobile-secondary-actions,
+  .scorer-secondary-row {
+    gap: 6px !important;
+  }
+
+  .scorer-quick-dock {
+    gap: 6px !important;
+    padding: 8px !important;
+  }
+
+  .scorer-shortcut-hint {
+    margin-top: 4px !important;
+  }
+}
+@media (min-width: 900px) {
+  .scorer-mode-shell.active {
+    padding: 14px !important;
+  }
+
+  .scorer-wow-console {
+    gap: 10px !important;
+  }
+
+  .scorer-live-hud,
+  .match-insights-card {
+    padding: 14px !important;
+  }
+}
