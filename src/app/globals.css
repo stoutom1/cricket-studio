@@ -16886,7 +16886,7 @@ body:has(.login-shell) .dashboard-content {
 
 .scorer-hud-main {
   display: flex;
-  justify-content: space-between;
+  justify-content: flex-start;
   gap: 14px;
   align-items: flex-start;
 }
@@ -17782,5 +17782,225 @@ body {
   .scorer-live-hud,
   .match-insights-card {
     padding: 14px !important;
+  }
+}
+/* SCORER MODE COMPACT + MOBILE SAFE FIX */
+.scorer-mode-shell.active,
+.scorer-wow-console,
+.scorer-live-hud,
+.match-insights-card,
+.tv-score-console {
+  box-sizing: border-box;
+  max-width: 100%;
+}
+
+@media (min-width: 900px) {
+  .scorer-mode-shell.active {
+    width: min(980px, calc(100vw - 40px)) !important;
+    height: auto !important;
+    max-height: calc(100vh - 36px) !important;
+    padding: 10px !important;
+  }
+
+  .scorer-live-hud {
+    padding: 12px !important;
+  }
+
+  .match-insights-card {
+    grid-template-columns: 1fr 1fr !important;
+    max-width: 560px;
+    gap: 8px !important;
+  }
+
+  .scorer-hud-main {
+    display: grid !important;
+    grid-template-columns: auto 1fr !important;
+    gap: 12px !important;
+  }
+
+  .scorer-hud-status {
+    max-width: none !important;
+    text-align: right !important;
+    white-space: normal !important;
+  }
+
+  .scorer-hud-players {
+    grid-template-columns: repeat(3, minmax(0, 1fr)) !important;
+    gap: 8px !important;
+  }
+
+  .scorer-hud-players > div {
+    min-width: 0 !important;
+    padding: 10px !important;
+  }
+
+  .scorer-hud-metrics {
+    gap: 6px !important;
+  }
+
+  .tv-status-banner,
+  .scorer-recent-wow,
+  .last-ball-ribbon {
+    padding: 9px 12px !important;
+    margin: 0 !important;
+  }
+
+  .scorer-actions-panel {
+    gap: 8px !important;
+  }
+}
+
+@media (max-width: 768px) {
+  html,
+  body {
+    max-width: 100%;
+    overflow-x: hidden;
+  }
+
+  .scoring-console {
+    width: 100% !important;
+    max-width: 100% !important;
+    padding: 10px !important;
+    overflow-x: hidden !important;
+  }
+
+  .scorer-mode-shell.active {
+    inset: 0 !important;
+    width: 100vw !important;
+    max-width: 100vw !important;
+    padding: 10px !important;
+    overflow-x: hidden !important;
+  }
+
+  .scorer-wow-console {
+    width: 100% !important;
+    max-width: 100% !important;
+    gap: 8px !important;
+    overflow-x: hidden !important;
+  }
+
+  .match-insights-card {
+    width: 100% !important;
+    grid-template-columns: 1fr !important;
+    gap: 8px !important;
+    overflow-x: hidden !important;
+  }
+
+  .insight-result,
+  .insight-mini {
+    width: 100% !important;
+    min-width: 0 !important;
+    padding: 10px 12px !important;
+  }
+
+  .scorer-live-hud {
+    width: 100% !important;
+    padding: 10px !important;
+    overflow-x: hidden !important;
+  }
+
+  .scorer-hud-main {
+    display: block !important;
+  }
+
+  .scorer-hud-main strong {
+    font-size: 38px !important;
+  }
+
+  .scorer-hud-status {
+    max-width: 100% !important;
+    text-align: left !important;
+    margin-top: 8px !important;
+    white-space: normal !important;
+    overflow-wrap: anywhere !important;
+  }
+
+  .scorer-hud-players {
+    grid-template-columns: 1fr !important;
+    gap: 7px !important;
+    margin-top: 8px !important;
+  }
+
+  .scorer-hud-players > div {
+    width: 100% !important;
+    min-width: 0 !important;
+    padding: 9px 10px !important;
+    grid-template-columns: 96px minmax(0, 1fr) auto !important;
+  }
+
+  .scorer-hud-players strong,
+  .scorer-hud-players b {
+    min-width: 0 !important;
+    max-width: 100% !important;
+    overflow: hidden !important;
+    text-overflow: ellipsis !important;
+    white-space: nowrap !important;
+  }
+
+  .scorer-hud-metrics {
+    display: grid !important;
+    grid-template-columns: repeat(2, minmax(0, 1fr)) !important;
+    gap: 6px !important;
+  }
+
+  .scorer-hud-metrics span {
+    min-width: 0 !important;
+    text-align: center;
+    white-space: nowrap;
+  }
+
+  .tv-status-banner,
+  .last-ball-ribbon,
+  .scorer-recent-wow {
+    width: 100% !important;
+    max-width: 100% !important;
+    padding: 9px 10px !important;
+    overflow-x: hidden !important;
+  }
+
+  .recent-ball-strip {
+    max-width: 100%;
+    overflow-x: auto;
+    white-space: nowrap;
+    -webkit-overflow-scrolling: touch;
+  }
+
+  .quick-actions,
+  .scorer-run-buttons {
+    display: grid !important;
+    grid-template-columns: repeat(5, minmax(0, 1fr)) !important;
+    gap: 7px !important;
+  }
+
+  .quick-actions .chip,
+  .scorer-run-buttons .chip {
+    width: 100% !important;
+    min-width: 0 !important;
+    height: 40px !important;
+    padding: 0 !important;
+  }
+
+  .mobile-secondary-actions,
+  .scorer-secondary-row {
+    display: grid !important;
+    grid-template-columns: repeat(2, minmax(0, 1fr)) !important;
+    gap: 7px !important;
+    width: 100%;
+  }
+
+  .mobile-secondary-actions button,
+  .scorer-secondary-row button {
+    width: 100% !important;
+    min-width: 0 !important;
+  }
+
+  .end-innings-pill {
+    grid-column: 1 / -1;
+  }
+
+  .scorer-quick-dock {
+    grid-template-columns: repeat(2, minmax(0, 1fr)) !important;
+    gap: 7px !important;
+    padding: 8px !important;
   }
 }

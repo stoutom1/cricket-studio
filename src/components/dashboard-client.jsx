@@ -5595,7 +5595,9 @@ onClick={() => {
   defaultCollapsed={false}
     right={
     selectedMatchId && !isSelectedMatchCompleted ? (
-        <><button
+        <>
+        <span>
+        <button
           type="button"
           className="scorer-mode-btn"
           onClick={() => {
@@ -5604,13 +5606,18 @@ onClick={() => {
           } }
         >
           🎯 Scorer Mode
-        </button><button
+        </button>
+        </span>
+        <span>
+          <button
           type="button"
           className="share-score-btn"
           onClick={handleShareMatch}
         >
             📤 Share - Spectator View
-          </button></>
+          </button>
+          </span>
+          </>
     ) : null
   }
 >
@@ -6282,7 +6289,7 @@ onClick={() => {
 </div>
 
         <div className="scorer-shortcut-hint">
-          Keyboard: 0 1 2 3 4 6 • W wicket • D wide • N no-ball • U undo
+          Keyboard Shortcuts: 0 1 2 3 4 6 • W wicket • D wide • N no-ball • U undo
         </div>
       </div>
     )}
