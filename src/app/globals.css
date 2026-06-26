@@ -18117,3 +18117,69 @@ body {
     margin-top: 10px;
   }
 }
+/* FINAL SCORER MODE POPUP FIX */
+.scorer-mode-shell.active {
+  background:
+    radial-gradient(circle at top, rgba(37, 99, 235, 0.18), transparent 38%),
+    #020617 !important;
+  border: 1px solid rgba(96, 165, 250, 0.32) !important;
+  box-shadow: 0 30px 90px rgba(0, 0, 0, 0.65) !important;
+  overflow-y: auto !important;
+  box-sizing: border-box !important;
+}
+
+@media (min-width: 900px) {
+  .scorer-mode-shell.active {
+    position: fixed !important;
+    top: 24px !important;
+    left: 50% !important;
+    transform: translateX(-50%) !important;
+    width: min(1080px, calc(100vw - 40px)) !important;
+    height: calc(100vh - 48px) !important;
+    max-height: calc(100vh - 48px) !important;
+    z-index: 99999 !important;
+    padding: 12px !important;
+    border-radius: 28px !important;
+  }
+}
+
+@media (max-width: 899px) {
+  .scorer-mode-shell.active {
+    position: fixed !important;
+    inset: 0 !important;
+    width: 100vw !important;
+    height: 100dvh !important;
+    max-height: 100dvh !important;
+    z-index: 99999 !important;
+    padding: 10px !important;
+    border-radius: 0 !important;
+  }
+}
+/* keep all scoring modals above Scorer Mode */
+.bowler-change-modal,
+.bowler-modal-backdrop,
+.bowler-modal,
+.bowler-change-backdrop,
+.delivery-setup-modal,
+.delivery-setup-backdrop,
+.modal,
+.modal-backdrop,
+.sheet-backdrop,
+.advanced-sheet {
+  z-index: 1000000 !important;
+}
+.bowler-modal-backdrop {
+  position: fixed !important;
+  inset: 0 !important;
+  z-index: 10000000 !important;
+  display: grid !important;
+  place-items: center !important;
+  background: rgba(0, 0, 0, 0.62) !important;
+}
+
+.bowler-modal {
+  position: relative !important;
+  z-index: 10000001 !important;
+  max-height: 90vh !important;
+  overflow-y: auto !important;
+}

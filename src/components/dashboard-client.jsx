@@ -2506,12 +2506,10 @@ const overJustCompleted =
   data.extraType !== "WIDE" &&
   data.extraType !== "NOBALL" &&
   Number(scoreboard?.currentState?.nextBallInOver) === 6;
-console.log("liveMatchCenter?.runs",liveMatchCenter?.runs);
-console.log("liveMatchCenter?.wickets",liveMatchCenter?.wickets);
-console.log("liveMatchCenter?.oversDisplay",liveMatchCenter?.oversDisplay);
+
 if (scorerMode && overJustCompleted) {
   setOverCompleteNotice(
-    `✅ Over complete • ${liveMatchCenter?.runs ?? 0}/${liveMatchCenter?.wickets ?? 0} • ${liveMatchCenter?.newOversDisplay || ""} ov`
+    `✅ Over complete • ${activeInnings?.runs ?? 0}/${activeInnings?.wickets ?? 0} • ${activeInnings?.oversDisplay || ""} ov`
   );
 } else {
   setOverCompleteNotice("");
@@ -5597,8 +5595,8 @@ onClick={() => {
     selectedMatchId && !isSelectedMatchCompleted ? (
         <>
 <div className="advanced-scoring-actions">
-  <button className="scorer-mode-btn">🎯 Scorer Mode</button>
-  <button className="share-score-btn">📤 Share - Spectator View</button>
+  <button type="button" className="scorer-mode-btn" onClick={() => {setScorerMode(true); setScorerDrawer(null);}}>🎯 Scorer Mode</button>
+  <button type="button" className="share-score-btn" onClick={handleShareMatch}>📤 Share - Spectator View</button>
 </div>
           </>
     ) : null
@@ -6844,29 +6842,6 @@ onClick={() => {
 )
     )}          
     </div>
-    {scorerMode && scorerDrawer && (
-  <div className="scorer-drawer-backdrop" onClick={() => setScorerDrawer(null)}>
-    <div className="scorer-drawer" onClick={(e) => e.stopPropagation()}>
-      <div className="scorer-drawer-head">
-        <strong>
-          {scorerDrawer === "scoreboard"
-            ? "📊 Scoreboard"
-            : scorerDrawer === "commentary"
-            ? "📝 Commentary"
-            : "⚙️ Match Setup"}
-        </strong>
-
-        <button type="button" onClick={() => setScorerDrawer(null)}>
-          ✕
-        </button>
-      </div>
-
-      <div className="scorer-drawer-body">
-
-      </div>
-    </div>
-  </div>
-)}
             </>
             
           )}
