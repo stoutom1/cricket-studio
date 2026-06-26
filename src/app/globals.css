@@ -18049,3 +18049,71 @@ body {
     grid-column: 1 / -1;
   }
 }
+@media (max-width: 768px) {
+  .scoring-console .card-header,
+  .scoring-console .card-title-row,
+  .scoring-console summary {
+    align-items: flex-start !important;
+  }
+
+  .scoring-console .card-header-right {
+    width: 100% !important;
+    display: grid !important;
+    grid-template-columns: 1fr 1fr !important;
+    gap: 8px !important;
+    margin-top: 10px !important;
+  }
+
+  .scorer-mode-btn,
+  .share-score-btn {
+    width: 100% !important;
+    min-height: 46px !important;
+    padding: 10px 12px !important;
+    border-radius: 999px !important;
+    font-size: 14px !important;
+    font-weight: 950 !important;
+    white-space: nowrap !important;
+  }
+
+  .share-score-btn {
+    font-size: 13px !important;
+  }
+
+  .scorer-quick-dock {
+    grid-template-columns: repeat(2, minmax(0, 1fr)) !important;
+    gap: 9px !important;
+    padding: 10px !important;
+    border-radius: 18px !important;
+    background: rgba(15, 23, 42, 0.96) !important;
+  }
+
+  .scorer-quick-dock button {
+    min-height: 46px !important;
+    border-radius: 16px !important;
+    font-size: 13px !important;
+    font-weight: 950 !important;
+    background: linear-gradient(
+      135deg,
+      rgba(37, 99, 235, 0.34),
+      rgba(15, 23, 42, 0.96)
+    ) !important;
+    border: 1px solid rgba(96, 165, 250, 0.36) !important;
+    box-shadow:
+      0 10px 22px rgba(0, 0, 0, 0.22),
+      inset 0 1px 0 rgba(255, 255, 255, 0.07) !important;
+  }
+
+  .scorer-quick-dock button.active {
+    background: linear-gradient(135deg, #2563eb, #38bdf8) !important;
+    color: white !important;
+  }
+}
+@media (max-width: 768px) {
+  .advanced-scoring-actions {
+    width: 100%;
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 8px;
+    margin-top: 10px;
+  }
+}

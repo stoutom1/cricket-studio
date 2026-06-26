@@ -2511,7 +2511,7 @@ console.log("liveMatchCenter?.wickets",liveMatchCenter?.wickets);
 console.log("liveMatchCenter?.oversDisplay",liveMatchCenter?.oversDisplay);
 if (scorerMode && overJustCompleted) {
   setOverCompleteNotice(
-    `✅ Over complete • ${liveMatchCenter?.runs ?? 0}/${liveMatchCenter?.wickets ?? 0} • ${liveMatchCenter?.oversDisplay || ""} ov`
+    `✅ Over complete • ${liveMatchCenter?.runs ?? 0}/${liveMatchCenter?.wickets ?? 0} • ${liveMatchCenter?.newOversDisplay || ""} ov`
   );
 } else {
   setOverCompleteNotice("");
@@ -3637,7 +3637,7 @@ function triggerQuickAction(actionKey, callback) {
 
   setTimeout(() => {
     setActiveQuickAction(null);
-  }, 100); // was 400
+  }, 50); // was 400
 }
 const editTeamA =
   editingMatch?.teamA ||
@@ -5596,27 +5596,10 @@ onClick={() => {
     right={
     selectedMatchId && !isSelectedMatchCompleted ? (
         <>
-        <span>
-        <button
-          type="button"
-          className="scorer-mode-btn"
-          onClick={() => {
-            setScorerMode(true);
-            setScorerDrawer(null);
-          } }
-        >
-          🎯 Scorer Mode
-        </button>
-        </span>
-        <span>
-          <button
-          type="button"
-          className="share-score-btn"
-          onClick={handleShareMatch}
-        >
-            📤 Share - Spectator View
-          </button>
-          </span>
+<div className="advanced-scoring-actions">
+  <button className="scorer-mode-btn">🎯 Scorer Mode</button>
+  <button className="share-score-btn">📤 Share - Spectator View</button>
+</div>
           </>
     ) : null
   }
