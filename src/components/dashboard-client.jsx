@@ -5776,7 +5776,7 @@ onClick={() => {
             </b>
           </div>
 
-          <div>
+          <div className="non-striker ">
             <span>🏃 Non-striker</span>
             <strong>{displayScoreboard?.currentState?.nonStrikerName || "-"}</strong>
             <b>

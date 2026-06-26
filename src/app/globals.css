@@ -18390,7 +18390,9 @@ body {
   }
 
   .table-type-partnerships {
-    --sticky-col-width: 145px;
+    .table-type-partnerships {
+    --sticky-col-width: 210px;
+  }
   }
 
   .table-type-wickets {
@@ -18412,5 +18414,12 @@ body {
   100% {
     transform: translateX(0);
     opacity: 0.55;
+  }
+}
+@media (max-width: 768px) {
+  .table-type-partnerships .sticky-first-col-table th:first-child,
+  .table-type-partnerships .sticky-first-col-table td:first-child {
+    white-space: normal;
+    line-height: 1.25;
   }
 }
