@@ -4755,7 +4755,7 @@ async function startVoiceScoring() {
       stream.getTracks().forEach((track) => track.stop());
 
       const audioBlob = new Blob(chunks, { type: "audio/webm" });
-    //  await sendVoiceCommand(audioBlob);
+      await sendVoiceCommand(audioBlob);
     };
 
     recorder.start();
@@ -4783,7 +4783,7 @@ async function sendVoiceCommand(audioBlob) {
     const formData = new FormData();
     formData.append("audio", audioBlob, "voice-command.webm");
 
-    /*const res = await fetch("/api/voice-score", {
+    const res = await fetch("/api/voice-score", {
       method: "POST",
       body: formData,
     });
@@ -4797,7 +4797,7 @@ async function sendVoiceCommand(audioBlob) {
     setVoiceMessage(`Heard: ${data.transcript}`);
 
     executeVoiceCommand(data.command);
-    */
+    
   } catch (err) {
     setVoiceMessage(err.message);
   } finally {
@@ -6473,38 +6473,6 @@ onClick={() => {
         ⛔ Match Abandoned
       </button>
     )}
- {scorerMode && (
-  <div className="voice-score-panel">
-    <button
-      type="button"
-      className={`voice-hold-btn ${voiceRecording ? "recording" : ""}`}
-      disabled={voiceBusy}
-      onPointerDown={startVoiceScoring}
-      onPointerUp={stopVoiceScoring}
-      onPointerCancel={stopVoiceScoring}
-      onTouchEnd={stopVoiceScoring}
-    >
-      {voiceRecording ? "🎙️ Release to Score" : "🎤 Hold to Speak"}
-    </button>
-
-    {voiceMessage && (
-      <div className="voice-score-message">
-        {voiceMessage}
-      </div>
-    )}
-  </div>
-)}   
-
-{isSuperAdmin && scorerMode && voiceSupported && (
-  <button
-    type="button"
-    className={`voice-score-btn ${voiceScoringOn ? "active" : ""}`}
-    onClick={() => setVoiceScoringOn((prev) => !prev)}
-  >
-    {voiceScoringOn ? "🎙️ Voice On" : "🎤 Voice Score"}
-  </button>
-)}
-
 {scorerMode && voiceStatus && (
   <div className="voice-score-status">
     {voiceStatus}
@@ -6548,15 +6516,67 @@ onClick={() => {
   <button type="button" onClick={() => setScorerMode(false)}>
     ✕ Exit
   </button>
-</div>
+<button
+  type="button"
+  className="scorer-dock-btn voice-btn"
+  onClick={() => {
+    const SpeechRecognition =
+      window.SpeechRecognition || window.webkitSpeechRecognition;
 
+    if (!SpeechRecognition) {
+      setVoiceStatus("Voice scoring is not supported in this browser.");
+      return;
+    }
+
+    const recognition = new SpeechRecognition();
+    recognition.lang = "en-US";
+    recognition.interimResults = false;
+    recognition.continuous = false;
+
+    recognition.onstart = () => {
+      setVoiceStatus("🎙️ Listening...");
+    };
+
+    recognition.onresult = (event) => {
+      const transcript = event.results[0][0].transcript;
+      setVoiceStatus(`Heard: ${transcript}`);
+      handleVoiceCommand(transcript);
+    };
+
+    recognition.onerror = (event) => {
+      setVoiceStatus(`Voice error: ${event.error}`);
+    };
+
+    recognition.onend = () => {
+      setVoiceStatus("");
+    };
+
+    recognition.start();
+  }}
+>
+  🎤 Hold
+</button>
+      {voiceMessage && (
+      <div className="voice-score-message">
+        {voiceMessage}
+      </div>
+    )}
+
+{isSuperAdmin && voiceSupported && (
+  <button
+    type="button"
+    className={scorerDrawer === "voice" ? "active" : ""}
+    onClick={() => setVoiceScoringOn((prev) => !prev)}
+  >
+    {voiceScoringOn ? "🎙️ Voice On" : "🎤 Voice Score"}
+  </button>
+)}
+</div>
         <div className="scorer-shortcut-hint">
           Keyboard Shortcuts: 0 1 2 3 4 6 • W wicket • D wide • N no-ball • U undo
         </div>
       </div>
     )}
-<div className="scoring-action-bar">
-</div>
 </div>
 
 {permissions?.canScoreMatch  && (isMobile ? (
@@ -7861,37 +7881,44 @@ onClick={() => {
             </div>
           </div>
 
-<label className="mgmt-field mgmt-select-field">
-            <span>👇 Choose a league to manage</span>
-            <div className="select-action-hint">
-  <span>Tap to choose</span>
-  <b>⌄</b>
-</div>
-{/*
-{activeLeagueId && (
-  loadMyLeaguePermissions(activeLeagueId);
-)}
- */
-} 
+<label className="compact-league-picker">
+  <span className="league-label">🏆 Active League</span>
 
-            <select
-              value={activeLeagueId || ""}
-              //value={activeLeagueId || ""}
-              onChange={(e) => {
-                setActiveLeagueId(e.target.value);
-                setSelectedTeamId("");
-                setSelectedSeriesId("");
-              }}
-            >
-              <option value="">Select League</option>
+  <div className="league-select-wrapper compact">
+    <div className="league-current-info">
+      <div className="league-current-name">
+        {activeLeague?.name || "Select League"}
+      </div>
 
-              {leagues.map((league) => (
-                <option key={league.id} value={league.id}>
-                  {league.name} • {league.visibility || "PRIVATE"}
-                </option>
-              ))}
-            </select>
-          </label>
+      <span className={`league-visibility ${activeLeague?.visibility?.toLowerCase()}`}>
+        {activeLeague?.visibility === "PUBLIC"
+          ? "🌍 Public"
+          : activeLeague?.visibility === "UNLISTED"
+          ? "🔗 Unlisted"
+          : "🔒 Private"}
+      </span>
+    </div>
+
+    <select
+      value={activeLeagueId || ""}
+      onChange={(e) => {
+        setActiveLeagueId(e.target.value);
+        setSelectedTeamId("");
+        setSelectedSeriesId("");
+      }}
+    >
+      <option value="">Select League</option>
+
+      {leagues.map((league) => (
+        <option key={league.id} value={league.id}>
+          {league.name} • {league.visibility || "PRIVATE"}
+        </option>
+      ))}
+    </select>
+
+    <div className="league-dropdown-icon">⌄</div>
+  </div>
+</label>
 
           <div className="mgmt-clean-actions">
             <button
@@ -8220,12 +8247,13 @@ onClick={() => {
 {activeTab === "Points" && (
   
   <Card title="🏆 Points" defaultCollapsed={false}>
-         <div className="active-league-banner">
-          Active League:{" "}
-  <strong>
-    {leagues.find((l) => Number(l.id) === Number(activeLeagueId))?.name || "No league selected"}
-  </strong>
-        </div>  
+  <div className="active-league-mini">
+      <span>League</span>
+      <strong>
+        {leagues.find((l) => Number(l.id) === Number(activeLeagueId))?.name ||
+          "No league selected"}
+      </strong>
+    </div> 
   {pointsTable.length === 0 ? (
     <p className="muted">No points table available yet.</p>
   ) : (
@@ -8272,12 +8300,13 @@ onClick={() => {
   </div>
 )}
     <Card title="📊 League Statistics" defaultCollapsed={false}>
-      <div className="active-league-banner">
-        Active League:{" "}
-        <strong>
-          {activeLeague?.name || "No league selected"}
-        </strong>
-      </div>
+  <div className="active-league-mini">
+      <span>League</span>
+      <strong>
+        {leagues.find((l) => Number(l.id) === Number(activeLeagueId))?.name ||
+          "No league selected"}
+      </strong>
+    </div>
     <ContextLens />
       <div className="stats-subtabs">
         <button
