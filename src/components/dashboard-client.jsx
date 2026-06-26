@@ -11117,22 +11117,24 @@ onClick={() => {
   </div>
 )}
 {showEditMatchModal && editingMatch && (
-  <div className="modal-backdrop">
-    <div className="edit-match-modal-v2">
-      <div className="edit-match-header-v2">
-        <div>
-          <div className="edit-match-kicker">Scheduled Match</div>
+  <div className="modal-backdrop edit-match-backdrop-v3">
+    <div className="edit-match-modal-v3">
+      <div className="edit-match-hero-v3">
+        <div className="edit-match-hero-left">
+          <span className="edit-match-kicker-v3">📅 Scheduled Match</span>
+
           <h2>Edit Match Details</h2>
-          <div className="edit-match-vs-pill">
+
+          <div className="edit-match-vs-v3">
             <span>{editTeamA?.name || editingMatch.teamAName || "Team A"}</span>
-            <b>vs</b>
+            <b>VS</b>
             <span>{editTeamB?.name || editingMatch.teamBName || "Team B"}</span>
           </div>
         </div>
 
         <button
           type="button"
-          className="edit-modal-close-v2"
+          className="edit-modal-close-v3"
           onClick={() => {
             setShowEditMatchModal(false);
             setEditingMatch(null);
@@ -11142,119 +11144,127 @@ onClick={() => {
         </button>
       </div>
 
-      <form onSubmit={handleUpdateScheduledMatch}>
-        <div className="edit-section-title">Match Settings</div>
+      <form onSubmit={handleUpdateScheduledMatch} className="edit-match-form-v3">
+        <section className="edit-panel-v3">
+          <div className="edit-panel-title-v3">
+            <strong>⚙️ Match Settings</strong>
+            <span>Update schedule, overs, wickets and bowling limits.</span>
+          </div>
 
-        <div className="edit-match-grid-v2">
-          <label>
-            <span>Scheduled Date/Time</span>
-            <input
-              type="datetime-local"
-              value={editMatchForm.scheduledAt}
-              onChange={(e) =>
-                setEditMatchForm((prev) => ({
-                  ...prev,
-                  scheduledAt: e.target.value,
-                }))
-              }
-            />
-          </label>
+          <div className="edit-match-grid-v3">
+            <label className="edit-field-v3 wide">
+              <span>Scheduled Date/Time</span>
+              <input
+                type="datetime-local"
+                value={editMatchForm.scheduledAt}
+                onChange={(e) =>
+                  setEditMatchForm((prev) => ({
+                    ...prev,
+                    scheduledAt: e.target.value,
+                  }))
+                }
+              />
+            </label>
 
-          <label>
-            <span>Series</span>
-            <select
-              value={editMatchForm.seriesId}
-              onChange={(e) =>
-                setEditMatchForm((prev) => ({
-                  ...prev,
-                  seriesId: e.target.value,
-                }))
-              }
-            >
-              <option value="">No Series</option>
-              {seriesList.map((series) => (
-                <option key={series.id} value={series.id}>
-                  {series.name} {series.year ? `(${series.year})` : ""}
-                </option>
-              ))}
-            </select>
-          </label>
+            <label className="edit-field-v3 wide">
+              <span>Series</span>
+              <select
+                value={editMatchForm.seriesId}
+                onChange={(e) =>
+                  setEditMatchForm((prev) => ({
+                    ...prev,
+                    seriesId: e.target.value,
+                  }))
+                }
+              >
+                <option value="">No Series</option>
+                {seriesList.map((series) => (
+                  <option key={series.id} value={series.id}>
+                    {series.name} {series.year ? `(${series.year})` : ""}
+                  </option>
+                ))}
+              </select>
+            </label>
 
-          <label>
-            <span>Overs</span>
-            <input
-              type="number"
-              min="1"
-              value={editMatchForm.oversPerInnings}
-              onChange={(e) =>
-                setEditMatchForm((prev) => ({
-                  ...prev,
-                  oversPerInnings: e.target.value,
-                }))
-              }
-            />
-          </label>
+            <label className="edit-field-v3">
+              <span>🎯 Overs</span>
+              <input
+                type="number"
+                min="1"
+                value={editMatchForm.oversPerInnings}
+                onChange={(e) =>
+                  setEditMatchForm((prev) => ({
+                    ...prev,
+                    oversPerInnings: e.target.value,
+                  }))
+                }
+              />
+            </label>
 
-          <label>
-            <span>Powerplay</span>
-            <input
-              type="number"
-              min="0"
-              value={editMatchForm.powerplayOversInnings}
-              onChange={(e) =>
-                setEditMatchForm((prev) => ({
-                  ...prev,
-                  powerplayOversInnings: e.target.value,
-                }))
-              }
-            />
-          </label>
+            <label className="edit-field-v3">
+              <span>⚡ Powerplay</span>
+              <input
+                type="number"
+                min="0"
+                value={editMatchForm.powerplayOversInnings}
+                onChange={(e) =>
+                  setEditMatchForm((prev) => ({
+                    ...prev,
+                    powerplayOversInnings: e.target.value,
+                  }))
+                }
+              />
+            </label>
 
-          <label>
-            <span>Max Wickets</span>
-            <input
-              type="number"
-              min="1"
-              placeholder="Optional"
-              value={editMatchForm.maxWicketsPerInnings}
-              onChange={(e) =>
-                setEditMatchForm((prev) => ({
-                  ...prev,
-                  maxWicketsPerInnings: e.target.value,
-                }))
-              }
-            />
-          </label>
+            <label className="edit-field-v3">
+              <span>☝️ Max Wickets</span>
+              <input
+                type="number"
+                min="1"
+                placeholder="Unlimited"
+                value={editMatchForm.maxWicketsPerInnings}
+                onChange={(e) =>
+                  setEditMatchForm((prev) => ({
+                    ...prev,
+                    maxWicketsPerInnings: e.target.value,
+                  }))
+                }
+              />
+            </label>
 
-          <label>
-            <span>Max Overs/Bowler</span>
-            <input
-              type="number"
-              min="1"
-              placeholder="Optional"
-              value={editMatchForm.maxOversPerBowler}
-              onChange={(e) =>
-                setEditMatchForm((prev) => ({
-                  ...prev,
-                  maxOversPerBowler: e.target.value,
-                }))
-              }
-            />
-          </label>
-        </div>
+            <label className="edit-field-v3">
+              <span>🎳 Max Overs/Bowler</span>
+              <input
+                type="number"
+                min="1"
+                placeholder="Unlimited"
+                value={editMatchForm.maxOversPerBowler}
+                onChange={(e) =>
+                  setEditMatchForm((prev) => ({
+                    ...prev,
+                    maxOversPerBowler: e.target.value,
+                  }))
+                }
+              />
+            </label>
+          </div>
+        </section>
 
-        <div className="edit-role-section-v2">
-          <div className="edit-section-title">Captains & Wicketkeepers</div>
+        <section className="edit-panel-v3">
+          <div className="edit-panel-title-v3">
+            <strong>🧢 Captains & Wicketkeepers</strong>
+            <span>Select optional officials for each team.</span>
+          </div>
 
-          <div className="edit-role-grid-v2">
-            <div className="edit-team-role-card-v2">
-              <div className="team-role-card-head">
-                <span className="team-badge">A</span>
+          <div className="edit-role-grid-v3">
+            <div className="edit-team-role-card-v3 team-a">
+              <div className="team-role-card-head-v3">
+                <span>A</span>
                 <strong>{editTeamA?.name || editingMatch.teamAName || "Team A"}</strong>
               </div>
 
-              <label>
-                <span>Captain</span>
+              <label className="edit-field-v3">
+                <span>🧢 Captain</span>
                 <select
                   value={editMatchForm.teamACaptainId}
                   onChange={(e) =>
@@ -11273,8 +11283,8 @@ onClick={() => {
                 </select>
               </label>
 
-              <label>
-                <span>Wicketkeeper</span>
+              <label className="edit-field-v3">
+                <span>🧤 Wicketkeeper</span>
                 <select
                   value={editMatchForm.teamAWicketKeeperId}
                   onChange={(e) =>
@@ -11294,14 +11304,14 @@ onClick={() => {
               </label>
             </div>
 
-            <div className="edit-team-role-card-v2">
-              <div className="team-role-card-head">
-                <span className="team-badge">B</span>
+            <div className="edit-team-role-card-v3 team-b">
+              <div className="team-role-card-head-v3">
+                <span>B</span>
                 <strong>{editTeamB?.name || editingMatch.teamBName || "Team B"}</strong>
               </div>
 
-              <label>
-                <span>Captain</span>
+              <label className="edit-field-v3">
+                <span>🧢 Captain</span>
                 <select
                   value={editMatchForm.teamBCaptainId}
                   onChange={(e) =>
@@ -11320,8 +11330,8 @@ onClick={() => {
                 </select>
               </label>
 
-              <label>
-                <span>Wicketkeeper</span>
+              <label className="edit-field-v3">
+                <span>🧤 Wicketkeeper</span>
                 <select
                   value={editMatchForm.teamBWicketKeeperId}
                   onChange={(e) =>
@@ -11341,17 +11351,21 @@ onClick={() => {
               </label>
             </div>
           </div>
-        </div>
+        </section>
 
-        <div className="edit-match-actions-v2">
-          <button type="button" className="btn btn-outline" onClick={() => {
-            setShowEditMatchModal(false);
-            setEditingMatch(null);
-          }}>
+        <div className="edit-match-actions-v3">
+          <button
+            type="button"
+            className="edit-cancel-btn-v3"
+            onClick={() => {
+              setShowEditMatchModal(false);
+              setEditingMatch(null);
+            }}
+          >
             Cancel
           </button>
 
-          <button type="submit" className="btn btn-primary">
+          <button type="submit" className="edit-save-btn-v3">
             💾 Save Changes
           </button>
         </div>
