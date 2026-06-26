@@ -2507,10 +2507,18 @@ const overJustCompleted =
   data.extraType !== "NOBALL" &&
   Number(scoreboard?.currentState?.nextBallInOver) === 6;
 
+//const legalBalls =
+//  scoreboard.currentState.legalBalls + 1;
+
+//const completedOvers = Math.floor(legalBalls / 6);
+
 if (scorerMode && overJustCompleted) {
-  setOverCompleteNotice(
-    `✅ Over complete • ${activeInnings?.runs ?? 0}/${activeInnings?.wickets ?? 0} • ${activeInnings?.oversDisplay || ""} ov`
-  );
+//  setOverCompleteNotice(
+//`✅ Over complete `
+    //    `✅ Over complete • ${legalBalls ?? 0}/${data.wickets ?? 0} • ${data.oversDisplay ?? 0} ov`
+//  );
+  setOverCompleteNotice("");
+
 } else {
   setOverCompleteNotice("");
 }

@@ -55,11 +55,21 @@ function PlayerCard({ label, name, value }) {
 
 function ProTable({ children }) {
   return (
-    <div className="live-table-wrap">
-      <table className="live-pro-table">{children}</table>
+    <div className="live-table-shell">
+      <div className="table-scroll-hint">
+        <span>Swipe right for more stats</span>
+        <b>➜</b>
+      </div>
+
+      <div className="live-table-wrap">
+        <table className="live-pro-table sticky-first-col-table">
+          {children}
+        </table>
+      </div>
     </div>
   );
 }
+
 function getTopRuns(battingStats = []) {
   return Math.max(...battingStats.map((p) => Number(p.runs || 0)), 0);
 }
