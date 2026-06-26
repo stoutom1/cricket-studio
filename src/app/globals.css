@@ -18680,3 +18680,39 @@ body {
     display: none;
   }
 }
+@media (max-width: 640px) {
+  .auth-nav.auth-nav-compact {
+    width: 100% !important;
+    max-width: 100% !important;
+    margin: 8px 0 12px !important;
+    padding: 6px !important;
+    display: grid !important;
+    grid-template-columns: repeat(4, minmax(0, 1fr)) !important;
+    gap: 6px !important;
+    overflow: visible !important;
+    border-radius: 18px !important;
+  }
+
+  .auth-nav-center,
+  .auth-nav-right {
+    display: contents !important;
+  }
+
+  .auth-nav .nav-link,
+  .auth-nav .login-btn,
+  .auth-nav .logout-btn {
+    width: auto !important;
+    min-width: 0 !important;
+    max-width: 100% !important;
+    min-height: 34px !important;
+    padding: 0 6px !important;
+    font-size: 11px !important;
+    justify-content: center !important;
+    overflow: hidden !important;
+    text-overflow: ellipsis !important;
+  }
+
+  .auth-nav .user-avatar {
+    display: none !important;
+  }
+}
