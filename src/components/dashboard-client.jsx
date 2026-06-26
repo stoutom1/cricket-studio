@@ -302,6 +302,9 @@ const [showPublicLeagueDrawer, setShowPublicLeagueDrawer] = useState(false);
 const [showFollowedLeaguesDrawer, setShowFollowedLeaguesDrawer] =  useState(false);
 const [showMatchPicker, setShowMatchPicker] = useState(false);
 const [overCompleteNotice, setOverCompleteNotice] = useState("");
+const [voiceScoringOn, setVoiceScoringOn] = useState(false);
+const [voiceStatus, setVoiceStatus] = useState("");
+const [voiceSupported, setVoiceSupported] = useState(false);
 const isSuperAdmin =
   session?.user?.email ===
   "surprisecricket11@gmail.com";
@@ -4102,6 +4105,100 @@ function playerPassesContextFilters(row) {
 
   return true;
 }
+useEffect(() => {
+  const SpeechRecognition =
+    window.SpeechRecognition || window.webkitSpeechRecognition;
+
+  setVoiceSupported(Boolean(SpeechRecognition));
+}, []);
+function handleVoiceCommand(command) {
+  const text = String(command || "").toLowerCase().trim();
+
+  if (!scorerMode) return;
+  if (isSavingBall || isMatchCompleted || isMatchLocked || isMatchAbandoned) return;
+
+  if (text.includes("zero") || text.includes("dot")) {
+    quickNormalBall(0);
+  } else if (text.includes("one") || text.includes("single")) {
+    quickNormalBall(1);
+  } else if (text.includes("two")) {
+    quickNormalBall(2);
+  } else if (text.includes("three")) {
+    quickNormalBall(3);
+  } else if (text.includes("four")) {
+    quickNormalBall(4);
+  } else if (text.includes("six")) {
+    quickNormalBall(6);
+  } else if (text.includes("wide")) {
+    quickExtra("WIDE");
+  } else if (text.includes("no ball") || text.includes("noball")) {
+    quickExtra("NOBALL");
+  } else if (text === "bye" || text.includes("bye")) {
+    quickExtra("BYE");
+  } else if (text.includes("leg bye")) {
+    quickExtra("LEGBYE");
+  } else if (text.includes("wicket")) {
+    quickWicket("BOWLED");
+  } else if (text.includes("undo")) {
+    handleUndoBall();
+  } else {
+    setVoiceStatus(`Heard: "${command}"`);
+  }
+}
+useEffect(() => {
+  if (!voiceScoringOn || !scorerMode) return;
+
+  const SpeechRecognition =
+    window.SpeechRecognition || window.webkitSpeechRecognition;
+
+  if (!SpeechRecognition) {
+    setVoiceStatus("Voice scoring is not supported in this browser.");
+    return;
+  }
+
+  const recognition = new SpeechRecognition();
+  recognition.continuous = true;
+  recognition.interimResults = false;
+  recognition.lang = "en-US";
+
+  recognition.onstart = () => {
+    setVoiceStatus("🎙️ Listening...");
+  };
+
+  recognition.onresult = (event) => {
+    const transcript =
+      event.results[event.results.length - 1][0].transcript;
+
+    setVoiceStatus(`Heard: ${transcript}`);
+    handleVoiceCommand(transcript);
+  };
+
+  recognition.onerror = (event) => {
+    setVoiceStatus(`Voice error: ${event.error}`);
+  };
+
+  recognition.onend = () => {
+    if (voiceScoringOn && scorerMode) {
+      try {
+        recognition.start();
+      } catch {}
+    }
+  };
+
+  recognition.start();
+
+  return () => {
+    recognition.onend = null;
+    recognition.stop();
+  };
+}, [
+  voiceScoringOn,
+  scorerMode,
+  isSavingBall,
+  isMatchCompleted,
+  isMatchLocked,
+  isMatchAbandoned,
+]);
 
 const rankedSelectedRanking =
   (selectedRanking || []).map((row, index) => ({
@@ -6246,7 +6343,21 @@ onClick={() => {
         ⛔ Match Abandoned
       </button>
     )}
+{voiceSupported && (
+  <button
+    type="button"
+    className={`voice-score-btn ${voiceScoringOn ? "active" : ""}`}
+    onClick={() => setVoiceScoringOn((prev) => !prev)}
+  >
+    {voiceScoringOn ? "🎙️ Voice On" : "🎤 Voice Score"}
+  </button>
+)}
 
+{voiceStatus && (
+  <div className="voice-score-status">
+    {voiceStatus}
+  </div>
+)}
     {scorerMode && (
       <div className="scorer-dock-area">
 <div className="scorer-quick-dock">

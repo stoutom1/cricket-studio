@@ -18269,3 +18269,24 @@ body {
     opacity: 0.55;
   }
 }
+.voice-score-btn {
+  width: 100%;
+  min-height: 44px;
+  border-radius: 999px;
+  border: 1px solid rgba(168, 85, 247, 0.4);
+  background: linear-gradient(135deg, rgba(124, 58, 237, 0.28), rgba(37, 99, 235, 0.18));
+  color: white;
+  font-weight: 950;
+}
+
+.voice-score-btn.active {
+  background: linear-gradient(135deg, #7c3aed, #2563eb);
+  box-shadow: 0 12px 28px rgba(124, 58, 237, 0.28);
+}
+
+.voice-score-status {
+  text-align: center;
+  color: #bfdbfe;
+  font-size: 12px;
+  font-weight: 850;
+}
