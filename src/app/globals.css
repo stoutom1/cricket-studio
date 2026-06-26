@@ -19603,3 +19603,75 @@ body {
 .league-select-wrapper.compact > span:not(.league-current-info) {
   display: none !important;
 }
+.smart-match-row {
+  align-items: flex-start !important;
+  gap: 4px !important;
+}
+
+.smart-match-title {
+  font-size: 13px;
+  font-weight: 950;
+  color: #fff;
+}
+
+.smart-match-meta {
+  color: #bfdbfe;
+  font-size: 11px;
+  font-weight: 800;
+}
+
+.smart-match-meta b {
+  color: #facc15;
+}
+
+.smart-match-extra {
+  color: #cbd5e1;
+  font-size: 11px;
+  font-weight: 750;
+}
+/* Smart Filter match rows: clean aligned columns */
+.filter-row.smart-match-row {
+  display: grid !important;
+  grid-template-columns: minmax(130px, 1.1fr) minmax(170px, 1.25fr) minmax(190px, 1.35fr);
+  align-items: center !important;
+  column-gap: 14px !important;
+  row-gap: 4px !important;
+  text-align: left !important;
+}
+
+.smart-match-title,
+.smart-match-extra,
+.smart-match-meta {
+  min-width: 0;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+.smart-match-title {
+  white-space: normal;
+  line-height: 1.25;
+}
+
+.smart-match-extra,
+.smart-match-meta {
+  white-space: normal;
+  line-height: 1.25;
+}
+
+.smart-match-meta {
+  justify-self: start;
+}
+
+@media (max-width: 640px) {
+  .filter-row.smart-match-row {
+    grid-template-columns: 1fr !important;
+    gap: 5px !important;
+    padding: 10px 8px !important;
+  }
+
+  .smart-match-title,
+  .smart-match-extra,
+  .smart-match-meta {
+    white-space: normal;
+  }
+}

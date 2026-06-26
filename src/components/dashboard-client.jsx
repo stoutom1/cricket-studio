@@ -6513,9 +6513,6 @@ onClick={() => {
     ⚙️ Setup
   </button>
 
-  <button type="button" onClick={() => setScorerMode(false)}>
-    ✕ Exit
-  </button>
 <button
   type="button"
   className="scorer-dock-btn voice-btn"
@@ -6571,6 +6568,9 @@ onClick={() => {
     {voiceScoringOn ? "🎙️ Voice On" : "🎤 Voice Score"}
   </button>
 )}
+  <button type="button" onClick={() => setScorerMode(false)}>
+    ✕ Exit
+  </button>
 </div>
         <div className="scorer-shortcut-hint">
           Keyboard Shortcuts: 0 1 2 3 4 6 • W wicket • D wide • N no-ball • U undo
@@ -10810,31 +10810,76 @@ onClick={() => {
     ))}
 {filterCategory === "matches" &&
   filteredMatchesForContextLens
-    .filter((m) =>
-      `${m.teamAName} ${m.teamBName} ${m.id} ${m.seriesName || ""} ${m.status || ""}`
-        .toLowerCase()
-        .includes(filterSearch.toLowerCase())
-    )
-    .map((match) => (
-      <button
-        key={match.id}
-        type="button"
-        className={
-          contextFilters.matchIds.includes(Number(match.id))
-            ? "filter-row active"
-            : "filter-row"
-        }
-        onClick={() => toggleFilterValue("matchIds", Number(match.id))}
-      >
-        <span>
-          #{match.id} {match.teamAName} vs {match.teamBName}
-        </span>
-        <small>
-          {match.seriesName ? `${match.seriesName} • ` : ""}
-          {String(match.status || "").replaceAll("_", " ")}
-        </small>
-      </button>
-    ))}
+    .filter((m) => {
+      const searchText = [
+        m.teamAName,
+        m.teamBName,
+        m.id,
+        m.seriesName,
+        m.status,
+        m.battingFirstTeamName,
+        m.scoreSummary,
+        m.liveScore,
+        m.resultText,
+        m.firstInningsScore,
+        m.secondInningsScore,
+        m.scheduledAt,
+        m.startedAt,
+      ]
+        .filter(Boolean)
+        .join(" ")
+        .toLowerCase();
+
+      return searchText.includes(filterSearch.toLowerCase());
+    })
+    .map((match) => {
+      const matchDate =
+        match.scheduledAt ||
+        match.startedAt ||
+        match.createdAt;
+
+      const dateText = matchDate
+        ? formatMatchDateTime(matchDate)
+        : "Date TBD";
+
+      const scoreText =
+        match.scoreSummary ||
+        match.liveScore ||
+        [match.firstInningsScore, match.secondInningsScore]
+          .filter(Boolean)
+          .join(" vs ");
+
+      return (
+        <button
+          key={match.id}
+          type="button"
+          className={
+            contextFilters.matchIds.includes(Number(match.id))
+              ? "filter-row smart-match-row active"
+              : "filter-row smart-match-row"
+          }
+          onClick={() => toggleFilterValue("matchIds", Number(match.id))}
+        >
+          <span className="smart-match-title">
+            🏏 {match.teamAName} vs {match.teamBName}
+          </span>
+
+          <small className="smart-match-extra">
+            {scoreText
+              ? `📊 ${scoreText}`
+              : match.battingFirstTeamName
+              ? `🏏 Bat 1st: ${match.battingFirstTeamName}`
+              : `Match #${match.id}`}
+          </small>
+          <small className="smart-match-meta">
+            <b>{String(match.status || "").replaceAll("_", " ")}</b>
+            {" • "}
+            {dateText}
+            {match.seriesName ? ` • ${match.seriesName}` : ""}
+          </small>
+        </button>
+      );
+    })} 
 {filterCategory === "series" &&
   filteredSeriesForContextLens
     .filter((s) =>
