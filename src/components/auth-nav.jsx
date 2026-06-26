@@ -2,10 +2,11 @@
 
 import Link from "next/link";
 import { signOut, useSession } from "next-auth/react";
+import { useState } from "react";
 
 export default function AuthNav() {
   const { data: session, status } = useSession();
-
+const [showAccountModal, setShowAccountModal] = useState(false);
   return (
     <nav className="auth-nav auth-nav-compact">
       <Link href="/" className="nav-link nav-home">
@@ -27,9 +28,14 @@ export default function AuthNav() {
           <span className="loading-text">Loading...</span>
         ) : session ? (
           <>
-            <span className="user-avatar" title={session.user?.email}>
-              👤
-            </span>
+<button
+  type="button"
+  className="user-avatar account-avatar-btn"
+  title="Account details"
+  onClick={() => setShowAccountModal(true)}
+>
+  👤
+</button>
 
             <button
               type="button"
@@ -49,6 +55,69 @@ export default function AuthNav() {
           </Link>
         )}
       </div>
+      {showAccountModal && session && (
+  <div className="account-modal-backdrop">
+    <div className="account-modal">
+      <button
+        type="button"
+        className="account-close-btn"
+        onClick={() => setShowAccountModal(false)}
+      >
+        ✕
+      </button>
+
+      <div className="account-hero">
+        <div className="account-avatar-big">👤</div>
+
+        <div>
+          <span className="account-kicker">Cric4All Account</span>
+          <h2>{session.user?.name || "Cricket User"}</h2>
+          <p>{session.user?.email}</p>
+        </div>
+      </div>
+
+      <div className="account-wow-grid">
+        <div>
+          <strong>🏏 Manage Cricket</strong>
+          <span>Create leagues, teams, players, matches, and scoring workflows.</span>
+        </div>
+
+        <div>
+          <strong>🎯 Score Faster</strong>
+          <span>Use Scorer Mode for quick match-day scoring.</span>
+        </div>
+
+        <div>
+          <strong>📤 Share Live</strong>
+          <span>Share spectator links with players, fans, and families.</span>
+        </div>
+
+        <div>
+          <strong>🤖 Review with AI</strong>
+          <span>Generate AI insights after completed matches.</span>
+        </div>
+      </div>
+
+      <div className="account-actions">
+        <a href="/dashboard" className="account-primary-action">
+          📊 Go to Dashboard
+        </a>
+
+        <a href="/explore" className="account-secondary-action">
+          🌐 Explore Leagues
+        </a>
+
+        <button
+          type="button"
+          className="account-danger-action"
+          onClick={() => signOut({ callbackUrl: "/login" })}
+        >
+          Sign Out
+        </button>
+      </div>
+    </div>
+  </div>
+)}
     </nav>
   );
 }

@@ -19748,3 +19748,175 @@ body {
     border-color: rgba(96, 165, 250, 0.55) !important;
   }
 }
+.account-avatar-btn {
+  cursor: pointer;
+  border: 1px solid rgba(147, 197, 253, 0.28);
+}
+
+.account-modal-backdrop {
+  position: fixed;
+  inset: 0;
+  z-index: 1000000;
+  display: grid;
+  place-items: center;
+  padding: 16px;
+  background: rgba(2, 6, 23, 0.72);
+  backdrop-filter: blur(10px);
+}
+
+.account-modal {
+  position: relative;
+  width: min(720px, 100%);
+  padding: 22px;
+  border-radius: 28px;
+  background:
+    radial-gradient(circle at top left, rgba(56,189,248,.28), transparent 34%),
+    radial-gradient(circle at bottom right, rgba(168,85,247,.18), transparent 30%),
+    #0f172a;
+  border: 1px solid rgba(147,197,253,.28);
+  box-shadow: 0 30px 90px rgba(0,0,0,.6);
+}
+
+.account-close-btn {
+  position: absolute;
+  top: 14px;
+  right: 14px;
+  width: 38px;
+  height: 38px;
+  border-radius: 999px;
+  border: 1px solid rgba(248,113,113,.35);
+  background: rgba(239,68,68,.16);
+  color: #fecaca;
+  font-weight: 950;
+  cursor: pointer;
+}
+
+.account-hero {
+  display: flex;
+  align-items: center;
+  gap: 16px;
+}
+
+.account-avatar-big {
+  width: 74px;
+  height: 74px;
+  border-radius: 24px;
+  display: grid;
+  place-items: center;
+  font-size: 34px;
+  background: linear-gradient(135deg, #2563eb, #38bdf8);
+  box-shadow: 0 16px 34px rgba(37,99,235,.3);
+}
+
+.account-kicker {
+  color: #bfdbfe;
+  font-size: 12px;
+  font-weight: 950;
+  text-transform: uppercase;
+}
+
+.account-hero h2 {
+  margin: 6px 0 4px;
+  color: white;
+}
+
+.account-hero p {
+  margin: 0;
+  color: #cbd5e1;
+  font-weight: 750;
+  word-break: break-word;
+}
+
+.account-wow-grid {
+  margin-top: 18px;
+  display: grid;
+  grid-template-columns: repeat(2, 1fr);
+  gap: 12px;
+}
+
+.account-wow-grid div {
+  padding: 14px;
+  border-radius: 20px;
+  background: rgba(15,23,42,.72);
+  border: 1px solid rgba(96,165,250,.18);
+}
+
+.account-wow-grid strong,
+.account-wow-grid span {
+  display: block;
+}
+
+.account-wow-grid strong {
+  color: white;
+  font-weight: 950;
+}
+
+.account-wow-grid span {
+  margin-top: 6px;
+  color: #94a3b8;
+  font-size: 13px;
+  font-weight: 750;
+}
+
+.account-actions {
+  margin-top: 18px;
+  display: flex;
+  flex-wrap: wrap;
+  gap: 10px;
+}
+
+.account-primary-action,
+.account-secondary-action,
+.account-danger-action {
+  min-height: 44px;
+  padding: 0 16px;
+  border-radius: 999px;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  text-decoration: none;
+  font-weight: 950;
+  cursor: pointer;
+}
+
+.account-primary-action {
+  color: white;
+  background: linear-gradient(135deg, #2563eb, #38bdf8);
+}
+
+.account-secondary-action {
+  color: #bfdbfe;
+  background: rgba(15,23,42,.75);
+  border: 1px solid rgba(96,165,250,.26);
+}
+
+.account-danger-action {
+  color: #fecaca;
+  background: rgba(239,68,68,.16);
+  border: 1px solid rgba(248,113,113,.28);
+}
+
+@media (max-width: 640px) {
+  .account-modal {
+    padding: 18px;
+    border-radius: 22px;
+  }
+
+  .account-hero {
+    align-items: flex-start;
+  }
+
+  .account-wow-grid {
+    grid-template-columns: 1fr;
+  }
+
+  .account-actions {
+    display: grid;
+  }
+
+  .account-primary-action,
+  .account-secondary-action,
+  .account-danger-action {
+    width: 100%;
+  }
+}
