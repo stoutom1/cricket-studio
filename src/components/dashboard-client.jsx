@@ -567,9 +567,9 @@ useEffect(() => {
 
       setSelectedMatchId("");
       setPreferencesLoaded(true);
-      setDashboardReady(true);
     } catch (err) {
       setError(err.message);
+    } finally {
       setDashboardReady(true);
     }
   }
@@ -4921,10 +4921,12 @@ return (
 <div className="dashboard-tabs">
 <Analytics />
 <SpeedInsights/>
-  {permissionsLoading ? (
-    <span>Loading permissions...</span>
-  ) : (
-    <>
+{!dashboardReady || permissionsLoading ? (
+  <div className="dashboard-tabs-loading">
+    Loading dashboard...
+  </div>
+) : (
+  <>
       {permissions?.canViewManagement && (
         <button
           className={`dashboard-tab ${
