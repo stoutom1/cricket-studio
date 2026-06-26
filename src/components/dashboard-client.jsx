@@ -4181,7 +4181,7 @@ useEffect(() => {
     if (voiceScoringOn && scorerMode) {
       try {
         recognition.start();
-      } catch {}
+      } catch {setVoiceStatus("");}
     }
   };
 
@@ -6343,7 +6343,7 @@ onClick={() => {
         ⛔ Match Abandoned
       </button>
     )}
-{voiceSupported && (
+{scorerMode && voiceSupported && (
   <button
     type="button"
     className={`voice-score-btn ${voiceScoringOn ? "active" : ""}`}
@@ -6353,7 +6353,7 @@ onClick={() => {
   </button>
 )}
 
-{voiceStatus && (
+{scorerMode && voiceStatus && (
   <div className="voice-score-status">
     {voiceStatus}
   </div>

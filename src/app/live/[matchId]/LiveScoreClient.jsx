@@ -53,12 +53,12 @@ function PlayerCard({ label, name, value }) {
   );
 }
 
-function ProTable({ children }) {
+function ProTable({ children, type = "default" }) {
   return (
-    <div className="live-table-shell">
+    <div className={`live-table-shell table-type-${type}`}>
       <div className="table-scroll-hint">
-        <span>Swipe right for more stats</span>
-        <b>➜</b>
+        <span>Swipe left/right for more details</span>
+        <b>⇄</b>
       </div>
 
       <div className="live-table-wrap">
@@ -634,7 +634,7 @@ function getLastThreeOvers(scoreboard) {
 
                 <h3 className="live-section-title">🏏 Batting Scorecard</h3>
 
-                <ProTable>
+                <ProTable type="batting">
                   <thead>
                     <tr>
                       <th>Player</th>
@@ -684,7 +684,7 @@ function getLastThreeOvers(scoreboard) {
 
                 <h3 className="live-section-title">🎯 Bowling Scorecard</h3>
 
-                <ProTable>
+                <ProTable type="bowling">
                   <thead>
                     <tr>
                       <th>Bowler</th>
@@ -727,7 +727,7 @@ function getLastThreeOvers(scoreboard) {
 
                 <h3 className="live-section-title">🤝 Partnerships</h3>
 
-                <ProTable>
+                <ProTable type="partnerships">
                   <thead>
                     <tr>
                       <th>Batters</th>
@@ -753,7 +753,7 @@ function getLastThreeOvers(scoreboard) {
 
                 <h3 className="live-section-title">☝️ Fall of Wickets</h3>
 
-                <ProTable>
+                <ProTable type="wickets">
                   <thead>
                     <tr>
                       <th>Wicket</th>
