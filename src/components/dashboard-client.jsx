@@ -7146,33 +7146,36 @@ onClick={() => {
   )
 ) &&(
 <div>
-  <div className="match-action-bar">
+  <div className="match-control-bar">
     <button
       type="button"
-      className="btn btn-danger"
+      className="match-control-btn lock"
       disabled={isMatchLocked}
       onClick={handleLockMatch}
     >
-      🔒 Lock Match
+        <span>🔒</span>
+    <label>Lock</label>
     </button>
 {(!isMatchAbandoned && !isMatchCompleted && !isMatchLocked) && (
     <button
       type="button"
-      className="btn btn-danger"
+      className="match-control-btn abandon"
       disabled={isMatchLocked || isMatchCompleted}
       onClick={handleAbandonMatch}
     >
-      ⛔ Abandon Match
+      <span>⛔</span>
+    <label>Abandon</label>
     </button>
     
 )}    
 {(ballForm.inningsNo != 1 && !isMatchLocked && !isMatchAbandoned && !isMatchCompleted) && (
   <button
   type="button"
-  className="btn btn-danger"
+  className="match-control-btn end"
   onClick={handleEndMatch}
 >
-  🏁 End Match
+      <span>🏁</span>
+    <label>End Match</label>
 </button>
 )}
   </div>

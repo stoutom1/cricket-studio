@@ -18716,3 +18716,79 @@ body {
     display: none !important;
   }
 }
+.match-control-bar{
+    display:grid;
+    grid-template-columns:repeat(3,1fr);
+    gap:10px;
+    margin-top:16px;
+}
+
+.match-control-btn{
+    height:52px;
+
+    display:flex;
+    align-items:center;
+    justify-content:center;
+    gap:8px;
+
+    border-radius:14px;
+
+    background:#17233a;
+
+    border:1px solid rgba(255,255,255,.08);
+
+    color:#fff;
+
+    font-weight:700;
+
+    transition:.18s;
+
+    cursor:pointer;
+}
+
+.match-control-btn span{
+    font-size:18px;
+}
+
+.match-control-btn:hover{
+    transform:translateY(-2px);
+
+    box-shadow:0 10px 24px rgba(0,0,0,.28);
+
+    border-color:#4f83ff;
+}
+
+.match-control-btn.lock span{
+    color:#ffcc55;
+}
+
+.match-control-btn.abandon span{
+    color:#ff7d7d;
+}
+
+.match-control-btn.end span{
+    color:#35d07f;
+}
+
+@media(max-width:768px){
+
+.match-control-bar{
+
+    gap:8px;
+}
+
+.match-control-btn{
+
+    height:46px;
+
+    font-size:13px;
+
+    gap:5px;
+}
+
+.match-control-btn span{
+
+    font-size:16px;
+}
+
+}
