@@ -10178,25 +10178,31 @@ onClick={() => {
 {showBowlerModal && (
   <div className="bowler-modal-backdrop">
     <div className="bowler-modal">
-<div className="bowler-change-score-card">
-  <div>
-    <span>Current Score</span>
-    <strong>{bowlerChangeScore.score}</strong>
+<div className="live-popup-snapshot">
+  <div className="live-popup-topline">
+    <span className="live-dot">● LIVE</span>
+    <span className="live-popup-over">Over {bowlerChangeScore.overs}</span>
   </div>
 
-  <div>
-    <span>Overs</span>
-    <strong>{bowlerChangeScore.overs}</strong>
-  </div>
-
-  <div>
-    <span>CRR</span>
-    <strong>{bowlerChangeScore.crr}</strong>
-  </div>
-
-  <div className="bowler-change-recent">
-    <span>Previous Over • {previousOverInfo.overNo}</span>
+  <div className="live-popup-main">
     <div>
+      <span>Current Score</span>
+      <strong>{bowlerChangeScore.score}</strong>
+    </div>
+
+    <div>
+      <span>CRR</span>
+      <strong>{bowlerChangeScore.crr}</strong>
+    </div>
+  </div>
+
+  <div className="live-popup-recent">
+    <div className="live-popup-recent-head">
+      <span>Previous Over</span>
+      <b>{previousOverInfo.overNo}</b>
+    </div>
+
+    <div className="live-popup-balls">
       {previousOverInfo.balls.length ? (
         previousOverInfo.balls.map((ball) => {
           const label = ball.label || "";
@@ -10204,7 +10210,24 @@ onClick={() => {
             label.split(" ").slice(1).join(" ") || label
           ).replace(/[()]/g, "");
 
-          return <b key={ball.id}>{result}</b>;
+          const ballClass =
+            result === "W"
+              ? "wicket"
+              : result === "4"
+              ? "four"
+              : result === "6"
+              ? "six"
+              : result.toUpperCase().includes("WD")
+              ? "wide"
+              : result.toUpperCase().includes("NB")
+              ? "noball"
+              : "";
+
+          return (
+            <b key={ball.id} className={ballClass}>
+              {result}
+            </b>
+          );
         })
       ) : (
         <small>No balls yet</small>
@@ -10472,6 +10495,63 @@ KL Rahul`}
 {showExtrasModal && (
   <div className="modal-backdrop">
     <div className="modal-card">
+<div className="live-popup-snapshot">
+  <div className="live-popup-topline">
+    <span className="live-dot">● LIVE</span>
+    <span className="live-popup-over">Over {bowlerChangeScore.overs}</span>
+  </div>
+
+  <div className="live-popup-main">
+    <div>
+      <span>Current Score</span>
+      <strong>{bowlerChangeScore.score}</strong>
+    </div>
+
+    <div>
+      <span>CRR</span>
+      <strong>{bowlerChangeScore.crr}</strong>
+    </div>
+  </div>
+
+  <div className="live-popup-recent">
+    <div className="live-popup-recent-head">
+      <span>Previous Over</span>
+      <b>{previousOverInfo.overNo}</b>
+    </div>
+
+    <div className="live-popup-balls">
+      {previousOverInfo.balls.length ? (
+        previousOverInfo.balls.map((ball) => {
+          const label = ball.label || "";
+          const result = (
+            label.split(" ").slice(1).join(" ") || label
+          ).replace(/[()]/g, "");
+
+          const ballClass =
+            result === "W"
+              ? "wicket"
+              : result === "4"
+              ? "four"
+              : result === "6"
+              ? "six"
+              : result.toUpperCase().includes("WD")
+              ? "wide"
+              : result.toUpperCase().includes("NB")
+              ? "noball"
+              : "";
+
+          return (
+            <b key={ball.id} className={ballClass}>
+              {result}
+            </b>
+          );
+        })
+      ) : (
+        <small>No balls yet</small>
+      )}
+    </div>
+  </div>
+</div>
       <h3>
         {selectedExtraType === "WIDE" && "Wide"}
         {selectedExtraType === "NOBALL" && "No Ball"}
@@ -11081,6 +11161,63 @@ onClick={() => {
 {showWicketModal && (
   <div className="modal-backdrop">
   <div className="modal-card app-modal-card">
+<div className="live-popup-snapshot">
+  <div className="live-popup-topline">
+    <span className="live-dot">● LIVE</span>
+    <span className="live-popup-over">Over {bowlerChangeScore.overs}</span>
+  </div>
+
+  <div className="live-popup-main">
+    <div>
+      <span>Current Score</span>
+      <strong>{bowlerChangeScore.score}</strong>
+    </div>
+
+    <div>
+      <span>CRR</span>
+      <strong>{bowlerChangeScore.crr}</strong>
+    </div>
+  </div>
+
+  <div className="live-popup-recent">
+    <div className="live-popup-recent-head">
+      <span>Previous Over</span>
+      <b>{previousOverInfo.overNo}</b>
+    </div>
+
+    <div className="live-popup-balls">
+      {previousOverInfo.balls.length ? (
+        previousOverInfo.balls.map((ball) => {
+          const label = ball.label || "";
+          const result = (
+            label.split(" ").slice(1).join(" ") || label
+          ).replace(/[()]/g, "");
+
+          const ballClass =
+            result === "W"
+              ? "wicket"
+              : result === "4"
+              ? "four"
+              : result === "6"
+              ? "six"
+              : result.toUpperCase().includes("WD")
+              ? "wide"
+              : result.toUpperCase().includes("NB")
+              ? "noball"
+              : "";
+
+          return (
+            <b key={ball.id} className={ballClass}>
+              {result}
+            </b>
+          );
+        })
+      ) : (
+        <small>No balls yet</small>
+      )}
+    </div>
+  </div>
+</div>
       <h3>🏏 Wicket Details</h3>
 
       <p style={{ opacity: 0.75, marginBottom: 16 }}>
@@ -11300,6 +11437,63 @@ onClick={() => {
 {showDeliverySetupModal && (
   <div className="modal-backdrop">
     <div className="add-player-pro-modal">
+<div className="live-popup-snapshot">
+  <div className="live-popup-topline">
+    <span className="live-dot">● LIVE</span>
+    <span className="live-popup-over">Over {bowlerChangeScore.overs}</span>
+  </div>
+
+  <div className="live-popup-main">
+    <div>
+      <span>Current Score</span>
+      <strong>{bowlerChangeScore.score}</strong>
+    </div>
+
+    <div>
+      <span>CRR</span>
+      <strong>{bowlerChangeScore.crr}</strong>
+    </div>
+  </div>
+
+  <div className="live-popup-recent">
+    <div className="live-popup-recent-head">
+      <span>Previous Over</span>
+      <b>{previousOverInfo.overNo}</b>
+    </div>
+
+    <div className="live-popup-balls">
+      {previousOverInfo.balls.length ? (
+        previousOverInfo.balls.map((ball) => {
+          const label = ball.label || "";
+          const result = (
+            label.split(" ").slice(1).join(" ") || label
+          ).replace(/[()]/g, "");
+
+          const ballClass =
+            result === "W"
+              ? "wicket"
+              : result === "4"
+              ? "four"
+              : result === "6"
+              ? "six"
+              : result.toUpperCase().includes("WD")
+              ? "wide"
+              : result.toUpperCase().includes("NB")
+              ? "noball"
+              : "";
+
+          return (
+            <b key={ball.id} className={ballClass}>
+              {result}
+            </b>
+          );
+        })
+      ) : (
+        <small>No balls yet</small>
+      )}
+    </div>
+  </div>
+</div>
       <div className="add-player-pro-hero">
         <div className="add-player-pro-icon">🎯</div>
 
@@ -11873,6 +12067,40 @@ onClick={() => {
 {showKeeperChangeModal && (
   <div className="modal-backdrop">
     <div className="correction-modal">
+      <div className="bowler-change-score-card">
+  <div>
+    <span>Current Score</span>
+    <strong>{bowlerChangeScore.score}</strong>
+  </div>
+
+  <div>
+    <span>Overs</span>
+    <strong>{bowlerChangeScore.overs}</strong>
+  </div>
+
+  <div>
+    <span>CRR</span>
+    <strong>{bowlerChangeScore.crr}</strong>
+  </div>
+
+  <div className="bowler-change-recent">
+    <span>Previous Over • {previousOverInfo.overNo}</span>
+    <div>
+      {previousOverInfo.balls.length ? (
+        previousOverInfo.balls.map((ball) => {
+          const label = ball.label || "";
+          const result = (
+            label.split(" ").slice(1).join(" ") || label
+          ).replace(/[()]/g, "");
+
+          return <b key={ball.id}>{result}</b>;
+        })
+      ) : (
+        <small>No balls yet</small>
+      )}
+    </div>
+  </div>
+</div>
       <div className="correction-header">
         <h2>🧤 Change Wicketkeeper</h2>
 
@@ -11994,6 +12222,63 @@ onClick={() => {
 {showRetiredHurtModal && (
   <div className="modal-backdrop">
     <div className="modal-card">
+<div className="live-popup-snapshot">
+  <div className="live-popup-topline">
+    <span className="live-dot">● LIVE</span>
+    <span className="live-popup-over">Over {bowlerChangeScore.overs}</span>
+  </div>
+
+  <div className="live-popup-main">
+    <div>
+      <span>Current Score</span>
+      <strong>{bowlerChangeScore.score}</strong>
+    </div>
+
+    <div>
+      <span>CRR</span>
+      <strong>{bowlerChangeScore.crr}</strong>
+    </div>
+  </div>
+
+  <div className="live-popup-recent">
+    <div className="live-popup-recent-head">
+      <span>Previous Over</span>
+      <b>{previousOverInfo.overNo}</b>
+    </div>
+
+    <div className="live-popup-balls">
+      {previousOverInfo.balls.length ? (
+        previousOverInfo.balls.map((ball) => {
+          const label = ball.label || "";
+          const result = (
+            label.split(" ").slice(1).join(" ") || label
+          ).replace(/[()]/g, "");
+
+          const ballClass =
+            result === "W"
+              ? "wicket"
+              : result === "4"
+              ? "four"
+              : result === "6"
+              ? "six"
+              : result.toUpperCase().includes("WD")
+              ? "wide"
+              : result.toUpperCase().includes("NB")
+              ? "noball"
+              : "";
+
+          return (
+            <b key={ball.id} className={ballClass}>
+              {result}
+            </b>
+          );
+        })
+      ) : (
+        <small>No balls yet</small>
+      )}
+    </div>
+  </div>
+</div>
 <h3>🚑 Retired Hurt</h3>
 
 <p
