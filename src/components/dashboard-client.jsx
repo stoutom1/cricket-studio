@@ -4743,7 +4743,7 @@ async function startVoiceScoring() {
       stream.getTracks().forEach((track) => track.stop());
 
       const audioBlob = new Blob(chunks, { type: "audio/webm" });
-      await sendVoiceCommand(audioBlob);
+    //  await sendVoiceCommand(audioBlob);
     };
 
     recorder.start();
@@ -6455,7 +6455,8 @@ onClick={() => {
           </button>
         )}
     </div>
-
+  </div>
+)}
     {(isMatchCompleted || isMatchLocked) && (
       <button type="submit" form="add-ball-form" className="btn scoring-btn scoring-btn-primary" disabled>
         ✅ Match Ended
@@ -6467,7 +6468,7 @@ onClick={() => {
         ⛔ Match Abandoned
       </button>
     )}
- {scorerMode && (
+ {isSuperAdmin && scorerMode && (
   <div className="voice-score-panel">
     <button
       type="button"
@@ -6488,8 +6489,8 @@ onClick={() => {
     )}
   </div>
 )}   
-{/*
-{scorerMode && voiceSupported && (
+
+{isSuperAdmin && scorerMode && voiceSupported && (
   <button
     type="button"
     className={`voice-score-btn ${voiceScoringOn ? "active" : ""}`}
@@ -6504,7 +6505,7 @@ onClick={() => {
     {voiceStatus}
   </div>
 )}
-*/}
+
 
 {scorerMode && (
       <div className="scorer-dock-area">
@@ -6549,8 +6550,6 @@ onClick={() => {
         </div>
       </div>
     )}
-  </div>
-)}
 <div className="scoring-action-bar">
 </div>
 </div>
