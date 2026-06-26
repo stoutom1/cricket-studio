@@ -5958,9 +5958,6 @@ onClick={() => {
           )
         ) && (
           <div
-            className={`tv-status-banner ${
-              instantDeliveryStatus ? "delivery-processing" : ""
-            } ${overCompleteNotice ? "over-complete-status" : ""}`}
           >
             {error ||
               instantDeliveryStatus ||
