@@ -6473,7 +6473,7 @@ onClick={() => {
         ⛔ Match Abandoned
       </button>
     )}
- {isSuperAdmin && scorerMode && (
+ {scorerMode && (
   <div className="voice-score-panel">
     <button
       type="button"
@@ -9194,8 +9194,9 @@ onClick={() => {
           <h2>🏏 Welcome to Cric4All</h2>
           <p>
             Create leagues, add teams and players, organize series, schedule
-            matches, score live games, share public scorecards, track points,
-            view rankings, and generate AI-powered match insights.
+            matches, score live games, use Scorer Mode, share spectator links,
+            track points, view rankings, manage permissions, and generate
+            AI-powered match insights.
           </p>
         </div>
       </div>
@@ -9208,8 +9209,8 @@ onClick={() => {
           <h4>Create or Select League</h4>
           <p>
             Open the <strong>Leagues</strong> tab and choose your active league.
-            Every team, player, series, match, points table, and stat belongs to
-            a league.
+            Every team, player, series, match, points table, permission, and stat
+            belongs to a league.
           </p>
         </div>
 
@@ -9218,8 +9219,8 @@ onClick={() => {
           <h4>Choose League Visibility</h4>
           <p>
             Keep leagues <strong>Private</strong>, make them{" "}
-            <strong>Unlisted</strong> for people with the link, or make them{" "}
-            <strong>Public</strong> so they can appear on the Explore page.
+            <strong>Unlisted</strong> for direct-link viewing, or make them{" "}
+            <strong>Public</strong> so they can appear on Explore.
           </p>
         </div>
 
@@ -9227,26 +9228,17 @@ onClick={() => {
           <h3>📅 Step 3</h3>
           <h4>Create Series / Season</h4>
           <p>
-            Series are optional. Use them to group matches by tournament, cup,
-            season, or year. You can still create matches without a series.
+            Series are optional. Use them for tournaments, cups, seasons, or
+            years. Friendly matches can be created without a series.
           </p>
         </div>
 
         <div className="help-card">
           <h3>👥 Step 4</h3>
-          <h4>Add Teams</h4>
+          <h4>Add Teams & Players</h4>
           <p>
-            Select your active league and add teams. You need at least two teams
-            before creating a match.
-          </p>
-        </div>
-
-        <div className="help-card">
-          <h3>🏏 Step 5</h3>
-          <h4>Add Players</h4>
-          <p>
-            Select a team and use the Add Players popup. Paste multiple player
-            names, one per line.
+            Add teams first, then use bulk player import to paste multiple
+            players at once, one player per line.
           </p>
 
           <div className="help-code-box">
@@ -9261,30 +9253,40 @@ onClick={() => {
         </div>
 
         <div className="help-card">
-          <h3>📋 Step 6</h3>
+          <h3>📋 Step 5</h3>
           <h4>Create / Schedule Match</h4>
           <p>
-            Go to <strong>Matches → Create Match</strong>. Series is optional.
-            Scheduled matches can be created first and started later.
+            Go to <strong>Matches → Create Match</strong>. Add overs, powerplay,
+            max wickets, max overs per bowler, captains, wicketkeepers, and
+            optional series.
           </p>
         </div>
 
         <div className="help-card">
-          <h3>▶ Step 7</h3>
+          <h3>▶ Step 6</h3>
           <h4>Start Match</h4>
           <p>
             Open the <strong>Scheduled</strong> tab, click{" "}
-            <strong>Start Match</strong>, select batting first, and begin live
-            scoring.
+            <strong>Start Match</strong>, select batting first, complete delivery
+            setup, and begin live scoring.
           </p>
         </div>
 
         <div className="help-card">
-          <h3>🎯 Step 8</h3>
+          <h3>🎯 Step 7</h3>
           <h4>Score Live</h4>
           <p>
-            Use the <strong>Scoring</strong> tab for runs, extras, wickets, run
-            outs, retired hurt, bowler changes, and striker rotation.
+            Use normal scoring or <strong>Scorer Mode</strong> for fast match-day
+            scoring with quick buttons, scoreboard, commentary, and setup panels.
+          </p>
+        </div>
+
+        <div className="help-card">
+          <h3>📤 Step 8</h3>
+          <h4>Share With Spectators</h4>
+          <p>
+            Use <strong>Share - Spectator View</strong> to share live scores,
+            commentary, scorecards, match status, and results.
           </p>
         </div>
       </div>
@@ -9296,7 +9298,8 @@ onClick={() => {
           <h3>🏆 Leagues</h3>
           <p>
             Manage leagues, series, teams, players, invite links, public view
-            links, and league visibility.
+            links, followed leagues, public discovery, visibility, roles, and
+            permissions.
           </p>
         </div>
 
@@ -9305,15 +9308,17 @@ onClick={() => {
           <p>
             Matches are separated into <strong>Create</strong>,{" "}
             <strong>Active</strong>, <strong>Scheduled</strong>, and{" "}
-            <strong>Completed</strong>.
+            <strong>Completed</strong>. Completed matches can also generate AI
+            reviews.
           </p>
         </div>
 
         <div className="help-card">
           <h3>🎯 Scoring</h3>
           <p>
-            Score live balls, extras, wickets, fielding details, retired hurt,
-            run outs, bowler changes, and striker rotation.
+            Score live balls, extras, wickets, run outs, retired hurt, bowler
+            changes, keeper changes, striker swaps, innings ending, and match
+            control actions.
           </p>
         </div>
 
@@ -9328,9 +9333,9 @@ onClick={() => {
         <div className="help-card">
           <h3>📊 Stats</h3>
           <p>
-            View batting, bowling, fielding, and rankings including top run
-            scorers, wicket takers, six hitters, strike rate, economy, and
-            all-rounders.
+            View batting, bowling, fielding, captaincy, wicketkeeping, rankings,
+            top run scorers, wicket takers, six hitters, strike rate, economy,
+            and all-rounders.
           </p>
         </div>
 
@@ -9339,6 +9344,145 @@ onClick={() => {
           <p>
             Manage league members, roles, and permissions for owners, admins,
             captains, scorers, analysts, and viewers.
+          </p>
+        </div>
+      </div>
+
+      <h3 className="help-section-title">⚡ Scorer Mode</h3>
+
+      <div className="help-grid">
+        <div className="help-card">
+          <h3>🎯 Quick Buttons</h3>
+          <p>
+            Record 0, 1, 2, 3, 4, 6, wides, no-balls, byes, leg-byes, wickets,
+            retired hurt, swaps, and undo from a focused scoring workspace.
+          </p>
+        </div>
+
+        <div className="help-card">
+          <h3>📊 Scoreboard Panel</h3>
+          <p>
+            View current score, overs, run rate, chase requirement, striker,
+            non-striker, bowler, top batters, top bowlers, and partnership.
+          </p>
+        </div>
+
+        <div className="help-card">
+          <h3>📝 Commentary Panel</h3>
+          <p>
+            View recent ball-by-ball commentary with score summary, overs, CRR,
+            chase requirement, boundaries, wickets, and extras highlighted.
+          </p>
+        </div>
+
+        <div className="help-card">
+          <h3>⚙️ Setup Panel</h3>
+          <p>
+            Quickly check overs, powerplay, wickets, max overs per bowler,
+            batting first, match status, captains, and wicketkeepers.
+          </p>
+        </div>
+
+        <div className="help-card">
+          <h3>✅ Over Complete Notice</h3>
+          <p>
+            After an over finishes, Cric4All shows a compact over-complete status
+            without interrupting the bowler change workflow.
+          </p>
+        </div>
+
+        <div className="help-card">
+          <h3>🎤 Voice Scoring</h3>
+          <p>
+            Voice scoring foundation supports commands like dot, one, two, four,
+            six, wide, no ball, bye, leg bye, wicket, and undo inside Scorer Mode.
+          </p>
+        </div>
+      </div>
+
+      <h3 className="help-section-title">🏏 Scoring Features</h3>
+
+      <div className="help-grid">
+        <div className="help-card">
+          <h3>➕ Extras</h3>
+          <p>
+            Supports wides, no-balls, byes, and leg-byes. No-ball runs off the
+            bat are credited to the striker correctly.
+          </p>
+        </div>
+
+        <div className="help-card">
+          <h3>🚨 Wickets</h3>
+          <p>
+            Supports bowled, caught, LBW, run out, stumped, hit wicket, retired
+            hurt, retired out, and other dismissal types.
+          </p>
+        </div>
+
+        <div className="help-card">
+          <h3>🧤 Fielding Details</h3>
+          <p>
+            Capture caught by, stumped by, run out by, assistant fielder, and
+            wicketkeeper changes for better scorecards and stats.
+          </p>
+        </div>
+
+        <div className="help-card">
+          <h3>🎯 Bowler Change</h3>
+          <p>
+            At the end of an over, the app prompts for a new bowler and helps
+            prevent the same bowler from bowling consecutive overs.
+          </p>
+        </div>
+
+        <div className="help-card">
+          <h3>🤝 Partnerships</h3>
+          <p>
+            Scoreboards show partnership runs, balls, current partnerships, and
+            wicket-ending partnerships for each innings.
+          </p>
+        </div>
+
+        <div className="help-card">
+          <h3>💥 Fall of Wickets</h3>
+          <p>
+            Fall of wickets shows score, wicket number, player out, and over.
+            Mobile tables support horizontal swipe with the first column locked.
+          </p>
+        </div>
+      </div>
+
+      <h3 className="help-section-title">📊 Scorecards & Mobile Tables</h3>
+
+      <div className="help-grid">
+        <div className="help-card">
+          <h3>🏏 Batting Scorecard</h3>
+          <p>
+            View batter runs, balls, boundaries, strike rate, and dismissal
+            details. On mobile, swipe sideways for more stats.
+          </p>
+        </div>
+
+        <div className="help-card">
+          <h3>🎳 Bowling Scorecard</h3>
+          <p>
+            View overs, maidens, runs, wickets, wides, no-balls, and economy.
+          </p>
+        </div>
+
+        <div className="help-card">
+          <h3>🤝 Partnerships</h3>
+          <p>
+            Partnership tables keep names readable and support mobile swiping for
+            detailed innings data.
+          </p>
+        </div>
+
+        <div className="help-card">
+          <h3>📌 Sticky First Column</h3>
+          <p>
+            Batting, bowling, partnerships, and fall-of-wickets tables keep the
+            first column locked so users can understand rows while swiping.
           </p>
         </div>
       </div>
@@ -9422,57 +9566,6 @@ onClick={() => {
         </div>
       </div>
 
-      <h3 className="help-section-title">🏏 Scoring Features</h3>
-
-      <div className="help-grid">
-        <div className="help-card">
-          <h3>➕ Extras</h3>
-          <p>
-            Supports wides, no-balls, byes, and leg-byes. No-ball runs off the
-            bat are credited to the striker.
-          </p>
-        </div>
-
-        <div className="help-card">
-          <h3>🚨 Wickets</h3>
-          <p>
-            Supports bowled, caught, LBW, run out, stumped, hit wicket, retired
-            hurt, retired out, and other dismissal types.
-          </p>
-        </div>
-
-        <div className="help-card">
-          <h3>🧤 Fielding Details</h3>
-          <p>
-            Capture caught by, stumped by, run out by, and assisted fielder
-            details for better scorecards and stats.
-          </p>
-        </div>
-
-        <div className="help-card">
-          <h3>🎯 Bowler Change</h3>
-          <p>
-            At the end of an over, the app prompts for a new bowler and helps
-            prevent invalid consecutive overs.
-          </p>
-        </div>
-
-        <div className="help-card">
-          <h3>🤝 Partnerships</h3>
-          <p>
-            Scoreboards show partnership runs, balls, current partnerships, and
-            wicket-ending partnerships.
-          </p>
-        </div>
-
-        <div className="help-card">
-          <h3>💥 Fall of Wickets</h3>
-          <p>
-            Fall of wickets shows score, wicket number, player out, and over.
-          </p>
-        </div>
-      </div>
-
       <h3 className="help-section-title">✨ Match Tools</h3>
 
       <div className="help-grid">
@@ -9480,8 +9573,8 @@ onClick={() => {
           <h3>🤖 AI Match Insights</h3>
           <p>
             For completed or locked matches, generate AI analysis covering match
-            summary, turning points, top performers, partnerships, pressure
-            moments, and team takeaways.
+            summary, MVP, turning points, momentum, top performers, partnerships,
+            pressure moments, and team takeaways.
           </p>
         </div>
 
@@ -9489,7 +9582,15 @@ onClick={() => {
           <h3>📤 Share Match</h3>
           <p>
             Share live scores, commentary, scorecards, match status, and stats
-            using match sharing links.
+            using spectator match links.
+          </p>
+        </div>
+
+        <div className="help-card">
+          <h3>✏️ Edit Scheduled Match</h3>
+          <p>
+            Update scheduled date/time, series, overs, powerplay, max wickets,
+            max overs per bowler, captains, and wicketkeepers.
           </p>
         </div>
 
@@ -9498,6 +9599,21 @@ onClick={() => {
           <p>
             Locked matches prevent further scoring changes and are treated as
             finalized scorecards.
+          </p>
+        </div>
+
+        <div className="help-card">
+          <h3>⛔ Abandon Match</h3>
+          <p>
+            Use abandon only when a match should stop without normal completion.
+          </p>
+        </div>
+
+        <div className="help-card">
+          <h3>🏁 End Match / Innings</h3>
+          <p>
+            End the first innings manually if needed, or end the match when
+            scoring is complete.
           </p>
         </div>
       </div>
@@ -9511,8 +9627,11 @@ onClick={() => {
           <li>Create at least two teams before creating a match.</li>
           <li>Add players before starting a match for accurate stats.</li>
           <li>Use Scheduled matches for future games.</li>
+          <li>Use Scorer Mode during live scoring to avoid scrolling.</li>
+          <li>Use Scoreboard, Commentary, and Setup panels inside Scorer Mode.</li>
           <li>Use Smart Filters to focus on a team, player, series, year, or match status.</li>
           <li>Use public league links when you want spectators to view league pages.</li>
+          <li>Use Share - Spectator View for live match links.</li>
           <li>Use Explore only for leagues you are comfortable making public.</li>
           <li>Completed matches automatically open the scoreboard instead of scoring.</li>
           <li>Use AI Match Insights only after the match is completed.</li>
@@ -9559,13 +9678,15 @@ onClick={() => {
           <div>
             <strong>Why don't I see my teams?</strong>
             <br />
-            Re-select the active league from the dropdown.
+            Confirm the active league from the league dropdown and make sure
+            your teams belong to that league.
           </div>
 
           <div>
             <strong>Why can't I create a match?</strong>
             <br />
-            Make sure the active league has at least two teams.
+            Make sure the active league has at least two teams and that your role
+            has match creation permission.
           </div>
 
           <div>
@@ -9580,6 +9701,20 @@ onClick={() => {
             <br />
             Completed and locked matches are finalized, so the app opens the
             scoreboard instead.
+          </div>
+
+          <div>
+            <strong>What is Scorer Mode?</strong>
+            <br />
+            Scorer Mode is a focused scoring workspace with quick buttons,
+            scoreboard, commentary, setup panels, and reduced scrolling.
+          </div>
+
+          <div>
+            <strong>Can I share a live match?</strong>
+            <br />
+            Yes. Use <strong>Share - Spectator View</strong> from the scoring or
+            match setup area.
           </div>
 
           <div>
@@ -9608,6 +9743,20 @@ onClick={() => {
             AI Insights are available only for completed or completed locked
             matches.
           </div>
+
+          <div>
+            <strong>Can I edit a scheduled match?</strong>
+            <br />
+            Yes. Scheduled matches can be edited before or around match setup,
+            including overs, powerplay, series, captains, and wicketkeepers.
+          </div>
+
+          <div>
+            <strong>Can I score by voice?</strong>
+            <br />
+            Voice scoring support is being introduced inside Scorer Mode and
+            depends on browser microphone support.
+          </div>
         </div>
       </div>
     </div>
@@ -9618,22 +9767,32 @@ onClick={() => {
     <div className="about-page">
       <div className="about-hero">
         <div>
+          <div className="about-kicker">🏏 Built for cricket communities</div>
+
           <h2>🏏 Cric4All</h2>
+
           <p>
-            A modern cricket scoring, league management, public score sharing,
-            and statistics platform built for clubs, leagues, academies,
-            tournaments, and community cricket.
+            A modern cricket scoring, league management, live spectator sharing,
+            AI match review, and statistics platform built for clubs, leagues,
+            academies, tournaments, and community cricket.
           </p>
+
+          <div className="release-badge-row">
+            <span className="release-badge">Live Scoring</span>
+            <span className="release-badge">Scorer Mode</span>
+            <span className="release-badge">AI Insights</span>
+            <span className="release-badge">Mobile Friendly</span>
+          </div>
         </div>
       </div>
 
       <div className="about-card about-mission">
         <h3>🎯 Our Mission</h3>
         <p>
-          Cric4All makes cricket easier to organize, score, follow, and share.
-          It brings leagues, teams, players, matches, series, points tables,
-          rankings, scorecards, commentary, and public league pages into one
-          simple platform.
+          Cric4All makes cricket easier to organize, score, follow, review, and
+          share. It brings leagues, teams, players, matches, series, scorecards,
+          commentary, points tables, rankings, permissions, public league pages,
+          and live spectator links into one simple platform.
         </p>
         <p>
           Whether you are running a weekend tournament, a yearly league, an
@@ -9651,16 +9810,18 @@ onClick={() => {
         <div className="about-feature">🏏 Player Management</div>
         <div className="about-feature">📋 Match Scheduling</div>
         <div className="about-feature">🎯 Live Ball-by-Ball Scoring</div>
-        <div className="about-feature">🏟️ Professional Match Center</div>
-        <div className="about-feature">🎙️ Ball-by-Ball Commentary</div>
-        <div className="about-feature">📊 Player & League Statistics</div>
-        <div className="about-feature">🏆 Rankings Hub</div>
+        <div className="about-feature">⚡ Scorer Mode Workspace</div>
+        <div className="about-feature">🎙️ Useful Scorer Commentary</div>
+        <div className="about-feature">📊 Live Scoreboard Panels</div>
+        <div className="about-feature">🏟️ Spectator Score Sharing</div>
+        <div className="about-feature">🤖 AI Post-Match Review</div>
         <div className="about-feature">📈 Points Table</div>
+        <div className="about-feature">🏆 Rankings Hub</div>
         <div className="about-feature">🔎 Smart Filters / Context Lens</div>
         <div className="about-feature">🌐 Public League Pages</div>
         <div className="about-feature">🧭 Explore Public Leagues</div>
-        <div className="about-feature">🤖 AI Post-Match Insights</div>
         <div className="about-feature">🔐 Role-Based Access</div>
+        <div className="about-feature">📱 Mobile App Ready</div>
       </div>
 
       <div className="about-card">
@@ -9670,7 +9831,7 @@ onClick={() => {
           <span className="release-badge">MVP 1.0</span>
           <span className="release-badge">Live Scoring Ready</span>
           <span className="release-badge">Public Pages Ready</span>
-          <span className="release-badge">Mobile Friendly</span>
+          <span className="release-badge">Android Packaging Ready</span>
         </div>
 
         <p>Current functionality includes:</p>
@@ -9682,20 +9843,88 @@ onClick={() => {
           <span>✅ Explore page for public leagues</span>
           <span>✅ Series / season creation</span>
           <span>✅ Team creation</span>
-          <span>✅ Beautiful bulk player imports</span>
+          <span>✅ Bulk player imports</span>
           <span>✅ Scheduled matches</span>
           <span>✅ Start match workflow</span>
           <span>✅ Optional series while creating matches</span>
+          <span>✅ Match editing for scheduled games</span>
+          <span>✅ Captains and wicketkeepers</span>
+          <span>✅ Custom overs per innings</span>
+          <span>✅ Optional max wickets</span>
+          <span>✅ Optional max overs per bowler</span>
+          <span>✅ Powerplay tracking</span>
           <span>✅ Live scoring</span>
           <span>✅ Wides, no-balls, byes, leg-byes</span>
           <span>✅ Wickets, run outs, stumpings, retired hurt</span>
+          <span>✅ Striker and non-striker management</span>
+          <span>✅ Bowler change workflow</span>
+          <span>✅ Keeper change workflow</span>
+          <span>✅ Undo ball</span>
+          <span>✅ End innings / end match</span>
+          <span>✅ Lock and abandon match controls</span>
           <span>✅ Scoreboard and match center</span>
           <span>✅ Commentary timeline</span>
+          <span>✅ Sticky first-column score tables</span>
+          <span>✅ Swipeable mobile scorecards</span>
           <span>✅ Points table</span>
           <span>✅ Batting, bowling, fielding stats</span>
+          <span>✅ Captaincy and wicketkeeping stats</span>
           <span>✅ Rankings and league leaders</span>
           <span>✅ Smart Filters / Context Lens</span>
           <span>✅ AI match insights</span>
+          <span>✅ Voice scoring foundation</span>
+        </div>
+      </div>
+
+      <div className="about-card">
+        <h3>⚡ Scorer Mode</h3>
+
+        <p>
+          Cric4All includes a focused scorer workspace designed for match day.
+          Scorers can stay on one screen, record balls quickly, view live score
+          context, open scoreboard, commentary, and setup panels, and continue
+          scoring without losing flow.
+        </p>
+
+        <div className="about-highlight-row">
+          <span>🎯 Quick Score Buttons</span>
+          <span>📊 Inline Scoreboard</span>
+          <span>📝 Commentary Panel</span>
+          <span>⚙️ Match Setup Panel</span>
+          <span>✅ Over Complete Notice</span>
+          <span>🎤 Voice Score Ready</span>
+        </div>
+      </div>
+
+      <div className="about-card">
+        <h3>🤖 AI Match Review</h3>
+
+        <p>
+          Completed matches can be reviewed with AI-powered insights so players,
+          captains, and organizers can quickly understand the story of the
+          match.
+        </p>
+
+        <div className="about-workflow-grid">
+          <div>
+            <strong>Summary</strong>
+            <p>Quickly understand how the match unfolded.</p>
+          </div>
+
+          <div>
+            <strong>MVP</strong>
+            <p>Highlight top performers and impact players.</p>
+          </div>
+
+          <div>
+            <strong>Turning Points</strong>
+            <p>Identify key overs, wickets, partnerships, and momentum shifts.</p>
+          </div>
+
+          <div>
+            <strong>Momentum</strong>
+            <p>Review the pressure points and chase/build-up story.</p>
+          </div>
         </div>
       </div>
 
@@ -9703,8 +9932,9 @@ onClick={() => {
         <h3>🌐 Public Cricket Experience</h3>
 
         <p>
-          Cric4All now supports public-facing cricket pages so leagues can share
-          scores, teams, series, results, standings, and leaders with spectators.
+          Cric4All supports public-facing cricket pages so leagues can share
+          live scores, teams, series, results, standings, rankings, and leaders
+          with spectators.
         </p>
 
         <div className="about-workflow-grid">
@@ -9724,8 +9954,8 @@ onClick={() => {
           </div>
 
           <div>
-            <strong>Explore Page</strong>
-            <p>Find public leagues by league name, team, series, or year.</p>
+            <strong>Spectator View</strong>
+            <p>Share live match links with fans, players, and families.</p>
           </div>
         </div>
       </div>
@@ -9746,23 +9976,24 @@ onClick={() => {
             <strong>For Scorers</strong>
             <p>
               Score every ball with runs, extras, wickets, fielders, bowler
-              changes, retired hurt, innings tracking, and commentary.
+              changes, retired hurt, innings tracking, quick actions, and
+              commentary.
             </p>
           </div>
 
           <div>
             <strong>For Players</strong>
             <p>
-              Track batting, bowling, fielding records, rankings, leaders, and
-              performance history.
+              Track batting, bowling, fielding records, rankings, leaders,
+              captaincy, wicketkeeping, and performance history.
             </p>
           </div>
 
           <div>
             <strong>For Spectators</strong>
             <p>
-              Follow public league pages, live scores, match status,
-              commentary, scorecards, results, points, and leaders.
+              Follow live scores, public leagues, match status, commentary,
+              scorecards, results, points, and leaders.
             </p>
           </div>
         </div>
@@ -9772,10 +10003,10 @@ onClick={() => {
         <h3>🧠 Smart Match Features</h3>
 
         <p>
-          Cric4All goes beyond basic scoring. Completed matches can include
-          AI-powered analysis, professional scorecards, innings-wise data,
-          player rankings, fielding records, public leaders, and detailed
-          ball-by-ball commentary.
+          Cric4All goes beyond basic scoring with professional match cards,
+          live scoring state, chase requirements, partnerships, fall of wickets,
+          over summaries, mobile-friendly score tables, public score sharing,
+          and post-match intelligence.
         </p>
 
         <div className="about-highlight-row">
@@ -9786,6 +10017,7 @@ onClick={() => {
           <span>📈 Points Table</span>
           <span>🔎 Smart Filters</span>
           <span>🌐 Public Pages</span>
+          <span>📱 Mobile Scoring</span>
         </div>
       </div>
 
@@ -9802,7 +10034,8 @@ onClick={() => {
           <span>🏏 Public player profiles</span>
           <span>📊 Advanced analytics dashboard</span>
           <span>🔍 SEO upgrades for public league pages</span>
-          <span>📲 Android app packaging</span>
+          <span>🎤 Enhanced voice scoring</span>
+          <span>📲 Android app publishing</span>
           <span>🍎 iOS app packaging</span>
         </div>
       </div>
