@@ -12,39 +12,43 @@ export default function AuthNav() {
         ← Home
       </Link>
 
-      <Link href="/explore" className="nav-link">
-        Explore
-      </Link>
-
-      <Link href="/contact" className="nav-link">
-        Contact
-      </Link>
-
-      {status === "loading" ? (
-        <span className="loading-text">Loading...</span>
-      ) : session ? (
-        <>
-          <span className="user-avatar" title={session.user?.email}>
-            👤
-          </span>
-
-          <button
-            type="button"
-            className="logout-btn"
-            onClick={() =>
-              signOut({
-                callbackUrl: "/login",
-              })
-            }
-          >
-            Sign Out
-          </button>
-        </>
-      ) : (
-        <Link href="/login" className="login-btn">
-          Sign In
+      <div className="auth-nav-center">
+        <Link href="/explore" className="nav-link">
+          Explore
         </Link>
-      )}
+
+        <Link href="/contact" className="nav-link">
+          Contact
+        </Link>
+      </div>
+
+      <div className="auth-nav-right">
+        {status === "loading" ? (
+          <span className="loading-text">Loading...</span>
+        ) : session ? (
+          <>
+            <span className="user-avatar" title={session.user?.email}>
+              👤
+            </span>
+
+            <button
+              type="button"
+              className="logout-btn"
+              onClick={() =>
+                signOut({
+                  callbackUrl: "/login",
+                })
+              }
+            >
+              Sign Out
+            </button>
+          </>
+        ) : (
+          <Link href="/login" className="login-btn">
+            Sign In
+          </Link>
+        )}
+      </div>
     </nav>
   );
 }

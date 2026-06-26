@@ -310,6 +310,7 @@ const [overCompleteNotice, setOverCompleteNotice] = useState("");
 const [voiceScoringOn, setVoiceScoringOn] = useState(false);
 const [voiceStatus, setVoiceStatus] = useState("");
 const [voiceSupported, setVoiceSupported] = useState(false);
+const [dashboardReady, setDashboardReady] = useState(false);
 const isSuperAdmin =
   session?.user?.email ===
   "surprisecricket11@gmail.com";
@@ -394,6 +395,7 @@ useEffect(() => {
   //loadPermissions(selectedMember);
   loadMyLeaguePermissions(activeLeagueId);
 }, [activeLeagueId, isSuperAdmin]);
+
 useEffect(() => {
   if (activeLeagueId) {
     loadPointsTable(activeLeagueId);
@@ -538,9 +540,44 @@ useEffect(() => {
     );
   }
 }, [activeLeague]);
-
-
 useEffect(() => {
+  async function initializeDashboard() {
+    try {
+      setDashboardReady(false);
+
+      const loadedLeagues = await loadLeagues(null);
+      await loadTeams();
+
+      const res = await fetch("/api/me");
+      const meData = await res.json();
+
+      const preferredLeagueId = meData?.activeLeagueId
+        ? Number(meData.activeLeagueId)
+        : loadedLeagues?.[0]?.id
+        ? Number(loadedLeagues[0].id)
+        : null;
+
+      if (preferredLeagueId) {
+        setActiveLeagueId(preferredLeagueId);
+        await loadMyLeaguePermissions(preferredLeagueId);
+        await loadMatches(preferredLeagueId);
+        await loadPointsTable(preferredLeagueId);
+        await loadLeagueStats(preferredLeagueId);
+      }
+
+      setSelectedMatchId("");
+      setPreferencesLoaded(true);
+      setDashboardReady(true);
+    } catch (err) {
+      setError(err.message);
+      setDashboardReady(true);
+    }
+  }
+
+  initializeDashboard();
+}, []);
+
+/*useEffect(() => {
     async function loadUserPreferences() {
       const res = await fetch("/api/me");
 
@@ -560,7 +597,8 @@ setSelectedMatchId("");
 
     loadUserPreferences();
   }, []);
-useEffect(() => {
+*/
+  useEffect(() => {
   if (!preferencesLoaded) return;
 
   fetch("/api/user/preferences", {
@@ -804,7 +842,7 @@ const currentRankingConfig =
 
 async function loadMatches(leagueId = activeLeagueId) {
   try {
-    if (!activeLeagueId) {
+    if (!leagueId) {
       setMatches([]);
       setSelectedMatchId("");
       return;
@@ -817,7 +855,7 @@ async function loadMatches(leagueId = activeLeagueId) {
 
     const leagueMatches = data.filter(
       (m) =>
-        String(m.leagueId) === String(activeLeagueId)
+        String(m.leagueId) === String(leagueId)
     );
 
     setMatches(leagueMatches);
@@ -1694,26 +1732,26 @@ setLastCorrectionId(null);
         console.error(err);
       }
     }
-const loadLeagues = async () => {
+const loadLeagues = async (leagueIdToValidate = null) => {
   const response = await fetch("/api/leagues");
   const data = await response.json();
 
- setLeagues(data);
+  setLeagues(data || []);
 
-if (activeLeagueId) {
-  const refreshedLeague =
-    data.find(
-      (l) =>
-        String(l.id) ===
-        String(activeLeagueId)
+  const idToCheck = leagueIdToValidate ?? activeLeagueId;
+
+  if (idToCheck) {
+    const refreshedLeague = data.find(
+      (l) => String(l.id) === String(idToCheck)
     );
 
-  if (!refreshedLeague) {
-    setActiveLeagueId("");
-    setSelectedTeamId("");
+    if (!refreshedLeague) {
+      setActiveLeagueId(null);
+      setSelectedTeamId("");
+    }
   }
-}
-  return data;
+
+  return data || [];
 };
 
 async function updateRole(
@@ -1884,16 +1922,6 @@ async function handleDeleteLeague(
       await loadSelectedMatch(matchId);
     }
   }
-
-  useEffect(() => {
-    (async () => {
-      try {
-        await Promise.all([loadLeagues(), loadTeams(), loadMatches()]);
-      } catch (err) {
-        setError(err.message);
-      }
-    })();
-  }, []);
 
   useEffect(() => {
     if (selectedMatchId) {
@@ -3217,36 +3245,6 @@ await api("/api/balls", {
 async function loadMyLeaguePermissions(leagueId) {
   if (!leagueId) return;
 
-  const selected = leagues.find(
-    (l) => String(l.id) === String(leagueId)
-  );
-
-  if (!selected) {
-    setPermissions(null);
-    return;
-  }
-
-  if (selected.isFollowing && !selected.role && !selected.membershipRole) {
-    setPermissions({
-      canViewDashboard: true,
-      canViewStats: true,
-      canViewMatches: true,
-      canViewManagement: false,
-      canCreateLeague: false,
-      canCreateTeam: false,
-      canCreateMatch: false,
-      canDeleteLeague: false,
-      canDeleteTeam: false,
-      canDeletePlayer: false,
-      canDeleteMatch: false,
-      canScoreMatch: false,
-      canEditScore: false,
-      canUndoBall: false,
-    });
-
-    return;
-  }
-
   try {
     setPermissionsLoading(true);
 
@@ -3257,8 +3255,33 @@ async function loadMyLeaguePermissions(leagueId) {
     setPermissions(data.permissions);
   } catch (err) {
     console.error(err);
-    setPermissions(null);
-    setError(err.message);
+
+    const selected = leagues.find(
+      (l) => String(l.id) === String(leagueId)
+    );
+
+    if (selected?.isFollowing && !selected?.role && !selected?.membershipRole) {
+      setPermissions({
+        canViewDashboard: true,
+        canViewStats: true,
+        canViewMatches: true,
+        canViewManagement: false,
+        canViewScoring: false,
+        canCreateLeague: false,
+        canCreateTeam: false,
+        canCreateMatch: false,
+        canDeleteLeague: false,
+        canDeleteTeam: false,
+        canDeletePlayer: false,
+        canDeleteMatch: false,
+        canScoreMatch: false,
+        canEditScore: false,
+        canUndoBall: false,
+      });
+    } else {
+      setPermissions(null);
+      setError(err.message);
+    }
   } finally {
     setPermissionsLoading(false);
   }
@@ -7859,8 +7882,16 @@ onClick={() => {
   <span>Tap to choose</span>
   <b>⌄</b>
 </div>
+{/*
+{activeLeagueId && (
+  loadMyLeaguePermissions(activeLeagueId);
+)}
+ */
+} 
+
             <select
               value={activeLeagueId || ""}
+              //value={activeLeagueId || ""}
               onChange={(e) => {
                 setActiveLeagueId(e.target.value);
                 setSelectedTeamId("");
