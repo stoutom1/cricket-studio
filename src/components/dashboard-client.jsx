@@ -267,6 +267,11 @@ const [selectedExtraOption, setSelectedExtraOption] = useState("");
 const [showCorrectionModal, setShowCorrectionModal] =useState(false);
 const [scorerMode, setScorerMode] = useState(false);
 const [scorerDrawer, setScorerDrawer] = useState(null);
+const [voiceRecording, setVoiceRecording] = useState(false);
+const [voiceBusy, setVoiceBusy] = useState(false);
+const [voiceMessage, setVoiceMessage] = useState("");
+const [voiceRecorder, setVoiceRecorder] = useState(null);
+const [voiceChunks, setVoiceChunks] = useState([]);
 const [correctionForm, setCorrectionForm] = useState({
   inningsNo: "1",
   afterBallId: "",
@@ -4117,7 +4122,7 @@ function handleVoiceCommand(command) {
   if (!scorerMode) return;
   if (isSavingBall || isMatchCompleted || isMatchLocked || isMatchAbandoned) return;
 
-  if (text.includes("zero") || text.includes("dot")) {
+  if (text.includes("dot") || text.includes("zero")) {
     quickNormalBall(0);
   } else if (text.includes("one") || text.includes("single")) {
     quickNormalBall(1);
@@ -4133,10 +4138,10 @@ function handleVoiceCommand(command) {
     quickExtra("WIDE");
   } else if (text.includes("no ball") || text.includes("noball")) {
     quickExtra("NOBALL");
-  } else if (text === "bye" || text.includes("bye")) {
-    quickExtra("BYE");
   } else if (text.includes("leg bye")) {
     quickExtra("LEGBYE");
+  } else if (text.includes("bye")) {
+    quickExtra("BYE");
   } else if (text.includes("wicket")) {
     quickWicket("BOWLED");
   } else if (text.includes("undo")) {
@@ -4717,6 +4722,125 @@ const lastBallText = lastScoredBall?.label
   if (key === "l") quickExtra("LEGBYE");
 
   if (key === "u") handleUndoBall();
+}
+async function startVoiceScoring() {
+  try {
+    if (!scorerMode) {
+      setVoiceMessage("Open Scorer Mode first.");
+      return;
+    }
+
+    const stream = await navigator.mediaDevices.getUserMedia({ audio: true });
+
+    const recorder = new MediaRecorder(stream);
+    const chunks = [];
+
+    recorder.ondataavailable = (event) => {
+      if (event.data.size > 0) chunks.push(event.data);
+    };
+
+    recorder.onstop = async () => {
+      stream.getTracks().forEach((track) => track.stop());
+
+      const audioBlob = new Blob(chunks, { type: "audio/webm" });
+      await sendVoiceCommand(audioBlob);
+    };
+
+    recorder.start();
+    setVoiceRecorder(recorder);
+    setVoiceChunks(chunks);
+    setVoiceRecording(true);
+    setVoiceMessage("🎙️ Listening...");
+  } catch (err) {
+    setVoiceMessage("Microphone permission denied or unavailable.");
+  }
+}
+
+function stopVoiceScoring() {
+  if (voiceRecorder && voiceRecorder.state !== "inactive") {
+    voiceRecorder.stop();
+  }
+
+  setVoiceRecording(false);
+}
+async function sendVoiceCommand(audioBlob) {
+  try {
+    setVoiceBusy(true);
+    setVoiceMessage("Understanding command...");
+
+    const formData = new FormData();
+    formData.append("audio", audioBlob, "voice-command.webm");
+
+    /*const res = await fetch("/api/voice-score", {
+      method: "POST",
+      body: formData,
+    });
+
+    const data = await res.json();
+
+    if (!res.ok) {
+      throw new Error(data.error || "Voice scoring failed");
+    }
+
+    setVoiceMessage(`Heard: ${data.transcript}`);
+
+    executeVoiceCommand(data.command);
+    */
+  } catch (err) {
+    setVoiceMessage(err.message);
+  } finally {
+    setVoiceBusy(false);
+  }
+}
+
+function executeVoiceCommand(command) {
+  if (!command || !command.action) return;
+
+  if (isSavingBall || isMatchCompleted || isMatchLocked || isMatchAbandoned) {
+    setVoiceMessage("Cannot score right now.");
+    return;
+  }
+
+  switch (command.action) {
+    case "RUN":
+      quickNormalBall(Number(command.runs || 0));
+      break;
+
+    case "WIDE":
+      quickExtra("WIDE", Number(command.runs || 1));
+      break;
+
+    case "NOBALL":
+      quickExtra("NOBALL", Number(command.runs || 1));
+      break;
+
+    case "BYE":
+      quickExtra("BYE", Number(command.runs || 1));
+      break;
+
+    case "LEGBYE":
+      quickExtra("LEGBYE", Number(command.runs || 1));
+      break;
+
+    case "WICKET":
+      quickWicket(command.wicketType || "BOWLED");
+      break;
+
+    case "UNDO":
+      handleUndoBall();
+      break;
+
+    case "SWAP":
+      swapBatters();
+      break;
+
+    case "RETIRED_HURT":
+      setShowRetiredHurtModal(true);
+      break;
+
+    default:
+      setVoiceMessage("Command not understood. Try: one, four, wide, wicket.");
+  }
 }
 
 function ContextLens() {
@@ -6343,6 +6467,28 @@ onClick={() => {
         ⛔ Match Abandoned
       </button>
     )}
+ {scorerMode && (
+  <div className="voice-score-panel">
+    <button
+      type="button"
+      className={`voice-hold-btn ${voiceRecording ? "recording" : ""}`}
+      disabled={voiceBusy}
+      onPointerDown={startVoiceScoring}
+      onPointerUp={stopVoiceScoring}
+      onPointerCancel={stopVoiceScoring}
+      onTouchEnd={stopVoiceScoring}
+    >
+      {voiceRecording ? "🎙️ Release to Score" : "🎤 Hold to Speak"}
+    </button>
+
+    {voiceMessage && (
+      <div className="voice-score-message">
+        {voiceMessage}
+      </div>
+    )}
+  </div>
+)}   
+{/*
 {scorerMode && voiceSupported && (
   <button
     type="button"
@@ -6358,7 +6504,9 @@ onClick={() => {
     {voiceStatus}
   </div>
 )}
-    {scorerMode && (
+*/}
+
+{scorerMode && (
       <div className="scorer-dock-area">
 <div className="scorer-quick-dock">
   <button

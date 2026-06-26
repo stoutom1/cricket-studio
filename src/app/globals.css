@@ -17808,7 +17808,7 @@ body {
 
   .match-insights-card {
     grid-template-columns: 1fr 1fr !important;
-    max-width: 560px;
+
     gap: 8px !important;
   }
 
@@ -18421,5 +18421,74 @@ body {
   .table-type-partnerships .sticky-first-col-table td:first-child {
     white-space: normal;
     line-height: 1.25;
+  }
+}
+.voice-score-panel {
+  display: grid;
+  gap: 7px;
+  margin-top: 8px;
+}
+
+.voice-hold-btn {
+  min-height: 48px;
+  border-radius: 999px;
+  border: 1px solid rgba(168, 85, 247, 0.42);
+  background: linear-gradient(135deg, #7c3aed, #2563eb);
+  color: white;
+  font-weight: 950;
+  box-shadow: 0 12px 28px rgba(124, 58, 237, 0.28);
+  touch-action: none;
+}
+
+.voice-hold-btn.recording {
+  background: linear-gradient(135deg, #dc2626, #f97316);
+  animation: voicePulse 1s infinite;
+}
+
+.voice-score-message {
+  text-align: center;
+  color: #bfdbfe;
+  font-size: 12px;
+  font-weight: 850;
+}
+
+@keyframes voicePulse {
+  0% {
+    box-shadow: 0 0 0 rgba(248, 113, 113, 0);
+  }
+  50% {
+    box-shadow: 0 0 28px rgba(248, 113, 113, 0.42);
+  }
+  100% {
+    box-shadow: 0 0 0 rgba(248, 113, 113, 0);
+  }
+}
+/* Fix Advanced Scoring insights alignment */
+.scorer-insights-strip.match-insights-card {
+  display: grid !important;
+  grid-template-columns: repeat(3, minmax(0, 1fr)) !important;
+  gap: 10px !important;
+  align-items: stretch !important;
+  width: 100% !important;
+  max-width: 100% !important;
+}
+
+.scorer-insights-strip .insight-result,
+.scorer-insights-strip .insight-mini {
+  width: 100% !important;
+  min-width: 0 !important;
+  height: 100% !important;
+  box-sizing: border-box !important;
+}
+
+@media (max-width: 768px) {
+  .scorer-insights-strip.match-insights-card {
+    grid-template-columns: 1fr !important;
+    gap: 8px !important;
+  }
+
+  .scorer-insights-strip .insight-result,
+  .scorer-insights-strip .insight-mini {
+    min-height: 76px !important;
   }
 }
