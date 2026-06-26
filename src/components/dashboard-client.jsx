@@ -3901,17 +3901,6 @@ function getMatchOptionLabel(match) {
     .replaceAll("_", " ")
     .toUpperCase();
 
-/*    
-  const scheduledAt = String(match.scheduledAt || "");
-  const startedAt = String(match.startedAt || "");
-  const matchTime = "";
-if (status === "SCHEDULED"){
-  matchTime = scheduledAt;
-}
-
-if (status === "IN_PROGRESS"){
-  matchTime = startedAt;
-}*/
   const timeline = getMatchTimelineText(match);
 
   const score =
@@ -5302,15 +5291,6 @@ onClick={() => {
     )}
   </div>
 )}  
-{/*
-              {scoreboard?.summary?.statusText && (
-          <div className="single-line-scoreboard">
-            <span className="status-chip">
-              📌 {scoreboard.summary.statusText}
-            </span>
-          </div>
-        )}
-*/}
         <div className="pro-scoreboard">
         <div className="pro-score-hero">
           <div>
