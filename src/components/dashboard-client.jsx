@@ -5193,7 +5193,10 @@ onClick={() => {
 </div>
 </details>
 )}
-      {selectedMatchId && (
+</div>
+</Card>
+<Card title = "">
+        {selectedMatchId && (
         <div className="scoring-subtabs pretty">
 {!isSelectedMatchCompleted && (
   <button
@@ -5224,8 +5227,7 @@ onClick={() => {
 </button>
         </div>
       )}
-</div>
-</Card>
+
 {selectedMatchId && effectiveScoringSubTab === "SCOREBOARD" && (
   <Card title="🏟️ Professional Scoreboard" defaultCollapsed={false}
     right={
@@ -5756,15 +5758,6 @@ onClick={() => {
     )}
   </div>
 )}  
-{/*}
-        {scoreboard?.summary?.statusText && (
-          <div className="single-line-scoreboard">
-            <span className="status-chip">
-              📌 {scoreboard.summary.statusText}
-            </span>
-          </div>
-        )}
-*/}
         <div className="commentary-feed pretty-commentary">
           {scoreboard.commentary.map((section, sectionIndex) => (
             <div
@@ -7184,7 +7177,7 @@ onClick={() => {
     ⚠️ Once locked, this match cannot be edited or scored further.
   </div>
 </div>
-)}
+)}</Card>
     </div>    
 )}
 {activeTab === "matches" && (
@@ -7211,8 +7204,10 @@ onClick={() => {
         {leagues.find((l) => Number(l.id) === Number(activeLeagueId))?.name ||
           "Select a league"}
       </strong>
-    </div>
-
+      </div>
+      <div className="combo-visual-cue" aria-hidden="true">
+  <span className="combo-ripple" />
+</div>
     <select
       value={activeLeagueId || ""}
       onChange={(e) => {
@@ -7888,7 +7883,9 @@ onClick={() => {
           : "🔒 Private"}
       </span>
     </div>
-
+      <div className="combo-visual-cue" aria-hidden="true">
+  <span className="combo-ripple" />
+</div>
     <select
       value={activeLeagueId || ""}
       onChange={(e) => {
