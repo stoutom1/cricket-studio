@@ -20099,3 +20099,8 @@ body {
     font-size: 11px;
   }
 }
+.modal-content{
+    max-height:90vh;
+    overflow-y:auto;
+    overscroll-behavior:contain;
+}

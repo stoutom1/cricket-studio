@@ -10176,7 +10176,7 @@ onClick={() => {
   </div>
 )}
 {showBowlerModal && (
-  <div className="bowler-modal-backdrop">
+  <div className="bowler-modal-backdrop modal-content{">
     <div className="bowler-modal">
 <div className="live-popup-snapshot">
   <div className="live-popup-topline">
@@ -10493,7 +10493,7 @@ KL Rahul`}
   </div>
 )}
 {showExtrasModal && (
-  <div className="modal-backdrop">
+  <div className="modal-backdrop modal-content">
     <div className="modal-card">
 <div className="live-popup-snapshot">
   <div className="live-popup-topline">
@@ -11159,7 +11159,7 @@ onClick={() => {
   </div>
 )}
 {showWicketModal && (
-  <div className="modal-backdrop">
+  <div className="modal-backdrop modal-content">
   <div className="modal-card app-modal-card">
 <div className="live-popup-snapshot">
   <div className="live-popup-topline">
@@ -11435,7 +11435,7 @@ onClick={() => {
   </div>
 )}
 {showDeliverySetupModal && (
-  <div className="modal-backdrop">
+  <div className="modal-backdrop modal-content">
     <div className="add-player-pro-modal">
 <div className="live-popup-snapshot">
   <div className="live-popup-topline">
@@ -11872,7 +11872,7 @@ onClick={() => {
   </div>
 )}
 {showCorrectionModal && (
-  <div className="modal-backdrop">
+  <div className="modal-backdrop modal-content">
     <div className="correction-modal">
       <div className="correction-header">
         <h2>🛠 Retired Hurt Corrections</h2>
@@ -12065,7 +12065,7 @@ onClick={() => {
   </div>
 )}
 {showKeeperChangeModal && (
-  <div className="modal-backdrop">
+  <div className="modal-backdrop modal-content">
     <div className="correction-modal">
       <div className="bowler-change-score-card">
   <div>
@@ -12220,7 +12220,7 @@ onClick={() => {
   </div>
 )}
 {showRetiredHurtModal && (
-  <div className="modal-backdrop">
+  <div className="modal-backdrop modal-content">
     <div className="modal-card">
 <div className="live-popup-snapshot">
   <div className="live-popup-topline">
