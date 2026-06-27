@@ -6404,7 +6404,7 @@ onClick={() => {
     <button
       key={run}
       type="button"
-      disabled={isSavingBall || isMatchCompleted || isMatchLocked || isMatchAbandoned}
+      disabled={isMatchCompleted || isMatchLocked || isMatchAbandoned}
       className={`chip score-chip ${activeQuickAction === String(run) ? "chip-active" : ""}`}
       onClick={() => triggerQuickAction(String(run), () => quickNormalBall(run))}
     >
@@ -6412,16 +6412,16 @@ onClick={() => {
     </button>
   ))}
 
-  <button type="button" className={`chip score-chip ${activeQuickAction === "Wd" ? "chip-active" : ""}`} disabled={isSavingBall || isMatchCompleted || isMatchLocked || isMatchAbandoned} onClick={() => triggerQuickAction("Wd", () => quickExtra("WIDE"))}>Wd</button>
-  <button type="button" className={`chip score-chip ${activeQuickAction === "Nb" ? "chip-active" : ""}`} disabled={isSavingBall || isMatchCompleted || isMatchLocked || isMatchAbandoned} onClick={() => triggerQuickAction("Nb", () => quickExtra("NOBALL"))}>Nb</button>
-  <button type="button" className={`chip score-chip ${activeQuickAction === "B" ? "chip-active" : ""}`} disabled={isSavingBall || isMatchCompleted || isMatchLocked || isMatchAbandoned} onClick={() => triggerQuickAction("B", () => quickExtra("BYE"))}>B</button>
-  <button type="button" className={`chip score-chip ${activeQuickAction === "LB" ? "chip-active" : ""}`} disabled={isSavingBall || isMatchCompleted || isMatchLocked || isMatchAbandoned} onClick={() => triggerQuickAction("LB", () => quickExtra("LEGBYE"))}>LB</button>
+  <button type="button" className={`chip score-chip ${activeQuickAction === "Wd" ? "chip-active" : ""}`} disabled={isMatchCompleted || isMatchLocked || isMatchAbandoned} onClick={() => triggerQuickAction("Wd", () => quickExtra("WIDE"))}>Wd</button>
+  <button type="button" className={`chip score-chip ${activeQuickAction === "Nb" ? "chip-active" : ""}`} disabled={isMatchCompleted || isMatchLocked || isMatchAbandoned} onClick={() => triggerQuickAction("Nb", () => quickExtra("NOBALL"))}>Nb</button>
+  <button type="button" className={`chip score-chip ${activeQuickAction === "B" ? "chip-active" : ""}`} disabled={isMatchCompleted || isMatchLocked || isMatchAbandoned} onClick={() => triggerQuickAction("B", () => quickExtra("BYE"))}>B</button>
+  <button type="button" className={`chip score-chip ${activeQuickAction === "LB" ? "chip-active" : ""}`} disabled={isMatchCompleted || isMatchLocked || isMatchAbandoned} onClick={() => triggerQuickAction("LB", () => quickExtra("LEGBYE"))}>LB</button>
 
-  <button type="button" className={`chip score-chip score-wide ${activeQuickAction === "W" ? "chip-active" : ""}`} disabled={isSavingBall || isMatchCompleted || isMatchLocked || isMatchAbandoned} onClick={() => triggerQuickAction("W", () => quickWicket("BOWLED"))}>Wkt</button>
+  <button type="button" className={`chip score-chip score-wide ${activeQuickAction === "W" ? "chip-active" : ""}`} disabled={isMatchCompleted || isMatchLocked || isMatchAbandoned} onClick={() => triggerQuickAction("W", () => quickWicket("BOWLED"))}>Wkt</button>
 
-  <button type="button" className="chip score-chip score-wide chip-retired-hurt" disabled={isSavingBall || isMatchCompleted || isMatchLocked || isMatchAbandoned} onClick={() => setShowRetiredHurtModal(true)}>Rtd H</button>
+  <button type="button" className="chip score-chip score-wide chip-retired-hurt" disabled={isMatchCompleted || isMatchLocked || isMatchAbandoned} onClick={() => setShowRetiredHurtModal(true)}>Rtd H</button>
 
-  <button type="button" className="chip score-chip score-wide chip-swap" disabled={isSavingBall || isMatchCompleted || isMatchLocked || isMatchAbandoned} onClick={swapBatters}>⇄ Swap</button>
+  <button type="button" className="chip score-chip score-wide chip-swap" disabled={isMatchCompleted || isMatchLocked || isMatchAbandoned} onClick={swapBatters}>⇄ Swap</button>
 
   <button
     type="button"
@@ -6434,11 +6434,11 @@ onClick={() => {
 </div>
 
     <div className="mobile-secondary-actions scorer-secondary-row">
-      <button type="button" className="btn btn-outline action-change-wk" disabled={isSavingBall || isMatchCompleted || isMatchLocked || isMatchAbandoned} onClick={() => setShowKeeperChangeModal(true)}>
+      <button type="button" className="btn btn-outline action-change-wk" disabled={isMatchCompleted || isMatchLocked || isMatchAbandoned} onClick={() => setShowKeeperChangeModal(true)}>
         🧤 Change WK
       </button>
 
-      <button type="button" className="btn btn-outline action-rh-corrections" disabled={isMatchLocked || isMatchAbandoned} onClick={() => setShowCorrectionModal(true)}>
+      <button type="button" className="btn btn-outline action-rh-corrections" disabled={isMatchAbandoned} onClick={() => setShowCorrectionModal(true)}>
         🛠️ Rtd H
       </button>
 
@@ -10176,7 +10176,7 @@ onClick={() => {
   </div>
 )}
 {showBowlerModal && (
-  <div className="bowler-modal-backdrop modal-content{">
+  <div className="bowler-modal-backdrop">
     <div className="bowler-modal">
 <div className="live-popup-snapshot">
   <div className="live-popup-topline">
@@ -10493,7 +10493,7 @@ KL Rahul`}
   </div>
 )}
 {showExtrasModal && (
-  <div className="modal-backdrop modal-content">
+  <div className="modal-backdrop">
     <div className="modal-card">
 <div className="live-popup-snapshot">
   <div className="live-popup-topline">
@@ -10562,26 +10562,6 @@ KL Rahul`}
       <p style={{ opacity: 0.75 }}>
         Select total extra runs
       </p>
-{selectedExtraOption && (
-  <div className="selected-extra-preview">
-    <strong>Selected:</strong>
-    <span>
-      {selectedExtraType === "WIDE"
-        ? selectedExtraOption === "WD"
-          ? "Wide"
-          : `Wide + ${selectedExtraOption.replace("WD+", "")}`
-        : selectedExtraType === "NOBALL"
-        ? selectedExtraOption === "NB"
-          ? "No Ball"
-          : `No Ball + ${selectedExtraOption.replace("NB+", "")} bat run(s)`
-        : selectedExtraType === "BYE"
-        ? `${selectedExtraOption} Bye run(s)`
-        : selectedExtraType === "LEGBYE"
-        ? `${selectedExtraOption} Leg Bye run(s)`
-        : selectedExtraOption}
-    </span>
-  </div>
-)}
       <div
         style={{
           display: "grid",
@@ -10600,9 +10580,7 @@ KL Rahul`}
           <button
             key={runs}
             type="button"
-              className={`extra-choice-btn ${
-    selectedExtraOption === "WD+1" ? "selected" : ""
-  }`}
+            className = "extra-choice-btn"
             onClick={() => confirmExtra(runs)}
           >
             {runs}
@@ -11159,7 +11137,7 @@ onClick={() => {
   </div>
 )}
 {showWicketModal && (
-  <div className="modal-backdrop modal-content">
+  <div className="modal-backdrop">
   <div className="modal-card app-modal-card">
 <div className="live-popup-snapshot">
   <div className="live-popup-topline">
@@ -11435,7 +11413,7 @@ onClick={() => {
   </div>
 )}
 {showDeliverySetupModal && (
-  <div className="modal-backdrop modal-content">
+  <div className="modal-backdrop">
     <div className="add-player-pro-modal">
 <div className="live-popup-snapshot">
   <div className="live-popup-topline">
@@ -11872,7 +11850,7 @@ onClick={() => {
   </div>
 )}
 {showCorrectionModal && (
-  <div className="modal-backdrop modal-content">
+  <div className="modal-backdrop">
     <div className="correction-modal">
       <div className="correction-header">
         <h2>🛠 Retired Hurt Corrections</h2>
@@ -12065,7 +12043,7 @@ onClick={() => {
   </div>
 )}
 {showKeeperChangeModal && (
-  <div className="modal-backdrop modal-content">
+  <div className="modal-backdrop">
     <div className="correction-modal">
       <div className="bowler-change-score-card">
   <div>
@@ -12220,7 +12198,7 @@ onClick={() => {
   </div>
 )}
 {showRetiredHurtModal && (
-  <div className="modal-backdrop modal-content">
+  <div className="modal-backdrop">
     <div className="modal-card">
 <div className="live-popup-snapshot">
   <div className="live-popup-topline">
