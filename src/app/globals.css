@@ -20104,3 +20104,161 @@ body {
     overflow-y:auto;
     overscroll-behavior:contain;
 }
+@media (max-width: 768px) {
+  .modal-backdrop,
+  .bowler-modal-backdrop,
+  .wicket-modal-backdrop,
+  .extras-modal-backdrop {
+    align-items: flex-start !important;
+    overflow-y: auto !important;
+    padding: 10px !important;
+  }
+
+  .modal,
+  .bowler-modal,
+  .wicket-modal,
+  .extras-modal,
+  .retired-hurt-modal {
+    max-height: calc(100dvh - 20px) !important;
+    overflow-y: auto !important;
+    overscroll-behavior: contain !important;
+  }
+}
+@media (max-width: 768px) {
+  .quick-actions,
+  .scorer-run-buttons {
+    gap: 5px !important;
+  }
+
+  .quick-actions .chip,
+  .scorer-run-buttons .chip {
+    height: 36px !important;
+    min-height: 36px !important;
+    border-radius: 11px !important;
+    font-size: 12px !important;
+    padding: 0 4px !important;
+  }
+
+  .mobile-secondary-actions,
+  .scorer-secondary-row {
+    gap: 5px !important;
+  }
+
+  .mobile-secondary-actions button,
+  .scorer-secondary-row button {
+    min-height: 36px !important;
+    font-size: 12px !important;
+    padding: 6px 8px !important;
+  }
+}
+.chip-active {
+  transform: scale(0.94) !important;
+  box-shadow:
+    0 0 0 3px rgba(250, 204, 21, 0.35),
+    0 10px 22px rgba(0, 0, 0, 0.3) !important;
+}
+
+.chip:active {
+  transform: scale(0.94) !important;
+}
+.matches-command-center {
+  display: grid;
+  grid-template-columns: 1fr auto;
+  gap: 12px;
+  align-items: center;
+  margin: 14px 0;
+}
+
+.match-league-picker {
+  position: relative;
+  min-height: 58px;
+  padding: 10px 54px 10px 14px;
+  border-radius: 18px;
+  background:
+    radial-gradient(circle at top left, rgba(56,189,248,.18), transparent 34%),
+    linear-gradient(135deg, rgba(15,23,42,.96), rgba(30,41,59,.92));
+  border: 1px solid rgba(96,165,250,.28);
+  box-shadow: 0 14px 34px rgba(2,6,23,.22);
+}
+
+.match-league-picker strong,
+.match-league-picker span {
+  display: block;
+}
+
+.command-kicker {
+  color: #93c5fd;
+  font-size: 11px;
+  font-weight: 950;
+  text-transform: uppercase;
+}
+
+.match-league-picker strong {
+  margin-top: 4px;
+  color: white;
+  font-size: 15px;
+  font-weight: 950;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.match-league-picker select {
+  position: absolute;
+  inset: 0;
+  opacity: 0;
+  cursor: pointer;
+}
+
+.picker-arrow {
+  position: absolute;
+  right: 14px;
+  top: 50%;
+  width: 30px;
+  height: 30px;
+  transform: translateY(-50%);
+  display: grid !important;
+  place-items: center;
+  border-radius: 999px;
+  background: rgba(37,99,235,.28);
+  border: 1px solid rgba(96,165,250,.35);
+  color: #bfdbfe;
+  pointer-events: none;
+}
+
+.pro-match-tabs {
+  display: grid;
+  grid-template-columns: repeat(4, 1fr);
+  gap: 10px;
+}
+
+.pro-match-tabs button {
+  min-height: 54px;
+  border-radius: 18px;
+  border: 1px solid rgba(96,165,250,.2);
+  background: rgba(15,23,42,.82);
+  color: #cbd5e1;
+  font-weight: 950;
+}
+
+.pro-match-tabs button.active {
+  color: white;
+  background: linear-gradient(135deg, #2563eb, #38bdf8);
+  box-shadow: 0 14px 28px rgba(37,99,235,.25);
+}
+
+@media (max-width: 640px) {
+  .matches-command-center {
+    grid-template-columns: 1fr;
+  }
+
+  .pro-match-tabs {
+    gap: 6px;
+  }
+
+  .pro-match-tabs button {
+    min-height: 44px;
+    border-radius: 14px;
+    font-size: 12px;
+  }
+}

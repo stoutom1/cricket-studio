@@ -311,6 +311,9 @@ const [voiceScoringOn, setVoiceScoringOn] = useState(false);
 const [voiceStatus, setVoiceStatus] = useState("");
 const [voiceSupported, setVoiceSupported] = useState(false);
 const [dashboardReady, setDashboardReady] = useState(false);
+const [showEditTeamModal, setShowEditTeamModal] = useState(false);
+const [editingTeam, setEditingTeam] = useState(null);
+const [teamEditName, setTeamEditName] = useState("");
 const isSuperAdmin =
   session?.user?.email ===
   "surprisecricket11@gmail.com";
@@ -7192,69 +7195,6 @@ onClick={() => {
         {error && <p className="error">{error}</p>}
       </div>
     )}
-    <Card title="🏆 League">
-      <label className="mgmt-field mgmt-select-field">
-            <span>👇 Choose an active league </span>
-            <div className="select-action-hint">
-            <span>Tap to choose</span>
-            <b>⌄</b>
-          </div>
-        <select
-          value={activeLeagueId || ""}
-          onChange={(e) => {
-            const value = e.target.value;
-            setActiveLeagueId(value ? Number(value) : null);
-            setSelectedMatchId("");
-          }}
-        >
-          <option value="">Select League</option>
-          {leagues.map((league) => (
-            <option key={league.id} value={league.id}>
-              {league.name}
-            </option>
-          ))}
-        </select>
-      </label>
-           <ContextLens />
-    <div className="matches-subtabs">
-      <button
-        type="button"
-        className={matchesSubTab === "CREATE MATCH" ? "active" : ""}
-        onClick={() => setMatchesSubTab("CREATE MATCH")}
-      >
-      <span className="tab-icon">➕</span>
-<span className="tab-label">Create</span>
-      </button>
-
-      <button
-        type="button"
-        className={matchesSubTab === "ACTIVE" ? "active" : ""}
-        onClick={() => setMatchesSubTab("ACTIVE")}
-      >
-        <span className="tab-icon">🟢</span>
-<span className="tab-label">Active</span>
-      </button>
-
-      <button
-        type="button"
-        className={matchesSubTab === "SCHEDULED" ? "active" : ""}
-        onClick={() => setMatchesSubTab("SCHEDULED")}
-      >
-        <span className="tab-icon">📅</span>
-<span className="tab-label">Scheduled</span>
-      </button>
-
-      <button
-        type="button"
-        className={matchesSubTab === "COMPLETED" ? "active" : ""}
-        onClick={() => setMatchesSubTab("COMPLETED")}
-      >
-                <span className="tab-icon">✅</span>
-<span className="tab-label">Completed</span>
-         
-      </button>
-    </div>
-    </Card>
     {!activeLeagueId && (
       <Card title="📋 Matches">
         <div className="empty-state">
@@ -7262,7 +7202,59 @@ onClick={() => {
         </div>
       </Card>
     )}
+<Card title = "Matches">
+<div className="matches-command-center">
+  <div className="match-league-picker">
+    <div>
+      <span className="command-kicker">🏆 Active League</span>
+      <strong>
+        {leagues.find((l) => Number(l.id) === Number(activeLeagueId))?.name ||
+          "Select a league"}
+      </strong>
+    </div>
 
+    <select
+      value={activeLeagueId || ""}
+      onChange={(e) => {
+        const value = e.target.value;
+        setActiveLeagueId(value ? Number(value) : null);
+        setSelectedMatchId("");
+      }}
+    >
+      <option value="">Select League</option>
+      {leagues.map((league) => (
+        <option key={league.id} value={league.id}>
+          {league.name}
+        </option>
+      ))}
+    </select>
+
+    <span className="picker-arrow">⌄</span>
+  </div>
+
+  <div className="match-filter-action">
+    <ContextLens />
+  </div>
+</div>
+
+<div className="matches-subtabs pro-match-tabs">
+  {[
+    ["CREATE MATCH", "➕", "Create"],
+    ["ACTIVE", "🟢", "Active"],
+    ["SCHEDULED", "📅", "Scheduled"],
+    ["COMPLETED", "✅", "Completed"],
+  ].map(([key, icon, label]) => (
+    <button
+      key={key}
+      type="button"
+      className={matchesSubTab === key ? "active" : ""}
+      onClick={() => setMatchesSubTab(key)}
+    >
+      <span className="tab-icon">{icon}</span>
+      <span className="tab-label">{label}</span>
+    </button>
+  ))}
+</div> 
     {activeLeagueId && matchesSubTab === "CREATE MATCH" && (
 <Card title="➕ Create Match">
   <form className="form create-match-form pro-create-match-form" onSubmit={handleCreateMatch}>
@@ -7862,7 +7854,8 @@ onClick={() => {
   )}
 </Card>
 )}
-  </div>
+</Card>
+  </div> 
 )}
 {activeTab === "management" && (
   <div className="management-page">
@@ -8104,7 +8097,19 @@ onClick={() => {
             >
               ➕ Add Team
             </button>
-
+{permissions?.canEditTeam && (
+  <button
+    type="button"
+              className="mgmt-clean-btn"
+    onClick={() => {
+      setEditingTeam(team);
+      setTeamEditName(team.name);
+      setShowEditTeamModal(true);
+    }}
+  >
+    ✏️ Edit Team
+  </button>
+)}
             {selectedTeam && permissions?.canDeleteTeam && (
               <button
                 type="button"
@@ -12195,6 +12200,37 @@ onClick={() => {
         <b>Open Explore →</b>
       </a>
     </aside>
+  </div>
+)}
+{showEditTeamModal && editingTeam && (
+  <div className="modal-backdrop">
+    <div className="modal">
+      <h3>✏️ Rename Team</h3>
+
+      <input
+        value={teamEditName}
+        onChange={(e) => setTeamEditName(e.target.value)}
+      />
+
+      <button onClick={() => setShowEditTeamModal(false)}>
+        Cancel
+      </button>
+
+      <button
+        onClick={async () => {
+          await api(`/api/teams/${editingTeam.id}`, {
+            method: "PATCH",
+            body: JSON.stringify({ name: teamEditName }),
+          });
+
+          await loadTeams();
+          await loadLeagues();
+          setShowEditTeamModal(false);
+        }}
+      >
+        Save
+      </button>
+    </div>
   </div>
 )}
 {showRetiredHurtModal && (
