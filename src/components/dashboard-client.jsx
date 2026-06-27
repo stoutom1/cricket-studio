@@ -5195,39 +5195,39 @@ onClick={() => {
 )}
 </div>
 </Card>
-<Card title = "">
-        {selectedMatchId && (
-        <div className="scoring-subtabs pretty">
-{!isSelectedMatchCompleted && (
-  <button
-    type="button"
-    className={effectiveScoringSubTab === "ADVANCED" ? "active" : ""}
-    onClick={() => setScoringSubTab("ADVANCED")}
-  >
-    <span>🎯</span>
-    <strong>Scoring</strong>
-  </button>
+<Card title = "Match Score Details">
+{selectedMatchId && (
+  <div className="scoring-subtabs scoring-subtabs-wow">
+    {!isSelectedMatchCompleted && (
+      <button
+        type="button"
+        className={effectiveScoringSubTab === "ADVANCED" ? "active" : ""}
+        onClick={() => setScoringSubTab("ADVANCED")}
+      >
+        <span>🎯</span>
+        <strong>Scoring</strong>
+      </button>
+    )}
+
+    <button
+      type="button"
+      className={effectiveScoringSubTab === "SCOREBOARD" ? "active" : ""}
+      onClick={() => setScoringSubTab("SCOREBOARD")}
+    >
+      <span>🏏</span>
+      <strong>Scoreboard</strong>
+    </button>
+
+    <button
+      type="button"
+      className={effectiveScoringSubTab === "COMMENTARY" ? "active" : ""}
+      onClick={() => setScoringSubTab("COMMENTARY")}
+    >
+      <span>📝</span>
+      <strong>Commentary</strong>
+    </button>
+  </div>
 )}
-          <button
-            type="button"
-            className={effectiveScoringSubTab === "SCOREBOARD" ? "active" : ""}
-            onClick={() => setScoringSubTab("SCOREBOARD")}
-          >
-            <span>🏏</span>
-            <strong>Scoreboard</strong>
-          </button>
-
-          <button
-  type="button"
-  className={effectiveScoringSubTab === "COMMENTARY" ? "active" : ""}
-  onClick={() => setScoringSubTab("COMMENTARY")}
->
-  <span>📝</span>
-  <strong>Commentary</strong>
-</button>
-        </div>
-      )}
-
 {selectedMatchId && effectiveScoringSubTab === "SCOREBOARD" && (
   <Card title="🏟️ Professional Scoreboard" defaultCollapsed={false}
     right={
