@@ -10418,12 +10418,6 @@ onClick={() => {
       </div>
 
       <form onSubmit={handleAddPlayers} className="add-player-pro-form">
-        {!setupBatters.length || !setupBowlers.length ? (
-  <div className="match-ended-banner">
-    Loading players for setup...
-  </div>
-) : (
-  <>
         <div className="add-player-pro-grid">
           <label>
             <span>🏆 League</span>
@@ -10439,7 +10433,10 @@ onClick={() => {
                   leagueId,
                   teamId: "",
                 }));
+
+                setSelectedPlayerTeamId("");
               }}
+              required
             >
               <option value="">Choose League</option>
 
@@ -10455,9 +10452,18 @@ onClick={() => {
             <span>👥 Team</span>
             <select
               value={selectedPlayerTeamId || ""}
-              onChange={(e) =>
-                setSelectedPlayerTeamId(Number(e.target.value))
-              }
+              onChange={(e) => {
+                const teamId = Number(e.target.value);
+
+                setSelectedPlayerTeamId(teamId);
+
+                setPlayerForm((prev) => ({
+                  ...prev,
+                  teamId,
+                }));
+              }}
+              required
+              disabled={!playerLeagueId}
             >
               <option value="">Choose Team</option>
 
@@ -10469,8 +10475,7 @@ onClick={() => {
             </select>
           </label>
         </div>
-          </>
-          )}
+
         <label className="add-player-pro-textarea-wrap">
           <div className="add-player-pro-label-row">
             <span>✍️ Player Names</span>
@@ -10514,7 +10519,11 @@ KL Rahul`}
             Cancel
           </button>
 
-          <button type="submit" className="add-player-pro-save">
+          <button
+            type="submit"
+            className="add-player-pro-save"
+            disabled={!playerLeagueId || !selectedPlayerTeamId}
+          >
             ✅ Save Players
           </button>
         </div>
