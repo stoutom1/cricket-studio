@@ -5,22 +5,31 @@ import { authOptions } from "@/lib/auth";
 
 export const runtime = "nodejs";
 
-export async function PATCH(request,{params}){
+export async function PATCH(request, { params }) {
+  const { id } = await params;
+  const playerId = Number(id);
+  const body = await request.json();
 
-    const {id}=await params;
+  const data = {};
 
-    const {name}=await request.json();
+  if (typeof body.name === "string") {
+    const name = body.name.trim();
+    if (!name) {
+      return Response.json({ error: "Player name is required" }, { status: 400 });
+    }
+    data.name = name;
+  }
 
-    const player=await prisma.player.update({
+  if (body.teamId) {
+    data.teamId = Number(body.teamId);
+  }
 
-        where:{id:Number(id)},
+  const player = await prisma.player.update({
+    where: { id: playerId },
+    data,
+  });
 
-        data:{name}
-
-    });
-
-    return Response.json(player);
-
+  return Response.json(player);
 }
 
 export async function DELETE(request, { params }) {

@@ -317,6 +317,9 @@ const [showEditPlayerModal, setShowEditPlayerModal] = useState(false);
 const [editingPlayer, setEditingPlayer] = useState(null);
 const [editPlayerName, setEditPlayerName] = useState("");
 const [teamEditName, setTeamEditName] = useState("");
+const [showTransferPlayerModal, setShowTransferPlayerModal] = useState(false);
+const [transferPlayer, setTransferPlayer] = useState(null);
+const [transferTeamId, setTransferTeamId] = useState("");
 const isSuperAdmin =
   session?.user?.email ===
   "surprisecricket11@gmail.com";
@@ -8242,6 +8245,20 @@ onClick={() => {
       ✏️
     </button>
   )}
+  {permissions?.canEditPlayer && (
+  <button
+    type="button"
+    className="mini-action-btn"
+    title="Move Player"
+    onClick={() => {
+      setTransferPlayer(player);
+      setTransferTeamId("");
+      setShowTransferPlayerModal(true);
+    }}
+  >
+    🔁
+  </button>
+)}
               {permissions?.canDeletePlayer && (
                 <button
                   type="button"
@@ -12420,6 +12437,94 @@ onClick={savePlayerName}
 
 </div>
 
+)}
+{showTransferPlayerModal && transferPlayer && (
+  <div className="modal-backdrop">
+    <div className="rename-modal">
+      <button
+        type="button"
+        className="rename-close"
+        onClick={() => {
+          setShowTransferPlayerModal(false);
+          setTransferPlayer(null);
+          setTransferTeamId("");
+        }}
+      >
+        ✕
+      </button>
+
+      <div className="rename-icon">🔁</div>
+
+      <h2>Move Player</h2>
+
+      <p>
+        Move <strong>{transferPlayer.name}</strong> to another team in the same league.
+      </p>
+
+      <label>
+        <span>NEW TEAM</span>
+
+        <select
+          value={transferTeamId}
+          onChange={(e) => setTransferTeamId(e.target.value)}
+        >
+          <option value="">Select Team</option>
+
+          {teams
+            .filter((team) => Number(team.leagueId) === Number(activeLeagueId))
+            .filter((team) => Number(team.id) !== Number(transferPlayer.teamId))
+            .sort((a, b) => a.name.localeCompare(b.name))
+            .map((team) => (
+              <option key={team.id} value={team.id}>
+                {team.name}
+              </option>
+            ))}
+        </select>
+      </label>
+
+      <div className="rename-note">
+        Player stats and match history will stay attached to this player.
+      </div>
+
+      <div className="rename-actions">
+        <button
+          type="button"
+          className="btn btn-outline"
+          onClick={() => {
+            setShowTransferPlayerModal(false);
+            setTransferPlayer(null);
+            setTransferTeamId("");
+          }}
+        >
+          Cancel
+        </button>
+
+        <button
+          type="button"
+          className="btn btn-primary"
+          disabled={!transferTeamId}
+          onClick={async () => {
+            await api(`/api/players/${transferPlayer.id}`, {
+              method: "PATCH",
+              body: JSON.stringify({
+                teamId: Number(transferTeamId),
+              }),
+            });
+
+            await refreshPlayerLists();
+
+            setShowTransferPlayerModal(false);
+            setTransferPlayer(null);
+            setTransferTeamId("");
+
+            showToast("success", "✅ Player moved.");
+          }}
+        >
+          🔁 Move Player
+        </button>
+      </div>
+    </div>
+  </div>
 )}
 {showRetiredHurtModal && (
   <div className="modal-backdrop">
