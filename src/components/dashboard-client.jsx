@@ -5039,6 +5039,37 @@ useEffect(() => {
   }
 }, [scorerMode]);
 
+function startBrowserVoiceScore() {
+  const SpeechRecognition =
+    window.SpeechRecognition || window.webkitSpeechRecognition;
+
+  if (!SpeechRecognition) {
+    setVoiceStatus("Voice scoring is not supported in this browser.");
+    return;
+  }
+
+  const recognition = new SpeechRecognition();
+  recognition.lang = "en-US";
+  recognition.interimResults = false;
+  recognition.continuous = false;
+
+  recognition.onstart = () => setVoiceStatus("🎙️ Listening...");
+
+  recognition.onresult = (event) => {
+    const transcript = event.results[0][0].transcript;
+    setVoiceStatus(`Heard: ${transcript}`);
+    handleVoiceCommand(transcript);
+  };
+
+  recognition.onerror = (event) => {
+    setVoiceStatus(`Voice error: ${event.error}`);
+  };
+
+  recognition.onend = () => setVoiceStatus("");
+
+  recognition.start();
+}
+
 function ContextLens() {
   const totalFilters =
     (contextFilters.teamIds?.length || 0) +
@@ -6638,110 +6669,67 @@ onClick={() => {
 
 
 {scorerMode && (
-      <div className="scorer-dock-area">
-<div className="scorer-quick-dock">
-  <button
-    type="button"
-    className={scorerDrawer === "scoreboard" ? "active" : ""}
-    onClick={() =>
-      setScorerDrawer((prev) => (prev === "scoreboard" ? null : "scoreboard"))
-    }
-  >
-  <span className="dock-icon">📊</span>
-  <span className="dock-text">Scoreboard</span>
-  </button>
+  <div className="scorer-dock-area">
+    <div className="scorer-quick-dock compact">
+      <button
+        type="button"
+        className={scorerDrawer === "scoreboard" ? "active" : ""}
+        onClick={() =>
+          setScorerDrawer((prev) => (prev === "scoreboard" ? null : "scoreboard"))
+        }
+      >
+        <span className="dock-icon">📊</span>
+        <span className="dock-text">Score</span>
+      </button>
 
-  <button
-    type="button"
-    className={scorerDrawer === "commentary" ? "active" : ""}
-    onClick={() =>
-      setScorerDrawer((prev) => (prev === "commentary" ? null : "commentary"))
-    }
-  >
-  <span className="dock-icon">📝</span>
-  <span className="dock-text">Commentary</span>
-  </button>
+      <button
+        type="button"
+        className={scorerDrawer === "commentary" ? "active" : ""}
+        onClick={() =>
+          setScorerDrawer((prev) => (prev === "commentary" ? null : "commentary"))
+        }
+      >
+        <span className="dock-icon">📝</span>
+        <span className="dock-text">Comm</span>
+      </button>
 
-  <button
-    type="button"
-    className={scorerDrawer === "setup" ? "active" : ""}
-    onClick={() =>
-      setScorerDrawer((prev) => (prev === "setup" ? null : "setup"))
-    }
-  >
-  <span className="dock-icon">⚙️</span>
-  <span className="dock-text">Setup</span>
-  </button>
+      <button
+        type="button"
+        className={scorerDrawer === "setup" ? "active" : ""}
+        onClick={() =>
+          setScorerDrawer((prev) => (prev === "setup" ? null : "setup"))
+        }
+      >
+        <span className="dock-icon">⚙️</span>
+        <span className="dock-text">Setup</span>
+      </button>
 
-<button
-  type="button"
-  className="scorer-dock-btn voice-btn"
-  onClick={() => {
-    const SpeechRecognition =
-      window.SpeechRecognition || window.webkitSpeechRecognition;
+      <button
+        type="button"
+        className="voice-btn"
+        onClick={startBrowserVoiceScore}
+      >
+        <span className="dock-icon">🎤</span>
+        <span className="dock-text">Voice</span>
+      </button>
 
-    if (!SpeechRecognition) {
-      setVoiceStatus("Voice scoring is not supported in this browser.");
-      return;
-    }
+      <button type="button" onClick={() => setScorerMode(false)}>
+        <span className="dock-icon">✕</span>
+        <span className="dock-text">Exit</span>
+      </button>
+    </div>
 
-    const recognition = new SpeechRecognition();
-    recognition.lang = "en-US";
-    recognition.interimResults = false;
-    recognition.continuous = false;
-
-    recognition.onstart = () => {
-      setVoiceStatus("🎙️ Listening...");
-    };
-
-    recognition.onresult = (event) => {
-      const transcript = event.results[0][0].transcript;
-      setVoiceStatus(`Heard: ${transcript}`);
-      handleVoiceCommand(transcript);
-    };
-
-    recognition.onerror = (event) => {
-      setVoiceStatus(`Voice error: ${event.error}`);
-    };
-
-    recognition.onend = () => {
-      setVoiceStatus("");
-    };
-
-    recognition.start();
-  }}
->
-   
-  <span className="dock-icon">🎤</span>
-  <span className="dock-text">Hold</span>
-  
-</button>
-      {voiceMessage && (
-      <div className="voice-score-message">
-        {voiceMessage}
+    {(voiceMessage || voiceStatus) && (
+      <div className="voice-score-message compact">
+        {voiceMessage || voiceStatus}
       </div>
     )}
 
-{isSuperAdmin && voiceSupported && (
-  <button
-    type="button"
-    className={scorerDrawer === "voice" ? "active" : ""}
-    onClick={() => setVoiceScoringOn((prev) => !prev)}
-  >
-    {voiceScoringOn ? "🎙️ Voice On" : "🎤 Voice Score"}
-  </button>
+    <div className="scorer-shortcut-hint">
+      Keyboard: 0 1 2 3 4 6 • W wicket • D wide • N no-ball • U undo
+    </div>
+  </div>
 )}
-  <button type="button" onClick={() => setScorerMode(false)}>
-     
-  <span className="dock-icon">✕</span>
-  <span className="dock-text">Exit</span>
-  </button>
-</div>
-        <div className="scorer-shortcut-hint">
-          Keyboard Shortcuts: 0 1 2 3 4 6 • W wicket • D wide • N no-ball • U undo
-        </div>
-      </div>
-    )}
 </div>
 
 {permissions?.canScoreMatch  && (isMobile ? (

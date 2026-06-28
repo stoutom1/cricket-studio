@@ -17119,6 +17119,7 @@ body:has(.login-shell) .dashboard-content {
 
 .scorer-dock-area {
   width: 100%;
+  max-width: 520px;
   display: grid;
   gap: 6px;
 }
@@ -21075,138 +21076,81 @@ flex-direction:column-reverse;
   font-weight: 950;
   cursor: pointer;
 }
-/* Scorer dock: keep 6 buttons in one row when space allows */
-.scorer-quick-dock {
-  width: 100% !important;
-  max-width: none !important;
+.scorer-dock-area {
+  width: fit-content;
+  max-width: 100%;
+  margin-top: 12px;
+}
+
+.scorer-quick-dock.compact {
+  width: fit-content;
+  max-width: 100%;
   display: grid !important;
-  grid-template-columns: repeat(6, minmax(0, 1fr)) !important;
-  gap: 10px !important;
-  padding: 10px 12px !important;
-  margin-top: 12px !important;
+  grid-template-columns: repeat(5, minmax(74px, 1fr));
+  gap: 8px;
+  padding: 8px;
+  border-radius: 18px;
 }
 
-.scorer-quick-dock button,
-.scorer-quick-dock .scorer-dock-btn {
-  width: 100% !important;
-  min-width: 0 !important;
-  min-height: 48px !important;
-  padding: 0 10px !important;
-  border-radius: 16px !important;
-  white-space: nowrap !important;
+.scorer-quick-dock.compact button {
+  min-width: 74px !important;
+  min-height: 44px !important;
+  padding: 7px 10px !important;
+  border-radius: 14px !important;
   display: inline-flex !important;
-  align-items: center !important;
-  justify-content: center !important;
-  gap: 7px !important;
+  align-items: center;
+  justify-content: center;
+  gap: 6px;
+  white-space: nowrap;
 }
 
-/* Mobile: still one row if possible, smaller buttons */
+.scorer-quick-dock.compact .dock-text {
+  max-width: 54px;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+.voice-score-message.compact {
+  margin-top: 8px;
+  padding: 8px 10px;
+  border-radius: 12px;
+  background: rgba(37, 99, 235, 0.16);
+  border: 1px solid rgba(96, 165, 250, 0.24);
+  color: #bfdbfe;
+  font-size: 12px;
+  font-weight: 900;
+}
+
 @media (max-width: 640px) {
-  .scorer-quick-dock {
-    grid-template-columns: repeat(6, minmax(0, 1fr)) !important;
-    gap: 5px !important;
-    padding: 7px !important;
+  .scorer-dock-area {
+    width: 100%;
   }
 
-  .scorer-quick-dock button,
-  .scorer-quick-dock .scorer-dock-btn {
-    min-height: 38px !important;
-    padding: 0 4px !important;
-    border-radius: 12px !important;
+  .scorer-quick-dock.compact {
+    width: 100%;
+    grid-template-columns: repeat(5, minmax(0, 1fr));
+    gap: 6px;
+    padding: 6px;
+  }
+
+  .scorer-quick-dock.compact button {
+    min-width: 0 !important;
+    min-height: 40px !important;
+    padding: 6px 4px !important;
+    font-size: 11px !important;
+    gap: 3px;
+  }
+
+  .scorer-quick-dock.compact .dock-icon {
+    font-size: 13px;
+  }
+
+  .scorer-quick-dock.compact .dock-text {
+    max-width: 42px;
+  }
+
+  .scorer-shortcut-hint {
     font-size: 10px !important;
-    gap: 3px !important;
+    line-height: 1.3;
   }
-}
-
-/* Very narrow phones: use 3 + 3 instead of cutting off */
-@media (max-width: 390px) {
-  .scorer-quick-dock {
-    grid-template-columns: repeat(3, minmax(0, 1fr)) !important;
-  }
-}
-.scorer-quick-dock{
-    display:grid;
-    grid-template-columns:repeat(6,minmax(0,1fr));
-    gap:8px;
-    width:100%;
-}
-
-.scorer-dock-btn{
-    display:flex;
-    align-items:center;
-    justify-content:center;
-
-    gap:6px;
-
-    min-width:0;
-    height:46px;
-
-    padding:0 10px;
-
-    white-space:nowrap;
-    overflow:hidden;
-}
-
-.dock-icon{
-    flex:0 0 auto;
-    font-size:14px;
-}
-
-.dock-text{
-    flex:1;
-    overflow:hidden;
-    text-overflow:ellipsis;
-    white-space:nowrap;
-
-    font-size:14px;
-    font-weight:700;
-}
-@media (min-width:1200px){
-
-.scorer-quick-dock{
-    gap:12px;
-}
-
-.scorer-dock-btn{
-    height:48px;
-}
-
-.dock-text{
-    font-size:15px;
-}
-
-}
-@media (max-width:640px){
-
-.scorer-quick-dock{
-    grid-template-columns:repeat(3,1fr);
-}
-
-.scorer-dock-btn{
-    height:40px;
-}
-
-.dock-text{
-    font-size:12px;
-}
-
-}
-.scorer-quick-dock{
-    width:100%;
-    display:grid;
-    grid-template-columns:repeat(6,1fr);
-    gap:10px;
-}
-.scorer-dock-btn{
-    width:100%;
-    height:46px;
-
-    display:flex;
-    align-items:center;
-    justify-content:center;
-    gap:8px;
-
-    padding:0 16px;
-
-    white-space:nowrap;
 }
