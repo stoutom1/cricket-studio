@@ -17119,7 +17119,6 @@ body:has(.login-shell) .dashboard-content {
 
 .scorer-dock-area {
   width: 100%;
-  max-width: 520px;
   display: grid;
   gap: 6px;
 }
@@ -20983,4 +20982,231 @@ flex-direction:column-reverse;
   display: inline-flex !important;
   align-items: center !important;
   gap: 6px !important;
+}
+@media (max-width: 768px) {
+  .live-dot,
+  .combo-ripple,
+  .combo-finger,
+  .pulse,
+  .glow-animate {
+    animation: none !important;
+  }
+
+  .modal-backdrop,
+  .account-modal-backdrop,
+  .edit-match-backdrop-v3 {
+    backdrop-filter: none !important;
+  }
+}
+@media (max-width: 768px) {
+  .combo-ripple,
+  .combo-finger,
+  .live-dot,
+  .pulse,
+  .glow-animate {
+    animation: none !important;
+  }
+
+  .modal-backdrop,
+  .account-modal-backdrop,
+  .edit-match-backdrop-v3 {
+    backdrop-filter: none !important;
+  }
+}
+/* FINAL FIX: Wicket / Run Out modal must always be scrollable on phone */
+.wicket-modal-backdrop {
+  align-items: flex-start !important;
+  overflow-y: auto !important;
+  padding: 10px !important;
+}
+
+.wicket-modal-card {
+  width: min(620px, 100%) !important;
+  max-height: calc(100dvh - 20px) !important;
+  overflow-y: auto !important;
+  overscroll-behavior: contain !important;
+  padding-bottom: 0 !important;
+}
+
+.wicket-modal-actions {
+  position: sticky !important;
+  bottom: 0 !important;
+  z-index: 20 !important;
+  margin: 16px -16px 0 !important;
+  padding: 12px 16px !important;
+  background:
+    linear-gradient(to top, rgba(15, 23, 42, 1) 72%, rgba(15, 23, 42, 0));
+  border-top: 1px solid rgba(96, 165, 250, 0.18);
+  display: grid !important;
+  grid-template-columns: 1fr 1fr !important;
+  gap: 10px !important;
+}
+
+.wicket-modal-actions .btn {
+  min-height: 44px !important;
+  width: 100% !important;
+}
+
+@media (max-width: 640px) {
+  .wicket-modal-card {
+    max-height: calc(100dvh - 12px) !important;
+    border-radius: 18px !important;
+  }
+
+  .wicket-modal-actions {
+    margin-left: -12px !important;
+    margin-right: -12px !important;
+    padding: 10px 12px calc(10px + env(safe-area-inset-bottom)) !important;
+  }
+}
+.wicket-modal-close {
+  position: sticky;
+  top: 0;
+  margin-left: auto;
+  z-index: 30;
+  width: 38px;
+  height: 38px;
+  border-radius: 999px;
+  display: grid;
+  place-items: center;
+  border: 1px solid rgba(248, 113, 113, 0.35);
+  background: rgba(239, 68, 68, 0.18);
+  color: #fecaca;
+  font-weight: 950;
+  cursor: pointer;
+}
+/* Scorer dock: keep 6 buttons in one row when space allows */
+.scorer-quick-dock {
+  width: 100% !important;
+  max-width: none !important;
+  display: grid !important;
+  grid-template-columns: repeat(6, minmax(0, 1fr)) !important;
+  gap: 10px !important;
+  padding: 10px 12px !important;
+  margin-top: 12px !important;
+}
+
+.scorer-quick-dock button,
+.scorer-quick-dock .scorer-dock-btn {
+  width: 100% !important;
+  min-width: 0 !important;
+  min-height: 48px !important;
+  padding: 0 10px !important;
+  border-radius: 16px !important;
+  white-space: nowrap !important;
+  display: inline-flex !important;
+  align-items: center !important;
+  justify-content: center !important;
+  gap: 7px !important;
+}
+
+/* Mobile: still one row if possible, smaller buttons */
+@media (max-width: 640px) {
+  .scorer-quick-dock {
+    grid-template-columns: repeat(6, minmax(0, 1fr)) !important;
+    gap: 5px !important;
+    padding: 7px !important;
+  }
+
+  .scorer-quick-dock button,
+  .scorer-quick-dock .scorer-dock-btn {
+    min-height: 38px !important;
+    padding: 0 4px !important;
+    border-radius: 12px !important;
+    font-size: 10px !important;
+    gap: 3px !important;
+  }
+}
+
+/* Very narrow phones: use 3 + 3 instead of cutting off */
+@media (max-width: 390px) {
+  .scorer-quick-dock {
+    grid-template-columns: repeat(3, minmax(0, 1fr)) !important;
+  }
+}
+.scorer-quick-dock{
+    display:grid;
+    grid-template-columns:repeat(6,minmax(0,1fr));
+    gap:8px;
+    width:100%;
+}
+
+.scorer-dock-btn{
+    display:flex;
+    align-items:center;
+    justify-content:center;
+
+    gap:6px;
+
+    min-width:0;
+    height:46px;
+
+    padding:0 10px;
+
+    white-space:nowrap;
+    overflow:hidden;
+}
+
+.dock-icon{
+    flex:0 0 auto;
+    font-size:14px;
+}
+
+.dock-text{
+    flex:1;
+    overflow:hidden;
+    text-overflow:ellipsis;
+    white-space:nowrap;
+
+    font-size:14px;
+    font-weight:700;
+}
+@media (min-width:1200px){
+
+.scorer-quick-dock{
+    gap:12px;
+}
+
+.scorer-dock-btn{
+    height:48px;
+}
+
+.dock-text{
+    font-size:15px;
+}
+
+}
+@media (max-width:640px){
+
+.scorer-quick-dock{
+    grid-template-columns:repeat(3,1fr);
+}
+
+.scorer-dock-btn{
+    height:40px;
+}
+
+.dock-text{
+    font-size:12px;
+}
+
+}
+.scorer-quick-dock{
+    width:100%;
+    display:grid;
+    grid-template-columns:repeat(6,1fr);
+    gap:10px;
+}
+.scorer-dock-btn{
+    width:100%;
+    height:46px;
+
+    display:flex;
+    align-items:center;
+    justify-content:center;
+    gap:8px;
+
+    padding:0 16px;
+
+    white-space:nowrap;
 }

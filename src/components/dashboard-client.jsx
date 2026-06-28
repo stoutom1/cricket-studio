@@ -320,6 +320,8 @@ const [teamEditName, setTeamEditName] = useState("");
 const [showTransferPlayerModal, setShowTransferPlayerModal] = useState(false);
 const [transferPlayer, setTransferPlayer] = useState(null);
 const [transferTeamId, setTransferTeamId] = useState("");
+const [pageVisible, setPageVisible] = useState(true);
+const [ballSaveInFlight, setBallSaveInFlight] = useState(false);
 const isSuperAdmin =
   session?.user?.email ===
   "surprisecricket11@gmail.com";
@@ -404,6 +406,31 @@ useEffect(() => {
   //loadPermissions(selectedMember);
   loadMyLeaguePermissions(activeLeagueId);
 }, [activeLeagueId, isSuperAdmin]);
+useEffect(() => {
+  function onVisibilityChange() {
+    setPageVisible(document.visibilityState === "visible");
+  }
+
+  document.addEventListener("visibilitychange", onVisibilityChange);
+  onVisibilityChange();
+
+  return () => {
+    document.removeEventListener("visibilitychange", onVisibilityChange);
+  };
+}, []);
+
+useEffect(() => {
+  function handleVisibilityChange() {
+    setPageVisible(document.visibilityState === "visible");
+  }
+
+  handleVisibilityChange();
+  document.addEventListener("visibilitychange", handleVisibilityChange);
+
+  return () => {
+    document.removeEventListener("visibilitychange", handleVisibilityChange);
+  };
+}, []);
 
 useEffect(() => {
   if (activeLeagueId) {
@@ -570,8 +597,6 @@ useEffect(() => {
         setActiveLeagueId(preferredLeagueId);
         await loadMyLeaguePermissions(preferredLeagueId);
         await loadMatches(preferredLeagueId);
-        await loadPointsTable(preferredLeagueId);
-        await loadLeagueStats(preferredLeagueId);
       }
 
       setSelectedMatchId("");
@@ -1382,6 +1407,7 @@ const PERMISSION_FIELDS = [
   "canViewAuditLogs",
 ];
 async function api(url, options = {}) {
+  console.count(`API ${url}`);  
     const res = await fetch(url, {
       ...options,
       headers: {
@@ -1858,50 +1884,52 @@ async function updateRole(
   }
 }
 
-  async function loadSelectedMatch(matchId) {
-    if (!matchId) {
-      setMatchDetail(null);
-      setScoreboard(null);
-      setStats({ batting: [], bowling: [] });
-      return;
-    }
+async function loadSelectedMatch(matchId, options = {}) {
+  const {
+    loadDetail = false,
+    loadStatsData = false,
+    syncBallForm = true,
+  } = options;
+
+  if (!matchId) {
+    setMatchDetail(null);
+    setScoreboard(null);
+    setStats({ batting: [], bowling: [] });
+    return;
+  }
 
   fetch("/api/user/preferences", {
     method: "POST",
-    headers: {
-      "Content-Type": "application/json"
-    },
+    headers: { "Content-Type": "application/json" },
     body: JSON.stringify({
-      activeLeagueId: activeLeagueId,
-      activeMatchId: selectedMatchId
-    })
-  });
+      activeLeagueId,
+      activeMatchId: matchId,
+    }),
+  }).catch(() => {});
 
-    const [detail, board, statData] = await Promise.all([
-      api(`/api/matches/${matchId}`),
-      api(`/api/scoreboard/${matchId}`),
-      api(`/api/stats/${matchId}`),
-    ]);
+  const board = await api(`/api/scoreboard/${matchId}`);
+  setScoreboard(board);
 
+  if (syncBallForm && board?.currentState && !showDeliverySetupModal) {
+    setBallForm((prev) => ({
+      ...prev,
+      strikerId: board.currentState.strikerId ?? prev.strikerId,
+      nonStrikerId: board.currentState.nonStrikerId ?? prev.nonStrikerId,
+      bowlerId: board.currentState.bowlerId ?? prev.bowlerId,
+    }));
+  }
+
+  if (loadDetail) {
+    const detail = await api(`/api/matches/${matchId}`);
     setMatchDetail(detail);
-    setScoreboard(board);
-    if (board?.currentState) {
-  setBallForm(prev => ({
-    ...prev,
+  }
 
-    strikerId:
-      board.currentState.strikerId,
-
-    nonStrikerId:
-      board.currentState.nonStrikerId,
-
-    bowlerId:
-      board.currentState.bowlerId ??
-      prev.bowlerId
-  }));
-}
+  if (loadStatsData) {
+    const statData = await api(`/api/stats/${matchId}`);
     setStats(statData);
   }
+}
+
 async function handleAddLeague(e) {
   e.preventDefault();
 
@@ -1975,6 +2003,7 @@ async function handleDeleteLeague(
 
   useEffect(() => {
     if (selectedMatchId) {
+       if (!pageVisible) return;
       loadSelectedMatch(selectedMatchId).catch((err) => setError(err.message));
     } else {
       setMatchDetail(null);
@@ -2489,6 +2518,9 @@ async function submitBall(data) {
   setMessage("");
   setError("");
 setOverCompleteNotice("");
+
+  if (ballSaveInFlight) return;
+
   if (scoreboard?.match?.status === "COMPLETED") {
     setError("Match has already ended");
     return;
@@ -2538,6 +2570,7 @@ data = {
       method: "POST",
       body: JSON.stringify(data),
     });
+if (scoreboard?.currentState && !showDeliverySetupModal) {  
 setBallForm((prev) => ({
   ...prev,
   inningsNo: Number(data.inningsNo),
@@ -2553,6 +2586,7 @@ setBallForm((prev) => ({
   assistantFielderId: "",
   wicketNote: "",
 }));
+  }
     setShowAdvancedSheet(false);
 
     const updatedBoard = await api(`/api/scoreboard/${selectedMatchId}`);
@@ -2588,7 +2622,10 @@ setBallForm((prev) => ({
   Number(savedBall?.nextInningsNo) === 2 &&
   ["OVERS_COMPLETED", "ALL_OUT"].includes(savedBall?.inningsEndedReason);
 
-    await loadSelectedMatch(selectedMatchId);
+await loadSelectedMatch(selectedMatchId, {
+  syncBallForm: true,
+});
+
 const overJustCompleted =
   data.extraType !== "WIDE" &&
   data.extraType !== "NOBALL" &&
@@ -2621,11 +2658,13 @@ if (firstInningsJustEnded) {
   setOptimisticScoreboard(null);
   setInstantDeliveryStatus("");
 
-  await loadSelectedMatch(selectedMatchId);
-  await loadMatches();
+await loadSelectedMatch(selectedMatchId, {
+  syncBallForm: false,
+});
+  //await loadMatches();
 
   setPendingSecondInningsSetup(true);
-
+if (scoreboard?.currentState && !showDeliverySetupModal) { 
   setBallForm((prev) => ({
     ...prev,
     inningsNo: 2,
@@ -2645,7 +2684,7 @@ if (firstInningsJustEnded) {
     assistantFielderId: "",
     wicketNote: "",
   }));
-
+}
   setDeliverySetupReason(
     "🏏 2nd innings is ready. Select the opening striker, non-striker, and bowler before scoring."
   );
@@ -2653,12 +2692,13 @@ if (firstInningsJustEnded) {
   setMessage("✅ 1st innings ended. Setup 2nd innings to continue scoring.");
 
   setTimeout(() => {
+
     setShowDeliverySetupModal(true);
   }, 200);
 
   return;
 }
-
+if (scoreboard?.currentState && !showDeliverySetupModal) { 
     setBallForm((prev) => ({
       ...prev,
       inningsNo: Number(data.inningsNo),
@@ -2675,7 +2715,7 @@ if (firstInningsJustEnded) {
       assistantFielderId: "",
       wicketNote: "",
     }));
-
+  }
     if (updatedIsFinalBallBowled || updatedIsChaseComplete) {
       setShowBowlerModal(false);
       setMustChangeBowler(false);
@@ -2685,8 +2725,8 @@ if (firstInningsJustEnded) {
         "🏁 Match ended. Review the scorecard, then click Lock Match to preserve the final scoreboard."
       );
 
-      await loadMatches();
-      await loadLeagueStats(activeLeagueId);
+      //await loadMatches();
+      //await loadLeagueStats(activeLeagueId);
       return;
     }
 
@@ -3096,7 +3136,11 @@ const names = playerForm.names
 async function handleMatchSelect(matchId) {
   setSelectedMatchId(String(matchId));
 
-  await loadSelectedMatch(matchId);
+await loadSelectedMatch(matchId, {
+  loadDetail: true,
+  loadStatsData: true,
+  syncBallForm: true,
+});
 
   setActiveTab("scoring");
 
@@ -4915,6 +4959,85 @@ async function refreshPlayerLists() {
     await loadLeagues();
   }
 }
+const shouldPollMatch =
+  pageVisible &&
+  selectedMatchId &&
+  activeTab === "scoring" &&
+  effectiveScoringSubTab === "ADVANCED" &&
+  !isMatchCompleted &&
+  !isMatchLocked;
+
+/*  useEffect(() => {
+  if (!shouldPollMatch) return;
+if (!pageVisible) return;
+  const id = setInterval(() => {
+    loadSelectedMatch(selectedMatchId);
+  }, 5000);
+
+  return () => clearInterval(id);
+}, [shouldPollMatch, selectedMatchId]);
+*/
+useEffect(() => {
+  if (!selectedMatchId) return;
+  if (!pageVisible) return;
+  if (ballSaveInFlight) return;
+  if (showDeliverySetupModal) return;
+
+  const interval = setInterval(() => {
+    loadSelectedMatch(selectedMatchId, {
+      syncBallForm: false,
+    });
+  }, 8000);
+
+  return () => clearInterval(interval);
+}, [
+  selectedMatchId,
+  pageVisible,
+  ballSaveInFlight,
+  showDeliverySetupModal,
+]);
+
+useEffect(() => {
+  if (!dashboardReady) return;
+  if (activeTab !== "points") return;
+  if (!activeLeagueId) return;
+
+  loadPointsTable(activeLeagueId);
+}, [dashboardReady, activeTab, activeLeagueId]);
+
+useEffect(() => {
+  if (!dashboardReady) return;
+  if (activeTab !== "stats") return;
+  if (!activeLeagueId) return;
+
+  loadLeagueStats(activeLeagueId);
+}, [dashboardReady, activeTab, activeLeagueId]);
+
+function safeSetJsonState(setter) {
+  return (next) => {
+    setter((prev) => {
+      if (JSON.stringify(prev) === JSON.stringify(next)) {
+        return prev;
+      }
+      return next;
+    });
+  };
+}
+useEffect(() => {
+  return () => {
+    try {
+      recognitionRef.current?.stop?.();
+    } catch {}
+  };
+}, []);
+useEffect(() => {
+  if (!scorerMode) {
+    setVoiceScoringOn(false);
+    try {
+      recognitionRef.current?.stop?.();
+    } catch {}
+  }
+}, [scorerMode]);
 
 function ContextLens() {
   const totalFilters =
@@ -6524,7 +6647,8 @@ onClick={() => {
       setScorerDrawer((prev) => (prev === "scoreboard" ? null : "scoreboard"))
     }
   >
-    📊 Scoreboard
+  <span className="dock-icon">📊</span>
+  <span className="dock-text">Scoreboard</span>
   </button>
 
   <button
@@ -6534,7 +6658,8 @@ onClick={() => {
       setScorerDrawer((prev) => (prev === "commentary" ? null : "commentary"))
     }
   >
-    📝 Commentary
+  <span className="dock-icon">📝</span>
+  <span className="dock-text">Commentary</span>
   </button>
 
   <button
@@ -6544,7 +6669,8 @@ onClick={() => {
       setScorerDrawer((prev) => (prev === "setup" ? null : "setup"))
     }
   >
-    ⚙️ Setup
+  <span className="dock-icon">⚙️</span>
+  <span className="dock-text">Setup</span>
   </button>
 
 <button
@@ -6585,7 +6711,10 @@ onClick={() => {
     recognition.start();
   }}
 >
-  🎤 Hold
+   
+  <span className="dock-icon">🎤</span>
+  <span className="dock-text">Hold</span>
+  
 </button>
       {voiceMessage && (
       <div className="voice-score-message">
@@ -6603,7 +6732,9 @@ onClick={() => {
   </button>
 )}
   <button type="button" onClick={() => setScorerMode(false)}>
-    ✕ Exit
+     
+  <span className="dock-icon">✕</span>
+  <span className="dock-text">Exit</span>
   </button>
 </div>
         <div className="scorer-shortcut-hint">
@@ -8135,9 +8266,6 @@ onClick={() => {
             >
               ➕ Add Team
             </button>
-            {
-                console.log("selectedTeamId",selectedTeamId)
-            }
 {selectedTeamId && permissions?.canEditTeam && selectedTeam && (
   <button
     type="button"
@@ -11215,8 +11343,29 @@ onClick={() => {
   </div>
 )}
 {showWicketModal && (
-  <div className="modal-backdrop">
-  <div className="modal-card app-modal-card">
+<div className="modal-backdrop wicket-modal-backdrop">
+  <div className="modal-card app-modal-card wicket-modal-card">
+    <button
+  type="button"
+  className="wicket-modal-close"
+  onClick={() => {
+    setShowWicketModal(false);
+    setRunOutRuns(0);
+
+    setBallForm((prev) => ({
+      ...prev,
+      isWicket: false,
+      wicketType: "NONE",
+      dismissedPlayerId: "",
+      newBatterId: "",
+      fielderId: "",
+      assistantFielderId: "",
+      wicketNote: "",
+    }));
+  }}
+>
+  ✕
+</button>
 <div className="live-popup-snapshot">
   <div className="live-popup-topline">
     <span className="live-dot">● LIVE</span>
@@ -11460,7 +11609,7 @@ onClick={() => {
         />
       </label>
 
-      <div className="modal-actions">
+      <div className="modal-actions wicket-modal-actions">
         <button
           type="button"
           className="btn btn-outline"
