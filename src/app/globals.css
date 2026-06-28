@@ -17119,7 +17119,6 @@ body:has(.login-shell) .dashboard-content {
 
 .scorer-dock-area {
   width: 100%;
-  max-width: 520px;
   display: grid;
   gap: 6px;
 }
@@ -21105,7 +21104,6 @@ flex-direction:column-reverse;
 }
 
 .scorer-quick-dock.compact .dock-text {
-  max-width: 54px;
   overflow: hidden;
   text-overflow: ellipsis;
 }
@@ -21143,10 +21141,6 @@ flex-direction:column-reverse;
 
   .scorer-quick-dock.compact .dock-icon {
     font-size: 13px;
-  }
-
-  .scorer-quick-dock.compact .dock-text {
-    max-width: 42px;
   }
 
   .scorer-shortcut-hint {

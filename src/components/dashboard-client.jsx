@@ -6679,7 +6679,7 @@ onClick={() => {
         }
       >
         <span className="dock-icon">📊</span>
-        <span className="dock-text">Score</span>
+        <span className="dock-text">Scorecard</span>
       </button>
 
       <button
@@ -6690,7 +6690,7 @@ onClick={() => {
         }
       >
         <span className="dock-icon">📝</span>
-        <span className="dock-text">Comm</span>
+        <span className="dock-text">Commentary</span>
       </button>
 
       <button
