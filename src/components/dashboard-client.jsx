@@ -313,6 +313,9 @@ const [voiceSupported, setVoiceSupported] = useState(false);
 const [dashboardReady, setDashboardReady] = useState(false);
 const [showEditTeamModal, setShowEditTeamModal] = useState(false);
 const [editingTeam, setEditingTeam] = useState(null);
+const [showEditPlayerModal, setShowEditPlayerModal] = useState(false);
+const [editingPlayer, setEditingPlayer] = useState(null);
+const [editPlayerName, setEditPlayerName] = useState("");
 const [teamEditName, setTeamEditName] = useState("");
 const isSuperAdmin =
   session?.user?.email ===
@@ -996,6 +999,34 @@ const handleAddPlayers = async (e) => {
     setError(error.message);
   }
 };
+async function savePlayerName() {
+
+  await api(`/api/players/${editingPlayer.id}`,{
+
+    method:"PATCH",
+
+    body:JSON.stringify({
+
+      name:editPlayerName.trim()
+
+    })
+
+  });
+
+  await loadTeams();
+
+  showToast("success","✅ Player updated.");
+
+  setShowEditPlayerModal(false);
+
+  setEditingPlayer(null);
+
+}  
+function openEditPlayer(player) {
+  setEditingPlayer(player);
+  setEditPlayerName(player.name);
+  setShowEditPlayerModal(true);
+}
 function buildLiveMatchCenter(scoreboard) {
   if (!scoreboard) return null;
 
@@ -4042,7 +4073,9 @@ const availablePlayersForFilter = (() => {
   });
 
   activeLeagueTeams.forEach((team) => {
-    (team.players || []).forEach((player) => {
+    [...(team.players || [])]
+  .sort((a, b) => a.name.localeCompare(b.name))
+  .map((player) => {
       const normalizedName = String(player.name || "")
         .trim()
         .toLowerCase();
@@ -4058,7 +4091,7 @@ const availablePlayersForFilter = (() => {
       }
 
       map.get(normalizedName).teams.add(team.name);
-    });
+  });
   });
 
   return [...map.values()]
@@ -5035,55 +5068,50 @@ onClick={() => {
   title="🏏 Match Center"
   defaultCollapsed={false}
 >
-<div className="match-center compact-match-center">
-  <div className="match-control-strip">
-    <div className="active-league-mini">
-      <span>League</span>
+<div className="match-center compact-match-center"> 
+<div className="match-command-single">
+  <div className="match-command-top">
+    <div className="match-command-league-inline">
+      <span>🏆 League</span>
       <strong>
         {leagues.find((l) => Number(l.id) === Number(activeLeagueId))?.name ||
           "No league selected"}
       </strong>
     </div>
-<div className="match-picker-pro">
-  <div className="match-picker-pro-head">
-    <span>Match</span>
 
-    <button
-      type="button"
-      onClick={() => setShowMatchPicker((prev) => !prev)}
-    >
-      {showMatchPicker ? "Close" : "Change Match"} ⌄
-    </button>
+    <div className="match-command-context">
+      <ContextLens />
+    </div>
   </div>
 
   <button
     type="button"
-    className="selected-match-pro-card"
+    className="match-command-selected full"
     onClick={() => setShowMatchPicker((prev) => !prev)}
   >
     <div>
+      <span>🏏 Match</span>
       <strong>
         {selectedMatch
           ? `${selectedMatch.teamAName} vs ${selectedMatch.teamBName}`
           : "Choose a match"}
       </strong>
-
-      <span>
+      <small>
         {selectedMatch
           ? `${selectedMatch.status || "SCHEDULED"} • ${
               selectedMatch.battingFirstTeamName
-                ? `Batting first: ${selectedMatch.battingFirstTeamName}`
+                ? `Bat 1st: ${selectedMatch.battingFirstTeamName}`
                 : "Batting first not decided"
             }`
-          : "Tap to choose active, scheduled, or completed match"}
-      </span>
+          : "Tap to select active, scheduled, or completed match"}
+      </small>
     </div>
 
-    <b>⌄</b>
+    <b>{showMatchPicker ? "⌃" : "⌄"}</b>
   </button>
 
   {showMatchPicker && (
-    <div className="match-choice-panel">
+    <div className="match-choice-panel match-choice-panel-wow inside">
       {scoringComboMatches.map((match) => (
         <button
           key={match.id}
@@ -5107,9 +5135,6 @@ onClick={() => {
     </div>
   )}
 </div>
-    <ContextLens />
-
-  </div>
 {matchDetail && (
 <details className="match-setup-card" open>
 <summary className="match-setup-summary">
@@ -5120,7 +5145,7 @@ onClick={() => {
   {selectedMatchId && (
     <button
       type="button"
-      className="share-score-btn compact-share-btn"
+      className="share-score-btn"
       onClick={(e) => {
         e.preventDefault();
         handleShareMatch();
@@ -5195,9 +5220,25 @@ onClick={() => {
 )}
 </div>
 </Card>
-<Card title = "Match Score Details">
+<Card title = "Score Details" 
+    right={
+    selectedMatchId ? (
+      <button
+        type="button"
+        className="share-score-btn"
+        onClick={handleShareMatch}
+      >
+        📤 Share - Spectator View
+      </button>
+    ) : null
+  }
+>
 {selectedMatchId && (
-  <div className="scoring-subtabs scoring-subtabs-wow">
+  <div
+    className={`score-detail-tabs ${
+      isSelectedMatchCompleted ? "completed-mode" : "live-mode"
+    }`}
+  >
     {!isSelectedMatchCompleted && (
       <button
         type="button"
@@ -5229,19 +5270,7 @@ onClick={() => {
   </div>
 )}
 {selectedMatchId && effectiveScoringSubTab === "SCOREBOARD" && (
-  <Card title="🏟️ Professional Scoreboard" defaultCollapsed={false}
-    right={
-    selectedMatchId ? (
-      <button
-        type="button"
-        className="share-score-btn"
-        onClick={handleShareMatch}
-      >
-        📤 Share - Spectator View
-      </button>
-    ) : null
-  }
-  >
+  <Card title="🏟️ Professional Scoreboard" defaultCollapsed={false}>
     {!scoreboard ? (
       <p className="muted">Select a match to view scoreboard.</p>
     ) : (
@@ -5687,19 +5716,7 @@ onClick={() => {
   </Card>
 )}
 {selectedMatchId && effectiveScoringSubTab === "COMMENTARY" && (
-  <Card title="🎙️ Live Match Commentary" defaultCollapsed={false}
-    right={
-    selectedMatchId ? (
-      <button
-        type="button"
-        className="share-score-btn"
-        onClick={handleShareMatch}
-      >
-        📤 Share - Spectator View
-      </button>
-    ) : null
-  }
-  >
+  <Card title="🎙️ Live Match Commentary" defaultCollapsed={false}>
     {!scoreboard ? (
       <p className="muted">Select a match to view commentary.</p>
     ) : !scoreboard.commentary?.length ? (
@@ -5826,7 +5843,6 @@ onClick={() => {
         <>
 <div className="advanced-scoring-actions">
   <button type="button" className="scorer-mode-btn" onClick={() => {setScorerMode(true); setScorerDrawer(null);}}>🎯 Scorer Mode</button>
-  <button type="button" className="share-score-btn" onClick={handleShareMatch}>📤 Share - Spectator View</button>
 </div>
           </>
     ) : null
@@ -8094,13 +8110,16 @@ onClick={() => {
             >
               ➕ Add Team
             </button>
-{permissions?.canEditTeam && (
+            {
+                console.log("selectedTeamId",selectedTeamId)
+            }
+{selectedTeamId && permissions?.canEditTeam && selectedTeam && (
   <button
     type="button"
-              className="mgmt-clean-btn"
+    className="mgmt-clean-btn"
     onClick={() => {
-      setEditingTeam(team);
-      setTeamEditName(team.name);
+      setEditingTeam(selectedTeam);
+      setTeamEditName(selectedTeam.name || "");
       setShowEditTeamModal(true);
     }}
   >
@@ -8191,7 +8210,16 @@ onClick={() => {
                 <strong>{player.name}</strong>
                 <span>Player #{index + 1}</span>
               </div>
-
+  {permissions?.canEditPlayer && (
+    <button
+      type="button"
+      className="mini-action-btn"
+      title="Edit Player"
+      onClick={() => openEditPlayer(player)}
+    >
+      ✏️
+    </button>
+  )}
               {permissions?.canDeletePlayer && (
                 <button
                   type="button"
@@ -12200,35 +12228,167 @@ onClick={() => {
   </div>
 )}
 {showEditTeamModal && editingTeam && (
-  <div className="modal-backdrop">
-    <div className="modal">
-      <h3>✏️ Rename Team</h3>
+<div className="modal-backdrop">
 
-      <input
-        value={teamEditName}
-        onChange={(e) => setTeamEditName(e.target.value)}
-      />
+<div className="rename-modal">
 
-      <button onClick={() => setShowEditTeamModal(false)}>
-        Cancel
-      </button>
+<button
+className="rename-close"
+onClick={()=>{
+setShowEditTeamModal(false);
+setEditingTeam(null);
+}}
+>
+✕
+</button>
 
-      <button
-        onClick={async () => {
-          await api(`/api/teams/${editingTeam.id}`, {
-            method: "PATCH",
-            body: JSON.stringify({ name: teamEditName }),
-          });
+<div className="rename-icon">
+🏏
+</div>
 
-          await loadTeams();
-          await loadLeagues();
-          setShowEditTeamModal(false);
-        }}
-      >
-        Save
-      </button>
-    </div>
-  </div>
+<h2>Rename Team</h2>
+
+<p>
+Update your team name.
+This will be visible everywhere in the league.
+</p>
+
+<label>
+
+<span>TEAM NAME</span>
+
+<input
+value={teamEditName}
+placeholder="Enter team name"
+onChange={(e)=>setTeamEditName(e.target.value)}
+/>
+
+</label>
+
+<div className="rename-note">
+💡 Team names must be unique within a league.
+</div>
+
+<div className="rename-actions">
+
+<button
+className="btn btn-outline"
+onClick={()=>{
+setShowEditTeamModal(false);
+setEditingTeam(null);
+}}
+>
+Cancel
+</button>
+
+<button
+className="btn btn-primary"
+onClick={async()=>{
+
+try{
+
+await api(`/api/teams/${editingTeam.id}`,{
+method:"PATCH",
+body:JSON.stringify({
+name:teamEditName.trim()
+})
+});
+
+await loadTeams();
+await loadLeagues();
+
+setShowEditTeamModal(false);
+setEditingTeam(null);
+
+showToast("success","✅ Team renamed.");
+
+}
+catch(err){
+
+setError(err.message);
+showToast("error",err.message);
+
+}
+
+}}
+>
+💾 Save Changes
+</button>
+
+</div>
+
+</div>
+
+</div>
+)}
+{showEditPlayerModal && editingPlayer && (
+
+<div className="modal-backdrop">
+
+<div className="rename-modal">
+
+<button
+className="rename-close"
+onClick={()=>{
+setShowEditPlayerModal(false);
+setEditingPlayer(null);
+}}
+>
+✕
+</button>
+
+<div className="rename-icon">
+👤
+</div>
+
+<h2>Rename Player</h2>
+
+<p>
+Update the player's display name.
+Statistics and match history remain unchanged.
+</p>
+
+<label>
+
+<span>PLAYER NAME</span>
+
+<input
+value={editPlayerName}
+placeholder="Enter player name"
+onChange={(e)=>setEditPlayerName(e.target.value)}
+/>
+
+</label>
+
+<div className="rename-note">
+🏏 Player statistics are preserved.
+</div>
+
+<div className="rename-actions">
+
+<button
+className="btn btn-outline"
+onClick={()=>{
+setShowEditPlayerModal(false);
+setEditingPlayer(null);
+}}
+>
+Cancel
+</button>
+
+<button
+className="btn btn-primary"
+onClick={savePlayerName}
+>
+💾 Save Changes
+</button>
+
+</div>
+
+</div>
+
+</div>
+
 )}
 {showRetiredHurtModal && (
   <div className="modal-backdrop">

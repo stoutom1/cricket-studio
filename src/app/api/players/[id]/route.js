@@ -5,6 +5,24 @@ import { authOptions } from "@/lib/auth";
 
 export const runtime = "nodejs";
 
+export async function PATCH(request,{params}){
+
+    const {id}=await params;
+
+    const {name}=await request.json();
+
+    const player=await prisma.player.update({
+
+        where:{id:Number(id)},
+
+        data:{name}
+
+    });
+
+    return Response.json(player);
+
+}
+
 export async function DELETE(request, { params }) {
   const session = await getServerSession(authOptions);
   if (!session) {
