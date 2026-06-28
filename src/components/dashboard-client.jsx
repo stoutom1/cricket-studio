@@ -6033,11 +6033,12 @@ onClick={() => {
             <>
 <div className={scorerMode ? "scorer-mode-shell active" : ""}>
   {scorerMode && (
-<div className="scorer-mode-banner">
-  🎯 Scorer Mode Active
-</div>
-  )}          
-<div className="tv-score-console scorer-wow-console">
+    <div className="scorer-mode-banner">
+      🎯 Scorer Mode Active
+    </div>
+  )}
+
+  <div className={scorerMode ? "scorer-wow-console scorer-mode-flat" : "tv-score-console scorer-wow-console"}>
   {liveMatchCenter && (
     <>
       {displayScoreboard && (
