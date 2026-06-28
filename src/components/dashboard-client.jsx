@@ -6667,6 +6667,7 @@ onClick={() => {
   </div>
 )}
 
+      Keyboard shortcuts: 0 1 2 3 4 6 • W wicket • D wide • N no-ball • U undo
 
 {scorerMode && (
   <div className="scorer-dock-area">
@@ -6724,10 +6725,6 @@ onClick={() => {
         {voiceMessage || voiceStatus}
       </div>
     )}
-
-    <div className="scorer-shortcut-hint">
-      Keyboard: 0 1 2 3 4 6 • W wicket • D wide • N no-ball • U undo
-    </div>
   </div>
 )}
 </div>
