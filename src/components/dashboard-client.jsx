@@ -430,7 +430,7 @@ useEffect(() => {
 }, []);
 
 useEffect(() => {
-  if (activeTab !== "points" || !activeLeagueId) return;
+  if (activeTab !== "Points" || !activeLeagueId) return;
   loadPointsTable(activeLeagueId);
 }, [activeTab, activeLeagueId]);
 
@@ -2051,8 +2051,9 @@ async function handleDeleteLeague(
     return battingTeam.id === matchDetail.teamA.id ? matchDetail.teamB : matchDetail.teamA;
   }, [matchDetail, battingTeam]);
 
-  useEffect(() => {
-    if (!battingTeam || !bowlingTeam) return;
+useEffect(() => {
+  if (showDeliverySetupModal) return;
+  if (!battingTeam || !bowlingTeam) return;
 
     const firstStriker = battingTeam.players[0]?.id ? String(battingTeam.players[0].id) : "";
     const secondPlayer = battingTeam.players.find(
@@ -2940,11 +2941,17 @@ if (
   }
 }
 async function quickWicket(type = "BOWLED") {
+  setRunOutRuns(type === "RUN_OUT" ? 0 : null);
+
   setBallForm((prev) => ({
     ...prev,
     isWicket: true,
     wicketType: type,
-    dismissedPlayerId: prev.strikerId
+    dismissedPlayerId: type === "RUN_OUT" ? prev.dismissedPlayerId || prev.strikerId : prev.strikerId,
+    newBatterId: "",
+    fielderId: "",
+    assistantFielderId: "",
+    wicketNote: "",
   }));
 
   setShowWicketModal(true);
@@ -2976,15 +2983,28 @@ async function confirmWicket() {
       return;
     }
 
-    const noMoreBattersAvailable =
-      Array.isArray(availableNewBatters) &&
-      availableNewBatters.length === 0;
+const noMoreBattersAvailable =
+  Array.isArray(wicketNewBatterOptions) &&
+  wicketNewBatterOptions.length === 0;
 
     if (!ballForm.newBatterId && !noMoreBattersAvailable) {
       setError("Please select a new batter.");
       return;
     }
+const selectedNewBatterIsValid =
+  noMoreBattersAvailable ||
+  wicketNewBatterOptions.some(
+    (player) => String(player.id) === String(ballForm.newBatterId)
+  );
 
+if (!selectedNewBatterIsValid) {
+  setError("Invalid new batter selected. Please select a valid replacement batter.");
+  setBallForm((prev) => ({
+    ...prev,
+    newBatterId: "",
+  }));
+  return;
+}
     const runsOffBat = isRunOut
       ? Number(runOutRuns)
       : Number(ballForm.runsOffBat || 0);
@@ -3035,26 +3055,46 @@ async function confirmWicket() {
       ?.replaceAll("_", " ")
       ?.toLowerCase();
 
-    if (noMoreBattersAvailable) {
-      setMessage(
-        `🚨 ${dismissedPlayer?.name || "Batter"} is out (${wicketText}). ${
-          runsOffBat
-        } ${runsOffBat === 1 ? "run" : "runs"} awarded. Innings ended.`
-      );
-      await loadMatches();
-      await loadSelectedMatch(selectedMatchId);
-    } else {
-      setMessage(
-        `🚨 ${dismissedPlayer?.name || "Batter"} is out (${wicketText}). ${
-          runsOffBat
-        } ${runsOffBat === 1 ? "run" : "runs"} awarded. ${
-          newBatter?.name || "New batter"
-        } comes in.`
-      );
-    }
+ if (noMoreBattersAvailable) {
+  setMessage(
+    `🚨 ${dismissedPlayer?.name || "Batter"} is out (${wicketText}). ${
+      runsOffBat
+    } ${runsOffBat === 1 ? "run" : "runs"} awarded. Innings ended.`
+  );
+} else {
+  setMessage(
+    `🚨 ${dismissedPlayer?.name || "Batter"} is out (${wicketText}). ${
+      runsOffBat
+    } ${runsOffBat === 1 ? "run" : "runs"} awarded. ${
+      newBatter?.name || "New batter"
+    } comes in.`
+  );
+}
+
+/* CRITICAL FIX: refresh after every wicket */
+await loadSelectedMatch(selectedMatchId, {
+  loadDetail: true,
+  loadStatsData: true,
+  syncBallForm: true,
+});
+
+await loadMatches(activeLeagueId);
 
     setShowWicketModal(false);
-    setRunOutRuns(null);
+    setRunOutRuns(0);
+setBallForm((prev) => ({
+  ...prev,
+  isWicket: false,
+  wicketType: "NONE",
+  dismissedPlayerId: "",
+  newBatterId: "",
+  fielderId: "",
+  assistantFielderId: "",
+  wicketNote: "",
+  runsOffBat: "0",
+  extras: "0",
+  extraType: "NONE",
+}));
   } catch (err) {
     setError(err.message);
   }
@@ -3163,48 +3203,164 @@ await loadSelectedMatch(matchId, {
     })
   });
 }
+function getWicketDismissedPlayerId(form) {
+  const wicketType = String(form?.wicketType || "").toUpperCase();
+
+  if (wicketType === "RUN_OUT") {
+    return Number(form?.dismissedPlayerId || 0);
+  }
+
+  return Number(form?.dismissedPlayerId || form?.strikerId || 0);
+}
+function getWicketDismissedPlayerId(form) {
+  const wicketType = String(form?.wicketType || "").toUpperCase();
+
+  if (wicketType === "RUN_OUT") {
+    return Number(form?.dismissedPlayerId || 0);
+  }
+
+  return Number(form?.dismissedPlayerId || form?.strikerId || 0);
+}
+
+function getUniqueBalls(...sources) {
+  const map = new Map();
+
+  sources.flat().filter(Boolean).forEach((ball) => {
+    const key = ball.id || ball.sequence || `${ball.inningsNo}-${ball.overNo}-${ball.ballInOver}`;
+    map.set(String(key), ball);
+  });
+
+  return [...map.values()];
+}
+
 const availableNewBatters = useMemo(() => {
   if (!battingTeam?.players?.length) return [];
 
-  const balls =
-    matchDetail?.balls ||
-    scoreboard?.balls ||
-    scoreboard?.match?.balls ||
-    [];
+  const inningsNo = Number(ballForm.inningsNo || scoreboard?.currentInnings || 1);
 
-  const legitimatelyOutIds = new Set(
-    balls
+  const allBalls = getUniqueBalls(
+    matchDetail?.balls || [],
+    scoreboard?.balls || [],
+    scoreboard?.match?.balls || []
+  ).filter((ball) => Number(ball.inningsNo || inningsNo) === inningsNo);
+
+  const alreadyOutIds = new Set(
+    allBalls
       .filter((ball) => {
         const dismissedPlayerId = Number(ball.dismissedPlayerId);
         if (!dismissedPlayerId) return false;
 
-        const wicketType = String(ball.wicketType || "")
-          .trim()
-          .toUpperCase();
+        const wicketType = String(ball.wicketType || "").trim().toUpperCase();
 
-        return (
-          Boolean(ball.isWicket) &&
-          wicketType !== "RETIRED_HURT"
-        );
+        return Boolean(ball.isWicket) && wicketType !== "RETIRED_HURT";
       })
       .map((ball) => Number(ball.dismissedPlayerId))
+  );
+
+  const strikerId = Number(ballForm.strikerId || 0);
+  const nonStrikerId = Number(ballForm.nonStrikerId || 0);
+  const dismissedPlayerId = getWicketDismissedPlayerId(ballForm);
+
+  return battingTeam.players.filter((player) => {
+    const playerId = Number(player.id);
+
+    if (!playerId) return false;
+    if (alreadyOutIds.has(playerId)) return false;
+    if (playerId === strikerId) return false;
+    if (playerId === nonStrikerId) return false;
+    if (dismissedPlayerId && playerId === dismissedPlayerId) return false;
+
+    return true;
+  });
+}, [
+  battingTeam?.players,
+  ballForm.inningsNo,
+  ballForm.strikerId,
+  ballForm.nonStrikerId,
+  ballForm.dismissedPlayerId,
+  ballForm.wicketType,
+  matchDetail?.balls,
+  scoreboard?.balls,
+  scoreboard?.match?.balls,
+  scoreboard?.currentInnings,
+]);
+const wicketNewBatterOptions = useMemo(() => {
+  if (!battingTeam?.players?.length) return [];
+
+  const inningsNo = Number(ballForm.inningsNo || scoreboard?.currentInnings || 1);
+
+  const activeInnings =
+    scoreboard?.innings?.find((inn) => Number(inn.number) === inningsNo) ||
+    scoreboard?.innings?.[inningsNo - 1];
+
+  const scorecardRows =
+    activeInnings?.battingRows ||
+    activeInnings?.batting ||
+    activeInnings?.battingStats ||
+    [];
+
+  const alreadyOutIds = new Set();
+
+  scorecardRows.forEach((row) => {
+    const dismissal = String(row.dismissal || "").trim().toLowerCase();
+
+if (
+  dismissal &&
+  dismissal !== "not out" &&
+  dismissal !== "-" &&
+  !dismissal.includes("retired hurt")
+) {
+  alreadyOutIds.add(Number(row.playerId));
+}
+  });
+
+  const currentStrikerId = Number(ballForm.strikerId || 0);
+  const currentNonStrikerId = Number(ballForm.nonStrikerId || 0);
+  const currentDismissedId = Number(
+    ballForm.wicketType === "RUN_OUT"
+      ? ballForm.dismissedPlayerId
+      : ballForm.dismissedPlayerId || ballForm.strikerId
   );
 
   return battingTeam.players.filter((player) => {
     const playerId = Number(player.id);
 
-    if (playerId === Number(ballForm.strikerId)) return false;
-    if (playerId === Number(ballForm.nonStrikerId)) return false;
-    if (legitimatelyOutIds.has(playerId)) return false;
+    if (!playerId) return false;
+    if (alreadyOutIds.has(playerId)) return false;
+    if (playerId === currentStrikerId) return false;
+    if (playerId === currentNonStrikerId) return false;
+    if (currentDismissedId && playerId === currentDismissedId) return false;
 
     return true;
   });
 }, [
-  battingTeam,
+  battingTeam?.players,
+  scoreboard?.innings,
+  scoreboard?.currentInnings,
+  ballForm.inningsNo,
   ballForm.strikerId,
   ballForm.nonStrikerId,
-  matchDetail,
-  scoreboard,
+  ballForm.dismissedPlayerId,
+  ballForm.wicketType,
+]);
+useEffect(() => {
+  if (!ballForm.isWicket) return;
+  if (!ballForm.newBatterId) return;
+
+  const stillAllowed = wicketNewBatterOptions.some(
+    (player) => String(player.id) === String(ballForm.newBatterId)
+  );
+
+  if (!stillAllowed) {
+    setBallForm((prev) => ({
+      ...prev,
+      newBatterId: "",
+    }));
+  }
+}, [
+  ballForm.isWicket,
+  ballForm.newBatterId,
+  availableNewBatters,
 ]);
 
 const availableReplacementBatters = useMemo(() => {
@@ -3650,7 +3806,11 @@ async function confirmStartMatch() {
   setShowStartMatchModal(false);
   setMessage("✅ Match started. Opening scoring...");
 
-  await loadSelectedMatch(selectedMatchId);
+ await loadSelectedMatch(selectedMatchId, {
+  loadDetail: true,
+  loadStatsData: false,
+  syncBallForm: false,
+});
   await loadMatches();
 
   setActiveTab("scoring");
@@ -4673,23 +4833,43 @@ async function handleScoringMatchSelect(matchId) {
   await handleMatchSelect(match.id);
 }
 async function openScoringAfterBattingFirst(matchId) {
-  if (!matchId) return;
-
   setMessage("");
   setError("");
 
   setSelectedMatchId(String(matchId));
-
-  await loadMatches(activeLeagueId);
-
-  await handleMatchSelect(matchId);
-
   setActiveTab("scoring");
+  setScoringSubTab("ADVANCED");
 
-  // Give React one render cycle so matchDetail/team players are available.
-  setTimeout(() => {
-    setShowDeliverySetupModal(true);
-  }, 100);
+  await loadSelectedMatch(matchId, {
+    loadDetail: true,
+    loadStatsData: false,
+    syncBallForm: false,
+  });
+
+  setBallForm((prev) => ({
+    ...prev,
+    inningsNo: "1",
+    strikerId: "",
+    nonStrikerId: "",
+    bowlerId: "",
+    extraType: "NONE",
+    runsOffBat: "0",
+    extras: "0",
+    isWicket: false,
+    wicketType: "NONE",
+    dismissedPlayerId: "",
+    newBatterId: "",
+    note: "",
+    fielderId: "",
+    assistantFielderId: "",
+    wicketNote: "",
+  }));
+
+  setDeliverySetupReason(
+    "Select opening striker, non-striker, and bowler before scoring the first ball."
+  );
+
+  setPendingDeliverySetupAfterStart(true);
 }
 
 const setupTeamA = matchDetail?.teamA;
@@ -4697,25 +4877,23 @@ const setupTeamB = matchDetail?.teamB;
 
 const setupTeamAId = Number(matchDetail?.teamAId || setupTeamA?.id);
 const setupTeamBId = Number(matchDetail?.teamBId || setupTeamB?.id);
-const setupBattingFirstTeamId = Number(matchDetail?.battingFirstTeamId);
+const setupBattingFirstTeamId = Number(
+  matchDetail?.battingFirstTeamId ||
+    scoreboard?.match?.battingFirstTeamId ||
+    selectedMatch?.battingFirstTeamId
+);
 
 const setupInningsNo = Number(ballForm?.inningsNo || 1);
 
 const setupBattingTeamId =
   setupInningsNo === 1
-    ? Number(matchDetail?.battingFirstTeamId)
-    : Number(matchDetail?.battingFirstTeamId) === Number(matchDetail?.teamAId)
-    ? Number(matchDetail?.teamBId)
-    : Number(matchDetail?.teamAId);
+    ? setupBattingFirstTeamId
+    : setupBattingFirstTeamId === setupTeamAId
+    ? setupTeamBId
+    : setupTeamAId;
 
 const setupBowlingTeamId =
-  setupInningsNo === 1
-    ? setupBattingTeamId === Number(matchDetail?.teamAId)
-      ? Number(matchDetail?.teamBId)
-      : Number(matchDetail?.teamAId)
-    : setupBattingTeamId === Number(matchDetail?.teamAId)
-    ? Number(matchDetail?.teamBId)
-    : Number(matchDetail?.teamAId);
+setupBattingTeamId === setupTeamAId ? setupTeamBId : setupTeamAId;
 
 const setupBatters =
   Number(matchDetail?.teamAId) === setupBattingTeamId
@@ -4768,7 +4946,8 @@ const availableNewBatters1 = getAvailableNewBatters(
 
 const noNewBatterAvailable =
   ballForm?.dismissedPlayerId &&
-  availableNewBatters.length === 0;
+  wicketNewBatterOptions.length === 0;
+
 function getSafeScoringInningsNo(board, form) {
   const inningsFromBoard = Number(
     board?.currentInnings ||
@@ -5007,7 +5186,7 @@ useEffect(() => {
 
 useEffect(() => {
   if (!dashboardReady) return;
-  if (activeTab !== "points") return;
+  if (activeTab !== "Points") return;
   if (!activeLeagueId) return;
 
   loadPointsTable(activeLeagueId);
@@ -6893,13 +7072,23 @@ onClick={() => {
                   <input
                     type="checkbox"
                     checked={ballForm.isWicket}
-                    onChange={(e) =>
-                      setBallForm((prev) => ({
-                        ...prev,
-                        isWicket: e.target.checked,
-                        wicketType: e.target.checked ? "BOWLED" : "NONE"
-                      }))
-                    }
+ onChange={(e) => {
+  const nextType = e.target.value;
+
+  setRunOutRuns(nextType === "RUN_OUT" ? 0 : null);
+
+  setBallForm((prev) => ({
+    ...prev,
+    wicketType: nextType,
+    dismissedPlayerId:
+      nextType === "RUN_OUT"
+        ? prev.dismissedPlayerId || prev.strikerId
+        : prev.strikerId,
+    newBatterId: "",
+    fielderId: "",
+    assistantFielderId: "",
+  }));
+}}
                   />
                 </label>
 
@@ -7000,7 +7189,7 @@ onClick={() => {
                     disabled={!ballForm.isWicket}
                   >
                     <option value="">Select new batter</option>
-                    {availableNewBatters.map((p) => (
+                    {wicketNewBatterOptions.map((p) => (
                       <option key={p.id} value={p.id}>{p.name}</option>
                     ))}
                   </select>
@@ -11478,11 +11667,12 @@ onClick={() => {
             <select
               value={ballForm.dismissedPlayerId || ""}
               onChange={(e) =>
-                setBallForm((prev) => ({
-                  ...prev,
-                  dismissedPlayerId: e.target.value,
-                }))
-              }
+  setBallForm((prev) => ({
+    ...prev,
+    dismissedPlayerId: e.target.value,
+    newBatterId: "",
+  }))
+}
             >
               <option value="">Select Player Out</option>
 
