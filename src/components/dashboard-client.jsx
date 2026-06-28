@@ -969,6 +969,14 @@ const handleAddPlayers = async (e) => {
       }
     );
 
+    await refreshPlayerLists();
+
+setShowPlayerModal(false);
+setPlayerForm((prev) => ({
+  ...prev,
+  names: "",
+}));
+showToast("success", "✅ Players added.");
     const data = await response.json();
 
   
@@ -1012,7 +1020,12 @@ async function savePlayerName() {
     })
 
   });
+await refreshPlayerLists();
 
+setShowEditPlayerModal(false);
+setEditingPlayer(null);
+setEditPlayerName("");
+showToast("success", "✅ Player updated.");
   await loadTeams();
 
   showToast("success","✅ Player updated.");
@@ -2197,6 +2210,7 @@ if (refreshedLeague) {
       await api(`/api/players/${playerId}`, {
         method: "DELETE"
       });
+      await refreshPlayerLists();
       setMessage("🗑️ Player deleted");
       showToast("success", "✅ Player deleted");
       await refreshAll();
@@ -4888,6 +4902,14 @@ function executeVoiceCommand(command) {
 
     default:
       setVoiceMessage("Command not understood. Try: one, four, wide, wicket.");
+  }
+}
+
+async function refreshPlayerLists() {
+  await loadTeams();
+
+  if (activeLeagueId) {
+    await loadLeagues();
   }
 }
 
