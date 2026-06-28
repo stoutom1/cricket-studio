@@ -20958,3 +20958,29 @@ font-size:17px;
 flex-direction:column-reverse;
 }
 }
+/* Player rows: prevent long names overlapping edit/delete buttons */
+.player-row,
+.player-item,
+.team-player-row {
+  display: grid !important;
+  grid-template-columns: minmax(0, 1fr) auto !important;
+  align-items: center !important;
+  gap: 10px !important;
+}
+
+.player-row span,
+.player-item span,
+.team-player-row span,
+.player-name {
+  min-width: 0 !important;
+  overflow: hidden !important;
+  text-overflow: ellipsis !important;
+  white-space: nowrap !important;
+}
+
+.player-actions {
+  flex-shrink: 0 !important;
+  display: inline-flex !important;
+  align-items: center !important;
+  gap: 6px !important;
+}
