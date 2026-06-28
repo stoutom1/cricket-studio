@@ -4,11 +4,8 @@ import React, { useEffect, useMemo, useState } from "react";
 import { EXTRA_TYPES, getPlayerName, WICKET_TYPES } from "@/lib/scoring";
 import "@/app/globals.css";
 import { useRouter } from "next/navigation";
-import { Analytics } from "@vercel/analytics/next"
-import { SpeedInsights } from "@vercel/speed-insights/next"
 import {formatMatchDateTime,getMatchTimelineText,} from "@/lib/date";
 import { buildMatchInsights } from "@/lib/match-insights";
-//import { useState } from "react";
 
 function Card({
   title,
@@ -433,10 +430,10 @@ useEffect(() => {
 }, []);
 
 useEffect(() => {
-  if (activeLeagueId) {
-    loadPointsTable(activeLeagueId);
-  }
-}, [activeLeagueId]);
+  if (activeTab !== "points" || !activeLeagueId) return;
+  loadPointsTable(activeLeagueId);
+}, [activeTab, activeLeagueId]);
+
 useEffect(() => {
   setContextFilters({
     teamIds: [],
@@ -610,7 +607,19 @@ useEffect(() => {
 
   initializeDashboard();
 }, []);
+useEffect(() => {
+  if (!activeLeagueId) return;
+  if (!["matches", "scoring"].includes(activeTab)) return;
 
+  loadMatches(activeLeagueId);
+}, [activeTab, activeLeagueId]);
+
+useEffect(() => {
+  if (!activeLeagueId) return;
+  if (activeTab !== "management") return;
+
+  loadSeries();
+}, [activeTab, activeLeagueId]);
 /*useEffect(() => {
     async function loadUserPreferences() {
       const res = await fetch("/api/me");
@@ -1406,8 +1415,7 @@ const PERMISSION_FIELDS = [
   "canExportStats",
   "canViewAuditLogs",
 ];
-async function api(url, options = {}) {
-  console.count(`API ${url}`);  
+async function api(url, options = {}) { 
     const res = await fetch(url, {
       ...options,
       headers: {
@@ -5123,8 +5131,6 @@ function ContextLens() {
 return (
   <>
 <div className="dashboard-tabs">
-<Analytics />
-<SpeedInsights/>
 {!dashboardReady || permissionsLoading ? (
   <div className="dashboard-tabs-loading">
     Loading dashboard...

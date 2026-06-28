@@ -1,7 +1,8 @@
 import "@/app/globals.css";
 import Providers from "@/components/providers";
 import AuthNav from "@/components/auth-nav";
-
+import { Analytics } from "@vercel/analytics/next";
+import { SpeedInsights } from "@vercel/speed-insights/next";
 export const metadata = {
   title: "Cricket Studio",
   description: "Advanced cricket scoring app"
@@ -41,6 +42,8 @@ export default function RootLayout({ children }) {
             <main className="page-container">{children}</main>
           </div>
         </Providers>
+        <Analytics />
+        <SpeedInsights />
       </body>
     </html>
   );
