@@ -21181,3 +21181,52 @@ flex-direction:column-reverse;
     box-sizing: border-box !important;
   }
 }
+/* Bigger, cleaner bowler change modal */
+.bowler-modal-backdrop {
+  padding: 18px !important;
+}
+
+.bowler-modal {
+  width: min(92vw, 560px) !important;
+  max-width: 560px !important;
+  padding: 18px !important;
+  border-radius: 24px !important;
+  box-sizing: border-box !important;
+}
+
+@media (min-width: 900px) {
+  .bowler-modal {
+    width: 560px !important;
+  }
+}
+
+@media (max-width: 640px) {
+  .bowler-modal-backdrop {
+    align-items: flex-start !important;
+    padding: 10px !important;
+    overflow-y: auto !important;
+  }
+
+  .bowler-modal {
+    width: 100% !important;
+    max-width: none !important;
+    padding: 14px !important;
+    border-radius: 20px !important;
+    max-height: calc(100dvh - 20px) !important;
+    overflow-y: auto !important;
+  }
+
+  .live-popup-main {
+    grid-template-columns: 1fr 0.75fr !important;
+  }
+
+  .bowler-modal-actions {
+    display: grid !important;
+    grid-template-columns: 1fr 1fr !important;
+    gap: 10px !important;
+  }
+}
+.live-popup-snapshot {
+  width: 100% !important;
+  box-sizing: border-box !important;
+}
