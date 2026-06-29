@@ -5509,7 +5509,11 @@ onClick={() => {
       )}
 
       <button
-        className="dashboard-tab"
+          className={`dashboard-tab ${
+            activeTab === "help"
+              ? "active"
+              : ""
+          }`}
         onClick={() =>
           setActiveTab("help")
         }
@@ -5518,7 +5522,11 @@ onClick={() => {
       </button>
 
       <button
-        className="dashboard-tab"
+          className={`dashboard-tab ${
+            activeTab === "about"
+              ? "active"
+              : ""
+          }`}
         onClick={() =>
           setActiveTab("about")
         }
