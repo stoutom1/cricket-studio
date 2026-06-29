@@ -7034,7 +7034,7 @@ onClick={() => {
   className="chip score-chip score-wide"
   onClick={() => setShowAdvancedSheet(true)}
 >
-  ⚙️ Form
+  ⚙️ Scoring Form
 </button>
 {showAdvancedSheet && (
   <>
