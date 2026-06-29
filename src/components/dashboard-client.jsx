@@ -4535,6 +4535,95 @@ const filteredScheduledMatches =
 const filteredCompletedMatches =
   completedMatches.filter(matchPassesContextFilters);
 
+function normalizeStatName(name) {
+  return String(name || "")
+    .trim()
+    .toLowerCase()
+    .replace(/\s+/g, " ");
+}
+
+function combineCaptaincyRows(rows = [], shouldCombine = false) {
+  if (!shouldCombine) return rows || [];
+
+  const map = new Map();
+
+  rows.forEach((row) => {
+    const key = normalizeStatName(row.playerName);
+    if (!key) return;
+
+    if (!map.has(key)) {
+      map.set(key, {
+        ...row,
+        playerIds: new Set(),
+        teamNamesSet: new Set(),
+        played: 0,
+        won: 0,
+        lost: 0,
+      });
+    }
+
+    const combined = map.get(key);
+
+    if (row.playerId) combined.playerIds.add(Number(row.playerId));
+    if (row.teamName) combined.teamNamesSet.add(row.teamName);
+
+    combined.played += Number(row.played || 0);
+    combined.won += Number(row.won || 0);
+    combined.lost += Number(row.lost || 0);
+  });
+
+  return [...map.values()].map((row) => ({
+    ...row,
+    playerId: [...row.playerIds][0],
+    teamName: [...row.teamNamesSet].sort().join(" / "),
+    teamNames: [...row.teamNamesSet].sort().join(" / "),
+    winPct: row.played ? ((row.won / row.played) * 100).toFixed(1) : "0.0",
+  }));
+}
+
+function combineWicketkeepingRows(rows = [], shouldCombine = false) {
+  if (!shouldCombine) return rows || [];
+
+  const map = new Map();
+
+  rows.forEach((row) => {
+    const key = normalizeStatName(row.playerName);
+    if (!key) return;
+
+    if (!map.has(key)) {
+      map.set(key, {
+        ...row,
+        playerIds: new Set(),
+        teamNamesSet: new Set(),
+        catches: 0,
+        stumpings: 0,
+        runOuts: 0,
+        dismissals: 0,
+      });
+    }
+
+    const combined = map.get(key);
+
+    if (row.playerId) combined.playerIds.add(Number(row.playerId));
+    if (row.teamName) combined.teamNamesSet.add(row.teamName);
+
+    combined.catches += Number(row.catches || 0);
+    combined.stumpings += Number(row.stumpings || 0);
+    combined.runOuts += Number(row.runOuts || 0);
+  });
+
+  return [...map.values()].map((row) => ({
+    ...row,
+    playerId: [...row.playerIds][0],
+    teamName: [...row.teamNamesSet].sort().join(" / "),
+    teamNames: [...row.teamNamesSet].sort().join(" / "),
+    dismissals:
+      Number(row.catches || 0) +
+      Number(row.stumpings || 0) +
+      Number(row.runOuts || 0),
+  }));
+}  
+
 const rankedBatting =
   (leagueStats?.batting || []).map((row, index) => ({
     ...row,
@@ -4561,6 +4650,21 @@ const filteredBowling =
 
 const filteredFielding =
   rankedFielding.filter(playerPassesContextFilters);
+
+const combinedCaptaincy = combineCaptaincyRows(
+  captaincyRows || [],
+  isSurpriseLeague
+);
+
+const combinedWicketkeeping = combineWicketkeepingRows(
+  wicketkeepingRows || [],
+  isSurpriseLeague
+);
+
+const filteredCaptaincy = combinedCaptaincy.filter(playerPassesContextFilters);
+
+const filteredWicketkeeping =
+  combinedWicketkeeping.filter(playerPassesContextFilters);
 
 const filteredPointsTable =
   pointsTable?.filter(pointsPassesContextFilters) || [];
@@ -8937,7 +9041,7 @@ onClick={() => {
 )}
 {statsSubTab === "CAPTAINCY" && (
   <div className="score-table-scroll">
-    {statsSubTab === "CAPTAINCY" && !leagueStats?.captaincy?.length && (
+    {statsSubTab === "CAPTAINCY" && !filteredCaptaincy.length && (
   <div className="mgmt-clean-empty">
     No captaincy stats yet.
   </div>
@@ -8955,23 +9059,23 @@ onClick={() => {
       </thead>
 
       <tbody>
-        {(leagueStats?.captaincy || []).map((row) => (
+        {(filteredCaptaincy.map((row) => (
           <tr key={row.playerId}>
             <td>{row.playerName}</td>
             <td>{row.teamName}</td>
             <td>{row.played}</td>
             <td>{row.won}</td>
             <td>{row.lost}</td>
-            <td>{row.played ? ((row.won / row.played) * 100).toFixed(1) : "0.0"}%</td>
+            <td>{row.winPct || (row.played ? ((row.won / row.played) * 100).toFixed(1) : "0.0")}%</td>
           </tr>
-        ))}
+        )))}
       </tbody>
     </table>
   </div>
 )}
 {statsSubTab === "WICKETKEEPING" && (
   <div className="score-table-scroll">
-    {statsSubTab === "WICKETKEEPING" && !leagueStats?.wicketkeeping?.length && (
+    {statsSubTab === "WICKETKEEPING" && !filteredWicketkeeping.length && (
   <div className="mgmt-clean-empty">
     No wicketkeeping stats yet.
   </div>
@@ -8989,7 +9093,7 @@ onClick={() => {
       </thead>
 
       <tbody>
-        {(leagueStats?.wicketkeeping || []).map((row) => (
+        {(filteredWicketkeeping.map((row) => (
           <tr key={row.playerId}>
             <td>{row.playerName}</td>
             <td>{row.teamName}</td>
@@ -9000,7 +9104,7 @@ onClick={() => {
               <strong>{row.dismissals}</strong>
             </td>
           </tr>
-        ))}
+        )))}
       </tbody>
     </table>
   </div>
