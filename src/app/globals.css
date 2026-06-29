@@ -10,6 +10,51 @@
   --danger: #ff6b6b;
   --success: #64d98b;
   --shadow: 0 12px 30px rgba(0, 0, 0, 0.25);
+  /* Primary text */
+  --text-primary: #f8fafc;
+
+  /* Secondary text 
+  --text-secondary: #dbe7f5; */
+  --text-secondary: #d7e3f4;
+  
+
+  /* Muted text 
+  --text-muted: #b8c6d9; */
+  --text-muted: #b6c2d3;
+
+  /* Headings */
+  --text-heading: #ffffff;
+
+  /* Accent */
+  --text-accent: #7dd3fc;
+
+  /* Success */
+  --text-success: #86efac;
+
+  /* Warning */
+  --text-warning: #fde68a;
+
+  /* Error */
+  --text-danger: #fca5a5;
+
+  --accent-blue: #38bdf8;
+  --accent-green: #34d399;
+  --accent-gold: #fbbf24;
+  --accent-red: #fb7185;
+
+    --c4a-text-heading: #ffffff;
+  --c4a-text-primary: #f8fafc;
+  --c4a-text-secondary: #d7e3f4;
+  --c4a-text-muted: #aebed3;
+  --c4a-text-soft: #c7d2e3;
+
+  --c4a-accent-blue: #38bdf8;
+  --c4a-accent-green: #34d399;
+  --c4a-accent-gold: #fbbf24;
+  --c4a-accent-red: #fb7185;
+
+  --c4a-card-bg: rgba(15, 23, 42, 0.88);
+  --c4a-card-border: rgba(148, 163, 184, 0.22);
 }
 
 * { box-sizing: border-box; }
@@ -20,7 +65,8 @@ body {
   padding: 0;
   min-height: 100%;
   background: linear-gradient(180deg, #09111f 0%, #0d1428 100%);
-  color: var(--text);
+  /* color: var(--text); */
+  color: var(--c4a-text-primary);
   font-family: Inter, system-ui, -apple-system, Segoe UI, Roboto, sans-serif;
 }
 
@@ -330,19 +376,19 @@ select:focus {
 
 .tab-btn.active {
   background: #2563eb;
-  color: white;
+  color: var(--c4a-text-primary);
   border-color: #2563eb;
 }
 
 .tab-btn:hover {
   background: rgba(255, 255, 255, 0.08);
-  color: white;
+  color: var(--c4a-text-primary);
 }
 }
 .live-page {
   background: #0b1220;
   min-height: 100vh;
-  color: white;
+  color: var(--c4a-text-primary);
   padding: 16px;
   max-width: 1200px;
   margin: auto;
@@ -573,7 +619,7 @@ select:focus {
 
   background: #111827;
   border: 1px solid #374151;
-  color: white;
+  color: var(--c4a-text-primary);
 
   padding: 14px 16px;
   border-radius: 12px;
@@ -616,7 +662,7 @@ select:focus {
 }
 
 .single-line-scoreboard strong {
-  color: white;
+  color: var(--c4a-text-primary);
 }
 .score-summary-panel {
   background: #0f172a;
@@ -690,7 +736,7 @@ select:focus {
   font-size: 14px;
   font-weight: 700;
 
-  color: white;
+  color: var(--c4a-text-primary);
 
   box-shadow: 0 10px 30px rgba(0,0,0,0.35);
 
@@ -820,7 +866,7 @@ select:focus {
 
 .btn-danger {
   background: #dc2626;
-  color: white;
+  color: var(--c4a-text-primary);
   border: none;
 }
 
@@ -910,7 +956,7 @@ select:focus {
 
 .dashboard-tab.active {
   background: #2563eb;
-  color: white;
+  color: var(--c4a-text-primary);
   border-color: #2563eb;
 }
 
@@ -1440,7 +1486,7 @@ body {
   padding: 12px;
   border: 1px solid #e5e7eb;
   border-radius: 12px;
-  background: #ffffff;
+  background: var(--text-heading);
   color: #111827;
   text-align: left;
   cursor: pointer;
@@ -1929,7 +1975,7 @@ body {
       rgba(124, 133, 255, 0.12)
     );
 
-  color: white;
+  color: var(--c4a-text-primary);
 
   cursor: pointer;
 
@@ -2122,7 +2168,7 @@ body {
 }
 .btn-selected {
   background: #16a34a;
-  color: #ffffff;
+  color: var(--text-heading);
   border: 2px solid #22c55e;
   font-weight: 700;
 }
@@ -2156,7 +2202,7 @@ body {
 
 .btn-selected {
   background: #16a34a;
-  color: #ffffff;
+  color: var(--text-heading);
   border: 2px solid #22c55e;
   font-weight: 700;
 }
@@ -2292,7 +2338,7 @@ body {
 .matches-subtabs button.active {
   background: #16a34a;
   border-color: #22c55e;
-  color: #fff;
+color: var(--c4a-text-primary);
 }
 
 .matches-page {
@@ -2452,7 +2498,7 @@ body {
 .scoring-subtabs button.active {
   background: #16a34a;
   border-color: #22c55e;
-  color: #fff;
+  color: var(--c4a-text-primary);
 }
 
 .scoring-subtabs {
@@ -2482,7 +2528,7 @@ body {
 .scoring-subtabs button.active {
   background: #16a34a;
   border-color: #22c55e;
-  color: #fff;
+  color: var(--c4a-text-primary);
 }
 .match-center {
   display: grid;
@@ -2560,7 +2606,7 @@ body {
 .scoring-subtabs.pretty button.active {
   background: #16a34a;
   border-color: #22c55e;
-  color: #fff;
+  color: var(--c4a-text-primary);
   box-shadow: 0 8px 24px rgba(22, 163, 74, 0.25);
 }
 
@@ -2660,7 +2706,7 @@ body {
 .stats-subtabs button.active {
   background: #16a34a;
   border-color: #22c55e;
-  color: #fff;
+  color: var(--c4a-text-primary);
 }
 .stats-page {
   display: grid;
@@ -2691,7 +2737,7 @@ body {
 .stats-subtabs button.active {
   background: #16a34a;
   border-color: #22c55e;
-  color: #fff;
+  color: var(--c4a-text-primary);
 }
 
 .rankings-grid {
@@ -2753,7 +2799,7 @@ body {
 .ranking-category-tabs button.active {
   background: #16a34a;
   border-color: #22c55e;
-  color: #fff;
+  color: var(--c4a-text-primary);
 }
 
 .ranking-category-tabs button span {
@@ -3717,7 +3763,7 @@ body {
     #0c969b
   );
 
-  color: #ffffff;
+  color: var(--text-heading);
 
   font-size: 14px;
   font-weight: 800;
@@ -3774,7 +3820,7 @@ body {
   border-radius: 999px;
   padding: 8px 14px;
   background: linear-gradient(135deg, #06a3a8, #02554a);
-  color: #fff;
+  color: var(--c4a-text-primary);
   font-size: 13px;
   font-weight: 900;
   cursor: pointer;
@@ -7034,7 +7080,7 @@ body {
   border-radius: 999px;
   border: 1px solid rgba(255,255,255,0.16);
   background: transparent;
-  color: white;
+  color: var(--c4a-text-primary);
   cursor: pointer;
 }
 
@@ -7125,7 +7171,7 @@ body {
 .add-player-pro-save {
   border-radius: 999px;
   padding: 11px 16px;
-  color: white;
+  color: var(--c4a-text-primary);
   font-weight: 900;
   cursor: pointer;
 }
@@ -7469,7 +7515,7 @@ body {
     rgba(59,130,246,.20)
   );
   border-color: rgba(34,197,94,.65);
-  color: #fff;
+  color: var(--c4a-text-primary);
   box-shadow: 0 0 0 2px rgba(34,197,94,.18);
   transform: scale(1.03);
 }
@@ -7503,7 +7549,7 @@ body {
 .public-league-portal {
   display: grid;
   gap: 18px;
-  color: white;
+  color: var(--c4a-text-primary);
 }
 
 .public-league-hero {
@@ -7580,13 +7626,13 @@ body {
   padding: 11px 12px;
   background: transparent;
   border: 1px solid rgba(255,255,255,0.22);
-  color: white;
+  color: var(--c4a-text-primary);
   font-weight: 800;
 }
 
 .public-league-filters select option {
   background: #0f172a;
-  color: white;
+  color: var(--c4a-text-primary);
 }
 
 .public-league-filters button {
@@ -7595,7 +7641,7 @@ body {
   padding: 10px 14px;
   border: 1px solid rgba(255,255,255,0.18);
   background: rgba(255,255,255,0.08);
-  color: white;
+  color: var(--c4a-text-primary);
   font-weight: 900;
 }
 
@@ -7625,7 +7671,7 @@ body {
     rgba(59,130,246,0.18)
   );
   border-color: rgba(34,197,94,0.32);
-  color: white;
+  color: var(--c4a-text-primary);
 }
 
 .public-section {
@@ -7694,7 +7740,7 @@ body {
 }
 
 .public-match-card a {
-  color: white;
+  color: var(--c4a-text-primary);
   text-decoration: none;
   border-radius: 999px;
   padding: 8px 11px;
@@ -7774,7 +7820,7 @@ body {
     rgba(59,130,246,0.18)
   );
   border-color: rgba(34,197,94,0.34);
-  color: white;
+  color: var(--c4a-text-primary);
 }
 
 .public-empty-state {
@@ -7813,7 +7859,7 @@ body {
   padding: 10px 14px;
   border: 1px solid rgba(34,197,94,0.32);
   background: rgba(34,197,94,0.10);
-  color: white;
+  color: var(--c4a-text-primary);
   text-decoration: none;
   font-weight: 900;
 }
@@ -7830,7 +7876,7 @@ body {
   padding: 10px 14px;
   border: 1px solid rgba(255,255,255,0.18);
   background: rgba(255,255,255,0.08);
-  color: white;
+  color: var(--c4a-text-primary);
   font-weight: 900;
   text-decoration: none;
   cursor: pointer;
@@ -7841,7 +7887,7 @@ body {
   background: rgba(255,255,255,0.13);
 }
 .public-card-link {
-  color: white;
+  color: var(--c4a-text-primary);
   text-decoration: none;
 }
 
@@ -7865,7 +7911,7 @@ body {
 }
 
 .public-breadcrumb a:hover {
-  color: white;
+  color: var(--c4a-text-primary);
 }
 
 .public-breadcrumb span {
@@ -7891,7 +7937,7 @@ body {
   padding: 12px;
   background: transparent;
   border: 1px solid rgba(255,255,255,0.22);
-  color: white;
+  color: var(--c4a-text-primary);
   font-weight: 800;
 }
 
@@ -7900,7 +7946,7 @@ body {
   padding: 8px 12px;
   border: 1px solid rgba(255,255,255,0.18);
   background: rgba(255,255,255,0.08);
-  color: white;
+  color: var(--c4a-text-primary);
   font-weight: 900;
 }
 .public-search-results {
@@ -7927,7 +7973,7 @@ body {
   padding: 11px 12px;
   border-radius: 14px;
   border: 1px solid rgba(255,255,255,0.12);
-  color: white;
+  color: var(--c4a-text-primary);
   text-decoration: none;
 }
 
@@ -8020,7 +8066,7 @@ body {
   padding: 8px 12px;
   border: 1px solid rgba(255,255,255,0.16);
   background: rgba(255,255,255,0.08);
-  color: white;
+  color: var(--c4a-text-primary);
   font-weight: 900;
 }
 
@@ -8030,7 +8076,7 @@ body {
   padding: 15px 16px;
   border: 1px solid rgba(255,255,255,0.18);
   background: rgba(255,255,255,0.06);
-  color: white;
+  color: var(--c4a-text-primary);
   font-weight: 900;
   font-size: 15px;
 }
@@ -8061,7 +8107,7 @@ body {
   border-radius: 18px;
   border: 1px solid rgba(255,255,255,0.12);
   background: rgba(255,255,255,0.045);
-  color: white;
+  color: var(--c4a-text-primary);
   text-decoration: none;
 }
 
@@ -8157,7 +8203,7 @@ body {
   padding: 10px 14px;
   border: 1px solid rgba(255,255,255,0.14);
   background: rgba(255,255,255,0.06);
-  color: white;
+  color: var(--c4a-text-primary);
   text-decoration: none;
   font-weight: 900;
 }
@@ -8226,7 +8272,7 @@ body {
   }
 }
 .public-card-button {
-  color: white;
+  color: var(--c4a-text-primary);
   text-align: left;
   cursor: pointer;
 }
@@ -8242,7 +8288,7 @@ body {
   padding: 7px 11px;
   border: 1px solid rgba(34,197,94,0.25);
   background: rgba(34,197,94,0.08);
-  color: white;
+  color: var(--c4a-text-primary);
   font-weight: 900;
   cursor: pointer;
   font-size: 12px;
@@ -8276,7 +8322,7 @@ body {
   font-size: 11px;
   font-weight: 900;
   border: 1px solid rgba(255,255,255,0.16);
-  color: white;
+  color: var(--c4a-text-primary);
 }
 
 .public-match-status.live,
@@ -8331,7 +8377,7 @@ body {
 .public-status-tabs button {
   border: 1px solid rgba(255,255,255,0.12);
   background: rgba(255,255,255,0.05);
-  color: white;
+  color: var(--c4a-text-primary);
   border-radius: 999px;
   padding: 10px 14px;
   cursor: pointer;
@@ -8355,7 +8401,7 @@ body {
   border-radius: 16px;
   background: rgba(34,197,94,0.12);
   border: 1px solid rgba(34,197,94,0.35);
-  color: white;
+  color: var(--c4a-text-primary);
 }
 
 .selected-extra-preview strong {
@@ -8417,7 +8463,7 @@ body {
   padding: 10px 14px;
   border: 1px solid rgba(239,68,68,0.35);
   background: rgba(239,68,68,0.10);
-  color: white;
+  color: var(--c4a-text-primary);
   cursor: pointer;
 }
 
@@ -8441,7 +8487,7 @@ body {
   border: 1px solid rgba(255,255,255,0.14);
   box-shadow: 0 30px 90px rgba(0,0,0,0.45);
   padding: 22px;
-  color: white;
+  color: var(--c4a-text-primary);
 }
 
 .edit-match-header {
@@ -8466,7 +8512,7 @@ body {
 .edit-modal-close {
   border: 1px solid rgba(255,255,255,0.16);
   background: rgba(255,255,255,0.08);
-  color: white;
+  color: var(--c4a-text-primary);
   border-radius: 999px;
   width: 38px;
   height: 38px;
@@ -8504,7 +8550,7 @@ body {
   padding: 12px 13px;
   border: 1px solid rgba(255,255,255,0.16);
   background: rgba(255,255,255,0.07);
-  color: white;
+  color: var(--c4a-text-primary);
   font-weight: 800;
 }
 
@@ -8702,7 +8748,7 @@ body {
   max-height: 92vh;
   overflow-y: auto;
   border-radius: 22px;
-  background: #ffffff;
+  background: var(--text-heading);
   color: #0f172a;
   border: 1px solid #dbeafe;
   box-shadow: 0 30px 90px rgba(15, 23, 42, 0.28);
@@ -8758,7 +8804,7 @@ body {
   height: 36px;
   border-radius: 999px;
   border: 1px solid #cbd5e1;
-  background: #ffffff;
+  background: var(--text-heading);
   color: #0f172a;
   font-weight: 900;
   cursor: pointer;
@@ -8803,7 +8849,7 @@ body {
   min-height: 42px;
   border-radius: 12px;
   border: 1px solid #cbd5e1;
-  background: #ffffff;
+  background: var(--text-heading);
   color: #0f172a;
   padding: 9px 11px;
   font-weight: 800;
@@ -9137,7 +9183,7 @@ body {
 
 .login-brand-side {
   padding: 46px;
-  color: white;
+  color: var(--c4a-text-primary);
   background:
     radial-gradient(circle at top left, rgba(96, 165, 250, 0.22), transparent 34%),
     linear-gradient(145deg, #06122d, #0b234f, #122f63);
@@ -9315,7 +9361,7 @@ body {
   border: 0;
   border-radius: 16px;
   background: linear-gradient(135deg, #2563eb, #1d4ed8);
-  color: white;
+  color: var(--c4a-text-primary);
   font-weight: 950;
   cursor: pointer;
   box-shadow: 0 14px 28px rgba(37, 99, 235, 0.26);
@@ -9418,7 +9464,7 @@ body {
   background:
     radial-gradient(circle at top left, rgba(96,165,250,.18), transparent 34%),
     linear-gradient(145deg, #06122d, #0b234f, #13366f);
-  color: white;
+  color: var(--c4a-text-primary);
 }
 
 .login-form-side {
@@ -9874,7 +9920,7 @@ body:has(.login-shell) .dashboard-content {
   border: 1px solid rgba(96, 165, 250, 0.55);
   background:
     linear-gradient(135deg, rgba(15, 23, 42, 0.96), rgba(30, 64, 175, 0.36));
-  color: #ffffff;
+  color: var(--text-heading);
   font-size: 15px;
   font-weight: 900;
   cursor: pointer;
@@ -9925,7 +9971,7 @@ body:has(.login-shell) .dashboard-content {
 
 .mgmt-select-field select option {
   background: #0f172a;
-  color: #ffffff;
+  color: var(--text-heading);
 }
 
 .select-action-hint {
@@ -9989,7 +10035,7 @@ body:has(.login-shell) .dashboard-content {
 
   .matches-subtabs button.active {
     background: linear-gradient(135deg, #2563eb, #1d4ed8);
-    color: white;
+    color: var(--c4a-text-primary);
     transform: translateY(-1px);
   }
 }
@@ -10027,14 +10073,14 @@ body:has(.login-shell) .dashboard-content {
     border-color: rgba(191,219,254,.9);
     background:
       linear-gradient(145deg, #2563eb, #1d4ed8);
-    color: #ffffff;
+    color: var(--text-heading);
     box-shadow:
       0 0 0 3px rgba(37,99,235,.22),
       0 12px 24px rgba(37,99,235,.38);
   }
 
   .matches-subtabs button.active::after {
-    color: white;
+    color: var(--c4a-text-primary);
   }
 }
 @media (max-width:700px){
@@ -10159,7 +10205,7 @@ body:has(.login-shell) .dashboard-content {
     linear-gradient(145deg, rgba(15, 23, 42, 0.96), rgba(30, 64, 175, 0.72));
   border: 1px solid rgba(147, 197, 253, 0.22);
   box-shadow: 0 16px 34px rgba(15, 23, 42, 0.28);
-  color: #ffffff;
+  color: var(--text-heading);
 }
 
 .live-center-top {
@@ -10262,7 +10308,7 @@ body:has(.login-shell) .dashboard-content {
   display: grid;
   place-items: center;
   background: rgba(255, 255, 255, 0.13);
-  color: white;
+  color: var(--c4a-text-primary);
   font-size: 12px;
   font-weight: 950;
 }
@@ -10515,7 +10561,7 @@ body:has(.login-shell) .dashboard-content {
 }
 
 .tv-metric-strip b {
-  color: #ffffff;
+  color: var(--text-heading);
 }
 
 .tv-chase-line {
@@ -10569,7 +10615,7 @@ body:has(.login-shell) .dashboard-content {
   place-items: center;
   border-radius: 999px;
   background: rgba(255, 255, 255, 0.12);
-  color: #ffffff;
+  color: var(--text-heading);
   font-size: 12px;
   font-weight: 950;
 }
@@ -10681,7 +10727,7 @@ body:has(.login-shell) .dashboard-content {
 }
 
 .tv-chase-mini b {
-  color: #ffffff;
+  color: var(--text-heading);
 }
 
 .tv-metric-strip span {
@@ -10826,7 +10872,7 @@ body:has(.login-shell) .dashboard-content {
 .tv-player-board strong {
   display: block;
   margin-top: 4px;
-  color: #ffffff;
+  color: var(--text-heading);
   font-size: 19px;
   line-height: 1.15;
   font-weight: 950;
@@ -10859,7 +10905,7 @@ body:has(.login-shell) .dashboard-content {
 }
 
 .tv-metric-strip b {
-  color: #ffffff;
+  color: var(--text-heading);
   font-weight: 950;
 }
 
@@ -10910,7 +10956,7 @@ body:has(.login-shell) .dashboard-content {
   place-items: center;
   border-radius: 999px;
   background: rgba(255, 255, 255, 0.14);
-  color: #ffffff;
+  color: var(--text-heading);
   font-size: 13px;
   font-weight: 950;
 }
@@ -10955,7 +11001,7 @@ body:has(.login-shell) .dashboard-content {
 }
 
 .tv-chase-mini b {
-  color: #ffffff;
+  color: var(--text-heading);
   font-size: 15px;
 }
 
@@ -11007,7 +11053,7 @@ body:has(.login-shell) .dashboard-content {
   .tv-player-board small {
     margin-top: 0;
     font-size: 19px;
-    color: #ffffff;
+    color: var(--text-heading);
   }
 
   .tv-metric-strip {
@@ -11103,7 +11149,7 @@ body:has(.login-shell) .dashboard-content {
   min-width: 0;
   font-size: 18px;
   font-weight: 950;
-  color: #ffffff;
+  color: var(--text-heading);
   white-space: nowrap;
   overflow: hidden;
   text-overflow: ellipsis;
@@ -11501,7 +11547,7 @@ body:has(.login-shell) .dashboard-content {
 .bowler-change-score-card strong {
   display: block;
   margin-top: 3px;
-  color: #ffffff;
+  color: var(--text-heading);
   font-size: 18px;
   font-weight: 950;
 }
@@ -11524,7 +11570,7 @@ body:has(.login-shell) .dashboard-content {
   display: grid;
   place-items: center;
   background: rgba(255,255,255,0.12);
-  color: #fff;
+  color: var(--c4a-text-primary);
   font-size: 12px;
   font-weight: 950;
 }
@@ -11826,7 +11872,7 @@ body:has(.login-shell) .dashboard-content {
 .match-setup-grid strong {
   display: block;
   margin-top: 1px;
-  color: #ffffff;
+  color: var(--text-heading);
   font-size: 12px;
   font-weight: 950;
 }
@@ -11847,7 +11893,7 @@ body:has(.login-shell) .dashboard-content {
 .match-officials-grid strong {
   display: block;
   margin-bottom: 4px;
-  color: #ffffff;
+  color: var(--text-heading);
   font-size: 13px;
   font-weight: 950;
 }
@@ -12173,7 +12219,7 @@ body:has(.login-shell) .dashboard-content {
 .live-score-side strong {
   display: block;
   margin-top: 4px;
-  color: #ffffff;
+  color: var(--text-heading);
   font-size: 14px;
   font-weight: 900;
 }
@@ -12278,7 +12324,7 @@ body:has(.login-shell) .dashboard-content {
 .live-info-pill strong {
   display: block;
   margin-top: 4px;
-  color: #ffffff;
+  color: var(--text-heading);
   font-size: 17px;
   font-weight: 950;
 }
@@ -12306,7 +12352,7 @@ body:has(.login-shell) .dashboard-content {
 .live-player-card strong {
   display: block;
   margin-top: 8px;
-  color: #ffffff;
+  color: var(--text-heading);
   font-size: 24px;
   line-height: 1.1;
   font-weight: 950;
@@ -12434,7 +12480,7 @@ body:has(.login-shell) .dashboard-content {
 }
 
 .live-pro-table .name-cell {
-  color: #ffffff;
+  color: var(--text-heading);
   font-weight: 950;
 }
 
@@ -12599,7 +12645,7 @@ body:has(.login-shell) .dashboard-content {
 .live-star-card strong {
   display: block;
   margin-top: 6px;
-  color: #ffffff;
+  color: var(--text-heading);
   font-size: 18px;
   font-weight: 950;
 }
@@ -12676,7 +12722,7 @@ body:has(.login-shell) .dashboard-content {
 }
 
 .live-view-toggle button.active {
-  color: white;
+  color: var(--c4a-text-primary);
   box-shadow: 0 10px 24px rgba(37, 99, 235, 0.32);
 }
 .live-action-bar {
@@ -12788,7 +12834,7 @@ body:has(.login-shell) .dashboard-content {
 .live-story-item strong {
   display: block;
   margin-top: 4px;
-  color: #ffffff;
+  color: var(--text-heading);
   font-size: 15px;
   font-weight: 950;
 }
@@ -12948,7 +12994,7 @@ body:has(.login-shell) .dashboard-content {
 .insight-mini strong {
   display: block;
   margin-top: 6px;
-  color: white;
+  color: var(--c4a-text-primary);
   font-size: 17px;
   font-weight: 950;
 }
@@ -13009,7 +13055,7 @@ body:has(.login-shell) .dashboard-content {
     linear-gradient(135deg,
       #020617,
       #0f172a);
-  color: white;
+  color: var(--c4a-text-primary);
 }
 
 .register-hero {
@@ -13101,7 +13147,7 @@ body:has(.login-shell) .dashboard-content {
   border-radius: 14px;
   border: 1px solid rgba(255,255,255,.1);
   background: rgba(255,255,255,.05);
-  color: white;
+  color: var(--c4a-text-primary);
   font-size: 16px;
 }
 
@@ -13123,7 +13169,7 @@ body:has(.login-shell) .dashboard-content {
       #2563eb,
       #06b6d4
     );
-  color: white;
+  color: var(--c4a-text-primary);
   font-size: 16px;
   font-weight: 900;
   cursor: pointer;
@@ -13289,7 +13335,7 @@ body:has(.login-shell) .dashboard-content {
   border-radius: 14px;
   border: 1px solid rgba(148, 163, 184, 0.32);
   background: rgba(2, 6, 23, 0.62);
-  color: #ffffff;
+  color: var(--text-heading);
   font-size: 15px;
 }
 
@@ -13306,7 +13352,7 @@ body:has(.login-shell) .dashboard-content {
   border: 0;
   border-radius: 15px;
   background: linear-gradient(135deg, #2563eb, #1d4ed8);
-  color: #ffffff;
+  color: var(--text-heading);
   font-weight: 950;
   cursor: pointer;
   box-shadow: 0 14px 30px rgba(37, 99, 235, 0.32);
@@ -13510,7 +13556,7 @@ body:has(.login-shell) .dashboard-content {
   border-radius: 16px;
   border: 1px solid rgba(148, 163, 184, 0.28);
   background: rgba(2, 6, 23, 0.58);
-  color: white;
+  color: var(--c4a-text-primary);
   font-weight: 800;
 }
 
@@ -13552,7 +13598,7 @@ body:has(.login-shell) .dashboard-content {
 .public-league-tabs button.active,
 .public-status-tabs button.active {
   background: #2563eb;
-  color: white;
+  color: var(--c4a-text-primary);
   box-shadow: 0 12px 28px rgba(37, 99, 235, 0.34);
 }
 
@@ -13575,7 +13621,7 @@ body:has(.login-shell) .dashboard-content {
     linear-gradient(145deg, rgba(30, 41, 59, 0.86), rgba(15, 23, 42, 0.92));
   border: 1px solid rgba(96, 165, 250, 0.18);
   box-shadow: 0 14px 34px rgba(0, 0, 0, 0.22);
-  color: white;
+  color: var(--c4a-text-primary);
   text-decoration: none;
 }
 
@@ -13739,7 +13785,7 @@ body:has(.login-shell) .dashboard-content {
   gap: 12px;
   padding: 12px;
   border-radius: 16px;
-  color: white;
+  color: var(--c4a-text-primary);
   text-decoration: none;
 }
 
@@ -14228,7 +14274,7 @@ body:has(.login-shell) .dashboard-content {
   border-radius: 16px;
   border: 1px solid rgba(148,163,184,.28);
   background: rgba(2,6,23,.64);
-  color: white;
+  color: var(--c4a-text-primary);
   font-weight: 850;
 }
 
@@ -14268,7 +14314,7 @@ body:has(.login-shell) .dashboard-content {
 
 .public-wow-tabs button.active {
   background: #2563eb;
-  color: white;
+  color: var(--c4a-text-primary);
   box-shadow: 0 12px 28px rgba(37,99,235,.34);
 }
 
@@ -14298,7 +14344,7 @@ body:has(.login-shell) .dashboard-content {
   border-radius: 22px;
   background: linear-gradient(145deg, rgba(30,41,59,.88), rgba(15,23,42,.94));
   border: 1px solid rgba(96,165,250,.18);
-  color: white;
+  color: var(--c4a-text-primary);
   text-align: left;
   text-decoration: none;
   transition: .18s ease;
@@ -14649,7 +14695,7 @@ body:has(.login-shell) .dashboard-content {
 
   text-decoration: none;
 
-  color: white;
+  color: var(--c4a-text-primary);
 
   transition: all .2s ease;
 }
@@ -14769,7 +14815,7 @@ body:has(.login-shell) .dashboard-content {
 .match-info-grid strong {
   display: block;
   margin-top: 5px;
-  color: white;
+  color: var(--c4a-text-primary);
   font-size: 15px;
   font-weight: 950;
 }
@@ -14797,7 +14843,7 @@ body:has(.login-shell) .dashboard-content {
   background: linear-gradient(145deg, #0f172a, #1e293b);
   border-left: 1px solid rgba(96,165,250,.24);
   box-shadow: -24px 0 60px rgba(0,0,0,.45);
-  color: white;
+  color: var(--c4a-text-primary);
 }
 
 .public-league-drawer-head {
@@ -14825,7 +14871,7 @@ body:has(.login-shell) .dashboard-content {
   border-radius: 999px;
   border: 1px solid rgba(148,163,184,.28);
   background: rgba(15,23,42,.72);
-  color: white;
+  color: var(--c4a-text-primary);
   cursor: pointer;
 }
 
@@ -14835,7 +14881,7 @@ body:has(.login-shell) .dashboard-content {
   border-radius: 22px;
   background: rgba(15,23,42,.72);
   border: 1px solid rgba(96,165,250,.22);
-  color: white;
+  color: var(--c4a-text-primary);
   text-decoration: none;
 }
 
@@ -15169,7 +15215,7 @@ body:has(.login-shell) .dashboard-content {
   }
 
   .live-state-header strong {
-    color: white;
+    color: var(--c4a-text-primary);
     font-size: 22px;
     font-weight: 900;
   }
@@ -15193,7 +15239,7 @@ body:has(.login-shell) .dashboard-content {
   }
 
   .live-player-card strong {
-    color: white;
+    color: var(--c4a-text-primary);
     font-size: 19px;
     font-weight: 900;
   }
@@ -15234,7 +15280,7 @@ body:has(.login-shell) .dashboard-content {
 }
 
 .live-player-row strong {
-  color: white;
+  color: var(--c4a-text-primary);
   font-size: 18px;
   font-weight: 900;
 }
@@ -15272,7 +15318,7 @@ body:has(.login-shell) .dashboard-content {
   display: flex;
   align-items: center;
   gap: 7px;
-  color: white;
+  color: var(--c4a-text-primary);
   font-size: 16px;
   font-weight: 950;
   white-space: nowrap;
@@ -15337,7 +15383,7 @@ body:has(.login-shell) .dashboard-content {
   .live-top-strip strong {
     display: block;
     margin-top: 3px;
-    color: #fff;
+    color: var(--c4a-text-primary);
     font-size: 22px;
     font-weight: 950;
   }
@@ -15354,7 +15400,7 @@ body:has(.login-shell) .dashboard-content {
   }
 
   .compact-player-row strong {
-    color: #fff;
+    color: var(--c4a-text-primary);
     font-size: 17px;
     font-weight: 950;
     overflow: hidden;
@@ -15390,7 +15436,7 @@ body:has(.login-shell) .dashboard-content {
   cursor: pointer;
 }
 .match-setup-title {
-  color: white;
+  color: var(--c4a-text-primary);
   font-size: 22px;
   font-weight: 900;
   letter-spacing: -0.02em;
@@ -15418,7 +15464,7 @@ body:has(.login-shell) .dashboard-content {
 .match-setup-grid strong {
   display: block;
   margin-top: 4px;
-  color: white;
+  color: var(--c4a-text-primary);
   font-size: 12px;
   font-weight: 900;
 }
@@ -15456,7 +15502,7 @@ body:has(.login-shell) .dashboard-content {
 }
 
 .team-official-pill strong {
-  color: #ffffff;
+  color: var(--text-heading);
   font-size: 16px;
   font-weight: 950;
 }
@@ -15651,14 +15697,14 @@ body:has(.login-shell) .dashboard-content {
 .name-cell {
   font-size: 18px;
   font-weight: 800;
-  color: #ffffff;
+  color: var(--text-heading);
 }
 .live-section-title {
   font-size: 18px;
   font-weight: 800;
   margin-top: 30px;
   margin-bottom: 18px;
-  color: white;
+  color: var(--c4a-text-primary);
 }
 .live-summary-grid .live-info-pill span {
   font-size: 13px;
@@ -15683,7 +15729,7 @@ body:has(.login-shell) .dashboard-content {
   font-size: 14px;
 }
 .compact-match-center {
-  margin-top: 12px;
+  margin-top: 6px;
 }
 
 .match-control-strip {
@@ -15718,7 +15764,7 @@ body:has(.login-shell) .dashboard-content {
 
 .active-league-mini strong {
   display: block;
-  color: white;
+  color: var(--c4a-text-primary);
   font-size: 13px;
   font-weight: 900;
   white-space: nowrap;
@@ -15731,7 +15777,7 @@ body:has(.login-shell) .dashboard-content {
   border: none;
   outline: none;
   background: transparent;
-  color: white;
+  color: var(--c4a-text-primary);
   font-size: 14px;
   font-weight: 850;
 }
@@ -15771,7 +15817,7 @@ body:has(.login-shell) .dashboard-content {
   padding: 6px 10px;
   border-radius: 999px;
   background: rgba(37, 99, 235, 0.85);
-  color: white;
+  color: var(--c4a-text-primary);
   font-size: 11px;
   font-weight: 950;
   white-space: nowrap;
@@ -15799,7 +15845,7 @@ body:has(.login-shell) .dashboard-content {
       rgba(30,41,59,.95),
       rgba(15,23,42,.98)
     );
-  color: #ffffff;
+  color: var(--text-heading);
   font-size: 15px;
   font-weight: 800;
   cursor: pointer;
@@ -15844,7 +15890,7 @@ body:has(.login-shell) .dashboard-content {
   border-radius: 999px;
   padding: 5px 10px;
   background: rgba(37, 99, 235, 0.78);
-  color: #fff;
+  color: var(--c4a-text-primary);
   font-size: 11px;
   font-weight: 950;
   cursor: pointer;
@@ -15856,7 +15902,7 @@ body:has(.login-shell) .dashboard-content {
   border-radius: 16px;
   padding: 14px;
   background: rgba(2, 6, 23, 0.42);
-  color: white;
+  color: var(--c4a-text-primary);
   display: flex;
   justify-content: space-between;
   align-items: center;
@@ -15869,7 +15915,7 @@ body:has(.login-shell) .dashboard-content {
   display: block;
   font-size: 16px;
   font-weight: 950;
-  color: #fff;
+  color: var(--c4a-text-primary);
 }
 
 .selected-match-pro-card span {
@@ -15887,7 +15933,7 @@ body:has(.login-shell) .dashboard-content {
   display: grid;
   place-items: center;
   background: rgba(37, 99, 235, 0.75);
-  color: white;
+  color: var(--c4a-text-primary);
   flex: 0 0 auto;
 }
 
@@ -15898,7 +15944,7 @@ body:has(.login-shell) .dashboard-content {
   border-radius: 16px;
   padding: 13px;
   background: rgba(15, 23, 42, 0.88);
-  color: white;
+  color: var(--c4a-text-primary);
   display: flex;
   justify-content: space-between;
   align-items: center;
@@ -16063,7 +16109,7 @@ body:has(.login-shell) .dashboard-content {
 .pro-score-strip strong {
   display: block;
   margin-top: 4px;
-  color: white;
+  color: var(--c4a-text-primary);
   font-size: 20px;
   font-weight: 750;
 }
@@ -16149,7 +16195,7 @@ body:has(.login-shell) .dashboard-content {
 
 .pro-scheduled-header h3 {
   margin: 8px 0 6px;
-  font-size: 24px;
+  font-size: 18px;
   font-weight: 950;
 }
 
@@ -16182,7 +16228,7 @@ body:has(.login-shell) .dashboard-content {
     #16a34a,
     #22c55e
   );
-  color: white;
+  color: var(--c4a-text-primary);
   font-weight: 900;
   cursor: pointer;
   box-shadow:
@@ -16252,7 +16298,7 @@ body:has(.login-shell) .dashboard-content {
 
 .pro-active-header h3 {
   margin: 8px 0 6px;
-  font-size: 24px;
+  font-size: 18px;
   font-weight: 950;
 }
 
@@ -16295,7 +16341,7 @@ body:has(.login-shell) .dashboard-content {
 .pro-live-score-box strong {
   display: block;
   margin-top: 5px;
-  color: white;
+  color: var(--c4a-text-primary);
   font-size: 20px;
   font-weight: 950;
 }
@@ -16380,7 +16426,7 @@ body:has(.login-shell) .dashboard-content {
   border-radius: 999px;
   padding: 10px 18px;
   background: linear-gradient(135deg, #2563eb, #38bdf8);
-  color: white;
+  color: var(--c4a-text-primary);
   font-weight: 900;
   cursor: pointer;
   box-shadow: 0 12px 28px rgba(37,99,235,.28);
@@ -16421,7 +16467,7 @@ body:has(.login-shell) .dashboard-content {
 .create-match-topbar strong {
   display: block;
   margin-top: 5px;
-  color: white;
+  color: var(--c4a-text-primary);
   font-size: 16px;
   font-weight: 950;
 }
@@ -16444,7 +16490,7 @@ body:has(.login-shell) .dashboard-content {
   margin: 0 0 14px;
   font-size: 18px;
   font-weight: 950;
-  color: white;
+  color: var(--c4a-text-primary);
 }
 
 .pro-create-submit {
@@ -16498,7 +16544,7 @@ body:has(.login-shell) .dashboard-content {
 
 .ai-left span {
   display: block;
-  color: white;
+  color: var(--c4a-text-primary);
   font-size: 13px;
   font-weight: 900;
 }
@@ -16625,7 +16671,7 @@ body:has(.login-shell) .dashboard-content {
     rgba(124, 58, 237, 0.22),
     rgba(37, 99, 235, 0.12)
   );
-  color: #fff;
+  color: var(--c4a-text-primary);
   font-size: 12px;
   font-weight: 950;
   white-space: nowrap;
@@ -16656,7 +16702,7 @@ body:has(.login-shell) .dashboard-content {
   border-radius: 999px;
   padding: 9px 14px;
   background: linear-gradient(135deg, #2563eb, #38bdf8);
-  color: white;
+  color: var(--c4a-text-primary);
   font-weight: 950;
   cursor: pointer;
   box-shadow: 0 12px 28px rgba(37, 99, 235, 0.28);
@@ -16691,7 +16737,7 @@ body:has(.login-shell) .dashboard-content {
 }
 
 .scorer-mode-topbar strong {
-  color: white;
+  color: var(--c4a-text-primary);
   font-size: 18px;
   font-weight: 950;
 }
@@ -16707,7 +16753,7 @@ body:has(.login-shell) .dashboard-content {
   border-radius: 999px;
   padding: 8px 11px;
   background: rgba(37,99,235,.16);
-  color: white;
+  color: var(--c4a-text-primary);
   font-weight: 900;
   cursor: pointer;
 }
@@ -16741,7 +16787,7 @@ body:has(.login-shell) .dashboard-content {
 }
 
 .scorer-drawer-head strong {
-  color: white;
+  color: var(--c4a-text-primary);
   font-size: 18px;
   font-weight: 950;
 }
@@ -16750,7 +16796,7 @@ body:has(.login-shell) .dashboard-content {
   border: 0;
   border-radius: 999px;
   background: rgba(239,68,68,.18);
-  color: white;
+  color: var(--c4a-text-primary);
   padding: 6px 10px;
   cursor: pointer;
 }
@@ -16809,7 +16855,7 @@ body:has(.login-shell) .dashboard-content {
 .drawer-stat-card strong {
   display: block;
   margin-top: 4px;
-  color: white;
+  color: var(--c4a-text-primary);
   font-size: 24px;
   font-weight: 950;
 }
@@ -16820,7 +16866,7 @@ body:has(.login-shell) .dashboard-content {
 }
 
 .drawer-commentary-ball strong {
-  color: white;
+  color: var(--c4a-text-primary);
 }
 
 @media (max-width: 768px) {
@@ -16847,7 +16893,7 @@ body:has(.login-shell) .dashboard-content {
   border-radius: 999px;
   padding: 10px 8px;
   background: rgba(37, 99, 235, 0.16);
-  color: white;
+  color: var(--c4a-text-primary);
   font-size: 12px;
   font-weight: 950;
 }
@@ -16897,7 +16943,7 @@ body:has(.login-shell) .dashboard-content {
 .scorer-hud-main strong {
   display: block;
   margin-top: 6px;
-  color: white;
+  color: var(--c4a-text-primary);
   font-size: 42px;
   font-weight: 950;
   line-height: 1;
@@ -16951,7 +16997,7 @@ body:has(.login-shell) .dashboard-content {
 .scorer-hud-players strong {
   display: block;
   margin-top: 5px;
-  color: white;
+  color: var(--c4a-text-primary);
   font-size: 18px;
   font-weight: 950;
   white-space: nowrap;
@@ -16988,7 +17034,7 @@ body:has(.login-shell) .dashboard-content {
 }
 
 .scorer-hud-metrics b {
-  color: white;
+  color: var(--c4a-text-primary);
 }
 
 .last-ball-ribbon {
@@ -17239,7 +17285,7 @@ body:has(.login-shell) .dashboard-content {
 }
 
 .scorer-workspace-head strong {
-  color: white;
+  color: var(--c4a-text-primary);
   font-size: 16px;
   font-weight: 950;
 }
@@ -17248,7 +17294,7 @@ body:has(.login-shell) .dashboard-content {
   border: 0;
   border-radius: 999px;
   background: rgba(239, 68, 68, 0.18);
-  color: white;
+  color: var(--c4a-text-primary);
   padding: 6px 10px;
   cursor: pointer;
 }
@@ -17291,7 +17337,7 @@ body:has(.login-shell) .dashboard-content {
 .scorer-official-card strong {
   display: block;
   margin-bottom: 8px;
-  color: white;
+  color: var(--c4a-text-primary);
   font-size: 15px;
   font-weight: 950;
 }
@@ -17338,7 +17384,7 @@ body:has(.login-shell) .dashboard-content {
 .scorer-commentary-summary strong {
   display: block;
   margin-top: 5px;
-  color: white;
+  color: var(--c4a-text-primary);
   font-size: 18px;
   font-weight: 950;
 }
@@ -17365,7 +17411,7 @@ body:has(.login-shell) .dashboard-content {
   display: grid;
   place-items: center;
   background: rgba(37, 99, 235, 0.18);
-  color: white;
+  color: var(--c4a-text-primary);
   font-size: 14px;
   font-weight: 950;
   flex: 0 0 auto;
@@ -17373,7 +17419,7 @@ body:has(.login-shell) .dashboard-content {
 
 .commentary-ball-main strong {
   display: block;
-  color: white;
+  color: var(--c4a-text-primary);
   font-size: 14px;
   font-weight: 950;
 }
@@ -17479,7 +17525,7 @@ body:has(.login-shell) .dashboard-content {
 .current-player-mini strong {
   display: block;
   margin-top: 5px;
-  color: white;
+  color: var(--c4a-text-primary);
   font-size: 15px;
   font-weight: 950;
   white-space: nowrap;
@@ -17532,7 +17578,7 @@ body:has(.login-shell) .dashboard-content {
 }
 
 .mini-score-row strong {
-  color: white;
+  color: var(--c4a-text-primary);
   font-weight: 950;
 }
 
@@ -17566,7 +17612,7 @@ body:has(.login-shell) .dashboard-content {
 }
 
 .scorer-scoreboard-footer b {
-  color: white;
+  color: var(--c4a-text-primary);
 }
 
 @media (max-width: 768px) {
@@ -17590,7 +17636,7 @@ body:has(.login-shell) .dashboard-content {
   border-radius: 24px;
   text-align: center;
   background: linear-gradient(135deg, rgba(37,99,235,.95), rgba(56,189,248,.85));
-  color: white;
+  color: var(--c4a-text-primary);
   box-shadow: 0 24px 60px rgba(37,99,235,.35);
   animation: overFlashPop .25s ease;
 }
@@ -18033,7 +18079,7 @@ body {
   .score-undo {
     background: linear-gradient(135deg, #ef4444, #dc2626) !important;
     border-color: rgba(248, 113, 113, .65) !important;
-    color: white !important;
+    color: var(--text-primary) !important;
   }
 
   .chip-active {
@@ -18107,7 +18153,7 @@ body {
 
   .scorer-quick-dock button.active {
     background: linear-gradient(135deg, #2563eb, #38bdf8) !important;
-    color: white !important;
+    color: var(--text-primary) !important;
   }
 }
 @media (max-width: 768px) {
@@ -18277,7 +18323,7 @@ body {
   border-radius: 999px;
   border: 1px solid rgba(168, 85, 247, 0.4);
   background: linear-gradient(135deg, rgba(124, 58, 237, 0.28), rgba(37, 99, 235, 0.18));
-  color: white;
+  color: var(--c4a-text-primary);
   font-weight: 950;
 }
 
@@ -18436,7 +18482,7 @@ body {
   border-radius: 999px;
   border: 1px solid rgba(168, 85, 247, 0.42);
   background: linear-gradient(135deg, #7c3aed, #2563eb);
-  color: white;
+  color: var(--c4a-text-primary);
   font-weight: 950;
   box-shadow: 0 12px 28px rgba(124, 58, 237, 0.28);
   touch-action: none;
@@ -18548,7 +18594,7 @@ body {
 
 .auth-nav .login-btn {
   background: linear-gradient(135deg, #2563eb, #38bdf8);
-  color: white;
+  color: var(--c4a-text-primary);
   border: 0;
 }
 
@@ -18640,7 +18686,7 @@ body {
 
 .auth-nav .login-btn {
   background: linear-gradient(135deg, #2563eb, #38bdf8);
-  color: white;
+  color: var(--c4a-text-primary);
 }
 
 .auth-nav .user-avatar {
@@ -18739,7 +18785,7 @@ body {
 
     border:1px solid rgba(255,255,255,.08);
 
-    color:#fff;
+color: var(--c4a-text-primary);
 
     font-weight:700;
 
@@ -18839,7 +18885,7 @@ body {
 
 .edit-match-hero-v3 h2 {
   margin: 10px 0;
-  color: #fff;
+ color: var(--c4a-text-primary);
   font-size: clamp(24px, 4vw, 36px);
   line-height: 1;
 }
@@ -18896,7 +18942,7 @@ body {
 
 .edit-panel-title-v3 strong {
   display: block;
-  color: white;
+  color: var(--c4a-text-primary);
   font-size: 18px;
   font-weight: 950;
 }
@@ -18939,7 +18985,7 @@ body {
   border-radius: 16px;
   background: rgba(2, 6, 23, 0.72);
   border: 1px solid rgba(96, 165, 250, 0.26);
-  color: #fff;
+color: var(--c4a-text-primary);
   font-weight: 850;
   outline: none;
 }
@@ -18978,12 +19024,12 @@ body {
   display: grid;
   place-items: center;
   background: linear-gradient(135deg, #2563eb, #38bdf8);
-  color: white;
+  color: var(--c4a-text-primary);
   font-weight: 950;
 }
 
 .team-role-card-head-v3 strong {
-  color: white;
+  color: var(--c4a-text-primary);
   font-size: 15px;
   font-weight: 950;
 }
@@ -19016,7 +19062,7 @@ body {
 
 .edit-save-btn-v3 {
   border: 0;
-  color: white;
+  color: var(--c4a-text-primary);
   background: linear-gradient(135deg, #2563eb, #38bdf8);
   box-shadow: 0 16px 34px rgba(37, 99, 235, 0.3);
 }
@@ -19098,7 +19144,7 @@ body {
 
 .contact-hero-card h1 {
   margin: 14px 0 8px;
-  color: white;
+  color: var(--c4a-text-primary);
   font-size: clamp(34px, 7vw, 64px);
   line-height: 0.95;
   letter-spacing: -0.04em;
@@ -19133,7 +19179,7 @@ body {
 }
 
 .contact-email-btn {
-  color: white;
+  color: var(--c4a-text-primary);
   background: linear-gradient(135deg, #2563eb, #38bdf8);
   box-shadow: 0 16px 34px rgba(37, 99, 235, 0.32);
 }
@@ -19178,7 +19224,7 @@ body {
 
 .contact-info-card h3 {
   margin: 14px 0 8px;
-  color: white;
+  color: var(--c4a-text-primary);
   font-size: 17px;
   font-weight: 950;
 }
@@ -19210,7 +19256,7 @@ body {
 
 .contact-checklist-card h2 {
   margin: 0 0 6px;
-  color: white;
+  color: var(--c4a-text-primary);
   font-size: 22px;
 }
 
@@ -19428,7 +19474,7 @@ body {
 
     background:#233458;
 
-    color:#fff;
+color: var(--c4a-text-primary);
 }
 .league-visibility.public{
 
@@ -19496,7 +19542,7 @@ body {
 }
 
 .league-select-wrapper.compact .league-current-name {
-  color: white;
+  color: var(--c4a-text-primary);
   font-size: 14px;
   font-weight: 950;
   line-height: 1.2;
@@ -19613,7 +19659,7 @@ body {
 .smart-match-title {
   font-size: 13px;
   font-weight: 950;
-  color: #fff;
+  color: var(--c4a-text-primary);
 }
 
 .smart-match-meta {
@@ -19819,7 +19865,7 @@ body {
 
 .account-hero h2 {
   margin: 6px 0 4px;
-  color: white;
+  color: var(--c4a-text-primary);
 }
 
 .account-hero p {
@@ -19849,7 +19895,7 @@ body {
 }
 
 .account-wow-grid strong {
-  color: white;
+  color: var(--c4a-text-primary);
   font-weight: 950;
 }
 
@@ -19882,7 +19928,7 @@ body {
 }
 
 .account-primary-action {
-  color: white;
+  color: var(--c4a-text-primary);
   background: linear-gradient(135deg, #2563eb, #38bdf8);
 }
 
@@ -19989,7 +20035,7 @@ body {
 .live-popup-main strong {
   display: block;
   margin-top: 4px;
-  color: #fff;
+  color: var(--c4a-text-primary);
   font-size: 22px;
   font-weight: 950;
   line-height: 1;
@@ -20197,7 +20243,7 @@ body {
 
 .match-league-picker strong {
   margin-top: 4px;
-  color: white;
+  color: var(--c4a-text-primary);
   font-size: 15px;
   font-weight: 950;
   overflow: hidden;
@@ -20244,7 +20290,7 @@ body {
 }
 
 .pro-match-tabs button.active {
-  color: white;
+  color: var(--c4a-text-primary);
   background: linear-gradient(135deg, #2563eb, #38bdf8);
   box-shadow: 0 14px 28px rgba(37,99,235,.25);
 }
@@ -20351,7 +20397,7 @@ body {
 }
 
 .scoring-subtabs-wow button.active {
-  color: white;
+  color: var(--c4a-text-primary);
   background: linear-gradient(135deg, #2563eb, #38bdf8);
   border-color: rgba(125, 211, 252, 0.5);
   box-shadow: 0 10px 22px rgba(37, 99, 235, 0.26);
@@ -20417,7 +20463,7 @@ body {
 .match-command-league strong,
 .match-command-selected strong {
   margin-top: 4px;
-  color: white;
+  color: var(--c4a-text-primary);
   font-size: 13px;
   font-weight: 950;
   overflow: hidden;
@@ -20563,7 +20609,7 @@ body {
 .match-command-league-inline strong {
   display: block;
   margin-top: 3px;
-  color: white;
+  color: var(--c4a-text-primary);
   font-size: 13px;
   font-weight: 950;
   overflow: hidden;
@@ -20590,14 +20636,14 @@ body {
   background:
     linear-gradient(135deg, rgba(15, 23, 42, 0.92), rgba(37, 99, 235, 0.22));
   border: 1px solid rgba(96, 165, 250, 0.26);
-  color: white;
+  color: var(--c4a-text-primary);
 }
 
 .match-command-selected.full strong {
   display: block;
   margin-top: 3px;
-  color: white;
-  font-size: 16px;
+  color: var(--c4a-text-primary);
+  font-size: 12px;
   font-weight: 950;
   overflow: hidden;
   text-overflow: ellipsis;
@@ -20693,7 +20739,7 @@ body {
 }
 
 .score-detail-tabs button.active {
-  color: white;
+  color: var(--c4a-text-primary);
   background: linear-gradient(135deg, #2563eb, #38bdf8);
   border-color: rgba(125, 211, 252, 0.5);
   box-shadow: 0 12px 26px rgba(37, 99, 235, 0.28);
@@ -21229,4 +21275,75 @@ flex-direction:column-reverse;
 .live-popup-snapshot {
   width: 100% !important;
   box-sizing: border-box !important;
+}
+h1,
+h2,
+h3,
+h4,
+h5,
+h6 {
+  color: var(--text-heading);
+}
+p,
+li,
+label,
+small,
+span {
+  color: var(--text-secondary);
+}
+button {
+  color: inherit;
+}
+a {
+  color: var(--text-accent);
+}
+
+a:hover {
+  color: #a5f3fc;
+}
+.card {
+  color: var(--c4a-text-primary);
+}
+body {
+  color: var(--c4a-text-primary);
+}
+
+h1,
+h2,
+h3,
+h4,
+h5,
+h6 {
+  color: var(--c4a-text-heading);
+}
+
+p,
+li,
+label,
+small {
+  color: var(--c4a-text-secondary);
+}
+
+.muted,
+.small,
+.helper-text,
+.loading-text {
+  color: var(--c4a-text-muted) !important;
+}
+
+a {
+  color: var(--c4a-accent-blue);
+}
+
+a:hover {
+  color: #a5f3fc;
+}
+
+.card,
+.modal,
+.rename-modal,
+.edit-match-modal-v2,
+.bowler-modal,
+.filter-center-modal {
+  color: var(--c4a-text-primary);
 }
