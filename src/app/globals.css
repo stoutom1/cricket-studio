@@ -21495,18 +21495,30 @@ a:hover {
 }
 
 @media (max-width: 768px) {
-  .dashboard-tabs {
-    flex-wrap: nowrap !important;
-    gap: 6px !important;
-    padding: 6px !important;
-    border-radius: 16px !important;
+
+  .dashboard-tabs{
+    gap:8px !important;
+    padding:8px !important;
   }
 
-  .dashboard-tab {
-    flex: 0 0 auto !important;
-    width: auto !important;
-    min-width: auto !important;
-    padding: 9px 12px !important;
-    font-size: 12px !important;
+  .dashboard-tab{
+    flex:0 0 auto !important;
+
+    padding:12px 18px !important;
+
+    min-height:46px !important;
+
+    font-size:13.5px !important;
+    font-weight:800 !important;
+
+    border-radius:14px !important;
+
+    display:flex;
+    align-items:center;
+    justify-content:center;
   }
+
+}
+.dashboard-tab.active{
+    transform:scale(1.05);
 }
