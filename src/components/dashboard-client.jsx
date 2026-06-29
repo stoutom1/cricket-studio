@@ -6927,7 +6927,7 @@ onClick={() => {
         🧤 Change WK
       </button>
 
-      <button type="button" className="btn btn-outline action-rh-corrections" disabled={isMatchAbandoned} onClick={() => setShowCorrectionModal(true)}>
+      <button type="button" className="btn btn-outline action-rh-corrections" disabled={isMatchLocked || isMatchAbandoned} onClick={() => setShowCorrectionModal(true)}>
         🛠️ Rtd H
       </button>
 
