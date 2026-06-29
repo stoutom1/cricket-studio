@@ -6920,13 +6920,6 @@ onClick={() => {
   >
     ↩ Undo
   </button>
-  <button
-  type="button"
-  className="chip score-chip score-wide"
-  onClick={() => setShowAdvancedSheet(true)}
->
-  ⚙️ Form
-</button>
 </div>
 
     <div className="mobile-secondary-actions scorer-secondary-row">
@@ -7036,6 +7029,13 @@ onClick={() => {
 
 {permissions?.canScoreMatch  && (isMobile ? (
   <>
+    <button
+  type="button"
+  className="chip score-chip score-wide"
+  onClick={() => setShowAdvancedSheet(true)}
+>
+  ⚙️ Form
+</button>
 {showAdvancedSheet && (
   <>
     <div
