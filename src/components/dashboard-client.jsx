@@ -5408,6 +5408,12 @@ function startBrowserVoiceScore() {
   recognition.start();
 }
 
+const matchEnded =
+  ["COMPLETED", "COMPLETED_LOCKED"].includes(
+    String(scoreboard?.match?.status || "").toUpperCase()
+  );
+
+
 function ContextLens() {
   const totalFilters =
     (contextFilters.teamIds?.length || 0) +
@@ -5949,7 +5955,7 @@ onClick={() => {
   </div>
 
   <div className="innings-mini-box striker-box">
-    <span>⚡ Striker</span>
+    <span>⚡ Striker4</span>
     <strong>
       {scoreboard?.currentState?.strikerName || "-"}
       {scoreboard?.currentState?.strikerStats && (
@@ -6015,7 +6021,7 @@ onClick={() => {
   </div>
 
   <div className="compact-player-row striker">
-    <span>⚡ Striker</span>
+    <span>⚡ Striker3</span>
     <strong>{scoreboard?.currentState?.strikerName || "-"}</strong>
     <b>
       {scoreboard?.currentState?.strikerStats
@@ -6442,8 +6448,10 @@ onClick={() => {
             {displayScoreboard?.summary?.statusText || "Ready for next ball"}
           </div>
         </div>
-
+          {!matchEnded && scoreboard?.currentState && (
+  <>
         <div className="scorer-hud-players">
+
           <div className="striker">
             <span>⚡ Striker</span>
             <strong>{displayScoreboard?.currentState?.strikerName || "-"}</strong>
@@ -6454,6 +6462,7 @@ onClick={() => {
             </b>
           </div>
 
+          
           <div className="non-striker ">
             <span>🏃 Non-striker</span>
             <strong>{displayScoreboard?.currentState?.nonStrikerName || "-"}</strong>
@@ -6473,6 +6482,7 @@ onClick={() => {
                 : "0/0"}
             </b>
           </div>
+
         </div>
 
         <div className="scorer-hud-metrics">
@@ -6481,6 +6491,8 @@ onClick={() => {
           <span>Proj <b>{liveMatchCenter.projected}</b></span>
           <span>P’ship <b>{liveMatchCenter.partnershipRuns} ({liveMatchCenter.partnershipBalls})</b></span>
         </div>
+  </>
+)}        
       </div>
       {needsDeliverySetup ? (
         <div className="tv-status-banner setup">
@@ -6673,7 +6685,7 @@ onClick={() => {
 
           <div className="scorer-current-pair">
             <div className="current-player-mini striker">
-              <span>⚡ Striker</span>
+              <span>⚡ Striker1</span>
               <strong>{scoreboard?.currentState?.strikerName || "-"}</strong>
               <b>
                 {scoreboard?.currentState?.strikerStats
