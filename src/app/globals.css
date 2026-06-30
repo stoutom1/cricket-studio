@@ -2566,7 +2566,7 @@ color: var(--c4a-text-primary);
   opacity: 0.85;
 }
 .selected-match-banner span.pill {
-  font-size: 18px;
+  font-size: 12px;
   opacity: 0.85;
 }
 .share-score-btn {
@@ -21757,4 +21757,102 @@ a:hover {
 .wicket-end-innings-option input {
   width: 18px;
   height: 18px;
+}
+.match-setup-summary {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 12px;
+  cursor: pointer;
+  list-style: none;
+}
+
+.match-setup-summary::-webkit-details-marker {
+  display: none;
+}
+
+.match-setup-left {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  min-width: 0;
+}
+
+.match-setup-icon {
+  width: 42px;
+  height: 42px;
+  border-radius: 14px;
+  display: grid;
+  place-items: center;
+  background: linear-gradient(135deg, #2563eb, #38bdf8);
+  box-shadow: 0 10px 22px rgba(37, 99, 235, 0.35);
+  font-size: 20px;
+  flex-shrink: 0;
+}
+
+.match-setup-title {
+  font-weight: 900;
+  font-size: 18px;
+  color: #ffffff;
+}
+
+.match-setup-subtitle {
+  margin-top: 3px;
+  font-size: 12px;
+  font-weight: 700;
+  color: #9fb4d0;
+}
+
+.match-setup-action {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  flex-shrink: 0;
+  color: #93c5fd;
+  font-size: 12px;
+  font-weight: 900;
+}
+
+.match-setup-chevron {
+  width: 32px;
+  height: 32px;
+  border-radius: 999px;
+  display: grid;
+  place-items: center;
+  background: rgba(37, 99, 235, 0.2);
+  border: 1px solid rgba(96, 165, 250, 0.45);
+  transition: transform 0.2s ease;
+}
+
+.match-setup-card[open] .match-setup-chevron {
+  transform: rotate(180deg);
+}
+
+.match-setup-card[open] .match-setup-action-text {
+  font-size: 0;
+}
+
+.match-setup-card[open] .match-setup-action-text::after {
+  content: "Hide details";
+  font-size: 12px;
+}
+
+@media (max-width: 768px) {
+  .match-setup-subtitle {
+    display: none;
+  }
+
+  .match-setup-title {
+    font-size: 16px;
+  }
+
+  .match-setup-action-text {
+    display: none;
+  }
+
+  .match-setup-icon {
+    width: 36px;
+    height: 36px;
+    border-radius: 12px;
+  }
 }

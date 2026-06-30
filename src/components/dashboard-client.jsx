@@ -5674,26 +5674,46 @@ onClick={() => {
     </div>
   )}
 </div>
+</div>
+</Card>
+<Card title = "Score Details" 
+    right={
+    selectedMatchId ? (
+      <button
+        type="button"
+        className="share-score-btn"
+        onClick={handleShareMatch}
+      >
+        📤 Share - Spectator View
+      </button>
+    ) : null
+  }
+>
 {matchDetail && (
-<details className="match-setup-card" open>
-<summary className="match-setup-summary">
-  <div className="match-setup-title">
-    ⚙️ Match Setup
-  </div>
+<details className="match-setup-card">
+  <summary className="match-setup-summary">
+    <div className="match-setup-left">
+      <div className="match-setup-icon">📋</div>
 
-  {selectedMatchId && (
-    <button
-      type="button"
-      className="share-score-btn"
-      onClick={(e) => {
-        e.preventDefault();
-        handleShareMatch();
-      }}
-    >
-      📤 Share - Spectator View
-    </button>
-  )}
-</summary>
+      <div>
+        <div className="match-setup-title">
+          Match Setup
+        </div>
+        <div className="match-setup-subtitle">
+          Tap to view innings, teams, players & match settings
+        </div>
+      </div>
+    </div>
+
+    <div className="match-setup-action">
+      <span className="match-setup-action-text">
+        View details
+      </span>
+      <span className="match-setup-chevron">
+        ▼
+      </span>
+    </div>
+  </summary>
       {selectedMatch && (
         <div className="selected-match-banner">
           <div>
@@ -5756,22 +5776,7 @@ onClick={() => {
   </div>
 </div>
 </details>
-)}
-</div>
-</Card>
-<Card title = "Score Details" 
-    right={
-    selectedMatchId ? (
-      <button
-        type="button"
-        className="share-score-btn"
-        onClick={handleShareMatch}
-      >
-        📤 Share - Spectator View
-      </button>
-    ) : null
-  }
->
+)}  
 {selectedMatchId && (
   <div
     className={`score-detail-tabs ${
