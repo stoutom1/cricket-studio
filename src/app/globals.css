@@ -21597,3 +21597,44 @@ a:hover {
     white-space: nowrap !important;
   }
 }
+/* MOBILE: flatten scorer mode without breaking popup/drawer */
+@media (max-width: 768px) {
+  .scorer-mode-shell.active {
+    padding: 0 !important;
+    margin: 0 !important;
+    border: 0 !important;
+    background: transparent !important;
+    box-shadow: none !important;
+    width: 100% !important;
+  }
+
+  .scorer-mode-shell.active > .scorer-wow-console {
+    margin-left: -10px !important;
+    margin-right: -10px !important;
+    width: calc(100% + 20px) !important;
+    max-width: calc(100% + 20px) !important;
+    padding: 10px !important;
+    border-radius: 18px !important;
+    box-sizing: border-box !important;
+  }
+
+  .scorer-live-hud,
+  .scorer-actions-panel,
+  .scorer-recent-wow,
+  .scorer-chase-wow {
+    width: 100% !important;
+    max-width: 100% !important;
+    margin-left: 0 !important;
+    margin-right: 0 !important;
+    box-sizing: border-box !important;
+  }
+
+  .scorer-hud-players {
+    grid-template-columns: 1fr !important;
+  }
+
+  .scorer-hud-players > div {
+    width: 100% !important;
+    min-width: 0 !important;
+  }
+}
