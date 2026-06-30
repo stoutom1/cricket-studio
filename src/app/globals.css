@@ -21522,184 +21522,76 @@ a:hover {
 .dashboard-tab.active{
     transform:scale(1.05);
 }
-/* MOBILE FIX: stop scorer mode from looking squeezed */
+/* MOBILE FIX: widen scoreboard + scorer buttons only */
 @media (max-width: 768px) {
-  .scoring-layout {
-    padding-left: 6px !important;
-    padding-right: 6px !important;
-  }
-
-  .scoring-layout > .card,
-  .scoring-console,
-  .scorer-mode-shell.active,
   .scorer-wow-console,
-  .scorer-mode-flat,
-  .tv-score-console {
-    width: 100% !important;
-    max-width: 100% !important;
-    margin-left: 0 !important;
-    margin-right: 0 !important;
-    padding-left: 8px !important;
-    padding-right: 8px !important;
-    box-sizing: border-box !important;
-  }
-
-  .scorer-mode-shell.active {
-    border: 0 !important;
-    box-shadow: none !important;
-    background: transparent !important;
-  }
-
-  .scorer-wow-console {
+  .tv-score-console,
+  .scorer-mode-flat {
+    padding: 6px !important;
     border-radius: 18px !important;
   }
 
   .scorer-live-hud {
+    width: calc(100vw - 28px) !important;
+    max-width: calc(100vw - 28px) !important;
+    margin-left: 50% !important;
+    transform: translateX(-50%) !important;
     padding: 12px !important;
-    border-radius: 18px !important;
-  }
-
-  .scorer-hud-players {
-    display: grid !important;
-    grid-template-columns: 1fr !important;
-    gap: 8px !important;
-  }
-
-  .scorer-hud-players > div {
-    min-width: 0 !important;
-    width: 100% !important;
-    padding: 11px 12px !important;
-    border-radius: 16px !important;
-  }
-
-  .scorer-hud-main {
-    gap: 8px !important;
-  }
-
-  .scorer-hud-main strong {
-    font-size: 38px !important;
-    line-height: 1 !important;
-  }
-
-  .scorer-insights-strip {
-    grid-template-columns: 1fr !important;
-    gap: 8px !important;
-  }
-
-  .score-detail-tabs {
-    overflow-x: auto !important;
-    flex-wrap: nowrap !important;
-  }
-
-  .score-detail-tabs button {
-    flex: 0 0 auto !important;
-    padding: 10px 14px !important;
-    white-space: nowrap !important;
-  }
-}
-/* MOBILE: flatten scorer mode without breaking popup/drawer */
-@media (max-width: 768px) {
-  .scorer-mode-shell.active {
-    padding: 0 !important;
-    margin: 0 !important;
-    border: 0 !important;
-    background: transparent !important;
-    box-shadow: none !important;
-    width: 100% !important;
-  }
-
-  .scorer-mode-shell.active > .scorer-wow-console {
-    margin-left: -10px !important;
-    margin-right: -10px !important;
-    width: calc(100% + 20px) !important;
-    max-width: calc(100% + 20px) !important;
-    padding: 10px !important;
     border-radius: 18px !important;
     box-sizing: border-box !important;
   }
 
-  .scorer-live-hud,
-  .scorer-actions-panel,
+  .scorer-actions-panel {
+    width: calc(100vw - 28px) !important;
+    max-width: calc(100vw - 28px) !important;
+    margin-left: 50% !important;
+    transform: translateX(-50%) !important;
+    padding: 10px !important;
+    box-sizing: border-box !important;
+  }
+
   .scorer-recent-wow,
   .scorer-chase-wow {
-    width: 100% !important;
-    max-width: 100% !important;
-    margin-left: 0 !important;
-    margin-right: 0 !important;
+    width: calc(100vw - 28px) !important;
+    max-width: calc(100vw - 28px) !important;
+    margin-left: 50% !important;
+    transform: translateX(-50%) !important;
     box-sizing: border-box !important;
   }
 
   .scorer-hud-players {
     grid-template-columns: 1fr !important;
+    gap: 8px !important;
   }
 
   .scorer-hud-players > div {
     width: 100% !important;
     min-width: 0 !important;
   }
-}
-/* MOBILE SCORER MODE: full screen cockpit */
-@media (max-width: 768px) {
-  .scorer-mode-shell.active {
-    position: fixed !important;
-    inset: 0 !important;
-    z-index: 99999 !important;
 
-    width: 100vw !important;
-    height: 100dvh !important;
-
-    overflow-y: auto !important;
-    overflow-x: hidden !important;
-
-    padding: 12px !important;
-    padding-top: calc(12px + env(safe-area-inset-top)) !important;
-    padding-bottom: calc(18px + env(safe-area-inset-bottom)) !important;
-
-    background: linear-gradient(180deg, #071225, #0f172a) !important;
-    border: 0 !important;
-    border-radius: 0 !important;
-    box-shadow: none !important;
-
-    box-sizing: border-box !important;
-  }
-
-  .scorer-mode-shell.active .scorer-wow-console,
-  .scorer-mode-shell.active .scorer-mode-flat,
-  .scorer-mode-shell.active .tv-score-console {
-    width: 100% !important;
-    max-width: 100% !important;
-    margin: 0 !important;
-    padding: 10px !important;
-    border-radius: 20px !important;
-    box-sizing: border-box !important;
-  }
-
-  .scorer-mode-shell.active .scorer-live-hud,
-  .scorer-mode-shell.active .scorer-actions-panel,
-  .scorer-mode-shell.active .scorer-recent-wow,
-  .scorer-mode-shell.active .scorer-chase-wow {
-    width: 100% !important;
-    max-width: 100% !important;
-    margin-left: 0 !important;
-    margin-right: 0 !important;
-    box-sizing: border-box !important;
-  }
-
-  .scorer-mode-shell.active .scorer-hud-players {
+  .quick-actions.scorer-run-buttons {
     display: grid !important;
-    grid-template-columns: 1fr !important;
-    gap: 10px !important;
+    grid-template-columns: repeat(5, minmax(0, 1fr)) !important;
+    gap: 8px !important;
   }
 
-  .scorer-mode-shell.active .scorer-hud-players > div {
+  .quick-actions.scorer-run-buttons .chip {
     width: 100% !important;
     min-width: 0 !important;
+    height: 42px !important;
+    padding: 0 !important;
+    font-size: 14px !important;
+    border-radius: 12px !important;
   }
 
-  .scorer-mode-banner {
-    position: sticky !important;
-    top: 0 !important;
-    z-index: 5 !important;
-    margin-bottom: 10px !important;
+  .mobile-secondary-actions.scorer-secondary-row {
+    display: grid !important;
+    grid-template-columns: 1fr 1fr !important;
+    gap: 8px !important;
+  }
+
+  .mobile-secondary-actions.scorer-secondary-row button {
+    width: 100% !important;
+    min-width: 0 !important;
   }
 }
