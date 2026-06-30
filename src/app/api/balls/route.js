@@ -36,6 +36,7 @@ export async function POST(request) {
       ? Number(body.dismissedPlayerId)
       : null,
     newBatterId: body.newBatterId ? Number(body.newBatterId) : null,
+    endInningsAfterWicket: Boolean (body.endInningsAfterWicket),
     note: body.note?.trim() || null,
     matchStatus: String(body.matchStatus || ""),
     fielderId: body.fielderId ? Number(body.fielderId) : null,
@@ -56,6 +57,7 @@ export async function POST(request) {
   if (payload.extraType === "NOBALL" && payload.extras < 1) {
     payload.extras = 1;
   }
+const endInningsAfterWicket = Boolean(payload.endInningsAfterWicket);
 
   const validationErrors = validateBallInput(payload);
 
@@ -248,6 +250,7 @@ if (isCountingWicket && dismissedThisBallId) {
     ) &&
     !payload.newBatterId &&
     !noMoreBattersAvailable &&
+    !endInningsAfterWicket &&
     !isFinalAllowedWicket
   ) {
     return NextResponse.json(
@@ -439,6 +442,7 @@ const inningsEndedByWickets =
 
 let inningsEnded =
   inningsEndedByOvers ||
+  endInningsAfterWicket ||
   inningsEndedByWickets ||
   noMoreBattersAvailable;
 
@@ -483,7 +487,7 @@ if (payload.inningsNo === 1 && inningsEnded) {
 
 if (
   payload.inningsNo === 2 &&
-  (inningsEnded || targetReached)
+  (inningsEnded || targetReached || endInningsAfterWicket)
 ) {
   inningsEnded = true;
 

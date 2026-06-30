@@ -21741,3 +21741,20 @@ a:hover {
     box-shadow: 0 10px 24px rgba(37, 99, 235, 0.35) !important;
   }
 }
+.wicket-end-innings-option {
+  margin-top: 12px;
+  padding: 12px 14px;
+  border-radius: 14px;
+  background: rgba(239, 68, 68, 0.12);
+  border: 1px solid rgba(248, 113, 113, 0.35);
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  color: #fecaca;
+  font-weight: 800;
+}
+
+.wicket-end-innings-option input {
+  width: 18px;
+  height: 18px;
+}

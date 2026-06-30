@@ -320,6 +320,7 @@ const [transferTeamId, setTransferTeamId] = useState("");
 const [pageVisible, setPageVisible] = useState(true);
 const [ballSaveInFlight, setBallSaveInFlight] = useState(false);
 const [tabsScrolled, setTabsScrolled] = useState(false);
+const [endInningsAfterWicket, setEndInningsAfterWicket] = useState(false);
 const isSuperAdmin =
   session?.user?.email ===
   "surprisecricket11@gmail.com";
@@ -2360,6 +2361,50 @@ showToast?.("success", "✅ Match created successfully.");
       setError(err.message);
     }
   }
+
+async function handleStartMatch(match) {
+  if (!match?.id) {
+    setError("Match was not found.");
+    return;
+  }
+
+  try {
+    setMessage("");
+    setError("");
+
+    const matchId = Number(match.id);
+
+    setSelectedMatchId(String(matchId));
+    setEditingMatch(match);
+    setStartMatchData({
+      matchId: String(matchId),
+      battingFirstTeamId:
+        match.battingFirstTeamId || match.battingFirstTeam?.id || "",
+    });
+
+    const battingFirstTeamId =
+      match.battingFirstTeamId || match.battingFirstTeam?.id || "";
+
+    if (!battingFirstTeamId) {
+      setShowStartMatchModal(true);
+      return;
+    }
+
+    await api(`/api/matches/${matchId}/start`, {
+      method: "POST",
+      body: JSON.stringify({
+        battingFirstTeamId: Number(battingFirstTeamId),
+      }),
+    });
+
+    await loadMatches(activeLeagueId);
+
+    await openScoringAfterBattingFirst(matchId);
+  } catch (err) {
+    setError(err.message || "Unable to start match.");
+  }
+}
+  
 const isMatchCompleted = scoreboard?.match?.status === "COMPLETED";
 const isMatchLocked = scoreboard?.match?.status ===  "COMPLETED_LOCKED";
 const isMatchAbandoned = scoreboard?.match?.status ===  "ABANDONED";
@@ -2943,7 +2988,7 @@ if (
 }
 async function quickWicket(type = "BOWLED") {
   setRunOutRuns(type === "RUN_OUT" ? 0 : null);
-
+  setEndInningsAfterWicket(false);
   setBallForm((prev) => ({
     ...prev,
     isWicket: true,
@@ -2988,18 +3033,24 @@ const noMoreBattersAvailable =
   Array.isArray(wicketNewBatterOptions) &&
   wicketNewBatterOptions.length === 0;
 
-    if (!ballForm.newBatterId && !noMoreBattersAvailable) {
-      setError("Please select a new batter.");
-      return;
-    }
+if (
+  !endInningsAfterWicket &&
+  !ballForm.newBatterId &&
+  !noMoreBattersAvailable
+) {
+  setError("Please select a new batter or choose end innings.");
+  return;
+}
+
 const selectedNewBatterIsValid =
+  endInningsAfterWicket ||
   noMoreBattersAvailable ||
   wicketNewBatterOptions.some(
     (player) => String(player.id) === String(ballForm.newBatterId)
   );
 
 if (!selectedNewBatterIsValid) {
-  setError("Invalid new batter selected. Please select a valid replacement batter.");
+  setError("Invalid new batter selected. Please select a valid replacement batter or choose end innings.");
   setBallForm((prev) => ({
     ...prev,
     newBatterId: "",
@@ -3036,9 +3087,16 @@ if (!selectedNewBatterIsValid) {
       wicketType: ballForm.isWicket ? ballForm.wicketType : "NONE",
 
       dismissedPlayerId,
-      newBatterId: noMoreBattersAvailable
+      /* newBatterId: noMoreBattersAvailable
         ? null
         : Number(ballForm.newBatterId),
+      */
+newBatterId:
+  endInningsAfterWicket || noMoreBattersAvailable
+    ? null
+    : Number(ballForm.newBatterId),
+
+endInningsAfterWicket: Boolean(endInningsAfterWicket),
 
       note: ballForm.note,
       matchStatus: scoreboard?.match?.status,
@@ -3055,6 +3113,9 @@ if (!selectedNewBatterIsValid) {
     const wicketText = ballForm.wicketType
       ?.replaceAll("_", " ")
       ?.toLowerCase();
+const shouldOpenSecondInningsSetup =
+  Boolean(endInningsAfterWicket) &&
+  Number(ballForm.inningsNo) === 1;
 
  if (noMoreBattersAvailable) {
   setMessage(
@@ -3076,8 +3137,33 @@ if (!selectedNewBatterIsValid) {
 await loadSelectedMatch(selectedMatchId, {
   loadDetail: true,
   loadStatsData: true,
-  syncBallForm: true,
+  syncBallForm: !shouldOpenSecondInningsSetup,
 });
+
+if (shouldOpenSecondInningsSetup) {
+  setBallForm((prev) => ({
+    ...prev,
+    inningsNo: "2",
+    strikerId: "",
+    nonStrikerId: "",
+    bowlerId: "",
+    isWicket: false,
+    wicketType: "NONE",
+    dismissedPlayerId: "",
+    newBatterId: "",
+    runsOffBat: "0",
+    extras: "0",
+    extraType: "NONE",
+  }));
+
+  setDeliverySetupReason(
+    "1st innings ended. Select opening striker, non-striker, and bowler for the 2nd innings."
+  );
+
+  setShowWicketModal(false);
+  setPendingDeliverySetupAfterStart(true);
+  setShowDeliverySetupModal(true);
+}
 
 await loadMatches(activeLeagueId);
 
@@ -3756,80 +3842,33 @@ const completedMatches = matches.filter((m) =>
   isCompletedStatus(m.status)
 );
 
-async function handleStartMatch(match) {
-  if (!match?.id) {
-    setError("Match was not found.");
-    return;
-  }
 
-  try {
-    setMessage("");
-    setError("");
-
-    setSelectedMatchId(String(match.id));
-
-    await handleMatchSelect(match.id);
-
-    setEditingMatch(match);
-
-    const battingFirstTeamId =
-      match.battingFirstTeamId ||
-      match.battingFirstTeam?.id ||
-      "";
-
-    if (!battingFirstTeamId) {
-      setShowStartMatchModal(true);
-      return;
-    }
-    await loadMatches(activeLeagueId);
-    await handleMatchSelect(editingMatch.id);
-    setShowStartMatchModal(false);
-    await openScoringAfterBattingFirst(editingMatch.id);
-    //setActiveTab("scoring");
-  } catch (err) {
-    setError(err.message || "Unable to start match.");
-  }
-}
 
 async function confirmStartMatch() {
-  if (!selectedMatchId || !startMatchData.battingFirstTeamId) {
+  const matchId = Number(startMatchData.matchId || selectedMatchId);
+
+  if (!matchId || !startMatchData.battingFirstTeamId) {
     setError("Please select batting first team.");
     return;
   }
 
-  await api(`/api/matches/${selectedMatchId}/start`, {
-    method: "POST",
-    body: JSON.stringify({
-      battingFirstTeamId: Number(startMatchData.battingFirstTeamId)
-    })
-  });
+  try {
+    await api(`/api/matches/${matchId}/start`, {
+      method: "POST",
+      body: JSON.stringify({
+        battingFirstTeamId: Number(startMatchData.battingFirstTeamId),
+      }),
+    });
 
-  setShowStartMatchModal(false);
-  setMessage("✅ Match started. Opening scoring...");
+    setShowStartMatchModal(false);
+    setMessage("✅ Match started. Opening scoring...");
 
- await loadSelectedMatch(selectedMatchId, {
-  loadDetail: true,
-  loadStatsData: false,
-  syncBallForm: false,
-});
-  await loadMatches();
+    await loadMatches(activeLeagueId);
 
-  setActiveTab("scoring");
-  setBallForm((prev) => ({
-  ...prev,
-  inningsNo: 1,
-  strikerId: "",
-  nonStrikerId: "",
-  bowlerId: "",
-  extraType: "NONE",
-  runsOffBat: "0",
-  extras: "0",
-  isWicket: false,
-  wicketType: "NONE",
-  dismissedPlayerId: "",
-  newBatterId: "",
-}));
-  setPendingDeliverySetupAfterStart(true);
+    await openScoringAfterBattingFirst(matchId);
+  } catch (err) {
+    setError(err.message || "Unable to start match.");
+  }
 }
 useEffect(() => {
   if (!pendingDeliverySetupAfterStart) return;
@@ -4938,18 +4977,19 @@ async function handleScoringMatchSelect(matchId) {
   await handleMatchSelect(match.id);
 }
 async function openScoringAfterBattingFirst(matchId) {
+  const safeMatchId = Number(matchId);
+
+  if (!safeMatchId) {
+    setError("Match was not found.");
+    return;
+  }
+
   setMessage("");
   setError("");
 
-  setSelectedMatchId(String(matchId));
+  setSelectedMatchId(String(safeMatchId));
   setActiveTab("scoring");
   setScoringSubTab("ADVANCED");
-
-  await loadSelectedMatch(matchId, {
-    loadDetail: true,
-    loadStatsData: false,
-    syncBallForm: false,
-  });
 
   setBallForm((prev) => ({
     ...prev,
@@ -4969,6 +5009,12 @@ async function openScoringAfterBattingFirst(matchId) {
     assistantFielderId: "",
     wicketNote: "",
   }));
+
+  await loadSelectedMatch(safeMatchId, {
+    loadDetail: true,
+    loadStatsData: false,
+    syncBallForm: false,
+  });
 
   setDeliverySetupReason(
     "Select opening striker, non-striker, and bowler before scoring the first ball."
@@ -11258,10 +11304,10 @@ KL Rahul`}
 <button
   type="button"
   className="btn btn-primary"
-  onClick={() => {
-    setShowMatchCreatedModal(false);
-    handleStartMatch(createdMatchInfo);
-  }}
+onClick={async () => {
+  setShowMatchCreatedModal(false);
+  await handleStartMatch(createdMatchInfo);
+}}
 >
   🏏 Start Scoring
 </button>
@@ -11893,6 +11939,7 @@ onClick={() => {
               newBatterId: e.target.value,
             }))
           }
+          disabled={!ballForm.isWicket || endInningsAfterWicket}
         >
           <option value="">Select New Batter</option>
           {availableNewBatters.map((p) => (
@@ -11901,6 +11948,28 @@ onClick={() => {
             </option>
           ))}
         </select>
+        <label className="wicket-end-innings-option">
+  <input
+    type="checkbox"
+    checked={endInningsAfterWicket}
+    onChange={(e) => {
+      const checked = e.target.checked;
+
+      setEndInningsAfterWicket(checked);
+
+      if (checked) {
+        setBallForm((prev) => ({
+          ...prev,
+          newBatterId: "",
+        }));
+      }
+    }}
+  />
+
+  <span>
+    🛑 No more batters available — end innings after this wicket
+  </span>
+</label>
         {noNewBatterAvailable && (
   <div className="wicket-final-batter-note">
     🏁 No new batter available. This wicket will end the innings.
