@@ -5695,23 +5695,16 @@ onClick={() => {
     <div className="match-setup-left">
       <div className="match-setup-icon">📋</div>
 
-      <div>
-        <div className="match-setup-title">
-          Match Setup
+      <div className="match-setup-text">
+        <div className="match-setup-title-row">
+          <span className="match-setup-title">Match Setup</span>
+          <span className="match-setup-chevron">▼</span>
         </div>
+
         <div className="match-setup-subtitle">
           Tap to view innings, teams, players & match settings
         </div>
       </div>
-    </div>
-
-    <div className="match-setup-action">
-      <span className="match-setup-action-text">
-        View details
-      </span>
-      <span className="match-setup-chevron">
-        ▼
-      </span>
     </div>
   </summary>
       {selectedMatch && (
