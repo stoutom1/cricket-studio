@@ -20759,7 +20759,7 @@ color: var(--c4a-text-primary);
   .score-detail-tabs button {
     min-height: 40px;
     border-radius: 14px;
-    font-size: 11px;
+    font-size: 14px;
     gap: 5px;
   }
 
