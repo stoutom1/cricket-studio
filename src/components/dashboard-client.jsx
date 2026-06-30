@@ -5467,9 +5467,6 @@ function ContextLens() {
 return (
   <>
 <div className={`dashboard-tabs-wrap ${tabsScrolled ? "scrolled" : ""}`}>
-  <div className="dashboard-tabs-swipe-hint">
-    Swipe →
-  </div>
 
 <div
   className="dashboard-tabs"
