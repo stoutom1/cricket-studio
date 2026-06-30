@@ -21646,3 +21646,38 @@ a:hover {
     display: none;
   }
 }
+@media (max-width: 768px) {
+  .score-detail-tabs {
+    display: grid !important;
+    grid-template-columns: repeat(3, 1fr) !important;
+    gap: 8px !important;
+    padding: 8px !important;
+    border-radius: 18px !important;
+  }
+
+  .score-detail-tabs button {
+    width: 100% !important;
+    min-height: 48px !important;
+    padding: 10px 6px !important;
+    border-radius: 16px !important;
+    font-size: 13px !important;
+    font-weight: 900 !important;
+    display: flex !important;
+    align-items: center !important;
+    justify-content: center !important;
+    gap: 5px !important;
+  }
+
+  .score-detail-tabs button span {
+    font-size: 15px !important;
+  }
+
+  .score-detail-tabs button strong {
+    font-size: 12.5px !important;
+    line-height: 1 !important;
+  }
+
+  .score-detail-tabs button.active {
+    transform: scale(1.03);
+  }
+}
