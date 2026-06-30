@@ -5955,7 +5955,7 @@ onClick={() => {
   </div>
 
   <div className="innings-mini-box striker-box">
-    <span>⚡ Striker4</span>
+    <span>⚡ Striker</span>
     <strong>
       {scoreboard?.currentState?.strikerName || "-"}
       {scoreboard?.currentState?.strikerStats && (
@@ -6021,7 +6021,7 @@ onClick={() => {
   </div>
 
   <div className="compact-player-row striker">
-    <span>⚡ Striker3</span>
+    <span>⚡ Striker</span>
     <strong>{scoreboard?.currentState?.strikerName || "-"}</strong>
     <b>
       {scoreboard?.currentState?.strikerStats
@@ -6685,7 +6685,7 @@ onClick={() => {
 
           <div className="scorer-current-pair">
             <div className="current-player-mini striker">
-              <span>⚡ Striker1</span>
+              <span>⚡ Striker</span>
               <strong>{scoreboard?.currentState?.strikerName || "-"}</strong>
               <b>
                 {scoreboard?.currentState?.strikerStats
