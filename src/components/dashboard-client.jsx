@@ -319,6 +319,7 @@ const [transferPlayer, setTransferPlayer] = useState(null);
 const [transferTeamId, setTransferTeamId] = useState("");
 const [pageVisible, setPageVisible] = useState(true);
 const [ballSaveInFlight, setBallSaveInFlight] = useState(false);
+const [tabsScrolled, setTabsScrolled] = useState(false);
 const isSuperAdmin =
   session?.user?.email ===
   "surprisecricket11@gmail.com";
@@ -5413,7 +5414,19 @@ function ContextLens() {
 
 return (
   <>
-<div className="dashboard-tabs">
+<div className={`dashboard-tabs-wrap ${tabsScrolled ? "scrolled" : ""}`}>
+  <div className="dashboard-tabs-swipe-hint">
+    Swipe →
+  </div>
+
+<div
+  className="dashboard-tabs"
+  onScroll={(e) => {
+    if (e.currentTarget.scrollLeft > 10) {
+      setTabsScrolled(true);
+    }
+  }}
+>
 {!dashboardReady || permissionsLoading ? (
   <div className="dashboard-tabs-loading">
     Loading dashboard...
@@ -5535,6 +5548,7 @@ onClick={() => {
       </button>
     </>
   )}
+</div>
 </div>
 
   {activeTab === "scoring" && (
