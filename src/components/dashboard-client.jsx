@@ -1788,53 +1788,54 @@ async function handleShareMatch() {
   const innings =
     scoreboard.innings?.[scoreboard.innings.length - 1];
 
-  const targetText =
-    scoreboard.summary?.targetText ||
+  const leagueName =
+    scoreboard.match?.leagueName ||
+    activeLeague?.name ||
+    "Cric4All";
+
+  const teamA = scoreboard.match?.teamAName || "Team A";
+  const teamB = scoreboard.match?.teamBName || "Team B";
+
+  const scoreLine = innings
+    ? `${innings.teamName || ""} ${innings.runs ?? 0}/${innings.wickets ?? 0} (${innings.oversDisplay || "0.0"} ov)`
+    : "Score loading...";
+
+  const statusText =
     scoreboard.summary?.statusText ||
-    "";
+    scoreboard.summary?.targetText ||
+    "Follow the live scorecard for updates.";
 
   const shareText = `
-🏏 LIVE CRICKET SCORE
+🏏 LIVE CRICKET MATCH
 
-${scoreboard.match.teamAName}
-🆚
-${scoreboard.match.teamBName}
+${leagueName}
+${teamA} 🆚 ${teamB}
 
-━━━━━━━━━━━━━━━━━━━━━━
+━━━━━━━━━━━━━━━━━━
+📊 LIVE SCORE
 
-📊 SCORE
-${innings?.teamName || ""}
-${innings?.runs}/${innings?.wickets} (${innings?.oversDisplay})
+${scoreLine}
+${statusText}
 
-${targetText}
-
-━━━━━━━━━━━━━━━━━━━━━━
-
-📱 Follow every ball LIVE
+━━━━━━━━━━━━━━━━━━
+📲 Watch LIVE Scorecard
 
 ${shareUrl}
 
-━━━━━━━━━━━━━━━━━━━━━━
-
-Scored live using Cric4All
-🏏 Fast • Free • Live Cricket Scoring
-https://cric4all.app
+━━━━━━━━━━━━━━━━━━
+🏏 Cric4All — Live Cricket Scoring, Scorecards & Player Stats
 `.trim();
 
   try {
     if (navigator.share) {
       await navigator.share({
-        title: `${scoreboard.match.teamAName} vs ${scoreboard.match.teamBName}`,
+        title: `${teamA} vs ${teamB}`,
         text: shareText,
         url: shareUrl,
       });
     } else {
       await navigator.clipboard.writeText(shareText);
-
-      showToast(
-        "success",
-        "📋 Live score link copied to clipboard."
-      );
+      showToast?.("success", "📋 Live score message copied.");
     }
   } catch (err) {
     console.error(err);
