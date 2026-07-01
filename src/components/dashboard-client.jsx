@@ -5436,6 +5436,23 @@ const matchEnded =
     String(scoreboard?.match?.status || "").toUpperCase()
   );
 
+const teamsInLeague =
+  teams.filter(
+    (t) => String(t.leagueId) === String(activeLeagueId)
+  ) || [];
+
+const minimumTeamsReady = teamsInLeague.length >= 2;
+
+const minimumPlayersReady =
+  minimumTeamsReady &&
+  teamsInLeague.every(
+    (team) =>
+      (team.players?.length || 0) >= 2
+  );
+
+const leagueReadyForMatches =
+  minimumTeamsReady &&
+  minimumPlayersReady;
 
 function ContextLens() {
   const totalFilters =
@@ -8501,22 +8518,36 @@ onClick={() => {
     </div>
   </label>
 
-  <div className="mobile-league-next-step">
-    <div>
-      <strong>Ready to play?</strong>
-      <span>Create or manage matches for this league.</span>
-    </div>
+<div className="mobile-league-next-step">
+  <div>
+    <strong>
+      {leagueReadyForMatches
+        ? "🏏 Ready to play!"
+        : "⚙️ Complete Setup"}
+    </strong>
 
-    <button
-      type="button"
-      onClick={() => {
-        setActiveTab("matches");
-        setMatchesSubTab("CREATE MATCH");
-      }}
-    >
-      Go to Matches →
-    </button>
+    <span>
+      {leagueReadyForMatches
+        ? "Your league is ready. Create or manage matches."
+        : !minimumTeamsReady
+        ? "Create at least 2 teams."
+        : "Each team needs at least 2 players."}
+    </span>
   </div>
+
+  <button
+    type="button"
+    disabled={!leagueReadyForMatches}
+    onClick={() => {
+      setActiveTab("matches");
+      setMatchesSubTab("CREATE MATCH");
+    }}
+  >
+    {leagueReadyForMatches
+      ? "Go to Matches →"
+      : "Complete Setup"}
+  </button>
+</div>
 
   <div className="mgmt-clean-actions league-actions-desktop">
     <button

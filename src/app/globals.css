@@ -22729,3 +22729,10 @@ a:hover {
     text-overflow: clip !important;
   }
 }
+.mobile-league-next-step button:disabled{
+    opacity:.55;
+    cursor:not-allowed;
+    filter:grayscale(.25);
+    background:#475569 !important;
+    color:#cbd5e1 !important;
+}
