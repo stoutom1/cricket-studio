@@ -22078,4 +22078,69 @@ a:hover {
   .mobile-league-more-actions {
     display: none !important;
   }
+}/* FINAL MOBILE FIX: account modal + active league hero */
+@media (max-width: 768px) {
+  body:has(.account-modal-backdrop) {
+    overflow: hidden !important;
+  }
+
+  .account-modal-backdrop {
+    position: fixed !important;
+    inset: 0 !important;
+    z-index: 2147483647 !important;
+    width: 100vw !important;
+    height: 100dvh !important;
+    background: rgba(2, 6, 23, 0.88) !important;
+    backdrop-filter: blur(16px) !important;
+    display: flex !important;
+    align-items: center !important;
+    justify-content: center !important;
+    padding: 14px !important;
+    overflow: hidden !important;
+  }
+
+  .account-modal {
+    position: relative !important;
+    z-index: 2147483647 !important;
+    width: min(100%, 430px) !important;
+    max-height: calc(100dvh - 28px) !important;
+    overflow-y: auto !important;
+    margin: 0 !important;
+    border-radius: 24px !important;
+    background: #0f172a !important;
+    border: 1px solid rgba(96, 165, 250, 0.4) !important;
+    box-shadow: 0 30px 80px rgba(0, 0, 0, 0.75) !important;
+  }
+
+  .account-close-btn {
+    position: absolute !important;
+    top: 12px !important;
+    right: 12px !important;
+    z-index: 2 !important;
+  }
+
+  .league-current-info {
+    width: 100% !important;
+  }
+
+  .league-current-name {
+    display: block !important;
+    font-size: 22px !important;
+    line-height: 1.15 !important;
+    font-weight: 1000 !important;
+    color: #ffffff !important;
+    letter-spacing: -0.02em !important;
+    margin-bottom: 10px !important;
+  }
+
+  .league-mobile-select-wrapper {
+    min-height: 104px !important;
+    padding: 18px 52px 18px 16px !important;
+  }
+
+  .league-label {
+    font-size: 14px !important;
+    font-weight: 950 !important;
+    color: #facc15 !important;
+  }
 }
