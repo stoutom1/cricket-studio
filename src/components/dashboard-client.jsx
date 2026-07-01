@@ -5689,8 +5689,6 @@ onClick={() => {
     ) : null
   }
 >
-{selectedMatchId && (
-  <div className="score-hub-shell">
     {matchDetail && (
       <details className="match-setup-wow">
         <summary className="match-setup-wow-summary">
@@ -5780,6 +5778,9 @@ onClick={() => {
         </div>
       </details>
     )}
+{selectedMatchId && (
+  <div className="score-hub-shell">
+  
 
     <div
       className={`score-hub-tabs ${
