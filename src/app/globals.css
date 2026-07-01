@@ -22713,7 +22713,7 @@ a:hover {
 
   .scoreboard-tab .wow-tab-copy strong,
   .commentary-tab .wow-tab-copy strong {
-    font-size: 11px !important;
+    font-size: 13px !important;
     line-height: 1.05 !important;
     white-space: nowrap !important;
     overflow: visible !important;
@@ -22722,7 +22722,7 @@ a:hover {
 
   .scoreboard-tab .wow-tab-copy small,
   .commentary-tab .wow-tab-copy small {
-    font-size: 8.5px !important;
+    font-size: 11px !important;
     line-height: 1.05 !important;
     white-space: nowrap !important;
     overflow: visible !important;
