@@ -5781,40 +5781,55 @@ onClick={() => {
       </details>
     )}
 
-    <div
-      className={`score-hub-tabs ${
-        isSelectedMatchCompleted ? "completed-mode" : "live-mode"
+<div
+  className={`score-hub-tabs wow-main-tabs ${
+    isSelectedMatchCompleted ? "completed-mode" : "live-mode"
+  }`}
+>
+  {!isSelectedMatchCompleted && (
+    <button
+      type="button"
+      className={`wow-score-tab scoring-tab ${
+        effectiveScoringSubTab === "ADVANCED" ? "active" : ""
       }`}
+      onClick={() => setScoringSubTab("ADVANCED")}
     >
-      {!isSelectedMatchCompleted && (
-        <button
-          type="button"
-          className={effectiveScoringSubTab === "ADVANCED" ? "active" : ""}
-          onClick={() => setScoringSubTab("ADVANCED")}
-        >
-          <span>🎯</span>
-          <strong>Scoring</strong>
-        </button>
-      )}
+      <span className="wow-tab-icon">🎯</span>
+      <span className="wow-tab-copy">
+        <strong>Scoring</strong>
+        <small>Score balls live</small>
+      </span>
+    </button>
+  )}
 
-      <button
-        type="button"
-        className={effectiveScoringSubTab === "SCOREBOARD" ? "active" : ""}
-        onClick={() => setScoringSubTab("SCOREBOARD")}
-      >
-        <span>🏏</span>
-        <strong>Scoreboard</strong>
-      </button>
+  <button
+    type="button"
+    className={`wow-score-tab scoreboard-tab ${
+      effectiveScoringSubTab === "SCOREBOARD" ? "active" : ""
+    }`}
+    onClick={() => setScoringSubTab("SCOREBOARD")}
+  >
+    <span className="wow-tab-icon">🏏</span>
+    <span className="wow-tab-copy">
+      <strong>Scoreboard</strong>
+      <small>Full scorecard</small>
+    </span>
+  </button>
 
-      <button
-        type="button"
-        className={effectiveScoringSubTab === "COMMENTARY" ? "active" : ""}
-        onClick={() => setScoringSubTab("COMMENTARY")}
-      >
-        <span>📝</span>
-        <strong>Commentary</strong>
-      </button>
-    </div>
+  <button
+    type="button"
+    className={`wow-score-tab commentary-tab ${
+      effectiveScoringSubTab === "COMMENTARY" ? "active" : ""
+    }`}
+    onClick={() => setScoringSubTab("COMMENTARY")}
+  >
+    <span className="wow-tab-icon">📝</span>
+    <span className="wow-tab-copy">
+      <strong>Commentary</strong>
+      <small>Ball by ball</small>
+    </span>
+  </button>
+</div>
   </div>
 )}
 {selectedMatchId && effectiveScoringSubTab === "SCOREBOARD" && (
