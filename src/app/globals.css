@@ -21951,3 +21951,131 @@ a:hover {
     height: 24px;
   }
 }
+@media (max-width: 768px) {
+  .account-modal-backdrop {
+    position: fixed !important;
+    inset: 0 !important;
+    z-index: 999999 !important;
+    display: flex !important;
+    align-items: flex-start !important;
+    justify-content: center !important;
+    padding: 12px !important;
+    padding-top: calc(12px + env(safe-area-inset-top)) !important;
+    background: rgba(2, 6, 23, 0.82) !important;
+    backdrop-filter: blur(14px) !important;
+    overflow-y: auto !important;
+  }
+
+  .account-modal {
+    width: 100% !important;
+    max-width: 430px !important;
+    max-height: calc(100dvh - 24px) !important;
+    overflow-y: auto !important;
+    border-radius: 22px !important;
+    margin: 0 !important;
+  }
+
+  .league-actions-desktop {
+    display: none !important;
+  }
+
+  .mobile-league-guidance {
+    display: block;
+    margin-top: 6px;
+    color: #b8c6d9;
+    font-size: 12px;
+    line-height: 1.35;
+  }
+
+  .mobile-league-next-step {
+    margin-top: 12px;
+    padding: 14px;
+    border-radius: 18px;
+    background: rgba(34, 197, 94, 0.12);
+    border: 1px solid rgba(74, 222, 128, 0.3);
+    display: grid;
+    gap: 10px;
+  }
+
+  .mobile-league-next-step strong {
+    display: block;
+    color: #bbf7d0;
+    font-size: 13px;
+  }
+
+  .mobile-league-next-step span {
+    display: block;
+    color: #d7e3f4;
+    font-size: 12px;
+  }
+
+  .mobile-league-next-step button {
+    width: 100%;
+    border: 0;
+    border-radius: 14px;
+    padding: 12px;
+    font-weight: 900;
+    background: linear-gradient(135deg, #16a34a, #22c55e);
+    color: white;
+  }
+
+  .mobile-league-more-actions {
+    margin-top: 12px;
+    border-radius: 18px;
+    background: rgba(15, 23, 42, 0.82);
+    border: 1px solid rgba(148, 163, 184, 0.2);
+    overflow: hidden;
+  }
+
+  .mobile-league-more-actions summary {
+    cursor: pointer;
+    padding: 13px 14px;
+    font-weight: 900;
+    color: #93c5fd;
+    list-style: none;
+  }
+
+  .mobile-league-more-actions summary::-webkit-details-marker {
+    display: none;
+  }
+
+  .mobile-league-more-actions summary::after {
+    content: " ▼";
+    float: right;
+  }
+
+  .mobile-league-more-actions[open] summary::after {
+    content: " ▲";
+  }
+
+  .mobile-league-actions-grid {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 8px;
+    padding: 0 12px 12px;
+  }
+
+  .mobile-league-actions-grid button {
+    min-height: 42px;
+    border-radius: 14px;
+    border: 1px solid rgba(96, 165, 250, 0.25);
+    background: rgba(30, 41, 59, 0.95);
+    color: #e2e8f0;
+    font-weight: 900;
+    font-size: 12px;
+  }
+
+  .mobile-league-actions-grid button.danger {
+    background: rgba(239, 68, 68, 0.16);
+    border-color: rgba(248, 113, 113, 0.35);
+    color: #fecaca;
+  }
+}
+
+@media (min-width: 769px) {
+  .mobile-league-guidance,
+  .mobile-league-next-step,
+  .mobile-league-more-actions {
+    display: none !important;
+  }
+}

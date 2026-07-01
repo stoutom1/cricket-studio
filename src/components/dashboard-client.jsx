@@ -8396,118 +8396,197 @@ onClick={() => {
     <Card title="🏏 League Management">
       <div className="mgmt-clean-shell">
 
-        {/* LEAGUE */}
-        <section className="mgmt-clean-card">
-          <div className="mgmt-clean-head">
-            <div>
-              <h3>🏆 League</h3>
-              <p>Select your active league and share invite/public links.</p>
-            </div>
-          </div>
+{/* LEAGUE */}
+<section className="mgmt-clean-card league-mobile-wow-card">
+  <div className="mgmt-clean-head">
+    <div>
+      <h3>🏆 League</h3>
+      <p>Select your active league and share invite/public links.</p>
+    </div>
+  </div>
 
-<label className="compact-league-picker">
-  <span className="league-label">🏆 Active League</span>
+  <label className="compact-league-picker mobile-landing-league-picker">
+    <span className="league-label">🏆 Active League</span>
 
-  <div className="league-select-wrapper compact">
-    <div className="league-current-info">
-      <div className="league-current-name">
-        {activeLeague?.name || "Select League"}
+    <div className="league-select-wrapper compact mobile-league-select-wow">
+      <div className="league-current-info">
+        <div className="league-current-name">
+          {activeLeague?.name || "Select League"}
+        </div>
+
+        <span className={`league-visibility ${activeLeague?.visibility?.toLowerCase()}`}>
+          {activeLeague?.visibility === "PUBLIC"
+            ? "🌍 Public"
+            : activeLeague?.visibility === "UNLISTED"
+            ? "🔗 Unlisted"
+            : "🔒 Private"}
+        </span>
+
+        <small className="mobile-league-guidance">
+          Choose a league first. Then go to Matches to create or score a match.
+        </small>
       </div>
 
-      <span className={`league-visibility ${activeLeague?.visibility?.toLowerCase()}`}>
-        {activeLeague?.visibility === "PUBLIC"
-          ? "🌍 Public"
-          : activeLeague?.visibility === "UNLISTED"
-          ? "🔗 Unlisted"
-          : "🔒 Private"}
-      </span>
-    </div>
       <div className="combo-visual-cue" aria-hidden="true">
-  <span className="combo-ripple" />
-</div>
-    <select
-      value={activeLeagueId || ""}
-      onChange={(e) => {
-        setActiveLeagueId(e.target.value);
-        setSelectedTeamId("");
-        setSelectedSeriesId("");
+        <span className="combo-ripple" />
+      </div>
+
+      <select
+        value={activeLeagueId || ""}
+        onChange={(e) => {
+          setActiveLeagueId(e.target.value);
+          setSelectedTeamId("");
+          setSelectedSeriesId("");
+        }}
+      >
+        <option value="">Select League</option>
+
+        {leagues.map((league) => (
+          <option key={league.id} value={league.id}>
+            {league.name} • {league.visibility || "PRIVATE"}
+          </option>
+        ))}
+      </select>
+
+      <div className="league-dropdown-icon">⌄</div>
+    </div>
+  </label>
+
+  <div className="mobile-league-next-step">
+    <div>
+      <strong>Ready to play?</strong>
+      <span>Create or manage matches for this league.</span>
+    </div>
+
+    <button
+      type="button"
+      onClick={() => {
+        setActiveTab("matches");
+        setMatchesSubTab("CREATE MATCH");
       }}
     >
-      <option value="">Select League</option>
-
-      {leagues.map((league) => (
-        <option key={league.id} value={league.id}>
-          {league.name} • {league.visibility || "PRIVATE"}
-        </option>
-      ))}
-    </select>
-
-    <div className="league-dropdown-icon">⌄</div>
+      Go to Matches →
+    </button>
   </div>
-</label>
 
-          <div className="mgmt-clean-actions">
-            <button
-              type="button"
-              className="mgmt-clean-btn"
-              onClick={() => setShowLeagueModal(true)}
-            >
-              ➕ Create League
-            </button>
-            {selectedLeague && permissions?.canDeleteLeague && (
-              <button
-                type="button"
-                className="mgmt-clean-danger"
-                title={`Delete ${selectedLeague.name}`}
-                onClick={() =>
-                  handleDeleteLeague(selectedLeague.id, selectedLeague.name)
-                }
-              >
-                🗑️
-              </button>
-            )}
-            {activeLeague && (
-              <button
-                type="button"
-                className="mgmt-clean-btn"
-                onClick={() => generateInviteLink(activeLeague.id)}
-              >
-                🔗 Copy Invite Link
-              </button>
-            )}
+  <div className="mgmt-clean-actions league-actions-desktop">
+    <button
+      type="button"
+      className="mgmt-clean-btn"
+      onClick={() => setShowLeagueModal(true)}
+    >
+      ➕ Create League
+    </button>
 
-            {activeLeague &&
-              activeLeague.visibility !== "PRIVATE" &&
-              activeLeague.slug && (
-                <button
-                  type="button"
-                  className="mgmt-clean-btn"
-                  onClick={() => {
-                    const url = `${window.location.origin}/leagues/${activeLeague.slug}`;
-                    navigator.clipboard.writeText(url);
-                    setMessage("Public league link copied.");
-                    showToast("success", "✅ Public league link copied.");
-                  }}
-                >
-                  🌐 Copy Public View Link
-                </button>
-              )}
-              <button
-                type="button"
-                className="mgmt-clean-btn"
-                onClick={() => setShowFollowedLeaguesDrawer(true)}
-              >
-                ⭐ Followed Leagues
-              </button>
-            <button
-              type="button"
-              className="mgmt-clean-btn public-discover-btn"
-              onClick={() => setShowPublicLeagueDrawer(true)}
-            >
-            🌐 Discover Public Leagues
+    {selectedLeague && permissions?.canDeleteLeague && (
+      <button
+        type="button"
+        className="mgmt-clean-danger"
+        title={`Delete ${selectedLeague.name}`}
+        onClick={() =>
+          handleDeleteLeague(selectedLeague.id, selectedLeague.name)
+        }
+      >
+        🗑️
+      </button>
+    )}
+
+    {activeLeague && (
+      <button
+        type="button"
+        className="mgmt-clean-btn"
+        onClick={() => generateInviteLink(activeLeague.id)}
+      >
+        🔗 Copy Invite Link
+      </button>
+    )}
+
+    {activeLeague &&
+      activeLeague.visibility !== "PRIVATE" &&
+      activeLeague.slug && (
+        <button
+          type="button"
+          className="mgmt-clean-btn"
+          onClick={() => {
+            const url = `${window.location.origin}/leagues/${activeLeague.slug}`;
+            navigator.clipboard.writeText(url);
+            setMessage("Public league link copied.");
+            showToast("success", "✅ Public league link copied.");
+          }}
+        >
+          🌐 Copy Public View Link
+        </button>
+      )}
+
+    <button
+      type="button"
+      className="mgmt-clean-btn"
+      onClick={() => setShowFollowedLeaguesDrawer(true)}
+    >
+      ⭐ Followed Leagues
+    </button>
+
+    <button
+      type="button"
+      className="mgmt-clean-btn public-discover-btn"
+      onClick={() => setShowPublicLeagueDrawer(true)}
+    >
+      🌐 Discover Public Leagues
+    </button>
+  </div>
+
+  <details className="mobile-league-more-actions">
+    <summary>More league actions</summary>
+
+    <div className="mobile-league-actions-grid">
+      <button type="button" onClick={() => setShowLeagueModal(true)}>
+        ➕ Create
+      </button>
+
+      {activeLeague && (
+        <button type="button" onClick={() => generateInviteLink(activeLeague.id)}>
+          🔗 Invite
+        </button>
+      )}
+
+      {activeLeague &&
+        activeLeague.visibility !== "PRIVATE" &&
+        activeLeague.slug && (
+          <button
+            type="button"
+            onClick={() => {
+              const url = `${window.location.origin}/leagues/${activeLeague.slug}`;
+              navigator.clipboard.writeText(url);
+              setMessage("Public league link copied.");
+              showToast("success", "✅ Public league link copied.");
+            }}
+          >
+            🌐 Public Link
           </button>
-          </div>
-        </section>
+        )}
+
+      <button type="button" onClick={() => setShowFollowedLeaguesDrawer(true)}>
+        ⭐ Followed
+      </button>
+
+      <button type="button" onClick={() => setShowPublicLeagueDrawer(true)}>
+        🌐 Discover
+      </button>
+
+      {selectedLeague && permissions?.canDeleteLeague && (
+        <button
+          type="button"
+          className="danger"
+          onClick={() =>
+            handleDeleteLeague(selectedLeague.id, selectedLeague.name)
+          }
+        >
+          🗑️ Delete
+        </button>
+      )}
+    </div>
+  </details>
+</section>
 
         {/* SERIES */}
         <section className="mgmt-clean-card">
