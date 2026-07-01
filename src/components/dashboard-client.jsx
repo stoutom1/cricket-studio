@@ -5689,121 +5689,126 @@ onClick={() => {
     ) : null
   }
 >
-{matchDetail && (
-<details className="match-setup-card">
-  <summary className="match-setup-summary">
-    <div className="match-setup-left">
-      <div className="match-setup-icon">📋</div>
+{selectedMatchId && (
+  <div className="score-details-control-block">
+    {matchDetail && (
+      <details className="match-setup-card">
+        <summary className="match-setup-summary">
+          <div className="match-setup-left">
+            <div className="match-setup-icon">📋</div>
 
-      <div className="match-setup-text">
-        <div className="match-setup-title-row">
-          <span className="match-setup-title">Match Setup</span>
-          <span className="match-setup-chevron">▼</span>
-        </div>
+            <div className="match-setup-text">
+              <div className="match-setup-title-row">
+                <span className="match-setup-title">Match Setup</span>
+                <span className="match-setup-chevron">▼</span>
+              </div>
 
-        <div className="match-setup-subtitle">
-          Tap to view innings, teams, players & match settings
-        </div>
-      </div>
-    </div>
-  </summary>
-      {selectedMatch && (
-        <div className="selected-match-banner">
-          <div>
-            <strong>
-              {selectedMatch.teamAName} vs {selectedMatch.teamBName}
-            </strong>
-            <span>
-              {selectedMatch.battingFirstTeamName
-                ? `Batting first: ${selectedMatch.battingFirstTeamName}`
-                : "Batting first not decided"}
-            </span>
+              <div className="match-setup-subtitle">
+                Tap to view innings, teams, players & match settings
+              </div>
+            </div>
+          </div>
+        </summary>
+
+        <div className="match-setup-content">
+          {selectedMatch && (
+            <div className="selected-match-banner">
+              <div>
+                <strong>
+                  {selectedMatch.teamAName} vs {selectedMatch.teamBName}
+                </strong>
+                <span>
+                  {selectedMatch.battingFirstTeamName
+                    ? `Batting first: ${selectedMatch.battingFirstTeamName}`
+                    : "Batting first not decided"}
+                </span>
+              </div>
+
+              <span className="pill">{selectedMatch.status}</span>
+            </div>
+          )}
+
+          <div className="match-setup-grid">
+            <div>
+              <span>Overs</span>
+              <strong>{matchDetail?.oversPerInnings || "-"}</strong>
+            </div>
+
+            <div>
+              <span>Wickets</span>
+              <strong>{matchDetail?.maxWicketsPerInnings || "Unlimited"}</strong>
+            </div>
+
+            <div>
+              <span>Powerplay</span>
+              <strong>{matchDetail?.powerplayOversInnings ?? 0}</strong>
+            </div>
+
+            <div>
+              <span>Max / Bowler</span>
+              <strong>{matchDetail?.maxOversPerBowler || "Unlimited"}</strong>
+            </div>
           </div>
 
-          <span className="pill">
-            {selectedMatch.status}
-          </span>
+          <div className="match-officials-pills">
+            <div className="team-official-pill">
+              <strong>{matchDetail?.teamA?.name || "Team A"}</strong>
+              <span>
+                🧢 {playerNameFromTeam(matchDetail?.teamA, matchDetail?.teamACaptainId)}
+              </span>
+              <span>
+                🧤 {playerNameFromTeam(matchDetail?.teamA, matchDetail?.teamAWicketKeeperId)}
+              </span>
+            </div>
+
+            <div className="team-official-pill">
+              <strong>{matchDetail?.teamB?.name || "Team B"}</strong>
+              <span>
+                🧢 {playerNameFromTeam(matchDetail?.teamB, matchDetail?.teamBCaptainId)}
+              </span>
+              <span>
+                🧤 {playerNameFromTeam(matchDetail?.teamB, matchDetail?.teamBWicketKeeperId)}
+              </span>
+            </div>
+          </div>
         </div>
-      )}
-  <div className="match-setup-grid">
-    <div>
-      <span>Overs</span>
-      <strong>{matchDetail?.oversPerInnings || "-"}</strong>
-    </div>
-
-    <div>
-      <span>Wickets</span>
-      <strong>{matchDetail?.maxWicketsPerInnings || "Unlimited"}</strong>
-    </div>
-
-    <div>
-      <span>Powerplay</span>
-      <strong>{matchDetail?.powerplayOversInnings ?? 0}</strong>
-    </div>
-
-    <div>
-      <span>Max / Bowler</span>
-      <strong>{matchDetail?.maxOversPerBowler || "Unlimited"}</strong>
-    </div>
-  </div>
-
-<div className="match-officials-pills">
-  <div className="team-official-pill">
-    <strong>{matchDetail?.teamA?.name || "Team A"}</strong>
-    <span>
-      🧢 {playerNameFromTeam(matchDetail?.teamA, matchDetail?.teamACaptainId)}
-    </span>
-    <span>
-      🧤 {playerNameFromTeam(matchDetail?.teamA, matchDetail?.teamAWicketKeeperId)}
-    </span>
-  </div>
-
-  <div className="team-official-pill">
-    <strong>{matchDetail?.teamB?.name || "Team B"}</strong>
-    <span>
-      🧢 {playerNameFromTeam(matchDetail?.teamB, matchDetail?.teamBCaptainId)}
-    </span>
-    <span>
-      🧤 {playerNameFromTeam(matchDetail?.teamB, matchDetail?.teamBWicketKeeperId)}
-    </span>
-  </div>
-</div>
-</details>
-)}  
-{selectedMatchId && (
-  <div
-    className={`score-detail-tabs ${
-      isSelectedMatchCompleted ? "completed-mode" : "live-mode"
-    }`}
-  >
-    {!isSelectedMatchCompleted && (
-      <button
-        type="button"
-        className={effectiveScoringSubTab === "ADVANCED" ? "active" : ""}
-        onClick={() => setScoringSubTab("ADVANCED")}
-      >
-        <span>🎯</span>
-        <strong>Scoring</strong>
-      </button>
+      </details>
     )}
 
-    <button
-      type="button"
-      className={effectiveScoringSubTab === "SCOREBOARD" ? "active" : ""}
-      onClick={() => setScoringSubTab("SCOREBOARD")}
+    <div
+      className={`score-detail-tabs ${
+        isSelectedMatchCompleted ? "completed-mode" : "live-mode"
+      }`}
     >
-      <span>🏏</span>
-      <strong>Scoreboard</strong>
-    </button>
+      {!isSelectedMatchCompleted && (
+        <button
+          type="button"
+          className={effectiveScoringSubTab === "ADVANCED" ? "active" : ""}
+          onClick={() => setScoringSubTab("ADVANCED")}
+        >
+          <span>🎯</span>
+          <strong>Scoring</strong>
+        </button>
+      )}
 
-    <button
-      type="button"
-      className={effectiveScoringSubTab === "COMMENTARY" ? "active" : ""}
-      onClick={() => setScoringSubTab("COMMENTARY")}
-    >
-      <span>📝</span>
-      <strong>Commentary</strong>
-    </button>
+      <button
+        type="button"
+        className={effectiveScoringSubTab === "SCOREBOARD" ? "active" : ""}
+        onClick={() => setScoringSubTab("SCOREBOARD")}
+      >
+        <span>🏏</span>
+        <strong>Scoreboard</strong>
+      </button>
+
+      <button
+        type="button"
+        className={effectiveScoringSubTab === "COMMENTARY" ? "active" : ""}
+        onClick={() => setScoringSubTab("COMMENTARY")}
+      >
+        <span>📝</span>
+        <strong>Commentary</strong>
+      </button>
+    </div>
   </div>
 )}
 {selectedMatchId && effectiveScoringSubTab === "SCOREBOARD" && (
