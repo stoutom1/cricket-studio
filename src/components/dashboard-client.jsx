@@ -5690,27 +5690,33 @@ onClick={() => {
   }
 >
 {selectedMatchId && (
-  <div className="score-details-control-block">
+  <div className="score-hub-shell">
     {matchDetail && (
-      <details className="match-setup-card">
-        <summary className="match-setup-summary">
-          <div className="match-setup-left">
-            <div className="match-setup-icon">📋</div>
+      <details className="match-setup-wow">
+        <summary className="match-setup-wow-summary">
+          <div className="match-setup-wow-left">
+            <div className="match-setup-wow-icon">📋</div>
 
-            <div className="match-setup-text">
-              <div className="match-setup-title-row">
-                <span className="match-setup-title">Match Setup</span>
-                <span className="match-setup-chevron">▼</span>
+            <div className="match-setup-wow-text">
+              <div className="match-setup-wow-title-row">
+                <span>Match Setup</span>
+                <b>▼</b>
               </div>
 
-              <div className="match-setup-subtitle">
-                Tap to view innings, teams, players & match settings
-              </div>
+              <small>
+                {selectedMatch
+                  ? `${selectedMatch.teamAName} vs ${selectedMatch.teamBName}`
+                  : "Tap to view match details"}
+              </small>
             </div>
+          </div>
+
+          <div className="match-setup-wow-status">
+            {selectedMatch?.status || "MATCH"}
           </div>
         </summary>
 
-        <div className="match-setup-content">
+        <div className="match-setup-wow-body">
           {selectedMatch && (
             <div className="selected-match-banner">
               <div>
@@ -5776,7 +5782,7 @@ onClick={() => {
     )}
 
     <div
-      className={`score-detail-tabs ${
+      className={`score-hub-tabs ${
         isSelectedMatchCompleted ? "completed-mode" : "live-mode"
       }`}
     >
