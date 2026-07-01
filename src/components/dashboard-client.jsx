@@ -1779,45 +1779,67 @@ setLastCorrectionId(null);
     setError(err.message);
   }
 }
-  async function handleShareMatch() {
-      if (!scoreboard) return;
+async function handleShareMatch() {
+  if (!scoreboard) return;
 
-      const shareCode = scoreboard?.match?.shareCode;
-      const shareUrl = `${window.location.origin}/live/${shareCode}`;
-      const innings =
-        scoreboard.innings?.[scoreboard.innings.length - 1];
+  const shareCode = scoreboard?.match?.shareCode;
+  const shareUrl = `${window.location.origin}/live/${shareCode}`;
 
-      const shareText = `
-    🏏 ${scoreboard.match.teamAName} vs ${scoreboard.match.teamBName}
+  const innings =
+    scoreboard.innings?.[scoreboard.innings.length - 1];
 
-    Score:
-    ${innings?.teamName || ""} ${innings?.runs}/${innings?.wickets}
-    Overs: ${innings?.oversDisplay}
+  const targetText =
+    scoreboard.summary?.targetText ||
+    scoreboard.summary?.statusText ||
+    "";
 
-    ${scoreboard.summary?.statusText || "Loading scorecard..."}
+  const shareText = `
+🏏 LIVE CRICKET SCORE
 
-    Live Score:
-    ${shareUrl}
-      `.trim();
+${scoreboard.match.teamAName}
+🆚
+${scoreboard.match.teamBName}
 
-      try {
-        if (navigator.share) {
-          await navigator.share({
-            title: `${scoreboard.match.teamAName} vs ${scoreboard.match.teamBName}`,
-            text: shareText,
-            url: shareUrl,
-          });
-        } else {
-          await navigator.clipboard.writeText(
-            `${shareText}\n\n${shareUrl}`
-          );
+━━━━━━━━━━━━━━━━━━━━━━
 
+📊 SCORE
+${innings?.teamName || ""}
+${innings?.runs}/${innings?.wickets} (${innings?.oversDisplay})
 
-        }
-      } catch (err) {
-        console.error(err);
-      }
+${targetText}
+
+━━━━━━━━━━━━━━━━━━━━━━
+
+📱 Follow every ball LIVE
+
+${shareUrl}
+
+━━━━━━━━━━━━━━━━━━━━━━
+
+Scored live using Cric4All
+🏏 Fast • Free • Live Cricket Scoring
+https://cric4all.app
+`.trim();
+
+  try {
+    if (navigator.share) {
+      await navigator.share({
+        title: `${scoreboard.match.teamAName} vs ${scoreboard.match.teamBName}`,
+        text: shareText,
+        url: shareUrl,
+      });
+    } else {
+      await navigator.clipboard.writeText(shareText);
+
+      showToast(
+        "success",
+        "📋 Live score link copied to clipboard."
+      );
     }
+  } catch (err) {
+    console.error(err);
+  }
+}
 const loadLeagues = async (leagueIdToValidate = null) => {
   const response = await fetch("/api/leagues");
   const data = await response.json();
