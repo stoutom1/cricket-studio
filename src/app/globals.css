@@ -22525,34 +22525,47 @@ a:hover {
 /* Mobile: make them obvious and not cut off */
 @media (max-width: 768px) {
   .wow-main-tabs {
-    grid-template-columns: 1fr !important;
+    grid-template-columns: repeat(2, minmax(0, 1fr)) !important;
     gap: 10px !important;
     padding: 10px !important;
-    border-radius: 22px !important;
-  }
-
-  .wow-main-tabs.completed-mode {
-    grid-template-columns: 1fr !important;
   }
 
   .wow-score-tab {
-    min-height: 74px !important;
-    padding: 12px !important;
-    border-radius: 20px !important;
+    min-height: 66px !important;
+    padding: 10px !important;
+    border-radius: 18px !important;
+  }
+
+  .wow-score-tab.scoring-tab {
+    grid-column: 1 / -1 !important;
+    min-height: 72px !important;
   }
 
   .wow-tab-icon {
-    width: 44px;
-    height: 44px;
-    border-radius: 16px;
-    font-size: 21px;
+    width: 38px !important;
+    height: 38px !important;
+    border-radius: 14px !important;
+    font-size: 19px !important;
   }
 
   .wow-tab-copy strong {
-    font-size: 17px;
+    font-size: 15px !important;
   }
 
   .wow-tab-copy small {
-    font-size: 12px;
+    font-size: 10.5px !important;
+  }
+
+  .wow-main-tabs.completed-mode {
+    grid-template-columns: repeat(2, minmax(0, 1fr)) !important;
+  }
+}
+@media (min-width: 769px) {
+  .wow-tab-copy strong {
+    font-size: 18px !important;
+  }
+
+  .wow-tab-copy small {
+    font-size: 12px !important;
   }
 }
