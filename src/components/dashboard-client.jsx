@@ -9293,74 +9293,118 @@ onClick={() => {
   </Card>
 )}
 {statsSubTab === "CAPTAINCY" && (
-  <div className="score-table-scroll">
-    {statsSubTab === "CAPTAINCY" && !filteredCaptaincy.length && (
-  <div className="mgmt-clean-empty">
-    No captaincy stats yet.
-  </div>
-)}
-    <table className="score-table sticky-first-col">
-      <thead>
-        <tr>
-          <th>Captain</th>
-          <th>Team</th>
-          <th>Matches</th>
-          <th>Won</th>
-          <th>Lost</th>
-          <th>Win %</th>
-        </tr>
-      </thead>
+  <Card title="🧢 Captaincy Records">
+    {!filteredCaptaincy.length ? (
+      <div className="mgmt-clean-empty">No captaincy stats yet.</div>
+    ) : (
+      <div className="compact-stats-list">
+        {[...filteredCaptaincy]
+          .sort((a, b) => {
+            const aWinPct = a.winPct
+              ? Number(a.winPct)
+              : a.played
+              ? (a.won / a.played) * 100
+              : 0;
 
-      <tbody>
-        {(filteredCaptaincy.map((row) => (
-          <tr key={row.playerId}>
-            <td>{row.playerName}</td>
-            <td>{row.teamName}</td>
-            <td>{row.played}</td>
-            <td>{row.won}</td>
-            <td>{row.lost}</td>
-            <td>{row.winPct || (row.played ? ((row.won / row.played) * 100).toFixed(1) : "0.0")}%</td>
-          </tr>
-        )))}
-      </tbody>
-    </table>
-  </div>
+            const bWinPct = b.winPct
+              ? Number(b.winPct)
+              : b.played
+              ? (b.won / b.played) * 100
+              : 0;
+
+            return (
+              bWinPct - aWinPct ||
+              (b.won || 0) - (a.won || 0) ||
+              (b.played || 0) - (a.played || 0)
+            );
+          })
+          .map((row, idx) => {
+            const winPct =
+              row.winPct ||
+              (row.played
+                ? ((row.won / row.played) * 100).toFixed(1)
+                : "0.0");
+
+            return (
+              <details
+                key={`league-captain-${row.playerId ?? row.playerName}-${idx}`}
+                className="compact-stat-card"
+              >
+                <summary className="compact-stat-summary">
+                  <span className="compact-rank">#{idx + 1}</span>
+
+                  <span className="compact-player">
+                    <strong>{row.playerName}</strong>
+                    <small>{row.teamName}</small>
+                  </span>
+
+                  <span className="compact-highlight">
+                    <strong>{winPct}%</strong>
+                    <small>Win</small>
+                  </span>
+
+                  <span className="compact-toggle">⌄</span>
+                </summary>
+
+                <div className="compact-stat-grid">
+                  <span>M {row.played}</span>
+                  <span>Won {row.won}</span>
+                  <span>Lost {row.lost}</span>
+                  <span>Win % {winPct}</span>
+                </div>
+              </details>
+            );
+          })}
+      </div>
+    )}
+  </Card>
 )}
 {statsSubTab === "WICKETKEEPING" && (
-  <div className="score-table-scroll">
-    {statsSubTab === "WICKETKEEPING" && !filteredWicketkeeping.length && (
-  <div className="mgmt-clean-empty">
-    No wicketkeeping stats yet.
-  </div>
-)}
-    <table className="score-table sticky-first-col">
-      <thead>
-        <tr>
-          <th>Keeper</th>
-          <th>Team</th>
-          <th>Catches</th>
-          <th>Stumpings</th>
-          <th>Run Outs</th>
-          <th>Total</th>
-        </tr>
-      </thead>
+  <Card title="🧤 Wicketkeeping Records">
+    {!filteredWicketkeeping.length ? (
+      <div className="mgmt-clean-empty">No wicketkeeping stats yet.</div>
+    ) : (
+      <div className="compact-stats-list">
+        {[...filteredWicketkeeping]
+          .sort(
+            (a, b) =>
+              (b.dismissals || 0) - (a.dismissals || 0) ||
+              (b.catches || 0) - (a.catches || 0) ||
+              (b.stumpings || 0) - (a.stumpings || 0) ||
+              (b.runOuts || 0) - (a.runOuts || 0)
+          )
+          .map((row, idx) => (
+            <details
+              key={`league-keeper-${row.playerId ?? row.playerName}-${idx}`}
+              className="compact-stat-card"
+            >
+              <summary className="compact-stat-summary">
+                <span className="compact-rank">#{idx + 1}</span>
 
-      <tbody>
-        {(filteredWicketkeeping.map((row) => (
-          <tr key={row.playerId}>
-            <td>{row.playerName}</td>
-            <td>{row.teamName}</td>
-            <td>{row.catches}</td>
-            <td>{row.stumpings}</td>
-            <td>{row.runOuts}</td>
-            <td>
-              <strong>{row.dismissals}</strong>
-            </td>
-          </tr>
-        )))}
-      </tbody>
-    </table>
-  </div>
+                <span className="compact-player">
+                  <strong>{row.playerName}</strong>
+                  <small>{row.teamName}</small>
+                </span>
+
+                <span className="compact-highlight">
+                  <strong>{row.dismissals}</strong>
+                  <small>Total</small>
+                </span>
+
+                <span className="compact-toggle">⌄</span>
+              </summary>
+
+              <div className="compact-stat-grid">
+                <span>Catches {row.catches}</span>
+                <span>Stumpings {row.stumpings}</span>
+                <span>Run Outs {row.runOuts}</span>
+                <span>Total {row.dismissals}</span>
+              </div>
+            </details>
+          ))}
+      </div>
+    )}
+  </Card>
 )}
       </>
     )}

@@ -23035,3 +23035,20 @@ a:hover {
     padding: 6px 7px;
   }
 }
+.compact-stat-summary-static {
+  grid-template-columns: 42px 1fr 72px;
+}
+
+.compact-stat-grid-static {
+  padding-left: 64px;
+}
+
+@media (max-width: 520px) {
+  .compact-stat-summary-static {
+    grid-template-columns: 34px 1fr 62px;
+  }
+
+  .compact-stat-grid-static {
+    padding-left: 44px;
+  }
+}
