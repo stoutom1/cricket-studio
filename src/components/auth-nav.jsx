@@ -29,28 +29,18 @@ export default function AuthNav() {
           {status === "loading" ? (
             <span className="loading-text">Loading...</span>
           ) : session ? (
-            <>
-              <button
-                type="button"
-                className="user-avatar account-avatar-btn"
-                title="Account details"
-                onClick={() => setShowAccountModal(true)}
-              >
-                👤
-              </button>
-
-              <button
-                type="button"
-                className="logout-btn"
-                onClick={() =>
-                  signOut({
-                    callbackUrl: "/login",
-                  })
-                }
-              >
-                Sign Out
-              </button>
-            </>
+<button
+  type="button"
+  className="account-pill-btn"
+  title="Account menu"
+  onClick={() => setShowAccountModal(true)}
+>
+  <span className="account-pill-avatar">👤</span>
+  <span className="account-pill-name">
+    {session.user?.name?.split(" ")[0] || "Account"}
+  </span>
+  <span className="account-pill-caret">▾</span>
+</button>
           ) : (
             <Link href="/login" className="login-btn">
               Sign In

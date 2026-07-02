@@ -22736,3 +22736,46 @@ a:hover {
     background:#475569 !important;
     color:#cbd5e1 !important;
 }
+.account-pill-btn {
+  display: inline-flex;
+  align-items: center;
+  gap: 7px;
+  border: 1px solid rgba(96, 165, 250, 0.45);
+  background: linear-gradient(135deg, rgba(37, 99, 235, 0.28), rgba(124, 58, 237, 0.22));
+  color: #ffffff;
+  border-radius: 999px;
+  padding: 7px 12px 7px 8px;
+  font-weight: 800;
+  font-size: 13px;
+  cursor: pointer;
+  box-shadow: 0 6px 18px rgba(15, 23, 42, 0.35);
+}
+
+.account-pill-btn:hover {
+  transform: translateY(-1px);
+  border-color: rgba(147, 197, 253, 0.9);
+  box-shadow: 0 8px 24px rgba(37, 99, 235, 0.35);
+}
+
+.account-pill-avatar {
+  width: 24px;
+  height: 24px;
+  border-radius: 999px;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  background: rgba(15, 23, 42, 0.45);
+  border: 1px solid rgba(255, 255, 255, 0.2);
+}
+
+.account-pill-name {
+  max-width: 90px;
+  overflow: hidden;
+  white-space: nowrap;
+  text-overflow: ellipsis;
+}
+
+.account-pill-caret {
+  opacity: 0.8;
+  font-size: 11px;
+}
