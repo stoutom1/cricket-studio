@@ -4,6 +4,7 @@ import { getServerSession } from "next-auth";
 import { authOptions } from "@/lib/auth";
 import { isSuperAdmin } from "@/lib/superAdmin";
 export const dynamic = "force-dynamic";
+import { logAudit } from "@/lib/audit";
 import { slugify } from "@/lib/slug";
 
 export async function GET() {
@@ -142,6 +143,17 @@ const league = await prisma.league.create({
     slug: slugify(body.name)
   }
 });
+    await logAudit({
+      action: "LEAGUE_CREATED",
+      entityType: "LEAGUE",
+      entityId: league.id,
+      leagueId: league.id,
+      actor: session?.user,
+      description: `League "${league.name}" created.`,
+      beforeData: null,
+      afterData: league,
+      request: req,
+    });
 
 await prisma.leagueMember.create({
   data: {

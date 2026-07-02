@@ -114,5 +114,18 @@ async authorize(credentials) {
       return session;
     }
   },
+  events: {
+  async signIn({ user }) {
+    if (!user?.email) return;
+
+    await prisma.user.update({
+      where: { email: user.email },
+      data: {
+        lastLoginAt: new Date(),
+        lastSeenAt: new Date(),
+      },
+    });
+  },
+},
   secret: process.env.NEXTAUTH_SECRET
 };

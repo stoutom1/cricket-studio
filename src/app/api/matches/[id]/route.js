@@ -3,6 +3,7 @@ import { NextResponse } from "next/server";
 import prisma from "@/lib/prisma";
 import { authOptions } from "@/lib/auth";
 import { getPermissions } from "@/lib/permissions";
+import { logAudit } from "@/lib/audit";
 
 export const runtime = "nodejs";
 
@@ -106,62 +107,89 @@ export async function PATCH(request, { params }) {
   return NextResponse.json(updated);
 }
 
-export async function DELETE(
-  request,
-  { params }
-) {
-  const session =
-    await getServerSession(authOptions);
-
-  if (!session?.user?.email) {
-    return NextResponse.json(
-      { error: "Unauthorized" },
-      { status: 401 }
-    );
-  }
-
+export async function DELETE(request, { params }) {
+  const session = await getServerSession(authOptions);
   const { id } = await params;
   const matchId = Number(id);
 
-  const match =
-    await prisma.match.findUnique({
-      where: {
-        id: matchId
-      }
-    });
-
-  if (!match) {
-    return NextResponse.json(
-      { error: "Match not found" },
-      { status: 404 }
-    );
+  if (!matchId || Number.isNaN(matchId)) {
+    return Response.json({ error: "Invalid match id" }, { status: 400 });
   }
 
-  const permissions =
-    await getPermissions(
-      session.user.email,
-      match.leagueId
-    );
+  const beforeMatch = await prisma.match.findUnique({
+    where: { id: matchId },
+    include: {
+      teamA: true,
+      teamB: true,
+      league: true,
+      series: true,
+      balls: true,
+    },
+  });
 
-  if (!permissions?.canDeleteMatch) {
-    return NextResponse.json(
-      { error: "Forbidden" },
-      { status: 403 }
-    );
+  if (!beforeMatch) {
+    return Response.json({ error: "Match not found" }, { status: 404 });
   }
-  await prisma.matchState.deleteMany({
-    where: {
-      matchId: matchId
-    }
+
+await prisma.$transaction(async (tx) => {
+  await tx.matchState.deleteMany({
+    where: { matchId },
   });
 
-  await prisma.match.delete({
-    where: {
-      id: matchId
-    }
+  await tx.ball.deleteMany({
+    where: { matchId },
   });
 
-  return NextResponse.json({
-    success: true
+  await tx.match.delete({
+    where: { id: matchId },
+  });
+});
+
+  await logAudit({
+    action: "MATCH_DELETED",
+    entityType: "MATCH",
+    entityId: matchId,
+
+    leagueId: beforeMatch.leagueId || null,
+    matchId,
+
+    actor: session?.user,
+
+    description: `Match "${beforeMatch.teamA?.name || "Team A"} vs ${
+      beforeMatch.teamB?.name || "Team B"
+    }" was deleted from league "${
+      beforeMatch.league?.name || "Unknown League"
+    }".`,
+
+    beforeData: {
+      id: beforeMatch.id,
+      status: beforeMatch.status,
+      leagueId: beforeMatch.leagueId,
+      leagueName: beforeMatch.league?.name || null,
+      seriesId: beforeMatch.seriesId || null,
+      seriesName: beforeMatch.series?.name || null,
+      teamAId: beforeMatch.teamAId,
+      teamAName: beforeMatch.teamA?.name || null,
+      teamBId: beforeMatch.teamBId,
+      teamBName: beforeMatch.teamB?.name || null,
+      battingFirstTeamId: beforeMatch.battingFirstTeamId || null,
+      oversPerInnings: beforeMatch.oversPerInnings,
+      powerplayOversInnings: beforeMatch.powerplayOversInnings,
+      maxWicketsPerInnings: beforeMatch.maxWicketsPerInnings,
+      maxOversPerBowler: beforeMatch.maxOversPerBowler,
+      scheduledAt: beforeMatch.scheduledAt,
+      startedAt: beforeMatch.startedAt,
+      endedAt: beforeMatch.endedAt,
+      ballsDeleted: beforeMatch.balls?.length || 0,
+    },
+
+    afterData: null,
+
+    request,
+  });
+
+  return Response.json({
+    success: true,
+    message: "Match deleted",
   });
 }

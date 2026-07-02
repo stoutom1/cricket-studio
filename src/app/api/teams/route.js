@@ -3,6 +3,7 @@ import { NextResponse } from "next/server";
 import prisma from "@/lib/prisma";
 import { authOptions } from "@/lib/auth";
 import { isSuperAdmin } from "@/lib/superAdmin";
+import { logAudit } from "@/lib/audit";
 
 export const runtime = "nodejs";
 
@@ -210,6 +211,17 @@ export async function POST(request) {
       }
     });
 
+await logAudit({
+  action: "TEAM_CREATED",
+  entityType: "TEAM",
+  entityId: team.id,
+  leagueId: team.leagueId,
+  teamId: team.id,
+  actor: session?.user,
+  description: `Team "${team.name}" was created.`,
+  afterData: team,
+  request,
+});
     return NextResponse.json(
       team,
       {

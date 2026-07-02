@@ -2,6 +2,7 @@ import { getServerSession } from "next-auth";
 import { NextResponse } from "next/server";
 import prisma from "@/lib/prisma";
 import { authOptions } from "@/lib/auth";
+import { logAudit } from "@/lib/audit";
 
 export const runtime = "nodejs";
 
@@ -56,7 +57,20 @@ export async function PATCH(request, { params }) {
       where: { id: teamId },
       data: { name },
     });
+    const session = await getServerSession(authOptions);
 
+await logAudit({
+  action: "TEAM_UPDATED",
+  entityType: "TEAM",
+  entityId: team.id,
+  leagueId: team.leagueId,
+  teamId: team.id,
+  actor: session?.user,
+  description: `Team renamed from "${existingTeam.name}" to "${team.name}".`,
+  beforeData: existingTeam,
+  afterData: team,
+  request,
+});
     return NextResponse.json(team);
   } catch (err) {
     console.error("TEAM PATCH ERROR", err);
@@ -124,7 +138,17 @@ export async function DELETE(request, { params }) {
   await prisma.team.delete({
     where: { id: teamId },
   });
-
+await logAudit({
+  action: "TEAM_DELETED",
+  entityType: "TEAM",
+  entityId: team.id,
+  leagueId: team.leagueId,
+  teamId: team.id,
+  actor: session?.user,
+  description: `Team "${team.name}" was deleted.`,
+  afterData: team,
+  request,
+});
   return NextResponse.json({
     success: true,
     message: "Team deleted successfully",

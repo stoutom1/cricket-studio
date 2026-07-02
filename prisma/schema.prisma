@@ -20,6 +20,8 @@ model User {
   resetTokenExpiry    DateTime?
   createdAt           DateTime             @default(now())
   leagueFollowers     LeagueFollower[]
+  lastLoginAt         DateTime?
+  lastSeenAt          DateTime?
 }
 
 model Team {
@@ -304,4 +306,36 @@ model LeagueFollower {
   league League @relation(fields: [leagueId], references: [id], onDelete: Cascade)
 
   @@unique([userId, leagueId])
+}
+
+model AuditLog {
+  id Int @id @default(autoincrement())
+
+  action     String
+  entityType String
+  entityId   Int?
+
+  leagueId Int?
+  matchId  Int?
+  teamId   Int?
+  playerId Int?
+
+  actorUserId Int?
+  actorName   String?
+  actorEmail  String?
+
+  description String?
+  beforeData  Json?
+  afterData   Json?
+
+  ipAddress String?
+  userAgent String?
+
+  createdAt DateTime @default(now())
+
+  @@index([leagueId])
+  @@index([matchId])
+  @@index([actorUserId])
+  @@index([action])
+  @@index([createdAt])
 }

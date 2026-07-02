@@ -5,6 +5,7 @@ import prisma from "@/lib/prisma";
 import { authOptions } from "@/lib/auth";
 import { ROLES } from "@/lib/roles";
 import { isSuperAdmin } from "@/lib/superAdmin";
+import { logAudit } from "@/lib/audit";
 
 export async function DELETE(request, { params }) {
   try {
@@ -112,7 +113,17 @@ await prisma.leagueInvite.deleteMany({
         id: leagueId
       }
     });
-
+await logAudit({
+    action: "LEAGUE_DELETED",
+    entityType: "LEAGUE",
+    entityId: league.id,
+    leagueId: league.id,
+    actor: session?.user,
+    description: `League "${league.name}" was deleted.`,
+    //beforeData: beforeLeague,
+    //afterData: updatedLeague,
+    request,
+  });
     return NextResponse.json({
       success: true,
       message: "League deleted successfully"
