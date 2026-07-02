@@ -1199,27 +1199,41 @@ function getInstantDeliveryStatus(data) {
   return `🏏 Ball recorded • ${runs} run${runs > 1 ? "s" : ""} added to the total.`;
 }
 
-function openEditMatchModal(match) {
-  setEditingMatch(match);
+async function openEditMatchModal(match) {
+  try {
+    const fullMatch = await api(`/api/matches/${match.id}`);
 
-  setEditMatchForm({
-    scheduledAt: match.scheduledAt
-      ? new Date(match.scheduledAt).toISOString().slice(0, 16)
-      : "",
+    setEditingMatch(fullMatch);
 
-    oversPerInnings: match.oversPerInnings || 20,
-    powerplayOversInnings: match.powerplayOversInnings || 0,
-    maxWicketsPerInnings: match.maxWicketsPerInnings || "",
-    maxOversPerBowler: match.maxOversPerBowler || "",
-    seriesId: match.seriesId || "",
+    setEditMatchForm({
+      scheduledAt: fullMatch.scheduledAt
+        ? new Date(fullMatch.scheduledAt).toISOString().slice(0, 16)
+        : "",
 
-    teamACaptainId: match.teamACaptainId || "",
-    teamBCaptainId: match.teamBCaptainId || "",
-    teamAWicketKeeperId: match.teamAWicketKeeperId || "",
-    teamBWicketKeeperId: match.teamBWicketKeeperId || "",
-  });
+      oversPerInnings: fullMatch.oversPerInnings || 20,
+      powerplayOversInnings: fullMatch.powerplayOversInnings || 0,
+      maxWicketsPerInnings: fullMatch.maxWicketsPerInnings || "",
+      maxOversPerBowler: fullMatch.maxOversPerBowler || "",
+      seriesId: fullMatch.seriesId || "",
 
-  setShowEditMatchModal(true);
+      teamACaptainId: fullMatch.teamACaptainId
+        ? String(fullMatch.teamACaptainId)
+        : "",
+      teamBCaptainId: fullMatch.teamBCaptainId
+        ? String(fullMatch.teamBCaptainId)
+        : "",
+      teamAWicketKeeperId: fullMatch.teamAWicketKeeperId
+        ? String(fullMatch.teamAWicketKeeperId)
+        : "",
+      teamBWicketKeeperId: fullMatch.teamBWicketKeeperId
+        ? String(fullMatch.teamBWicketKeeperId)
+        : "",
+    });
+
+    setShowEditMatchModal(true);
+  } catch (err) {
+    setError(err.message || "Unable to load match details.");
+  }
 }
 async function handleUpdateScheduledMatch(e) {
   e.preventDefault();
