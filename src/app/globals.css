@@ -22877,3 +22877,28 @@ a:hover {
     height: 22px;
   }
 }
+@media (max-width: 520px) {
+  .cric-ai-fab {
+    position: fixed;
+
+    right: max(8px, env(safe-area-inset-right));
+    bottom: max(8px, env(safe-area-inset-bottom));
+
+    width: 54px;
+    height: 54px;
+
+    border-radius: 999px;
+
+    z-index: 9999;
+
+    box-shadow:
+      0 6px 20px rgba(0,0,0,.30),
+      0 0 0 3px rgba(255,255,255,.85);
+
+    transition: transform .18s ease;
+  }
+
+  .cric-ai-fab:active {
+    transform: scale(.94);
+  }
+}
