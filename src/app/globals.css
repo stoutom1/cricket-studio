@@ -22942,7 +22942,7 @@ a:hover {
 
 .compact-player strong {
   color: #ffffff;
-  font-size: 14px;
+  font-size: 16px;
   overflow: hidden;
   white-space: nowrap;
   text-overflow: ellipsis;
@@ -22950,7 +22950,7 @@ a:hover {
 
 .compact-player small {
   color: #93c5fd;
-  font-size: 12px;
+  font-size: 14px;
 }
 
 .compact-highlight {
@@ -23013,11 +23013,11 @@ a:hover {
   }
 
   .compact-player strong {
-    font-size: 13px;
+    font-size: 16px;
   }
 
   .compact-player small {
-    font-size: 11px;
+    font-size: 14px;
   }
 
   .compact-highlight strong {
