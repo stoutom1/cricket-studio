@@ -22902,3 +22902,136 @@ a:hover {
     transform: scale(.94);
   }
 }
+.compact-stats-list {
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+}
+
+.compact-stat-card {
+  border-radius: 14px;
+  background: rgba(15, 23, 42, 0.35);
+  border: 1px solid rgba(96, 165, 250, 0.12);
+  overflow: hidden;
+}
+
+.compact-stat-summary {
+  list-style: none;
+  cursor: pointer;
+  display: grid;
+  grid-template-columns: 42px 1fr 72px 28px;
+  align-items: center;
+  gap: 10px;
+  padding: 12px;
+}
+
+.compact-stat-summary::-webkit-details-marker {
+  display: none;
+}
+
+.compact-rank {
+  font-weight: 900;
+  color: #bfdbfe;
+}
+
+.compact-player {
+  min-width: 0;
+  display: flex;
+  flex-direction: column;
+}
+
+.compact-player strong {
+  color: #ffffff;
+  font-size: 14px;
+  overflow: hidden;
+  white-space: nowrap;
+  text-overflow: ellipsis;
+}
+
+.compact-player small {
+  color: #93c5fd;
+  font-size: 12px;
+}
+
+.compact-highlight {
+  border-radius: 12px;
+  background: rgba(37, 99, 235, 0.16);
+  border: 1px solid rgba(59, 130, 246, 0.25);
+  padding: 7px 8px;
+  text-align: center;
+}
+
+.compact-highlight strong {
+  display: block;
+  color: #ffffff;
+  font-size: 17px;
+}
+
+.compact-highlight small {
+  color: #bfdbfe;
+  font-size: 11px;
+}
+
+.compact-toggle {
+  width: 26px;
+  height: 26px;
+  border-radius: 999px;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  color: #bfdbfe;
+  background: rgba(96, 165, 250, 0.12);
+  transition: transform 0.2s ease;
+}
+
+.compact-stat-card[open] .compact-toggle {
+  transform: rotate(180deg);
+}
+
+.compact-stat-grid {
+  display: grid;
+  grid-template-columns: repeat(4, minmax(0, 1fr));
+  gap: 8px;
+  padding: 0 12px 12px 64px;
+}
+
+.compact-stat-grid span {
+  border-radius: 10px;
+  padding: 7px 8px;
+  background: rgba(15, 23, 42, 0.5);
+  color: #dbeafe;
+  font-size: 12px;
+  font-weight: 700;
+  white-space: nowrap;
+}
+
+@media (max-width: 520px) {
+  .compact-stat-summary {
+    grid-template-columns: 34px 1fr 62px 24px;
+    gap: 7px;
+    padding: 10px;
+  }
+
+  .compact-player strong {
+    font-size: 13px;
+  }
+
+  .compact-player small {
+    font-size: 11px;
+  }
+
+  .compact-highlight strong {
+    font-size: 15px;
+  }
+
+  .compact-stat-grid {
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+    padding: 0 10px 10px 44px;
+    gap: 6px;
+  }
+
+  .compact-stat-grid span {
+    font-size: 11px;
+    padding: 6px 7px;
+  }
+}

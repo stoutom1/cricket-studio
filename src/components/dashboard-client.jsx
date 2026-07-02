@@ -9091,25 +9091,29 @@ onClick={() => {
     {!leagueStats?.batting?.length ? (
       <p className="muted">No batting stats yet.</p>
     ) : (
-      <div className="pretty-stats-list">
+      <div className="compact-stats-list">
         {filteredBatting.map((row, idx) => (
-          <div
+          <details
             key={`league-bat-${row.playerId ?? row.playerName}-${idx}`}
-            className="pretty-stat-card"
+            className="compact-stat-card"
           >
-            <div className="pretty-stat-rank">#{row.actualRank}</div>
+            <summary className="compact-stat-summary">
+              <span className="compact-rank">#{row.actualRank}</span>
 
-            <div className="pretty-stat-main">
-              <strong>{row.playerName}</strong>
-              <small>{row.teamName}</small>
-            </div>
+              <span className="compact-player">
+                <strong>{row.playerName}</strong>
+                <small>{row.teamName}</small>
+              </span>
 
-            <div className="pretty-stat-highlight">
-              <strong>{row.runs}</strong>
-              <small>Runs</small>
-            </div>
+              <span className="compact-highlight">
+                <strong>{row.runs}</strong>
+                <small>Runs</small>
+              </span>
 
-            <div className="pretty-stat-grid">
+              <span className="compact-toggle">⌄</span>
+            </summary>
+
+            <div className="compact-stat-grid">
               <span>M {row.matches}</span>
               <span>Inn {row.battingInnings}</span>
               <span>B {row.balls}</span>
@@ -9119,7 +9123,7 @@ onClick={() => {
               <span>6s {row.sixes}</span>
               <span>HS {row.highestScore}</span>
             </div>
-          </div>
+          </details>
         ))}
       </div>
     )}
@@ -9131,25 +9135,29 @@ onClick={() => {
     {!leagueStats?.bowling?.length ? (
       <p className="muted">No bowling stats yet.</p>
     ) : (
-      <div className="pretty-stats-list">
+      <div className="compact-stats-list">
         {filteredBowling.map((row, idx) => (
-          <div
+          <details
             key={`league-bowl-${row.playerId ?? row.playerName}-${idx}`}
-            className="pretty-stat-card"
+            className="compact-stat-card"
           >
-            <div className="pretty-stat-rank">#{row.actualRank}</div>
+            <summary className="compact-stat-summary">
+              <span className="compact-rank">#{row.actualRank}</span>
 
-            <div className="pretty-stat-main">
-              <strong>{row.playerName}</strong>
-              <small>{row.teamName}</small>
-            </div>
+              <span className="compact-player">
+                <strong>{row.playerName}</strong>
+                <small>{row.teamName}</small>
+              </span>
 
-            <div className="pretty-stat-highlight">
-              <strong>{row.wickets}</strong>
-              <small>Wkts</small>
-            </div>
+              <span className="compact-highlight">
+                <strong>{row.wickets}</strong>
+                <small>Wkts</small>
+              </span>
 
-            <div className="pretty-stat-grid">
+              <span className="compact-toggle">⌄</span>
+            </summary>
+
+            <div className="compact-stat-grid">
               <span>M {row.matches}</span>
               <span>O {row.bowlingOvers}</span>
               <span>R {row.bowlingRuns}</span>
@@ -9159,7 +9167,7 @@ onClick={() => {
               <span>Dots {row.dots}</span>
               <span>Best {row.bestBowling}</span>
             </div>
-          </div>
+          </details>
         ))}
       </div>
     )}
@@ -9171,31 +9179,35 @@ onClick={() => {
     {!leagueStats?.fielding?.length ? (
       <p className="muted">No fielding stats yet.</p>
     ) : (
-      <div className="pretty-stats-list">
+      <div className="compact-stats-list">
         {filteredFielding.map((row, idx) => (
-          <div
+          <details
             key={`league-field-${row.playerId ?? row.playerName}-${idx}`}
-            className="pretty-stat-card"
+            className="compact-stat-card"
           >
-            <div className="pretty-stat-rank">#{row.actualRank}</div>
+            <summary className="compact-stat-summary">
+              <span className="compact-rank">#{row.actualRank}</span>
 
-            <div className="pretty-stat-main">
-              <strong>{row.playerName}</strong>
-              <small>{row.teamName}</small>
-            </div>
+              <span className="compact-player">
+                <strong>{row.playerName}</strong>
+                <small>{row.teamName}</small>
+              </span>
 
-            <div className="pretty-stat-highlight">
-              <strong>{row.fieldingTotal}</strong>
-              <small>Total</small>
-            </div>
+              <span className="compact-highlight">
+                <strong>{row.fieldingTotal}</strong>
+                <small>Total</small>
+              </span>
 
-            <div className="pretty-stat-grid">
+              <span className="compact-toggle">⌄</span>
+            </summary>
+
+            <div className="compact-stat-grid">
               <span>Catches {row.catches}</span>
               <span>Run Outs {row.runOuts}</span>
               <span>Stumpings {row.stumpings}</span>
               <span>Assists {row.assists}</span>
             </div>
-          </div>
+          </details>
         ))}
       </div>
     )}
