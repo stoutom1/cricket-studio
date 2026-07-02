@@ -1,34 +1,68 @@
 "use client";
 
-import { useState } from "react";
+import { useEffect, useState } from "react";
+
+const INTRO_KEY = "cric4all-ai-intro-seen";
 
 export default function CricChatbot() {
   const [open, setOpen] = useState(false);
+  const [showIntro, setShowIntro] = useState(false);
+  const [pulse, setPulse] = useState(false);
   const [messages, setMessages] = useState([
     {
       role: "assistant",
-      text: "Hi! I’m Cric4All AI. Ask me about live scoring, match setup, extras, wickets, teams, leagues, stats, or spectator links.",
+      text: "Hi! I’m Cric4All AI. Ask me about scoring, matches, leagues, stats, or spectator links.",
     },
   ]);
   const [input, setInput] = useState("");
   const [loading, setLoading] = useState(false);
-  const [bubbleVisible, setBubbleVisible] = useState(true);
+
+  useEffect(() => {
+    const seen = localStorage.getItem(INTRO_KEY);
+
+    if (!seen) {
+      setShowIntro(true);
+      setPulse(true);
+
+      const introTimer = setTimeout(() => {
+        setShowIntro(false);
+        localStorage.setItem(INTRO_KEY, "true");
+      }, 8000);
+
+      const pulseTimer = setTimeout(() => {
+        setPulse(false);
+      }, 10000);
+
+      return () => {
+        clearTimeout(introTimer);
+        clearTimeout(pulseTimer);
+      };
+    }
+  }, []);
+
+  function markIntroSeen() {
+    setShowIntro(false);
+    setPulse(false);
+    localStorage.setItem(INTRO_KEY, "true");
+  }
+
+  function openChat() {
+    markIntroSeen();
+    setOpen(true);
+  }
 
   async function sendMessage(customText) {
     const text = (customText || input).trim();
     if (!text || loading) return;
 
     setInput("");
-    setBubbleVisible(false);
     setMessages((prev) => [...prev, { role: "user", text }]);
     setLoading(true);
 
     try {
       const res = await fetch("/api/chatbot", {
         method: "POST",
-        headers: {
-          "Content-Type": "application/json",
-        },
+        headers: { "Content-Type": "application/json" },
         body: JSON.stringify({ message: text }),
       });
 
@@ -54,11 +88,6 @@ export default function CricChatbot() {
     }
   }
 
-  function openChat() {
-    setOpen(true);
-    setBubbleVisible(false);
-  }
-
   const quickQuestions = [
     "How do I score a wide?",
     "How do I score a no-ball?",
@@ -69,114 +98,164 @@ export default function CricChatbot() {
     <>
       <style>{`
         @keyframes cricAiPulse {
-          0% { transform: scale(1); box-shadow: 0 8px 24px rgba(37, 99, 235, 0.35); }
-          50% { transform: scale(1.04); box-shadow: 0 10px 32px rgba(37, 99, 235, 0.55); }
-          100% { transform: scale(1); box-shadow: 0 8px 24px rgba(37, 99, 235, 0.35); }
+          0% { transform: scale(1); }
+          50% { transform: scale(1.08); }
+          100% { transform: scale(1); }
         }
 
-        .cric-ai-button {
-          animation: cricAiPulse 2.5s ease-in-out infinite;
+        .cric-ai-fab {
+          position: fixed;
+          right: 18px;
+          bottom: 18px;
+          width: 56px;
+          height: 56px;
+          border-radius: 999px;
+          border: 1px solid rgba(255,255,255,0.25);
+          background: linear-gradient(135deg, #2563eb, #7c3aed);
+          color: white;
+          font-size: 24px;
+          font-weight: 900;
+          cursor: pointer;
+          z-index: 9999;
+          box-shadow: 0 8px 26px rgba(37, 99, 235, 0.42);
+          display: flex;
+          align-items: center;
+          justify-content: center;
         }
 
-        .cric-ai-button:hover {
-          transform: translateY(-2px) scale(1.03);
+        .cric-ai-fab.pulse {
+          animation: cricAiPulse 2s ease-in-out infinite;
+        }
+
+        .cric-ai-intro {
+          position: fixed;
+          right: 18px;
+          bottom: 84px;
+          width: 255px;
+          background: linear-gradient(135deg, #ffffff, #eff6ff);
+          color: #0f172a;
+          border: 1px solid rgba(59,130,246,0.35);
+          border-radius: 16px;
+          padding: 12px 14px;
+          box-shadow: 0 10px 30px rgba(0,0,0,0.25);
+          font-size: 13px;
+          line-height: 1.35;
+          z-index: 9998;
+        }
+
+        .cric-ai-intro-title {
+          font-weight: 900;
+          margin-bottom: 4px;
+        }
+
+        .cric-ai-intro-actions {
+          display: flex;
+          gap: 8px;
+          margin-top: 10px;
+        }
+
+        .cric-ai-intro-actions button {
+          border: none;
+          border-radius: 999px;
+          padding: 7px 10px;
+          font-size: 12px;
+          font-weight: 800;
+          cursor: pointer;
+        }
+
+        .cric-ai-try {
+          background: #2563eb;
+          color: white;
+        }
+
+        .cric-ai-dismiss {
+          background: #e5e7eb;
+          color: #111827;
+        }
+
+        .cric-ai-panel {
+          position: fixed;
+          right: 18px;
+          bottom: 84px;
+          width: min(390px, calc(100vw - 28px));
+          height: 540px;
+          background: white;
+          color: #111827;
+          border-radius: 18px;
+          box-shadow: 0 12px 40px rgba(0,0,0,0.38);
+          z-index: 10000;
+          display: flex;
+          flex-direction: column;
+          overflow: hidden;
+          border: 1px solid rgba(59,130,246,0.35);
         }
 
         @media (max-width: 520px) {
+          .cric-ai-fab {
+            width: 52px;
+            height: 52px;
+            right: 14px;
+            bottom: 14px;
+            font-size: 22px;
+          }
+
+          .cric-ai-intro {
+            right: 12px;
+            bottom: 76px;
+            width: 235px;
+          }
+
           .cric-ai-panel {
-            right: 10px !important;
-            left: 10px !important;
-            bottom: 82px !important;
-            width: auto !important;
-            height: 72vh !important;
-          }
-
-          .cric-ai-button {
-            right: 12px !important;
-            bottom: 14px !important;
-            padding: 13px 16px !important;
-            font-size: 14px !important;
-          }
-
-          .cric-ai-bubble {
-            right: 12px !important;
-            bottom: 72px !important;
-            width: 230px !important;
+            left: 10px;
+            right: 10px;
+            bottom: 76px;
+            width: auto;
+            height: 72vh;
+            border-radius: 16px;
           }
         }
       `}</style>
 
-      {!open && bubbleVisible && (
-        <div
-          className="cric-ai-bubble"
-          style={{
-            position: "fixed",
-            right: 18,
-            bottom: 76,
-            width: 260,
-            zIndex: 9998,
-            background: "linear-gradient(135deg, #ffffff, #eff6ff)",
-            color: "#0f172a",
-            border: "1px solid rgba(59,130,246,0.35)",
-            borderRadius: 16,
-            padding: "12px 14px",
-            boxShadow: "0 10px 30px rgba(0,0,0,0.28)",
-            fontSize: 13,
-            lineHeight: 1.35,
-          }}
-        >
-          <div style={{ fontWeight: 800, marginBottom: 4 }}>
-            👋 Need help?
-          </div>
+      {!open && showIntro && (
+        <div className="cric-ai-intro">
+          <div className="cric-ai-intro-title">👋 Need help?</div>
           <div>
-            Ask Cric4All AI about scoring, leagues, matches, or cricket rules.
+            Cric4All AI can help with scoring, no-balls, wides, matches,
+            leagues, and spectator links.
+          </div>
+
+          <div className="cric-ai-intro-actions">
+            <button
+              type="button"
+              className="cric-ai-try"
+              onClick={openChat}
+            >
+              Try AI
+            </button>
+
+            <button
+              type="button"
+              className="cric-ai-dismiss"
+              onClick={markIntroSeen}
+            >
+              Hide
+            </button>
           </div>
         </div>
       )}
 
       <button
         type="button"
-        className="cric-ai-button"
+        className={`cric-ai-fab ${pulse ? "pulse" : ""}`}
         onClick={openChat}
-        style={{
-          position: "fixed",
-          right: 18,
-          bottom: 18,
-          zIndex: 9999,
-          border: "1px solid rgba(255,255,255,0.25)",
-          borderRadius: "999px",
-          padding: "14px 20px",
-          background: "linear-gradient(135deg, #2563eb, #7c3aed)",
-          color: "white",
-          fontWeight: 900,
-          fontSize: 15,
-          cursor: "pointer",
-          letterSpacing: "0.2px",
-        }}
+        title="Cric4All AI Assistant"
+        aria-label="Open Cric4All AI Assistant"
       >
-        🏏 Ask Cric4All AI
+        🤖
       </button>
 
       {open && (
-        <div
-          className="cric-ai-panel"
-          style={{
-            position: "fixed",
-            right: 18,
-            bottom: 82,
-            width: "min(390px, calc(100vw - 28px))",
-            height: 540,
-            background: "white",
-            color: "#111827",
-            borderRadius: 18,
-            boxShadow: "0 12px 40px rgba(0,0,0,0.38)",
-            zIndex: 10000,
-            display: "flex",
-            flexDirection: "column",
-            overflow: "hidden",
-            border: "1px solid rgba(59,130,246,0.35)",
-          }}
-        >
+        <div className="cric-ai-panel">
           <div
             style={{
               padding: 14,
@@ -300,7 +379,7 @@ export default function CricChatbot() {
               onKeyDown={(e) => {
                 if (e.key === "Enter") sendMessage();
               }}
-              placeholder="Ask about scoring, teams, matches..."
+              placeholder="Ask Cric4All AI..."
               style={{
                 flex: 1,
                 padding: 11,
