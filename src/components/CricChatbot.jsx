@@ -97,123 +97,131 @@ export default function CricChatbot() {
   return (
     <>
       <style>{`
-        @keyframes cricAiPulse {
-          0% { transform: scale(1); }
-          50% { transform: scale(1.08); }
-          100% { transform: scale(1); }
-        }
+@keyframes cricAiPulse {
+  0% { transform: scale(1); }
+  50% { transform: scale(1.08); }
+  100% { transform: scale(1); }
+}
 
-        .cric-ai-fab {
-          position: fixed;
-          right: 18px;
-          bottom: 18px;
-          width: 56px;
-          height: 56px;
-          border-radius: 999px;
-          border: 1px solid rgba(255,255,255,0.25);
-          background: linear-gradient(135deg, #2563eb, #7c3aed);
-          color: white;
-          font-size: 24px;
-          font-weight: 900;
-          cursor: pointer;
-          z-index: 9999;
-          box-shadow: 0 8px 26px rgba(37, 99, 235, 0.42);
-          display: flex;
-          align-items: center;
-          justify-content: center;
-        }
+.cric-ai-fab {
+  position: fixed;
+  right: 18px;
+  bottom: 18px;
+  width: 56px;
+  height: 56px;
+  border-radius: 999px;
+  border: 1px solid rgba(255,255,255,0.25);
+  background: linear-gradient(135deg, #2563eb, #7c3aed);
+  color: white;
+  font-size: 24px;
+  font-weight: 900;
+  cursor: pointer;
+  z-index: 9999;
+  box-shadow: 0 8px 26px rgba(37, 99, 235, 0.42);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
 
-        .cric-ai-fab.pulse {
-          animation: cricAiPulse 2s ease-in-out infinite;
-        }
+.cric-ai-fab.pulse {
+  animation: cricAiPulse 2s ease-in-out infinite;
+}
 
-        .cric-ai-intro {
-          position: fixed;
-          right: 18px;
-          bottom: 84px;
-          width: 255px;
-          background: linear-gradient(135deg, #ffffff, #eff6ff);
-          color: #0f172a;
-          border: 1px solid rgba(59,130,246,0.35);
-          border-radius: 16px;
-          padding: 12px 14px;
-          box-shadow: 0 10px 30px rgba(0,0,0,0.25);
-          font-size: 13px;
-          line-height: 1.35;
-          z-index: 9998;
-        }
+.cric-ai-fab:active {
+  transform: scale(0.94);
+}
 
-        .cric-ai-intro-title {
-          font-weight: 900;
-          margin-bottom: 4px;
-        }
+.cric-ai-intro {
+  position: fixed;
+  right: 18px;
+  bottom: 84px;
+  width: 255px;
+  background: linear-gradient(135deg, #ffffff, #eff6ff);
+  color: #0f172a;
+  border: 1px solid rgba(59,130,246,0.35);
+  border-radius: 16px;
+  padding: 12px 14px;
+  box-shadow: 0 10px 30px rgba(0,0,0,0.25);
+  font-size: 13px;
+  line-height: 1.35;
+  z-index: 9998;
+}
 
-        .cric-ai-intro-actions {
-          display: flex;
-          gap: 8px;
-          margin-top: 10px;
-        }
+.cric-ai-intro-title {
+  font-weight: 900;
+  margin-bottom: 4px;
+}
 
-        .cric-ai-intro-actions button {
-          border: none;
-          border-radius: 999px;
-          padding: 7px 10px;
-          font-size: 12px;
-          font-weight: 800;
-          cursor: pointer;
-        }
+.cric-ai-intro-actions {
+  display: flex;
+  gap: 8px;
+  margin-top: 10px;
+}
 
-        .cric-ai-try {
-          background: #2563eb;
-          color: white;
-        }
+.cric-ai-intro-actions button {
+  border: none;
+  border-radius: 999px;
+  padding: 7px 10px;
+  font-size: 12px;
+  font-weight: 800;
+  cursor: pointer;
+}
 
-        .cric-ai-dismiss {
-          background: #e5e7eb;
-          color: #111827;
-        }
+.cric-ai-try {
+  background: #2563eb;
+  color: white;
+}
 
-        .cric-ai-panel {
-          position: fixed;
-          right: 18px;
-          bottom: 84px;
-          width: min(390px, calc(100vw - 28px));
-          height: 540px;
-          background: white;
-          color: #111827;
-          border-radius: 18px;
-          box-shadow: 0 12px 40px rgba(0,0,0,0.38);
-          z-index: 10000;
-          display: flex;
-          flex-direction: column;
-          overflow: hidden;
-          border: 1px solid rgba(59,130,246,0.35);
-        }
+.cric-ai-dismiss {
+  background: #e5e7eb;
+  color: #111827;
+}
 
-        @media (max-width: 520px) {
-          .cric-ai-fab {
-            width: 52px;
-            height: 52px;
-            right: 14px;
-            bottom: 14px;
-            font-size: 22px;
-          }
+.cric-ai-panel {
+  position: fixed;
+  right: 18px;
+  bottom: 84px;
+  width: min(390px, calc(100vw - 28px));
+  height: 540px;
+  background: white;
+  color: #111827;
+  border-radius: 18px;
+  box-shadow: 0 12px 40px rgba(0,0,0,0.38);
+  z-index: 10000;
+  display: flex;
+  flex-direction: column;
+  overflow: hidden;
+  border: 1px solid rgba(59,130,246,0.35);
+}
 
-          .cric-ai-intro {
-            right: 12px;
-            bottom: 76px;
-            width: 235px;
-          }
+/* Production mobile docked mode */
+@media (max-width: 520px) {
+  .cric-ai-fab {
+    width: 52px;
+    height: 52px;
+    right: max(8px, env(safe-area-inset-right));
+    bottom: max(8px, env(safe-area-inset-bottom));
+    font-size: 22px;
+    box-shadow:
+      0 6px 20px rgba(0,0,0,.30),
+      0 0 0 3px rgba(255,255,255,.85);
+  }
 
-          .cric-ai-panel {
-            left: 10px;
-            right: 10px;
-            bottom: 76px;
-            width: auto;
-            height: 72vh;
-            border-radius: 16px;
-          }
-        }
+  .cric-ai-intro {
+    right: max(10px, env(safe-area-inset-right));
+    bottom: calc(64px + env(safe-area-inset-bottom));
+    width: 235px;
+  }
+
+  .cric-ai-panel {
+    left: 10px;
+    right: 10px;
+    bottom: calc(64px + env(safe-area-inset-bottom));
+    width: auto;
+    height: 72vh;
+    border-radius: 16px;
+  }
+} 
       `}</style>
 
       {!open && showIntro && (
@@ -225,13 +233,15 @@ export default function CricChatbot() {
           </div>
 
           <div className="cric-ai-intro-actions">
-            <button
-              type="button"
-              className="cric-ai-try"
-              onClick={openChat}
-            >
-              Try AI
-            </button>
+<button
+  type="button"
+  className={`cric-ai-fab ${pulse ? "pulse" : ""}`}
+  onClick={openChat}
+  title="Cric4All AI Assistant"
+  aria-label="Open Cric4All AI Assistant"
+>
+  🤖
+</button>
 
             <button
               type="button"
