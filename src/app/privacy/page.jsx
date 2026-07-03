@@ -1,60 +1,112 @@
 export default function PrivacyPage() {
   return (
-    <main className="max-w-4xl mx-auto px-6 py-10">
-      <h1 className="text-3xl font-bold mb-6">Privacy Policy</h1>
+    <main className="privacy-page">
+      <section className="privacy-hero">
+        <span className="privacy-badge">🔒 Privacy & Security</span>
 
-      <p className="mb-4">
-        Last Updated: June 2026
-      </p>
+        <h1>Privacy Policy</h1>
 
-      <p className="mb-4">
-        Cric4All respects your privacy. We collect only the information
-        necessary to provide cricket scoring and league management services.
-      </p>
+        <p className="privacy-updated">
+          Last Updated: <strong>July 2026</strong>
+        </p>
 
-      <h2 className="text-xl font-semibold mt-6 mb-2">
-        Information We Collect
-      </h2>
+        <p className="privacy-intro">
+          At <strong>Cric4All</strong>, protecting your privacy is one of our
+          highest priorities. We collect only the information required to
+          provide live cricket scoring, league management, statistics and
+          spectator features. We never sell your personal information.
+        </p>
+      </section>
 
-      <ul className="list-disc pl-6 space-y-2">
-        <li>Name and email address used for account registration.</li>
-        <li>Match, team, player, and scoring information entered by users.</li>
-        <li>Device information required for app functionality and notifications.</li>
-      </ul>
+      <section className="privacy-card">
+        <h2>📋 Information We Collect</h2>
 
-      <h2 className="text-xl font-semibold mt-6 mb-2">
-        How We Use Information
-      </h2>
+        <div className="privacy-grid">
+          <div className="privacy-item">
+            <h3>👤 Account Information</h3>
+            <p>
+              Your name, email address and account credentials used to create
+              and manage your Cric4All account.
+            </p>
+          </div>
 
-      <ul className="list-disc pl-6 space-y-2">
-        <li>To provide and improve Cric4All services.</li>
-        <li>To authenticate users.</li>
-        <li>To deliver live scoring updates and notifications.</li>
-        <li>To respond to support requests.</li>
-      </ul>
+          <div className="privacy-item">
+            <h3>🏏 Cricket Data</h3>
+            <p>
+              League, team, player, match, scorecard, statistics and commentary
+              information that you create while using Cric4All.
+            </p>
+          </div>
 
-      <h2 className="text-xl font-semibold mt-6 mb-2">
-        Data Sharing
-      </h2>
+          <div className="privacy-item">
+            <h3>📱 Device Information</h3>
+            <p>
+              Basic device information required for login security, application
+              performance and push notifications.
+            </p>
+          </div>
+        </div>
+      </section>
 
-      <p className="mb-4">
-        We do not sell your personal information to third parties.
-      </p>
+      <section className="privacy-card">
+        <h2>⚡ How We Use Your Information</h2>
 
-      <h2 className="text-xl font-semibold mt-6 mb-2">
-        Contact Us
-      </h2>
+        <ul className="privacy-list">
+          <li>Provide live cricket scoring and league management.</li>
+          <li>Authenticate users securely.</li>
+          <li>Generate scorecards, player statistics and match summaries.</li>
+          <li>Deliver live score updates and notifications.</li>
+          <li>Improve application performance and reliability.</li>
+          <li>Respond to customer support requests.</li>
+        </ul>
+      </section>
 
-      <p>
-        If you have any questions regarding this Privacy Policy, please contact
-        us at{" "}
+      <section className="privacy-card">
+        <h2>🤝 Data Sharing</h2>
+
+        <p>
+          Cric4All <strong>does not sell</strong> your personal information.
+          Information is shared only when required to provide the service (for
+          example, hosting providers, authentication services or notification
+          services) or when required by law.
+        </p>
+      </section>
+
+      <section className="privacy-card">
+        <h2>🛡️ Data Security</h2>
+
+        <p>
+          We use industry-standard security practices to help protect your
+          account and cricket data. While no online service can guarantee
+          absolute security, we continually improve our systems to safeguard
+          your information.
+        </p>
+      </section>
+
+      <section className="privacy-card">
+        <h2>🗑️ Data Deletion</h2>
+
+        <p>
+          You may request deletion of your Cric4All account and associated
+          personal information by contacting our support team.
+        </p>
+      </section>
+
+      <section className="privacy-card">
+        <h2>📧 Contact Us</h2>
+
+        <p>
+          If you have any questions about this Privacy Policy or your personal
+          information, please contact us at:
+        </p>
+
         <a
           href="mailto:support@cric4all.app"
-          className="text-blue-600 underline"
+          className="privacy-email"
         >
           support@cric4all.app
-        </a>.
-      </p>
+        </a>
+      </section>
     </main>
   );
 }
