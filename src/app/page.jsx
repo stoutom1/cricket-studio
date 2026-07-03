@@ -4,29 +4,53 @@ export default function HomePage() {
   return (
     <main className="home-lite">
       <section className="home-hero-lite">
-        <div className="home-badge">🏏 Cric4All • Live Cricket Scoring</div>
+        <div className="home-hero-grid">
+          <div className="home-left">
+            <div className="home-badge">🏏 Cric4All • Live Cricket Scoring</div>
 
-        <h1>Score cricket matches live. Share scorecards instantly.</h1>
+            <h1>Professional cricket scoring for leagues, clubs and tournaments.</h1>
 
-        <p>
-          Cric4All helps local leagues, teams, and scorers manage matches,
-          live scorecards, stats, commentary, AI-powered insights, and spectator links.
-        </p>
+            <p>
+              Manage live scoring, scorecards, player statistics, AI insights,
+              league management and spectator sharing from one simple platform.
+            </p>
 
-        <div className="home-actions-lite">
-          <Link href="/dashboard" className="home-primary">
-            Open Dashboard
-          </Link>
+            <div className="home-actions-lite">
+              <Link href="/dashboard" className="home-primary">
+                Open Dashboard
+              </Link>
 
-          <Link href="/login" className="home-secondary">
-            Sign In
-          </Link>
-        </div>
+              <Link href="/login" className="home-secondary">
+                Sign In
+              </Link>
+            </div>
 
-        <div className="home-trust-row">
-          <span>⚡ Fast scoring</span>
-          <span>📊 Player stats</span>
-          <span>🔗 Live share links</span>
+            <div className="home-trust-row">
+              <span>⚡ Fast scoring</span>
+              <span>📊 Player stats</span>
+              <span>🔗 Live share links</span>
+            </div>
+          </div>
+
+          <div className="home-right">
+            <div className="feature-card">
+              <span>🏏</span>
+              <h3>Live Scoring</h3>
+              <p>Ball-by-ball scoring with professional scorecards.</p>
+            </div>
+
+            <div className="feature-card">
+              <span>📊</span>
+              <h3>Player Statistics</h3>
+              <p>Batting, bowling, fielding, captaincy and wicketkeeping records.</p>
+            </div>
+
+            <div className="feature-card">
+              <span>🌍</span>
+              <h3>Share Live</h3>
+              <p>Public spectator links for friends, family and clubs.</p>
+            </div>
+          </div>
         </div>
       </section>
     </main>
