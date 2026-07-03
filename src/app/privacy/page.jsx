@@ -101,10 +101,10 @@ export default function PrivacyPage() {
         </p>
 
         <a
-          href="mailto:support@cric4all.app"
+          href="mailto:surprisecricket11@gmail.com"
           className="privacy-email"
         >
-          support@cric4all.app
+          surprisecricket11@gmail.com
         </a>
       </section>
     </main>
