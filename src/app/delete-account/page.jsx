@@ -21,10 +21,10 @@ export default function DeleteAccountPage() {
         </p>
 
         <a
-          href="mailto:support@cric4all.app?subject=Cric4All Account Deletion Request"
+          href="mailto:surprisecricket11@gmail.com?subject=Cric4All Account Deletion Request"
           className="delete-account-email"
         >
-          support@cric4all.app
+          surprisecricket11@gmail.com
         </a>
 
         <p className="delete-account-note">
