@@ -10,7 +10,7 @@ export default function HomePage() {
 
         <p>
           Cric4All helps local leagues, teams, and scorers manage matches,
-          live scorecards, stats, commentary, and spectator links.
+          live scorecards, stats, commentary, AI-powered insights, and spectator links.
         </p>
 
         <div className="home-actions-lite">
