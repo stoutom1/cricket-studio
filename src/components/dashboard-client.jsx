@@ -6342,56 +6342,49 @@ onClick={() => {
       </div>
     ) : (
       <>
-      {matchInsights && (
-  <div className="match-insights-card">
-    {matchInsights.resultText && (
-      <div className="insight-result">
-        <span>🏆 Match Result</span>
-        <strong>{matchInsights.resultText}</strong>
-      </div>
-    )}
+        {matchInsights && (
+          <div className="match-insights-card">
+            {matchInsights.resultText && (
+              <div className="insight-result">
+                <span>🏆 Match Result</span>
+                <strong>{matchInsights.resultText}</strong>
+              </div>
+            )}
 
-    {matchInsights.potm && (
-      <div className="insight-mini">
-        <span>⭐ Player of the Match</span>
-        <strong>{matchInsights.potm.playerName}</strong>
-        <small>
-          {matchInsights.potm.summary?.join(" & ") || "Top performer"}
-        </small>
-      </div>
-    )}
+            {matchInsights.potm && (
+              <div className="insight-mini">
+                <span>⭐ Player of the Match</span>
+                <strong>{matchInsights.potm.playerName}</strong>
+                <small>
+                  {matchInsights.potm.summary?.join(" & ") || "Top performer"}
+                </small>
+              </div>
+            )}
 
-    {matchInsights.winProbability && (
-      <div className="insight-mini">
-        <span>📈 Win Probability</span>
+            {matchInsights.winProbability && (
+              <div className="insight-mini">
+                <span>📈 Win Probability</span>
 
-        <div className="win-prob-row">
-          <b>{matchInsights.winProbability.bowlingTeam}</b>
-          <div className="win-prob-track">
-            <i
-              style={{
-                width: `${matchInsights.winProbability.bowlingChance}%`,
-              }}
-            />
+                <div className="win-prob-row">
+                  <b>{matchInsights.winProbability.bowlingTeam}</b>
+                  <div className="win-prob-track">
+                    <i style={{ width: `${matchInsights.winProbability.bowlingChance}%` }} />
+                  </div>
+                  <b>{matchInsights.winProbability.bowlingChance}%</b>
+                </div>
+
+                <div className="win-prob-row">
+                  <b>{matchInsights.winProbability.battingTeam}</b>
+                  <div className="win-prob-track chase">
+                    <i style={{ width: `${matchInsights.winProbability.battingChance}%` }} />
+                  </div>
+                  <b>{matchInsights.winProbability.battingChance}%</b>
+                </div>
+              </div>
+            )}
           </div>
-          <b>{matchInsights.winProbability.bowlingChance}%</b>
-        </div>
+        )}
 
-        <div className="win-prob-row">
-          <b>{matchInsights.winProbability.battingTeam}</b>
-          <div className="win-prob-track chase">
-            <i
-              style={{
-                width: `${matchInsights.winProbability.battingChance}%`,
-              }}
-            />
-          </div>
-          <b>{matchInsights.winProbability.battingChance}%</b>
-        </div>
-      </div>
-    )}
-  </div>
-)}  
         <div className="commentary-feed pretty-commentary">
           {scoreboard.commentary.map((section, sectionIndex) => (
             <div
@@ -6410,35 +6403,39 @@ onClick={() => {
                     item.type === "OVER_SUMMARY" ? "over-summary-item" : ""
                   }`}
                 >
-                  <div
-                    className={`commentary-ball ${
-                      item.badgeClass || ""
-                    }`}
-                  >
+                  <div className={`commentary-ball ${item.badgeClass || ""}`}>
                     {item.badge || item.over}
                   </div>
 
                   <div className="commentary-body">
-                    <div className="commentary-main">
-                      {item.text}
-                    </div>
+                    {item.type === "BALL" && item.badge !== "END" ? (
+                      <details className="commentary-inline-details">
+                        <summary className="commentary-inline-summary">
+                          <span className="commentary-main">{item.text}</span>
+                          <span className="commentary-inline-score">{item.score}</span>
+                          <span className="commentary-inline-caret">⌄</span>
+                        </summary>
 
+                        <div className="commentary-inline-stats">
+                          <span>🏏 {item.strikerSummary}</span>
+                          <span>🏃 {item.nonStrikerSummary}</span>
+                          <span>🎯 {item.bowlerSummary}</span>
+                        </div>
+                      </details>
+                    ) : item.type === "OVER_SUMMARY" ? (
+                      <details className="commentary-inline-details">
+                        <summary className="commentary-inline-summary">
+                          <span className="commentary-main">{item.text}</span>
+                          <span className="commentary-inline-score">{item.score}</span>
+                          <span className="commentary-inline-caret">⌄</span>
+                        </summary>
 
-
-                    {item.type === "BALL" && item.badge !== "END" &&(
-                      <div className="commentary-mini-score">
-                        <span>{item.score}</span>
-                        <span>🏏 {item.strikerSummary}</span>
-                        <span>🏃 {item.nonStrikerSummary}</span>
-                        <span>🎯 {item.bowlerSummary}</span>
-                      </div>
-                    )}
-
-                    {item.type === "OVER_SUMMARY" && (
-                      <div className="commentary-over-summary">
-                        <strong>{item.score}</strong>
-                        <span>🎯 {item.bowlerSummary}</span>
-                      </div>
+                        <div className="commentary-inline-stats">
+                          <span>🎯 {item.bowlerSummary}</span>
+                        </div>
+                      </details>
+                    ) : (
+                      <div className="commentary-main">{item.text}</div>
                     )}
                   </div>
                 </div>
