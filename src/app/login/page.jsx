@@ -6,12 +6,21 @@ import LoginForm from "@/components/login-form";
 function safeCallbackUrl(value) {
   if (!value) return "/dashboard";
 
-  const decoded = decodeURIComponent(String(value));
+  let decoded = decodeURIComponent(String(value));
+
+  try {
+    if (decoded.startsWith("http")) {
+      const url = new URL(decoded);
+      decoded = url.pathname + url.search;
+    }
+  } catch {
+    decoded = "/dashboard";
+  }
 
   if (
     decoded.includes("/api/auth") ||
-    decoded.includes("api/auth") ||
-    decoded === "/login"
+    decoded === "/login" ||
+    decoded.startsWith("/login?")
   ) {
     return "/dashboard";
   }

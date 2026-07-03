@@ -10,9 +10,9 @@ export default async function DashboardPage() {
       authOptions
     );
 
-  if (!session) {
-    redirect("/login");
-  }
+if (!session) {
+  redirect("/login?callbackUrl=/dashboard");
+}
 
   return (
     <main className="dashboard-page">
