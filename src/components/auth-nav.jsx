@@ -108,7 +108,21 @@ export default function AuthNav() {
               >
                 🌐 Explore Leagues
               </Link>
+<Link
+  href="/privacy"
+  className="account-secondary-action"
+  onClick={() => setShowAccountModal(false)}
+>
+  🔒 Privacy Policy
+</Link>
 
+<Link
+  href="/delete-account"
+  className="account-secondary-action"
+  onClick={() => setShowAccountModal(false)}
+>
+  🗑️ Delete Account
+</Link>
               <button
                 type="button"
                 className="account-danger-action"

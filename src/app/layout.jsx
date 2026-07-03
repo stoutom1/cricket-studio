@@ -4,6 +4,7 @@ import AuthNav from "@/components/auth-nav";
 import { Analytics } from "@vercel/analytics/next";
 import { SpeedInsights } from "@vercel/speed-insights/next";
 import CricChatbot from "@/components/CricChatbot";
+import SiteFooter from "@/components/site-footer";
 export const metadata = {
   title: "Cricket Studio",
   description: "Advanced cricket scoring app"
@@ -46,6 +47,7 @@ export default function RootLayout({ children }) {
         <Analytics />
         <SpeedInsights />
         <CricChatbot />
+<SiteFooter />
       </body>
     </html>
   );

@@ -23408,3 +23408,38 @@ a:hover {
     grid-template-columns: 1fr;
   }
 }
+.site-footer {
+  padding: 24px 16px 30px;
+  text-align: center;
+  color: #94a3b8;
+  font-size: 13px;
+}
+
+.site-footer-links {
+  margin-top: 8px;
+  display: flex;
+  justify-content: center;
+  gap: 14px;
+  flex-wrap: wrap;
+}
+
+.site-footer-links a {
+  color: #93c5fd;
+  text-decoration: none;
+  font-weight: 800;
+}
+
+.site-footer-links a:hover {
+  text-decoration: underline;
+}
+
+@media (max-width: 768px) {
+  .site-footer {
+    padding: 18px 12px 24px;
+    font-size: 12px;
+  }
+
+  .site-footer-links {
+    gap: 10px;
+  }
+}
