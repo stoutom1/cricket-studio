@@ -16,34 +16,42 @@ export default function LoginForm({ callbackUrl = "/dashboard" }) {
   const [loading, setLoading] = useState(false);
   const [showPassword, setShowPassword] = useState(false);
 
-  async function handleSubmit(e) {
-    e.preventDefault();
+ async function handleSubmit(e) {
+  e.preventDefault();
 
-    setError("");
-    setLoading(true);
+  setError("");
+  setLoading(true);
 
-    try {
-      const result = await signIn("credentials", {
-        email,
-        password,
-        redirect: false,
-        callbackUrl: callbackUrl || "/dashboard",
-      });
+  const safeCallbackUrl =
+    callbackUrl &&
+    callbackUrl.startsWith("/") &&
+    !callbackUrl.includes("/api/auth") &&
+    callbackUrl !== "/login"
+      ? callbackUrl
+      : "/dashboard";
 
-      if (!result?.ok) {
-        setError("Invalid email or password");
-        return;
-      }
+  try {
+    const result = await signIn("credentials", {
+      email,
+      password,
+      redirect: false,
+      callbackUrl: safeCallbackUrl,
+    });
 
-      router.push(callbackUrl || "/dashboard");
-      router.refresh();
-    } catch (err) {
-      console.error(err);
-      setError("Unable to sign in");
-    } finally {
-      setLoading(false);
+    if (!result?.ok) {
+      setError("Invalid email or password");
+      return;
     }
+
+    router.replace(safeCallbackUrl);
+    router.refresh();
+  } catch (err) {
+    console.error(err);
+    setError("Unable to sign in");
+  } finally {
+    setLoading(false);
   }
+}
 
   return (
     <main className="login-shell">

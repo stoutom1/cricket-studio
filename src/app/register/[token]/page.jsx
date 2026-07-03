@@ -29,9 +29,7 @@ export default async function RegisterTokenPage({
    * Not logged in
    */
   if (!session?.user?.email) {
-    redirect(
-      `/api/auth/signin?callbackUrl=/register/${token}`
-    );
+redirect(`/login?callbackUrl=/register/${token}`);
   }
 
   const user =

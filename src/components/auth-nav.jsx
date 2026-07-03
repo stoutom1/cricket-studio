@@ -126,7 +126,7 @@ export default function AuthNav() {
               <button
                 type="button"
                 className="account-danger-action"
-                onClick={() => signOut({ callbackUrl: "/login" })}
+                onClick={() => signOut({ callbackUrl: "/" })}
               >
                 Sign Out
               </button>
