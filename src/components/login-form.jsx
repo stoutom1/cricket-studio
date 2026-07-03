@@ -31,20 +31,23 @@ export default function LoginForm({ callbackUrl = "/dashboard" }) {
       : "/dashboard";
 
   try {
-    const result = await signIn("credentials", {
-      email,
-      password,
-      redirect: false,
-      callbackUrl: safeCallbackUrl,
-    });
+const result = await signIn("credentials", {
+  email,
+  password,
+  redirect: false,
+  callbackUrl: safeCallbackUrl,
+});
 
-    if (!result?.ok) {
-      setError("Invalid email or password");
-      return;
-    }
+if (!result?.ok) {
+  setError("Invalid email or password");
+  return;
+}
 
-    router.replace(safeCallbackUrl);
-    router.refresh();
+/*
+ * CRITICAL FIX FOR MOBILE
+ * Force a full browser navigation after the session cookie is set.
+ */
+window.location.href = result.url || safeCallbackUrl;
   } catch (err) {
     console.error(err);
     setError("Unable to sign in");
