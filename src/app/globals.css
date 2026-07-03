@@ -23686,3 +23686,108 @@ a:hover {
     justify-content: center;
   }
 }
+/* ============================================
+   DASHBOARD TABS - DESKTOP
+   Fill the available width
+============================================ */
+
+@media (min-width: 769px) {
+
+  .dashboard-tabs {
+    display: grid !important;
+    grid-template-columns: repeat(7, minmax(0, 1fr));
+    gap: 12px;
+
+    width: 100% !important;
+    max-width: 100% !important;
+
+    padding: 8px;
+    box-sizing: border-box;
+  }
+
+  .dashboard-tab {
+    width: 100%;
+    min-width: 0;
+
+    height: 52px;
+
+    display: flex;
+    align-items: center;
+    justify-content: center;
+
+    font-size: 17px;
+    font-weight: 800;
+
+    white-space: nowrap;
+  }
+
+  .dashboard-tab span,
+  .dashboard-tab svg {
+    margin-right: 8px;
+    font-size: 18px;
+  }
+}
+@media (min-width: 769px) {
+
+  .dashboard-tabs {
+    display: flex !important;
+    width: 100%;
+    gap: 12px;
+  }
+
+  .dashboard-tab {
+    flex: 1 1 0;
+    min-width: 0;
+
+    height: 52px;
+
+    display: flex;
+    justify-content: center;
+    align-items: center;
+
+    font-size: 17px;
+    font-weight: 800;
+  }
+}
+/* FINAL: Desktop dashboard tabs fill full row equally */
+@media (min-width: 769px) {
+  .dashboard-tabs-wrap {
+    width: 100% !important;
+    max-width: 100% !important;
+  }
+
+  .dashboard-tabs {
+    width: 100% !important;
+    max-width: 100% !important;
+    display: flex !important;
+    flex-wrap: nowrap !important;
+    gap: 10px !important;
+    padding: 8px !important;
+    box-sizing: border-box !important;
+  }
+
+  .dashboard-tabs .dashboard-tab {
+    flex: 1 1 0 !important;
+    width: auto !important;
+    min-width: 0 !important;
+    max-width: none !important;
+
+    height: 56px !important;
+    padding: 0 12px !important;
+
+    display: flex !important;
+    align-items: center !important;
+    justify-content: center !important;
+
+    font-size: 16px !important;
+    font-weight: 950 !important;
+    white-space: nowrap !important;
+    text-align: center !important;
+
+    border-radius: 16px !important;
+  }
+
+  .dashboard-tabs .dashboard-tab.active {
+    transform: none !important;
+  }
+}
