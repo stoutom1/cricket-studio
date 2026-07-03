@@ -1,47 +1,75 @@
 export default function DeleteAccountPage() {
-return ( <main className="max-w-4xl mx-auto px-6 py-10"> <h1 className="text-3xl font-bold mb-6">Delete Your Cric4All Account</h1>
+  return (
+    <main className="delete-account-page">
+      <section className="delete-account-hero">
+        <span className="delete-account-badge">🗑️ Account Deletion</span>
 
-```
-  <p className="mb-4">
-    If you would like to delete your Cric4All account and associated data,
-    please send a request to:
-  </p>
+        <h1>Delete Your Cric4All Account</h1>
 
-  <p className="mb-6">
-    <strong>Email:</strong>{" "}
-    <a
-      href="mailto:support@cric4all.app"
-      className="text-blue-600 underline"
-    >
-      surprisecricket11@gmail.com
-    </a>
-  </p>
+        <p>
+          You can request deletion of your Cric4All account and personal
+          information at any time. We process deletion requests carefully to
+          protect your privacy while preserving match and league integrity.
+        </p>
+      </section>
 
-  <h2 className="text-xl font-semibold mb-2">
-    What data will be deleted?
-  </h2>
+      <section className="delete-account-card danger-card">
+        <h2>How to request account deletion</h2>
 
-  <ul className="list-disc pl-6 space-y-2 mb-6">
-    <li>Your Cric4All account information.</li>
-    <li>Your profile details.</li>
-    <li>Any personal information associated with your account.</li>
-  </ul>
+        <p>
+          Send an email from the address linked to your Cric4All account to:
+        </p>
 
-  <h2 className="text-xl font-semibold mb-2">
-    What data may be retained?
-  </h2>
+        <a
+          href="mailto:support@cric4all.app?subject=Cric4All Account Deletion Request"
+          className="delete-account-email"
+        >
+          support@cric4all.app
+        </a>
 
-  <ul className="list-disc pl-6 space-y-2">
-    <li>
-      Match scorecards and league records that are necessary to preserve
-      the integrity of tournaments and historical statistics.
-    </li>
-    <li>Information required to comply with legal obligations.</li>
-  </ul>
+        <p className="delete-account-note">
+          Please include your name, registered email address, and mention that
+          you want your Cric4All account deleted.
+        </p>
+      </section>
 
-  <p className="mt-6">
-    Account deletion requests are typically processed within 30 days.
-  </p>
-</main>
-);
+      <section className="delete-account-grid">
+        <div className="delete-account-card">
+          <h2>✅ Data we delete</h2>
+
+          <ul>
+            <li>Your Cric4All account information.</li>
+            <li>Your profile details.</li>
+            <li>Personal information associated with your account.</li>
+            <li>Login-related account identifiers where deletion is allowed.</li>
+          </ul>
+        </div>
+
+        <div className="delete-account-card">
+          <h2>🏏 Data we may retain</h2>
+
+          <ul>
+            <li>
+              Match scorecards, league records, score history, and statistics
+              needed to preserve tournament integrity.
+            </li>
+            <li>
+              Records required for security, fraud prevention, legal, or
+              operational purposes.
+            </li>
+          </ul>
+        </div>
+      </section>
+
+      <section className="delete-account-card">
+        <h2>Processing time</h2>
+
+        <p>
+          Account deletion requests are typically processed within{" "}
+          <strong>30 days</strong>. We may contact you to verify account
+          ownership before completing the request.
+        </p>
+      </section>
+    </main>
+  );
 }

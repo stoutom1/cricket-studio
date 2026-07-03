@@ -23298,3 +23298,113 @@ a:hover {
     }
 
 }
+.delete-account-page {
+  max-width: 1000px;
+  margin: auto;
+  padding: 50px 20px 70px;
+  color: #f8fafc;
+}
+
+.delete-account-hero {
+  text-align: center;
+  margin-bottom: 40px;
+}
+
+.delete-account-badge {
+  display: inline-block;
+  padding: 8px 18px;
+  border-radius: 999px;
+  background: linear-gradient(135deg, #dc2626, #f97316);
+  color: #fff;
+  font-weight: 900;
+  font-size: 0.9rem;
+  margin-bottom: 18px;
+  box-shadow: 0 8px 20px rgba(220, 38, 38, 0.35);
+}
+
+.delete-account-hero h1 {
+  font-size: clamp(2.2rem, 5vw, 3.4rem);
+  margin-bottom: 14px;
+  font-weight: 950;
+}
+
+.delete-account-hero p {
+  max-width: 760px;
+  margin: auto;
+  color: #dbeafe;
+  font-size: 1.08rem;
+  line-height: 1.8;
+}
+
+.delete-account-card {
+  margin-top: 24px;
+  background: rgba(15, 23, 42, 0.86);
+  border: 1px solid rgba(96, 165, 250, 0.18);
+  border-radius: 22px;
+  padding: 28px;
+  box-shadow: 0 15px 40px rgba(0, 0, 0, 0.25);
+}
+
+.delete-account-card h2 {
+  margin-bottom: 14px;
+  color: #ffffff;
+  font-size: 1.35rem;
+}
+
+.delete-account-card p,
+.delete-account-card li {
+  color: #d1d5db;
+  line-height: 1.75;
+}
+
+.delete-account-card ul {
+  margin: 0;
+  padding-left: 22px;
+}
+
+.delete-account-card li {
+  margin: 10px 0;
+}
+
+.danger-card {
+  border-color: rgba(248, 113, 113, 0.35);
+  background:
+    radial-gradient(circle at top left, rgba(248, 113, 113, 0.12), transparent 38%),
+    rgba(15, 23, 42, 0.88);
+}
+
+.delete-account-email {
+  display: inline-block;
+  margin: 14px 0;
+  padding: 13px 22px;
+  border-radius: 14px;
+  background: linear-gradient(135deg, #2563eb, #38bdf8);
+  color: #ffffff;
+  text-decoration: none;
+  font-weight: 900;
+}
+
+.delete-account-note {
+  margin-top: 8px;
+  color: #fef3c7 !important;
+}
+
+.delete-account-grid {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: 18px;
+}
+
+@media (max-width: 768px) {
+  .delete-account-page {
+    padding: 30px 16px 50px;
+  }
+
+  .delete-account-card {
+    padding: 20px;
+  }
+
+  .delete-account-grid {
+    grid-template-columns: 1fr;
+  }
+}
