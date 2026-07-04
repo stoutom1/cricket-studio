@@ -3,6 +3,7 @@
 import Link from "next/link";
 import { signOut, useSession } from "next-auth/react";
 import { useState } from "react";
+import UserHeartbeat from "@/components/user-heartbeat";
 
 export default function AuthNav() {
   const { data: session, status } = useSession();
@@ -10,6 +11,7 @@ export default function AuthNav() {
 
   return (
     <>
+     <UserHeartbeat />
       <nav className="auth-nav auth-nav-compact">
         <Link href="/" className="nav-link nav-home">
           ← Home

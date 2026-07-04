@@ -335,6 +335,7 @@ useEffect(() => {
     .then((r) => r.json())
     .then(setMe);
 }, []);
+
 useEffect(() => {
   if (!message && !error) return;
 
@@ -359,7 +360,7 @@ useEffect(() => {
 
   sendHeartbeat();
 
-  const interval = setInterval(sendHeartbeat, 5 * 60 * 1000);
+  const interval = setInterval(sendHeartbeat, 2 * 60 * 1000);
 
   return () => clearInterval(interval);
 }, [session?.user?.email]);

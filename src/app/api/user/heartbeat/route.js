@@ -17,5 +17,7 @@ export async function POST() {
     data: { lastSeenAt: new Date() },
   });
 
+  console.log("Heartbeat updated:", session.user.email);
+
   return NextResponse.json({ ok: true });
 }

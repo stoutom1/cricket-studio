@@ -12,7 +12,7 @@ export async function GET() {
     return NextResponse.json({ error: "Unauthorized" }, { status: 403 });
   }
 
-  const onlineSince = new Date(Date.now() - 5 * 60 * 1000);
+  const onlineSince = new Date(Date.now() - 60 * 60 * 1000);
   const last24Hours = new Date(Date.now() - 24 * 60 * 60 * 1000);
 
   const [onlineUsers, recentLogins, loginCount24h] = await Promise.all([
