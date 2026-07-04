@@ -8,7 +8,7 @@ export default function HomePage() {
           <div className="home-left">
             <div className="home-badge">🏏 Cric4All • Live Cricket Scoring</div>
 
-            <h1>Professional cricket scoring for leagues, clubs and tournaments.</h1>
+            <h2>Professional cricket scoring for leagues, clubs and tournaments.</h2>
 
             <p>
               Manage live scoring, scorecards, player statistics, AI insights,

@@ -321,6 +321,10 @@ const [pageVisible, setPageVisible] = useState(true);
 const [ballSaveInFlight, setBallSaveInFlight] = useState(false);
 const [tabsScrolled, setTabsScrolled] = useState(false);
 const [endInningsAfterWicket, setEndInningsAfterWicket] = useState(false);
+const [userActivity, setUserActivity] = useState(null);
+const [userActivityLoading, setUserActivityLoading] = useState(false);
+const [auditLogs, setAuditLogs] = useState([]);
+const [auditLogsLoading, setAuditLogsLoading] = useState(false);
 const isSuperAdmin =
   session?.user?.email ===
   "surprisecricket11@gmail.com";
@@ -341,6 +345,25 @@ useEffect(() => {
 
   return () => clearTimeout(timer);
 }, [message, error]);
+
+useEffect(() => {
+  if (!session?.user?.email) return;
+
+  const sendHeartbeat = () => {
+    if (document.visibilityState !== "visible") return;
+
+    fetch("/api/user/heartbeat", {
+      method: "POST",
+    }).catch(() => {});
+  };
+
+  sendHeartbeat();
+
+  const interval = setInterval(sendHeartbeat, 5 * 60 * 1000);
+
+  return () => clearInterval(interval);
+}, [session?.user?.email]);
+
 const selectedLeague =
   leagues.find(
     (l) => String(l.id) === String(activeLeagueId)
@@ -462,6 +485,45 @@ useEffect(() => {
 const selectedSeries = seriesList.find(
   (s) => Number(s.id) === Number(selectedSeriesId)
 );
+
+useEffect(() => {
+  if (activeTab !== "admin") return;
+  loadUserActivity();
+}, [activeTab]);
+useEffect(() => {
+  if (activeTab !== "admin") return;
+
+  loadUserActivity();
+  loadAuditLogs();
+}, [activeTab, activeLeagueId]);
+
+async function loadUserActivity() {
+  try {
+    setUserActivityLoading(true);
+    const data = await api("/api/admin/user-activity");
+    setUserActivity(data);
+  } catch (err) {
+    setError(err.message || "Failed to load user activity.");
+  } finally {
+    setUserActivityLoading(false);
+  }
+}
+async function loadAuditLogs() {
+  try {
+    setAuditLogsLoading(true);
+
+    const query = activeLeagueId
+      ? `/api/audit-logs?leagueId=${activeLeagueId}`
+      : "/api/audit-logs";
+
+    const data = await api(query);
+    setAuditLogs(Array.isArray(data) ? data : []);
+  } catch (err) {
+    setError(err.message || "Failed to load audit logs.");
+  } finally {
+    setAuditLogsLoading(false);
+  }
+}
 
 async function loadAiAnalysis(matchId) {
   try {
@@ -5649,6 +5711,14 @@ onClick={() => {
       >
         ℹ️ About
       </button>
+{session?.user?.email === "surprisecricket11@gmail.com" && (
+  <button
+    className={`dashboard-tab ${activeTab === "admin" ? "active" : ""}`}
+    onClick={() => setActiveTab("admin")}
+  >
+    🛡️ Admin
+  </button>
+)}
     </>
   )}
 </div>
@@ -10011,8 +10081,8 @@ onClick={() => {
           <p>
             Create leagues, add teams and players, organize series, schedule
             matches, score live games, use Scorer Mode, share spectator links,
-            track points, view rankings, manage permissions, and generate
-            AI-powered match insights.
+            track points, view rankings, manage permissions, review audit logs,
+            monitor user activity, and generate AI-powered match insights.
           </p>
         </div>
       </div>
@@ -10025,13 +10095,23 @@ onClick={() => {
           <h4>Create or Select League</h4>
           <p>
             Open the <strong>Leagues</strong> tab and choose your active league.
-            Every team, player, series, match, points table, permission, and stat
-            belongs to a league.
+            Every team, player, series, match, points table, permission, stat,
+            and audit record belongs to a league.
           </p>
         </div>
 
         <div className="help-card">
-          <h3>🌐 Step 2</h3>
+          <h3>✅ Step 2</h3>
+          <h4>Complete Minimum Setup</h4>
+          <p>
+            Create at least <strong>2 teams</strong> and add at least{" "}
+            <strong>2 players per team</strong> before creating a match. The
+            mobile landing page guides users when setup is incomplete.
+          </p>
+        </div>
+
+        <div className="help-card">
+          <h3>🌐 Step 3</h3>
           <h4>Choose League Visibility</h4>
           <p>
             Keep leagues <strong>Private</strong>, make them{" "}
@@ -10041,7 +10121,7 @@ onClick={() => {
         </div>
 
         <div className="help-card">
-          <h3>📅 Step 3</h3>
+          <h3>📅 Step 4</h3>
           <h4>Create Series / Season</h4>
           <p>
             Series are optional. Use them for tournaments, cups, seasons, or
@@ -10050,7 +10130,7 @@ onClick={() => {
         </div>
 
         <div className="help-card">
-          <h3>👥 Step 4</h3>
+          <h3>👥 Step 5</h3>
           <h4>Add Teams & Players</h4>
           <p>
             Add teams first, then use bulk player import to paste multiple
@@ -10069,7 +10149,7 @@ onClick={() => {
         </div>
 
         <div className="help-card">
-          <h3>📋 Step 5</h3>
+          <h3>📋 Step 6</h3>
           <h4>Create / Schedule Match</h4>
           <p>
             Go to <strong>Matches → Create Match</strong>. Add overs, powerplay,
@@ -10079,7 +10159,7 @@ onClick={() => {
         </div>
 
         <div className="help-card">
-          <h3>▶ Step 6</h3>
+          <h3>▶ Step 7</h3>
           <h4>Start Match</h4>
           <p>
             Open the <strong>Scheduled</strong> tab, click{" "}
@@ -10089,20 +10169,12 @@ onClick={() => {
         </div>
 
         <div className="help-card">
-          <h3>🎯 Step 7</h3>
-          <h4>Score Live</h4>
-          <p>
-            Use normal scoring or <strong>Scorer Mode</strong> for fast match-day
-            scoring with quick buttons, scoreboard, commentary, and setup panels.
-          </p>
-        </div>
-
-        <div className="help-card">
           <h3>📤 Step 8</h3>
           <h4>Share With Spectators</h4>
           <p>
-            Use <strong>Share - Spectator View</strong> to share live scores,
-            commentary, scorecards, match status, and results.
+            Use <strong>Share - Spectator View</strong> to share a professional
+            live score message with score, match status, live link, and Cric4All
+            branding.
           </p>
         </div>
       </div>
@@ -10124,7 +10196,7 @@ onClick={() => {
           <p>
             Matches are separated into <strong>Create</strong>,{" "}
             <strong>Active</strong>, <strong>Scheduled</strong>, and{" "}
-            <strong>Completed</strong>. Completed matches can also generate AI
+            <strong>Completed</strong>. Completed matches can generate AI
             reviews.
           </p>
         </div>
@@ -10139,7 +10211,7 @@ onClick={() => {
         </div>
 
         <div className="help-card">
-          <h3>📈 Points</h3>
+          <h3>🥇 Points</h3>
           <p>
             Track standings with matches played, wins, losses, ties, points, and
             team performance.
@@ -10162,6 +10234,24 @@ onClick={() => {
             captains, scorers, analysts, and viewers.
           </p>
         </div>
+
+        <div className="help-card">
+          <h3>🛡️ Admin</h3>
+          <p>
+            Owner-only Admin Center shows online users, recent logins, 24-hour
+            login activity, and audit logs for sensitive league and match
+            actions.
+          </p>
+        </div>
+
+        <div className="help-card">
+          <h3>👤 Account</h3>
+          <p>
+            Use the account icon near Sign Out to view your Cric4All account,
+            quick actions, dashboard shortcut, Explore shortcut, and sign-out
+            option.
+          </p>
+        </div>
       </div>
 
       <h3 className="help-section-title">⚡ Scorer Mode</h3>
@@ -10172,6 +10262,15 @@ onClick={() => {
           <p>
             Record 0, 1, 2, 3, 4, 6, wides, no-balls, byes, leg-byes, wickets,
             retired hurt, swaps, and undo from a focused scoring workspace.
+          </p>
+        </div>
+
+        <div className="help-card">
+          <h3>🏏 Main Scoring Tabs</h3>
+          <p>
+            Scoring, Scoreboard, and Commentary are presented as prominent tabs
+            so scorers can quickly switch between live scoring, full scorecard,
+            and ball-by-ball history.
           </p>
         </div>
 
@@ -10192,10 +10291,11 @@ onClick={() => {
         </div>
 
         <div className="help-card">
-          <h3>⚙️ Setup Panel</h3>
+          <h3>📋 Match Setup Panel</h3>
           <p>
-            Quickly check overs, powerplay, wickets, max overs per bowler,
-            batting first, match status, captains, and wicketkeepers.
+            Match Setup is collapsed by default. Expand it to check overs,
+            powerplay, wickets, max overs per bowler, batting first, match
+            status, captains, and wicketkeepers.
           </p>
         </div>
 
@@ -10210,8 +10310,18 @@ onClick={() => {
         <div className="help-card">
           <h3>🎤 Voice Scoring</h3>
           <p>
-            Voice scoring foundation supports commands like dot, one, two, four,
-            six, wide, no ball, bye, leg bye, wicket, and undo inside Scorer Mode.
+            Voice scoring supports commands like dot, one, two, four, six, wide,
+            no ball, bye, leg bye, wicket, and undo inside Scorer Mode when the
+            browser supports microphone input.
+          </p>
+        </div>
+
+        <div className="help-card">
+          <h3>📱 Mobile Experience</h3>
+          <p>
+            Mobile scoring uses compact layouts, larger primary scoring controls,
+            swipe hints for dashboard tabs, and optimized views for quick
+            match-day use.
           </p>
         </div>
       </div>
@@ -10232,6 +10342,15 @@ onClick={() => {
           <p>
             Supports bowled, caught, LBW, run out, stumped, hit wicket, retired
             hurt, retired out, and other dismissal types.
+          </p>
+        </div>
+
+        <div className="help-card">
+          <h3>🛑 End Innings After Wicket</h3>
+          <p>
+            For short lineups or leagues with large rosters, scorers can mark a
+            batter out and end the innings without selecting a random non-playing
+            replacement batter.
           </p>
         </div>
 
@@ -10264,6 +10383,15 @@ onClick={() => {
           <p>
             Fall of wickets shows score, wicket number, player out, and over.
             Mobile tables support horizontal swipe with the first column locked.
+          </p>
+        </div>
+
+        <div className="help-card">
+          <h3>↩️ Undo & Corrections</h3>
+          <p>
+            Authorized users can undo the latest ball and use correction flows
+            for special cases such as retired hurt adjustments and scoring
+            fixes.
           </p>
         </div>
       </div>
@@ -10329,6 +10457,15 @@ onClick={() => {
             Player filters work by player name across teams.
           </p>
         </div>
+
+        <div className="help-card">
+          <h3>🏏 Match Finder</h3>
+          <p>
+            Match filters include useful details such as teams, series, status,
+            score summary, result, and date so users can find the right match
+            quickly.
+          </p>
+        </div>
       </div>
 
       <h3 className="help-section-title">🌐 Public League Features</h3>
@@ -10366,6 +10503,14 @@ onClick={() => {
         </div>
 
         <div className="help-card">
+          <h3>⭐ Followed Leagues</h3>
+          <p>
+            Users can access followed leagues from the Leagues area to quickly
+            return to public leagues they care about.
+          </p>
+        </div>
+
+        <div className="help-card">
           <h3>📈 Public Points Table</h3>
           <p>
             Public league pages show standings so spectators can follow team
@@ -10378,6 +10523,14 @@ onClick={() => {
           <p>
             Public league pages can show top performers such as most runs, most
             wickets, most sixes, strike rate, and economy.
+          </p>
+        </div>
+
+        <div className="help-card">
+          <h3>📲 Android App</h3>
+          <p>
+            Cric4All is available as a mobile-friendly web app and Android app,
+            making live scoring easier on phones during match day.
           </p>
         </div>
       </div>
@@ -10397,8 +10550,9 @@ onClick={() => {
         <div className="help-card">
           <h3>📤 Share Match</h3>
           <p>
-            Share live scores, commentary, scorecards, match status, and stats
-            using spectator match links.
+            Share live scores using a polished message that includes league,
+            teams, score, match status, live scorecard link, and Cric4All
+            branding.
           </p>
         </div>
 
@@ -10434,23 +10588,63 @@ onClick={() => {
         </div>
       </div>
 
+      <h3 className="help-section-title">🛡️ Admin & Integrity</h3>
+
+      <div className="help-grid">
+        <div className="help-card">
+          <h3>🟢 Online Users</h3>
+          <p>
+            Owner-only Admin Center can show users who are currently active using
+            last-seen heartbeat tracking.
+          </p>
+        </div>
+
+        <div className="help-card">
+          <h3>🕒 Recent Logins</h3>
+          <p>
+            Track last login time and recent login history so owners can see who
+            has logged in during the last 24 hours or recent period.
+          </p>
+        </div>
+
+        <div className="help-card">
+          <h3>📜 Audit Logs</h3>
+          <p>
+            Audit logs record important actions such as creating, editing,
+            deleting, locking, abandoning, ending matches, and permission
+            changes.
+          </p>
+        </div>
+
+        <div className="help-card">
+          <h3>🔐 Data Integrity</h3>
+          <p>
+            Admin logging helps league owners understand who changed important
+            data and when, improving trust and accountability.
+          </p>
+        </div>
+      </div>
+
       <div className="help-tip-box">
         <h3>💡 Pro Tips</h3>
 
         <ul>
           <li>Use the Leagues tab first: league → series → teams → players.</li>
-          <li>Series are optional. Use them only for cups, seasons, tournaments, or years.</li>
           <li>Create at least two teams before creating a match.</li>
+          <li>Add at least two players per team before creating a match.</li>
+          <li>Series are optional. Use them only for cups, seasons, tournaments, or years.</li>
           <li>Add players before starting a match for accurate stats.</li>
           <li>Use Scheduled matches for future games.</li>
           <li>Use Scorer Mode during live scoring to avoid scrolling.</li>
-          <li>Use Scoreboard, Commentary, and Setup panels inside Scorer Mode.</li>
+          <li>Use the Scoring, Scoreboard, and Commentary tabs during live scoring.</li>
+          <li>Expand Match Setup only when you need match configuration details.</li>
           <li>Use Smart Filters to focus on a team, player, series, year, or match status.</li>
           <li>Use public league links when you want spectators to view league pages.</li>
-          <li>Use Share - Spectator View for live match links.</li>
+          <li>Use Share - Spectator View for professional live match links.</li>
           <li>Use Explore only for leagues you are comfortable making public.</li>
           <li>Completed matches automatically open the scoreboard instead of scoring.</li>
           <li>Use AI Match Insights only after the match is completed.</li>
+          <li>Use Admin Center to review user activity and audit logs.</li>
         </ul>
       </div>
 
@@ -10459,9 +10653,9 @@ onClick={() => {
 
         <p>
           League Owners and Admins can manage users, teams, matches, scoring,
-          series, public visibility, and access levels. Scorers can score
-          matches, captains can help manage team-related actions, analysts can
-          review stats, and viewers can follow league information.
+          series, public visibility, audit activity, and access levels. Scorers
+          can score matches, captains can help manage team-related actions,
+          analysts can review stats, and viewers can follow league information.
         </p>
 
         <div className="help-badges">
@@ -10501,8 +10695,8 @@ onClick={() => {
           <div>
             <strong>Why can't I create a match?</strong>
             <br />
-            Make sure the active league has at least two teams and that your role
-            has match creation permission.
+            Make sure the active league has at least two teams, at least two
+            players per team, and that your role has match creation permission.
           </div>
 
           <div>
@@ -10524,6 +10718,13 @@ onClick={() => {
             <br />
             Scorer Mode is a focused scoring workspace with quick buttons,
             scoreboard, commentary, setup panels, and reduced scrolling.
+          </div>
+
+          <div>
+            <strong>Can I end an innings if no more real batters are available?</strong>
+            <br />
+            Yes. Use the end-innings-after-wicket option in the wicket modal
+            instead of selecting a non-playing roster member.
           </div>
 
           <div>
@@ -10568,6 +10769,21 @@ onClick={() => {
           </div>
 
           <div>
+            <strong>Can I see who changed important data?</strong>
+            <br />
+            Yes. Owners can use Admin Center audit logs to review important
+            actions such as match locks, deletes, edits, abandoned matches, and
+            permission changes.
+          </div>
+
+          <div>
+            <strong>Can I see who logged in recently?</strong>
+            <br />
+            Yes. Owners can view recent login activity and currently active
+            users in Admin Center.
+          </div>
+
+          <div>
             <strong>Can I score by voice?</strong>
             <br />
             Voice scoring support is being introduced inside Scorer Mode and
@@ -10589,15 +10805,17 @@ onClick={() => {
 
           <p>
             A modern cricket scoring, league management, live spectator sharing,
-            AI match review, and statistics platform built for clubs, leagues,
-            academies, tournaments, and community cricket.
+            AI match review, statistics, admin activity, and audit tracking
+            platform built for clubs, leagues, academies, tournaments, and
+            community cricket.
           </p>
 
           <div className="release-badge-row">
             <span className="release-badge">Live Scoring</span>
             <span className="release-badge">Scorer Mode</span>
             <span className="release-badge">AI Insights</span>
-            <span className="release-badge">Mobile Friendly</span>
+            <span className="release-badge">Android App</span>
+            <span className="release-badge">Admin Center</span>
           </div>
         </div>
       </div>
@@ -10608,7 +10826,8 @@ onClick={() => {
           Cric4All makes cricket easier to organize, score, follow, review, and
           share. It brings leagues, teams, players, matches, series, scorecards,
           commentary, points tables, rankings, permissions, public league pages,
-          and live spectator links into one simple platform.
+          live spectator links, audit logs, and user activity into one simple
+          platform.
         </p>
         <p>
           Whether you are running a weekend tournament, a yearly league, an
@@ -10627,7 +10846,7 @@ onClick={() => {
         <div className="about-feature">📋 Match Scheduling</div>
         <div className="about-feature">🎯 Live Ball-by-Ball Scoring</div>
         <div className="about-feature">⚡ Scorer Mode Workspace</div>
-        <div className="about-feature">🎙️ Useful Scorer Commentary</div>
+        <div className="about-feature">📝 Ball-by-Ball Commentary</div>
         <div className="about-feature">📊 Live Scoreboard Panels</div>
         <div className="about-feature">🏟️ Spectator Score Sharing</div>
         <div className="about-feature">🤖 AI Post-Match Review</div>
@@ -10636,18 +10855,22 @@ onClick={() => {
         <div className="about-feature">🔎 Smart Filters / Context Lens</div>
         <div className="about-feature">🌐 Public League Pages</div>
         <div className="about-feature">🧭 Explore Public Leagues</div>
+        <div className="about-feature">⭐ Followed Leagues</div>
         <div className="about-feature">🔐 Role-Based Access</div>
-        <div className="about-feature">📱 Mobile App Ready</div>
+        <div className="about-feature">🛡️ Admin Center</div>
+        <div className="about-feature">📜 Audit Logs</div>
+        <div className="about-feature">🟢 Login Activity</div>
+        <div className="about-feature">📱 Android App</div>
       </div>
 
       <div className="about-card">
         <h3>📦 Current Release</h3>
 
         <div className="release-badge-row">
-          <span className="release-badge">MVP 1.0</span>
+          <span className="release-badge">MVP 1.0+</span>
           <span className="release-badge">Live Scoring Ready</span>
           <span className="release-badge">Public Pages Ready</span>
-          <span className="release-badge">Android Packaging Ready</span>
+          <span className="release-badge">Android Production Ready</span>
         </div>
 
         <p>Current functionality includes:</p>
@@ -10657,11 +10880,14 @@ onClick={() => {
           <span>✅ Private, Unlisted, and Public leagues</span>
           <span>✅ Public league view links</span>
           <span>✅ Explore page for public leagues</span>
+          <span>✅ Followed leagues</span>
           <span>✅ Series / season creation</span>
-          <span>✅ Team creation</span>
+          <span>✅ Team creation and editing</span>
+          <span>✅ Player creation and editing</span>
           <span>✅ Bulk player imports</span>
           <span>✅ Scheduled matches</span>
           <span>✅ Start match workflow</span>
+          <span>✅ Delivery setup workflow</span>
           <span>✅ Optional series while creating matches</span>
           <span>✅ Match editing for scheduled games</span>
           <span>✅ Captains and wicketkeepers</span>
@@ -10672,6 +10898,7 @@ onClick={() => {
           <span>✅ Live scoring</span>
           <span>✅ Wides, no-balls, byes, leg-byes</span>
           <span>✅ Wickets, run outs, stumpings, retired hurt</span>
+          <span>✅ End innings after wicket option</span>
           <span>✅ Striker and non-striker management</span>
           <span>✅ Bowler change workflow</span>
           <span>✅ Keeper change workflow</span>
@@ -10680,6 +10907,7 @@ onClick={() => {
           <span>✅ Lock and abandon match controls</span>
           <span>✅ Scoreboard and match center</span>
           <span>✅ Commentary timeline</span>
+          <span>✅ Professional share message</span>
           <span>✅ Sticky first-column score tables</span>
           <span>✅ Swipeable mobile scorecards</span>
           <span>✅ Points table</span>
@@ -10689,6 +10917,10 @@ onClick={() => {
           <span>✅ Smart Filters / Context Lens</span>
           <span>✅ AI match insights</span>
           <span>✅ Voice scoring foundation</span>
+          <span>✅ Account details page</span>
+          <span>✅ Admin activity center</span>
+          <span>✅ Audit logs</span>
+          <span>✅ Login activity tracking</span>
         </div>
       </div>
 
@@ -10706,7 +10938,7 @@ onClick={() => {
           <span>🎯 Quick Score Buttons</span>
           <span>📊 Inline Scoreboard</span>
           <span>📝 Commentary Panel</span>
-          <span>⚙️ Match Setup Panel</span>
+          <span>📋 Collapsible Match Setup</span>
           <span>✅ Over Complete Notice</span>
           <span>🎤 Voice Score Ready</span>
         </div>
@@ -10739,7 +10971,7 @@ onClick={() => {
 
           <div>
             <strong>Momentum</strong>
-            <p>Review the pressure points and chase/build-up story.</p>
+            <p>Review pressure points and chase/build-up story.</p>
           </div>
         </div>
       </div>
@@ -10784,7 +11016,7 @@ onClick={() => {
             <strong>For Organizers</strong>
             <p>
               Create leagues, series, teams, matches, invite links, visibility
-              settings, roles, and permissions.
+              settings, roles, permissions, and review important activity.
             </p>
           </div>
 
@@ -10816,6 +11048,37 @@ onClick={() => {
       </div>
 
       <div className="about-card">
+        <h3>🛡️ Admin & Data Integrity</h3>
+
+        <p>
+          Cric4All includes owner-focused tools to help maintain trust,
+          accountability, and league integrity.
+        </p>
+
+        <div className="about-workflow-grid">
+          <div>
+            <strong>Recent Logins</strong>
+            <p>See who logged in recently and who is active now.</p>
+          </div>
+
+          <div>
+            <strong>Audit Logs</strong>
+            <p>Track important create, edit, delete, lock, abandon, and end actions.</p>
+          </div>
+
+          <div>
+            <strong>Admin Center</strong>
+            <p>Review online users, 24-hour logins, and system activity.</p>
+          </div>
+
+          <div>
+            <strong>Account Details</strong>
+            <p>Users can quickly access dashboard, Explore, and account actions.</p>
+          </div>
+        </div>
+      </div>
+
+      <div className="about-card">
         <h3>🧠 Smart Match Features</h3>
 
         <p>
@@ -10828,7 +11091,7 @@ onClick={() => {
         <div className="about-highlight-row">
           <span>🤖 AI Analysis</span>
           <span>📊 Stats</span>
-          <span>🎙️ Commentary</span>
+          <span>📝 Commentary</span>
           <span>🏆 Rankings</span>
           <span>📈 Points Table</span>
           <span>🔎 Smart Filters</span>
@@ -10851,8 +11114,10 @@ onClick={() => {
           <span>📊 Advanced analytics dashboard</span>
           <span>🔍 SEO upgrades for public league pages</span>
           <span>🎤 Enhanced voice scoring</span>
-          <span>📲 Android app publishing</span>
+          <span>📲 Android app improvements</span>
           <span>🍎 iOS app packaging</span>
+          <span>💳 Premium league tools</span>
+          <span>📤 Export scorecards and stats</span>
         </div>
       </div>
 
@@ -10868,6 +11133,7 @@ onClick={() => {
           <span className="badge">OpenAI</span>
           <span className="badge">Vercel</span>
           <span className="badge">Capacitor</span>
+          <span className="badge">Google Play</span>
         </div>
       </div>
 
@@ -10877,6 +11143,111 @@ onClick={() => {
         <p className="about-copy">© 2026 Cric4All</p>
       </div>
     </div>
+  </Card>
+)}
+{activeTab === "admin" && (
+  <Card title="🛡️ Admin Center">
+    <div className="admin-center-grid">
+      <div className="admin-activity-card">
+        <h3>🟢 Online Now</h3>
+
+        {userActivityLoading ? (
+          <p className="muted">Loading activity...</p>
+        ) : !userActivity?.onlineUsers?.length ? (
+          <p className="muted">No users online right now.</p>
+        ) : (
+          <div className="admin-user-list">
+            {userActivity.onlineUsers.map((user) => (
+              <div key={user.id} className="admin-user-row">
+                <div>
+                  <strong>{user.name || "Unknown User"}</strong>
+                  <span>{user.email}</span>
+                </div>
+                <small>Active now</small>
+              </div>
+            ))}
+          </div>
+        )}
+      </div>
+
+      <div className="admin-activity-card">
+        <h3>🕒 Recent Logins</h3>
+
+        {!userActivity?.recentLogins?.length ? (
+          <p className="muted">No logins in the last 24 hours.</p>
+        ) : (
+          <div className="admin-user-list">
+            {userActivity.recentLogins.map((login) => (
+              <div key={login.id} className="admin-user-row">
+                <div>
+                  <strong>{login.name || "Unknown User"}</strong>
+                  <span>{login.email}</span>
+                </div>
+                <small>{formatDate(login.loginAt)}</small>
+              </div>
+            ))}
+          </div>
+        )}
+      </div>
+
+      <div className="admin-activity-card admin-stat-card">
+        <h3>📈 Activity Summary</h3>
+
+        <div className="admin-stat-grid">
+          <div>
+            <span>Online</span>
+            <strong>{userActivity?.onlineUsers?.length || 0}</strong>
+          </div>
+
+          <div>
+            <span>24h Logins</span>
+            <strong>{userActivity?.loginCount24h || 0}</strong>
+          </div>
+        </div>
+      </div>
+    </div>
+    <div className="admin-activity-card admin-audit-card">
+  <div className="admin-card-title-row">
+    <h3>📜 Audit Logs</h3>
+  </div>
+
+  {auditLogsLoading ? (
+    <p className="muted">Loading audit logs...</p>
+  ) : !auditLogs.length ? (
+    <p className="muted">No audit logs found.</p>
+  ) : (
+    <div className="admin-audit-list">
+      {auditLogs.map((log) => (
+        <div key={log.id} className="admin-audit-row">
+          <div className="admin-audit-main">
+            <strong>{log.action?.replaceAll("_", " ")}</strong>
+            <span>{log.description || "No description available."}</span>
+
+            <small>
+              👤 {log.actorName || log.actorEmail || "Unknown user"}
+              {log.actorEmail ? ` • ${log.actorEmail}` : ""}
+            </small>
+          </div>
+
+          <div className="admin-audit-meta">
+            <span>{log.entityType || "SYSTEM"}</span>
+            <small>{formatDate(log.createdAt)}</small>
+          </div>
+        </div>
+      ))}
+    </div>
+  )}
+</div>
+        <button
+          type="button"
+          className="btn"
+          onClick={() => {
+            loadUserActivity();
+            loadAuditLogs();
+          }}
+        >
+          🔄 Refresh Activity
+        </button>
   </Card>
 )}
 {showLeagueModal && (

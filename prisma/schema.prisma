@@ -22,6 +22,7 @@ model User {
   leagueFollowers     LeagueFollower[]
   lastLoginAt         DateTime?
   lastSeenAt          DateTime?
+  loginHistory        LoginHistory[]
 }
 
 model Team {
@@ -338,4 +339,23 @@ model AuditLog {
   @@index([actorUserId])
   @@index([action])
   @@index([createdAt])
+}
+
+model LoginHistory {
+  id Int @id @default(autoincrement())
+
+  userId String
+  email  String
+  name   String?
+
+  loginAt DateTime @default(now())
+
+  ipAddress String?
+  userAgent String?
+
+  user User @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@index([loginAt])
+  @@index([userId])
+  @@index([email])
 }

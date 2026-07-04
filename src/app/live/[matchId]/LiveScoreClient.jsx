@@ -2,6 +2,11 @@
 
 import { useEffect, useState } from "react";
 import { buildMatchInsights } from "@/lib/match-insights";
+const FINAL_MATCH_STATUSES = ["ABANDONED", "COMPLETED", "COMPLETED_LOCKED"];
+
+function isFinalMatchStatus(status) {
+  return FINAL_MATCH_STATUSES.includes(String(status || "").toUpperCase());
+}
 
 function getBallDisplay(label) {
   const raw =
@@ -178,27 +183,37 @@ async function shareLiveScore() {
   await navigator.clipboard.writeText(shareUrl);
   alert("Live score link copied!");
 }
-  useEffect(() => {
-    async function loadScorecard() {
-      try {
-        const res = await fetch(`/api/liveview/${matchId}`);
+useEffect(() => {
+  let intervalId = null;
 
-        if (!res.ok) {
-          throw new Error("Failed to load scorecard");
-        }
+  async function loadScorecard() {
+    try {
+      const res = await fetch(`/api/liveview/${matchId}`);
 
-        const data = await res.json();
-        setScoreboard(data);
-      } catch (err) {
-        setError(err.message);
+      if (!res.ok) {
+        throw new Error("Failed to load scorecard");
       }
+
+      const data = await res.json();
+      setScoreboard(data);
+
+      if (isFinalMatchStatus(data?.match?.status) && intervalId) {
+        clearInterval(intervalId);
+        intervalId = null;
+      }
+    } catch (err) {
+      setError(err.message);
     }
+  }
 
-    loadScorecard();
+  loadScorecard();
 
-    const interval = setInterval(loadScorecard, 5000);
-    return () => clearInterval(interval);
-  }, [matchId]);
+  intervalId = setInterval(loadScorecard, 5000);
+
+  return () => {
+    if (intervalId) clearInterval(intervalId);
+  };
+}, [matchId]);
 
   if (error) {
     return (
@@ -322,6 +337,18 @@ function getLastThreeOvers(scoreboard) {
   return Array.from(overMap.values()).slice(-3);
 }
 
+const matchStatus = String(scoreboard?.match?.status || "").toUpperCase();
+const isMatchFinished = isFinalMatchStatus(matchStatus);
+
+const livePillText =
+  matchStatus === "ABANDONED"
+    ? "● MATCH ABANDONED"
+    : matchStatus === "COMPLETED_LOCKED"
+    ? "● COMPLETED & LOCKED"
+    : matchStatus === "COMPLETED"
+    ? "● MATCH COMPLETED"
+    : "● LIVE SCORE";
+
   return (
 <main className={`live-page-shell ${tvMode ? "live-tv-mode" : ""}`}>
   {tvMode && (
@@ -335,8 +362,13 @@ function getLastThreeOvers(scoreboard) {
 )}
       <section className="live-hero-card">
         <div className="live-hero-top">
-          <span className="live-pill">● LIVE SCORE</span>
-          <span className="live-refresh">Auto refreshes every 5s</span>
+<span className={`live-pill ${isMatchFinished ? "completed" : ""}`}>
+  {livePillText}
+</span>
+
+<span className="live-refresh">
+  {isMatchFinished ? "Final scorecard" : "Auto refreshes every 5s"}
+</span>
         </div>
 
         <div className="live-match-title">

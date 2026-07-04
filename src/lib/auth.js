@@ -114,15 +114,29 @@ async authorize(credentials) {
       return session;
     }
   },
-  events: {
+events: {
   async signIn({ user }) {
     if (!user?.email) return;
 
-    await prisma.user.update({
+    const dbUser = await prisma.user.findUnique({
       where: { email: user.email },
+    });
+
+    if (!dbUser) return;
+
+    await prisma.user.update({
+      where: { id: dbUser.id },
       data: {
         lastLoginAt: new Date(),
         lastSeenAt: new Date(),
+      },
+    });
+
+    await prisma.loginHistory.create({
+      data: {
+        userId: dbUser.id,
+        email: dbUser.email,
+        name: dbUser.name,
       },
     });
   },
