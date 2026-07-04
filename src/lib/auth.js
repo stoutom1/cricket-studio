@@ -52,23 +52,6 @@ async authorize(credentials) {
     if (!valid) {
       return null;
     }
-
-await prisma.user.update({
-  where: { id: user.id },
-  data: {
-    lastLoginAt: new Date(),
-    lastSeenAt: new Date(),
-  },
-});
-
-await prisma.loginHistory.create({
-  data: {
-    userId: user.id,
-    email: user.email,
-    name: user.name || user.email,
-  },
-});
-
 return {
   id: String(user.id),
   email: user.email,
@@ -118,6 +101,40 @@ return {
   pages: {
     signIn: "/login" 
   },
+  events: {
+  async signIn({ user }) {
+    if (!user?.email) return;
+
+    const dbUser = await prisma.user.findUnique({
+      where: { email: user.email },
+      select: {
+        id: true,
+        email: true,
+        name: true,
+      },
+    });
+
+    if (!dbUser) return;
+
+    const now = new Date();
+
+    await prisma.user.update({
+      where: { id: dbUser.id },
+      data: {
+        lastLoginAt: now,
+        lastSeenAt: now,
+      },
+    });
+
+    await prisma.loginHistory.create({
+      data: {
+        userId: dbUser.id,
+        email: dbUser.email,
+        name: dbUser.name || dbUser.email,
+      },
+    });
+  },
+},
   callbacks: {
     async jwt({ token, user }) {
       if (user) token.id = user.id;
