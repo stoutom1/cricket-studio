@@ -12,6 +12,8 @@ export default function TeamPollClient({ token }) {
   const [submitted, setSubmitted] = useState(false);
   const [loading, setLoading] = useState(true);
   const [dateResponses, setDateResponses] = useState({});
+  const [submitting, setSubmitting] = useState(false);
+  const [submitError, setSubmitError] = useState("");
 
   useEffect(() => {
     loadPoll();
@@ -54,12 +56,14 @@ export default function TeamPollClient({ token }) {
   }, [players, search]);
 
 async function submit() {
+  setSubmitError("");
+
   if (!selectedPlayer) {
-    alert("Please select your Cric4All player name.");
+    setSubmitError("Please select your Cric4All player name.");
     return;
   }
 
-  const responses = Object.entries(dateResponses).map(
+  const responses = Object.entries(dateResponses || {}).map(
     ([optionId, response]) => ({
       optionId: Number(optionId),
       response,
@@ -67,38 +71,42 @@ async function submit() {
   );
 
   if (!responses.length) {
-    alert("Please choose availability for at least one date.");
+    setSubmitError("Please choose Yes, Maybe, or No for at least one option.");
     return;
   }
 
-  const res = await fetch("/api/team-availability-poll/respond", {
-    method: "POST",
-    headers: {
-      "Content-Type": "application/json",
-    },
-body: JSON.stringify({
-  token,
-  playerKey: selectedPlayer.playerKey,
-  playerName: selectedPlayer.playerName,
-  responses: [
-    {
-      optionId: option.id,
-      response: "YES",
-    },
-  ],
-  displayName,
-  comment,
-})
-  });
+  setSubmitting(true);
 
-  const data = await res.json();
+  try {
+    const res = await fetch("/api/team-availability-poll/respond", {
+      method: "POST",
+      headers: {
+        "Content-Type": "application/json",
+      },
+      body: JSON.stringify({
+        token,
+        playerKey: selectedPlayer.playerKey,
+        playerName: selectedPlayer.playerName,
+        responses,
+        displayName,
+        comment,
+      }),
+    });
 
-  if (!res.ok) {
-    alert(data.error || "Failed to submit.");
-    return;
+    const data = await res.json();
+
+    if (!res.ok) {
+      setSubmitError(data.error || "Failed to submit availability.");
+      return;
+    }
+
+    setSubmitted(true);
+  } catch (error) {
+    console.error("Submit availability failed:", error);
+    setSubmitError("Network error. Please try again.");
+  } finally {
+    setSubmitting(false);
   }
-
-  setSubmitted(true);
 }
 
   if (loading) {
@@ -215,12 +223,19 @@ body: JSON.stringify({
   ))}
 </div>
 
+{submitError && (
+  <div className="team-poll-error">
+    {submitError}
+  </div>
+)}
+
 <button
   type="button"
   className="team-poll-submit-btn"
   onClick={submit}
+  disabled={submitting}
 >
-  Submit Availability
+  {submitting ? "Submitting..." : "Submit Availability"}
 </button>
       </section>
     </main>

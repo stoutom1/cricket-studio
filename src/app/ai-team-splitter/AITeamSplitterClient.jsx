@@ -96,9 +96,10 @@ export default function AITeamSplitterClient() {
   const [allPolls, setAllPolls] = useState([]);
   const [leagueId, setLeagueId] = useState(null);
 
-  const [pollOptions, setPollOptions] = useState([
-    { label: "", startTime: "" },
-  ]);
+  const [pollOptions, setPollOptions] = useState([]);
+  const [showOptionForm, setShowOptionForm] = useState(false);
+  const [newOptionLabel, setNewOptionLabel] = useState("");
+  const [newOptionStartTime, setNewOptionStartTime] = useState("");
 
   useEffect(() => {
     loadPlayers();
@@ -191,20 +192,27 @@ await loadAllPolls(playerData.leagueId);
     setResult(null);
   }
 
-  function updatePollOption(index, field, value) {
-    setPollOptions((prev) => {
-      const next = [...prev];
-      next[index] = {
-        ...next[index],
-        [field]: value,
-      };
-      return next;
-    });
+  function addMatchOption() {
+  const label = newOptionLabel.trim();
+  const startTime = newOptionStartTime;
+
+  if (!label && !startTime) {
+    alert("Please enter a label or date/time.");
+    return;
   }
 
-  function addPollOption() {
-    setPollOptions((prev) => [...prev, { label: "", startTime: "" }]);
-  }
+  setPollOptions((prev) => [
+    ...prev,
+    {
+      label: label || `Match Option ${prev.length + 1}`,
+      startTime,
+    },
+  ]);
+
+  setNewOptionLabel("");
+  setNewOptionStartTime("");
+  setShowOptionForm(false);
+}
 
   function removePollOption(index) {
     setPollOptions((prev) => prev.filter((_, i) => i !== index));
@@ -530,44 +538,77 @@ const pollOptionResults = getPollOptionResults();
           />
         </div>
 
-        <div className="poll-options-admin compact">
-  <div className="poll-options-header">
-    <strong>Match Date Options</strong>
-    <button type="button" onClick={addPollOption}>
-      ➕ Add Date
+<div className="match-options-card">
+  <div className="match-options-header">
+    <div>
+      <strong>📅 Match Options</strong>
+      <span>Add one or more possible match dates/times.</span>
+    </div>
+
+    <button
+      type="button"
+      onClick={() => setShowOptionForm((prev) => !prev)}
+    >
+      ➕ Add Match Option
     </button>
   </div>
 
-  {pollOptions.map((option, index) => (
-    <div key={index} className="poll-option-compact-row">
+  {pollOptions.length > 0 ? (
+    <div className="match-options-list">
+      {pollOptions.map((option, index) => (
+        <div key={`${option.label}-${index}`} className="match-option-pill">
+          <div>
+            <strong>{option.label}</strong>
+            {option.startTime && (
+              <small>{new Date(option.startTime).toLocaleString()}</small>
+            )}
+          </div>
+
+          <button
+            type="button"
+            onClick={() => removePollOption(index)}
+            title="Remove option"
+          >
+            ✕
+          </button>
+        </div>
+      ))}
+    </div>
+  ) : (
+    <div className="match-options-empty">
+      No match options added yet. Add at least one option before creating poll.
+    </div>
+  )}
+
+  {showOptionForm && (
+    <div className="match-option-form">
       <input
-        value={option.label}
-        onChange={(e) =>
-          updatePollOption(index, "label", e.target.value)
-        }
-        placeholder={`Option ${index + 1} label`}
+        value={newOptionLabel}
+        onChange={(e) => setNewOptionLabel(e.target.value)}
+        placeholder="Example: Friday Night Match"
       />
 
       <input
         type="datetime-local"
-        value={option.startTime}
-        onChange={(e) =>
-          updatePollOption(index, "startTime", e.target.value)
-        }
+        value={newOptionStartTime}
+        onChange={(e) => setNewOptionStartTime(e.target.value)}
       />
 
-      {pollOptions.length > 1 && (
+      <div className="match-option-form-actions">
+        <button type="button" onClick={addMatchOption}>
+          Save Option
+        </button>
+
         <button
           type="button"
-          className="poll-remove-option-btn"
-          onClick={() => removePollOption(index)}
-          title="Remove date option"
+          className="secondary"
+          onClick={() => setShowOptionForm(false)}
         >
-          ✕
+          Cancel
         </button>
-      )}
+      </div>
     </div>
-  ))}
+  )}
 </div>
 
         <div className="ai-toolbar-actions poll-actions">
