@@ -52,6 +52,24 @@ async authorize(credentials) {
     if (!valid) {
       return null;
     }
+    const now = new Date();
+
+await prisma.user.update({
+  where: { id: user.id },
+  data: {
+    lastLoginAt: now,
+    lastSeenAt: now,
+  },
+});
+
+await prisma.loginHistory.create({
+  data: {
+    userId: user.id,
+    email: user.email,
+    name: user.name || user.email,
+    loginAt: now,
+  },
+});
 return {
   id: String(user.id),
   email: user.email,
@@ -101,51 +119,58 @@ return {
   pages: {
     signIn: "/login" 
   },
-  events: {
+events: {
   async signIn({ user }) {
-    if (!user?.email) return;
+    try {
+      if (!user?.email) return;
 
-    const dbUser = await prisma.user.findUnique({
-      where: { email: user.email },
-      select: {
-        id: true,
-        email: true,
-        name: true,
-      },
-    });
+      const dbUser = await prisma.user.findUnique({
+        where: { email: user.email },
+        select: { id: true, email: true, name: true },
+      });
 
-    if (!dbUser) return;
+      if (!dbUser) return;
 
-    const now = new Date();
+      const now = new Date();
 
-    await prisma.user.update({
-      where: { id: dbUser.id },
-      data: {
-        lastLoginAt: now,
-        lastSeenAt: now,
-      },
-    });
+      await prisma.user.update({
+        where: { id: dbUser.id },
+        data: {
+          lastLoginAt: now,
+          lastSeenAt: now,
+        },
+      });
 
-    await prisma.loginHistory.create({
-      data: {
-        userId: dbUser.id,
-        email: dbUser.email,
-        name: dbUser.name || dbUser.email,
-      },
-    });
-  },
-},
-  callbacks: {
-    async jwt({ token, user }) {
-      if (user) token.id = user.id;
-      return token;
-    },
-    async session({ session, token }) {
-      if (session.user) {
-        session.user.id = token.id;
-      }
-      return session;
+      await prisma.loginHistory.create({
+        data: {
+          userId: dbUser.id,
+          email: dbUser.email,
+          name: dbUser.name || dbUser.email,
+        },
+      });
+    } catch (error) {
+      console.error("signIn event error:", error);
     }
   },
+},
+callbacks: {
+  async jwt({ token, user }) {
+    if (user) {
+      token.id = user.id;
+      token.email = user.email;
+    }
+
+    return token;
+  },
+
+  async session({ session, token }) {
+    if (session.user) {
+      session.user.id = token.id;
+      session.user.email = token.email || session.user.email;
+    }
+
+    return session;
+  },
+},
   secret: process.env.NEXTAUTH_SECRET
 };
