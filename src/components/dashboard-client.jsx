@@ -6,6 +6,7 @@ import "@/app/globals.css";
 import { useRouter } from "next/navigation";
 import {formatMatchDateTime,getMatchTimelineText,} from "@/lib/date";
 import { buildMatchInsights } from "@/lib/match-insights";
+import Link from "next/link";
 
 function Card({
   title,
@@ -8898,9 +8899,15 @@ onClick={() => {
                 🗑️
               </button>
             )}
-          </div>
+          </div>  
+          {activeLeague?.name?.trim().toLowerCase() === "surprise cricket league" && (
+          <div className="ai-splitter-row">
+          <Link href="/ai-team-splitter" className="ai-splitter-launch-btn">
+            🤖 AI Split Surprise Teams
+          </Link>
+        </div>
+        )}        
         </section>
-
  {/* PLAYERS */}
 <section className="mgmt-clean-card player-manager-card">
   <div className="player-manager-head">
