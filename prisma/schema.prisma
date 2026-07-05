@@ -377,3 +377,45 @@ model TeamBalanceSuggestion {
   reason            String?
   createdAt         DateTime @default(now())
 }
+
+model TeamAvailabilityPoll {
+  id        Int                        @id @default(autoincrement())
+  token     String                     @unique
+  leagueId  Int?
+  title     String
+  matchText String?
+  startTime DateTime?
+  status    String                     @default("OPEN") // OPEN, CLOSED
+  createdAt DateTime                   @default(now())
+  options   TeamAvailabilityOption[]
+  responses TeamAvailabilityResponse[]
+}
+
+model TeamAvailabilityOption {
+  id        Int       @id @default(autoincrement())
+  pollId    Int
+  label     String // Friday, Saturday, Sunday
+  startTime DateTime?
+  sortOrder Int       @default(0)
+
+  poll      TeamAvailabilityPoll       @relation(fields: [pollId], references: [id], onDelete: Cascade)
+  responses TeamAvailabilityResponse[]
+}
+
+model TeamAvailabilityResponse {
+  id          Int      @id @default(autoincrement())
+  pollId      Int
+  optionId    Int
+  playerKey   String
+  playerName  String
+  response    String // YES, MAYBE, NO
+  displayName String?
+  comment     String?
+  createdAt   DateTime @default(now())
+  updatedAt   DateTime @updatedAt
+
+  poll   TeamAvailabilityPoll   @relation(fields: [pollId], references: [id], onDelete: Cascade)
+  option TeamAvailabilityOption @relation(fields: [optionId], references: [id], onDelete: Cascade)
+
+  @@unique([pollId, optionId, playerKey])
+}

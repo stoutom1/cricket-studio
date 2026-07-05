@@ -10,31 +10,27 @@ function normalizeName(name) {
     .replace(/\s+/g, " ");
 }
 
-export async function GET() {
+export async function GET(req, { params }) {
   try {
-    const league = await prisma.league.findFirst({
-      where: {
-        name: {
-          equals: "Surprise Cricket League",
-          mode: "insensitive",
+    const { token } = await params;
+
+    const poll = await prisma.teamAvailabilityPoll.findUnique({
+      where: { token },
+      include: {
+        options: {
+          orderBy: { sortOrder: "asc" },
         },
-      },
-      select: {
-        id: true,
-        name: true,
+        responses: true,
       },
     });
 
-    if (!league) {
-      return NextResponse.json(
-        { error: "Surprise Cricket League not found." },
-        { status: 404 }
-      );
+    if (!poll) {
+      return NextResponse.json({ error: "Poll not found." }, { status: 404 });
     }
 
     const teams = await prisma.team.findMany({
       where: {
-        leagueId: league.id,
+        leagueId: poll.leagueId || undefined,
         name: {
           in: ["Surprise 1", "Surprise 2"],
         },
@@ -54,26 +50,12 @@ export async function GET() {
         if (!uniqueMap.has(key)) {
           uniqueMap.set(key, {
             id: key,
-            playerId: player.id,
-            leagueId: league.id,
+            playerKey: key,
             playerName: player.name,
-            teamName: "Surprise Pool",
             sourceTeams: [team.name],
-
-            runs: 0,
-            average: 0,
-            strikeRate: 0,
-            wickets: 0,
-            economy: 12,
-            catches: 0,
-            runOuts: 0,
-            stumpings: 0,
-            dismissals: 0,
-            winPct: 0,
           });
         } else {
           const existing = uniqueMap.get(key);
-
           if (!existing.sourceTeams.includes(team.name)) {
             existing.sourceTeams.push(team.name);
           }
@@ -81,21 +63,17 @@ export async function GET() {
       }
     }
 
-    const players = Array.from(uniqueMap.values()).sort((a, b) =>
-      a.playerName.localeCompare(b.playerName)
-    );
-
     return NextResponse.json({
       ok: true,
-      leagueId: league.id,
-      leagueName: league.name,
-      players,
+      poll,
+      players: Array.from(uniqueMap.values()).sort((a, b) =>
+        a.playerName.localeCompare(b.playerName)
+      ),
     });
   } catch (error) {
-    console.error("AI splitter players error:", error);
-
+    console.error("Load availability poll failed:", error);
     return NextResponse.json(
-      { error: "Failed to load players." },
+      { error: "Failed to load poll." },
       { status: 500 }
     );
   }
