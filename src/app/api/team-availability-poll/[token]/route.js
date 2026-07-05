@@ -14,15 +14,15 @@ export async function GET(req, { params }) {
   try {
     const { token } = await params;
 
-    const poll = await prisma.teamAvailabilityPoll.findUnique({
-      where: { token },
-      include: {
-        options: {
-          orderBy: { sortOrder: "asc" },
-        },
-        responses: true,
-      },
-    });
+const poll = await prisma.teamAvailabilityPoll.findUnique({
+  where: { token },
+  include: {
+    options: {
+      orderBy: { sortOrder: "asc" },
+    },
+    responses: true,
+  },
+});
 
     if (!poll) {
       return NextResponse.json({ error: "Poll not found." }, { status: 404 });

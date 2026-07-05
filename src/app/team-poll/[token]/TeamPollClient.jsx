@@ -76,14 +76,19 @@ async function submit() {
     headers: {
       "Content-Type": "application/json",
     },
-    body: JSON.stringify({
-      token,
-      playerKey: selectedPlayer.playerKey,
-      playerName: selectedPlayer.playerName,
-      responses,
-      displayName,
-      comment,
-    }),
+body: JSON.stringify({
+  token,
+  playerKey: selectedPlayer.playerKey,
+  playerName: selectedPlayer.playerName,
+  responses: [
+    {
+      optionId: option.id,
+      response: "YES",
+    },
+  ],
+  displayName,
+  comment,
+})
   });
 
   const data = await res.json();

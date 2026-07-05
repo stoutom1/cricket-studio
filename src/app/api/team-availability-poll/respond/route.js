@@ -5,14 +5,8 @@ export const runtime = "nodejs";
 
 export async function POST(req) {
   try {
-    const {
-      token,
-      playerKey,
-      playerName,
-      responses,
-      displayName,
-      comment,
-    } = await req.json();
+    const { token, playerKey, playerName, responses, displayName, comment } =
+      await req.json();
 
     if (!token || !playerKey || !playerName || !Array.isArray(responses)) {
       return NextResponse.json(
@@ -30,20 +24,12 @@ export async function POST(req) {
       return NextResponse.json({ error: "Poll not found." }, { status: 404 });
     }
 
-    if (poll.status !== "OPEN") {
-      return NextResponse.json(
-        { error: "This poll is closed." },
-        { status: 400 }
-      );
-    }
-
     const validOptionIds = new Set(poll.options.map((o) => Number(o.id)));
 
     for (const item of responses) {
       const optionId = Number(item.optionId);
 
       if (!validOptionIds.has(optionId)) continue;
-
       if (!["YES", "MAYBE", "NO"].includes(item.response)) continue;
 
       await prisma.teamAvailabilityResponse.upsert({

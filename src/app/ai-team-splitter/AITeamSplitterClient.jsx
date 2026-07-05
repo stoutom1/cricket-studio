@@ -93,6 +93,8 @@ export default function AITeamSplitterClient() {
   const [pollResponses, setPollResponses] = useState([]);
   const [creatingPoll, setCreatingPoll] = useState(false);
   const [refreshingPoll, setRefreshingPoll] = useState(false);
+  const [allPolls, setAllPolls] = useState([]);
+  const [leagueId, setLeagueId] = useState(null);
 
   const [pollOptions, setPollOptions] = useState([
     { label: "", startTime: "" },
@@ -101,6 +103,23 @@ export default function AITeamSplitterClient() {
   useEffect(() => {
     loadPlayers();
   }, []);
+
+useEffect(() => {
+  if (!poll?.token) return;
+
+  refreshPollResponses();
+
+  const timer = setInterval(() => {
+    refreshPollResponses();
+  }, 10000);
+
+  return () => clearInterval(timer);
+}, [poll?.token]);
+
+useEffect(() => {
+  const token = localStorage.getItem("cric4all-latest-team-poll-token");
+  if (token) loadPollByToken(token);
+}, []);
 
   const selectedPlayers = useMemo(
     () => players.filter((p) => selectedIds.includes(p.id)),
@@ -134,6 +153,21 @@ export default function AITeamSplitterClient() {
 
       setPlayers(mergedPlayers);
       setSelectedIds(mergedPlayers.map((p) => p.id));
+if (playerData.leagueId) {
+  const latestPollRes = await fetch(
+    `/api/team-availability-poll/latest?leagueId=${playerData.leagueId}`
+  );
+
+  const latestPollData = await latestPollRes.json();
+
+  if (latestPollRes.ok && latestPollData.poll) {
+    setPoll(latestPollData.poll);
+    setPollResponses(latestPollData.poll.responses || []);
+  }
+}
+setLeagueId(playerData.leagueId);
+await loadAllPolls(playerData.leagueId);
+
     } catch (error) {
       console.error("Load AI splitter players failed:", error);
       alert("Failed to load players.");
@@ -211,6 +245,11 @@ export default function AITeamSplitterClient() {
 
       setPoll(data.poll);
       setPollResponses(data.poll?.responses || []);
+      await loadAllPolls(players?.[0]?.leagueId || leagueId);
+      localStorage.setItem("cric4all-latest-team-poll-token", data.poll.token);
+      setTimeout(() => {
+  refreshPollResponses();
+}, 500);
       alert("Poll created. You can now share it to WhatsApp.");
     } catch (error) {
       console.error("Create poll failed:", error);
@@ -335,6 +374,116 @@ ${url}`;
       setBalancing(false);
     }
   }
+function getPollOptionResults() {
+  if (!poll?.options?.length) return [];
+
+  return poll.options.map((option) => {
+    const optionResponses = pollResponses.filter(
+      (r) => Number(r.optionId) === Number(option.id)
+    );
+
+    const yes = optionResponses.filter((r) => r.response === "YES");
+    const maybe = optionResponses.filter((r) => r.response === "MAYBE");
+    const no = optionResponses.filter((r) => r.response === "NO");
+
+    const respondedKeys = new Set(optionResponses.map((r) => r.playerKey));
+
+    const notResponded = players.filter(
+      (p) => !respondedKeys.has(p.id) && !respondedKeys.has(p.playerKey)
+    );
+
+    return {
+      option,
+      yes,
+      maybe,
+      no,
+      notResponded,
+      totalResponses: optionResponses.length,
+    };
+  });
+}
+
+function useOptionPlayers(optionId) {
+  const yesKeys = new Set(
+    pollResponses
+      .filter(
+        (r) =>
+          Number(r.optionId) === Number(optionId) &&
+          r.response === "YES"
+      )
+      .map((r) => r.playerKey)
+  );
+
+  const selected = players
+    .filter((p) => yesKeys.has(p.id) || yesKeys.has(p.playerKey))
+    .map((p) => p.id);
+
+  setSelectedIds(selected);
+  setResult(null);
+
+  alert(`Selected ${selected.length} available players.`);
+}
+
+async function loadPollByToken(token) {
+  if (!token) return;
+
+  const res = await fetch(`/api/team-availability-poll/${token}`);
+  const data = await res.json();
+
+  if (res.ok && data.poll) {
+    setPoll(data.poll);
+    setPollResponses(data.poll.responses || []);
+  }
+}
+
+async function loadAllPolls(targetLeagueId = leagueId) {
+  if (!targetLeagueId) return;
+
+  const res = await fetch(
+    `/api/team-availability-poll/list?leagueId=${targetLeagueId}`
+  );
+
+  const data = await res.json();
+
+  if (res.ok) {
+    setAllPolls(data.polls || []);
+  }
+}
+
+function openExistingPoll(existingPoll) {
+  setPoll(existingPoll);
+  setPollResponses(existingPoll.responses || []);
+  localStorage.setItem("cric4all-latest-team-poll-token", existingPoll.token);
+}
+
+async function deletePoll(token) {
+  const confirmed = window.confirm(
+    "Delete this poll and all its responses?"
+  );
+
+  if (!confirmed) return;
+
+  const res = await fetch(`/api/team-availability-poll/${token}/delete`, {
+    method: "DELETE",
+  });
+
+  const data = await res.json();
+
+  if (!res.ok) {
+    alert(data.error || "Failed to delete poll.");
+    return;
+  }
+
+  if (poll?.token === token) {
+    setPoll(null);
+    setPollResponses([]);
+    localStorage.removeItem("cric4all-latest-team-poll-token");
+  }
+
+  await loadAllPolls();
+}
+
+const pollOptionResults = getPollOptionResults();
 
   const bestPollOption = getBestPollOption();
 
@@ -446,7 +595,37 @@ ${url}`;
             🏆 Use Best Date Players
           </button>
         </div>
+{!!allPolls.length && (
+  <div className="existing-polls-box">
+    <strong>📋 Existing Polls</strong>
 
+    {allPolls.map((existingPoll) => (
+      <div key={existingPoll.token} className="existing-poll-row">
+        <div>
+          <b>{existingPoll.title}</b>
+          <small>
+            {new Date(existingPoll.createdAt).toLocaleString()} •{" "}
+            {existingPoll.responses?.length || 0} responses
+          </small>
+        </div>
+
+        <div className="existing-poll-actions">
+          <button type="button" onClick={() => openExistingPoll(existingPoll)}>
+            Open
+          </button>
+
+          <button
+            type="button"
+            className="danger"
+            onClick={() => deletePoll(existingPoll.token)}
+          >
+            Delete
+          </button>
+        </div>
+      </div>
+    ))}
+  </div>
+)}
         {poll && (
           <div className="poll-link-box">
             <strong>Poll Link</strong>
@@ -478,7 +657,136 @@ ${url}`;
             </div>
           </div>
         )}
+{poll && pollOptionResults.length > 0 && (
+  <section className="poll-results-card">
+    <div className="poll-results-header">
+      <div>
+        <strong>📊 Live Poll Results</strong>
+        <span>
+          Responses by date option. Use any date’s YES players to generate teams.
+        </span>
+      </div>
+    </div>
 
+    <div className="poll-results-grid">
+      {pollOptionResults.map((group) => {
+        const isBest =
+          bestPollOption &&
+          Number(bestPollOption.id) === Number(group.option.id);
+
+        return (
+          <div
+            key={group.option.id}
+            className={`poll-date-result-card ${isBest ? "best" : ""}`}
+          >
+            <div className="poll-date-result-title">
+              <div>
+                <strong>
+                  {isBest ? "🏆 " : "📅 "}
+                  {group.option.label}
+                </strong>
+
+                {group.option.startTime && (
+                  <small>
+                    {new Date(group.option.startTime).toLocaleString()}
+                  </small>
+                )}
+              </div>
+
+              <button
+                type="button"
+                onClick={() => useOptionPlayers(group.option.id)}
+                disabled={!group.yes.length}
+              >
+                Use YES Players
+              </button>
+            </div>
+
+            <div className="poll-mini-counts">
+              <div className="yes">
+                <span>✅ Yes</span>
+                <strong>{group.yes.length}</strong>
+              </div>
+
+              <div className="maybe">
+                <span>🤔 Maybe</span>
+                <strong>{group.maybe.length}</strong>
+              </div>
+
+              <div className="no">
+                <span>❌ No</span>
+                <strong>{group.no.length}</strong>
+              </div>
+
+              <div className="pending">
+                <span>⚪ No Reply</span>
+                <strong>{group.notResponded.length}</strong>
+              </div>
+            </div>
+
+            <details className="poll-player-breakdown" open={isBest}>
+              <summary>View player responses</summary>
+
+              <div className="poll-response-columns">
+                <div>
+                  <h4>✅ Yes</h4>
+                  {group.yes.length ? (
+                    group.yes.map((r) => (
+                      <span key={`yes-${group.option.id}-${r.playerKey}`}>
+                        {r.playerName}
+                      </span>
+                    ))
+                  ) : (
+                    <small>None</small>
+                  )}
+                </div>
+
+                <div>
+                  <h4>🤔 Maybe</h4>
+                  {group.maybe.length ? (
+                    group.maybe.map((r) => (
+                      <span key={`maybe-${group.option.id}-${r.playerKey}`}>
+                        {r.playerName}
+                      </span>
+                    ))
+                  ) : (
+                    <small>None</small>
+                  )}
+                </div>
+
+                <div>
+                  <h4>❌ No</h4>
+                  {group.no.length ? (
+                    group.no.map((r) => (
+                      <span key={`no-${group.option.id}-${r.playerKey}`}>
+                        {r.playerName}
+                      </span>
+                    ))
+                  ) : (
+                    <small>None</small>
+                  )}
+                </div>
+
+                <div>
+                  <h4>⚪ No Reply</h4>
+                  {group.notResponded.length ? (
+                    group.notResponded.map((p) => (
+                      <span key={`pending-${group.option.id}-${p.id}`}>
+                        {p.playerName}
+                      </span>
+                    ))
+                  ) : (
+                    <small>Everyone responded</small>
+                  )}
+                </div>
+              </div>
+            </details>
+          </div>
+        );
+      })}
+    </div>
+  </section>
+)}
         {bestPollOption && (
           <div className="poll-best-date-box">
             <span>🏆 Best Date</span>
