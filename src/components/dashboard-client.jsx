@@ -2570,9 +2570,6 @@ async function handleEndFirstInnings() {
   const confirmed = window.confirm(
   "End 1st innings and start 2nd innings setup?\n\nUse this when the batting side is finished before all scheduled overs are bowled."
 );
- /* const confirmed = window.confirm(
-    "End the 1st innings now and start the 2nd innings setup?"
-  );*/
 
   if (!confirmed) return;
 
