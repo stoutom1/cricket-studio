@@ -447,8 +447,17 @@ inn.items.push({
   const innings1TeamName = innings1TeamId === match.teamAId ? match.teamA.name : match.teamB.name;
   const innings2TeamName = innings2TeamId === match.teamAId ? match.teamA.name : match.teamB.name;
   const matchStats = buildMatchStats(match);
-  const innings1 = summarizeInningsDetailed(innings1Balls, playerMap, match.oversPerInnings);
-  const innings2 = summarizeInningsDetailed(innings2Balls, playerMap, match.oversPerInnings);
+const innings1 = summarizeInningsDetailed(
+  innings1Balls,
+  playerMap,
+  match.oversPerInnings
+);
+
+const innings2 = summarizeInningsDetailed(
+  innings2Balls,
+  playerMap,
+  match.oversPerInnings
+);
 
   const innings1Started = innings1Balls.length > 0;
   const maxLegalBalls = match.oversPerInnings * 6;

@@ -202,6 +202,7 @@ export function getNextAvailableBatter(
     ) || null
   );
 }
+
 function getKeeperForBall(match, ball, keeperChanges = []) {
   const inningsNo = Number(ball.inningsNo);
   const sequence = Number(ball.sequence);
@@ -276,27 +277,23 @@ export function applyBallOutcome(ball) {
   let nonStrikerId = ball.nonStrikerId || null;  
 
     // RETIRED HURT
-  if (ball.wicketType === "RETIRED_HURT") {
+if (ball.wicketType === "RETIRED_HURT") {
+  let strikerId = ball.strikerId || null;
+  let nonStrikerId = ball.nonStrikerId || null;
 
-    if (
-      Number(ball.dismissedPlayerId) ===
-      Number(ball.strikerId)
-    ) {
-      strikerId = ball.newBatterId;
-    }
-
-    if (
-      Number(ball.dismissedPlayerId) ===
-      Number(ball.nonStrikerId)
-    ) {
-      nonStrikerId = ball.newBatterId;
-    }
-
-    return {
-      strikerId,
-      nonStrikerId
-    };
+  if (Number(ball.dismissedPlayerId) === Number(ball.strikerId)) {
+    strikerId = ball.newBatterId;
   }
+
+  if (Number(ball.dismissedPlayerId) === Number(ball.nonStrikerId)) {
+    nonStrikerId = ball.newBatterId;
+  }
+
+  return {
+    strikerId,
+    nonStrikerId,
+  };
+}
 
 if (ball.isWicket) {
   if (!ball.newBatterId) {
@@ -419,7 +416,7 @@ if (
 
   continue;
 }
-  const nextPair = applyBallOutcome(ball);
+const nextPair = applyBallOutcome(ball);
 
 
 
@@ -764,6 +761,7 @@ const currentlyRetiredHurt = new Set();
 
     return bowling.get(key);
   }
+
 
   for (const ball of match.balls || []) {
     const inningsNo = Number(ball.inningsNo || 1);

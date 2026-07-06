@@ -137,25 +137,41 @@ async function correctRetiredHurt({ match, payload }) {
     retiredBallUpdate.nonStrikerId = correctedRetiredPlayerId;
   }
 
-  const affectedBalls = oldReplacementPlayerId
-    ? match.balls.filter(
-        (ball) =>
-          Number(ball.inningsNo) === inningsNo &&
-          Number(ball.sequence) > Number(retiredBall.sequence) &&
-          (
-            Number(ball.strikerId) === oldReplacementPlayerId ||
-            Number(ball.nonStrikerId) === oldReplacementPlayerId ||
-            Number(ball.newBatterId) === oldReplacementPlayerId
-          )
-      )
-    : [];
+const futureBalls = match.balls
+  .filter(
+    (ball) =>
+      Number(ball.inningsNo) === inningsNo &&
+      Number(ball.sequence) > Number(retiredBall.sequence)
+  )
+  .sort((a, b) => Number(a.sequence) - Number(b.sequence));
+
+const affectedBalls = [];
+
+for (const ball of futureBalls) {
+  const retiredPlayerHasReturned =
+    Number(ball.strikerId) === correctedRetiredPlayerId ||
+    Number(ball.nonStrikerId) === correctedRetiredPlayerId;
+
+  if (retiredPlayerHasReturned) {
+    break;
+  }
+
+  const hasOldReplacement =
+    Number(ball.strikerId) === oldReplacementPlayerId ||
+    Number(ball.nonStrikerId) === oldReplacementPlayerId ||
+    Number(ball.newBatterId) === oldReplacementPlayerId;
+
+  if (oldReplacementPlayerId && hasOldReplacement) {
+    affectedBalls.push(ball);
+  }
+}
 
   const beforeFutureBalls = affectedBalls.map(snapshotBall);
 
-  await prisma.ball.update({
-    where: { id: retiredBall.id },
-    data: retiredBallUpdate,
-  });
+await prisma.ball.update({
+  where: { id: retiredBall.id },
+  data: retiredBallUpdate,
+});
 
   const afterFutureBalls = [];
 

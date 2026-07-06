@@ -6412,177 +6412,215 @@ onClick={() => {
               </div>
             </div>
 
-            <CollapsibleSection title="🏏 Batting Scorecard" defaultOpen={true}>
-              <MobileBattingCards
-    rows={inn.battingRows || inn.batting || []}
-    currentStrikerId={scoreboard.currentState?.strikerId}
-  />
-              <div className="score-table-scroll desktop-score-table">
-                <table className="score-table sticky-first-col pro-table">
-                  <thead>
-                    <tr>
-                      <th>Batter</th>
-                      <th>Dismissal</th>
-                      <th>R</th>
-                      <th>B</th>
-                      <th>4s</th>
-                      <th>6s</th>
-                      <th>SR</th>
-                    </tr>
-                  </thead>
+<details className="scorecard-wow-collapse">
+  <summary className="scorecard-wow-summary">
+    <div className="scorecard-wow-left">
+      <span className="scorecard-wow-icon">🏏</span>
+      <div>
+        <strong>Batting Scorecard</strong>
+        <small>Tap to view batting details</small>
+      </div>
+    </div>
+    <span className="scorecard-wow-caret">⌄</span>
+  </summary>
 
-                  <tbody>
-                    {(inn.battingRows || inn.batting || []).length ? (
-                      (inn.battingRows || inn.batting || []).map(
-                        (row, rowIdx) => (
-                          <tr
-                            key={`bat-${inn.number ?? innIdx}-${
-                              row.playerId ?? rowIdx
-                            }-${rowIdx}`}
-                          >
-                            <td>
-                              <strong>
-                                {row.playerName}
-                                {Number(scoreboard.currentState?.strikerId) ===
-                                Number(row.playerId)
-                                  ? " *"
-                                  : ""}
-                              </strong>
-                            </td>
-                            <td>{row.dismissal !== "not out"? row.dismissal: "not out"}</td>
-                            <td>{row.runs}</td>
-                            <td>{row.balls}</td>
-                            <td>{row.fours}</td>
-                            <td>{row.sixes}</td>
-                            <td>{row.strikeRate}</td>
-                          </tr>
-                        )
-                      )
-                    ) : (
-                      <tr>
-                        <td colSpan="7" className="muted">
-                          Batting details not available yet.
-                        </td>
-                      </tr>
-                    )}
-                  </tbody>
-                </table>
-              </div>
-            </CollapsibleSection>
+  <div className="scorecard-wow-content">
+    <MobileBattingCards
+      rows={inn.battingRows || inn.batting || []}
+      currentStrikerId={scoreboard.currentState?.strikerId}
+    />
 
-            <CollapsibleSection title="🎯 Bowling Scorecard" defaultOpen={true}>
-  <MobileBowlingCards
-    rows={inn.bowlingRows || inn.bowling || []}
-  />
-              <div className="score-table-scroll desktop-score-table">
-                <table className="score-table sticky-first-col pro-table bowling-table">
-                  <thead>
-                    <tr>
-                      <th>Bowler</th>
-                      <th>O</th>
-                      <th>R</th>
-                      <th>W</th>
-                      <th>Wd</th>
-                      <th>Nb</th>
-                      <th>Eco</th>
-                    </tr>
-                  </thead>
+    <div className="score-table-scroll desktop-score-table">
+      <table className="score-table sticky-first-col pro-table">
+        <thead>
+          <tr>
+            <th>Batter</th>
+            <th>Dismissal</th>
+            <th>R</th>
+            <th>B</th>
+            <th>4s</th>
+            <th>6s</th>
+            <th>SR</th>
+          </tr>
+        </thead>
 
-                  <tbody>
-                    {(inn.bowlingRows || inn.bowling || []).length ? (
-                      (inn.bowlingRows || inn.bowling || []).map(
-                        (row, rowIdx) => (
-                          <tr
-                            key={`bowl-${inn.number ?? innIdx}-${
-                              row.playerId ?? rowIdx
-                            }-${rowIdx}`}
-                          >
-                            <td>
-                              <strong>{row.playerName}</strong>
-                            </td>
-                              <td>{row.overs}</td>
-                              <td>{row.runs}</td>
-                              <td>{row.wickets}</td>
-                              <td>{row.wides || 0}</td>
-                              <td>{row.noBalls || 0}</td>
-                              <td>{row.economy}</td>
-                          </tr>
-                        )
-                      )
-                    ) : (
-                      <tr>
-                        <td colSpan="7" className="muted">
-                          Bowling details not available yet.
-                        </td>
-                      </tr>
-                    )}
-                  </tbody>
-                </table>
-              </div>
-            </CollapsibleSection>
+        <tbody>
+          {(inn.battingRows || inn.batting || []).length ? (
+            (inn.battingRows || inn.batting || []).map((row, rowIdx) => (
+              <tr
+                key={`bat-${inn.number ?? innIdx}-${row.playerId ?? rowIdx}-${rowIdx}`}
+              >
+                <td>
+                  <strong>
+                    {row.playerName}
+                    {Number(scoreboard.currentState?.strikerId) ===
+                    Number(row.playerId)
+                      ? " *"
+                      : ""}
+                  </strong>
+                </td>
+                <td>{row.dismissal !== "not out" ? row.dismissal : "not out"}</td>
+                <td>{row.runs}</td>
+                <td>{row.balls}</td>
+                <td>{row.fours}</td>
+                <td>{row.sixes}</td>
+                <td>{row.strikeRate}</td>
+              </tr>
+            ))
+          ) : (
+            <tr>
+              <td colSpan="7" className="muted">
+                Batting details not available yet.
+              </td>
+            </tr>
+          )}
+        </tbody>
+      </table>
+    </div>
+  </div>
+</details>
 
-            <CollapsibleSection title="💥 Fall of Wickets" defaultOpen={false}>
-              {!inn.fallOfWickets?.length ? (
-                <p className="muted">No wickets yet.</p>
-              ) : (
-                <div className="fow-list">
-                  {inn.fallOfWickets.map((w, wicketIdx) => (
-                    <div
-                      key={`fow-${inn.number ?? innIdx}-${
-                        w.wicketNumber ?? wicketIdx
-                      }-${w.over ?? "over"}-${wicketIdx}`}
-                      className="fow-chip"
-                    >
-                      <strong>
-                        {w.score}
-                      </strong>
-                      <span>{w.playerOut}</span>
-                      <small>{w.over} ov</small>
-                    </div>
-                  ))}
-                </div>
-              )}
-            </CollapsibleSection>
+<details className="scorecard-wow-collapse">
+  <summary className="scorecard-wow-summary">
+    <div className="scorecard-wow-left">
+      <span className="scorecard-wow-icon">🎯</span>
+      <div>
+        <strong>Bowling Scorecard</strong>
+        <small>Tap to view bowling figures</small>
+      </div>
+    </div>
+    <span className="scorecard-wow-caret">⌄</span>
+  </summary>
 
-            <CollapsibleSection title="🤝 Partnerships" defaultOpen={false}>
-              {!inn.partnerships?.length ? (
-                <p className="muted">No partnerships yet.</p>
-              ) : (
-                <div className="score-table-scroll">
-                  <table className="score-table sticky-first-col pro-table">
-                    <thead>
-                      <tr>
-                        <th>Batters</th>
-                        <th>Runs</th>
-                        <th>Balls</th>
-                        <th>Status</th>
-                      </tr>
-                    </thead>
+  <div className="scorecard-wow-content">
+    <MobileBowlingCards rows={inn.bowlingRows || inn.bowling || []} />
 
-                    <tbody>
-                      {inn.partnerships.map((p, pIdx) => (
-                        <tr
-                          key={`partnership-${inn.number ?? innIdx}-${
-                            p.batter1 || "b1"
-                          }-${p.batter2 || "b2"}-${pIdx}`}
-                        >
-                          <td>
-                            {p.batter1} & {p.batter2}
-                          </td>
-                          <td>{p.runs}</td>
-                          <td>{p.balls}</td>
-                          <td>
-                            {p.ongoing
-                              ? "Current"
-                              : `wicket ${p.wicketNumber}`}
-                          </td>
-                        </tr>
-                      ))}
-                    </tbody>
-                  </table>
-                </div>
-              )}
-            </CollapsibleSection>
+    <div className="score-table-scroll desktop-score-table">
+      <table className="score-table sticky-first-col pro-table bowling-table">
+        <thead>
+          <tr>
+            <th>Bowler</th>
+            <th>O</th>
+            <th>R</th>
+            <th>W</th>
+            <th>Wd</th>
+            <th>Nb</th>
+            <th>Eco</th>
+          </tr>
+        </thead>
+
+        <tbody>
+          {(inn.bowlingRows || inn.bowling || []).length ? (
+            (inn.bowlingRows || inn.bowling || []).map((row, rowIdx) => (
+              <tr
+                key={`bowl-${inn.number ?? innIdx}-${row.playerId ?? rowIdx}-${rowIdx}`}
+              >
+                <td>
+                  <strong>{row.playerName}</strong>
+                </td>
+                <td>{row.overs}</td>
+                <td>{row.runs}</td>
+                <td>{row.wickets}</td>
+                <td>{row.wides || 0}</td>
+                <td>{row.noBalls || 0}</td>
+                <td>{row.economy}</td>
+              </tr>
+            ))
+          ) : (
+            <tr>
+              <td colSpan="7" className="muted">
+                Bowling details not available yet.
+              </td>
+            </tr>
+          )}
+        </tbody>
+      </table>
+    </div>
+  </div>
+</details>
+
+<details className="scorecard-wow-collapse">
+  <summary className="scorecard-wow-summary">
+    <div className="scorecard-wow-left">
+      <span className="scorecard-wow-icon">💥</span>
+      <div>
+        <strong>Fall of Wickets</strong>
+        <small>Tap to view wicket timeline</small>
+      </div>
+    </div>
+    <span className="scorecard-wow-caret">⌄</span>
+  </summary>
+
+  <div className="scorecard-wow-content">
+    {!inn.fallOfWickets?.length ? (
+      <p className="muted">No wickets yet.</p>
+    ) : (
+      <div className="fow-list">
+        {inn.fallOfWickets.map((w, wicketIdx) => (
+          <div
+            key={`fow-${inn.number ?? innIdx}-${w.wicketNumber ?? wicketIdx}-${
+              w.over ?? "over"
+            }-${wicketIdx}`}
+            className="fow-chip"
+          >
+            <strong>{w.score}</strong>
+            <span>{w.playerOut}</span>
+            <small>{w.over} ov</small>
+          </div>
+        ))}
+      </div>
+    )}
+  </div>
+</details>
+
+<details className="scorecard-wow-collapse">
+  <summary className="scorecard-wow-summary">
+    <div className="scorecard-wow-left">
+      <span className="scorecard-wow-icon">🤝</span>
+      <div>
+        <strong>Partnerships</strong>
+        <small>Tap to view batting partnerships</small>
+      </div>
+    </div>
+    <span className="scorecard-wow-caret">⌄</span>
+  </summary>
+
+  <div className="scorecard-wow-content">
+    {!inn.partnerships?.length ? (
+      <p className="muted">No partnerships yet.</p>
+    ) : (
+      <div className="score-table-scroll">
+        <table className="score-table sticky-first-col pro-table">
+          <thead>
+            <tr>
+              <th>Batters</th>
+              <th>Runs</th>
+              <th>Balls</th>
+              <th>Status</th>
+            </tr>
+          </thead>
+
+          <tbody>
+            {inn.partnerships.map((p, pIdx) => (
+              <tr
+                key={`partnership-${inn.number ?? innIdx}-${p.batter1 || "b1"}-${
+                  p.batter2 || "b2"
+                }-${pIdx}`}
+              >
+                <td>
+                  {p.batter1} & {p.batter2}
+                </td>
+                <td>{p.runs}</td>
+                <td>{p.balls}</td>
+                <td>{p.ongoing ? "Current" : `wicket ${p.wicketNumber}`}</td>
+              </tr>
+            ))}
+          </tbody>
+        </table>
+      </div>
+    )}
+  </div>
+</details>
           </div>
         ))}
       </div>
@@ -6642,63 +6680,77 @@ onClick={() => {
             )}
           </div>
         )}
-
         <div className="commentary-feed pretty-commentary">
           {scoreboard.commentary.map((section, sectionIndex) => (
-            <div
-              key={`innings-${section.inningsNo}-${sectionIndex}`}
-              className="commentary-innings-section"
-            >
-              <div className="commentary-innings-title">
-                <span>🏏</span>
-                <strong>{section.title}</strong>
+<details
+  key={`innings-${section.inningsNo}-${sectionIndex}`}
+  className="innings-wow-collapse"
+>
+  <summary className="innings-wow-summary">
+    <div className="innings-wow-left">
+      <span className="innings-wow-icon">🏏</span>
+
+      <div>
+        <strong>{section.title}</strong>
+        <small>Tap to view detailed ball-by-ball commentary</small>
+      </div>
+    </div>
+
+    <div className="innings-wow-right">
+      <span className="innings-wow-count">
+        {section.items?.length || 0} updates
+      </span>
+      <span className="innings-wow-caret">⌄</span>
+    </div>
+  </summary>
+
+  <div className="commentary-innings-section innings-wow-content">
+    {section.items.map((item, itemIndex) => (
+      <div
+        key={`commentary-${section.inningsNo}-${item.id ?? itemIndex}`}
+        className={`commentary-item pretty-commentary-item ${
+          item.type === "OVER_SUMMARY" ? "over-summary-item" : ""
+        }`}
+      >
+        <div className={`commentary-ball ${item.badgeClass || ""}`}>
+          {item.badge || item.over}
+        </div>
+
+        <div className="commentary-body">
+          {item.type === "BALL" && item.badge !== "END" ? (
+            <details className="commentary-inline-details">
+              <summary className="commentary-inline-summary">
+                <span className="commentary-main">{item.text}</span>
+                <span className="commentary-inline-score">{item.score}</span>
+                <span className="commentary-inline-caret">⌄</span>
+              </summary>
+
+              <div className="commentary-inline-stats">
+                <span>🏏 {item.strikerSummary}</span>
+                <span>🏃 {item.nonStrikerSummary}</span>
+                <span>🎯 {item.bowlerSummary}</span>
               </div>
+            </details>
+          ) : item.type === "OVER_SUMMARY" ? (
+            <details className="commentary-inline-details">
+              <summary className="commentary-inline-summary">
+                <span className="commentary-main">{item.text}</span>
+                <span className="commentary-inline-score">{item.score}</span>
+                <span className="commentary-inline-caret">⌄</span>
+              </summary>
 
-              {section.items.map((item, itemIndex) => (
-                <div
-                  key={`commentary-${section.inningsNo}-${item.id ?? itemIndex}`}
-                  className={`commentary-item pretty-commentary-item ${
-                    item.type === "OVER_SUMMARY" ? "over-summary-item" : ""
-                  }`}
-                >
-                  <div className={`commentary-ball ${item.badgeClass || ""}`}>
-                    {item.badge || item.over}
-                  </div>
-
-                  <div className="commentary-body">
-                    {item.type === "BALL" && item.badge !== "END" ? (
-                      <details className="commentary-inline-details">
-                        <summary className="commentary-inline-summary">
-                          <span className="commentary-main">{item.text}</span>
-                          <span className="commentary-inline-score">{item.score}</span>
-                          <span className="commentary-inline-caret">⌄</span>
-                        </summary>
-
-                        <div className="commentary-inline-stats">
-                          <span>🏏 {item.strikerSummary}</span>
-                          <span>🏃 {item.nonStrikerSummary}</span>
-                          <span>🎯 {item.bowlerSummary}</span>
-                        </div>
-                      </details>
-                    ) : item.type === "OVER_SUMMARY" ? (
-                      <details className="commentary-inline-details">
-                        <summary className="commentary-inline-summary">
-                          <span className="commentary-main">{item.text}</span>
-                          <span className="commentary-inline-score">{item.score}</span>
-                          <span className="commentary-inline-caret">⌄</span>
-                        </summary>
-
-                        <div className="commentary-inline-stats">
-                          <span>🎯 {item.bowlerSummary}</span>
-                        </div>
-                      </details>
-                    ) : (
-                      <div className="commentary-main">{item.text}</div>
-                    )}
-                  </div>
-                </div>
-              ))}
-            </div>
+              <div className="commentary-inline-stats">
+                <span>🎯 {item.bowlerSummary}</span>
+              </div>
+            </details>
+          ) : (
+            <div className="commentary-main">{item.text}</div>
+          )}
+        </div>
+      </div>
+    ))}
+  </div>
+</details>
           ))}
         </div>
       </>
