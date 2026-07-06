@@ -335,7 +335,7 @@ const matches = await prisma.match.findMany({
   where: {
     leagueId: Number(leagueId),
     status: {
-      in: ["COMPLETED", "COMPLETED_LOCKED"],
+      in: ["COMPLETED", "COMPLETED_LOCKED", "COMPLETED_CORRECTED"],
     },
   },
   include: {

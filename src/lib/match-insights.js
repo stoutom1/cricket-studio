@@ -51,7 +51,7 @@ export function buildMatchInsights(scoreboard) {
   if (status === "ABANDONED") {
     resultText = "Match abandoned";
   } else if (
-    ["COMPLETED", "COMPLETED_LOCKED"].includes(status) &&
+    ["COMPLETED", "COMPLETED_LOCKED", "COMPLETED_CORRECTED"].includes(status) &&
     first &&
     second
   ) {
@@ -163,7 +163,7 @@ export function buildMatchInsights(scoreboard) {
 
   let winProbability = null;
 
-  const isFinished = ["COMPLETED", "COMPLETED_LOCKED", "ABANDONED"].includes(
+  const isFinished = ["COMPLETED", "COMPLETED_LOCKED", "COMPLETED_CORRECTED", "ABANDONED"].includes(
     status
   );
 

@@ -2,7 +2,7 @@
 
 import { useEffect, useState } from "react";
 import { buildMatchInsights } from "@/lib/match-insights";
-const FINAL_MATCH_STATUSES = ["ABANDONED", "COMPLETED", "COMPLETED_LOCKED"];
+const FINAL_MATCH_STATUSES = ["ABANDONED", "COMPLETED", "COMPLETED_LOCKED", "COMPLETED_CORRECTED"];
 
 function isFinalMatchStatus(status) {
   return FINAL_MATCH_STATUSES.includes(String(status || "").toUpperCase());
@@ -345,6 +345,8 @@ const livePillText =
     ? "● MATCH ABANDONED"
     : matchStatus === "COMPLETED_LOCKED"
     ? "● COMPLETED & LOCKED"
+    : matchStatus === "COMPLETED_CORRECTED"
+    ? "● COMPLETED & CORRECTED"
     : matchStatus === "COMPLETED"
     ? "● MATCH COMPLETED"
     : "● LIVE SCORE";
@@ -447,7 +449,7 @@ const livePillText =
 )}
 {scoreboard?.currentInnings === 2 &&
   chaseRunsNeeded !== null &&
-  !["COMPLETED", "ABANDONED", "COMPLETED_LOCKED"].includes(
+  !["COMPLETED", "ABANDONED", "COMPLETED_LOCKED", "COMPLETED_CORRECTED"].includes(
     String(scoreboard?.match?.status || "").toUpperCase()
   ) && (
   <div className="live-chase-card">

@@ -29,7 +29,7 @@ function buildPointsTable(matches, teams) {
 
   (matches || []).forEach((match) => {
     const status = normalizeStatus(match.status);
-    if (!["COMPLETED", "COMPLETED_LOCKED"].includes(status)) return;
+    if (!["COMPLETED", "COMPLETED_LOCKED", "COMPLETED_CORRECTED"].includes(status)) return;
 
     const teamA = table.get(Number(match.teamAId));
     const teamB = table.get(Number(match.teamBId));
@@ -295,7 +295,7 @@ async function toggleFollowLeague() {
   );
 
   const completedMatches = filteredMatches.filter((m) =>
-    ["COMPLETED", "COMPLETED_LOCKED", "ABANDONED"].includes(normalizeStatus(m.status))
+    ["COMPLETED", "COMPLETED_LOCKED", "COMPLETED_CORRECTED", "ABANDONED"].includes(normalizeStatus(m.status))
   );
 
   const visibleMatches = useMemo(() => {

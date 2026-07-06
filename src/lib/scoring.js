@@ -945,7 +945,7 @@ const getSafePlayerName = (playerId) =>
 let winningTeamId = null;
 
 if (
-  ["COMPLETED", "COMPLETED_LOCKED"].includes(
+  ["COMPLETED", "COMPLETED_LOCKED", "COMPLETED_CORRECTED"].includes(
     String(match.status || "").toUpperCase()
   )
 ) {

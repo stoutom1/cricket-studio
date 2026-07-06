@@ -176,6 +176,7 @@ const inningsData = [
   match.innings1EndedManually ||
   innings2Summary.legalBalls > 0 ||
   match.status === "COMPLETED" ||
+  match.status === "COMPLETED_CORRECTED" ||
   match.status === "COMPLETED_LOCKED"
     ? 2
     : 1;
@@ -229,7 +230,7 @@ const currentInningsBalls = match.balls.filter(
       const isCompleted =
         innings1Complete &&
         (
-          innings2Complete ||  chaseCompleted || match.status === "COMPLETED_LOCKED" || match.status === "COMPLETED"
+          innings2Complete ||  chaseCompleted || match.status === "COMPLETED_LOCKED" || match.status === "COMPLETED" || match.status === "COMPLETED_CORRECTED"
         );
 
       let statusText = "Match in progress";

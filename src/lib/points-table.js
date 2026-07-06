@@ -44,7 +44,7 @@ export function buildPointsTable({ teams, matches }) {
   matches.forEach((match) => {
     const status = String(match.status || "").toUpperCase();
 
-    if (!["COMPLETED", "COMPLETED_LOCKED", "ABANDONED"].includes(status)) {
+    if (!["COMPLETED", "COMPLETED_LOCKED", "COMPLETED_CORRECTED", "ABANDONED"].includes(status)) {
       return;
     }
 

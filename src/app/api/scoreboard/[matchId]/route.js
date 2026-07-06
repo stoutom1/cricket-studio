@@ -504,7 +504,7 @@ function getBatterStats(playerId, balls) {
       statusText = `${innings1TeamName} won by ${innings1.runs - innings2.runs} runs`;
     }
   } else if (target && innings2Started) {
-    if (match.status === "COMPLETED" || match.status === "COMPLETED_LOCKED") {
+    if (match.status === "COMPLETED" || match.status === "COMPLETED_LOCKED" || match.status === "COMPLETED_CORRECTED") {
        statusText = `${innings1TeamName} won by ${innings1.runs - innings2.runs} runs`;
     } else if (match.status === "ABANDONED") {
       statusText = "Match is abandoned";
@@ -605,6 +605,7 @@ const shouldComplete =
 const canAutoComplete = ![
   "COMPLETED",
   "COMPLETED_LOCKED",
+  "COMPLETED_CORRECTED",
   "ABANDONED"
 ].includes(normalizedStatus);
 /*

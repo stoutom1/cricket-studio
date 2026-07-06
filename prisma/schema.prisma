@@ -282,6 +282,17 @@ model CorrectionLog {
   beforeBalls      Json?
   createdAt        DateTime  @default(now())
   revertedAt       DateTime?
+
+  correctionType  String? @default("RETIRED_HURT")
+  correctionLabel String?
+  reason          String?
+
+  beforeJson Json?
+  afterJson  Json?
+
+  correctedById    Int?
+  correctedByName  String?
+  correctedByEmail String?
 }
 
 model WicketKeeperChange {
@@ -418,4 +429,33 @@ model TeamAvailabilityResponse {
   option TeamAvailabilityOption @relation(fields: [optionId], references: [id], onDelete: Cascade)
 
   @@unique([pollId, optionId, playerKey])
+}
+
+model MatchCorrection {
+  id Int @id @default(autoincrement())
+
+  matchId  Int
+  leagueId Int?
+
+  correctionType  String
+  correctionLabel String?
+
+  beforeJson Json
+  afterJson  Json
+
+  reason String?
+
+  correctedById    Int?
+  correctedByName  String?
+  correctedByEmail String?
+
+  rolledBackAt   DateTime?
+  rolledBackById Int?
+
+  createdAt DateTime @default(now())
+
+  @@index([matchId])
+  @@index([leagueId])
+  @@index([correctionType])
+  @@index([createdAt])
 }

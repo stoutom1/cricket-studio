@@ -326,6 +326,12 @@ const [userActivity, setUserActivity] = useState(null);
 const [userActivityLoading, setUserActivityLoading] = useState(false);
 const [auditLogs, setAuditLogs] = useState([]);
 const [auditLogsLoading, setAuditLogsLoading] = useState(false);
+const [showCorrectionCenter, setShowCorrectionCenter] = useState(false);
+const [correctionType, setCorrectionType] = useState("TRANSFER_BATTER_RUNS");
+const [correctionReason, setCorrectionReason] = useState("");
+const [correctionHistory, setCorrectionHistory] = useState([]);
+const [correctionLoading, setCorrectionLoading] = useState(false);
+const [correctionInnings, setCorrectionInnings] = useState(1);
 const isSuperAdmin =
   session?.user?.email ===
   "surprisecricket11@gmail.com";
@@ -498,6 +504,24 @@ useEffect(() => {
   loadUserActivity();
   loadAuditLogs();
 }, [activeTab, activeLeagueId]);
+
+const battingTeamForCorrection =
+  correctionInnings === 1
+    ? matchDetail?.battingFirstTeamId === matchDetail?.teamA?.id
+      ? matchDetail?.teamA
+      : matchDetail?.teamB
+    : matchDetail?.battingFirstTeamId === matchDetail?.teamA?.id
+      ? matchDetail?.teamB
+      : matchDetail?.teamA;
+
+const bowlingTeamForCorrection =
+  correctionInnings === 1
+    ? matchDetail?.battingFirstTeamId === matchDetail?.teamA?.id
+      ? matchDetail?.teamB
+      : matchDetail?.teamA
+    : matchDetail?.battingFirstTeamId === matchDetail?.teamA?.id
+      ? matchDetail?.teamA
+      : matchDetail?.teamB;
 
 async function loadUserActivity() {
   try {
@@ -1524,7 +1548,7 @@ function buildCaptainStats(matches) {
   for (const match of matches || []) {
     const status = String(match.status || "").toUpperCase();
 
-    if (!["COMPLETED", "COMPLETED_LOCKED"].includes(status)) continue;
+    if (!["COMPLETED", "COMPLETED_LOCKED", "COMPLETED_CORRECTED"].includes(status)) continue;
 
     const statusText = String(match.statusText || "").toLowerCase();
 
@@ -2508,6 +2532,7 @@ async function handleStartMatch(match) {
   
 const isMatchCompleted = scoreboard?.match?.status === "COMPLETED";
 const isMatchLocked = scoreboard?.match?.status ===  "COMPLETED_LOCKED";
+const isMatchCorrected = scoreboard?.match?.status ===  "COMPLETED_CORRECTED";
 const isMatchAbandoned = scoreboard?.match?.status ===  "ABANDONED";
 
   async function handleDeleteMatch(matchId) {
@@ -3915,6 +3940,8 @@ function isCompletedStatus(status) {
   return (
     s === "COMPLETED" ||
     s === "COMPLETED_LOCKED" ||
+    s === "COMPLETED_CORRECTED" ||
+    s === "COMPLETED_ABANDONED" ||
     s === "LOCKED" ||
     s === "ABANDONED" ||
     s.includes("COMPLETED") ||
@@ -4101,7 +4128,8 @@ const normalizedMatchStatus = String(
 
 const canShowAiAnalysis =
   normalizedMatchStatus === "COMPLETED" ||
-  normalizedMatchStatus === "COMPLETED_LOCKED";
+  normalizedMatchStatus === "COMPLETED_LOCKED" ||
+  normalizedMatchStatus === "COMPLETED_CORRECTED";
 
 const activeInnings = useMemo(() => {
   const innings = displayScoreboard?.innings || [];
@@ -4139,7 +4167,7 @@ const isChaseComplete =
 const isMatchReadyToLock =
   isFinalBallBowled ||
   isChaseComplete ||
-  ["COMPLETED", "COMPLETED_LOCKED", "ABANDONED"].includes(
+  ["COMPLETED", "COMPLETED_LOCKED", "COMPLETED_CORRECTED", "ABANDONED"].includes(
     String(scoreboard?.match?.status || "").toUpperCase()
   );
 
@@ -4315,6 +4343,9 @@ function getMatchOptionLabel(match) {
     if (match.status === "COMPLETED") {
         return `${teams} • ${status} • ${score}`;
     }
+    if (match.status === "COMPLETED_CORRECTED") {
+        return `${teams} • ${status} • ${score}`;
+    }
     if (match.status === "ABANDONED") {
         return `${teams} • ${status}`;
     }
@@ -4345,6 +4376,7 @@ function sortMatchesForSelection(matches) {
     SCHEDULED: 2,
     COMPLETED: 3,
     COMPLETED_LOCKED: 3,
+    COMPLETED_CORRECTED: 3,
     ABANDONED: 4,
   };
 
@@ -5507,7 +5539,7 @@ function startBrowserVoiceScore() {
 }
 
 const matchEnded =
-  ["COMPLETED", "COMPLETED_LOCKED"].includes(
+  ["COMPLETED", "COMPLETED_LOCKED", "COMPLETED_CORRECTED"].includes(
     String(scoreboard?.match?.status || "").toUpperCase()
   );
 
@@ -5528,6 +5560,163 @@ const minimumPlayersReady =
 const leagueReadyForMatches =
   minimumTeamsReady &&
   minimumPlayersReady;
+
+async function loadCorrectionHistory(matchId = selectedMatchId) {
+  if (!matchId) return;
+
+  const data = await api(`/api/matches/${matchId}/corrections`);
+  setCorrectionHistory(Array.isArray(data) ? data : []);
+}
+
+async function applyCorrection() {
+  if (!selectedMatchId) return;
+setCorrectionError("");
+  try {
+    setCorrectionLoading(true);
+
+    await api(`/api/matches/${selectedMatchId}/corrections`, {
+      method: "POST",
+      body: JSON.stringify({
+        correctionType,
+        payload: {
+  ...correctionForm,
+  inningsNo: correctionInnings,
+},
+        reason: correctionReason,
+      }),
+    });
+
+    await loadSelectedMatch(selectedMatchId, {
+      loadDetail: true,
+      loadStatsData: true,
+      syncBallForm: true,
+    });
+
+    await loadCorrectionHistory(selectedMatchId);
+
+    setCorrectionReason("");
+    setCorrectionForm({});
+
+    showToast("success", "✅ Scorecard correction applied.");
+  } catch (err) {
+  const message = err.message || "Correction failed.";
+  setCorrectionError(message);
+  showToast("error", message);
+  } finally {
+    setCorrectionLoading(false);
+  }
+}
+
+async function rollbackCorrection(correctionId) {
+  if (!selectedMatchId) return;
+
+  if (!confirm("Rollback this correction?")) return;
+
+  try {
+    await api(`/api/matches/${selectedMatchId}/corrections/${correctionId}/rollback`, {
+      method: "POST",
+    });
+
+    await loadSelectedMatch(selectedMatchId, {
+      loadDetail: true,
+      loadStatsData: true,
+      syncBallForm: true,
+    });
+
+    await loadCorrectionHistory(selectedMatchId);
+
+    showToast("success", "↩️ Correction rolled back.");
+  } catch (err) {
+    setError(err.message);
+    showToast("error", err.message);
+  }
+}
+
+function getTeamById(teamId) {
+  if (!matchDetail) return null;
+
+  if (String(matchDetail.teamA?.id) === String(teamId)) {
+    return matchDetail.teamA;
+  }
+
+  if (String(matchDetail.teamB?.id) === String(teamId)) {
+    return matchDetail.teamB;
+  }
+
+  return null;
+}
+
+const battingFirstTeamId =
+  matchDetail?.battingFirstTeamId ||
+  matchDetail?.battingFirstTeam?.id ||
+  selectedMatch?.battingFirstTeamId;
+
+const teamAId = matchDetail?.teamA?.id;
+const teamBId = matchDetail?.teamB?.id;
+
+const battingPlayersForCorrection =
+  battingTeamForCorrection?.players || [];
+
+const bowlingPlayersForCorrection =
+  bowlingTeamForCorrection?.players || [];
+
+async function openCorrectionCenter(matchIdFromButton = null) {
+  const matchIdToUse =
+    Number(matchIdFromButton) ||
+    Number(selectedMatchId) ||
+    Number(selectedMatch?.id) ||
+    Number(scoreboard?.match?.id) ||
+    Number(matchDetail?.id);
+
+  if (!matchIdToUse) {
+    setError("Please select a match first.");
+    return;
+  }
+
+  setSelectedMatchId(String(matchIdToUse));
+
+  await loadSelectedMatch(matchIdToUse, {
+    loadDetail: true,
+    loadStatsData: true,
+    syncBallForm: false,
+  });
+
+  await loadCorrectionHistory(matchIdToUse);
+
+  setCorrectionInnings(1);
+  setCorrectionForm({});
+  setCorrectionReason("");
+  setShowCorrectionCenter(true);
+}
+
+const wicketBallsForCorrection =
+  (matchDetail?.balls || [])
+    .filter(
+      (ball) =>
+        Number(ball.inningsNo) === Number(correctionInnings) &&
+        Boolean(ball.isWicket)
+    )
+    .sort((a, b) => Number(a.sequence) - Number(b.sequence));
+
+const oversForCorrection = [
+  ...new Set(
+    (matchDetail?.balls || [])
+      .filter((b) => Number(b.inningsNo) === Number(correctionInnings))
+      .map((b) => Number(b.overNo))
+      .filter((n) => !Number.isNaN(n))
+  ),
+].sort((a, b) => a - b);
+
+const [correctionError, setCorrectionError] = useState("");
+
+const retiredHurtBallsForCorrection = (matchDetail?.balls || [])
+  .filter(
+    (ball) =>
+      Number(ball.inningsNo) === Number(correctionInnings) &&
+      String(ball.wicketType || "").toUpperCase() === "RETIRED_HURT"
+  )
+  .sort((a, b) => Number(a.sequence) - Number(b.sequence));
+
 
 function ContextLens() {
   const totalFilters =
@@ -6072,7 +6261,7 @@ onClick={() => {
 
         {scoreboard.currentState && !(
   selectedMatch &&
-  ["COMPLETED", "COMPLETED_LOCKED"].includes(
+  ["COMPLETED", "COMPLETED_LOCKED", "COMPLETED_CORRECTED"].includes(
     String(selectedMatch.status || "").toUpperCase()
   )
 ) &&(
@@ -6655,7 +6844,7 @@ onClick={() => {
       ) : (
         !(
           selectedMatch &&
-          ["COMPLETED", "COMPLETED_LOCKED"].includes(
+          ["COMPLETED", "COMPLETED_LOCKED", "COMPLETED_CORRECTED"].includes(
             String(selectedMatch.status || "").toUpperCase()
           )
         ) && (
@@ -7149,10 +7338,10 @@ onClick={() => {
           {rollbackSaving ? "Restoring..." : "Rollback"}
         </button>
       )}
-
       {Number(ballForm.inningsNo) === 1 &&
         scoreboard?.match?.status !== "COMPLETED" &&
-        scoreboard?.match?.status !== "COMPLETED_LOCKED" && (
+        scoreboard?.match?.status !== "COMPLETED_LOCKED" &&
+        scoreboard?.match?.status !== "COMPLETED_CORRECTED" && (
           <button type="button" className="end-innings-pill action-end-innings" onClick={handleEndFirstInnings}>
             <span>🛑 End 1st Innings</span>
             <small>Finished batting?</small>
@@ -7161,7 +7350,7 @@ onClick={() => {
     </div>
   </div>
 )}
-    {(isMatchCompleted || isMatchLocked) && (
+    {(isMatchCompleted || isMatchLocked || isMatchCorrected) && (
       <button type="submit" form="add-ball-form" className="btn scoring-btn scoring-btn-primary" disabled>
         ✅ Match Ended
       </button>
@@ -8440,6 +8629,7 @@ onClick={() => {
 
         const canShowAi =
           normalizedStatus === "COMPLETED" ||
+          normalizedStatus === "COMPLETED_CORRECTED" ||
           normalizedStatus === "COMPLETED_LOCKED";
 
         return (
@@ -8491,6 +8681,15 @@ onClick={() => {
       >
         🗑️
       </button>
+    )}
+    {permissions?.canScoreMatch && (
+      <button
+    type="button"
+    className="btn"
+onClick={() => openCorrectionCenter(match.id)}
+  >
+    ✏️ Correct Scorecard
+  </button>
     )}
   </div>
 </div>
@@ -12183,7 +12382,7 @@ onClick={() => {
       </button>
     ))}
     {filterCategory === "statuses" &&
-  ["SCHEDULED", "IN_PROGRESS", "COMPLETED", "COMPLETED_LOCKED"].map(
+  ["SCHEDULED", "IN_PROGRESS", "COMPLETED", "COMPLETED_LOCKED", "COMPLETED_CORRECTED"].map(
     (status) => (
       <button
         key={status}
@@ -13069,199 +13268,7 @@ onClick={() => {
     </div>
   </div>
 )}
-{showCorrectionModal && (
-  <div className="modal-backdrop">
-    <div className="correction-modal">
-      <div className="correction-header">
-        <h2>🛠 Retired Hurt Corrections</h2>
 
-        <button
-          type="button"
-          className="edit-modal-close-v2"
-          onClick={() =>
-            setShowCorrectionModal(false)
-          }
-        >
-          ✕
-        </button>
-      </div>
-{correctionStatus && (
-  <div className="correction-status">
-    {correctionStatus}
-  </div>
-)}
-      <div className="form-grid">
-        <label>
-          <span>Innings</span>
-
-          <select
-            value={correctionForm.inningsNo}
-            onChange={(e) =>
-              setCorrectionForm((prev) => ({
-                ...prev,
-                inningsNo: e.target.value,
-              }))
-            }
-          >
-            <option value="1">
-              1st Innings
-            </option>
-            <option value="2">
-              2nd Innings
-            </option>
-          </select>
-        </label>
-
-<label>
-  <span>Retired Hurt happened after</span>
-  <select
-    value={correctionForm.afterBallId || ""}
-    onChange={(e) =>
-      setCorrectionForm((prev) => ({
-        ...prev,
-        afterBallId: e.target.value,
-      }))
-    }
-  >
-    <option value="">Select ball</option>
-
-    {(matchDetail?.balls || [])
-      .filter(
-        (ball) =>
-          Number(ball.inningsNo) === Number(correctionForm.inningsNo)
-      )
-      .map((ball) => (
-        <option key={ball.id} value={ball.id}>
-          {ball.overNo}.{ball.ballInOver} — Seq {ball.sequence}
-        </option>
-      ))}
-  </select>
-</label>
-        <label>
-          <span>Retired Player</span>
-
-          <select
-            value={
-              correctionForm.retiredPlayerId
-            }
-            onChange={(e) =>
-              setCorrectionForm((prev) => ({
-                ...prev,
-                retiredPlayerId:
-                  e.target.value,
-              }))
-            }
-          >
-            <option value="">
-              Select Player
-            </option>
-
-{correctionPlayers.map((player) => (
-  <option key={player.id} value={player.id}>
-    {player.name}
-  </option>
-))}
-          </select>
-        </label>
-
-        <label>
-          <span>Replacement Batter</span>
-
-          <select
-            value={
-              correctionForm.replacementPlayerId
-            }
-            onChange={(e) =>
-              setCorrectionForm((prev) => ({
-                ...prev,
-                replacementPlayerId:
-                  e.target.value,
-              }))
-            }
-          >
-            <option value="">
-              Select Batter
-            </option>
-
-{correctionPlayers.map((player) => (
-  <option key={player.id} value={player.id}>
-    {player.name}
-  </option>
-))}
-          </select>
-        </label>
- <label>
-  <span>Replacement got out at</span>
-  <select
-    value={correctionForm.replacementOutBallId}
-    onChange={(e) =>
-      setCorrectionForm((prev) => ({
-        ...prev,
-        replacementOutBallId: e.target.value,
-      }))
-    }
-  >
-    <option value="">Select ball where Kasa got out</option>
-
-    {(matchDetail?.balls || [])
-      .filter((ball) => Number(ball.inningsNo) === Number(correctionForm.inningsNo))
-      .map((ball) => (
-        <option key={ball.id} value={ball.id}>
-          {ball.overNo}.{ball.ballInOver} — Seq {ball.sequence}
-        </option>
-      ))}
-  </select>
-</label>
-
-<label>
-  <span>New batter after replacement</span>
-  <select
-    value={correctionForm.newBatterAfterReplacementId}
-    onChange={(e) =>
-      setCorrectionForm((prev) => ({
-        ...prev,
-        newBatterAfterReplacementId: e.target.value,
-      }))
-    }
-  >
-    <option value="">Select player who came after Kasa</option>
-
-    {correctionPlayers.map((player) => (
-      <option key={player.id} value={player.id}>
-        {player.name}
-      </option>
-    ))}
-  </select>
-</label>
-      </div>
-
-      <div className="edit-match-actions-v2">
-        <button
-          type="button"
-          className="btn btn-outline"
-          onClick={() =>
-            setShowCorrectionModal(false)
-          }
-        >
-          Cancel
-        </button>
-
-<button
-  type="button"
-  className={`btn btn-primary ${
-    correctionSaving ? "btn-loading" : ""
-  }`}
-  disabled={correctionSaving}
-  onClick={applyRetiredHurtCorrection}
->
-  {correctionSaving
-    ? "Recalculating..."
-    : "Apply Correction"}
-</button>
-      </div>
-    </div>
-  </div>
-)}
 {showKeeperChangeModal && (
   <div className="modal-backdrop">
     <div className="correction-modal">
@@ -13664,6 +13671,393 @@ onClick={savePlayerName}
         >
           🔁 Move Player
         </button>
+      </div>
+    </div>
+  </div>
+)}
+{showCorrectionCenter && matchDetail && (
+  <div className="modal-backdrop">
+    <div className="correction-center-modal">
+      <div className="correction-center-header">
+        <div>
+          <h3>✏️ Scorecard Correction Center</h3>
+          <p>Correct completed match details safely without changing innings totals accidentally.</p>
+        </div>
+        {correctionError && (
+  <div className="correction-error-box">
+    ⚠️ {correctionError}
+  </div>
+)}
+
+        <button
+          type="button"
+          className="icon-btn"
+          onClick={() => setShowCorrectionCenter(false)}
+        >
+          ✕
+        </button>
+      </div>
+
+      <div className="correction-type-tabs">
+        {[
+          ["TRANSFER_BATTER_RUNS", "🏏 Batting"],
+          ["REASSIGN_OVER_BOWLER", "🎳 Bowling"],
+          ["CHANGE_FIELDER", "🧤 Fielding"],
+          ["RETIRED_HURT", "🩹 Retired Hurt"],
+        ].map(([key, label]) => (
+          <button
+            key={key}
+            type="button"
+            className={correctionType === key ? "active" : ""}
+            onClick={() => {
+              setCorrectionType(key);
+              setCorrectionForm({});
+              setCorrectionError("");
+            }}
+          >
+            {label}
+          </button>
+        ))}
+      </div>
+<label>
+  <span>Innings</span>
+
+<select
+  value={correctionInnings}
+  onChange={(e) => {
+    setCorrectionInnings(Number(e.target.value));
+    setCorrectionForm({});
+  }}
+>
+    <option value={1}>
+      1st Innings
+    </option>
+
+    <option value={2}>
+      2nd Innings
+    </option>
+  </select>
+</label>
+{correctionType === "RETIRED_HURT" && (
+  <div className="retired-hurt-wow-layout">
+    <section className="retired-hurt-main-panel">
+      <div className="retired-hurt-panel-head">
+        <div>
+          <h4>🩹 Retired Hurt Correction</h4>
+          <p>
+            Correct the batter flow after a retired hurt event while preserving
+            innings score integrity.
+          </p>
+        </div>
+      </div>
+
+      <div className="retired-hurt-form-grid">
+        <label className="retired-hurt-field retired-hurt-wide-field">
+          <span>① Retired Hurt Event</span>
+          <select
+            value={correctionForm.retiredBallId || ""}
+onChange={(e) => {
+  const retiredBallId = e.target.value;
+
+  const selectedBall = retiredHurtBallsForCorrection.find(
+    (ball) => String(ball.id) === String(retiredBallId)
+  );
+
+  setCorrectionForm((prev) => ({
+    ...prev,
+    retiredBallId,
+    retiredPlayerId: selectedBall?.dismissedPlayerId || "",
+    replacementPlayerId: selectedBall?.newBatterId || "",
+  }));
+
+  setCorrectionError("");
+}}
+          >
+            <option value="">Select retired hurt event</option>
+
+            {retiredHurtBallsForCorrection.map((ball) => {
+              const retiredPlayer =
+                battingPlayersForCorrection.find(
+                  (p) => Number(p.id) === Number(ball.dismissedPlayerId)
+                )?.name || "Retired batter";
+
+              return (
+                <option key={ball.id} value={ball.id}>
+                  {ball.overNo}.{ball.ballInOver} • {retiredPlayer}
+                </option>
+              );
+            })}
+          </select>
+        </label>
+
+        <label className="retired-hurt-field">
+          <span>② Retired Batter</span>
+          <select
+            value={correctionForm.retiredPlayerId || ""}
+            onChange={(e) =>
+              setCorrectionForm((prev) => ({
+                ...prev,
+                retiredPlayerId: e.target.value,
+              }))
+            }
+          >
+            <option value="">Select retired batter</option>
+
+            {battingPlayersForCorrection.map((player) => (
+              <option key={player.id} value={player.id}>
+                {player.name} ({battingTeamForCorrection?.name})
+              </option>
+            ))}
+          </select>
+        </label>
+
+        <div className="retired-hurt-flow-connector">
+          <span>→</span>
+        </div>
+
+        <label className="retired-hurt-field">
+          <span>③ Replacement Batter</span>
+          <select
+            value={correctionForm.replacementPlayerId || ""}
+            onChange={(e) =>
+              setCorrectionForm((prev) => ({
+                ...prev,
+                replacementPlayerId: e.target.value,
+              }))
+            }
+          >
+            <option value="">Select replacement batter</option>
+
+            {battingPlayersForCorrection.map((player) => (
+              <option key={player.id} value={player.id}>
+                {player.name} ({battingTeamForCorrection?.name})
+              </option>
+            ))}
+          </select>
+        </label>
+      </div>
+    </section>
+
+    <aside className="retired-hurt-preview-panel">
+      <h4>✨ What Cric4All will update</h4>
+
+      <div className="retired-hurt-check-list">
+        <div>✅ The retired hurt event will be corrected, and future affected balls will be updated only if needed.</div>
+        <div>✅ Innings total will not be accidentally changed.</div>
+        <div>✅ Retired batter can still return later.</div>
+        <div>✅ Scorecard, stats, and commentary refresh from corrected ball data.</div>
+        <div>✅ Full rollback is available from Correction History.</div>
+      </div>
+    </aside>
+  </div>
+)}
+      {correctionType === "TRANSFER_BATTER_RUNS" && (
+        <div className="correction-form-grid">
+          <label>
+            <span>From Batter</span>
+            <select
+              value={correctionForm.fromPlayerId || ""}
+              onChange={(e) =>
+                setCorrectionForm((p) => ({ ...p, fromPlayerId: e.target.value }))
+              }
+            >
+<option value="">Select batter</option>
+{battingPlayersForCorrection.map((player) => (
+  <option key={player.id} value={player.id}>
+    {player.name} ({battingTeamForCorrection?.name})
+  </option>
+))}
+            </select>
+          </label>
+
+          <label>
+            <span>To Batter</span>
+            <select
+              value={correctionForm.toPlayerId || ""}
+              onChange={(e) =>
+                setCorrectionForm((p) => ({ ...p, toPlayerId: e.target.value }))
+              }
+            >
+<option value="">Select batter</option>
+{battingPlayersForCorrection.map((player) => (
+  <option key={player.id} value={player.id}>
+    {player.name} ({battingTeamForCorrection?.name})
+  </option>
+))}
+            </select>
+          </label>
+
+          <label>
+            <span>Runs to Transfer</span>
+            <input
+              type="number"
+              min="1"
+              value={correctionForm.runs || ""}
+              onChange={(e) =>
+                setCorrectionForm((p) => ({ ...p, runs: e.target.value }))
+              }
+            />
+          </label>
+        </div>
+      )}
+
+      {correctionType === "REASSIGN_OVER_BOWLER" && (
+        <div className="correction-form-grid">
+<label>
+  <span>Over</span>
+  <select
+    value={correctionForm.overNo || ""}
+    onChange={(e) =>
+      setCorrectionForm((p) => ({ ...p, overNo: e.target.value }))
+    }
+  >
+    <option value="">Select over</option>
+    {oversForCorrection.map((overNo) => (
+<option key={overNo} value={overNo}>
+    Over {Number(overNo) + 1}
+</option>
+    ))}
+  </select>
+</label>
+
+          <label>
+            <span>Correct Bowler</span>
+            <select
+              value={correctionForm.newBowlerId || ""}
+              onChange={(e) =>
+                setCorrectionForm((p) => ({ ...p, newBowlerId: e.target.value }))
+              }
+            >
+<option value="">Select bowler</option>
+{bowlingPlayersForCorrection.map((player) => (
+  <option key={player.id} value={player.id}>
+    {player.name} ({bowlingTeamForCorrection?.name})
+  </option>
+))}
+            </select>
+          </label>
+        </div>
+      )}
+
+      {correctionType === "CHANGE_FIELDER" && (
+        <div className="correction-form-grid">
+<label>
+  <span>Dismissal</span>
+
+  <select
+    value={correctionForm.ballId || ""}
+    onChange={(e) =>
+      setCorrectionForm((p) => ({
+        ...p,
+        ballId: e.target.value,
+      }))
+    }
+  >
+    <option value="">Select dismissal</option>
+
+    {wicketBallsForCorrection.map((ball) => (
+      <option key={ball.id} value={ball.id}>
+        {Number(ball.overNo) + 1}.{ball.ballInOver} •{" "}
+        {String(ball.wicketType || "WICKET").replaceAll("_", " ")}
+        {ball.dismissedPlayer?.name ? ` • ${ball.dismissedPlayer.name}` : ""}
+      </option>
+    ))}
+  </select>
+</label>
+
+          <label>
+            <span>Correct Fielder</span>
+            <select
+              value={correctionForm.fielderId || ""}
+              onChange={(e) =>
+                setCorrectionForm((p) => ({ ...p, fielderId: e.target.value }))
+              }
+            >
+<option value="">Select fielder</option>
+{bowlingPlayersForCorrection.map((player) => (
+  <option key={player.id} value={player.id}>
+    {player.name} ({bowlingTeamForCorrection?.name})
+  </option>
+))}
+            </select>
+          </label>
+
+          <label>
+            <span>Assistant Fielder Optional</span>
+            <select
+              value={correctionForm.assistantFielderId || ""}
+              onChange={(e) =>
+                setCorrectionForm((p) => ({ ...p, assistantFielderId: e.target.value }))
+              }
+            >
+              <option value="">None</option>
+              {[...(bowlingTeamForCorrection?.players || []), ...(battingTeamForCorrection?.players || [])].map((p) => (
+                <option key={p.id} value={p.id}>{p.name}</option>
+              ))}
+            </select>
+          </label>
+        </div>
+      )}
+
+<label className="correction-reason">
+  <span>Reason for correction</span>
+  <textarea
+    value={correctionReason}
+    onChange={(e) => setCorrectionReason(e.target.value)}
+    placeholder="Example: Retired hurt replacement was assigned incorrectly."
+  />
+</label>
+
+      <div className="correction-actions">
+        <button
+          type="button"
+          className="btn btn-outline"
+          onClick={() => setShowCorrectionCenter(false)}
+        >
+          Cancel
+        </button>
+
+        <button
+          type="button"
+          className="btn"
+          disabled={correctionLoading}
+          onClick={applyCorrection}
+        >
+          {correctionLoading ? "Applying..." : "Apply Correction"}
+        </button>
+      </div>
+
+      <div className="correction-history">
+        <h4>📜 Correction History</h4>
+
+        {!correctionHistory.length ? (
+          <p className="muted">No corrections yet.</p>
+        ) : (
+          correctionHistory.map((c) => (
+            <div key={c.id} className="correction-history-row">
+              <div>
+                <strong>{c.correctionLabel || c.correctionType}</strong>
+                <span>{c.reason || "No reason provided."}</span>
+                <small>
+                  {c.correctedByName || c.correctedByEmail || "Unknown"} •{" "}
+                  {formatDate(c.createdAt)}
+                </small>
+              </div>
+
+              {!c.revertedAt && (
+                <button
+                  type="button"
+                  className="btn btn-outline"
+                  onClick={() => rollbackCorrection(c.id)}
+                >
+                  ↩ Rollback
+                </button>
+              )}
+
+              {c.revertedAt && <small>Reverted</small>}
+            </div>
+          ))
+        )}
       </div>
     </div>
   </div>

@@ -208,6 +208,7 @@ const canAutoComplete =
   ![
     "COMPLETED",
     "COMPLETED_LOCKED",
+    "COMPLETED_CORRECTED",
     "ABANDONED"
   ].includes(normalizedStatus);
 

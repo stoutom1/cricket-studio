@@ -48,7 +48,7 @@ export async function GET(request, { params }) {
 
 const status = String(match.status || "").toUpperCase();
 
-    if (!["COMPLETED", "COMPLETED_LOCKED"].includes(status)) {
+    if (!["COMPLETED", "COMPLETED_LOCKED", "COMPLETED_CORRECTED"].includes(status)) {
       return NextResponse.json(
         { error: "AI analysis is available only after match completion." },
         { status: 400 }
