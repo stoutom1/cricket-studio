@@ -8725,7 +8725,7 @@ onClick={() => {
       }}
     >
       <span>📋</span>
-      <b>View</b>
+      <b>View Details</b>
     </button>
   </div>
 
@@ -8733,7 +8733,7 @@ onClick={() => {
     {permissions?.canScoreMatch && (
       <button
         type="button"
-        className="completed-secondary-action"
+        className="completed-action completed-view-action"
         onClick={() => openCorrectionCenter(match.id)}
       >
         <span>✏️</span>
