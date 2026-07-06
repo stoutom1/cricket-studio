@@ -673,31 +673,6 @@ const pollOptionResults = getPollOptionResults();
             <span>{`${window.location.origin}/team-poll/${poll.token}`}</span>
           </div>
         )}
-
-        {!!pollResponses.length && (
-          <div className="poll-response-summary">
-            <div>
-              <span>✅ Yes</span>
-              <strong>
-                {pollResponses.filter((r) => r.response === "YES").length}
-              </strong>
-            </div>
-
-            <div>
-              <span>🤔 Maybe</span>
-              <strong>
-                {pollResponses.filter((r) => r.response === "MAYBE").length}
-              </strong>
-            </div>
-
-            <div>
-              <span>❌ No</span>
-              <strong>
-                {pollResponses.filter((r) => r.response === "NO").length}
-              </strong>
-            </div>
-          </div>
-        )}
 {poll && pollOptionResults.length > 0 && (
   <section className="poll-results-card">
     <div className="poll-results-header">
@@ -925,29 +900,29 @@ const pollOptionResults = getPollOptionResults();
             <div className="ai-team-box">
               <h2>🔵 Surprise 1</h2>
 
-              {result.teamA.map((player, idx) => (
-                <div key={`a-${player.id}-${idx}`} className="ai-team-row">
-                  <span>
-                    <b>{idx + 1}.</b> {player.playerName}
-                  </span>
-
-                  <strong>{player.skillScore}</strong>
-                </div>
-              ))}
+{[...result.teamA]
+  .sort((a, b) => a.playerName.localeCompare(b.playerName))
+  .map((player, idx) => (
+    <div key={`a-${player.id}-${idx}`} className="ai-team-row">
+      <span>
+        <b>{idx + 1}.</b> {player.playerName}
+      </span>
+    </div>
+  ))}
             </div>
 
             <div className="ai-team-box">
               <h2>🟣 Surprise 2</h2>
 
-              {result.teamB.map((player, idx) => (
-                <div key={`b-${player.id}-${idx}`} className="ai-team-row">
-                  <span>
-                    <b>{idx + 1}.</b> {player.playerName}
-                  </span>
-
-                  <strong>{player.skillScore}</strong>
-                </div>
-              ))}
+{[...result.teamB]
+  .sort((a, b) => a.playerName.localeCompare(b.playerName))
+  .map((player, idx) => (
+    <div key={`b-${player.id}-${idx}`} className="ai-team-row">
+      <span>
+        <b>{idx + 1}.</b> {player.playerName}
+      </span>
+    </div>
+  ))}
             </div>
           </div>
         </section>
