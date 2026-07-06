@@ -25888,3 +25888,41 @@ a:hover {
     padding: 8px 10px 10px;
   }
 }
+@media (max-width:768px){
+
+.completed-match-actions{
+
+display:flex;
+flex-direction:column;
+gap:12px;
+
+}
+
+.completed-match-actions .primary-action{
+
+width:100%;
+height:56px;
+font-size:17px;
+font-weight:700;
+border-radius:16px;
+
+}
+
+.completed-match-actions .secondary-row{
+
+display:grid;
+grid-template-columns:1fr 1fr;
+gap:10px;
+
+}
+
+.completed-match-actions .secondary-row button{
+
+height:48px;
+font-size:15px;
+font-weight:700;
+border-radius:14px;
+
+}
+
+}
