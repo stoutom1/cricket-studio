@@ -8702,75 +8702,53 @@ onClick={() => {
     <p>🏆 {match.resultText || "Result unavailable"}</p>
   </div>
 
-<div className="completed-top-actions">
-  {canShowAi && (
-    <button
-      type="button"
-      className="ai-top-action-btn completed-primary-action"
-      disabled={aiAnalysisLoading}
-      onClick={() => loadAiAnalysis(match.id)}
-    >
-      🤖 {aiAnalysisLoading ? "Generating..." : "AI Review"}
-    </button>
-  )}
-
-  <button
-    type="button"
-    className="view-match-btn compact-view-btn completed-primary-action"
-    onClick={() => {
-      setSelectedMatchId(String(match.id));
-      handleMatchSelect(match.id);
-    }}
-  >
-    📋 View
-  </button>
-
-  <details className="completed-more-menu">
-    <summary className="completed-actions-summary">
-  <span>⚙️</span>
-  <b>Actions</b>
-</summary>
-
-    <div className="completed-more-dropdown">
-      {permissions?.canScoreMatch && (
-        <button
-          type="button"
-          onClick={() => openCorrectionCenter(match.id)}
-        >
-          ✏️ Correct Scorecard
-        </button>
-      )}
-
-      {permissions?.canDeleteMatch && (
-        <button
-          type="button"
-          className="danger"
-          onClick={() => handleDeleteMatch(match.id)}
-        >
-          🗑️ Delete Match
-        </button>
-      )}
-    </div>
-  </details>
-
-  <div className="completed-desktop-extra-actions">
-    {permissions?.canDeleteMatch && (
+<div className="completed-action-panel">
+  <div className="completed-main-actions">
+    {canShowAi && (
       <button
         type="button"
-        className="mini-action-btn danger-mini-btn"
-        onClick={() => handleDeleteMatch(match.id)}
+        className="completed-action completed-ai-action"
+        disabled={aiAnalysisLoading}
+        onClick={() => loadAiAnalysis(match.id)}
       >
-        🗑️
+        <span>🤖</span>
+        <b>{aiAnalysisLoading ? "Generating..." : "AI Review"}</b>
       </button>
     )}
 
+    <button
+      type="button"
+      className="completed-action completed-view-action"
+      onClick={() => {
+        setSelectedMatchId(String(match.id));
+        handleMatchSelect(match.id);
+      }}
+    >
+      <span>📋</span>
+      <b>View</b>
+    </button>
+  </div>
+
+  <div className="completed-secondary-actions">
     {permissions?.canScoreMatch && (
       <button
         type="button"
-        className="btn"
+        className="completed-secondary-action"
         onClick={() => openCorrectionCenter(match.id)}
       >
-        ✏️ Correct Scorecard
+        <span>✏️</span>
+        <b>Correct</b>
+      </button>
+    )}
+
+    {permissions?.canDeleteMatch && (
+      <button
+        type="button"
+        className="completed-secondary-action danger"
+        onClick={() => handleDeleteMatch(match.id)}
+      >
+        <span>🗑️</span>
+        <b>Delete</b>
       </button>
     )}
   </div>
