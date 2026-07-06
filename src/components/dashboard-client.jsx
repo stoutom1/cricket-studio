@@ -8726,7 +8726,10 @@ onClick={() => {
   </button>
 
   <details className="completed-more-menu">
-    <summary>⋯</summary>
+    <summary className="completed-actions-summary">
+  <span>⚙️</span>
+  <b>Actions</b>
+</summary>
 
     <div className="completed-more-dropdown">
       {permissions?.canScoreMatch && (

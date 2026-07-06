@@ -26027,3 +26027,32 @@ border-radius:14px;
     height: 38px;
   }
 }
+.completed-more-menu summary {
+  list-style: none;
+}
+
+.completed-actions-summary {
+  width: 100%;
+  height: 38px;
+  border-radius: 999px;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 5px;
+  cursor: pointer;
+  background: rgba(96, 165, 250, 0.16);
+  color: #dbeafe;
+  font-size: 12px;
+  font-weight: 900;
+  border: 1px solid rgba(96, 165, 250, 0.2);
+}
+
+.completed-actions-summary::-webkit-details-marker {
+  display: none;
+}
+
+@media (max-width: 560px) {
+  .completed-top-actions {
+    grid-template-columns: 1fr 0.75fr 82px;
+  }
+}
