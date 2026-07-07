@@ -8538,7 +8538,6 @@ onClick={() => {
   <summary className="scheduled-mobile-setup-summary">
     <div>
       <strong>📌 Match Setup</strong>
-      <small>Overs, wickets, powerplay & bowling limits</small>
     </div>
     <b>⌄</b>
   </summary>
@@ -8687,7 +8686,6 @@ onClick={() => {
   <summary className="scheduled-mobile-setup-summary">
     <div>
       <strong>📌 Match Setup</strong>
-      <small>Overs, wickets, powerplay & bowling limits</small>
     </div>
     <b>⌄</b>
   </summary>
