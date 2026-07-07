@@ -8924,18 +8924,6 @@ const playedDateLabel = new Date(playedDate).toLocaleString("en-US", {
   </summary>
 
   <div className="completed-mobile-expanded">
-    <div className="completed-mobile-score-grid">
-      <div>
-        <span>1st Innings</span>
-        <strong>{match.firstInningsScore}</strong>
-      </div>
-
-      <div>
-        <span>2nd Innings</span>
-        <strong>{match.secondInningsScore}</strong>
-      </div>
-    </div>
-
     {renderActions()}
     {renderSetupDetails()}
   </div>
