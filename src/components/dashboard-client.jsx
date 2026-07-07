@@ -9431,7 +9431,14 @@ const playedDateLabel = playedDate
         </div>
       ) : (
 <div className="pretty-player-list">
-  {selectedTeam.players.map((player, index) => (
+{[...(selectedTeam.players || [])]
+  .sort((a, b) =>
+    String(a.name || "").localeCompare(String(b.name || ""), undefined, {
+      sensitivity: "base",
+      numeric: true,
+    })
+  )
+  .map((player, index) => (
     <div key={player.id} className="pretty-player-row">
       <div className="player-avatar">
         {String(player.name || "?").trim().charAt(0).toUpperCase()}
@@ -9487,7 +9494,8 @@ const playedDateLabel = playedDate
         <div className="mobile-player-actions-menu">
           {permissions?.canEditPlayer && (
             <button type="button" onClick={() => openEditPlayer(player)}>
-              ✏️ Edit Player
+             <span>✏️</span>
+            <span>Edit Player</span>
             </button>
           )}
 
@@ -9500,7 +9508,8 @@ const playedDateLabel = playedDate
                 setShowTransferPlayerModal(true);
               }}
             >
-              🔁 Move Player
+              <span>🔁</span>
+              <span>Move Player</span>
             </button>
           )}
 
@@ -9510,7 +9519,8 @@ const playedDateLabel = playedDate
               className="danger"
               onClick={() => handleDeletePlayer(player.id, player.name)}
             >
-              🗑️ Delete Player
+              <span>🗑️</span>
+              <span>Delete Player</span>
             </button>
           )}
         </div>
