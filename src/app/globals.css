@@ -29000,3 +29000,42 @@ text-overflow:unset;
     line-height: 1.25;
   }
 }
+@media (max-width: 640px) {
+  .pro-active-actions {
+    display: grid !important;
+    grid-template-columns: 1fr 44px;
+    gap: 8px;
+    width: 100%;
+    margin-top: 10px;
+  }
+
+  .pro-active-actions .start-match-btn {
+    width: 100% !important;
+    height: 42px;
+    border-radius: 14px !important;
+    font-size: 13px !important;
+    font-weight: 950 !important;
+    justify-content: center;
+  }
+
+  .pro-active-actions .danger-mini-btn {
+    width: 44px !important;
+    height: 42px !important;
+    border-radius: 14px !important;
+    padding: 0 !important;
+    font-size: 16px !important;
+  }
+
+  .scheduled-mobile-setup {
+    margin-top: 10px !important;
+  }
+}
+@media (max-width: 640px) {
+  .pro-active-actions {
+    display: grid !important;
+    grid-template-columns: 1fr 44px 44px;
+    gap: 8px;
+    width: 100%;
+    margin-top: 10px;
+  }
+}
