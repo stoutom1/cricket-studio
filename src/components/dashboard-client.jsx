@@ -332,6 +332,7 @@ const [correctionReason, setCorrectionReason] = useState("");
 const [correctionHistory, setCorrectionHistory] = useState([]);
 const [correctionLoading, setCorrectionLoading] = useState(false);
 const [correctionInnings, setCorrectionInnings] = useState(1);
+const [openPlayerActionId, setOpenPlayerActionId] = useState(null);
 const isSuperAdmin =
   session?.user?.email ===
   "surprisecricket11@gmail.com";
@@ -5718,6 +5719,7 @@ const retiredHurtBallsForCorrection = (matchDetail?.balls || [])
   .sort((a, b) => Number(a.sequence) - Number(b.sequence));
 
 
+  
 function ContextLens() {
   const totalFilters =
     (contextFilters.teamIds?.length || 0) +
@@ -9488,12 +9490,21 @@ const playedDateLabel = playedDate
         )}
       </div>
 
-      <details className="mobile-player-actions">
-        <summary>⚙️</summary>
+<details
+  className="mobile-player-actions"
+  open={openPlayerActionId === player.id}
+  onToggle={(e) => {
+    setOpenPlayerActionId(e.currentTarget.open ? player.id : null);
+  }}
+>
+  <summary>⚙️</summary>
 
         <div className="mobile-player-actions-menu">
           {permissions?.canEditPlayer && (
-            <button type="button" onClick={() => openEditPlayer(player)}>
+            <button type="button"   onClick={() => {
+    setOpenPlayerActionId(null);
+    openEditPlayer(player);
+  }}>
              <span>✏️</span>
             <span>Edit Player</span>
             </button>
@@ -9503,6 +9514,7 @@ const playedDateLabel = playedDate
             <button
               type="button"
               onClick={() => {
+                setOpenPlayerActionId(null);
                 setTransferPlayer(player);
                 setTransferTeamId("");
                 setShowTransferPlayerModal(true);
@@ -9517,7 +9529,10 @@ const playedDateLabel = playedDate
             <button
               type="button"
               className="danger"
-              onClick={() => handleDeletePlayer(player.id, player.name)}
+              onClick={() => {
+                setOpenPlayerActionId(null);
+                handleDeletePlayer(player.id, player.name);
+              }}
             >
               <span>🗑️</span>
               <span>Delete Player</span>
