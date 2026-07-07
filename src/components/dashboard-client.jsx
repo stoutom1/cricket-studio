@@ -6388,16 +6388,7 @@ onClick={() => {
 </>
         )}
 
-        <details className="mobile-scoreboard-match-center">
-  <summary className="mobile-scoreboard-match-center-summary">
-    <div>
-      <strong>📋 Match Center</strong>
-      <small>Scorecards, wickets, partnerships & full innings details</small>
-    </div>
-    <b>⌄</b>
-  </summary>
-
-  {(scoreboard.innings || []).map((inn, innIdx) => (
+        {(scoreboard.innings || []).map((inn, innIdx) => (
           <div
             key={`innings-detail-${inn.number ?? innIdx}`}
             className="full-innings-card"
@@ -6634,7 +6625,6 @@ onClick={() => {
 </details>
           </div>
         ))}
-        </details>
       </div>
       </>
     )}
