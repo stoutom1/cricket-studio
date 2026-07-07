@@ -8708,7 +8708,14 @@ const cleanScore = (score) =>
     .replace(`${match.teamAName}:`, "")
     .replace(`${match.teamBName}:`, "")
     .trim();
-        
+
+    const playedDate =
+  match.endedAt || match.startedAt || match.createdAt;
+
+const playedDateLabel = playedDate
+  ? formatMatchDateTime(playedDate)
+  : "Date unavailable";
+
         const canShowAi =
           normalizedStatus === "COMPLETED" ||
           normalizedStatus === "COMPLETED_CORRECTED" ||
@@ -8837,11 +8844,14 @@ const cleanScore = (score) =>
         return (
           <article key={match.id} className="completed-scorecard-card">
             <div className="completed-desktop-card">
-              <div className="completed-scorecard-top">
-                <span className="completed-match-chip">Match #{matchNumber}</span>
-                <span className="completed-status-chip">{match.status}</span>
-                <span className="completed-id-chip">#{match.id}</span>
-              </div>
+<div className="completed-scorecard-top">
+  <div className="completed-top-left">
+    <span className="completed-match-chip">Match #{matchNumber}</span>
+    <span className="completed-status-chip">{match.status}</span>
+  </div>
+
+  <span className="completed-date-chip">📅 {playedDateLabel}</span>
+</div>
 
 <div className="completed-scorecard-hero compact-teams-line">
   <strong>{battingFirstTeamName}</strong>
@@ -8875,9 +8885,9 @@ const cleanScore = (score) =>
       <span className="completed-status-chip mobile-status">
         {match.status}
       </span>
-      <span className="completed-mobile-match-no">
-        Match #{matchNumber}
-      </span>
+<span className="completed-mobile-match-no">
+  Match #{matchNumber} • 📅 {playedDateLabel}
+</span>
     </div>
 
 <div className="completed-mobile-teams-grid">
