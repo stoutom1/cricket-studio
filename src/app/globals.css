@@ -27098,3 +27098,111 @@ text-overflow:unset;
     font-size: 13px;
   }
 }
+.completed-mobile-compact-card {
+  display: none;
+}
+
+@media (max-width: 768px) {
+  .completed-scorecard-card {
+    padding: 0;
+    background: transparent;
+    border: 0;
+    box-shadow: none;
+  }
+
+  .completed-scorecard-card::before,
+  .completed-desktop-card {
+    display: none;
+  }
+
+  .completed-mobile-compact-card {
+    display: block;
+    margin-bottom: 12px;
+    border-radius: 18px;
+    background: rgba(15, 23, 42, 0.94);
+    border: 1px solid rgba(148, 163, 184, 0.18);
+    overflow: hidden;
+  }
+
+  .completed-mobile-summary {
+    list-style: none;
+    cursor: pointer;
+    padding: 13px;
+    display: grid;
+    grid-template-columns: 1fr auto 28px;
+    gap: 10px;
+    align-items: center;
+  }
+
+  .completed-mobile-summary::-webkit-details-marker {
+    display: none;
+  }
+
+  .completed-mobile-topline {
+    display: flex;
+    justify-content: space-between;
+    gap: 8px;
+    margin-bottom: 4px;
+  }
+
+  .completed-mobile-topline span {
+    color: #bfdbfe;
+    font-weight: 1000;
+    font-size: 12px;
+  }
+
+  .completed-mobile-topline small {
+    color: #94a3b8;
+    font-weight: 900;
+  }
+
+  .completed-mobile-main strong {
+    display: block;
+    color: #f8fafc;
+    font-size: 14px;
+  }
+
+  .completed-mobile-main em {
+    color: #93c5fd;
+    font-style: normal;
+    font-size: 11px;
+    margin: 0 4px;
+  }
+
+  .completed-mobile-main p {
+    margin: 5px 0 0;
+    color: #fde68a;
+    font-size: 12px;
+    font-weight: 900;
+  }
+
+  .completed-mobile-scoreline {
+    display: grid;
+    gap: 4px;
+    text-align: right;
+    color: #e5e7eb;
+    font-size: 12px;
+    white-space: nowrap;
+  }
+
+  .completed-mobile-expand {
+    width: 28px;
+    height: 28px;
+    border-radius: 999px;
+    display: grid;
+    place-items: center;
+    background: rgba(30, 41, 59, 0.9);
+    color: #bfdbfe;
+    font-weight: 1000;
+  }
+
+  .completed-mobile-compact-card[open] .completed-mobile-expand {
+    transform: rotate(180deg);
+  }
+
+  .completed-mobile-expanded {
+    padding: 0 13px 13px;
+    display: grid;
+    gap: 12px;
+  }
+}
