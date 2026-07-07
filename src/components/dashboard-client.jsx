@@ -8766,27 +8766,73 @@ onClick={() => {
               </div>
             </div>
 
-            <div className="pro-match-facts">
-              <span>🏏 Bat 1st: {match.battingFirstTeamName || "Not decided"}</span>
-              <span>🎯 Ov: {match.oversPerInnings}</span>
-              <span>⚾ Wkts: {match.maxWicketsPerInnings ?? "∞"}</span>
-              <span>⚡ PP: {match.powerplayOversInnings ?? 0}</span>
-              <span>🎳 Max/Bwl: {match.maxOversPerBowler ?? "∞"}</span>
-            </div>
+<details className="match-facts-wow">
+  <summary className="match-facts-wow-summary">
+    <div className="match-facts-wow-left">
+      <span className="match-facts-wow-icon">📌</span>
+      <div>
+        <strong>Match Setup & Timeline</strong>
+        <small>Tap to view overs, wickets, powerplay, and match times</small>
+      </div>
+    </div>
 
-            <div className="pro-match-timeline">
-              {match?.startedAt && (
-                <span>Started {formatMatchDateTime(match.startedAt)}</span>
-              )}
+    <span className="match-facts-wow-caret">⌄</span>
+  </summary>
 
-              {match?.endedAt && (
-                <span>Ended {formatMatchDateTime(match.endedAt)}</span>
-              )}
+  <div className="match-facts-wow-content">
+    <div className="match-facts-grid">
+      <div>
+        <span>🏏 Bat 1st</span>
+        <strong>{match.battingFirstTeamName || "Not decided"}</strong>
+      </div>
 
-              {match?.lockedAt && (
-                <span>Locked {formatMatchDateTime(match.lockedAt)}</span>
-              )}
-            </div>
+      <div>
+        <span>🎯 Overs</span>
+        <strong>{match.oversPerInnings}</strong>
+      </div>
+
+      <div>
+        <span>⚾ Wickets</span>
+        <strong>{match.maxWicketsPerInnings ?? "∞"}</strong>
+      </div>
+
+      <div>
+        <span>⚡ Powerplay</span>
+        <strong>{match.powerplayOversInnings ?? 0}</strong>
+      </div>
+
+      <div>
+        <span>🎳 Max / Bowler</span>
+        <strong>{match.maxOversPerBowler ?? "∞"}</strong>
+      </div>
+    </div>
+
+    {(match?.startedAt || match?.endedAt || match?.lockedAt) && (
+      <div className="match-timeline-wow">
+        {match?.startedAt && (
+          <div>
+            <span>Started</span>
+            <strong>{formatMatchDateTime(match.startedAt)}</strong>
+          </div>
+        )}
+
+        {match?.endedAt && (
+          <div>
+            <span>Ended</span>
+            <strong>{formatMatchDateTime(match.endedAt)}</strong>
+          </div>
+        )}
+
+        {match?.lockedAt && (
+          <div>
+            <span>Locked</span>
+            <strong>{formatMatchDateTime(match.lockedAt)}</strong>
+          </div>
+        )}
+      </div>
+    )}
+  </div>
+</details>
           </article>
         );
       })}
