@@ -8712,12 +8712,14 @@ const cleanScore = (score) =>
     const playedDate =
   match.endedAt || match.startedAt || match.createdAt;
 
-const playedDateLabel = new Date(playedDate).toLocaleString("en-US", {
-  month: "short",
-  day: "numeric",
-  hour: "numeric",
-  minute: "2-digit",
-});
+const playedDateLabel = playedDate
+  ? new Date(playedDate).toLocaleString("en-US", {
+      month: "long",
+      day: "numeric",
+      hour: "numeric",
+      minute: "2-digit",
+    }).replace(" at ", ", ")
+  : "Date unavailable";
 
         const canShowAi =
           normalizedStatus === "COMPLETED" ||
@@ -8890,7 +8892,7 @@ const playedDateLabel = new Date(playedDate).toLocaleString("en-US", {
     <span className="mobile-status-chip">{match.status}</span>
   </div>
 
-  <div className="completed-date-chip">
+  <div className="mobile-date-chip">
     📅 {playedDateLabel}
   </div>
 </div>
