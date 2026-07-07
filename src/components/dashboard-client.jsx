@@ -8890,7 +8890,7 @@ const playedDateLabel = new Date(playedDate).toLocaleString("en-US", {
     <span className="mobile-status-chip">{match.status}</span>
   </div>
 
-  <div className="mobile-date-chip">
+  <div className="completed-date-chip">
     📅 {playedDateLabel}
   </div>
 </div>
