@@ -8916,9 +8916,11 @@ const playedDateLabel = playedDate
       <span>⚙️ Actions & Details</span>
       <b>⌄</b>
     </div>
+    <div className="completed-mobile-result-clean">
     <span className="completed-mobile-match-no">
 📅 {playedDateLabel}
 </span>
+</div>
   </summary>
 
   <div className="completed-mobile-expanded">
