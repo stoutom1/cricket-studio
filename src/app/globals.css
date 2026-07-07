@@ -27294,3 +27294,157 @@ text-overflow:unset;
     grid-row: 1 !important;
   }
 }
+/* =========================================================
+   ONE-TIME FIX: MOBILE MATCH HISTORY COMPACT CARDS
+========================================================= */
+@media (max-width: 768px) {
+  .completed-scorecard-card {
+    padding: 0 !important;
+    margin: 0 0 14px !important;
+    background: transparent !important;
+    border: 0 !important;
+    box-shadow: none !important;
+  }
+
+  .completed-scorecard-card::before,
+  .completed-desktop-card {
+    display: none !important;
+  }
+
+  .completed-mobile-compact-card {
+    display: block !important;
+    width: 100% !important;
+    margin: 0 0 14px !important;
+    border-radius: 18px !important;
+    background: rgba(15, 23, 42, 0.96) !important;
+    border: 1px solid rgba(148, 163, 184, 0.18) !important;
+    overflow: hidden !important;
+  }
+
+  .completed-mobile-summary {
+    list-style: none !important;
+    cursor: pointer !important;
+    padding: 14px !important;
+    display: grid !important;
+    grid-template-columns: 1fr 34px !important;
+    gap: 10px !important;
+    align-items: center !important;
+  }
+
+  .completed-mobile-summary::-webkit-details-marker {
+    display: none !important;
+  }
+
+  .completed-mobile-main {
+    min-width: 0 !important;
+  }
+
+  .completed-mobile-topline {
+    display: flex !important;
+    align-items: center !important;
+    justify-content: space-between !important;
+    gap: 10px !important;
+    margin-bottom: 8px !important;
+  }
+
+  .completed-mobile-topline span,
+  .completed-mobile-topline small {
+    font-size: 12px !important;
+    font-weight: 950 !important;
+    color: #bfdbfe !important;
+    white-space: nowrap !important;
+  }
+
+  .completed-mobile-main strong {
+    display: grid !important;
+    grid-template-columns: minmax(0, 1fr) auto minmax(0, 1fr) !important;
+    gap: 6px !important;
+    align-items: center !important;
+    color: #f8fafc !important;
+    font-size: 14px !important;
+    line-height: 1.15 !important;
+    white-space: nowrap !important;
+  }
+
+  .completed-mobile-main strong > span,
+  .completed-mobile-main strong {
+    min-width: 0 !important;
+  }
+
+  .completed-mobile-main em {
+    color: #93c5fd !important;
+    font-style: normal !important;
+    font-size: 11px !important;
+    font-weight: 900 !important;
+    text-transform: uppercase !important;
+  }
+
+  .completed-mobile-main p {
+    margin: 8px 0 0 !important;
+    display: inline-flex !important;
+    max-width: 100% !important;
+    padding: 7px 10px !important;
+    border-radius: 999px !important;
+    background: rgba(34, 197, 94, 0.12) !important;
+    border: 1px solid rgba(34, 197, 94, 0.22) !important;
+    color: #fde68a !important;
+    font-size: 12px !important;
+    font-weight: 950 !important;
+    line-height: 1.15 !important;
+    white-space: nowrap !important;
+    overflow: hidden !important;
+    text-overflow: ellipsis !important;
+  }
+
+  .completed-mobile-scoreline {
+    margin-top: 10px !important;
+    display: grid !important;
+    grid-template-columns: 1fr 1fr !important;
+    gap: 8px !important;
+    text-align: left !important;
+    color: #e5e7eb !important;
+    font-size: 12px !important;
+  }
+
+  .completed-mobile-scoreline b {
+    min-width: 0 !important;
+    padding: 8px 9px !important;
+    border-radius: 12px !important;
+    background: rgba(2, 6, 23, 0.5) !important;
+    border: 1px solid rgba(148, 163, 184, 0.12) !important;
+    white-space: nowrap !important;
+    overflow: hidden !important;
+    text-overflow: ellipsis !important;
+  }
+
+  .completed-mobile-expand {
+    width: 34px !important;
+    height: 34px !important;
+    border-radius: 999px !important;
+    display: grid !important;
+    place-items: center !important;
+    background: rgba(30, 41, 59, 0.92) !important;
+    color: #bfdbfe !important;
+    font-weight: 1000 !important;
+  }
+
+  .completed-mobile-expanded {
+    padding: 0 14px 14px !important;
+    display: grid !important;
+    gap: 12px !important;
+  }
+
+  .completed-mobile-expanded .completed-actions-bar {
+    grid-template-columns: 1fr 1fr !important;
+    gap: 10px !important;
+  }
+
+  .completed-mobile-expanded .completed-action-btn {
+    min-height: 54px !important;
+    font-size: 13px !important;
+  }
+
+  .completed-mobile-expanded .completed-innings-row {
+    grid-template-columns: 1fr !important;
+  }
+}

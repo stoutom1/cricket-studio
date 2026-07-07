@@ -8849,9 +8849,11 @@ onClick={() => {
                     <small>#{match.id}</small>
                   </div>
 
-                  <strong>
-                    {match.teamAName} <em>vs</em> {match.teamBName}
-                  </strong>
+<strong>
+  <span>{match.teamAName}</span>
+  <em>vs</em>
+  <span>{match.teamBName}</span>
+</strong>
 
                   <p>🏆 {match.resultText || "Result unavailable"}</p>
                 </div>
