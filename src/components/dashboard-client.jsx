@@ -8883,8 +8883,6 @@ const playedDateLabel = playedDate
   <summary className="completed-mobile-summary">
         <div className="completed-mobile-result-clean">
           <span>📅 {playedDateLabel}</span>
-        </div>
-    <div className="completed-mobile-meta">
       <span className="completed-status-chip mobile-status">
         {match.status}
       </span>
