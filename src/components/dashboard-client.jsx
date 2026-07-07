@@ -9430,56 +9430,94 @@ const playedDateLabel = playedDate
           <span>Add players in bulk by pasting one name per line.</span>
         </div>
       ) : (
-        <div className="pretty-player-list">
-          {selectedTeam.players.map((player, index) => (
-            <div key={player.id} className="pretty-player-row">
-              <div className="player-avatar">
-                {String(player.name || "?").trim().charAt(0).toUpperCase()}
-              </div>
+<div className="pretty-player-list">
+  {selectedTeam.players.map((player, index) => (
+    <div key={player.id} className="pretty-player-row">
+      <div className="player-avatar">
+        {String(player.name || "?").trim().charAt(0).toUpperCase()}
+      </div>
 
-              <div className="player-info">
-                <strong>{player.name}</strong>
-                <span>Player #{index + 1}</span>
-              </div>
-  {permissions?.canEditPlayer && (
-    <button
-      type="button"
-      className="mini-action-btn"
-      title="Edit Player"
-      onClick={() => openEditPlayer(player)}
-    >
-      ✏️
-    </button>
-  )}
-  {permissions?.canEditPlayer && (
-  <button
-    type="button"
-    className="mini-action-btn"
-    title="Move Player"
-    onClick={() => {
-      setTransferPlayer(player);
-      setTransferTeamId("");
-      setShowTransferPlayerModal(true);
-    }}
-  >
-    🔁
-  </button>
-)}
-              {permissions?.canDeletePlayer && (
-                <button
-                  type="button"
-                  className="player-delete-btn"
-                  title={`Delete ${player.name}`}
-                  onClick={() =>
-                    handleDeletePlayer(player.id, player.name)
-                  }
-                >
-                  🗑️
-                </button>
-              )}
-            </div>
-          ))}
+      <div className="player-info">
+        <strong>{player.name}</strong>
+        <span>Player #{index + 1}</span>
+      </div>
+
+      <div className="player-row-actions desktop-player-actions">
+        {permissions?.canEditPlayer && (
+          <button
+            type="button"
+            className="mini-action-btn"
+            title="Edit Player"
+            onClick={() => openEditPlayer(player)}
+          >
+            ✏️
+          </button>
+        )}
+
+        {permissions?.canEditPlayer && (
+          <button
+            type="button"
+            className="mini-action-btn"
+            title="Move Player"
+            onClick={() => {
+              setTransferPlayer(player);
+              setTransferTeamId("");
+              setShowTransferPlayerModal(true);
+            }}
+          >
+            🔁
+          </button>
+        )}
+
+        {permissions?.canDeletePlayer && (
+          <button
+            type="button"
+            className="player-delete-btn"
+            title={`Delete ${player.name}`}
+            onClick={() => handleDeletePlayer(player.id, player.name)}
+          >
+            🗑️
+          </button>
+        )}
+      </div>
+
+      <details className="mobile-player-actions">
+        <summary>⚙️</summary>
+
+        <div className="mobile-player-actions-menu">
+          {permissions?.canEditPlayer && (
+            <button type="button" onClick={() => openEditPlayer(player)}>
+              ✏️ Edit Player
+            </button>
+          )}
+
+          {permissions?.canEditPlayer && (
+            <button
+              type="button"
+              onClick={() => {
+                setTransferPlayer(player);
+                setTransferTeamId("");
+                setShowTransferPlayerModal(true);
+              }}
+            >
+              🔁 Move Player
+            </button>
+          )}
+
+          {permissions?.canDeletePlayer && (
+            <button
+              type="button"
+              className="danger"
+              onClick={() => handleDeletePlayer(player.id, player.name)}
+            >
+              🗑️ Delete Player
+            </button>
+          )}
         </div>
+      </details>
+    </div>
+  ))}
+</div>
       )}
     </>
   )}
