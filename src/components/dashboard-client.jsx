@@ -8694,12 +8694,20 @@ const teamAScore = match.firstInningsTeamName === match.teamAName
 const teamBScore = match.firstInningsTeamName === match.teamBName
   ? match.firstInningsScore
   : match.secondInningsScore;
+const firstTeamName =
+  match.battingFirstTeamName || match.firstInningsTeamName || match.teamAName;
+
+const secondTeamName =
+  firstTeamName === match.teamAName ? match.teamBName : match.teamAName;
+
+const firstTeamScore = match.firstInningsScore;
+const secondTeamScore = match.secondInningsScore;
 
 const cleanScore = (score) =>
   String(score || "")
     .replace(`${match.teamAName}:`, "")
     .replace(`${match.teamBName}:`, "")
-    .trim();  
+    .trim();
         
         const canShowAi =
           normalizedStatus === "COMPLETED" ||
@@ -8874,13 +8882,13 @@ const cleanScore = (score) =>
 
 <div className="completed-mobile-teams-grid">
   <div className="mobile-team-score">
-    <strong>{match.teamAName}</strong>
-    <small>{cleanScore(teamAScore)}</small>
+    <strong>{firstTeamName}</strong>
+    <small>{cleanScore(firstTeamScore)}</small>
   </div>
 
   <div className="mobile-team-score right">
-    <strong>{match.teamBName}</strong>
-    <small>{cleanScore(teamBScore)}</small>
+    <strong>{secondTeamName}</strong>
+    <small>{cleanScore(secondTeamScore)}</small>
   </div>
 </div>
 

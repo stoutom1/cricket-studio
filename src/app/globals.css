@@ -28524,3 +28524,119 @@ text-overflow:unset;
     margin-top: 3px !important;
   }
 }
+@media (max-width:640px){
+
+.completed-mobile-teams-grid{
+    display:grid;
+    grid-template-columns:1fr 1fr;
+    column-gap:22px;
+    align-items:start;
+}
+
+.mobile-team-score{
+    min-width:0;
+}
+
+.mobile-team-score.right{
+    text-align:right;
+}
+
+.mobile-team-score strong{
+    display:block;
+    color:#fff;
+    font-size:16px;
+    font-weight:900;
+    margin-bottom:4px;
+}
+
+.mobile-team-score small{
+    display:block;
+    color:#bfdbfe;
+    font-size:12px;
+    font-weight:800;
+}
+
+.completed-mobile-vs{
+    display:flex;
+    align-items:center;
+    gap:10px;
+    margin:10px 0 14px;
+}
+
+.completed-mobile-vs span{
+    flex:1;
+    height:1px;
+    background:rgba(148,163,184,.25);
+}
+
+.completed-mobile-vs b{
+    padding:3px 10px;
+    border-radius:999px;
+    background:rgba(59,130,246,.18);
+    border:1px solid rgba(96,165,250,.28);
+    color:#93c5fd;
+    font-size:11px;
+    letter-spacing:.08em;
+}
+}
+@media (max-width: 640px) {
+  .completed-mobile-teams-grid {
+    display: grid !important;
+    grid-template-columns: 1fr 1fr !important;
+    column-gap: 22px !important;
+    align-items: start !important;
+    margin-top: 12px !important;
+  }
+
+  .mobile-team-score {
+    min-width: 0 !important;
+  }
+
+  .mobile-team-score.right {
+    text-align: right !important;
+  }
+
+  .mobile-team-score strong {
+    display: block !important;
+    color: #ffffff !important;
+    font-size: 16px !important;
+    font-weight: 950 !important;
+    margin-bottom: 4px !important;
+    overflow: hidden !important;
+    text-overflow: ellipsis !important;
+    white-space: nowrap !important;
+  }
+
+  .mobile-team-score small {
+    display: block !important;
+    color: #bfdbfe !important;
+    font-size: 12px !important;
+    font-weight: 850 !important;
+    overflow: hidden !important;
+    text-overflow: ellipsis !important;
+    white-space: nowrap !important;
+  }
+
+  .completed-mobile-vs {
+    display: flex !important;
+    align-items: center !important;
+    gap: 10px !important;
+    margin: 10px 0 12px !important;
+  }
+
+  .completed-mobile-vs span {
+    flex: 1 !important;
+    height: 1px !important;
+    background: rgba(148, 163, 184, 0.25) !important;
+  }
+
+  .completed-mobile-vs b {
+    padding: 3px 10px !important;
+    border-radius: 999px !important;
+    background: rgba(59, 130, 246, 0.18) !important;
+    border: 1px solid rgba(96, 165, 250, 0.28) !important;
+    color: #93c5fd !important;
+    font-size: 11px !important;
+    letter-spacing: 0.08em !important;
+  }
+}
