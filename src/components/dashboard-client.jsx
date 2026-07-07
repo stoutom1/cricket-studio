@@ -8850,11 +8850,11 @@ onClick={() => {
       </span>
     </div>
 
-    <div className="completed-mobile-teams-stacked">
-      <strong>{match.teamAName}</strong>
-      <span>vs</span>
-      <strong>{match.teamBName}</strong>
-    </div>
+<div className="completed-mobile-teams-stacked">
+  <strong>{match.teamAName}</strong>
+  <span>vs</span>
+  <strong>{match.teamBName}</strong>
+</div>
 
     <div className="completed-mobile-result-clean">
       🏆 {match.resultText || "Result unavailable"}
