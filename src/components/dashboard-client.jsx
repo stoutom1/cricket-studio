@@ -8674,6 +8674,14 @@ onClick={() => {
   ) : (
     <div className="completed-match-list pro-completed-list">
       {filteredCompletedMatches.map((match, index) => {
+        const battingFirstTeamName =
+  match.battingFirstTeamName ||
+  match.teamAName;
+
+const bowlingSecondTeamName =
+  battingFirstTeamName === match.teamAName
+    ? match.teamBName
+    : match.teamAName;
         const normalizedStatus = String(match.status || "")
           .trim()
           .replace(/[\s-]+/g, "_")
@@ -8813,11 +8821,11 @@ onClick={() => {
                 <span className="completed-id-chip">#{match.id}</span>
               </div>
 
-              <div className="completed-scorecard-hero">
-                <div className="completed-team-name">{match.teamAName}</div>
-                <div className="completed-vs">vs</div>
-                <div className="completed-team-name">{match.teamBName}</div>
-              </div>
+<div className="completed-scorecard-hero compact-teams-line">
+  <strong>{battingFirstTeamName}</strong>
+  <span>vs</span>
+  <strong>{bowlingSecondTeamName}</strong>
+</div>
 
               <div className="completed-winner-banner">
                 🏆 {match.resultText || "Result unavailable"}
@@ -8850,10 +8858,10 @@ onClick={() => {
       </span>
     </div>
 
-<div className="completed-mobile-teams-stacked">
-  <strong>{match.teamAName}</strong>
+<div className="completed-mobile-teams-line">
+  <strong>{battingFirstTeamName}</strong>
   <span>vs</span>
-  <strong>{match.teamBName}</strong>
+  <strong>{bowlingSecondTeamName}</strong>
 </div>
 
     <div className="completed-mobile-result-clean">
