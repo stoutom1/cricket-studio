@@ -8842,11 +8842,15 @@ onClick={() => {
 <details className="completed-mobile-card">
   <summary className="completed-mobile-summary">
     <div className="completed-mobile-meta">
-      <span className="completed-status-chip">{match.status}</span>
-      <span className="completed-mobile-match-no">Match #{index + 1}</span>
+      <span className="completed-status-chip mobile-status">
+        {match.status}
+      </span>
+      <span className="completed-mobile-match-no">
+        Match #{index + 1}
+      </span>
     </div>
 
-    <div className="completed-mobile-versus">
+    <div className="completed-mobile-teams-stacked">
       <strong>{match.teamAName}</strong>
       <span>vs</span>
       <strong>{match.teamBName}</strong>
@@ -8857,7 +8861,7 @@ onClick={() => {
     </div>
 
     <div className="completed-mobile-expand">
-      <span>View actions, scorecard & match details</span>
+      <span>Open match actions & details</span>
       <b>⌄</b>
     </div>
   </summary>

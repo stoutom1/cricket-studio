@@ -28003,3 +28003,198 @@ text-overflow:unset;
     font-size: 12px;
   }
 }
+.completed-desktop-card {
+  display: block;
+}
+
+.completed-mobile-card {
+  display: none;
+}
+
+@media (max-width: 640px) {
+  .completed-desktop-card {
+    display: none !important;
+  }
+
+  .completed-scorecard-card {
+    width: 100%;
+    max-width: 100%;
+    overflow: hidden;
+  }
+
+  .completed-mobile-card {
+    display: block !important;
+    width: 100%;
+    max-width: 100%;
+    box-sizing: border-box;
+    border-radius: 20px;
+    overflow: hidden;
+    background:
+      radial-gradient(circle at top left, rgba(59,130,246,.20), transparent 38%),
+      linear-gradient(135deg, rgba(15,23,42,.92), rgba(30,41,59,.72));
+    border: 1px solid rgba(96,165,250,.22);
+    box-shadow: 0 14px 34px rgba(0,0,0,.28);
+  }
+
+  .completed-mobile-summary {
+    list-style: none;
+    padding: 14px;
+    cursor: pointer;
+  }
+
+  .completed-mobile-summary::-webkit-details-marker {
+    display: none;
+  }
+
+  .completed-mobile-meta {
+    display: flex;
+    justify-content: space-between;
+    gap: 8px;
+    margin-bottom: 12px;
+  }
+
+  .mobile-status,
+  .completed-mobile-match-no {
+    max-width: 48%;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+    border-radius: 999px;
+    padding: 6px 9px;
+    font-size: 10px;
+    font-weight: 950;
+  }
+
+  .completed-mobile-match-no {
+    background: rgba(96,165,250,.18);
+    color: #bfdbfe;
+  }
+
+  .completed-mobile-teams-stacked {
+    display: grid;
+    grid-template-columns: 1fr;
+    gap: 5px;
+    margin-bottom: 10px;
+  }
+
+  .completed-mobile-teams-stacked strong {
+    display: block;
+    width: 100%;
+    color: #ffffff;
+    font-size: 16px;
+    font-weight: 950;
+    line-height: 1.25;
+    word-break: break-word;
+  }
+
+  .completed-mobile-teams-stacked span {
+    width: fit-content;
+    border-radius: 999px;
+    padding: 3px 8px;
+    background: rgba(96,165,250,.16);
+    color: #93c5fd;
+    font-size: 10px;
+    font-weight: 950;
+  }
+
+  .completed-mobile-result-clean {
+    width: 100%;
+    box-sizing: border-box;
+    border-radius: 14px;
+    padding: 10px 11px;
+    margin-bottom: 10px;
+    background: linear-gradient(135deg, rgba(22,163,74,.24), rgba(13,148,136,.16));
+    border: 1px solid rgba(34,197,94,.30);
+    color: #fde68a;
+    font-size: 13px;
+    font-weight: 950;
+    line-height: 1.35;
+    white-space: normal;
+    word-break: break-word;
+  }
+
+  .completed-mobile-expand {
+    width: 100%;
+    box-sizing: border-box;
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 10px;
+    border-radius: 999px;
+    padding: 9px 10px 9px 12px;
+    background: rgba(96,165,250,.14);
+    color: #dbeafe;
+    font-size: 12px;
+    font-weight: 900;
+  }
+
+  .completed-mobile-expand span {
+    white-space: normal;
+    line-height: 1.2;
+  }
+
+  .completed-mobile-expand b {
+    width: 26px;
+    height: 26px;
+    flex: 0 0 26px;
+    border-radius: 999px;
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    background: linear-gradient(135deg, #2563eb, #7c3aed);
+    color: white;
+    transition: transform .2s ease;
+  }
+
+  .completed-mobile-card[open] .completed-mobile-expand b {
+    transform: rotate(180deg);
+  }
+
+  .completed-mobile-expanded {
+    padding: 0 14px 14px;
+  }
+
+  .completed-mobile-score-grid {
+    display: grid;
+    grid-template-columns: 1fr;
+    gap: 8px;
+    margin: 10px 0;
+  }
+
+  .completed-mobile-score-grid div {
+    border-radius: 14px;
+    padding: 10px;
+    background: rgba(15,23,42,.68);
+    border: 1px solid rgba(96,165,250,.16);
+  }
+
+  .completed-mobile-score-grid span {
+    display: block;
+    color: #93c5fd;
+    font-size: 11px;
+    font-weight: 900;
+    margin-bottom: 4px;
+  }
+
+  .completed-mobile-score-grid strong {
+    color: white;
+    font-size: 15px;
+    line-height: 1.25;
+  }
+
+  .completed-actions-bar {
+    display: grid;
+    grid-template-columns: 1fr;
+    gap: 8px;
+    margin: 10px 0;
+  }
+
+  .completed-action-btn {
+    width: 100%;
+    min-width: 0;
+    height: 42px;
+    border-radius: 14px;
+    justify-content: center;
+    font-size: 12px;
+  }
+}
