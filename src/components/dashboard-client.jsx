@@ -8532,8 +8532,32 @@ onClick={() => {
   <span>⚡ PP: {match.powerplayOversInnings ?? 0}</span>
   <span>🎳 Max/Bwl: {match.maxOversPerBowler ?? "∞"}</span>
 </div>
+            </button>
+            <div className="pro-active-actions">
+              {permissions?.canScoreMatch && (
+                <button
+                  type="button"
+                  className={`start-match-btn ${isSelected ? "is-open" : ""}`}
+                  onClick={() => {
+                    setSelectedMatchId(String(match.id));
+                    handleMatchSelect(match.id);
+                  }}
+                >
+                  {isSelected ? "✅ Scoring Open" : "🏏 Open Scoring"}
+                </button>
+              )}
 
-{/* Mobile: collapsible wow view */}
+              {permissions?.canDeleteMatch && (
+                <button
+                  type="button"
+                  className="mini-action-btn danger-mini-btn"
+                  onClick={() => handleDeleteMatch(match.id)}
+                >
+                  🗑️
+                </button>
+              )}
+            </div>
+            {/* Mobile: collapsible wow view */}
 <details className="scheduled-mobile-setup">
   <summary className="scheduled-mobile-setup-summary">
     <div>
@@ -8569,32 +8593,6 @@ onClick={() => {
     </div>
   </div>
 </details>
-            </button>
-
-            <div className="pro-active-actions">
-              {permissions?.canScoreMatch && (
-                <button
-                  type="button"
-                  className={`start-match-btn ${isSelected ? "is-open" : ""}`}
-                  onClick={() => {
-                    setSelectedMatchId(String(match.id));
-                    handleMatchSelect(match.id);
-                  }}
-                >
-                  {isSelected ? "✅ Scoring Open" : "🏏 Open Scoring"}
-                </button>
-              )}
-
-              {permissions?.canDeleteMatch && (
-                <button
-                  type="button"
-                  className="mini-action-btn danger-mini-btn"
-                  onClick={() => handleDeleteMatch(match.id)}
-                >
-                  🗑️
-                </button>
-              )}
-            </div>
           </article>
         );
       })}
