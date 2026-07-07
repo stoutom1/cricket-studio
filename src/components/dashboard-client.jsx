@@ -8841,12 +8841,12 @@ onClick={() => {
 
 <details className="completed-mobile-card">
   <summary className="completed-mobile-summary">
-    <div className="completed-mobile-header-row">
+    <div className="completed-mobile-meta">
       <span className="completed-status-chip">{match.status}</span>
       <span className="completed-mobile-match-no">Match #{index + 1}</span>
     </div>
 
-    <div className="completed-mobile-teams-clean">
+    <div className="completed-mobile-versus">
       <strong>{match.teamAName}</strong>
       <span>vs</span>
       <strong>{match.teamBName}</strong>
@@ -8856,8 +8856,8 @@ onClick={() => {
       🏆 {match.resultText || "Result unavailable"}
     </div>
 
-    <div className="completed-mobile-open-row">
-      <span>Actions & Match Details</span>
+    <div className="completed-mobile-expand">
+      <span>View actions, scorecard & match details</span>
       <b>⌄</b>
     </div>
   </summary>
