@@ -8886,7 +8886,7 @@ const playedDateLabel = playedDate
         {match.status}
       </span>
 <span className="completed-mobile-match-no">
-  Match #{matchNumber} • 📅 {playedDateLabel}
+  Match #{matchNumber}
 </span>
     </div>
 
@@ -8916,6 +8916,9 @@ const playedDateLabel = playedDate
       <span>⚙️ Actions & Details</span>
       <b>⌄</b>
     </div>
+    <span className="completed-mobile-match-no">
+📅 {playedDateLabel}
+</span>
   </summary>
 
   <div className="completed-mobile-expanded">
