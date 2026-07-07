@@ -8668,12 +8668,12 @@ onClick={() => {
     )}
 
 {activeLeagueId && matchesSubTab === "COMPLETED" && (
-<Card title="✅ Completed Matches">
+<Card title="✅ Completed Scorecards">
   {completedMatches.length === 0 ? (
     <div className="empty-state">No completed matches found.</div>
   ) : (
     <div className="completed-match-list pro-completed-list">
-      {filteredCompletedMatches.map((match) => {
+      {filteredCompletedMatches.map((match, index) => {
         const normalizedStatus = String(match.status || "")
           .trim()
           .replace(/[\s-]+/g, "_")
@@ -8685,154 +8685,152 @@ onClick={() => {
           normalizedStatus === "COMPLETED_LOCKED";
 
         return (
-          <article
-            key={match.id}
-            className="completed-match-card pro-completed-card"
-          >
-<div className="completed-card-headline">
-  <div className="pro-completed-title">
-    <span className="status-pill">{match.status}</span>
+          <article key={match.id} className="completed-scorecard-card">
+            <div className="completed-scorecard-top">
+              <span className="completed-match-chip">Match #{index + 1}</span>
+              <span className="completed-status-chip">{match.status}</span>
+              <span className="completed-id-chip">#{match.id}</span>
+            </div>
 
-    <h3>
-      {match.teamAName}
-      <b>vs</b>
-      {match.teamBName}
-    </h3>
+            <div className="completed-scorecard-hero">
+              <div className="completed-team-name">{match.teamAName}</div>
+              <div className="completed-vs">vs</div>
+              <div className="completed-team-name">{match.teamBName}</div>
+            </div>
 
-    <p>🏆 {match.resultText || "Result unavailable"}</p>
-  </div>
+            <div className="completed-winner-banner">
+              🏆 {match.resultText || "Result unavailable"}
+            </div>
 
-<div className="completed-action-panel">
-  <div className="completed-main-actions">
-    {canShowAi && (
-      <button
-        type="button"
-        className="completed-action completed-ai-action"
-        disabled={aiAnalysisLoading}
-        onClick={() => loadAiAnalysis(match.id)}
-      >
-        <span>🤖</span>
-        <b>{aiAnalysisLoading ? "Generating..." : "AI Review"}</b>
-      </button>
-    )}
-
-    <button
-      type="button"
-      className="completed-action completed-view-action"
-      onClick={() => {
-        setSelectedMatchId(String(match.id));
-        handleMatchSelect(match.id);
-      }}
-    >
-      <span>📋</span>
-      <b>View Details</b>
-    </button>
-  </div>
-
-  <div className="completed-secondary-actions">
-    {permissions?.canScoreMatch && (
-      <button
-        type="button"
-        className="completed-action completed-view-action"
-        onClick={() => openCorrectionCenter(match.id)}
-      >
-        <span>✏️</span>
-        <b>Correct</b>
-      </button>
-    )}
-
-    {permissions?.canDeleteMatch && (
-      <button
-        type="button"
-        className="completed-secondary-action danger"
-        onClick={() => handleDeleteMatch(match.id)}
-      >
-        <span>🗑️</span>
-        <b>Delete</b>
-      </button>
-    )}
-  </div>
-</div>
-</div>
-            <div className="pro-score-strip">
-              <div>
+            <div className="completed-innings-row">
+              <div className="completed-innings-box">
                 <span>1st Innings</span>
                 <strong>{match.firstInningsScore}</strong>
               </div>
 
-              <div>
+              <div className="completed-innings-box">
                 <span>2nd Innings</span>
                 <strong>{match.secondInningsScore}</strong>
               </div>
             </div>
 
-<details className="match-facts-wow">
-  <summary className="match-facts-wow-summary">
-    <div className="match-facts-wow-left">
-      <span className="match-facts-wow-icon">📌</span>
-      <div>
-        <strong>Match Setup & Timeline</strong>
-        <small>Tap to view overs, wickets, powerplay, and match times</small>
-      </div>
-    </div>
+            <div className="completed-actions-bar">
+              <button
+                type="button"
+                className="completed-action-btn"
+                onClick={() => {
+                  setSelectedMatchId(String(match.id));
+                  handleMatchSelect(match.id);
+                }}
+              >
+                <span>📊</span>
+                <b>Scorecard</b>
+              </button>
 
-    <span className="match-facts-wow-caret">⌄</span>
-  </summary>
+              {canShowAi && (
+                <button
+                  type="button"
+                  className="completed-action-btn"
+                  disabled={aiAnalysisLoading}
+                  onClick={() => loadAiAnalysis(match.id)}
+                >
+                  <span>🤖</span>
+                  <b>{aiAnalysisLoading ? "Working..." : "AI Review"}</b>
+                </button>
+              )}
 
-  <div className="match-facts-wow-content">
-    <div className="match-facts-grid">
-      <div>
-        <span>🏏 Bat 1st</span>
-        <strong>{match.battingFirstTeamName || "Not decided"}</strong>
-      </div>
+              {permissions?.canScoreMatch && (
+                <button
+                  type="button"
+                  className="completed-action-btn"
+                  onClick={() => openCorrectionCenter(match.id)}
+                >
+                  <span>✏️</span>
+                  <b>Corrections</b>
+                </button>
+              )}
 
-      <div>
-        <span>🎯 Overs</span>
-        <strong>{match.oversPerInnings}</strong>
-      </div>
+              {permissions?.canDeleteMatch && (
+                <button
+                  type="button"
+                  className="completed-action-btn completed-danger-btn"
+                  onClick={() => handleDeleteMatch(match.id)}
+                >
+                  <span>🗑️</span>
+                  <b>Delete</b>
+                </button>
+              )}
+            </div>
 
-      <div>
-        <span>⚾ Wickets</span>
-        <strong>{match.maxWicketsPerInnings ?? "∞"}</strong>
-      </div>
+            <details className="match-facts-wow completed-setup-row">
+              <summary className="match-facts-wow-summary">
+                <div className="match-facts-wow-left">
+                  <span className="match-facts-wow-icon">📌</span>
+                  <div>
+                    <strong>Match Setup & Timeline</strong>
+                    <small>
+                      Tap to view overs, wickets, powerplay, and match times
+                    </small>
+                  </div>
+                </div>
 
-      <div>
-        <span>⚡ Powerplay</span>
-        <strong>{match.powerplayOversInnings ?? 0}</strong>
-      </div>
+                <span className="match-facts-wow-caret">⌄</span>
+              </summary>
 
-      <div>
-        <span>🎳 Max / Bowler</span>
-        <strong>{match.maxOversPerBowler ?? "∞"}</strong>
-      </div>
-    </div>
+              <div className="match-facts-wow-content">
+                <div className="match-facts-grid">
+                  <div>
+                    <span>🏏 Bat 1st</span>
+                    <strong>{match.battingFirstTeamName || "Not decided"}</strong>
+                  </div>
 
-    {(match?.startedAt || match?.endedAt || match?.lockedAt) && (
-      <div className="match-timeline-wow">
-        {match?.startedAt && (
-          <div>
-            <span>Started</span>
-            <strong>{formatMatchDateTime(match.startedAt)}</strong>
-          </div>
-        )}
+                  <div>
+                    <span>🎯 Overs</span>
+                    <strong>{match.oversPerInnings}</strong>
+                  </div>
 
-        {match?.endedAt && (
-          <div>
-            <span>Ended</span>
-            <strong>{formatMatchDateTime(match.endedAt)}</strong>
-          </div>
-        )}
+                  <div>
+                    <span>⚾ Wickets</span>
+                    <strong>{match.maxWicketsPerInnings ?? "∞"}</strong>
+                  </div>
 
-        {match?.lockedAt && (
-          <div>
-            <span>Locked</span>
-            <strong>{formatMatchDateTime(match.lockedAt)}</strong>
-          </div>
-        )}
-      </div>
-    )}
-  </div>
-</details>
+                  <div>
+                    <span>⚡ Powerplay</span>
+                    <strong>{match.powerplayOversInnings ?? 0}</strong>
+                  </div>
+
+                  <div>
+                    <span>🎳 Max / Bowler</span>
+                    <strong>{match.maxOversPerBowler ?? "∞"}</strong>
+                  </div>
+                </div>
+
+                {(match?.startedAt || match?.endedAt || match?.lockedAt) && (
+                  <div className="match-timeline-wow">
+                    {match?.startedAt && (
+                      <div>
+                        <span>Started</span>
+                        <strong>{formatMatchDateTime(match.startedAt)}</strong>
+                      </div>
+                    )}
+
+                    {match?.endedAt && (
+                      <div>
+                        <span>Ended</span>
+                        <strong>{formatMatchDateTime(match.endedAt)}</strong>
+                      </div>
+                    )}
+
+                    {match?.lockedAt && (
+                      <div>
+                        <span>Locked</span>
+                        <strong>{formatMatchDateTime(match.lockedAt)}</strong>
+                      </div>
+                    )}
+                  </div>
+                )}
+              </div>
+            </details>
           </article>
         );
       })}
