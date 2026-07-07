@@ -8881,33 +8881,29 @@ const playedDateLabel = playedDate
 
 <details className="completed-mobile-card">
   <summary className="completed-mobile-summary">
-        <div className="completed-mobile-result-clean">
-          <span>📅 {playedDateLabel}</span>
-      <span className="completed-status-chip mobile-status">
-        {match.status}
-      </span>
-<span className="completed-mobile-match-no">
-  Match #{matchNumber}
-</span>
+    <div className="completed-mobile-info-strip">
+      <span>📅 {playedDateLabel}</span>
+      <span>{match.status}</span>
+      <span>Match #{matchNumber}</span>
     </div>
 
-<div className="completed-mobile-teams-grid">
-  <div className="mobile-team-score">
-    <strong>{firstTeamName}</strong>
-    <small>{cleanScore(firstTeamScore)}</small>
-  </div>
+    <div className="completed-mobile-teams-grid">
+      <div className="mobile-team-score">
+        <strong>{firstTeamName}</strong>
+        <small>{cleanScore(firstTeamScore)}</small>
+      </div>
 
-  <div className="mobile-team-score right">
-    <strong>{secondTeamName}</strong>
-    <small>{cleanScore(secondTeamScore)}</small>
-  </div>
-</div>
+      <div className="mobile-team-score right">
+        <strong>{secondTeamName}</strong>
+        <small>{cleanScore(secondTeamScore)}</small>
+      </div>
+    </div>
 
-<div className="completed-mobile-vs">
-  <span></span>
-  <b>VS</b>
-  <span></span>
-</div>
+    <div className="completed-mobile-vs">
+      <span></span>
+      <b>VS</b>
+      <span></span>
+    </div>
 
     <div className="completed-mobile-result-clean">
       🏆 {match.resultText || "Result unavailable"}
