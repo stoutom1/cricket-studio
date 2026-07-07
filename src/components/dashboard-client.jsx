@@ -8861,7 +8861,7 @@ onClick={() => {
     </div>
 
     <div className="completed-mobile-expand">
-      <span>Open match actions & details</span>
+      <span>Tap here for actions & match details</span>
       <b>⌄</b>
     </div>
   </summary>
