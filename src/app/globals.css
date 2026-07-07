@@ -28807,3 +28807,60 @@ text-overflow:unset;
     white-space: nowrap;
 }
 }
+@media (max-width:640px){
+
+.completed-mobile-meta-wow{
+    margin-bottom:14px;
+}
+
+.completed-mobile-meta-top{
+    display:grid;
+    grid-template-columns:1fr 1fr;
+    gap:8px;
+    margin-bottom:8px;
+}
+
+/* ALL THREE PILLS IDENTICAL */
+
+.mobile-match-chip,
+.mobile-status-chip,
+.mobile-date-chip{
+
+    display:flex;
+    align-items:center;
+    justify-content:center;
+
+    width:100%;
+    box-sizing:border-box;
+
+    padding:8px 10px;
+
+    border-radius:999px;
+
+    background:rgba(37,99,235,.16);
+    border:1px solid rgba(96,165,250,.25);
+
+    color:#dbeafe;
+
+    font-size:12px;
+    font-weight:900;
+    line-height:1.2;
+
+    overflow:visible;
+    white-space:normal;
+    text-overflow:clip;
+
+    min-height:34px;
+}
+
+/* DATE TAKES WHOLE WIDTH */
+
+.mobile-date-chip{
+
+    grid-column:1 / -1;
+
+    justify-content:center;
+
+    margin:0;
+}
+}

@@ -8712,9 +8712,12 @@ const cleanScore = (score) =>
     const playedDate =
   match.endedAt || match.startedAt || match.createdAt;
 
-const playedDateLabel = playedDate
-  ? formatMatchDateTime(playedDate)
-  : "Date unavailable";
+const playedDateLabel = new Date(playedDate).toLocaleString("en-US", {
+  month: "short",
+  day: "numeric",
+  hour: "numeric",
+  minute: "2-digit",
+});
 
         const canShowAi =
           normalizedStatus === "COMPLETED" ||
