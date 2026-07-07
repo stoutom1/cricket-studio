@@ -8839,48 +8839,46 @@ onClick={() => {
               {renderSetupDetails()}
             </div>
 
-            <details className="completed-mobile-card">
-              <summary className="completed-mobile-summary">
-                <div className="completed-mobile-top">
-                  <span className="completed-mobile-match-no">
-                    Match #{index + 1}
-                  </span>
-                  <span className="completed-mobile-id">#{match.id}</span>
-                </div>
+<details className="completed-mobile-card">
+  <summary className="completed-mobile-summary">
+    <div className="completed-mobile-header-row">
+      <span className="completed-status-chip">{match.status}</span>
+      <span className="completed-mobile-match-no">Match #{index + 1}</span>
+    </div>
 
-                <div className="completed-mobile-teams">
-                  <strong>{match.teamAName}</strong>
-                  <span>vs</span>
-                  <strong>{match.teamBName}</strong>
-                </div>
+    <div className="completed-mobile-teams-clean">
+      <strong>{match.teamAName}</strong>
+      <span>vs</span>
+      <strong>{match.teamBName}</strong>
+    </div>
 
-                <div className="completed-mobile-result">
-                  🏆 {match.resultText || "Result unavailable"}
-                </div>
+    <div className="completed-mobile-result-clean">
+      🏆 {match.resultText || "Result unavailable"}
+    </div>
 
-                <div className="completed-mobile-scores">
-                  <div>
-                    <span>1st</span>
-                    <strong>{match.firstInningsScore}</strong>
-                  </div>
+    <div className="completed-mobile-open-row">
+      <span>Actions & Match Details</span>
+      <b>⌄</b>
+    </div>
+  </summary>
 
-                  <div>
-                    <span>2nd</span>
-                    <strong>{match.secondInningsScore}</strong>
-                  </div>
-                </div>
+  <div className="completed-mobile-expanded">
+    <div className="completed-mobile-score-grid">
+      <div>
+        <span>1st Innings</span>
+        <strong>{match.firstInningsScore}</strong>
+      </div>
 
-                <div className="completed-mobile-open-row">
-                  <span>Tap to open actions</span>
-                  <b>⌄</b>
-                </div>
-              </summary>
+      <div>
+        <span>2nd Innings</span>
+        <strong>{match.secondInningsScore}</strong>
+      </div>
+    </div>
 
-              <div className="completed-mobile-expanded">
-                {renderActions()}
-                {renderSetupDetails()}
-              </div>
-            </details>
+    {renderActions()}
+    {renderSetupDetails()}
+  </div>
+</details>
           </article>
         );
       })}
