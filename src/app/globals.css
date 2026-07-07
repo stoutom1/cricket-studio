@@ -28610,7 +28610,7 @@ text-overflow:unset;
   .mobile-team-score small {
     display: block !important;
     color: #bfdbfe !important;
-    font-size: 12px !important;
+    font-size: 14px !important;
     font-weight: 850 !important;
     overflow: hidden !important;
     text-overflow: ellipsis !important;

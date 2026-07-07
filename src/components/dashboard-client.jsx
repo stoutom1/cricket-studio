@@ -8903,7 +8903,7 @@ const cleanScore = (score) =>
     </div>
 
     <div className="completed-mobile-expand">
-      <span>Tap here for actions & match details</span>
+      <span>⚙️ Actions & Details</span>
       <b>⌄</b>
     </div>
   </summary>
