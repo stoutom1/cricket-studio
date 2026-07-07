@@ -16342,7 +16342,7 @@ body:has(.login-shell) .dashboard-content {
   display: block;
   margin-top: 5px;
   color: var(--c4a-text-primary);
-  font-size: 20px;
+  font-size: 15px;
   font-weight: 950;
 }
 
@@ -16415,7 +16415,7 @@ body:has(.login-shell) .dashboard-content {
   border-radius: 20px;
   background: rgba(2,6,23,.42);
   border: 1px solid rgba(96,165,250,.22);
-  text-align: right;
+  text-align: left;
 }
 
 .pro-live-score-box span {
