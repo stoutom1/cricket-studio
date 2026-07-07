@@ -8668,7 +8668,7 @@ onClick={() => {
     )}
 
 {activeLeagueId && matchesSubTab === "COMPLETED" && (
-<Card title="✅ Completed Scorecards">
+<Card title="✅ Match History">
   {completedMatches.length === 0 ? (
     <div className="empty-state">No completed matches found.</div>
   ) : (
