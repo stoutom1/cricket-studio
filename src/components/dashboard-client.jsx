@@ -8881,11 +8881,16 @@ const playedDateLabel = playedDate
 
 <details className="completed-mobile-card">
   <summary className="completed-mobile-summary">
-    <div className="completed-mobile-info-strip">
-      <span>📅 {playedDateLabel}</span>
-      <span>{match.status}</span>
-      <span>Match #{matchNumber}</span>
-    </div>
+<div className="completed-mobile-meta-wow">
+  <div className="completed-mobile-meta-top">
+    <span className="mobile-match-chip">Match #{matchNumber}</span>
+    <span className="mobile-status-chip">{match.status}</span>
+  </div>
+
+  <div className="mobile-date-chip">
+    📅 {playedDateLabel}
+  </div>
+</div>
 
     <div className="completed-mobile-teams-grid">
       <div className="mobile-team-score">
