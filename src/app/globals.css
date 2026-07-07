@@ -29039,3 +29039,44 @@ text-overflow:unset;
     margin-top: 10px;
   }
 }
+@media (max-width: 640px) {
+  .pro-scheduled-header {
+    display: block !important;
+  }
+
+  .pro-scheduled-actions {
+    display: grid !important;
+    grid-template-columns: 1fr 72px 44px;
+    gap: 8px;
+    width: 100%;
+    margin-top: 12px;
+  }
+
+  .pro-scheduled-actions .start-match-btn {
+    width: 100% !important;
+    height: 42px !important;
+    border-radius: 14px !important;
+    padding: 0 10px !important;
+    font-size: 13px !important;
+    font-weight: 950 !important;
+    white-space: nowrap !important;
+  }
+
+  .pro-scheduled-actions .mini-action-btn {
+    width: 100% !important;
+    height: 42px !important;
+    border-radius: 14px !important;
+    padding: 0 !important;
+    font-size: 13px !important;
+    font-weight: 950 !important;
+  }
+
+  .pro-scheduled-actions .danger-mini-btn {
+    width: 44px !important;
+    font-size: 16px !important;
+  }
+
+  .scheduled-mobile-setup {
+    margin-top: 10px !important;
+  }
+}
