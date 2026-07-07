@@ -8559,12 +8559,16 @@ onClick={() => {
             </div>
             {/* Mobile: collapsible wow view */}
 <details className="scheduled-mobile-setup">
-  <summary className="scheduled-mobile-setup-summary">
-    <div>
-      <strong>📌 Match Setup</strong>
-    </div>
-    <b>⌄</b>
-  </summary>
+<summary className="scheduled-mobile-setup-summary">
+  <div className="scheduled-mobile-summary-left">
+    <span className="scheduled-mobile-summary-icon">⚙️</span>
+    <span className="scheduled-mobile-summary-text">
+      Match Setup
+    </span>
+  </div>
+
+  <span className="scheduled-mobile-summary-arrow">⌄</span>
+</summary>
 
   <div className="scheduled-mobile-setup-grid">
     <div>
@@ -8681,12 +8685,16 @@ onClick={() => {
 
 {/* Mobile: collapsible wow view */}
 <details className="scheduled-mobile-setup">
-  <summary className="scheduled-mobile-setup-summary">
-    <div>
-      <strong>📌 Match Setup</strong>
-    </div>
-    <b>⌄</b>
-  </summary>
+<summary className="scheduled-mobile-setup-summary">
+  <div className="scheduled-mobile-summary-left">
+    <span className="scheduled-mobile-summary-icon">⚙️</span>
+    <span className="scheduled-mobile-summary-text">
+      Match Setup
+    </span>
+  </div>
+
+  <span className="scheduled-mobile-summary-arrow">⌄</span>
+</summary>
 
   <div className="scheduled-mobile-setup-grid">
     <div>
