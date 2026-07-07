@@ -8872,18 +8872,22 @@ const cleanScore = (score) =>
       </span>
     </div>
 
-<div className="completed-mobile-teams-line score-aware">
+<div className="completed-mobile-teams-grid">
   <div className="mobile-team-score">
     <strong>{match.teamAName}</strong>
     <small>{cleanScore(teamAScore)}</small>
   </div>
 
-  <span>vs</span>
-
-  <div className="mobile-team-score">
+  <div className="mobile-team-score right">
     <strong>{match.teamBName}</strong>
     <small>{cleanScore(teamBScore)}</small>
   </div>
+</div>
+
+<div className="completed-mobile-vs">
+  <span></span>
+  <b>VS</b>
+  <span></span>
 </div>
 
     <div className="completed-mobile-result-clean">
