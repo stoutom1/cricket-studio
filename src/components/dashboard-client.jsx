@@ -8684,7 +8684,7 @@ onClick={() => {
           normalizedStatus === "COMPLETED_CORRECTED" ||
           normalizedStatus === "COMPLETED_LOCKED";
 
-        const actionButtons = (
+        const renderActions = () => (
           <div className="completed-actions-bar">
             <button
               type="button"
@@ -8734,16 +8734,14 @@ onClick={() => {
           </div>
         );
 
-        const setupDetails = (
+        const renderSetupDetails = () => (
           <details className="match-facts-wow completed-setup-row">
             <summary className="match-facts-wow-summary">
               <div className="match-facts-wow-left">
                 <span className="match-facts-wow-icon">📌</span>
                 <div>
                   <strong>Match Setup & Timeline</strong>
-                  <small>
-                    Tap to view overs, wickets, powerplay, and match times
-                  </small>
+                  <small>Overs, wickets, powerplay, and match times</small>
                 </div>
               </div>
 
@@ -8837,51 +8835,50 @@ onClick={() => {
                 </div>
               </div>
 
-              {actionButtons}
-              {setupDetails}
+              {renderActions()}
+              {renderSetupDetails()}
             </div>
 
-            <details className="completed-mobile-compact-card">
+            <details className="completed-mobile-card">
               <summary className="completed-mobile-summary">
-                <div className="completed-mobile-main">
-                  <div className="completed-mobile-topline">
-                    <span>Match #{index + 1}</span>
-                    <small>#{match.id}</small>
-                  </div>
-
-<strong>
-  <span>{match.teamAName}</span>
-  <em>vs</em>
-  <span>{match.teamBName}</span>
-</strong>
-
-                  <p>🏆 {match.resultText || "Result unavailable"}</p>
+                <div className="completed-mobile-top">
+                  <span className="completed-mobile-match-no">
+                    Match #{index + 1}
+                  </span>
+                  <span className="completed-mobile-id">#{match.id}</span>
                 </div>
 
-                <div className="completed-mobile-scoreline">
-                  <b>{match.firstInningsScore}</b>
-                  <b>{match.secondInningsScore}</b>
+                <div className="completed-mobile-teams">
+                  <strong>{match.teamAName}</strong>
+                  <span>vs</span>
+                  <strong>{match.teamBName}</strong>
                 </div>
 
-                <span className="completed-mobile-expand">⌄</span>
-              </summary>
+                <div className="completed-mobile-result">
+                  🏆 {match.resultText || "Result unavailable"}
+                </div>
 
-              <div className="completed-mobile-expanded">
-                {actionButtons}
-
-                <div className="completed-innings-row">
-                  <div className="completed-innings-box">
-                    <span>1st Innings</span>
+                <div className="completed-mobile-scores">
+                  <div>
+                    <span>1st</span>
                     <strong>{match.firstInningsScore}</strong>
                   </div>
 
-                  <div className="completed-innings-box">
-                    <span>2nd Innings</span>
+                  <div>
+                    <span>2nd</span>
                     <strong>{match.secondInningsScore}</strong>
                   </div>
                 </div>
 
-                {setupDetails}
+                <div className="completed-mobile-open-row">
+                  <span>Tap to open actions</span>
+                  <b>⌄</b>
+                </div>
+              </summary>
+
+              <div className="completed-mobile-expanded">
+                {renderActions()}
+                {renderSetupDetails()}
               </div>
             </details>
           </article>
