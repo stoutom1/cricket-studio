@@ -8677,7 +8677,7 @@ onClick={() => {
         const battingFirstTeamName =
   match.battingFirstTeamName ||
   match.teamAName;
-
+const matchNumber = filteredCompletedMatches.length - index;
 const bowlingSecondTeamName =
   battingFirstTeamName === match.teamAName
     ? match.teamBName
@@ -8686,7 +8686,15 @@ const bowlingSecondTeamName =
           .trim()
           .replace(/[\s-]+/g, "_")
           .toUpperCase();
+  const battingFirstScore =
+  battingFirstTeamName === match.teamAName
+    ? match.firstInningsScore
+    : match.secondInningsScore;
 
+const chasingTeamScore =
+  battingFirstTeamName === match.teamAName
+    ? match.secondInningsScore
+    : match.firstInningsScore;
         const canShowAi =
           normalizedStatus === "COMPLETED" ||
           normalizedStatus === "COMPLETED_CORRECTED" ||
@@ -8816,7 +8824,7 @@ const bowlingSecondTeamName =
           <article key={match.id} className="completed-scorecard-card">
             <div className="completed-desktop-card">
               <div className="completed-scorecard-top">
-                <span className="completed-match-chip">Match #{index + 1}</span>
+                <span className="completed-match-chip">Match #{matchNumber}</span>
                 <span className="completed-status-chip">{match.status}</span>
                 <span className="completed-id-chip">#{match.id}</span>
               </div>
@@ -8854,14 +8862,22 @@ const bowlingSecondTeamName =
         {match.status}
       </span>
       <span className="completed-mobile-match-no">
-        Match #{index + 1}
+        Match #{matchNumber}
       </span>
     </div>
 
-<div className="completed-mobile-teams-line">
-  <strong>{battingFirstTeamName}</strong>
+<div className="completed-mobile-teams-line score-aware">
+  <div className="mobile-team-score">
+    <strong>{battingFirstTeamName}</strong>
+    <small>{battingFirstScore}</small>
+  </div>
+
   <span>vs</span>
-  <strong>{bowlingSecondTeamName}</strong>
+
+  <div className="mobile-team-score">
+    <strong>{bowlingSecondTeamName}</strong>
+    <small>{chasingTeamScore}</small>
+  </div>
 </div>
 
     <div className="completed-mobile-result-clean">
