@@ -8686,15 +8686,15 @@ const bowlingSecondTeamName =
           .trim()
           .replace(/[\s-]+/g, "_")
           .toUpperCase();
-  const battingFirstScore =
-  battingFirstTeamName === match.teamAName
-    ? match.firstInningsScore
-    : match.secondInningsScore;
+        
+const teamAScore = match.firstInningsTeamName === match.teamAName
+  ? match.firstInningsScore
+  : match.secondInningsScore;
 
-const chasingTeamScore =
-  battingFirstTeamName === match.teamAName
-    ? match.secondInningsScore
-    : match.firstInningsScore;
+const teamBScore = match.firstInningsTeamName === match.teamBName
+  ? match.firstInningsScore
+  : match.secondInningsScore;
+        
         const canShowAi =
           normalizedStatus === "COMPLETED" ||
           normalizedStatus === "COMPLETED_CORRECTED" ||
@@ -8868,15 +8868,15 @@ const chasingTeamScore =
 
 <div className="completed-mobile-teams-line score-aware">
   <div className="mobile-team-score">
-    <strong>{battingFirstTeamName}</strong>
-    <small>{battingFirstScore}</small>
+    <strong>{match.teamAName}</strong>
+    <small>{teamAScore}</small>
   </div>
 
   <span>vs</span>
 
   <div className="mobile-team-score">
-    <strong>{bowlingSecondTeamName}</strong>
-    <small>{chasingTeamScore}</small>
+    <strong>{match.teamBName}</strong>
+    <small>{teamBScore}</small>
   </div>
 </div>
 
