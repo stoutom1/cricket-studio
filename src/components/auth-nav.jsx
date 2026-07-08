@@ -2,31 +2,12 @@
 
 import Link from "next/link";
 import { signOut, useSession } from "next-auth/react";
-import { useEffect, useMemo, useState } from "react";
+import { useState } from "react";
 import UserHeartbeat from "@/components/user-heartbeat";
-
 
 export default function AuthNav() {
   const { data: session, status } = useSession();
   const [showAccountModal, setShowAccountModal] = useState(false);
-const [appTheme, setAppTheme] = useState("dark");
-
-useEffect(() => {
-  const savedTheme = localStorage.getItem("cric4all-theme") || "dark";
-  setAppTheme(savedTheme);
-  document.documentElement.setAttribute("data-theme", savedTheme);
-}, []);
-
-function toggleAppTheme() {
-  const nextTheme = appTheme === "dark" ? "light" : "dark";
-  setAppTheme(nextTheme);
-  localStorage.setItem("cric4all-theme", nextTheme);
-  document.documentElement.setAttribute("data-theme", nextTheme);
-}
-
-const isSuperAdmin =
-  session?.user?.email ===
-  "surprisecricket11@gmail.com";
 
   return (
     <>
@@ -45,16 +26,7 @@ const isSuperAdmin =
             Contact
           </Link>
         </div>
-{(isSuperAdmin)  && (
-<button
-  type="button"
-  className="theme-toggle-btn"
-  onClick={toggleAppTheme}
-  title="Switch theme"
->
-  {appTheme === "dark" ? "☀️ Light" : "🌙 Dark"}
-</button>
-)}
+
         <div className="auth-nav-right">
           {status === "loading" ? (
             <span className="loading-text">Loading...</span>
