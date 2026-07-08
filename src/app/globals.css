@@ -29377,3 +29377,475 @@ text-overflow:unset;
     margin-bottom: 0;
   }
 }
+.scoreboard-innings-tabs-shell {
+  margin-top: 14px;
+}
+
+.scoreboard-innings-tabs {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: 10px;
+  margin-bottom: 12px;
+}
+
+.scoreboard-innings-tab {
+  border: 1px solid rgba(96, 165, 250, 0.22);
+  border-radius: 18px;
+  padding: 12px;
+  cursor: pointer;
+  text-align: left;
+  background: rgba(15, 23, 42, 0.58);
+  color: #dbeafe;
+  box-shadow: 0 10px 26px rgba(0, 0, 0, 0.18);
+}
+
+.scoreboard-innings-tab span,
+.scoreboard-innings-tab strong,
+.scoreboard-innings-tab small {
+  display: block;
+}
+
+.scoreboard-innings-tab span {
+  font-size: 12px;
+  font-weight: 900;
+  color: #bfdbfe;
+}
+
+.scoreboard-innings-tab strong {
+  margin-top: 4px;
+  font-size: 24px;
+  color: white;
+  font-weight: 950;
+}
+
+.scoreboard-innings-tab small {
+  margin-top: 2px;
+  font-size: 11px;
+  color: #93c5fd;
+  font-weight: 850;
+}
+
+.scoreboard-innings-tab.active {
+  background:
+    radial-gradient(circle at top left, rgba(37, 99, 235, 0.28), transparent 38%),
+    linear-gradient(135deg, rgba(37, 99, 235, 0.34), rgba(124, 58, 237, 0.26));
+  border-color: rgba(191, 219, 254, 0.42);
+}
+
+.active-innings-tab-panel {
+  animation: inningsTabFade 0.18s ease-out;
+}
+
+@keyframes inningsTabFade {
+  from {
+    opacity: 0;
+    transform: translateY(4px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+@media (max-width: 640px) {
+  .scoreboard-innings-tabs {
+    position: sticky;
+    top: 8px;
+    z-index: 20;
+    gap: 8px;
+  }
+
+  .scoreboard-innings-tab {
+    border-radius: 16px;
+    padding: 10px;
+  }
+
+  .scoreboard-innings-tab strong {
+    font-size: 20px;
+  }
+
+  .scoreboard-innings-tab small {
+    font-size: 10px;
+  }
+}
+.compact-score-hero {
+  margin-bottom: 14px;
+}
+
+.compact-score-hero p {
+  display: none !important;
+}
+
+.scoreboard-status-top {
+  display: inline-flex;
+  margin-bottom: 8px;
+}
+
+.clickable-innings-cards {
+  margin-bottom: 14px;
+}
+
+.innings-click-card {
+  border: 1px solid rgba(96, 165, 250, 0.22);
+  cursor: pointer;
+  text-align: left;
+  transition: transform 0.18s ease, border-color 0.18s ease;
+}
+
+.innings-click-card:hover {
+  transform: translateY(-1px);
+}
+
+.innings-click-card.active {
+  border-color: rgba(191, 219, 254, 0.55);
+  background:
+    radial-gradient(circle at top left, rgba(37, 99, 235, 0.26), transparent 38%),
+    linear-gradient(135deg, rgba(37, 99, 235, 0.34), rgba(124, 58, 237, 0.24));
+}
+
+@media (max-width: 640px) {
+  .compact-score-hero {
+    padding: 12px !important;
+  }
+
+  .compact-score-hero h2 {
+    font-size: 18px !important;
+    line-height: 1.25;
+  }
+
+  .innings-score-cards {
+    grid-template-columns: 1fr 1fr !important;
+    gap: 8px !important;
+  }
+
+  .innings-click-card {
+    padding: 10px !important;
+    border-radius: 16px !important;
+  }
+
+  .innings-main-score {
+    font-size: 24px !important;
+  }
+}
+.innings-click-card {
+  position: relative;
+  border: 1px solid rgba(96, 165, 250, 0.24);
+  cursor: pointer;
+  text-align: left;
+  background:
+    radial-gradient(circle at top left, rgba(37, 99, 235, 0.16), transparent 38%),
+    linear-gradient(135deg, rgba(15, 23, 42, 0.9), rgba(30, 41, 59, 0.78));
+  transition: transform 0.18s ease, border-color 0.18s ease, box-shadow 0.18s ease;
+}
+
+.innings-click-card:hover {
+  transform: translateY(-2px);
+  border-color: rgba(191, 219, 254, 0.45);
+  box-shadow: 0 14px 32px rgba(37, 99, 235, 0.18);
+}
+
+.innings-click-card.active {
+  border-color: rgba(34, 197, 94, 0.6);
+  background:
+    radial-gradient(circle at top left, rgba(34, 197, 94, 0.18), transparent 38%),
+    linear-gradient(135deg, rgba(37, 99, 235, 0.34), rgba(124, 58, 237, 0.26));
+  box-shadow: 0 0 0 1px rgba(34, 197, 94, 0.18),
+    0 16px 36px rgba(37, 99, 235, 0.22);
+}
+
+.innings-card-click-hint {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 8px;
+}
+
+.innings-card-click-hint span {
+  border-radius: 999px;
+  padding: 4px 8px;
+  background: rgba(96, 165, 250, 0.15);
+  color: #bfdbfe;
+  font-size: 11px;
+  font-weight: 950;
+}
+
+.innings-card-click-hint b {
+  width: 25px;
+  height: 25px;
+  border-radius: 999px;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  background: linear-gradient(135deg, #2563eb, #7c3aed);
+  color: white;
+  font-size: 12px;
+}
+
+.innings-click-card.active .innings-card-click-hint b {
+  background: linear-gradient(135deg, #16a34a, #2563eb);
+}
+
+@media (max-width: 640px) {
+  .innings-card-click-hint span {
+    font-size: 10px;
+  }
+
+  .innings-click-card {
+    border-radius: 18px !important;
+  }
+}
+.innings-click-card{
+
+    padding:14px 16px;
+
+    border-radius:18px;
+
+    min-height:auto;
+
+    transition:.2s;
+
+}
+
+.innings-tab-header{
+
+    display:flex;
+    justify-content:space-between;
+    align-items:center;
+
+    margin-bottom:10px;
+
+}
+
+.innings-chip{
+
+    padding:4px 10px;
+
+    border-radius:999px;
+
+    background:rgba(59,130,246,.18);
+
+    color:#dbeafe;
+
+    font-size:11px;
+
+    font-weight:900;
+
+}
+
+.innings-active-chip{
+
+    padding:4px 10px;
+
+    border-radius:999px;
+
+    background:#16a34a;
+
+    color:white;
+
+    font-size:11px;
+
+    font-weight:900;
+
+}
+
+.innings-team-name{
+
+    color:white;
+
+    font-size:18px;
+
+    font-weight:900;
+
+    margin-bottom:10px;
+
+}
+
+.innings-score-row{
+
+    display:flex;
+
+    justify-content:space-between;
+
+    align-items:flex-end;
+
+}
+
+.innings-score-row strong{
+
+    font-size:34px;
+
+    color:white;
+
+}
+
+.innings-score-row span{
+
+    color:#cbd5e1;
+
+    font-size:13px;
+
+}
+
+.innings-bottom-row{
+
+    margin-top:8px;
+
+    color:#93c5fd;
+
+    font-size:12px;
+
+    font-weight:700;
+
+}
+.innings-click-card {
+  min-height: auto !important;
+  padding: 10px 12px !important;
+  border-radius: 16px !important;
+  cursor: pointer;
+}
+
+.innings-tab-header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  margin-bottom: 6px;
+}
+
+.innings-tab-header span {
+  color: #bfdbfe;
+  font-size: 16px;
+  font-weight: 950;
+}
+
+.innings-tab-header small {
+  color: #bfdbfe;
+  font-size: 13px;
+  font-weight: 950;
+}
+
+.innings-tab-header b {
+  width: 22px;
+  height: 22px;
+  border-radius: 999px;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  background: linear-gradient(135deg, #16a34a, #2563eb);
+  color: white;
+  font-size: 12px;
+}
+
+.innings-tab-main {
+  display: flex;
+  align-items: baseline;
+  gap: 8px;
+}
+
+.innings-tab-main strong {
+  color: white;
+  font-size: 24px;
+  font-weight: 950;
+}
+
+.innings-tab-main small {
+  color: #93c5fd;
+  font-size: 16px;
+  font-weight: 850;
+}
+
+.innings-tab-team {
+  margin-top: 4px;
+  color: #dbeafe;
+  font-size: 15px;
+  font-weight: 900;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+.innings-click-card.active {
+  border-color: rgba(34, 197, 94, 0.55) !important;
+  background:
+    radial-gradient(circle at top left, rgba(34, 197, 94, 0.16), transparent 38%),
+    linear-gradient(135deg, rgba(37, 99, 235, 0.32), rgba(124, 58, 237, 0.24)) !important;
+}
+
+.active-innings-details-collapse {
+  margin-top: 12px;
+  border-radius: 18px;
+  overflow: hidden;
+  background: rgba(15, 23, 42, 0.72);
+  border: 1px solid rgba(96, 165, 250, 0.22);
+}
+
+.active-innings-details-summary {
+  list-style: none;
+  cursor: pointer;
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  gap: 12px;
+  padding: 12px 14px;
+  background: linear-gradient(
+    135deg,
+    rgba(37, 99, 235, 0.26),
+    rgba(124, 58, 237, 0.22)
+  );
+}
+
+.active-innings-details-summary::-webkit-details-marker {
+  display: none;
+}
+
+.active-innings-details-summary strong {
+  display: block;
+  color: white;
+  font-size: 15px;
+  font-weight: 950;
+}
+
+.active-innings-details-summary small {
+  display: block;
+  color: #bfdbfe;
+  font-size: 11px;
+  margin-top: 3px;
+}
+
+.active-innings-details-summary > b {
+  width: 30px;
+  height: 30px;
+  border-radius: 999px;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  background: linear-gradient(135deg, #2563eb, #7c3aed);
+  color: white;
+  transition: transform 0.2s ease;
+}
+
+.active-innings-details-collapse[open] .active-innings-details-summary > b {
+  transform: rotate(180deg);
+}
+
+.active-innings-details-collapse .full-innings-card {
+  margin: 0 !important;
+  border-radius: 0 !important;
+}
+
+@media (max-width: 640px) {
+  .innings-click-card {
+    padding: 9px 10px !important;
+  }
+
+  .innings-tab-main strong {
+    font-size: 21px !important;
+  }
+
+  .innings-tab-team {
+    font-size: 14px !important;
+  }
+
+  .active-innings-details-summary strong {
+    font-size: 14px;
+  }
+}

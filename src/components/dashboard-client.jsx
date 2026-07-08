@@ -332,6 +332,7 @@ const [correctionReason, setCorrectionReason] = useState("");
 const [correctionHistory, setCorrectionHistory] = useState([]);
 const [correctionLoading, setCorrectionLoading] = useState(false);
 const [correctionInnings, setCorrectionInnings] = useState(1);
+const [activeScoreboardInnings, setActiveScoreboardInnings] = useState(1);
 const [openPlayerActionId, setOpenPlayerActionId] = useState(null);
 const isSuperAdmin =
   session?.user?.email ===
@@ -5718,7 +5719,12 @@ const retiredHurtBallsForCorrection = (matchDetail?.balls || [])
   )
   .sort((a, b) => Number(a.sequence) - Number(b.sequence));
 
+const scoreboardInnings = scoreboard?.innings || [];
 
+const activeInningsForScoreboard =
+  scoreboardInnings.find(
+    (inn) => Number(inn.number) === Number(activeScoreboardInnings)
+  ) || scoreboardInnings[0];
   
 function ContextLens() {
   const totalFilters =
@@ -6147,488 +6153,575 @@ onClick={() => {
   </div>
 )}
 {selectedMatchId && effectiveScoringSubTab === "SCOREBOARD" && (
-  <Card title="🏟️ Professional Scoreboard" defaultCollapsed={false}>
-    {!scoreboard ? (
-      <p className="muted">Select a match to view scoreboard.</p>
-    ) : (
+<Card title="🏟️ Professional Scoreboard" defaultCollapsed={false}>
+  {!scoreboard ? (
+    <p className="muted">Select a match to view scoreboard.</p>
+  ) : (
+    <>
+                  <div className="pro-score-hero compact-score-hero">
+                <div>
+                  <h3>
+                    {scoreboard.match?.teamAName} vs {scoreboard.match?.teamBName}
+                  </h3>
+                  </div>  
+                  <div>                
+                  <span className="pill scoreboard-status-top" align="right">
+                    {scoreboard.match?.status}
+                  </span>
+
+                </div>
+              </div>
+      {matchInsights && (
+        <div className="match-insights-card">
+          {matchInsights.resultText && (
+            <div className="insight-result">
+              <span>🏆 Match Result</span>
+              <strong>{matchInsights.resultText}</strong>
+            </div>
+          )}
+
+          {matchInsights.potm && (
+            <div className="insight-mini">
+              <span>⭐ Player of the Match</span>
+              <strong>{matchInsights.potm.playerName}</strong>
+              <small>
+                {matchInsights.potm.summary?.join(" & ") || "Top performer"}
+              </small>
+            </div>
+          )}
+
+          {matchInsights.winProbability && (
+            <div className="insight-mini">
+              <span>📈 Win Probability</span>
+
+              <div className="win-prob-row">
+                <b>{matchInsights.winProbability.bowlingTeam}</b>
+                <div className="win-prob-track">
+                  <i
+                    style={{
+                      width: `${matchInsights.winProbability.bowlingChance}%`,
+                    }}
+                  />
+                </div>
+                <b>{matchInsights.winProbability.bowlingChance}%</b>
+              </div>
+
+              <div className="win-prob-row">
+                <b>{matchInsights.winProbability.battingTeam}</b>
+                <div className="win-prob-track chase">
+                  <i
+                    style={{
+                      width: `${matchInsights.winProbability.battingChance}%`,
+                    }}
+                  />
+                </div>
+                <b>{matchInsights.winProbability.battingChance}%</b>
+              </div>
+            </div>
+          )}
+        </div>
+      )}
+
+      <div className="pro-scoreboard">
+        {(() => {
+          const scoreboardInnings = scoreboard.innings || [];
+
+          const activeInningsForScoreboard =
+            scoreboardInnings.find(
+              (x, idx) =>
+        Number(x.number ?? idx + 1) === Number(activeScoreboardInnings)
+    ) || scoreboardInnings[0];
+
+          const activeInnIdx = scoreboardInnings.findIndex(
+           (x, idx) =>
+      Number(x.number ?? idx + 1) === Number(activeScoreboardInnings)
+  );
+  if (!activeInningsForScoreboard) return null;
+
+          return (
             <>
-            {matchInsights && (
-  <div className="match-insights-card">
-    {matchInsights.resultText && (
-      <div className="insight-result">
-        <span>🏆 Match Result</span>
-        <strong>{matchInsights.resultText}</strong>
-      </div>
-    )}
+<div className="innings-score-cards clickable-innings-cards">
+  {(scoreboard.innings || []).map((inn, idx) => {
+    const inningsNo = Number(inn.number ?? idx + 1);
+    const isActive = Number(activeScoreboardInnings) === inningsNo;
 
-    {matchInsights.potm && (
-      <div className="insight-mini">
-        <span>⭐ Player of the Match</span>
-        <strong>{matchInsights.potm.playerName}</strong>
-        <small>
-          {matchInsights.potm.summary?.join(" & ") || "Top performer"}
-        </small>
-      </div>
-    )}
-
-    {matchInsights.winProbability && (
-      <div className="insight-mini">
-        <span>📈 Win Probability</span>
-
-        <div className="win-prob-row">
-          <b>{matchInsights.winProbability.bowlingTeam}</b>
-          <div className="win-prob-track">
-            <i
-              style={{
-                width: `${matchInsights.winProbability.bowlingChance}%`,
-              }}
-            />
-          </div>
-          <b>{matchInsights.winProbability.bowlingChance}%</b>
-        </div>
-
-        <div className="win-prob-row">
-          <b>{matchInsights.winProbability.battingTeam}</b>
-          <div className="win-prob-track chase">
-            <i
-              style={{
-                width: `${matchInsights.winProbability.battingChance}%`,
-              }}
-            />
-          </div>
-          <b>{matchInsights.winProbability.battingChance}%</b>
-        </div>
-      </div>
-    )}
-  </div>
-)}  
-        <div className="pro-scoreboard">
-        <div className="pro-score-hero">
-          <div>
-            <h2>
-              {scoreboard.match?.teamAName} vs {scoreboard.match?.teamBName}
-            </h2>
-
-<p>
-  Batting first: {scoreboard.match?.battingFirstTeamName || "-"} •{" "}
-  {scoreboard.match?.oversPerInnings || "-"} overs a side •{" "}
-  Powerplay: {scoreboard.match?.powerplayOversInnings ?? 0} overs •{" "}
-  Wickets:{" "}
-  {Number(scoreboard.match?.maxWicketsPerInnings || 0) > 0
-    ? scoreboard.match.maxWicketsPerInnings
-    : "Unlimited"}{" "}
-  • Max bowler:{" "}
-  {Number(scoreboard.match?.maxOversPerBowler || 0) > 0
-    ? `${scoreboard.match.maxOversPerBowler} overs`
-    : "Unlimited"}
-</p>
-
-          </div>
-
-          <span className="pill">{scoreboard.match?.status}</span>
-        </div>
-
-        <div className="innings-score-cards">
-          {(scoreboard.innings || []).map((inn, idx) => (
-            <div
-              key={`innings-summary-${inn.number ?? idx}`}
-              className={`innings-score-card ${
-                Number(scoreboard.currentInnings) === Number(inn.number)
-                  ? "active"
-                  : ""
-              }`}
-            >
-              <div className="innings-card-top">
-                <span>Innings {inn.number}</span>
-                <strong>
-                  {inn.teamName || inn.battingTeamName || inn.team || "Team"}
-                </strong>
-              </div>
-
-              <div className="innings-main-score">
-                {inn.runs}/{inn.wickets}
-              </div>
-
-              <div className="innings-card-meta">
-                <span>Ov: {inn.oversDisplay}</span>
-                <span>RR: {inn.runRate}</span>
-                <span>Ext: {inn.extras?.total ?? 0}</span>
-                <span>
-                  PP: {inn.powerplay?.runs ?? 0}/{inn.powerplay?.wickets ?? 0}
-                </span>
-              </div>
-            </div>
-          ))}
-        </div>
-
-        {scoreboard.currentState && !(
-  selectedMatch &&
-  ["COMPLETED", "COMPLETED_LOCKED", "COMPLETED_CORRECTED"].includes(
-    String(selectedMatch.status || "").toUpperCase()
-  )
-) &&(
-           <>
-<div className="innings-state-grid compact-innings-state">
-  <div className="innings-mini-box">
-    <span>🏏 Innings</span>
-    <strong>
-      {scoreboard?.currentState?.inningsNo ||
-        scoreboard?.currentInnings ||
-        ballForm?.inningsNo ||
-        "-"}
-    </strong>
-  </div>
-
-  <div className="innings-mini-box">
-    <span>Next Ball</span>
-    <strong>
-      {scoreboard?.currentState?.nextBallLabel ||
-        `${scoreboard?.currentState?.nextOverNo ?? scoreboard?.currentState?.nextOver ?? 0}.${
-          scoreboard?.currentState?.nextBallInOver ?? scoreboard?.currentState?.nextBallNo ?? 0
+    return (
+      <button
+        type="button"
+        key={`innings-summary-${inningsNo}`}
+        className={`innings-score-card innings-click-card ${
+          isActive ? "active" : ""
         }`}
-    </strong>
-  </div>
-
-  <div className="innings-mini-box striker-box">
-    <span>⚡ Striker</span>
-    <strong>
-      {scoreboard?.currentState?.strikerName || "-"}
-      {scoreboard?.currentState?.strikerStats && (
-        <b>
-          {scoreboard.currentState.strikerStats.runs || 0} (
-          {scoreboard.currentState.strikerStats.balls || 0})
-        </b>
-      )}
-    </strong>
-  </div>
-
-  <div className="innings-mini-box striker-box">
-    <span>🏃 Non-Striker</span>
-    <strong>
-      {scoreboard?.currentState?.nonStrikerName || "-"}
-      {scoreboard?.currentState?.nonStrikerStats && (
-        <b>
-          {scoreboard.currentState.nonStrikerStats.runs || 0} (
-          {scoreboard.currentState.nonStrikerStats.balls || 0})
-        </b>
-      )}
-    </strong>
-  </div>
-
-  <div className="innings-mini-box bowler-box">
-    <span>🎯 Bowler</span>
-    <strong>
-      {scoreboard?.currentState?.bowlerName || "-"}
-      {scoreboard?.currentState?.bowlerStats && (
-        <b>
-          {scoreboard.currentState.bowlerStats.wickets || 0}/
-          {scoreboard.currentState.bowlerStats.runs || 0} (
-          {scoreboard.currentState.bowlerStats.overs || "0.0"})
-        </b>
-      )}
-    </strong>
-  </div>
+        onClick={() => setActiveScoreboardInnings(inningsNo)}
+      >
+<div className="innings-tab-header">
+  <span>🏏 Innings {inningsNo} • {inn.teamName || inn.battingTeamName || inn.team || "Team"}</span>
+  {isActive && <b>✓</b>}
 </div>
-                      {/*below one is for mobile*/}
-<div className="live-match-state compact-live-state">
-  <div className="live-top-strip">
-    <div>
-      <span>🏏 Inn</span>
-      <strong>
-        {scoreboard?.currentState?.inningsNo ||
-          scoreboard?.currentInnings ||
-          ballForm?.inningsNo ||
-          "-"}
-      </strong>
-    </div>
 
-    <div>
-      <span>Next</span>
-      <strong>
-        {scoreboard?.currentState?.nextBallLabel ||
-          `${scoreboard?.currentState?.nextOverNo ?? scoreboard?.currentState?.nextOver ?? 0}.${
-            scoreboard?.currentState?.nextBallInOver ??
-            scoreboard?.currentState?.nextBallNo ??
-            0
-          }`}
-      </strong>
-    </div>
-  </div>
-
-  <div className="compact-player-row striker">
-    <span>⚡ Striker</span>
-    <strong>{scoreboard?.currentState?.strikerName || "-"}</strong>
-    <b>
-      {scoreboard?.currentState?.strikerStats
-        ? `${scoreboard.currentState.strikerStats.runs || 0} (${scoreboard.currentState.strikerStats.balls || 0})`
-        : ""}
-    </b>
-  </div>
-
-  <div className="compact-player-row non-striker">
-    <span>🏃 Non-striker</span>
-    <strong>{scoreboard?.currentState?.nonStrikerName || "-"}</strong>
-    <b>
-      {scoreboard?.currentState?.nonStrikerStats
-        ? `${scoreboard.currentState.nonStrikerStats.runs || 0} (${scoreboard.currentState.nonStrikerStats.balls || 0})`
-        : ""}
-    </b>
-  </div>
-
-  <div className="compact-player-row bowler">
-    <span>🎯 Bowler</span>
-    <strong>{scoreboard?.currentState?.bowlerName || "-"}</strong>
-    <b>
-      {scoreboard?.currentState?.bowlerStats
-        ? `${scoreboard.currentState.bowlerStats.wickets || 0}/${scoreboard.currentState.bowlerStats.runs || 0} (${scoreboard.currentState.bowlerStats.overs || "0.0"})`
-        : ""}
-    </b>
-  </div>
+<div className="innings-tab-main">
+  <strong>{inn.runs}/{inn.wickets}</strong>
+  <small>{inn.oversDisplay} ov,</small>
+  {inn.runRate && (
+    <small>{inn.runRate} RR</small>
+  )}
 </div>
-</>
-        )}
+                      <div className="innings-tab-header">
+                      <small>
+                        Extras: {inn.extras?.total ?? 0} • Wd {" "}
+                        {inn.extras?.wides ?? 0} • Nb {" "}
+                        {inn.extras?.noBalls ?? 0} • B {" "}
+                        {inn.extras?.byes ?? 0} • LB {" "}
+                        {inn.extras?.legByes ?? 0}
+                      </small>
+                      </div>
+      </button>
+    );
+  })}
+</div>
 
-        {(scoreboard.innings || []).map((inn, innIdx) => (
-          <div
-            key={`innings-detail-${inn.number ?? innIdx}`}
-            className="full-innings-card"
-          >
-            <div className="innings-section-header">
-              <div>
-                <h3>
-                  Innings {inn.number}:{" "}
-                  {inn.teamName || inn.battingTeamName || inn.team || "Team"}
-                </h3>
+              {scoreboard.currentState &&
+                !(
+                  selectedMatch &&
+                  [
+                    "COMPLETED",
+                    "COMPLETED_LOCKED",
+                    "COMPLETED_CORRECTED",
+                  ].includes(String(selectedMatch.status || "").toUpperCase())
+                ) && (
+                  <>
+                    <div className="innings-state-grid compact-innings-state">
+                      <div className="innings-mini-box">
+                        <span>🏏 Innings</span>
+                        <strong>
+                          {scoreboard?.currentState?.inningsNo ||
+                            scoreboard?.currentInnings ||
+                            ballForm?.inningsNo ||
+                            "-"}
+                        </strong>
+                      </div>
 
-                <p className="muted small">
-                  {inn.runs}/{inn.wickets} in {inn.oversDisplay} overs • RR{" "}
-                  {inn.runRate}
-                </p>
-                <p className="muted small extras-line">
-                Extras: {inn.extras?.total ?? 0}
-                {" "}• Wd {inn.extras?.wides ?? 0}
-                {" "}• Nb {inn.extras?.noBalls ?? 0}
-                {" "}• B {inn.extras?.byes ?? 0}
-                {" "}• LB {inn.extras?.legByes ?? 0}
-              </p>
-              </div>
-            </div>
+                      <div className="innings-mini-box">
+                        <span>Next Ball</span>
+                        <strong>
+                          {scoreboard?.currentState?.nextBallLabel ||
+                            `${
+                              scoreboard?.currentState?.nextOverNo ??
+                              scoreboard?.currentState?.nextOver ??
+                              0
+                            }.${
+                              scoreboard?.currentState?.nextBallInOver ??
+                              scoreboard?.currentState?.nextBallNo ??
+                              0
+                            }`}
+                        </strong>
+                      </div>
 
-<details className="scorecard-wow-collapse">
-  <summary className="scorecard-wow-summary">
-    <div className="scorecard-wow-left">
-      <span className="scorecard-wow-icon">🏏</span>
-      <div>
-        <strong>Batting Scorecard</strong>
-        <small>Tap to view batting details</small>
+                      <div className="innings-mini-box striker-box">
+                        <span>⚡ Striker</span>
+                        <strong>
+                          {scoreboard?.currentState?.strikerName || "-"}
+                          {scoreboard?.currentState?.strikerStats && (
+                            <b>
+                              {scoreboard.currentState.strikerStats.runs || 0} (
+                              {scoreboard.currentState.strikerStats.balls || 0})
+                            </b>
+                          )}
+                        </strong>
+                      </div>
+
+                      <div className="innings-mini-box striker-box">
+                        <span>🏃 Non-Striker</span>
+                        <strong>
+                          {scoreboard?.currentState?.nonStrikerName || "-"}
+                          {scoreboard?.currentState?.nonStrikerStats && (
+                            <b>
+                              {scoreboard.currentState.nonStrikerStats.runs || 0} (
+                              {scoreboard.currentState.nonStrikerStats.balls || 0})
+                            </b>
+                          )}
+                        </strong>
+                      </div>
+
+                      <div className="innings-mini-box bowler-box">
+                        <span>🎯 Bowler</span>
+                        <strong>
+                          {scoreboard?.currentState?.bowlerName || "-"}
+                          {scoreboard?.currentState?.bowlerStats && (
+                            <b>
+                              {scoreboard.currentState.bowlerStats.wickets || 0}/
+                              {scoreboard.currentState.bowlerStats.runs || 0} (
+                              {scoreboard.currentState.bowlerStats.overs || "0.0"})
+                            </b>
+                          )}
+                        </strong>
+                      </div>
+                    </div>
+
+                    {/* Mobile compact live state */}
+                    <div className="live-match-state compact-live-state">
+                      <div className="live-top-strip">
+                        <div>
+                          <span>🏏 Inn</span>
+                          <strong>
+                            {scoreboard?.currentState?.inningsNo ||
+                              scoreboard?.currentInnings ||
+                              ballForm?.inningsNo ||
+                              "-"}
+                          </strong>
+                        </div>
+
+                        <div>
+                          <span>Next</span>
+                          <strong>
+                            {scoreboard?.currentState?.nextBallLabel ||
+                              `${
+                                scoreboard?.currentState?.nextOverNo ??
+                                scoreboard?.currentState?.nextOver ??
+                                0
+                              }.${
+                                scoreboard?.currentState?.nextBallInOver ??
+                                scoreboard?.currentState?.nextBallNo ??
+                                0
+                              }`}
+                          </strong>
+                        </div>
+                      </div>
+
+                      <div className="compact-player-row striker">
+                        <span>⚡ Striker</span>
+                        <strong>{scoreboard?.currentState?.strikerName || "-"}</strong>
+                        <b>
+                          {scoreboard?.currentState?.strikerStats
+                            ? `${
+                                scoreboard.currentState.strikerStats.runs || 0
+                              } (${scoreboard.currentState.strikerStats.balls || 0})`
+                            : ""}
+                        </b>
+                      </div>
+
+                      <div className="compact-player-row non-striker">
+                        <span>🏃 Non-striker</span>
+                        <strong>
+                          {scoreboard?.currentState?.nonStrikerName || "-"}
+                        </strong>
+                        <b>
+                          {scoreboard?.currentState?.nonStrikerStats
+                            ? `${
+                                scoreboard.currentState.nonStrikerStats.runs || 0
+                              } (${scoreboard.currentState.nonStrikerStats.balls || 0})`
+                            : ""}
+                        </b>
+                      </div>
+
+                      <div className="compact-player-row bowler">
+                        <span>🎯 Bowler</span>
+                        <strong>{scoreboard?.currentState?.bowlerName || "-"}</strong>
+                        <b>
+                          {scoreboard?.currentState?.bowlerStats
+                            ? `${
+                                scoreboard.currentState.bowlerStats.wickets || 0
+                              }/${scoreboard.currentState.bowlerStats.runs || 0} (${
+                                scoreboard.currentState.bowlerStats.overs || "0.0"
+                              })`
+                            : ""}
+                        </b>
+                      </div>
+                    </div>
+                  </>
+                )}
+
+              {activeInningsForScoreboard && (
+<div
+  key={`innings-detail-${activeInningsForScoreboard.number ?? activeInnIdx}`}
+  className="full-innings-card active-innings-tab-panel"
+>
+                  <div className="innings-section-header">
+                    <div>
+                      <h3>
+                        Innings {activeInningsForScoreboard.number}: {" "}
+                        {activeInningsForScoreboard.teamName ||
+                          activeInningsForScoreboard.battingTeamName ||
+                          activeInningsForScoreboard.team ||
+                          "Team"}
+                      </h3>
+
+                      <p className="muted small extras-line">
+                        Extras: {activeInningsForScoreboard.extras?.total ?? 0} • Wd {" "}
+                        {activeInningsForScoreboard.extras?.wides ?? 0} • Nb {" "}
+                        {activeInningsForScoreboard.extras?.noBalls ?? 0} • B {" "}
+                        {activeInningsForScoreboard.extras?.byes ?? 0} • LB {" "}
+                        {activeInningsForScoreboard.extras?.legByes ?? 0}
+                      </p>
+                    </div>
+                  </div>
+
+                  <details className="scorecard-wow-collapse">
+                    <summary className="scorecard-wow-summary">
+                      <div className="scorecard-wow-left">
+                        <span className="scorecard-wow-icon">🏏</span>
+                        <div>
+                          <strong>Batting Scorecard</strong>
+                          <small>Tap to view batting details</small>
+                        </div>
+                      </div>
+                      <span className="scorecard-wow-caret">⌄</span>
+                    </summary>
+
+                    <div className="scorecard-wow-content">
+                      <MobileBattingCards
+                        rows={
+                          activeInningsForScoreboard.battingRows ||
+                          activeInningsForScoreboard.batting ||
+                          []
+                        }
+                        currentStrikerId={scoreboard.currentState?.strikerId}
+                      />
+
+                      <div className="score-table-scroll desktop-score-table">
+                        <table className="score-table sticky-first-col pro-table">
+                          <thead>
+                            <tr>
+                              <th>Batter</th>
+                              <th>Dismissal</th>
+                              <th>R</th>
+                              <th>B</th>
+                              <th>4s</th>
+                              <th>6s</th>
+                              <th>SR</th>
+                            </tr>
+                          </thead>
+
+                          <tbody>
+                            {(
+                              activeInningsForScoreboard.battingRows ||
+                              activeInningsForScoreboard.batting ||
+                              []
+                            ).length ? (
+                              (
+                                activeInningsForScoreboard.battingRows ||
+                                activeInningsForScoreboard.batting ||
+                                []
+                              ).map((row, rowIdx) => (
+                                <tr
+                                  key={`bat-${
+                                    activeInningsForScoreboard.number ?? activeInnIdx
+                                  }-${row.playerId ?? rowIdx}-${rowIdx}`}
+                                >
+                                  <td>
+                                    <strong>
+                                      {row.playerName}
+                                      {Number(scoreboard.currentState?.strikerId) ===
+                                      Number(row.playerId)
+                                        ? " *"
+                                        : ""}
+                                    </strong>
+                                  </td>
+                                  <td>
+                                    {row.dismissal !== "not out"
+                                      ? row.dismissal
+                                      : "not out"}
+                                  </td>
+                                  <td>{row.runs}</td>
+                                  <td>{row.balls}</td>
+                                  <td>{row.fours}</td>
+                                  <td>{row.sixes}</td>
+                                  <td>{row.strikeRate}</td>
+                                </tr>
+                              ))
+                            ) : (
+                              <tr>
+                                <td colSpan="7" className="muted">
+                                  Batting details not available yet.
+                                </td>
+                              </tr>
+                            )}
+                          </tbody>
+                        </table>
+                      </div>
+                    </div>
+                  </details>
+
+                  <details className="scorecard-wow-collapse">
+                    <summary className="scorecard-wow-summary">
+                      <div className="scorecard-wow-left">
+                        <span className="scorecard-wow-icon">🎯</span>
+                        <div>
+                          <strong>Bowling Scorecard</strong>
+                          <small>Tap to view bowling figures</small>
+                        </div>
+                      </div>
+                      <span className="scorecard-wow-caret">⌄</span>
+                    </summary>
+
+                    <div className="scorecard-wow-content">
+                      <MobileBowlingCards
+                        rows={
+                          activeInningsForScoreboard.bowlingRows ||
+                          activeInningsForScoreboard.bowling ||
+                          []
+                        }
+                      />
+
+                      <div className="score-table-scroll desktop-score-table">
+                        <table className="score-table sticky-first-col pro-table bowling-table">
+                          <thead>
+                            <tr>
+                              <th>Bowler</th>
+                              <th>O</th>
+                              <th>R</th>
+                              <th>W</th>
+                              <th>Wd</th>
+                              <th>Nb</th>
+                              <th>Eco</th>
+                            </tr>
+                          </thead>
+
+                          <tbody>
+                            {(
+                              activeInningsForScoreboard.bowlingRows ||
+                              activeInningsForScoreboard.bowling ||
+                              []
+                            ).length ? (
+                              (
+                                activeInningsForScoreboard.bowlingRows ||
+                                activeInningsForScoreboard.bowling ||
+                                []
+                              ).map((row, rowIdx) => (
+                                <tr
+                                  key={`bowl-${
+                                    activeInningsForScoreboard.number ?? activeInnIdx
+                                  }-${row.playerId ?? rowIdx}-${rowIdx}`}
+                                >
+                                  <td>
+                                    <strong>{row.playerName}</strong>
+                                  </td>
+                                  <td>{row.overs}</td>
+                                  <td>{row.runs}</td>
+                                  <td>{row.wickets}</td>
+                                  <td>{row.wides || 0}</td>
+                                  <td>{row.noBalls || 0}</td>
+                                  <td>{row.economy}</td>
+                                </tr>
+                              ))
+                            ) : (
+                              <tr>
+                                <td colSpan="7" className="muted">
+                                  Bowling details not available yet.
+                                </td>
+                              </tr>
+                            )}
+                          </tbody>
+                        </table>
+                      </div>
+                    </div>
+                  </details>
+
+                  <details className="scorecard-wow-collapse">
+                    <summary className="scorecard-wow-summary">
+                      <div className="scorecard-wow-left">
+                        <span className="scorecard-wow-icon">💥</span>
+                        <div>
+                          <strong>Fall of Wickets</strong>
+                          <small>Tap to view wicket timeline</small>
+                        </div>
+                      </div>
+                      <span className="scorecard-wow-caret">⌄</span>
+                    </summary>
+
+                    <div className="scorecard-wow-content">
+                      {!activeInningsForScoreboard.fallOfWickets?.length ? (
+                        <p className="muted">No wickets yet.</p>
+                      ) : (
+                        <div className="fow-list">
+                          {activeInningsForScoreboard.fallOfWickets.map(
+                            (w, wicketIdx) => (
+                              <div
+                                key={`fow-${
+                                  activeInningsForScoreboard.number ?? activeInnIdx
+                                }-${w.wicketNumber ?? wicketIdx}-${
+                                  w.over ?? "over"
+                                }-${wicketIdx}`}
+                                className="fow-chip"
+                              >
+                                <strong>{w.score}</strong>
+                                <span>{w.playerOut}</span>
+                                <small>{w.over} ov</small>
+                              </div>
+                            )
+                          )}
+                        </div>
+                      )}
+                    </div>
+                  </details>
+
+                  <details className="scorecard-wow-collapse">
+                    <summary className="scorecard-wow-summary">
+                      <div className="scorecard-wow-left">
+                        <span className="scorecard-wow-icon">🤝</span>
+                        <div>
+                          <strong>Partnerships</strong>
+                          <small>Tap to view batting partnerships</small>
+                        </div>
+                      </div>
+                      <span className="scorecard-wow-caret">⌄</span>
+                    </summary>
+
+                    <div className="scorecard-wow-content">
+                      {!activeInningsForScoreboard.partnerships?.length ? (
+                        <p className="muted">No partnerships yet.</p>
+                      ) : (
+                        <div className="score-table-scroll">
+                          <table className="score-table sticky-first-col pro-table">
+                            <thead>
+                              <tr>
+                                <th>Batters</th>
+                                <th>Runs</th>
+                                <th>Balls</th>
+                                <th>Status</th>
+                              </tr>
+                            </thead>
+
+                            <tbody>
+                              {activeInningsForScoreboard.partnerships.map(
+                                (p, pIdx) => (
+                                  <tr
+                                    key={`partnership-${
+                                      activeInningsForScoreboard.number ??
+                                      activeInnIdx
+                                    }-${p.batter1 || "b1"}-${
+                                      p.batter2 || "b2"
+                                    }-${pIdx}`}
+                                  >
+                                    <td>
+                                      {p.batter1} & {p.batter2}
+                                    </td>
+                                    <td>{p.runs}</td>
+                                    <td>{p.balls}</td>
+                                    <td>
+                                      {p.ongoing
+                                        ? "Current"
+                                        : `wicket ${p.wicketNumber}`}
+                                    </td>
+                                  </tr>
+                                )
+                              )}
+                            </tbody>
+                          </table>
+                        </div>
+                      )}
+                    </div>
+                  </details>
+                </div>
+              )}
+            </>
+          );
+        })()}
       </div>
-    </div>
-    <span className="scorecard-wow-caret">⌄</span>
-  </summary>
+    </>
+  )}
+</Card>
 
-  <div className="scorecard-wow-content">
-    <MobileBattingCards
-      rows={inn.battingRows || inn.batting || []}
-      currentStrikerId={scoreboard.currentState?.strikerId}
-    />
-
-    <div className="score-table-scroll desktop-score-table">
-      <table className="score-table sticky-first-col pro-table">
-        <thead>
-          <tr>
-            <th>Batter</th>
-            <th>Dismissal</th>
-            <th>R</th>
-            <th>B</th>
-            <th>4s</th>
-            <th>6s</th>
-            <th>SR</th>
-          </tr>
-        </thead>
-
-        <tbody>
-          {(inn.battingRows || inn.batting || []).length ? (
-            (inn.battingRows || inn.batting || []).map((row, rowIdx) => (
-              <tr
-                key={`bat-${inn.number ?? innIdx}-${row.playerId ?? rowIdx}-${rowIdx}`}
-              >
-                <td>
-                  <strong>
-                    {row.playerName}
-                    {Number(scoreboard.currentState?.strikerId) ===
-                    Number(row.playerId)
-                      ? " *"
-                      : ""}
-                  </strong>
-                </td>
-                <td>{row.dismissal !== "not out" ? row.dismissal : "not out"}</td>
-                <td>{row.runs}</td>
-                <td>{row.balls}</td>
-                <td>{row.fours}</td>
-                <td>{row.sixes}</td>
-                <td>{row.strikeRate}</td>
-              </tr>
-            ))
-          ) : (
-            <tr>
-              <td colSpan="7" className="muted">
-                Batting details not available yet.
-              </td>
-            </tr>
-          )}
-        </tbody>
-      </table>
-    </div>
-  </div>
-</details>
-
-<details className="scorecard-wow-collapse">
-  <summary className="scorecard-wow-summary">
-    <div className="scorecard-wow-left">
-      <span className="scorecard-wow-icon">🎯</span>
-      <div>
-        <strong>Bowling Scorecard</strong>
-        <small>Tap to view bowling figures</small>
-      </div>
-    </div>
-    <span className="scorecard-wow-caret">⌄</span>
-  </summary>
-
-  <div className="scorecard-wow-content">
-    <MobileBowlingCards rows={inn.bowlingRows || inn.bowling || []} />
-
-    <div className="score-table-scroll desktop-score-table">
-      <table className="score-table sticky-first-col pro-table bowling-table">
-        <thead>
-          <tr>
-            <th>Bowler</th>
-            <th>O</th>
-            <th>R</th>
-            <th>W</th>
-            <th>Wd</th>
-            <th>Nb</th>
-            <th>Eco</th>
-          </tr>
-        </thead>
-
-        <tbody>
-          {(inn.bowlingRows || inn.bowling || []).length ? (
-            (inn.bowlingRows || inn.bowling || []).map((row, rowIdx) => (
-              <tr
-                key={`bowl-${inn.number ?? innIdx}-${row.playerId ?? rowIdx}-${rowIdx}`}
-              >
-                <td>
-                  <strong>{row.playerName}</strong>
-                </td>
-                <td>{row.overs}</td>
-                <td>{row.runs}</td>
-                <td>{row.wickets}</td>
-                <td>{row.wides || 0}</td>
-                <td>{row.noBalls || 0}</td>
-                <td>{row.economy}</td>
-              </tr>
-            ))
-          ) : (
-            <tr>
-              <td colSpan="7" className="muted">
-                Bowling details not available yet.
-              </td>
-            </tr>
-          )}
-        </tbody>
-      </table>
-    </div>
-  </div>
-</details>
-
-<details className="scorecard-wow-collapse">
-  <summary className="scorecard-wow-summary">
-    <div className="scorecard-wow-left">
-      <span className="scorecard-wow-icon">💥</span>
-      <div>
-        <strong>Fall of Wickets</strong>
-        <small>Tap to view wicket timeline</small>
-      </div>
-    </div>
-    <span className="scorecard-wow-caret">⌄</span>
-  </summary>
-
-  <div className="scorecard-wow-content">
-    {!inn.fallOfWickets?.length ? (
-      <p className="muted">No wickets yet.</p>
-    ) : (
-      <div className="fow-list">
-        {inn.fallOfWickets.map((w, wicketIdx) => (
-          <div
-            key={`fow-${inn.number ?? innIdx}-${w.wicketNumber ?? wicketIdx}-${
-              w.over ?? "over"
-            }-${wicketIdx}`}
-            className="fow-chip"
-          >
-            <strong>{w.score}</strong>
-            <span>{w.playerOut}</span>
-            <small>{w.over} ov</small>
-          </div>
-        ))}
-      </div>
-    )}
-  </div>
-</details>
-
-<details className="scorecard-wow-collapse">
-  <summary className="scorecard-wow-summary">
-    <div className="scorecard-wow-left">
-      <span className="scorecard-wow-icon">🤝</span>
-      <div>
-        <strong>Partnerships</strong>
-        <small>Tap to view batting partnerships</small>
-      </div>
-    </div>
-    <span className="scorecard-wow-caret">⌄</span>
-  </summary>
-
-  <div className="scorecard-wow-content">
-    {!inn.partnerships?.length ? (
-      <p className="muted">No partnerships yet.</p>
-    ) : (
-      <div className="score-table-scroll">
-        <table className="score-table sticky-first-col pro-table">
-          <thead>
-            <tr>
-              <th>Batters</th>
-              <th>Runs</th>
-              <th>Balls</th>
-              <th>Status</th>
-            </tr>
-          </thead>
-
-          <tbody>
-            {inn.partnerships.map((p, pIdx) => (
-              <tr
-                key={`partnership-${inn.number ?? innIdx}-${p.batter1 || "b1"}-${
-                  p.batter2 || "b2"
-                }-${pIdx}`}
-              >
-                <td>
-                  {p.batter1} & {p.batter2}
-                </td>
-                <td>{p.runs}</td>
-                <td>{p.balls}</td>
-                <td>{p.ongoing ? "Current" : `wicket ${p.wicketNumber}`}</td>
-              </tr>
-            ))}
-          </tbody>
-        </table>
-      </div>
-    )}
-  </div>
-</details>
-          </div>
-        ))}
-      </div>
-      </>
-    )}
-  </Card>
 )}
 {selectedMatchId && effectiveScoringSubTab === "COMMENTARY" && (
   <Card title="🎙️ Live Match Commentary" defaultCollapsed={false}>
