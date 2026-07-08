@@ -6265,15 +6265,8 @@ onClick={() => {
 
 <div className="innings-tab-main">
   <strong>{inn.runs}/{inn.wickets}</strong>
-  <small>{inn.oversDisplay} ov</small>
-</div>
-
-<div className="innings-bottom-row">
-  RR {inn.runRate} • Ext {inn.extras?.total ?? 0} • Wd {" "}
-                        {inn.extras?.wides ?? 0} • Nb {" "}
-                        {inn.extras?.noBalls ?? 0} • B {" "}
-                        {inn.extras?.byes ?? 0} • LB {" "}
-                        {inn.extras?.legByes ?? 0}
+  <small>{inn.oversDisplay} ov • </small>
+  <small>{inn.runRate} RR</small>
 </div>
       </button>
     );
@@ -6446,6 +6439,15 @@ onClick={() => {
                           "Team"}
                       </h3>
                     </div>
+                                          <div className="innings-tab-header">
+                      <small>
+                        Extras: {activeInningsForScoreboard.extras?.total ?? 0} • Wd {" "}
+                        {activeInningsForScoreboard.extras?.wides ?? 0} • Nb {" "}
+                        {activeInningsForScoreboard.extras?.noBalls ?? 0} • B {" "}
+                        {activeInningsForScoreboard.extras?.byes ?? 0} • LB {" "}
+                        {activeInningsForScoreboard.extras?.legByes ?? 0}
+                      </small>
+                      </div>
                   </div>
 
                   <details className="scorecard-wow-collapse">
