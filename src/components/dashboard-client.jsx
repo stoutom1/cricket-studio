@@ -337,8 +337,7 @@ const [correctionInnings, setCorrectionInnings] = useState(1);
 const [activeScoreboardInnings, setActiveScoreboardInnings] = useState(1);
 const [openPlayerActionId, setOpenPlayerActionId] = useState(null);
 const [selectedAuditLeagueKey, setSelectedAuditLeagueKey] = useState("ALL");
-
-
+const [appTheme, setAppTheme] = useState("dark");
 const isSuperAdmin =
   session?.user?.email ===
   "surprisecricket11@gmail.com";
@@ -378,7 +377,18 @@ useEffect(() => {
 
   return () => clearInterval(interval);
 }, [session?.user?.email]);
+useEffect(() => {
+  const savedTheme = localStorage.getItem("cric4all-theme") || "dark";
+  setAppTheme(savedTheme);
+  document.documentElement.setAttribute("data-theme", savedTheme);
+}, []);
 
+function toggleAppTheme() {
+  const nextTheme = appTheme === "dark" ? "light" : "dark";
+  setAppTheme(nextTheme);
+  localStorage.setItem("cric4all-theme", nextTheme);
+  document.documentElement.setAttribute("data-theme", nextTheme);
+}
 const selectedLeague =
   leagues.find(
     (l) => String(l.id) === String(activeLeagueId)

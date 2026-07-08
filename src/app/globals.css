@@ -30557,3 +30557,56 @@ text-overflow:unset;
     grid-column: 1 / -1;
   }
 }
+:root {
+  --app-bg: #020617;
+  --card-bg: rgba(15, 23, 42, 0.72);
+  --card-border: rgba(96, 165, 250, 0.22);
+  --text-main: #ffffff;
+  --text-muted: #bfdbfe;
+  --accent-bg: rgba(37, 99, 235, 0.22);
+}
+
+html[data-theme="light"] {
+  --app-bg: #f8fafc;
+  --card-bg: #ffffff;
+  --card-border: rgba(15, 23, 42, 0.12);
+  --text-main: #0f172a;
+  --text-muted: #475569;
+  --accent-bg: rgba(37, 99, 235, 0.08);
+}
+body {
+  background: var(--app-bg);
+  color: var(--text-main);
+}
+
+.mgmt-clean-card,
+.admin-activity-card,
+.pro-scheduled-card,
+.pro-active-card,
+.completed-scorecard-card,
+.full-innings-card,
+.scorecard-wow-collapse,
+.scorecard-wow-summary,
+.scheduled-facts-wow,
+.admin-login-group {
+  background: var(--card-bg) !important;
+  border-color: var(--card-border) !important;
+  color: var(--text-main) !important;
+}
+
+.muted,
+small,
+.scorecard-wow-summary small,
+.scheduled-facts-wow-summary small {
+  color: var(--text-muted) !important;
+}
+
+.theme-toggle-btn {
+  border: 1px solid var(--card-border);
+  border-radius: 999px;
+  padding: 8px 12px;
+  background: var(--card-bg);
+  color: var(--text-main);
+  font-weight: 900;
+  cursor: pointer;
+}
