@@ -30169,3 +30169,12 @@ text-overflow:unset;
     grid-template-columns: 1fr 1fr;
   }
 }
+@media (max-width: 640px) {
+  .scheduled-facts-wow {
+    display: none !important;
+  }
+
+  .scheduled-mobile-setup {
+    display: block !important;
+  }
+}
