@@ -29692,7 +29692,7 @@ text-overflow:unset;
 
     color:#93c5fd;
 
-    font-size:12px;
+    font-size:16px;
 
     font-weight:700;
 
@@ -29732,7 +29732,7 @@ text-overflow:unset;
   justify-content: center;
   background: linear-gradient(135deg, #16a34a, #2563eb);
   color: white;
-  font-size: 12px;
+  font-size: 16px;
 }
 
 .innings-tab-main {
@@ -29756,7 +29756,7 @@ text-overflow:unset;
 .innings-tab-team {
   margin-top: 4px;
   color: #dbeafe;
-  font-size: 15px;
+  font-size: 16px;
   font-weight: 900;
   white-space: nowrap;
   overflow: hidden;
@@ -29842,7 +29842,7 @@ text-overflow:unset;
   }
 
   .innings-tab-team {
-    font-size: 14px !important;
+    font-size: 16px !important;
   }
 
   .active-innings-details-summary strong {
@@ -29922,7 +29922,7 @@ text-overflow:unset;
 
   .innings-bottom-row {
     margin-top: 7px !important;
-    font-size: 11px !important;
+    font-size: 14px !important;
     line-height: 1.3 !important;
     color: #bfdbfe !important;
     white-space: normal !important;
@@ -30013,7 +30013,7 @@ text-overflow:unset;
 
   .innings-bottom-row {
     margin-top: 3px !important;
-    font-size: 10px !important;
+    font-size: 14px !important;
     line-height: 1.15 !important;
     color: #bfdbfe !important;
     white-space: nowrap !important;

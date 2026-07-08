@@ -6265,8 +6265,10 @@ onClick={() => {
 
 <div className="innings-tab-main">
   <strong>{inn.runs}/{inn.wickets}</strong>
-  <small>{inn.oversDisplay} ov • </small>
-  <small>{inn.runRate} RR</small>
+</div>
+
+<div className="innings-bottom-row">
+  {inn.oversDisplay} ov • RR {inn.runRate}
 </div>
       </button>
     );
