@@ -6153,7 +6153,7 @@ onClick={() => {
   </div>
 )}
 {selectedMatchId && effectiveScoringSubTab === "SCOREBOARD" && (
-<Card title="🏟️ Professional Scoreboard" defaultCollapsed={false}>
+<Card title="🏟️ Scoreboard" defaultCollapsed={false}>
   {!scoreboard ? (
     <p className="muted">Select a match to view scoreboard.</p>
   ) : (
