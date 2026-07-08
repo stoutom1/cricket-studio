@@ -6664,14 +6664,14 @@ onClick={() => {
   </summary>
 
   <div className="scorecard-wow-content">
-    {!inn.partnerships?.length ? (
+    {!activeInningsForScoreboard.partnerships?.length ? (
       <p className="muted">No partnerships yet.</p>
     ) : (
       <>
         <div className="mobile-partnership-list">
-          {inn.partnerships.map((p, pIdx) => (
+          {activeInningsForScoreboard.partnerships.map((p, pIdx) => (
             <div
-              key={`mobile-partnership-${inn.number ?? innIdx}-${pIdx}`}
+              key={`mobile-partnership-${activeInningsForScoreboard.number ?? activeInnIdx}-${pIdx}`}
               className="mobile-partnership-card"
             >
               <div className="mobile-partnership-title">
@@ -6709,9 +6709,9 @@ onClick={() => {
               </tr>
             </thead>
             <tbody>
-              {inn.partnerships.map((p, pIdx) => (
+              {activeInningsForScoreboard.partnerships.map((p, pIdx) => (
                 <tr
-                  key={`partnership-${inn.number ?? innIdx}-${p.batter1 || "b1"}-${
+                  key={`partnership-${activeInningsForScoreboard.number ?? activeInnIdx}-${p.batter1 || "b1"}-${
                     p.batter2 || "b2"
                   }-${pIdx}`}
                 >
