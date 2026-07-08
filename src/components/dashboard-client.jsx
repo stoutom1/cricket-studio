@@ -8634,15 +8634,6 @@ onClick={() => {
                   </strong>
                 </div>
               </div>
-
-{/* Desktop: keep existing perfect view */}
-<div className="pro-match-facts scheduled-desktop-facts">
-  <span>🏏 Bat 1st: {match.battingFirstTeamName || "Not decided"}</span>
-  <span>🎯 Ov: {match.oversPerInnings}</span>
-  <span>⚾ Wkts: {match.maxWicketsPerInnings ?? "∞"}</span>
-  <span>⚡ PP: {match.powerplayOversInnings ?? 0}</span>
-  <span>🎳 Max/Bwl: {match.maxOversPerBowler ?? "∞"}</span>
-</div>
             </button>
             <div className="pro-active-actions">
               {permissions?.canScoreMatch && (
@@ -8668,6 +8659,29 @@ onClick={() => {
                 </button>
               )}
             </div>
+{/* Desktop: keep existing perfect view */}
+<details className="scheduled-facts-wow">
+  <summary className="scheduled-facts-wow-summary">
+    <div>
+      <strong>📌 Match Setup & Roles</strong>
+    </div>
+
+    <span>⌄</span>
+  </summary>
+
+  <div className="scheduled-facts-wow-grid">
+    <div><span>🏏 Bat 1st</span><strong>{match.battingFirstTeamName || "Not decided"}</strong></div>
+    <div><span>🎯 Overs</span><strong>{match.oversPerInnings}</strong></div>
+    <div><span>⚾ Wickets</span><strong>{match.maxWicketsPerInnings ?? "∞"}</strong></div>
+    <div><span>⚡ Powerplay</span><strong>{match.powerplayOversInnings ?? 0}</strong></div>
+    <div><span>🎳 Max / Bowler</span><strong>{match.maxOversPerBowler ?? "∞"}</strong></div>
+
+    <div><span>🧤 {match.teamAName} WK</span><strong>{match.teamAWicketKeeperName || "Not selected"}</strong></div>
+    <div><span>🧤 {match.teamBName} WK</span><strong>{match.teamBWicketKeeperName || "Not selected"}</strong></div>
+    <div><span>👑 {match.teamAName} Captain</span><strong>{match.teamACaptainName || "Not selected"}</strong></div>
+    <div><span>👑 {match.teamBName} Captain</span><strong>{match.teamBCaptainName || "Not selected"}</strong></div>
+  </div>
+</details>            
             {/* Mobile: collapsible wow view */}
 <details className="scheduled-mobile-setup">
 <summary className="scheduled-mobile-setup-summary">
@@ -8706,6 +8720,26 @@ onClick={() => {
       <span>🎳 Max / Bowler</span>
       <strong>{match.maxOversPerBowler ?? "∞"}</strong>
     </div>
+
+        <div>
+  <span>🧤 {match.teamAName} WK</span>
+  <strong>{match.teamAWicketKeeperName || "Not selected"}</strong>
+</div>
+
+<div>
+  <span>🧤 {match.teamBName} WK</span>
+  <strong>{match.teamBWicketKeeperName || "Not selected"}</strong>
+</div>
+
+<div>
+  <span>👑 {match.teamAName} Captain</span>
+  <strong>{match.teamACaptainName || "Not selected"}</strong>
+</div>
+
+<div>
+  <span>👑 {match.teamBName} Captain</span>
+  <strong>{match.teamBCaptainName || "Not selected"}</strong>
+</div>
   </div>
 </details>
           </article>
