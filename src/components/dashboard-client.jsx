@@ -334,6 +334,7 @@ const [correctionLoading, setCorrectionLoading] = useState(false);
 const [correctionInnings, setCorrectionInnings] = useState(1);
 const [activeScoreboardInnings, setActiveScoreboardInnings] = useState(1);
 const [openPlayerActionId, setOpenPlayerActionId] = useState(null);
+const [selectedAuditLeagueKey, setSelectedAuditLeagueKey] = useState("ALL");
 const isSuperAdmin =
   session?.user?.email ===
   "surprisecricket11@gmail.com";
@@ -540,11 +541,9 @@ async function loadAuditLogs() {
   try {
     setAuditLogsLoading(true);
 
-    const query = activeLeagueId
-      ? `/api/audit-logs?leagueId=${activeLeagueId}`
-      : "/api/audit-logs";
+    //const query = await api("/api/audit-logs");
 
-    const data = await api(query);
+    const data = await api("/api/audit-logs");
     setAuditLogs(Array.isArray(data) ? data : []);
   } catch (err) {
     setError(err.message || "Failed to load audit logs.");
@@ -5725,7 +5724,54 @@ const activeInningsForScoreboard =
   scoreboardInnings.find(
     (inn) => Number(inn.number) === Number(activeScoreboardInnings)
   ) || scoreboardInnings[0];
+
   
+const auditLeagueGroups = Object.values(
+  (auditLogs || []).reduce((groups, log) => {
+    const key = String(log.leagueId ?? log.leagueName ?? "NO_LEAGUE");
+
+    const label =
+      log.leagueName ||
+      (log.leagueId ? `League #${log.leagueId}` : "System / No League");
+
+    if (!groups[key]) {
+      groups[key] = {
+        key,
+        label,
+        logs: [],
+      };
+    }
+
+    groups[key].logs.push(log);
+    return groups;
+  }, {})
+);
+
+const visibleAuditLogs =
+  selectedAuditLeagueKey === "ALL"
+    ? auditLogs
+    : auditLeagueGroups.find(
+        (group) => String(group.key) === String(selectedAuditLeagueKey)
+      )?.logs || [];
+
+const groupedRecentLogins = Object.values(
+  (userActivity?.recentLogins || []).reduce((groups, login) => {
+    const key = login.userId || login.email || login.id;
+
+    if (!groups[key]) {
+      groups[key] = {
+        key,
+        name: login.name || "Unknown User",
+        email: login.email,
+        logins: [],
+      };
+    }
+
+    groups[key].logins.push(login);
+    return groups;
+  }, {})
+);      
+        
 function ContextLens() {
   const totalFilters =
     (contextFilters.teamIds?.length || 0) +
@@ -11884,25 +11930,41 @@ onClick={() => {
         )}
       </div>
 
-      <div className="admin-activity-card">
-        <h3>🕒 Recent Logins</h3>
+<div className="admin-activity-card">
+  <h3>🕒 Recent Logins</h3>
 
-        {!userActivity?.recentLogins?.length ? (
-          <p className="muted">No logins in the last 24 hours.</p>
-        ) : (
-          <div className="admin-user-list">
-            {userActivity.recentLogins.map((login) => (
-              <div key={login.id} className="admin-user-row">
-                <div>
-                  <strong>{login.name || "Unknown User"}</strong>
-                  <span>{login.email}</span>
-                </div>
-                <small>{formatDate(login.loginAt)}</small>
+  {!groupedRecentLogins.length ? (
+    <p className="muted">No logins in the last 24 hours.</p>
+  ) : (
+    <div className="admin-login-group-list">
+      {groupedRecentLogins.map((group) => (
+        <details key={group.key} className="admin-login-group">
+          <summary className="admin-login-group-summary">
+            <div>
+              <strong>{group.name}</strong>
+              <span>{group.email}</span>
+            </div>
+
+            <div className="admin-login-count">
+              <b>{group.logins.length}</b>
+              <small>logins</small>
+              <i>⌄</i>
+            </div>
+          </summary>
+
+          <div className="admin-login-events">
+            {group.logins.map((login) => (
+              <div key={login.id} className="admin-login-event">
+                <span>🔐 Login</span>
+                <strong>{formatDate(login.loginAt)}</strong>
               </div>
             ))}
           </div>
-        )}
-      </div>
+        </details>
+      ))}
+    </div>
+  )}
+</div>
 
       <div className="admin-activity-card admin-stat-card">
         <h3>📈 Activity Summary</h3>
@@ -11920,7 +11982,7 @@ onClick={() => {
         </div>
       </div>
     </div>
-    <div className="admin-activity-card admin-audit-card">
+<div className="admin-activity-card admin-audit-card">
   <div className="admin-card-title-row">
     <h3>📜 Audit Logs</h3>
   </div>
@@ -11930,26 +11992,52 @@ onClick={() => {
   ) : !auditLogs.length ? (
     <p className="muted">No audit logs found.</p>
   ) : (
-    <div className="admin-audit-list">
-      {auditLogs.map((log) => (
-        <div key={log.id} className="admin-audit-row">
-          <div className="admin-audit-main">
-            <strong>{log.action?.replaceAll("_", " ")}</strong>
-            <span>{log.description || "No description available."}</span>
+    <>
+<div className="audit-league-tabs">
+  <button
+    type="button"
+    className={selectedAuditLeagueKey === "ALL" ? "active" : ""}
+    onClick={() => setSelectedAuditLeagueKey("ALL")}
+  >
+    🌐 All <span>{auditLogs.length}</span>
+  </button>
 
-            <small>
-              👤 {log.actorName || log.actorEmail || "Unknown user"}
-              {log.actorEmail ? ` • ${log.actorEmail}` : ""}
-            </small>
-          </div>
+  {auditLeagueGroups.map((group) => (
+    <button
+      type="button"
+      key={group.key}
+      className={
+        String(selectedAuditLeagueKey) === String(group.key) ? "active" : ""
+      }
+      onClick={() => setSelectedAuditLeagueKey(String(group.key))}
+    >
+      🏆 {group.label} <span>{group.logs.length}</span>
+    </button>
+  ))}
+</div>
 
-          <div className="admin-audit-meta">
-            <span>{log.entityType || "SYSTEM"}</span>
-            <small>{formatDate(log.createdAt)}</small>
+      <div className="admin-audit-list">
+        {visibleAuditLogs.map((log) => (
+          <div key={log.id} className="admin-audit-row">
+            <div className="admin-audit-main">
+              <strong>{log.action?.replaceAll("_", " ")}</strong>
+              <span>{log.description || "No description available."}</span>
+
+              <small>
+                🏆 {log.leagueName || "System / No League"} • 👤{" "}
+                {log.actorName || log.actorEmail || "Unknown user"}
+                {log.actorEmail ? ` • ${log.actorEmail}` : ""}
+              </small>
+            </div>
+
+            <div className="admin-audit-meta">
+              <span>{log.entityType || "SYSTEM"}</span>
+              <small>{formatDate(log.createdAt)}</small>
+            </div>
           </div>
-        </div>
-      ))}
-    </div>
+        ))}
+      </div>
+    </>
   )}
 </div>
         <button

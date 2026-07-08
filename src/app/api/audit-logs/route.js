@@ -17,14 +17,57 @@ export async function GET(request) {
   const leagueId = searchParams.get("leagueId");
   const matchId = searchParams.get("matchId");
 
-  const logs = await prisma.auditLog.findMany({
-    where: {
-      ...(leagueId ? { leagueId: Number(leagueId) } : {}),
-      ...(matchId ? { matchId: Number(matchId) } : {}),
+  const where = {};
+
+  if (leagueId && leagueId !== "ALL") {
+    where.leagueId = Number(leagueId);
+  }
+
+  if (matchId) {
+    where.matchId = Number(matchId);
+  }
+
+  const auditLogs = await prisma.auditLog.findMany({
+    where,
+    orderBy: {
+      createdAt: "desc",
     },
-    orderBy: { createdAt: "desc" },
-    take: 100,
+    take: 300,
   });
 
-  return NextResponse.json(logs);
+  const leagueIds = [
+    ...new Set(
+      auditLogs
+        .map((log) => log.leagueId)
+        .filter(Boolean)
+    ),
+  ];
+
+  const leagues = leagueIds.length
+    ? await prisma.league.findMany({
+        where: {
+          id: {
+            in: leagueIds,
+          },
+        },
+        select: {
+          id: true,
+          name: true,
+        },
+      })
+    : [];
+
+  const leagueNameById = new Map(
+    leagues.map((league) => [league.id, league.name])
+  );
+
+  return NextResponse.json(
+    auditLogs.map((log) => ({
+      ...log,
+      leagueName:
+        log.leagueId && leagueNameById.has(log.leagueId)
+          ? leagueNameById.get(log.leagueId)
+          : "System / No League",
+    }))
+  );
 }
