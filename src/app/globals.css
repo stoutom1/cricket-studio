@@ -30083,3 +30083,89 @@ text-overflow:unset;
     margin-top: 3px;
   }
 }
+.scheduled-facts-wow {
+  margin-top: 12px;
+  border-radius: 18px;
+  overflow: hidden;
+  background: rgba(15, 23, 42, 0.62);
+  border: 1px solid rgba(96, 165, 250, 0.22);
+}
+
+.scheduled-facts-wow-summary {
+  list-style: none;
+  cursor: pointer;
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  gap: 12px;
+  padding: 12px 14px;
+  background: linear-gradient(135deg, rgba(37, 99, 235, 0.24), rgba(124, 58, 237, 0.2));
+}
+
+.scheduled-facts-wow-summary::-webkit-details-marker {
+  display: none;
+}
+
+.scheduled-facts-wow-summary strong {
+  display: block;
+  color: white;
+  font-size: 15px;
+  font-weight: 950;
+}
+
+.scheduled-facts-wow-summary small {
+  display: block;
+  color: #bfdbfe;
+  font-size: 12px;
+  margin-top: 3px;
+}
+
+.scheduled-facts-wow-summary > span {
+  width: 30px;
+  height: 20px;
+  border-radius: 999px;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  color: white;
+  background: linear-gradient(135deg, #2563eb, #7c3aed);
+  transition: transform 0.2s ease;
+}
+
+.scheduled-facts-wow[open] .scheduled-facts-wow-summary > span {
+  transform: rotate(180deg);
+}
+
+.scheduled-facts-wow-grid {
+  display: grid;
+  grid-template-columns: repeat(3, minmax(0, 1fr));
+  gap: 8px;
+  padding: 12px;
+}
+
+.scheduled-facts-wow-grid div {
+  border-radius: 14px;
+  padding: 10px;
+  background: rgba(15, 23, 42, 0.55);
+  border: 1px solid rgba(96, 165, 250, 0.16);
+}
+
+.scheduled-facts-wow-grid span {
+  display: block;
+  color: #bfdbfe;
+  font-size: 11px;
+  font-weight: 900;
+}
+
+.scheduled-facts-wow-grid strong {
+  display: block;
+  color: white;
+  font-size: 13px;
+  margin-top: 4px;
+}
+
+@media (max-width: 640px) {
+  .scheduled-facts-wow-grid {
+    grid-template-columns: 1fr 1fr;
+  }
+}

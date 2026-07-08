@@ -247,6 +247,31 @@ if (canAutoComplete && shouldComplete) {
 
     const resultText = buildResultText(m, innings1, innings2);
 
+    const findPlayerName = (players, playerId) => {
+  if (!playerId) return "";
+  return players?.find((p) => Number(p.id) === Number(playerId))?.name || "";
+};
+
+const teamAWicketKeeperName = findPlayerName(
+  m.teamA?.players,
+  m.teamAWicketKeeperId
+);
+
+const teamBWicketKeeperName = findPlayerName(
+  m.teamB?.players,
+  m.teamBWicketKeeperId
+);
+
+const teamACaptainName = findPlayerName(
+  m.teamA?.players,
+  m.teamACaptainId
+);
+
+const teamBCaptainName = findPlayerName(
+  m.teamB?.players,
+  m.teamBCaptainId
+);
+
     const firstInningsScore =
       `${firstInningsTeamName}: ${innings1.runs}/${innings1.wickets} (${innings1.overs})`;
 
@@ -264,6 +289,15 @@ if (canAutoComplete && shouldComplete) {
       teamBId: m.teamBId,
       teamAName: m.teamA.name,
       teamBName: m.teamB.name,
+      teamAWicketKeeperId: m.teamAWicketKeeperId,
+      teamBWicketKeeperId: m.teamBWicketKeeperId,
+      teamACaptainId: m.teamACaptainId,
+      teamBCaptainId: m.teamBCaptainId,
+
+      teamAWicketKeeperName,
+      teamBWicketKeeperName,
+      teamACaptainName,
+      teamBCaptainName,
 
       battingFirstTeamId: m.battingFirstTeamId,
       battingFirstTeamName:
