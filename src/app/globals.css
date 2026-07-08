@@ -29929,3 +29929,95 @@ text-overflow:unset;
     overflow-wrap: anywhere !important;
   }
 }
+@media (max-width: 640px) {
+  .clickable-innings-cards {
+    display: grid !important;
+    grid-template-columns: 1fr 1fr !important;
+    gap: 6px !important;
+    padding: 6px !important;
+    border-radius: 18px !important;
+    background: rgba(15, 23, 42, 0.72) !important;
+    border: 1px solid rgba(96, 165, 250, 0.2) !important;
+  }
+
+  .innings-click-card {
+    min-height: 74px !important;
+    padding: 8px !important;
+    border-radius: 14px !important;
+    background: rgba(15, 23, 42, 0.68) !important;
+    border: 1px solid rgba(96, 165, 250, 0.16) !important;
+    overflow: hidden !important;
+  }
+
+  .innings-click-card.active {
+    background: linear-gradient(
+      135deg,
+      rgba(37, 99, 235, 0.42),
+      rgba(124, 58, 237, 0.36)
+    ) !important;
+    border-color: rgba(191, 219, 254, 0.42) !important;
+    box-shadow: 0 10px 22px rgba(37, 99, 235, 0.2) !important;
+  }
+
+  .innings-tab-header {
+    display: flex !important;
+    justify-content: space-between !important;
+    align-items: center !important;
+    gap: 5px !important;
+    margin-bottom: 4px !important;
+  }
+
+  .innings-tab-header span {
+    font-size: 10px !important;
+    font-weight: 950 !important;
+    color: #bfdbfe !important;
+    white-space: nowrap !important;
+  }
+
+  .innings-tab-header b {
+    width: 18px !important;
+    height: 18px !important;
+    flex: 0 0 18px !important;
+    font-size: 10px !important;
+  }
+
+  .innings-tab-team {
+    font-size: 11px !important;
+    font-weight: 900 !important;
+    color: #ffffff !important;
+    white-space: nowrap !important;
+    overflow: hidden !important;
+    text-overflow: ellipsis !important;
+    margin-bottom: 3px !important;
+  }
+
+  .innings-tab-main {
+    display: flex !important;
+    justify-content: space-between !important;
+    align-items: baseline !important;
+    gap: 4px !important;
+  }
+
+  .innings-tab-main strong {
+    font-size: 20px !important;
+    line-height: 1 !important;
+    color: white !important;
+    white-space: nowrap !important;
+  }
+
+  .innings-tab-main small {
+    font-size: 10px !important;
+    color: #93c5fd !important;
+    white-space: nowrap !important;
+  }
+
+  .innings-bottom-row {
+    margin-top: 3px !important;
+    font-size: 10px !important;
+    line-height: 1.15 !important;
+    color: #bfdbfe !important;
+    white-space: nowrap !important;
+    overflow: hidden !important;
+    text-overflow: ellipsis !important;
+  }
+}

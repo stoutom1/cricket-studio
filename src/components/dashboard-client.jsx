@@ -6255,26 +6255,26 @@ onClick={() => {
         onClick={() => setActiveScoreboardInnings(inningsNo)}
       >
 <div className="innings-tab-header">
-  <span>🏏 Innings {inningsNo} • {inn.teamName || inn.battingTeamName || inn.team || "Team"}</span>
+  <span>Tap • Inn {inningsNo}</span>
   {isActive && <b>✓</b>}
+</div>
+
+<div className="innings-tab-team">
+  {inn.teamName || inn.battingTeamName || inn.team || "Team"}
 </div>
 
 <div className="innings-tab-main">
   <strong>{inn.runs}/{inn.wickets}</strong>
-  <small>{inn.oversDisplay} ov,</small>
-  {inn.runRate && (
-    <small>{inn.runRate} RR</small>
-  )}
+  <small>{inn.oversDisplay} ov</small>
 </div>
-                      <div className="innings-tab-header">
-                      <small>
-                        Extras: {inn.extras?.total ?? 0} • Wd {" "}
+
+<div className="innings-bottom-row">
+  RR {inn.runRate} • Ext {inn.extras?.total ?? 0} • Wd {" "}
                         {inn.extras?.wides ?? 0} • Nb {" "}
                         {inn.extras?.noBalls ?? 0} • B {" "}
                         {inn.extras?.byes ?? 0} • LB {" "}
                         {inn.extras?.legByes ?? 0}
-                      </small>
-                      </div>
+</div>
       </button>
     );
   })}
