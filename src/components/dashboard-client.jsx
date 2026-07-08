@@ -8662,9 +8662,10 @@ onClick={() => {
 {/* Desktop: keep existing perfect view */}
 <details className="scheduled-facts-wow">
   <summary className="scheduled-facts-wow-summary">
-    <div>
-      <strong>📌 Match Setup & Roles</strong>
-    </div>
+<div>
+  <strong>📌 Match Setup & Roles</strong>
+  <small>Click to view match rules, captains & wicketkeepers</small>
+</div>
 
     <span>⌄</span>
   </summary>
@@ -8822,9 +8823,10 @@ onClick={() => {
 {/* Desktop: keep existing perfect view */}
 <details className="scheduled-facts-wow">
   <summary className="scheduled-facts-wow-summary">
-    <div>
-      <strong>📌 Match Setup & Roles</strong>
-    </div>
+<div>
+  <strong>📌 Match Setup & Roles</strong>
+  <small>Click to view match rules, captains & wicketkeepers</small>
+</div>
 
     <span>⌄</span>
   </summary>
