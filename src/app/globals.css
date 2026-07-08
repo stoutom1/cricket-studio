@@ -30536,3 +30536,24 @@ text-overflow:unset;
 
     border-bottom:1px solid rgba(255,255,255,.05);
 }
+.series-actions-row {
+  display: flex;
+  gap: 8px;
+  flex-wrap: wrap;
+}
+
+@media (max-width: 640px) {
+  .series-actions-row {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+  }
+
+  .series-actions-row button {
+    width: 100%;
+    min-height: 40px;
+  }
+
+  .series-actions-row .mgmt-clean-danger {
+    grid-column: 1 / -1;
+  }
+}

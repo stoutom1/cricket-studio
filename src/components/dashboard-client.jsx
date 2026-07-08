@@ -252,7 +252,9 @@ const [filterCategory, setFilterCategory] = useState("teams");
 const [seriesList, setSeriesList] = useState([]);
 const [selectedSeriesId, setSelectedSeriesId] = useState("");
 const [selectedYear, setSelectedYear] = useState(String(new Date().getFullYear()));
-const [seriesForm, setSeriesForm] = useState({name: "",year: new Date().getFullYear(),description: ""});
+//const [seriesForm, setSeriesForm] = useState({name: "",year: new Date().getFullYear(),description: ""});
+const [seriesForm, setSeriesForm] = useState({name: "",year: new Date().getFullYear(),status: "ACTIVE",});
+const [editingSeries, setEditingSeries] = useState(null);
 const [showSeriesModal, setShowSeriesModal] = useState(false);
 const [showDeliverySetupModal, setShowDeliverySetupModal] = useState(false);
 const [deliverySetupReason, setDeliverySetupReason] = useState("");
@@ -335,6 +337,8 @@ const [correctionInnings, setCorrectionInnings] = useState(1);
 const [activeScoreboardInnings, setActiveScoreboardInnings] = useState(1);
 const [openPlayerActionId, setOpenPlayerActionId] = useState(null);
 const [selectedAuditLeagueKey, setSelectedAuditLeagueKey] = useState("ALL");
+
+
 const isSuperAdmin =
   session?.user?.email ===
   "surprisecricket11@gmail.com";
@@ -5771,7 +5775,62 @@ const groupedRecentLogins = Object.values(
     return groups;
   }, {})
 );      
-        
+
+async function handleSaveSeries(e) {
+  e.preventDefault();
+
+  const isEditing = Boolean(editingSeries?.id);
+
+  const url = isEditing
+    ? `/api/series/${editingSeries.id}`
+    : "/api/series";
+
+  const method = isEditing ? "PATCH" : "POST";
+
+  await api(url, {
+    method,
+    body: JSON.stringify({
+      leagueId: activeLeagueId,
+      name: seriesForm.name.trim(),
+      year: Number(seriesForm.year),
+      status: seriesForm.status || "ACTIVE",
+    }),
+  });
+
+  setShowSeriesModal(false);
+  setEditingSeries(null);
+  setSeriesForm({
+    name: "",
+    year: new Date().getFullYear(),
+    status: "ACTIVE",
+  });
+
+  await loadSeries(activeLeagueId);
+}
+
+async function handleDeleteSeries(seriesId, seriesName) {
+  const confirmed = window.confirm(
+    `Delete series "${seriesName}"?\n\nThis is only allowed when no matches are linked to this series.`
+  );
+
+  if (!confirmed) return;
+
+  try {
+    await api(`/api/series/${seriesId}`, {
+      method: "DELETE",
+    });
+
+    if (String(selectedSeriesId) === String(seriesId)) {
+      setSelectedSeriesId("");
+    }
+
+    await loadSeries(activeLeagueId);
+  } catch (err) {
+    console.error("Delete series failed:", err);
+    alert(err.message || "Series cannot be deleted.");
+  }
+}
+
 function ContextLens() {
   const totalFilters =
     (contextFilters.teamIds?.length || 0) +
@@ -6284,6 +6343,85 @@ onClick={() => {
   );
   if (!activeInningsForScoreboard) return null;
 
+const inningsNo = Number(activeInningsForScoreboard?.number ?? activeInnIdx + 1);
+
+const teamAId = Number(matchDetail?.teamAId);
+const teamBId = Number(matchDetail?.teamBId);
+const battingFirstTeamId = Number(matchDetail?.battingFirstTeamId);
+
+const inningsTeamName =
+  activeInningsForScoreboard?.teamName ||
+  activeInningsForScoreboard?.battingTeamName ||
+  activeInningsForScoreboard?.team ||
+  "";
+
+let activeBattingTeamId =
+  Number(activeInningsForScoreboard?.battingTeamId) ||
+  Number(activeInningsForScoreboard?.teamId) ||
+  null;
+
+if (!activeBattingTeamId && inningsTeamName) {
+  if (inningsTeamName === matchDetail?.teamAName) {
+    activeBattingTeamId = teamAId;
+  } else if (inningsTeamName === matchDetail?.teamBName) {
+    activeBattingTeamId = teamBId;
+  }
+}
+
+if (!activeBattingTeamId) {
+  activeBattingTeamId =
+    inningsNo === 1
+      ? battingFirstTeamId
+      : battingFirstTeamId === teamAId
+        ? teamBId
+        : teamAId;
+}
+
+const isTeamABatting = Number(activeBattingTeamId) === Number(teamAId);
+
+const captainId = isTeamABatting
+  ? matchDetail?.teamACaptainId ?? matchDetail?.teamAcaptainId
+  : matchDetail?.teamBCaptainId ?? matchDetail?.teamBcaptainId;
+
+const wicketKeeperId = isTeamABatting
+  ? matchDetail?.teamAWicketKeeperId
+  : matchDetail?.teamBWicketKeeperId;
+
+const captainName = isTeamABatting
+  ? matchDetail?.teamACaptainName
+  : matchDetail?.teamBCaptainName;
+
+const wicketKeeperName = isTeamABatting
+  ? matchDetail?.teamAWicketKeeperName
+  : matchDetail?.teamBWicketKeeperName;
+
+const playerRoleBadge = (row) => {
+  const badges = [];
+
+  const samePlayer = (roleId, roleName) => {
+    if (roleId && row.playerId && Number(row.playerId) === Number(roleId)) {
+      return true;
+    }
+
+    return (
+      roleName &&
+      row.playerName &&
+      String(row.playerName).trim().toLowerCase() ===
+        String(roleName).trim().toLowerCase()
+    );
+  };
+
+  if (samePlayer(captainId, captainName)) {
+    badges.push("(c)");
+  }
+
+  if (samePlayer(wicketKeeperId, wicketKeeperName)) {
+    badges.push("(wk)");
+  }
+
+  return badges.length ? ` ${badges.join(" ")}` : "";
+};
+
           return (
             <>
 <div className="innings-score-cards clickable-innings-cards">
@@ -6497,7 +6635,6 @@ onClick={() => {
                       </small>
                       </div>
                   </div>
-
                   <details className="scorecard-wow-collapse">
                     <summary className="scorecard-wow-summary">
                       <div className="scorecard-wow-left">
@@ -6553,10 +6690,10 @@ onClick={() => {
                                   <td>
                                     <strong>
                                       {row.playerName}
-                                      {Number(scoreboard.currentState?.strikerId) ===
-                                      Number(row.playerId)
-                                        ? " *"
-                                        : ""}
+                                        {playerRoleBadge(row)}
+                                        {Number(scoreboard.currentState?.strikerId) === Number(row.playerId)
+                                          ? " *"
+                                          : ""}
                                     </strong>
                                   </td>
                                   <td>
@@ -9493,29 +9630,55 @@ const playedDateLabel = playedDate
             </small>
           </label>
 
-          <div className="mgmt-clean-actions">
-            <button
-              type="button"
-              className="mgmt-clean-btn"
-              disabled={!activeLeagueId}
-              onClick={() => setShowSeriesModal(true)}
-            >
-              ➕ Create Series
-            </button>
+<div className="mgmt-clean-actions series-actions-row">
+  <button
+    type="button"
+    className="mgmt-clean-btn"
+    disabled={!activeLeagueId}
+    onClick={() => {
+      setEditingSeries(null);
+      setSeriesForm({
+        name: "",
+        year: new Date().getFullYear(),
+        status: "ACTIVE",
+      });
+      setShowSeriesModal(true);
+    }}
+  >
+    ➕ Create Series
+  </button>
 
-            {selectedSeries && (
-              <button
-                type="button"
-                className="mgmt-clean-danger"
-                title={`Delete ${selectedSeries.name}`}
-                onClick={() =>
-                  handleDeleteSeries(selectedSeries.id, selectedSeries.name)
-                }
-              >
-                🗑️
-              </button>
-            )}
-          </div>
+  {selectedSeries && (
+    <>
+      <button
+        type="button"
+        className="mgmt-clean-btn secondary"
+          onClick={() => {
+            setEditingSeries(selectedSeries);
+            setSeriesForm({
+              name: selectedSeries.name || "",
+              year: selectedSeries.year || new Date().getFullYear(),
+              status: selectedSeries.status || "ACTIVE",
+            });
+            setShowSeriesModal(true);
+          }}
+      >
+        ✏️ Edit Series
+      </button>
+
+      <button
+        type="button"
+        className="mgmt-clean-danger"
+        title={`Delete ${selectedSeries.name}`}
+        onClick={() =>
+          handleDeleteSeries(selectedSeries.id, selectedSeries.name)
+        }
+      >
+        🗑️
+      </button>
+    </>
+  )}
+</div>
         </section>
 
         {/* TEAMS */}
@@ -13021,10 +13184,12 @@ onClick={() => {
 {showSeriesModal && (
   <div className="modal-backdrop">
     <div className="modal-card app-modal-card">
-      <h3>📅 Create Series</h3>
+      <h3>{editingSeries ? "✏️ Edit Series" : "📅 Create Series"}</h3>
 
       <p className="muted">
-        Create a tournament, season, cup, or yearly series under the selected league.
+        {editingSeries
+          ? "Update the selected series details."
+          : "Create a tournament, season, cup, or yearly series under the selected league."}
       </p>
 
       <label>
@@ -13034,7 +13199,7 @@ onClick={() => {
           onChange={(e) =>
             setSeriesForm((prev) => ({
               ...prev,
-              name: e.target.value
+              name: e.target.value,
             }))
           }
           placeholder="Summer Cup"
@@ -13049,7 +13214,7 @@ onClick={() => {
           onChange={(e) =>
             setSeriesForm((prev) => ({
               ...prev,
-              year: e.target.value
+              year: e.target.value,
             }))
           }
         />
@@ -13058,11 +13223,11 @@ onClick={() => {
       <label>
         <span>Description</span>
         <input
-          value={seriesForm.description}
+          value={seriesForm.description || ""}
           onChange={(e) =>
             setSeriesForm((prev) => ({
               ...prev,
-              description: e.target.value
+              description: e.target.value,
             }))
           }
           placeholder="Optional"
@@ -13073,7 +13238,10 @@ onClick={() => {
         <button
           type="button"
           className="btn btn-outline"
-          onClick={() => setShowSeriesModal(false)}
+          onClick={() => {
+            setShowSeriesModal(false);
+            setEditingSeries(null);
+          }}
         >
           Cancel
         </button>
@@ -13082,27 +13250,34 @@ onClick={() => {
           type="button"
           className="btn"
           onClick={async () => {
-            const created = await api("/api/series", {
-              method: "POST",
-              body: JSON.stringify({
-                ...seriesForm,
-                leagueId: activeLeagueId
-              })
-            });
+            const isEditing = Boolean(editingSeries?.id);
+
+            const saved = await api(
+              isEditing ? `/api/series/${editingSeries.id}` : "/api/series",
+              {
+                method: isEditing ? "PATCH" : "POST",
+                body: JSON.stringify({
+                  ...seriesForm,
+                  leagueId: activeLeagueId,
+                  year: Number(seriesForm.year),
+                }),
+              }
+            );
 
             setSeriesForm({
               name: "",
               year: new Date().getFullYear(),
-              description: ""
+              description: "",
             });
 
+            setEditingSeries(null);
             setShowSeriesModal(false);
-            await loadSeries();
+            await loadSeries(activeLeagueId);
 
-            setSelectedSeriesId(String(created.id));
+            setSelectedSeriesId(String(saved.id));
           }}
         >
-          Create Series
+          {editingSeries ? "Save Changes" : "Create Series"}
         </button>
       </div>
     </div>
