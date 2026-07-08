@@ -6651,63 +6651,83 @@ onClick={() => {
                     </div>
                   </details>
 
-                  <details className="scorecard-wow-collapse">
-                    <summary className="scorecard-wow-summary">
-                      <div className="scorecard-wow-left">
-                        <span className="scorecard-wow-icon">🤝</span>
-                        <div>
-                          <strong>Partnerships</strong>
-                          <small>Tap to view batting partnerships</small>
-                        </div>
-                      </div>
-                      <span className="scorecard-wow-caret">⌄</span>
-                    </summary>
+<details className="scorecard-wow-collapse">
+  <summary className="scorecard-wow-summary">
+    <div className="scorecard-wow-left">
+      <span className="scorecard-wow-icon">🤝</span>
+      <div>
+        <strong>Partnerships</strong>
+        <small>Tap to view batting partnerships</small>
+      </div>
+    </div>
+    <span className="scorecard-wow-caret">⌄</span>
+  </summary>
 
-                    <div className="scorecard-wow-content">
-                      {!activeInningsForScoreboard.partnerships?.length ? (
-                        <p className="muted">No partnerships yet.</p>
-                      ) : (
-                        <div className="score-table-scroll">
-                          <table className="score-table sticky-first-col pro-table">
-                            <thead>
-                              <tr>
-                                <th>Batters</th>
-                                <th>Runs</th>
-                                <th>Balls</th>
-                                <th>Status</th>
-                              </tr>
-                            </thead>
+  <div className="scorecard-wow-content">
+    {!inn.partnerships?.length ? (
+      <p className="muted">No partnerships yet.</p>
+    ) : (
+      <>
+        <div className="mobile-partnership-list">
+          {inn.partnerships.map((p, pIdx) => (
+            <div
+              key={`mobile-partnership-${inn.number ?? innIdx}-${pIdx}`}
+              className="mobile-partnership-card"
+            >
+              <div className="mobile-partnership-title">
+                <strong>{p.batter1 || "Batter 1"}</strong>
+                <span>+</span>
+                <strong>{p.batter2 || "Batter 2"}</strong>
+              </div>
 
-                            <tbody>
-                              {activeInningsForScoreboard.partnerships.map(
-                                (p, pIdx) => (
-                                  <tr
-                                    key={`partnership-${
-                                      activeInningsForScoreboard.number ??
-                                      activeInnIdx
-                                    }-${p.batter1 || "b1"}-${
-                                      p.batter2 || "b2"
-                                    }-${pIdx}`}
-                                  >
-                                    <td>
-                                      {p.batter1} & {p.batter2}
-                                    </td>
-                                    <td>{p.runs}</td>
-                                    <td>{p.balls}</td>
-                                    <td>
-                                      {p.ongoing
-                                        ? "Current"
-                                        : `wicket ${p.wicketNumber}`}
-                                    </td>
-                                  </tr>
-                                )
-                              )}
-                            </tbody>
-                          </table>
-                        </div>
-                      )}
-                    </div>
-                  </details>
+              <div className="mobile-partnership-stats">
+                <div>
+                  <span>Runs</span>
+                  <strong>{p.runs ?? 0}</strong>
+                </div>
+                <div>
+                  <span>Balls</span>
+                  <strong>{p.balls ?? 0}</strong>
+                </div>
+                <div>
+                  <span>Status</span>
+                  <strong>{p.ongoing ? "Current" : `Wkt ${p.wicketNumber ?? "-"}`}</strong>
+                </div>
+              </div>
+            </div>
+          ))}
+        </div>
+
+        <div className="score-table-scroll desktop-partnership-table">
+          <table className="score-table sticky-first-col pro-table">
+            <thead>
+              <tr>
+                <th>Batters</th>
+                <th>Runs</th>
+                <th>Balls</th>
+                <th>Status</th>
+              </tr>
+            </thead>
+            <tbody>
+              {inn.partnerships.map((p, pIdx) => (
+                <tr
+                  key={`partnership-${inn.number ?? innIdx}-${p.batter1 || "b1"}-${
+                    p.batter2 || "b2"
+                  }-${pIdx}`}
+                >
+                  <td>{p.batter1} & {p.batter2}</td>
+                  <td>{p.runs}</td>
+                  <td>{p.balls}</td>
+                  <td>{p.ongoing ? "Current" : `wicket ${p.wicketNumber}`}</td>
+                </tr>
+              ))}
+            </tbody>
+          </table>
+        </div>
+      </>
+    )}
+  </div>
+</details>
                 </div>
               )}
             </>
@@ -6720,7 +6740,7 @@ onClick={() => {
 
 )}
 {selectedMatchId && effectiveScoringSubTab === "COMMENTARY" && (
-  <Card title="🎙️ Live Match Commentary" defaultCollapsed={false}>
+  <Card title="🎙️ Commentary" defaultCollapsed={false}>
     {!scoreboard ? (
       <p className="muted">Select a match to view commentary.</p>
     ) : !scoreboard.commentary?.length ? (

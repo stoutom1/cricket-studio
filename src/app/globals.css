@@ -30021,3 +30021,65 @@ text-overflow:unset;
     text-overflow: ellipsis !important;
   }
 }
+.mobile-partnership-list {
+  display: none;
+}
+
+@media (max-width: 640px) {
+  .desktop-partnership-table {
+    display: none !important;
+  }
+
+  .mobile-partnership-list {
+    display: grid;
+    gap: 10px;
+  }
+
+  .mobile-partnership-card {
+    border-radius: 16px;
+    padding: 12px;
+    background: rgba(15, 23, 42, 0.62);
+    border: 1px solid rgba(96, 165, 250, 0.18);
+  }
+
+  .mobile-partnership-title {
+    display: flex;
+    gap: 7px;
+    align-items: center;
+    flex-wrap: wrap;
+    color: white;
+    font-size: 14px;
+    font-weight: 900;
+  }
+
+  .mobile-partnership-title span {
+    color: #93c5fd;
+  }
+
+  .mobile-partnership-stats {
+    display: grid;
+    grid-template-columns: repeat(3, 1fr);
+    gap: 8px;
+    margin-top: 10px;
+  }
+
+  .mobile-partnership-stats div {
+    border-radius: 12px;
+    padding: 8px;
+    background: rgba(37, 99, 235, 0.14);
+  }
+
+  .mobile-partnership-stats span {
+    display: block;
+    color: #bfdbfe;
+    font-size: 10px;
+    font-weight: 900;
+  }
+
+  .mobile-partnership-stats strong {
+    display: block;
+    color: white;
+    font-size: 14px;
+    margin-top: 3px;
+  }
+}
