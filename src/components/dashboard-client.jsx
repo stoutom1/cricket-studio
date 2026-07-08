@@ -6445,14 +6445,6 @@ onClick={() => {
                           activeInningsForScoreboard.team ||
                           "Team"}
                       </h3>
-
-                      <p className="muted small extras-line">
-                        Extras: {activeInningsForScoreboard.extras?.total ?? 0} • Wd {" "}
-                        {activeInningsForScoreboard.extras?.wides ?? 0} • Nb {" "}
-                        {activeInningsForScoreboard.extras?.noBalls ?? 0} • B {" "}
-                        {activeInningsForScoreboard.extras?.byes ?? 0} • LB {" "}
-                        {activeInningsForScoreboard.extras?.legByes ?? 0}
-                      </p>
                     </div>
                   </div>
 
