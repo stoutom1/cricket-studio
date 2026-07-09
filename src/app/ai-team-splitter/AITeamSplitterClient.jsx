@@ -2,6 +2,7 @@
 
 import Link from "next/link";
 import { useEffect, useMemo, useState } from "react";
+import { suggestCaptainsForTeam } from "@/lib/captainSuggestions";
 
 function normalizeName(name) {
   return String(name || "")
@@ -100,6 +101,7 @@ export default function AITeamSplitterClient() {
   const [showOptionForm, setShowOptionForm] = useState(false);
   const [newOptionLabel, setNewOptionLabel] = useState("");
   const [newOptionStartTime, setNewOptionStartTime] = useState("");
+  const [captainSuggestions, setCaptainSuggestions] = useState(null);
 
   useEffect(() => {
     loadPlayers();
@@ -375,6 +377,11 @@ ${url}`;
       }
 
       setResult(data);
+
+      setCaptainSuggestions({
+        surprise1: suggestCaptainsForTeam(data.teamA || []),
+        surprise2: suggestCaptainsForTeam(data.teamB || []),
+      });
     } catch (error) {
       console.error("Generate balanced teams failed:", error);
       alert("Failed to balance teams.");
@@ -382,6 +389,7 @@ ${url}`;
       setBalancing(false);
     }
   }
+
 function getPollOptionResults() {
   if (!poll?.options?.length) return [];
 
@@ -925,6 +933,31 @@ const pollOptionResults = getPollOptionResults();
   ))}
             </div>
           </div>
+          {captainSuggestions && (
+  <div className="captain-suggestions-card">
+    <h3>⭐ Cric4All Captain Suggestions</h3>
+    <p>Suggestions only. Organizer can choose anyone.</p>
+
+    <div className="captain-suggestion-grid">
+      {[
+        ["Surprise 1", captainSuggestions.surprise1],
+        ["Surprise 2", captainSuggestions.surprise2],
+      ].map(([teamName, suggestions]) => (
+        <div key={teamName} className="captain-team-card">
+          <h4>🏏 {teamName}</h4>
+
+          {suggestions.map((s) => (
+            <div key={s.playerId} className="captain-choice-row">
+              <strong>{s.playerName}</strong>
+              <span>{s.label}</span>
+              <small>{s.reason}</small>
+            </div>
+          ))}
+        </div>
+      ))}
+    </div>
+  </div>
+)}
         </section>
       )}
     </main>
