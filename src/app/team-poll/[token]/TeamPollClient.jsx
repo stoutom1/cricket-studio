@@ -150,21 +150,39 @@ async function submit() {
           placeholder="Type your name..."
         />
 
-        <div className="team-poll-player-list">
-          {filteredPlayers.map((player) => (
-            <button
-              key={player.playerKey}
-              type="button"
-              className={`team-poll-player ${
-                selectedPlayer?.playerKey === player.playerKey ? "selected" : ""
-              }`}
-              onClick={() => setSelectedPlayer(player)}
-            >
-              <strong>{player.playerName}</strong>
-              <small>{player.sourceTeams?.join(" + ")}</small>
-            </button>
-          ))}
-        </div>
+<details className="team-poll-player-collapse">
+  <summary className="team-poll-player-summary">
+    <div className="team-poll-player-summary-left">
+      <span className="team-poll-player-icon">👥</span>
+
+      <div>
+        <strong>Select Player</strong>
+        <small>
+          {filteredPlayers.length} available player
+          {filteredPlayers.length !== 1 ? "s" : ""}
+        </small>
+      </div>
+    </div>
+
+    <span className="team-poll-player-arrow">⌄</span>
+  </summary>
+
+  <div className="team-poll-player-list">
+    {filteredPlayers.map((player) => (
+      <button
+        key={player.playerKey}
+        type="button"
+        className={`team-poll-player ${
+          selectedPlayer?.playerKey === player.playerKey ? "selected" : ""
+        }`}
+        onClick={() => setSelectedPlayer(player)}
+      >
+        <strong>{player.playerName}</strong>
+        <small>{player.sourceTeams?.join(" + ")}</small>
+      </button>
+    ))}
+  </div>
+</details>
 
         <label className="team-poll-label">Optional WhatsApp name</label>
         <input
