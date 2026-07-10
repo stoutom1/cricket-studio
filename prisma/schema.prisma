@@ -223,6 +223,10 @@ model LeagueMember {
   // Admin
   canViewAuditLogs Boolean @default(false)
 
+  // Polling and Team Splits
+  canUseTeamBuilder         Boolean @default(false)
+  canCreateAvailabilityPoll Boolean @default(false)
+
   league League @relation(fields: [leagueId], references: [id], onDelete: Cascade)
   user   User   @relation(fields: [userId], references: [id])
 

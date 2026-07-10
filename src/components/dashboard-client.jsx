@@ -5829,6 +5829,10 @@ async function handleDeleteSeries(seriesId, seriesName) {
   }
 }
 
+const canUseAvailabilityBuilder =
+  Boolean(permissions?.canUseTeamBuilder) ||
+  Boolean(permissions?.canScoreMatch);
+  
 function ContextLens() {
   const totalFilters =
     (contextFilters.teamIds?.length || 0) +
@@ -9752,13 +9756,28 @@ const playedDateLabel = playedDate
               </button>
             )}
           </div>  
-          {activeLeague?.name?.trim().toLowerCase() === "surprise cricket league" && (
-          <div className="ai-splitter-row">
-          <Link href="/ai-team-splitter" className="ai-splitter-launch-btn">
-            🤖 AI Split Surprise Teams
-          </Link>
-        </div>
-        )}        
+{activeLeagueId && canUseAvailabilityBuilder && (
+<button
+  type="button"
+  className="league-team-builder-btn"
+onClick={() => {
+  window.location.href = `/ai-team-splitter?leagueId=${activeLeagueId}`;
+}}
+>
+  <span>⚖️</span>
+
+  <div>
+    <strong>Availability & Team Builder</strong>
+    <small>
+      Create Poll • Split Teams • Captain Suggestions
+    </small>
+  </div>
+
+  <div className="team-builder-arrow">
+    →
+  </div>
+</button>
+)}
         </section>
  {/* PLAYERS */}
 <section className="mgmt-clean-card player-manager-card">

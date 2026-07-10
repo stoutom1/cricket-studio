@@ -2,7 +2,7 @@ export const ROLES = {
   OWNER: {
     role: "OWNER",
 
-      canViewDashboard:  true,
+  canViewDashboard:  true,
   canViewManagement:  true,
   canViewMatches:  true,
   canViewScoring:  true,
@@ -39,6 +39,9 @@ export const ROLES = {
 
   canExportStats:  true,
   canViewAuditLogs:  true,
+
+  canUseTeamBuilder: true,
+  canCreateAvailabilityPoll: true
   },
 
   ADMIN: {
@@ -73,7 +76,10 @@ export const ROLES = {
     canEndMatch: true,
     canAbandonMatch: true,
 
-    canExportStats: true
+    canExportStats: true,
+
+    canUseTeamBuilder: true,
+    canCreateAvailabilityPoll: true
   },
 
   SCORER: {
@@ -90,7 +96,9 @@ export const ROLES = {
     canSwapStrike: true,
     canRetirePlayer: true,
 
-    canEndMatch: true
+    canEndMatch: true,
+    canUseTeamBuilder: true,
+    canCreateAvailabilityPoll: true
   },
 
   CAPTAIN: {
@@ -110,7 +118,9 @@ export const ROLES = {
 
     canScoreMatch: false,
     canEditScore: false,
-    canUndoBall: false
+    canUndoBall: false,
+    canUseTeamBuilder: true,
+    canCreateAvailabilityPoll: true
   },
 
   VIEWER: {

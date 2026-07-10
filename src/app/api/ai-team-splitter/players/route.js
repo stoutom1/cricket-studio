@@ -1,5 +1,7 @@
 import { NextResponse } from "next/server";
 import prisma from "@/lib/prisma";
+import { getServerSession } from "next-auth";
+import { authOptions } from "@/lib/auth";
 
 export const runtime = "nodejs";
 
@@ -10,69 +12,100 @@ function normalizeName(name) {
     .replace(/\s+/g, " ");
 }
 
-export async function GET() {
+export async function GET(request) {
   try {
-    const league = await prisma.league.findFirst({
-      where: {
-        name: {
-          equals: "Surprise Cricket League",
-          mode: "insensitive",
-        },
-      },
-      select: {
-        id: true,
-        name: true,
-      },
-    });
+    const session = await getServerSession(authOptions);
 
-    if (!league) {
+    if (!session?.user?.email) {
       return NextResponse.json(
-        { error: "Surprise Cricket League not found." },
-        { status: 404 }
+        { error: "Unauthorized" },
+        { status: 401 }
       );
     }
 
+    const { searchParams } = new URL(request.url);
+
+    // Read and validate leagueId first
+    const leagueIdParam = searchParams.get("leagueId");
+    const leagueId = Number(leagueIdParam);
+
+    if (!leagueIdParam || !Number.isInteger(leagueId) || leagueId <= 0) {
+      return NextResponse.json(
+        { error: "A valid leagueId is required." },
+        { status: 400 }
+      );
+    }
+
+    // Declare teamIds BEFORE using it
+    const teamIds = String(searchParams.get("teamIds") || "")
+      .split(",")
+      .map((value) => Number(value))
+      .filter((id) => Number.isInteger(id) && id > 0);
+
     const teams = await prisma.team.findMany({
       where: {
-        leagueId: league.id,
-        name: {
-          in: ["Surprise 1", "Surprise 2"],
-        },
+        leagueId,
+        ...(teamIds.length
+          ? {
+              id: {
+                in: teamIds,
+              },
+            }
+          : {}),
       },
       include: {
-        players: true,
+        players: {
+          orderBy: {
+            name: "asc",
+          },
+        },
+      },
+      orderBy: {
+        name: "asc",
       },
     });
 
-    const uniqueMap = new Map();
+    // If explicit team IDs were supplied, make sure all belong to the league
+    if (teamIds.length && teams.length !== teamIds.length) {
+      return NextResponse.json(
+        {
+          error:
+            "One or more selected teams do not exist or do not belong to this league.",
+        },
+        { status: 400 }
+      );
+    }
+
+    const uniquePlayers = new Map();
 
     for (const team of teams) {
       for (const player of team.players || []) {
-        const key = normalizeName(player.name);
-        if (!key) continue;
+        /*
+          Use a true shared/global player ID here if your schema has one.
+          Otherwise name-based deduplication keeps the existing Surprise
+          roster behavior.
+        */
+        const playerKey =
+          player.globalPlayerId ||
+          normalizeName(player.name);
 
-        if (!uniqueMap.has(key)) {
-          uniqueMap.set(key, {
-            id: key,
-            playerId: player.id,
-            leagueId: league.id,
+        if (!uniquePlayers.has(playerKey)) {
+          uniquePlayers.set(playerKey, {
+            id: player.id,
+            playerKey,
             playerName: player.name,
-            teamName: "Surprise Pool",
+            leagueId,
+            teamId: team.id,
+            teamName: team.name,
+            sourceTeamIds: [team.id],
             sourceTeams: [team.name],
-
-            runs: 0,
-            average: 0,
-            strikeRate: 0,
-            wickets: 0,
-            economy: 12,
-            catches: 0,
-            runOuts: 0,
-            stumpings: 0,
-            dismissals: 0,
-            winPct: 0,
           });
         } else {
-          const existing = uniqueMap.get(key);
+          const existing = uniquePlayers.get(playerKey);
+
+          if (!existing.sourceTeamIds.includes(team.id)) {
+            existing.sourceTeamIds.push(team.id);
+          }
 
           if (!existing.sourceTeams.includes(team.name)) {
             existing.sourceTeams.push(team.name);
@@ -81,21 +114,25 @@ export async function GET() {
       }
     }
 
-    const players = Array.from(uniqueMap.values()).sort((a, b) =>
-      a.playerName.localeCompare(b.playerName)
-    );
-
     return NextResponse.json({
-      ok: true,
-      leagueId: league.id,
-      leagueName: league.name,
-      players,
+      leagueId,
+      teams: teams.map((team) => ({
+        id: team.id,
+        name: team.name,
+        playerCount: team.players?.length || 0,
+      })),
+      players: Array.from(uniquePlayers.values()).sort((a, b) =>
+        a.playerName.localeCompare(b.playerName, undefined, {
+          sensitivity: "base",
+          numeric: true,
+        })
+      ),
     });
   } catch (error) {
     console.error("AI splitter players error:", error);
 
     return NextResponse.json(
-      { error: "Failed to load players." },
+      { error: "Failed to load team-builder players." },
       { status: 500 }
     );
   }

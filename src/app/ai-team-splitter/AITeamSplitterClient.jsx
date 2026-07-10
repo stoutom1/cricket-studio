@@ -3,6 +3,7 @@
 import Link from "next/link";
 import { useEffect, useMemo, useState } from "react";
 import { suggestCaptainsForTeam } from "@/lib/captainSuggestions";
+import { useSearchParams } from "next/navigation";
 
 function normalizeName(name) {
   return String(name || "")
@@ -81,6 +82,9 @@ function mergeStatsIntoPlayers(players, stats) {
 }
 
 export default function AITeamSplitterClient() {
+  const searchParams = useSearchParams();
+  const requestedLeagueId = Number(searchParams.get("leagueId"));
+
   const [players, setPlayers] = useState([]);
   const [selectedIds, setSelectedIds] = useState([]);
   const [result, setResult] = useState(null);
@@ -89,7 +93,7 @@ export default function AITeamSplitterClient() {
   const [balancing, setBalancing] = useState(false);
 
   const [poll, setPoll] = useState(null);
-  const [pollTitle, setPollTitle] = useState("Surprise Match Availability");
+  const [pollTitle, setPollTitle] = useState("Match Availability");
   const [pollText, setPollText] = useState("");
   const [pollResponses, setPollResponses] = useState([]);
   const [creatingPoll, setCreatingPoll] = useState(false);
@@ -102,10 +106,26 @@ export default function AITeamSplitterClient() {
   const [newOptionLabel, setNewOptionLabel] = useState("");
   const [newOptionStartTime, setNewOptionStartTime] = useState("");
   const [captainSuggestions, setCaptainSuggestions] = useState(null);
+  const [leagueTeams, setLeagueTeams] = useState([]);
+  const [selectedSourceTeamIds, setSelectedSourceTeamIds] = useState([]);
+  const [generatedTeamAName, setGeneratedTeamAName] = useState("Team A");
+  const [generatedTeamBName, setGeneratedTeamBName] = useState("Team B");
+  const [sourceTeamsInitialized, setSourceTeamsInitialized] = useState(false);
 
-  useEffect(() => {
-    loadPlayers();
-  }, []);
+useEffect(() => {
+  if (
+    !Number.isInteger(requestedLeagueId) ||
+    requestedLeagueId <= 0
+  ) {
+    setLoadingPlayers(false);
+    return;
+  }
+
+  setSourceTeamsInitialized(false);
+  setLeagueId(requestedLeagueId);
+  loadInitialTeamBuilderData(requestedLeagueId);
+}, [requestedLeagueId]);
+
 
 useEffect(() => {
   if (!poll?.token) return;
@@ -124,60 +144,207 @@ useEffect(() => {
   if (token) loadPollByToken(token);
 }, []);
 
+useEffect(() => {
+  if (!leagueId || !sourceTeamsInitialized) return;
+
+  loadPlayersForSelectedTeams();
+}, [
+  leagueId,
+  sourceTeamsInitialized,
+  selectedSourceTeamIds,
+]);
+
+
   const selectedPlayers = useMemo(
     () => players.filter((p) => selectedIds.includes(p.id)),
     [players, selectedIds]
   );
 
-  async function loadPlayers() {
-    setLoadingPlayers(true);
+  async function loadLeagueTeams(targetLeagueId) {
+  if (!targetLeagueId) return;
 
-    try {
-      const playerRes = await fetch("/api/ai-team-splitter/players");
-      const playerData = await playerRes.json();
+  try {
+    const res = await fetch(
+      `/api/teams?leagueId=${targetLeagueId}`
+    );
 
-      if (!playerRes.ok) {
-        alert(playerData.error || "Failed to load players.");
-        return;
-      }
+    const data = await res.json();
 
-      const statsRes = await fetch(`/api/leagues/${playerData.leagueId}/stats`);
-      const statsData = await statsRes.json();
-
-      if (!statsRes.ok) {
-        alert(statsData.error || "Failed to load league stats.");
-        return;
-      }
-
-      const mergedPlayers = mergeStatsIntoPlayers(
-        playerData.players || [],
-        statsData
+    if (!res.ok) {
+      throw new Error(
+        data.error || "Failed to load league teams."
       );
+    }
 
-      setPlayers(mergedPlayers);
-      setSelectedIds(mergedPlayers.map((p) => p.id));
-if (playerData.leagueId) {
-  const latestPollRes = await fetch(
-    `/api/team-availability-poll/latest?leagueId=${playerData.leagueId}`
-  );
+    const teams = Array.isArray(data)
+      ? data
+      : data.teams || [];
 
-  const latestPollData = await latestPollRes.json();
-
-  if (latestPollRes.ok && latestPollData.poll) {
-    setPoll(latestPollData.poll);
-    setPollResponses(latestPollData.poll.responses || []);
+    setLeagueTeams(teams);
+  } catch (error) {
+    console.error("Load league teams failed:", error);
+    setLeagueTeams([]);
   }
 }
-setLeagueId(playerData.leagueId);
-await loadAllPolls(playerData.leagueId);
 
-    } catch (error) {
-      console.error("Load AI splitter players failed:", error);
-      alert("Failed to load players.");
-    } finally {
-      setLoadingPlayers(false);
-    }
+async function loadPlayersForSelectedTeams() {
+  if (!leagueId) return;
+
+  if (!selectedSourceTeamIds.length) {
+    setPlayers([]);
+    setSelectedIds([]);
+    setResult(null);
+    setCaptainSuggestions(null);
+    return;
   }
+
+  setLoadingPlayers(true);
+
+  try {
+    const teamIdsParam =
+      selectedSourceTeamIds.join(",");
+
+    const playerRes = await fetch(
+      `/api/ai-team-splitter/players?leagueId=${leagueId}&teamIds=${encodeURIComponent(
+        teamIdsParam
+      )}`
+    );
+
+    const playerData = await playerRes.json();
+
+    if (!playerRes.ok) {
+      throw new Error(
+        playerData.error || "Failed to load selected team players."
+      );
+    }
+
+    const statsRes = await fetch(
+      `/api/leagues/${leagueId}/stats`
+    );
+
+    const statsData = await statsRes.json();
+
+    if (!statsRes.ok) {
+      throw new Error(
+        statsData.error || "Failed to load league statistics."
+      );
+    }
+
+    const mergedPlayers = mergeStatsIntoPlayers(
+      playerData.players || [],
+      statsData
+    );
+
+    setPlayers(mergedPlayers);
+    setSelectedIds(
+      mergedPlayers.map((player) => player.id)
+    );
+    setResult(null);
+    setCaptainSuggestions(null);
+  } catch (error) {
+    console.error(
+      "Load selected-team players failed:",
+      error
+    );
+
+    alert(
+      error.message ||
+        "Failed to load selected team players."
+    );
+  } finally {
+    setLoadingPlayers(false);
+  }
+}
+
+async function loadInitialTeamBuilderData(targetLeagueId) {
+  if (!targetLeagueId) return;
+
+  setLoadingPlayers(true);
+
+  try {
+    const playerRes = await fetch(
+      `/api/ai-team-splitter/players?leagueId=${targetLeagueId}`
+    );
+
+    const playerData = await playerRes.json();
+
+    if (!playerRes.ok) {
+      throw new Error(
+        playerData.error || "Failed to load players."
+      );
+    }
+
+    const availableTeams = playerData.teams || [];
+
+    setLeagueTeams(availableTeams);
+
+    /*
+      Start with every league team selected.
+      Users can deselect teams afterward.
+    */
+    const allTeamIds = availableTeams.map((team) =>
+      Number(team.id)
+    );
+
+  setSelectedSourceTeamIds(allTeamIds);
+setSourceTeamsInitialized(true);
+
+    const statsRes = await fetch(
+      `/api/leagues/${targetLeagueId}/stats`
+    );
+
+    const statsData = await statsRes.json();
+
+    if (!statsRes.ok) {
+      throw new Error(
+        statsData.error || "Failed to load league statistics."
+      );
+    }
+
+    const mergedPlayers = mergeStatsIntoPlayers(
+      playerData.players || [],
+      statsData
+    );
+
+    setPlayers(mergedPlayers);
+    setSelectedIds(mergedPlayers.map((player) => player.id));
+    setResult(null);
+    setCaptainSuggestions(null);
+
+    setLeagueId(targetLeagueId);
+
+    await loadAllPolls(targetLeagueId);
+
+    const latestPollRes = await fetch(
+      `/api/team-availability-poll/latest?leagueId=${targetLeagueId}`
+    );
+
+    const latestPollData = await latestPollRes.json();
+
+    if (latestPollRes.ok && latestPollData.poll) {
+      setPoll(latestPollData.poll);
+      setPollResponses(
+        latestPollData.poll.responses || []
+      );
+    }
+  } catch (error) {
+    console.error(
+      "Load team-builder data failed:",
+      error
+    );
+
+    alert(
+      error.message ||
+        "Failed to load the team builder."
+    );
+
+    setPlayers([]);
+    setSelectedIds([]);
+    setLeagueTeams([]);
+  } finally {
+    setLoadingPlayers(false);
+  }
+}
 
   function togglePlayer(id) {
     setSelectedIds((prev) =>
@@ -239,7 +406,7 @@ await loadAllPolls(playerData.leagueId);
           "Content-Type": "application/json",
         },
         body: JSON.stringify({
-          leagueId: players?.[0]?.leagueId || null,
+          leagueId,
           title: pollTitle,
           matchText: pollText,
           options: cleanOptions,
@@ -255,7 +422,7 @@ await loadAllPolls(playerData.leagueId);
 
       setPoll(data.poll);
       setPollResponses(data.poll?.responses || []);
-      await loadAllPolls(players?.[0]?.leagueId || leagueId);
+      await loadAllPolls(leagueId);
       localStorage.setItem("cric4all-latest-team-poll-token", data.poll.token);
       setTimeout(() => {
   refreshPollResponses();
@@ -379,8 +546,8 @@ ${url}`;
       setResult(data);
 
       setCaptainSuggestions({
-        surprise1: suggestCaptainsForTeam(data.teamA || []),
-        surprise2: suggestCaptainsForTeam(data.teamB || []),
+        teamA: suggestCaptainsForTeam(data.teamA || []),
+        teamB: suggestCaptainsForTeam(data.teamB || []),
       });
     } catch (error) {
       console.error("Generate balanced teams failed:", error);
@@ -512,12 +679,14 @@ const pollOptionResults = getPollOptionResults();
       </div>
 
       <section className="ai-splitter-hero">
-        <span className="ai-kicker">Cric4All AI</span>
-        <h1>🤖 AI Surprise Team Splitter</h1>
+        <span className="ai-kicker">Cric4All Team Builder</span>
+
+        <h1>⚖️ Availability & Balanced Teams</h1>
+
         <p>
-          Create a WhatsApp availability poll, collect votes for multiple dates,
-          then use the best date’s available players to generate balanced
-          Surprise 1 and Surprise 2 teams.
+          Create a WhatsApp availability poll, collect player
+          responses, and generate evenly balanced teams for your
+          league.
         </p>
       </section>
 
@@ -678,7 +847,9 @@ const pollOptionResults = getPollOptionResults();
         {poll && (
           <div className="poll-link-box">
             <strong>Poll Link</strong>
-            <span>{`${window.location.origin}/team-poll/${poll.token}`}</span>
+            <span>{typeof window !== "undefined"
+              ? `${window.location.origin}/team-poll/${poll.token}`
+              : `/team-poll/${poll.token}`}</span>
           </div>
         )}
 {poll && pollOptionResults.length > 0 && (
@@ -748,142 +919,296 @@ const pollOptionResults = getPollOptionResults();
               </div>
             </div>
 
-            <details className="poll-player-breakdown" open={isBest}>
-              <summary>View player responses</summary>
+<details className="poll-player-breakdown">
+  <summary className="poll-player-breakdown-summary">
+    <div>
+      <strong>👥 View Player Responses</strong>
+      <small>
+        Yes {group.yes.length} • Maybe {group.maybe.length} • No{" "}
+        {group.no.length} • No Reply {group.notResponded.length}
+      </small>
+    </div>
 
-              <div className="poll-response-columns">
-                <div>
-                  <h4>✅ Yes</h4>
-                  {group.yes.length ? (
-                    group.yes.map((r) => (
-                      <span key={`yes-${group.option.id}-${r.playerKey}`}>
-                        {r.playerName}
-                      </span>
-                    ))
-                  ) : (
-                    <small>None</small>
-                  )}
-                </div>
+    <span className="poll-player-breakdown-arrow">⌄</span>
+  </summary>
 
-                <div>
-                  <h4>🤔 Maybe</h4>
-                  {group.maybe.length ? (
-                    group.maybe.map((r) => (
-                      <span key={`maybe-${group.option.id}-${r.playerKey}`}>
-                        {r.playerName}
-                      </span>
-                    ))
-                  ) : (
-                    <small>None</small>
-                  )}
-                </div>
+  <div className="poll-response-dropdowns">
+    <details className="poll-response-group yes-group">
+      <summary>
+        <div>
+          <span>✅ Yes</span>
+          <b>{group.yes.length}</b>
+        </div>
+        <i>⌄</i>
+      </summary>
 
-                <div>
-                  <h4>❌ No</h4>
-                  {group.no.length ? (
-                    group.no.map((r) => (
-                      <span key={`no-${group.option.id}-${r.playerKey}`}>
-                        {r.playerName}
-                      </span>
-                    ))
-                  ) : (
-                    <small>None</small>
-                  )}
-                </div>
+      <div className="poll-response-player-list">
+        {group.yes.length ? (
+          group.yes.map((r) => (
+            <span key={`yes-${group.option.id}-${r.playerKey}`}>
+              {r.playerName}
+            </span>
+          ))
+        ) : (
+          <small>None</small>
+        )}
+      </div>
+    </details>
 
-                <div>
-                  <h4>⚪ No Reply</h4>
-                  {group.notResponded.length ? (
-                    group.notResponded.map((p) => (
-                      <span key={`pending-${group.option.id}-${p.id}`}>
-                        {p.playerName}
-                      </span>
-                    ))
-                  ) : (
-                    <small>Everyone responded</small>
-                  )}
-                </div>
-              </div>
-            </details>
+    <details className="poll-response-group maybe-group">
+      <summary>
+        <div>
+          <span>🤔 Maybe</span>
+          <b>{group.maybe.length}</b>
+        </div>
+        <i>⌄</i>
+      </summary>
+
+      <div className="poll-response-player-list">
+        {group.maybe.length ? (
+          group.maybe.map((r) => (
+            <span key={`maybe-${group.option.id}-${r.playerKey}`}>
+              {r.playerName}
+            </span>
+          ))
+        ) : (
+          <small>None</small>
+        )}
+      </div>
+    </details>
+
+    <details className="poll-response-group no-group">
+      <summary>
+        <div>
+          <span>❌ No</span>
+          <b>{group.no.length}</b>
+        </div>
+        <i>⌄</i>
+      </summary>
+
+      <div className="poll-response-player-list">
+        {group.no.length ? (
+          group.no.map((r) => (
+            <span key={`no-${group.option.id}-${r.playerKey}`}>
+              {r.playerName}
+            </span>
+          ))
+        ) : (
+          <small>None</small>
+        )}
+      </div>
+    </details>
+
+    <details className="poll-response-group pending-group">
+      <summary>
+        <div>
+          <span>⚪ No Reply</span>
+          <b>{group.notResponded.length}</b>
+        </div>
+        <i>⌄</i>
+      </summary>
+
+      <div className="poll-response-player-list">
+        {group.notResponded.length ? (
+          group.notResponded.map((p) => (
+            <span key={`pending-${group.option.id}-${p.id}`}>
+              {p.playerName}
+            </span>
+          ))
+        ) : (
+          <small>Everyone responded</small>
+        )}
+      </div>
+    </details>
+  </div>
+</details>
           </div>
         );
       })}
     </div>
   </section>
 )}
-        {bestPollOption && (
-          <div className="poll-best-date-box">
-            <span>🏆 Best Date</span>
-            <strong>{bestPollOption.label}</strong>
-            <small>{bestPollOption.yesCount} YES votes</small>
-          </div>
-        )}
-      </section>
+{bestPollOption && (
+  <div className="poll-best-date-box polished-best-date">
+    <span className="best-date-label">🏆 Best Date</span>
 
-      <section className="ai-splitter-card">
-        <div className="ai-splitter-toolbar">
-          <div>
-            <strong>Available Players</strong>
+    <strong className="best-date-name">
+      {bestPollOption.label}
+    </strong>
+
+    <small className="best-date-votes">
+      {bestPollOption.yesCount} YES votes
+    </small>
+  </div>
+)}
+      </section>
+<section className="team-builder-source-card">
+  <div className="team-builder-source-head">
+    <div>
+      <strong>👥 Select Player Pools</strong>
+      <span>
+        Choose one or more league teams whose players can participate.
+      </span>
+    </div>
+
+    <small>
+      {selectedSourceTeamIds.length} selected
+    </small>
+  </div>
+
+  {!leagueTeams.length ? (
+    <div className="team-builder-source-empty">
+      No teams found in this league.
+    </div>
+  ) : (
+    <div className="team-builder-source-grid">
+      {leagueTeams.map((team) => {
+        const teamId = Number(team.id);
+
+        const selected =
+          selectedSourceTeamIds.includes(teamId);
+
+        return (
+          <button
+            key={team.id}
+            type="button"
+            className={`team-builder-source-option ${
+              selected ? "selected" : ""
+            }`}
+            onClick={() => {
+              setSelectedSourceTeamIds((previous) =>
+                selected
+                  ? previous.filter(
+                      (id) => Number(id) !== teamId
+                    )
+                  : [...previous, teamId]
+              );
+            }}
+          >
             <span>
-              Selected {selectedIds.length} / {players.length}
+              {selected ? "✅" : "⬜"}
             </span>
+
+            <div>
+              <strong>{team.name}</strong>
+              <small>
+                {team.playerCount ?? 0} players
+              </small>
+            </div>
+          </button>
+        );
+      })}
+    </div>
+  )}
+</section>
+<section className="ai-splitter-card team-builder-players-card">
+  <div className="team-builder-players-head">
+    <div className="team-builder-player-count">
+      <strong>Available Players</strong>
+      <span>
+        Selected {selectedIds.length} / {players.length}
+      </span>
+    </div>
+
+    <div className="team-builder-selection-actions">
+      <button
+        type="button"
+        onClick={selectAll}
+        disabled={!players.length}
+      >
+        Select All
+      </button>
+
+      <button
+        type="button"
+        onClick={clearAll}
+        disabled={!players.length}
+      >
+        Clear
+      </button>
+    </div>
+
+    <div className="generated-team-name-grid">
+      <label>
+        <span>Team 1 Name</span>
+        <input
+          value={generatedTeamAName}
+          onChange={(event) =>
+            setGeneratedTeamAName(event.target.value)
+          }
+          placeholder="Team A"
+        />
+      </label>
+
+      <label>
+        <span>Team 2 Name</span>
+        <input
+          value={generatedTeamBName}
+          onChange={(event) =>
+            setGeneratedTeamBName(event.target.value)
+          }
+          placeholder="Team B"
+        />
+      </label>
+    </div>
+
+    <button
+      type="button"
+      className="ai-primary-btn team-builder-generate-btn"
+      onClick={generateTeams}
+      disabled={
+        balancing ||
+        loadingPlayers ||
+        selectedPlayers.length < 4
+      }
+    >
+      {balancing
+        ? "Balancing..."
+        : "✨ Generate Balanced Teams"}
+    </button>
+  </div>
+
+  {loadingPlayers ? (
+    <div className="ai-empty-box">
+      Loading players...
+    </div>
+  ) : !selectedSourceTeamIds.length ? (
+    <div className="ai-empty-box">
+      Select at least one player pool above.
+    </div>
+  ) : !players.length ? (
+    <div className="ai-empty-box">
+      No players found in the selected team pools.
+    </div>
+  ) : (
+    <div className="ai-player-grid">
+      {players.map((player) => (
+        <button
+          key={player.id}
+          type="button"
+          className={`ai-player-chip ${
+            selectedIds.includes(player.id) ? "selected" : ""
+          }`}
+          onClick={() => togglePlayer(player.id)}
+        >
+          <span>{selectedIds.includes(player.id) ? "✅" : "⬜"}</span>
+
+          <div>
+            <strong>{player.playerName}</strong>
+
+            <small>
+              {player.sourceTeams?.join(" + ") || player.teamName || "League player"}
+            </small>
+
+            <small>
+              🏏 {player.runs || 0} runs • 🎯 {player.wickets || 0} wkts
+            </small>
           </div>
-
-          <div className="ai-toolbar-actions">
-            <button type="button" onClick={selectAll}>
-              Select All
-            </button>
-
-            <button type="button" onClick={clearAll}>
-              Clear
-            </button>
-
-            <button
-              type="button"
-              className="ai-primary-btn"
-              onClick={generateTeams}
-              disabled={balancing || loadingPlayers}
-            >
-              {balancing ? "Balancing..." : "✨ Generate Balanced Teams"}
-            </button>
-          </div>
-        </div>
-
-        {loadingPlayers ? (
-          <div className="ai-empty-box">Loading players...</div>
-        ) : !players.length ? (
-          <div className="ai-empty-box">
-            No players found for Surprise 1 and Surprise 2.
-          </div>
-        ) : (
-          <div className="ai-player-grid">
-            {players.map((player) => (
-              <button
-                key={player.id}
-                type="button"
-                className={`ai-player-chip ${
-                  selectedIds.includes(player.id) ? "selected" : ""
-                }`}
-                onClick={() => togglePlayer(player.id)}
-              >
-                <span>{selectedIds.includes(player.id) ? "✅" : "⬜"}</span>
-
-                <div>
-                  <strong>{player.playerName}</strong>
-
-                  <small>
-                    {player.sourceTeams?.join(" + ") || player.teamName}
-                  </small>
-
-                  <small>
-                    🏏 {player.runs} runs • 🎯 {player.wickets} wkts
-                  </small>
-                </div>
-              </button>
-            ))}
-          </div>
-        )}
-      </section>
+        </button>
+      ))}
+    </div>
+  )}
+</section>
 
       {result && (
         <section className="ai-result-card">
@@ -894,19 +1219,19 @@ const pollOptionResults = getPollOptionResults();
             </div>
 
             <div>
-              <span>Surprise 1 Strength</span>
+              <span>{generatedTeamAName || "Team A"} Strength</span>
               <strong>{result.teamAStrength}</strong>
             </div>
 
             <div>
-              <span>Surprise 2 Strength</span>
+              <span>{generatedTeamBName || "Team B"} Strength</span>
               <strong>{result.teamBStrength}</strong>
             </div>
           </div>
 
           <div className="ai-teams-grid">
             <div className="ai-team-box">
-              <h2>🔵 Surprise 1</h2>
+              <h2>🔵 {generatedTeamAName || "Team A"}</h2>
 
 {[...result.teamA]
   .sort((a, b) => a.playerName.localeCompare(b.playerName))
@@ -920,7 +1245,7 @@ const pollOptionResults = getPollOptionResults();
             </div>
 
             <div className="ai-team-box">
-              <h2>🟣 Surprise 2</h2>
+              <h2>🟣 {generatedTeamBName || "Team B"}</h2>
 
 {[...result.teamB]
   .sort((a, b) => a.playerName.localeCompare(b.playerName))
@@ -940,17 +1265,17 @@ const pollOptionResults = getPollOptionResults();
 
     <div className="captain-suggestion-grid">
       {[
-        ["Surprise 1", captainSuggestions.surprise1],
-        ["Surprise 2", captainSuggestions.surprise2],
+        [generatedTeamAName || "Team A", captainSuggestions.teamA || []],
+        [generatedTeamBName || "Team B", captainSuggestions.teamB || []],
       ].map(([teamName, suggestions]) => (
         <div key={teamName} className="captain-team-card">
           <h4>🏏 {teamName}</h4>
 
-          {suggestions.map((s) => (
-            <div key={s.playerId} className="captain-choice-row">
-              <strong>{s.playerName}</strong>
-              <span>{s.label}</span>
-              <small>{s.reason}</small>
+          {suggestions.map((suggestion) => (
+            <div key={suggestion.playerId} className="captain-choice-row">
+              <strong>{suggestion.playerName}</strong>
+              <span>{suggestion.label}</span>
+              <small>{suggestion.reason}</small>
             </div>
           ))}
         </div>

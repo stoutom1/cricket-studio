@@ -13,7 +13,28 @@ export async function POST(req) {
         { status: 400 }
       );
     }
+const membership = await prisma.leagueMember.findFirst({
+  where: {
+    leagueId,
+    userId: user.id,
+  },
+});
 
+const canUseBuilder =
+  membership?.role === "OWNER" ||
+  membership?.role === "ADMIN" ||
+  membership?.role === "CAPTAIN" ||
+  Boolean(membership?.canScoreMatch);
+
+if (!canUseBuilder) {
+  return NextResponse.json(
+    {
+      error:
+        "You do not have permission to use the team builder.",
+    },
+    { status: 403 }
+  );
+}
     const result = balancePlayers(players);
 
     return NextResponse.json({
