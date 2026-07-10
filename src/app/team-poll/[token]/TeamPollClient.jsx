@@ -48,11 +48,11 @@ export default function TeamPollClient({ token }) {
   const filteredPlayers = useMemo(() => {
     const q = search.trim().toLowerCase();
 
-    if (!q) return players.slice(0, 20);
+    if (!q) return players.slice(0, 70);
 
     return players
       .filter((p) => p.playerName.toLowerCase().includes(q))
-      .slice(0, 20);
+      .slice(0, 70);
   }, [players, search]);
 
 async function submit() {
