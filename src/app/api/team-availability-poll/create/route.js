@@ -110,7 +110,7 @@ if (!cleanOptions.length) {
       data: {
         token,
         leagueId: leagueId ? Number(leagueId) : null,
-        title: title || "Surprise Match Availability",
+        title: title || "Match Availability",
         matchText: matchText || null,
         options: {
           create: cleanOptions.map((option, index) => ({
