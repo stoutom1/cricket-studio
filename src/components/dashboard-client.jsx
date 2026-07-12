@@ -7711,67 +7711,12 @@ const playerRoleBadge = (row) => {
   </div>
 )}
 
+{!isMobile && (
+  <>
       Keyboard shortcuts: 0 1 2 3 4 6 • W wicket • D wide • N no-ball • U undo
-
-{scorerMode && (
-  <div className="scorer-dock-area">
-    <div className="scorer-quick-dock compact">
-      <button
-        type="button"
-        className={scorerDrawer === "scoreboard" ? "active" : ""}
-        onClick={() =>
-          setScorerDrawer((prev) => (prev === "scoreboard" ? null : "scoreboard"))
-        }
-      >
-        <span className="dock-icon">📊</span>
-        <span className="dock-text">Scorecard</span>
-      </button>
-
-      <button
-        type="button"
-        className={scorerDrawer === "commentary" ? "active" : ""}
-        onClick={() =>
-          setScorerDrawer((prev) => (prev === "commentary" ? null : "commentary"))
-        }
-      >
-        <span className="dock-icon">📝</span>
-        <span className="dock-text">Commentary</span>
-      </button>
-
-      <button
-        type="button"
-        className={scorerDrawer === "setup" ? "active" : ""}
-        onClick={() =>
-          setScorerDrawer((prev) => (prev === "setup" ? null : "setup"))
-        }
-      >
-        <span className="dock-icon">⚙️</span>
-        <span className="dock-text">Setup</span>
-      </button>
-
-      <button
-        type="button"
-        className="voice-btn"
-        onClick={startBrowserVoiceScore}
-      >
-        <span className="dock-icon">🎤</span>
-        <span className="dock-text">Voice</span>
-      </button>
-
-      <button type="button" onClick={() => setScorerMode(false)}>
-        <span className="dock-icon">✕</span>
-        <span className="dock-text">Exit</span>
-      </button>
-    </div>
-
-    {(voiceMessage || voiceStatus) && (
-      <div className="voice-score-message compact">
-        {voiceMessage || voiceStatus}
-      </div>
-    )}
-  </div>
+</>
 )}
-</div>
+      </div>
 
 {permissions?.canScoreMatch  && (isMobile ? (
   <>
@@ -8091,7 +8036,7 @@ const playerRoleBadge = (row) => {
 ) : (
 <CollapsibleSection
   title="🏏 Scoring Form"
-  defaultOpen={true}
+  defaultOpen={false}
 >
                 <form id="add-ball-form" className="form grid-2" onSubmit={handleAddBall}>
                 <label>
@@ -8342,10 +8287,67 @@ const playerRoleBadge = (row) => {
 </form>
               </CollapsibleSection>
 )
-    )}          
+    )}         
+{scorerMode && (
+  <div className="scorer-dock-area">
+    <div className="scorer-quick-dock compact">
+      <button
+        type="button"
+        className={scorerDrawer === "scoreboard" ? "active" : ""}
+        onClick={() =>
+          setScorerDrawer((prev) => (prev === "scoreboard" ? null : "scoreboard"))
+        }
+      >
+        <span className="dock-icon">📊</span>
+        <span className="dock-text">Scorecard</span>
+      </button>
+
+      <button
+        type="button"
+        className={scorerDrawer === "commentary" ? "active" : ""}
+        onClick={() =>
+          setScorerDrawer((prev) => (prev === "commentary" ? null : "commentary"))
+        }
+      >
+        <span className="dock-icon">📝</span>
+        <span className="dock-text">Commentary</span>
+      </button>
+
+      <button
+        type="button"
+        className={scorerDrawer === "setup" ? "active" : ""}
+        onClick={() =>
+          setScorerDrawer((prev) => (prev === "setup" ? null : "setup"))
+        }
+      >
+        <span className="dock-icon">⚙️</span>
+        <span className="dock-text">Setup</span>
+      </button>
+
+      <button
+        type="button"
+        className="voice-btn"
+        onClick={startBrowserVoiceScore}
+      >
+        <span className="dock-icon">🎤</span>
+        <span className="dock-text">Voice</span>
+      </button>
+
+      <button type="button" onClick={() => setScorerMode(false)}>
+        <span className="dock-icon">✕</span>
+        <span className="dock-text">Exit</span>
+      </button>
     </div>
-            </>
-            
+
+    {(voiceMessage || voiceStatus) && (
+      <div className="voice-score-message compact">
+        {voiceMessage || voiceStatus}
+      </div>
+    )}
+  </div>
+)}     
+    </div>
+            </>            
           )}
 
         </Card>
