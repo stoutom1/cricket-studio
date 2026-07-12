@@ -1,11 +1,19 @@
 "use client";
 
-import { useEffect, useState } from "react";
+import { useEffect, useMemo, useState } from "react";
 import { buildMatchInsights } from "@/lib/match-insights";
-const FINAL_MATCH_STATUSES = ["ABANDONED", "COMPLETED", "COMPLETED_LOCKED", "COMPLETED_CORRECTED"];
+
+const FINAL_MATCH_STATUSES = [
+  "ABANDONED",
+  "COMPLETED",
+  "COMPLETED_LOCKED",
+  "COMPLETED_CORRECTED",
+];
 
 function isFinalMatchStatus(status) {
-  return FINAL_MATCH_STATUSES.includes(String(status || "").toUpperCase());
+  return FINAL_MATCH_STATUSES.includes(
+    String(status || "").toUpperCase()
+  );
 }
 
 function getBallDisplay(label) {
@@ -19,8 +27,13 @@ function getBallDisplay(label) {
 
   const upper = raw.toUpperCase();
 
-  if (raw === "4") return { text: "4", type: "four" };
-  if (raw === "6") return { text: "6", type: "six" };
+  if (raw === "4") {
+    return { text: "4", type: "four" };
+  }
+
+  if (raw === "6") {
+    return { text: "6", type: "six" };
+  }
 
   if (upper.includes("W") && !upper.includes("WD")) {
     return { text: "W", type: "wicket" };
@@ -39,34 +52,62 @@ function getBallDisplay(label) {
   return { text: raw, type: "normal" };
 }
 
-function InfoPill({ label, value }) {
+function InfoPill({
+  label,
+  value,
+  emphasis = false,
+}) {
   return (
-    <div className="live-info-pill">
+    <div
+      className={`live-info-pill ${
+        emphasis ? "is-emphasis" : ""
+      }`}
+    >
       <span>{label}</span>
       <strong>{value}</strong>
     </div>
   );
 }
 
-function PlayerCard({ label, name, value }) {
+function PlayerCard({
+  label,
+  name,
+  value,
+  active = false,
+}) {
   return (
-    <div className="live-player-card">
+    <div
+      className={`live-player-card ${
+        active ? "is-active" : ""
+      }`}
+    >
       <span>{label}</span>
       <strong>{name || "-"}</strong>
-      {value && <small>{value}</small>}
+      {value ? <small>{value}</small> : null}
     </div>
   );
 }
 
-function ProTable({ children, type = "default" }) {
+function ProTable({
+  children,
+  type = "default",
+}) {
   return (
-    <div className={`live-table-shell table-type-${type}`}>
-      <div className="table-scroll-hint">
-        <span>Swipe left/right for more details</span>
+    <div
+      className={`live-table-shell table-type-${type}`}
+    >
+      <div
+        className="table-scroll-hint"
+        aria-hidden="true"
+      >
+        <span>Swipe for more details</span>
         <b>⇄</b>
       </div>
 
-      <div className="live-table-wrap">
+      <div
+        className="live-table-wrap"
+        tabIndex={0}
+      >
         <table className="live-pro-table sticky-first-col-table">
           {children}
         </table>
@@ -75,227 +116,116 @@ function ProTable({ children, type = "default" }) {
   );
 }
 
+function AccordionSection({
+  id,
+  title,
+  subtitle,
+  open,
+  onToggle,
+  children,
+}) {
+  return (
+    <section
+      className={`live-detail-card ${
+        open ? "is-open" : ""
+      }`}
+    >
+      <button
+        type="button"
+        className="live-detail-header"
+        onClick={onToggle}
+        aria-expanded={open}
+        aria-controls={id}
+      >
+        <span>
+          <strong>{title}</strong>
+
+          {subtitle ? (
+            <small>{subtitle}</small>
+          ) : null}
+        </span>
+
+        <i aria-hidden="true">
+          {open ? "−" : "+"}
+        </i>
+      </button>
+
+      {open ? (
+        <div
+          id={id}
+          className="live-detail-body"
+        >
+          {children}
+        </div>
+      ) : null}
+    </section>
+  );
+}
+
 function getTopRuns(battingStats = []) {
-  return Math.max(...battingStats.map((p) => Number(p.runs || 0)), 0);
+  return Math.max(
+    ...battingStats.map((player) =>
+      Number(player.runs || 0)
+    ),
+    0
+  );
 }
 
 function getBestWickets(bowlingStats = []) {
-  return Math.max(...bowlingStats.map((p) => Number(p.wickets || 0)), 0);
-}
-function getMatchStory(scoreboard) {
-  const story = [];
-
-  scoreboard?.innings?.forEach((innings) => {
-    const topBatter = [...(innings.battingStats || [])].sort(
-      (a, b) => Number(b.runs || 0) - Number(a.runs || 0)
-    )[0];
-
-    const bestBowler = [...(innings.bowlingStats || [])].sort((a, b) => {
-      const wicketDiff = Number(b.wickets || 0) - Number(a.wickets || 0);
-      if (wicketDiff !== 0) return wicketDiff;
-      return Number(a.runs || 0) - Number(b.runs || 0);
-    })[0];
-
-    story.push({
-      label: `Innings ${innings.number}`,
-      title: `${innings.teamName} scored ${innings.runs}/${innings.wickets}`,
-      detail: `${innings.oversDisplay} overs • RR ${innings.runRate}`,
-    });
-
-    if (topBatter?.runs > 0) {
-      story.push({
-        label: "Top batting",
-        title: `${topBatter.playerName} ${topBatter.runs} (${topBatter.balls})`,
-        detail: `${topBatter.fours || 0} fours • ${topBatter.sixes || 0} sixes`,
-      });
-    }
-
-    if (bestBowler?.wickets > 0) {
-      story.push({
-        label: "Best bowling",
-        title: `${bestBowler.playerName} ${bestBowler.wickets}/${bestBowler.runs}`,
-        detail: `${bestBowler.overs} overs • Econ ${bestBowler.economy}`,
-      });
-    }
-  });
-
-  return story;
-}
-function getRunRateTrend(scoreboard, latestInnings, ballsLeft) {
-  const crr = Number(latestInnings?.runRate || 0);
-
-  const target = Number(scoreboard?.summary?.target || 0);
-  const currentRuns = Number(latestInnings?.runs || 0);
-
-  const runsNeeded =
-    scoreboard?.currentInnings === 2 && target
-      ? Math.max(target - currentRuns, 0)
-      : 0;
-
-  const rrr =
-    scoreboard?.currentInnings === 2 && ballsLeft
-      ? Number(((runsNeeded / ballsLeft) * 6).toFixed(2))
-      : 0;
-
-  const maxRate = Math.max(crr, rrr, 12);
-  const crrPct = Math.min((crr / maxRate) * 100, 100);
-  const rrrPct = Math.min((rrr / maxRate) * 100, 100);
-
-  return {
-    crr: crr.toFixed(2),
-    rrr: rrr ? rrr.toFixed(2) : "—",
-    crrPct,
-    rrrPct,
-  };
+  return Math.max(
+    ...bowlingStats.map((player) =>
+      Number(player.wickets || 0)
+    ),
+    0
+  );
 }
 
-export default function LiveScoreClient({ matchId }) {
-  const [scoreboard, setScoreboard] = useState(null);
-  const [error, setError] = useState("");
-  const [collapsedInnings, setCollapsedInnings] = useState({});
-  const [viewMode, setViewMode] = useState("full");
-  const [tvMode, setTvMode] = useState(false);
-
-  const matchStory = getMatchStory(scoreboard);
-  const matchInsights = buildMatchInsights(scoreboard);
-  
-
-  function toggleInnings(inningsNo) {
-    setCollapsedInnings((prev) => ({
-      ...prev,
-      [inningsNo]: !prev[inningsNo],
-    }));
-  }
-async function shareLiveScore() {
-  const shareUrl = window.location.href;
-
-  const text = `${scoreboard?.match?.teamAName} vs ${scoreboard?.match?.teamBName} • ${latestInnings?.runs}/${latestInnings?.wickets} in ${latestInnings?.oversDisplay} ov`;
-
-  if (navigator.share) {
-    await navigator.share({
-      title: "Cric4All Live Score",
-      text,
-      url: shareUrl,
-    });
-    return;
-  }
-
-  await navigator.clipboard.writeText(shareUrl);
-  alert("Live score link copied!");
-}
-useEffect(() => {
-  let intervalId = null;
-
-  async function loadScorecard() {
-    try {
-      const res = await fetch(`/api/liveview/${matchId}`);
-
-      if (!res.ok) {
-        throw new Error("Failed to load scorecard");
-      }
-
-      const data = await res.json();
-      setScoreboard(data);
-
-      if (isFinalMatchStatus(data?.match?.status) && intervalId) {
-        clearInterval(intervalId);
-        intervalId = null;
-      }
-    } catch (err) {
-      setError(err.message);
-    }
-  }
-
-  loadScorecard();
-
-  intervalId = setInterval(loadScorecard, 5000);
-
-  return () => {
-    if (intervalId) clearInterval(intervalId);
-  };
-}, [matchId]);
-
-  if (error) {
-    return (
-      <main className="live-page-shell">
-        <div className="live-error-card">
-          <h2>Unable to load scorecard</h2>
-          <p>{error}</p>
-        </div>
-      </main>
-    );
-  }
-
-  if (!scoreboard) {
-    return (
-    <main className="live-page-shell">
-        <div className="live-loading-card">
-          <div className="live-loading-dot" />
-          <h2>Loading live scorecard...</h2>
-        </div>
-      </main>
-    );
-  }
-
-  const latestInnings =
-    scoreboard?.innings?.find(
-      (inn) => inn.number === scoreboard?.currentInnings
-    ) ??
-    scoreboard?.innings?.[scoreboard?.innings?.length - 1] ??
-    null;
-
-  const ballsLeft = scoreboard?.summary?.remainingBalls;
-const rateTrend = getRunRateTrend(scoreboard, latestInnings, ballsLeft);
-  const topBatter = getTopBatter(scoreboard);
-const bestBowler = getBestBowler(scoreboard);
-const lastThreeOvers = getLastThreeOvers(scoreboard);
-const chaseRunsNeeded =
-  scoreboard?.currentInnings === 2 && scoreboard?.summary?.target
-    ? Math.max(
-        Number(scoreboard.summary.target) - Number(latestInnings?.runs || 0),
-        0
-      )
-    : null;
-
-const requiredRate =
-  chaseRunsNeeded !== null && ballsLeft
-    ? ((chaseRunsNeeded / ballsLeft) * 6).toFixed(2)
-    : null;
-
-
-  const strikerValue = scoreboard?.currentState?.strikerStats
-    ? `${scoreboard.currentState.strikerStats.runs} (${scoreboard.currentState.strikerStats.balls})`
-    : "";
-
-  const nonStrikerValue = scoreboard?.currentState?.nonStrikerStats
-    ? `${scoreboard.currentState.nonStrikerStats.runs} (${scoreboard.currentState.nonStrikerStats.balls})`
-    : "";
-
-  const bowlerValue = scoreboard?.currentState?.bowlerStats
-    ? `${scoreboard.currentState.bowlerStats.wickets}/${scoreboard.currentState.bowlerStats.runs} in ${scoreboard.currentState.bowlerStats.overs} ov`
-    : "";
-
-    function getTopBatter(scoreboard) {
+function getTopBatter(scoreboard) {
   const rows =
-    scoreboard?.innings?.flatMap((inn) => inn.battingStats || []) || [];
+    scoreboard?.innings?.flatMap(
+      (innings) => innings.battingStats || []
+    ) || [];
 
   return rows
-    .filter((p) => Number(p.runs || 0) > 0)
-    .sort((a, b) => Number(b.runs || 0) - Number(a.runs || 0))[0];
+    .filter(
+      (player) =>
+        Number(player.runs || 0) > 0
+    )
+    .sort(
+      (a, b) =>
+        Number(b.runs || 0) -
+        Number(a.runs || 0)
+    )[0];
 }
 
 function getBestBowler(scoreboard) {
   const rows =
-    scoreboard?.innings?.flatMap((inn) => inn.bowlingStats || []) || [];
+    scoreboard?.innings?.flatMap(
+      (innings) => innings.bowlingStats || []
+    ) || [];
 
   return rows
-    .filter((p) => Number(p.wickets || 0) > 0 || Number(p.runs || 0) > 0)
+    .filter(
+      (player) =>
+        Number(player.wickets || 0) > 0 ||
+        Number(player.runs || 0) > 0
+    )
     .sort((a, b) => {
-      const wicketDiff = Number(b.wickets || 0) - Number(a.wickets || 0);
-      if (wicketDiff !== 0) return wicketDiff;
-      return Number(a.runs || 0) - Number(b.runs || 0);
+      const wicketDifference =
+        Number(b.wickets || 0) -
+        Number(a.wickets || 0);
+
+      if (wicketDifference !== 0) {
+        return wicketDifference;
+      }
+
+      return (
+        Number(a.runs || 0) -
+        Number(b.runs || 0)
+      );
     })[0];
 }
+
 function getLastThreeOvers(scoreboard) {
   const balls = scoreboard?.recentBalls || [];
   const overMap = new Map();
@@ -303,516 +233,1342 @@ function getLastThreeOvers(scoreboard) {
   balls.forEach((ball) => {
     const label = String(ball.label || "");
     const overNo = label.split(".")[0];
+
     const result =
-      label.split(" ").slice(1).join(" ").replace(/[()]/g, "") || "";
+      label
+        .split(" ")
+        .slice(1)
+        .join(" ")
+        .replace(/[()]/g, "") || "";
 
     if (!overMap.has(overNo)) {
       overMap.set(overNo, {
         overNo,
         runs: 0,
         wickets: 0,
-        balls: [],
       });
     }
 
     const over = overMap.get(overNo);
+    const normalizedResult =
+      result.toUpperCase();
 
     const runs =
-      result.includes("Wd") || result.includes("Nb")
-        ? Number(result.replace(/\D/g, "") || 1)
+      normalizedResult.includes("WD") ||
+      normalizedResult.includes("NB")
+        ? Number(
+            result.replace(/\D/g, "") || 1
+          )
         : Number(result) || 0;
 
     over.runs += runs;
 
     if (
-      result.toUpperCase().includes("W") &&
-      !result.toUpperCase().includes("WD")
+      normalizedResult.includes("W") &&
+      !normalizedResult.includes("WD")
     ) {
       over.wickets += 1;
     }
-
-    over.balls.push(result);
   });
 
   return Array.from(overMap.values()).slice(-3);
 }
 
-const matchStatus = String(scoreboard?.match?.status || "").toUpperCase();
-const isMatchFinished = isFinalMatchStatus(matchStatus);
+function getRunRateTrend(
+  scoreboard,
+  latestInnings,
+  ballsLeft
+) {
+  const currentRunRate = Number(
+    latestInnings?.runRate || 0
+  );
 
-const livePillText =
-  matchStatus === "ABANDONED"
-    ? "● MATCH ABANDONED"
-    : matchStatus === "COMPLETED_LOCKED"
-    ? "● COMPLETED & LOCKED"
-    : matchStatus === "COMPLETED_CORRECTED"
-    ? "● COMPLETED & CORRECTED"
-    : matchStatus === "COMPLETED"
-    ? "● MATCH COMPLETED"
-    : "● LIVE SCORE";
+  const target = Number(
+    scoreboard?.summary?.target || 0
+  );
+
+  const currentRuns = Number(
+    latestInnings?.runs || 0
+  );
+
+  const runsNeeded =
+    scoreboard?.currentInnings === 2 &&
+    target
+      ? Math.max(
+          target - currentRuns,
+          0
+        )
+      : 0;
+
+  const requiredRunRate =
+    scoreboard?.currentInnings === 2 &&
+    Number(ballsLeft) > 0
+      ? Number(
+          (
+            (runsNeeded /
+              Number(ballsLeft)) *
+            6
+          ).toFixed(2)
+        )
+      : 0;
+
+  const maximumRate = Math.max(
+    currentRunRate,
+    requiredRunRate,
+    12
+  );
+
+  return {
+    crr: currentRunRate.toFixed(2),
+
+    rrr: requiredRunRate
+      ? requiredRunRate.toFixed(2)
+      : "—",
+
+    crrPct: Math.min(
+      (currentRunRate / maximumRate) * 100,
+      100
+    ),
+
+    rrrPct: Math.min(
+      (requiredRunRate / maximumRate) * 100,
+      100
+    ),
+  };
+}
+
+export default function LiveScoreClient({
+  matchId,
+}) {
+  const [scoreboard, setScoreboard] =
+    useState(null);
+
+  const [error, setError] =
+    useState("");
+
+  const [
+    collapsedInnings,
+    setCollapsedInnings,
+  ] = useState({});
+
+  const [
+    showScorecard,
+    setShowScorecard,
+  ] = useState(false);
+
+  const [
+    showInsights,
+    setShowInsights,
+  ] = useState(false);
+
+  const [tvMode, setTvMode] =
+    useState(false);
+
+  const [
+    isRefreshing,
+    setIsRefreshing,
+  ] = useState(false);
+
+  useEffect(() => {
+    let intervalId = null;
+    let cancelled = false;
+
+    async function loadScorecard() {
+      try {
+        const response = await fetch(
+          `/api/liveview/${matchId}`,
+          {
+            cache: "no-store",
+          }
+        );
+
+        if (!response.ok) {
+          throw new Error(
+            "Failed to load scorecard"
+          );
+        }
+
+        const data =
+          await response.json();
+
+        if (cancelled) {
+          return;
+        }
+
+        setScoreboard(data);
+        setError("");
+
+        if (
+          isFinalMatchStatus(
+            data?.match?.status
+          ) &&
+          intervalId
+        ) {
+          clearInterval(intervalId);
+          intervalId = null;
+        }
+      } catch (loadError) {
+        if (!cancelled) {
+          setError(
+            loadError?.message ||
+              "Failed to load scorecard"
+          );
+        }
+      }
+    }
+
+    loadScorecard();
+
+    intervalId = setInterval(
+      loadScorecard,
+      5000
+    );
+
+    return () => {
+      cancelled = true;
+
+      if (intervalId) {
+        clearInterval(intervalId);
+      }
+    };
+  }, [matchId]);
+
+  const latestInnings = useMemo(() => {
+    if (!scoreboard) {
+      return null;
+    }
+
+    return (
+      scoreboard.innings?.find(
+        (innings) =>
+          innings.number ===
+          scoreboard.currentInnings
+      ) ??
+      scoreboard.innings?.[
+        scoreboard.innings.length - 1
+      ] ??
+      null
+    );
+  }, [scoreboard]);
+
+  if (error && !scoreboard) {
+    return (
+      <main className="live-page-shell">
+        <div className="live-error-card">
+          <h2>
+            Unable to load scorecard
+          </h2>
+
+          <p>{error}</p>
+
+          <button
+            type="button"
+            onClick={() =>
+              window.location.reload()
+            }
+          >
+            Try again
+          </button>
+        </div>
+      </main>
+    );
+  }
+
+  if (!scoreboard) {
+    return (
+      <main className="live-page-shell">
+        <div className="live-loading-card">
+          <div className="live-loading-dot" />
+
+          <h2>
+            Loading live scorecard...
+          </h2>
+        </div>
+      </main>
+    );
+  }
+
+  const ballsLeft =
+    scoreboard?.summary?.remainingBalls;
+
+  const rateTrend = getRunRateTrend(
+    scoreboard,
+    latestInnings,
+    ballsLeft
+  );
+
+  const topBatter =
+    getTopBatter(scoreboard);
+
+  const bestBowler =
+    getBestBowler(scoreboard);
+
+  const lastThreeOvers =
+    getLastThreeOvers(scoreboard);
+
+  const matchInsights =
+    buildMatchInsights(scoreboard);
+
+  const matchStatus = String(
+    scoreboard?.match?.status || ""
+  ).toUpperCase();
+
+  const isMatchFinished =
+    isFinalMatchStatus(matchStatus);
+
+  const chaseRunsNeeded =
+    scoreboard?.currentInnings === 2 &&
+    scoreboard?.summary?.target
+      ? Math.max(
+          Number(
+            scoreboard.summary.target
+          ) -
+            Number(
+              latestInnings?.runs || 0
+            ),
+          0
+        )
+      : null;
+
+  const requiredRate =
+    chaseRunsNeeded !== null &&
+    Number(ballsLeft) > 0
+      ? (
+          (chaseRunsNeeded /
+            Number(ballsLeft)) *
+          6
+        ).toFixed(2)
+      : null;
+
+  const livePillText =
+    matchStatus === "ABANDONED"
+      ? "MATCH ABANDONED"
+      : matchStatus ===
+          "COMPLETED_LOCKED"
+        ? "COMPLETED & LOCKED"
+        : matchStatus ===
+            "COMPLETED_CORRECTED"
+          ? "COMPLETED & CORRECTED"
+          : matchStatus === "COMPLETED"
+            ? "MATCH COMPLETED"
+            : "LIVE";
+
+  const strikerValue =
+    scoreboard?.currentState
+      ?.strikerStats
+      ? `${scoreboard.currentState.strikerStats.runs} (${scoreboard.currentState.strikerStats.balls})`
+      : "";
+
+  const nonStrikerValue =
+    scoreboard?.currentState
+      ?.nonStrikerStats
+      ? `${scoreboard.currentState.nonStrikerStats.runs} (${scoreboard.currentState.nonStrikerStats.balls})`
+      : "";
+
+  const bowlerValue =
+    scoreboard?.currentState
+      ?.bowlerStats
+      ? `${scoreboard.currentState.bowlerStats.wickets}/${scoreboard.currentState.bowlerStats.runs} • ${scoreboard.currentState.bowlerStats.overs} ov`
+      : "";
+
+  function toggleInnings(inningsNo) {
+    setCollapsedInnings((previous) => ({
+      ...previous,
+
+      [inningsNo]:
+        previous[inningsNo] === false
+          ? true
+          : false,
+    }));
+  }
+
+  async function shareLiveScore() {
+    const shareUrl =
+      window.location.href;
+
+    const shareText =
+      `${scoreboard?.match?.teamAName} vs ` +
+      `${scoreboard?.match?.teamBName} • ` +
+      `${latestInnings?.runs}/` +
+      `${latestInnings?.wickets} in ` +
+      `${latestInnings?.oversDisplay} ov`;
+
+    try {
+      if (navigator.share) {
+        await navigator.share({
+          title:
+            "Cric4All Live Score",
+
+          text: shareText,
+          url: shareUrl,
+        });
+
+        return;
+      }
+
+      await navigator.clipboard.writeText(
+        shareUrl
+      );
+
+      alert(
+        "Live score link copied!"
+      );
+    } catch (shareError) {
+      if (
+        shareError?.name !==
+        "AbortError"
+      ) {
+        alert(
+          "Unable to share this score right now."
+        );
+      }
+    }
+  }
+
+  async function refreshNow() {
+    try {
+      setIsRefreshing(true);
+
+      const response = await fetch(
+        `/api/liveview/${matchId}`,
+        {
+          cache: "no-store",
+        }
+      );
+
+      if (!response.ok) {
+        throw new Error(
+          "Failed to refresh scorecard"
+        );
+      }
+
+      const data =
+        await response.json();
+
+      setScoreboard(data);
+      setError("");
+    } catch (refreshError) {
+      setError(
+        refreshError?.message ||
+          "Failed to refresh scorecard"
+      );
+    } finally {
+      setIsRefreshing(false);
+    }
+  }
 
   return (
-<main className={`live-page-shell ${tvMode ? "live-tv-mode" : ""}`}>
-  {tvMode && (
-  <button
-    type="button"
-    className="live-tv-exit-btn"
-    onClick={() => setTvMode(false)}
-  >
-    ✕ Exit TV Mode
-  </button>
-)}
-      <section className="live-hero-card">
-        <div className="live-hero-top">
-<span className={`live-pill ${isMatchFinished ? "completed" : ""}`}>
-  {livePillText}
-</span>
+    <main
+      className={`live-page-shell ${
+        tvMode ? "live-tv-mode" : ""
+      }`}
+    >
+      {tvMode ? (
+        <button
+          type="button"
+          className="live-tv-exit-btn"
+          onClick={() =>
+            setTvMode(false)
+          }
+        >
+          ✕ Exit TV Mode
+        </button>
+      ) : null}
 
-<span className="live-refresh">
-  {isMatchFinished ? "Final scorecard" : "Auto refreshes every 5s"}
-</span>
+      <section
+        className="live-primary-card"
+        aria-label="Live match summary"
+      >
+        <div className="live-primary-topline">
+          <span
+            className={`live-pill ${
+              isMatchFinished
+                ? "completed"
+                : ""
+            }`}
+          >
+            <i aria-hidden="true" />
+
+            {livePillText}
+          </span>
+
+          <span className="live-refresh-copy">
+            {isMatchFinished
+              ? "Final scorecard"
+              : "Updates every 5 seconds"}
+          </span>
         </div>
 
         <div className="live-match-title">
-          {scoreboard?.match?.teamAName} vs {scoreboard?.match?.teamBName}
+          {scoreboard?.match?.teamAName}
+
+          <span>vs</span>
+
+          {scoreboard?.match?.teamBName}
         </div>
 
-        <div className="live-score-row">
-          <div className="live-main-score">
-            {latestInnings
-              ? `${latestInnings.runs}/${latestInnings.wickets}`
-              : "-"}
-          </div>
+        <div className="live-score-focus">
+          <div>
+            <span className="live-batting-team">
+              {latestInnings?.teamName ||
+                "Current innings"}
+            </span>
 
-          <div className="live-score-side">
-            <span>Current innings</span>
-            <strong>
+            <strong className="live-main-score">
               {latestInnings
-                ? `Innings ${latestInnings.number} • ${latestInnings.oversDisplay} ov`
+                ? `${latestInnings.runs}/${latestInnings.wickets}`
                 : "-"}
             </strong>
+          </div>
+
+          <div className="live-over-focus">
+            <strong>
+              {latestInnings?.oversDisplay ||
+                "0.0"}
+            </strong>
+
+            <span>overs</span>
           </div>
         </div>
 
         <p className="live-status-text">
-          {scoreboard?.summary?.statusText || "Match in progress"}
+          {scoreboard?.summary
+            ?.statusText ||
+            "Match in progress"}
         </p>
-{matchInsights && (
-  <div className="match-insights-card">
-    {matchInsights.resultText && (
-      <div className="insight-result">
-        <span>🏆 Match Result</span>
-        <strong>{matchInsights.resultText}</strong>
-      </div>
-    )}
 
-    {matchInsights.potm && (
-      <div className="insight-mini">
-        <span>⭐ Player of the Match</span>
-        <strong>{matchInsights.potm.playerName}</strong>
-        <small>
-          {matchInsights.potm.summary?.join(" & ") || "Top performer"}
-        </small>
-      </div>
-    )}
+        {scoreboard?.currentInnings ===
+          2 &&
+        chaseRunsNeeded !== null &&
+        !isMatchFinished ? (
+          <div className="live-chase-card">
+            <span>
+              CHASE EQUATION
+            </span>
 
-    {matchInsights.winProbability && (
-      <div className="insight-mini">
-        <span>📈 Win Probability</span>
+            <strong>
+              Need {chaseRunsNeeded} from{" "}
+              {ballsLeft ?? "-"} balls
+            </strong>
 
-        <div className="win-prob-row">
-          <b>{matchInsights.winProbability.bowlingTeam}</b>
-          <div className="win-prob-track">
-            <i
-              style={{
-                width: `${matchInsights.winProbability.bowlingChance}%`,
-              }}
-            />
+            <small>
+              Required rate{" "}
+              {requiredRate || "—"}
+            </small>
           </div>
-          <b>{matchInsights.winProbability.bowlingChance}%</b>
-        </div>
+        ) : null}
 
-        <div className="win-prob-row">
-          <b>{matchInsights.winProbability.battingTeam}</b>
-          <div className="win-prob-track chase">
-            <i
-              style={{
-                width: `${matchInsights.winProbability.battingChance}%`,
-              }}
-            />
-          </div>
-          <b>{matchInsights.winProbability.battingChance}%</b>
-        </div>
-      </div>
-    )}
-  </div>
-)}
-{scoreboard?.currentInnings === 2 &&
-  chaseRunsNeeded !== null &&
-  !["COMPLETED", "ABANDONED", "COMPLETED_LOCKED", "COMPLETED_CORRECTED"].includes(
-    String(scoreboard?.match?.status || "").toUpperCase()
-  ) && (
-  <div className="live-chase-card">
-    <span>Chase Equation</span>
-    <strong>
-      Need {chaseRunsNeeded} from {ballsLeft ?? "-"} balls
-    </strong>
-    <small>Required rate {requiredRate || "—"}</small>
-  </div>
-)}
-
-<div className="live-stars-grid">
-  <div className="live-star-card">
-    <span>🔥 Top Batter</span>
-    <strong>{topBatter?.playerName || "-"}</strong>
-    <small>
-      {topBatter
-        ? `${topBatter.runs} (${topBatter.balls})`
-        : "No runs yet"}
-    </small>
-  </div>
-
-  <div className="live-star-card">
-    <span>🎯 Best Bowler</span>
-    <strong>{bestBowler?.playerName || "-"}</strong>
-    <small>
-      {bestBowler
-        ? `${bestBowler.wickets}/${bestBowler.runs} in ${bestBowler.overs} ov`
-        : "No figures yet"}
-    </small>
-  </div>
-</div>
-        <div className="live-recent-section">
-          <span>Recent</span>
-
-          <div className="live-recent-strip">
-            {scoreboard?.recentBalls?.slice(-12).map((ball, index) => {
-              const item = getBallDisplay(ball.label);
-
-              return (
-                <b
-                  key={ball.id || index}
-                  className={`live-ball live-ball-${item.type}`}
-                >
-                  {item.text}
-                </b>
-              );
-            })}
-          </div>
-        </div>
-
-        {lastThreeOvers.length > 0 && (
-  <div className="live-momentum-strip">
-    <span>Momentum</span>
-
-    <div>
-{lastThreeOvers.map((over, index) => (
-  <b key={over.overNo}>
-    Over {Number(over.overNo) + 1}: {over.runs}
-    {over.wickets ? `/${over.wickets}` : ""}
-  </b>
-))}
-    </div>
-  </div>
-  
-)}
-{/*}
-{matchStory.length > 0 && (
-  <section className="live-story-card">
-    <div className="live-story-head">
-      <strong>📖 Match Story</strong>
-      <span>Quick highlights</span>
-    </div>
-
-    <div className="live-story-list">
-      {matchStory.slice(0, 6).map((item, index) => (
-        <div key={`${item.label}-${index}`} className="live-story-item">
-          <span>{item.label}</span>
-          <strong>{item.title}</strong>
-          <small>{item.detail}</small>
-        </div>
-      ))}
-    </div>
-  </section>
-)}
-*/}
-        <div className="live-hero-metrics">
+        <div className="live-key-metrics">
           <InfoPill
-            label="Overs"
-            value={latestInnings?.oversDisplay || "0.0"}
-          />
-
-          <InfoPill
-            label="Run Rate"
-            value={latestInnings?.runRate || "0.00"}
+            label="CRR"
+            value={rateTrend.crr}
+            emphasis
           />
 
           <InfoPill
             label="Target"
             value={
-              scoreboard?.currentInnings === 2 && scoreboard?.summary?.target
-                ? scoreboard.summary.target
+              scoreboard?.currentInnings ===
+              2
+                ? scoreboard?.summary
+                    ?.target || "—"
                 : "—"
             }
           />
 
-          <InfoPill label="Balls Left" value={ballsLeft ?? "—"} />
+          <InfoPill
+            label="Balls left"
+            value={ballsLeft ?? "—"}
+          />
+
+          <InfoPill
+            label="RRR"
+            value={rateTrend.rrr}
+            emphasis={
+              scoreboard?.currentInnings ===
+              2
+            }
+          />
         </div>
-        <div className="live-rate-trend">
-  <div className="rate-row">
-    <span>CRR {rateTrend.crr}</span>
-    <div className="rate-track">
-      <i style={{ width: `${rateTrend.crrPct}%` }} />
-    </div>
-  </div>
 
-  <div className="rate-row rrr">
-    <span>RRR {rateTrend.rrr}</span>
-    <div className="rate-track">
-      <i style={{ width: `${rateTrend.rrrPct}%` }} />
-    </div>
-  </div>
-</div>
+        <section
+          className="live-current-grid"
+          aria-label="Players currently involved"
+        >
+          <PlayerCard
+            label="🏏 Striker"
+            name={
+              scoreboard?.currentState
+                ?.strikerName || "-"
+            }
+            value={strikerValue}
+            active
+          />
+
+          <PlayerCard
+            label="🏃 Non-striker"
+            name={
+              scoreboard?.currentState
+                ?.nonStrikerName || "-"
+            }
+            value={nonStrikerValue}
+          />
+
+          <PlayerCard
+            label="🎯 Bowler"
+            name={
+              scoreboard?.currentState
+                ?.bowlerName || "-"
+            }
+            value={bowlerValue}
+          />
+        </section>
+
+        <div className="live-recent-section">
+          <div className="live-section-label">
+            <strong>
+              Recent balls
+            </strong>
+
+            <span>
+              Latest delivery on the right
+            </span>
+          </div>
+
+          <div className="live-recent-strip">
+            {scoreboard?.recentBalls
+              ?.slice(-12)
+              .map((ball, index) => {
+                const item =
+                  getBallDisplay(
+                    ball.label
+                  );
+
+                return (
+                  <b
+                    key={
+                      ball.id || index
+                    }
+                    className={`live-ball live-ball-${item.type}`}
+                  >
+                    {item.text}
+                  </b>
+                );
+              })}
+          </div>
+        </div>
+
+        {lastThreeOvers.length > 0 ? (
+          <div className="live-momentum-strip">
+            <span>
+              Last overs
+            </span>
+
+            <div>
+              {lastThreeOvers.map(
+                (over) => (
+                  <b key={over.overNo}>
+                    O
+                    {Number(
+                      over.overNo
+                    ) + 1}
+                    : {over.runs}
+                    {over.wickets
+                      ? `/${over.wickets}`
+                      : ""}
+                  </b>
+                )
+              )}
+            </div>
+          </div>
+        ) : null}
       </section>
-      <div className="live-action-bar">
-  <button type="button" onClick={shareLiveScore}>
-    📤 Share Live Score
-  </button>
-<button
-  type="button"
-  onClick={() => setTvMode((prev) => !prev)}
->
-  📺 {tvMode ? "Exit TV Mode" : "TV Mode"}
-</button>
-  <button type="button" onClick={() => window.location.reload()}>
-    🔄 Refresh
-  </button>
-</div>
-<div className="live-view-toggle">
-  <button
-    type="button"
-    className={viewMode === "compact" ? "active" : ""}
-    onClick={() => setViewMode("compact")}
-  >
-    ⚡ Compact
-  </button>
 
-  <button
-    type="button"
-    className={viewMode === "full" ? "active" : ""}
-    onClick={() => setViewMode("full")}
-  >
-    📋 Full Scorecard
-  </button>
-</div>
-      <section className="live-current-grid">
-        <PlayerCard
-          label="🏏 Striker"
-          name={scoreboard?.currentState?.strikerName || "-"}
-          value={strikerValue}
-        />
+      {!tvMode ? (
+        <nav
+          className="live-action-bar"
+          aria-label="Scorecard actions"
+        >
+          <button
+            type="button"
+            onClick={shareLiveScore}
+          >
+            📤 <span>Share</span>
+          </button>
 
-        <PlayerCard
-          label="🏃 Non-striker"
-          name={scoreboard?.currentState?.nonStrikerName || "-"}
-          value={nonStrikerValue}
-        />
+          <button
+            type="button"
+            onClick={() =>
+              setTvMode(true)
+            }
+          >
+            📺 <span>TV mode</span>
+          </button>
 
-        <PlayerCard
-          label="🎯 Bowler"
-          name={scoreboard?.currentState?.bowlerName || "-"}
-          value={bowlerValue}
-        />
-      </section>
+          <button
+            type="button"
+            onClick={refreshNow}
+            disabled={isRefreshing}
+          >
+            🔄{" "}
+            <span>
+              {isRefreshing
+                ? "Refreshing"
+                : "Refresh"}
+            </span>
+          </button>
+        </nav>
+      ) : null}
 
-{viewMode === "full" &&
-  !tvMode &&
-  scoreboard?.innings?.map((innings) => {
-        const isCollapsed = collapsedInnings[innings.number];
+      {!tvMode &&
+      (matchInsights ||
+        topBatter ||
+        bestBowler) ? (
+        <AccordionSection
+  id="live-insights-panel"
+  title="📊 Match Insights"
+  subtitle="Result, win probability and standout performers"
+          open={showInsights}
+          onToggle={() =>
+            setShowInsights(
+              (previous) => !previous
+            )
+          }
+        >
+          {matchInsights?.resultText ? (
+            <div className="insight-result">
+              <span>
+                🏆 Match Result
+              </span>
 
-        return (
-          <section key={innings.number} className="live-innings-card">
-            <button
-              type="button"
-              className="live-innings-header"
-              onClick={() => toggleInnings(innings.number)}
-            >
-              <div>
-                <span>Innings {innings.number}</span>
-                <strong>{innings.teamName}</strong>
-              </div>
+              <strong>
+                {
+                  matchInsights.resultText
+                }
+              </strong>
+            </div>
+          ) : null}
 
-              <b>
-                {innings.runs}/{innings.wickets} ({innings.oversDisplay})
-              </b>
+          <div className="live-stars-grid">
+            <div className="live-star-card">
+              <span>
+                🔥 Top Batter
+              </span>
 
-              <i>{isCollapsed ? "+" : "−"}</i>
-            </button>
+              <strong>
+                {topBatter?.playerName ||
+                  "-"}
+              </strong>
 
-            {!isCollapsed && (
-              <div className="live-innings-body">
-                <div className="live-summary-grid">
-                  <InfoPill
-                    label="Score"
-                    value={`${innings.runs}/${innings.wickets}`}
-                  />
-                  <InfoPill label="Overs" value={innings.oversDisplay} />
-                  <InfoPill label="Run Rate" value={innings.runRate} />
-                  <InfoPill
-                    label="Powerplay"
-                    value={`${innings.powerplay?.runs || 0}/${
-                      innings.powerplay?.wickets || 0
-                    }`}
+              <small>
+                {topBatter
+                  ? `${topBatter.runs} (${topBatter.balls})`
+                  : "No runs yet"}
+              </small>
+            </div>
+
+            <div className="live-star-card">
+              <span>
+                🎯 Best Bowler
+              </span>
+
+              <strong>
+                {bestBowler?.playerName ||
+                  "-"}
+              </strong>
+
+              <small>
+                {bestBowler
+                  ? `${bestBowler.wickets}/${bestBowler.runs} in ${bestBowler.overs} ov`
+                  : "No figures yet"}
+              </small>
+            </div>
+          </div>
+
+          {matchInsights?.potm ? (
+            <div className="insight-mini">
+              <span>
+                ⭐ Player of the Match
+              </span>
+
+              <strong>
+                {
+                  matchInsights.potm
+                    .playerName
+                }
+              </strong>
+
+              <small>
+                {matchInsights.potm
+                  .summary?.join(" & ") ||
+                  "Top performer"}
+              </small>
+            </div>
+          ) : null}
+
+          {matchInsights?.winProbability ? (
+            <div className="insight-mini">
+              <span>
+                📈 Win Probability
+              </span>
+
+              <div className="win-prob-row">
+                <b>
+                  {
+                    matchInsights
+                      .winProbability
+                      .bowlingTeam
+                  }
+                </b>
+
+                <div className="win-prob-track">
+                  <i
+                    style={{
+                      width: `${matchInsights.winProbability.bowlingChance}%`,
+                    }}
                   />
                 </div>
 
-                <h3 className="live-section-title">🏏 Batting Scorecard</h3>
-
-                <ProTable type="batting">
-                  <thead>
-                    <tr>
-                      <th>Player</th>
-                      <th>R</th>
-                      <th>B</th>
-                      <th>4s</th>
-                      <th>6s</th>
-                      <th>SR</th>
-                      <th>Dismissal</th>
-                    </tr>
-                  </thead>
-
-                  <tbody>
-{innings?.battingStats?.map((batter) => {
-  const isTopScorer =
-    Number(batter.runs || 0) === getTopRuns(innings.battingStats) &&
-    Number(batter.runs || 0) > 0;
-
-  const isNotOut =
-    !batter.dismissal && !batter.isRetiredHurt;
-
-  return (
-    <tr
-      key={batter.playerId}
-      className={isTopScorer ? "highlight-top-batter" : ""}
-    >
-                        <td className="name-cell">{batter.playerName}</td>
-                        <td>{batter.runs}</td>
-                        <td>{batter.balls}</td>
-                        <td>{batter.fours}</td>
-                        <td>{batter.sixes}</td>
-                        <td>{batter.strikeRate}</td>
-<td>
-  {batter.isRetiredHurt ? (
-    <span className="score-badge retired">Retired hurt</span>
-  ) : isNotOut ? (
-    <span className="score-badge notout">not out</span>
-  ) : (
-    batter.dismissal || "-"
-  )}
-</td>
-                      </tr>
-                    );
-                    })}
-                  </tbody>
-                </ProTable>
-
-                <h3 className="live-section-title">🎯 Bowling Scorecard</h3>
-
-                <ProTable type="bowling">
-                  <thead>
-                    <tr>
-                      <th>Bowler</th>
-                      <th>Overs</th>
-                      <th>Runs</th>
-                      <th>Wickets</th>
-                      <th>Dots</th>
-                      <th>Economy</th>
-                    </tr>
-                  </thead>
-
-                  <tbody>
-{innings?.bowlingStats?.map((bowler) => {
-  const isBestBowler =
-    Number(bowler.wickets || 0) === getBestWickets(innings.bowlingStats) &&
-    Number(bowler.wickets || 0) > 0;
-
-  return (
-    <tr
-      key={bowler.playerId}
-      className={isBestBowler ? "highlight-best-bowler" : ""}
-    >
-                        <td className="name-cell">{bowler.playerName}</td>
-                        <td>{bowler.overs}</td>
-                        <td>{bowler.runs}</td>
-  <td>
-  {Number(bowler.wickets || 0) > 0 ? (
-    <span className="score-badge wicket">{bowler.wickets}</span>
-  ) : (
-    bowler.wickets
-  )}
-</td>
-                        <td>{bowler.dots}</td>
-                        <td>{bowler.economy}</td>
-                      </tr>
-                       );
-                    })}
-                  </tbody>
-                </ProTable>
-
-                <h3 className="live-section-title">🤝 Partnerships</h3>
-
-                <ProTable type="partnerships">
-                  <thead>
-                    <tr>
-                      <th>Batters</th>
-                      <th>Runs</th>
-                      <th>Balls</th>
-                      <th>Status</th>
-                    </tr>
-                  </thead>
-
-                  <tbody>
-                    {innings.partnerships?.map((p, index) => (
-                      <tr key={index}>
-                        <td className="name-cell">
-                          {p.batter1} & {p.batter2}
-                        </td>
-                        <td>{p.runs}</td>
-                        <td>{p.balls}</td>
-                        <td>{p.ongoing ? "Current" : `W${p.wicketNumber}`}</td>
-                      </tr>
-                    ))}
-                  </tbody>
-                </ProTable>
-
-                <h3 className="live-section-title">☝️ Fall of Wickets</h3>
-
-                <ProTable type="wickets">
-                  <thead>
-                    <tr>
-                      <th>Wicket</th>
-                      <th>Score</th>
-                      <th>Player</th>
-                      <th>Over</th>
-                    </tr>
-                  </thead>
-
-                  <tbody>
-                    {innings.fallOfWickets?.map((w, index) => (
-                      <tr key={index}>
-                        <td>{w.wicketNumber}</td>
-                        <td>{w.score}</td>
-                        <td className="name-cell">{w.playerOut}</td>
-                        <td>{w.over}</td>
-                      </tr>
-                    ))}
-                  </tbody>
-                </ProTable>
+                <b>
+                  {
+                    matchInsights
+                      .winProbability
+                      .bowlingChance
+                  }
+                  %
+                </b>
               </div>
+
+              <div className="win-prob-row">
+                <b>
+                  {
+                    matchInsights
+                      .winProbability
+                      .battingTeam
+                  }
+                </b>
+
+                <div className="win-prob-track chase">
+                  <i
+                    style={{
+                      width: `${matchInsights.winProbability.battingChance}%`,
+                    }}
+                  />
+                </div>
+
+                <b>
+                  {
+                    matchInsights
+                      .winProbability
+                      .battingChance
+                  }
+                  %
+                </b>
+              </div>
+            </div>
+          ) : null}
+
+          <div className="live-rate-trend">
+            <div className="rate-row">
+              <span>
+                CRR {rateTrend.crr}
+              </span>
+
+              <div className="rate-track">
+                <i
+                  style={{
+                    width: `${rateTrend.crrPct}%`,
+                  }}
+                />
+              </div>
+            </div>
+
+            <div className="rate-row rrr">
+              <span>
+                RRR {rateTrend.rrr}
+              </span>
+
+              <div className="rate-track">
+                <i
+                  style={{
+                    width: `${rateTrend.rrrPct}%`,
+                  }}
+                />
+              </div>
+            </div>
+          </div>
+        </AccordionSection>
+      ) : null}
+
+      {!tvMode ? (
+        <AccordionSection
+  id="full-scorecard-panel"
+  title="📋 Full Scorecard"
+  subtitle="Explore batting, bowling, partnerships and wickets"
+          open={showScorecard}
+          onToggle={() =>
+            setShowScorecard(
+              (previous) => !previous
+            )
+          }
+        >
+          <div className="live-innings-list">
+            {scoreboard?.innings?.map(
+              (innings) => {
+                const isCollapsed =
+                  collapsedInnings[
+                    innings.number
+                  ] !== false;
+
+                return (
+                  <section
+                    key={innings.number}
+                    className="live-innings-card"
+                  >
+                    <button
+                      type="button"
+                      className="live-innings-header"
+                      onClick={() =>
+                        toggleInnings(
+                          innings.number
+                        )
+                      }
+                      aria-expanded={
+                        !isCollapsed
+                      }
+                      aria-controls={`innings-${innings.number}-content`}
+                    >
+                      <div>
+                        <span>
+                          Innings{" "}
+                          {innings.number}
+                        </span>
+
+                        <strong>
+                          {
+                            innings.teamName
+                          }
+                        </strong>
+                      </div>
+
+                      <b>
+                        {innings.runs}/
+                        {innings.wickets}{" "}
+                        <small>
+                          (
+                          {
+                            innings.oversDisplay
+                          }
+                          )
+                        </small>
+                      </b>
+
+                      <i aria-hidden="true">
+                        {isCollapsed
+                          ? "+"
+                          : "−"}
+                      </i>
+                    </button>
+
+                    {!isCollapsed ? (
+                      <div
+                        id={`innings-${innings.number}-content`}
+                        className="live-innings-body"
+                      >
+                        <div className="live-summary-grid">
+                          <InfoPill
+                            label="Score"
+                            value={`${innings.runs}/${innings.wickets}`}
+                          />
+
+                          <InfoPill
+                            label="Overs"
+                            value={
+                              innings.oversDisplay
+                            }
+                          />
+
+                          <InfoPill
+                            label="Run Rate"
+                            value={
+                              innings.runRate
+                            }
+                          />
+
+                          <InfoPill
+                            label="Powerplay"
+                            value={`${
+                              innings
+                                .powerplay
+                                ?.runs || 0
+                            }/${
+                              innings
+                                .powerplay
+                                ?.wickets ||
+                              0
+                            }`}
+                          />
+                        </div>
+
+                        <h3 className="live-section-title">
+                          🏏 Batting
+                        </h3>
+
+                        <ProTable type="batting">
+                          <thead>
+                            <tr>
+                              <th>
+                                Player
+                              </th>
+                              <th>R</th>
+                              <th>B</th>
+                              <th>4s</th>
+                              <th>6s</th>
+                              <th>SR</th>
+                              <th>
+                                Dismissal
+                              </th>
+                            </tr>
+                          </thead>
+
+                          <tbody>
+                            {innings?.battingStats?.map(
+                              (
+                                batter
+                              ) => {
+                                const isTopScorer =
+                                  Number(
+                                    batter.runs ||
+                                      0
+                                  ) ===
+                                    getTopRuns(
+                                      innings.battingStats
+                                    ) &&
+                                  Number(
+                                    batter.runs ||
+                                      0
+                                  ) > 0;
+
+                                const isNotOut =
+                                  !batter.dismissal &&
+                                  !batter.isRetiredHurt;
+
+                                return (
+                                  <tr
+                                    key={
+                                      batter.playerId
+                                    }
+                                    className={
+                                      isTopScorer
+                                        ? "highlight-top-batter"
+                                        : ""
+                                    }
+                                  >
+                                    <td className="name-cell">
+                                      {
+                                        batter.playerName
+                                      }
+                                    </td>
+
+                                    <td>
+                                      {
+                                        batter.runs
+                                      }
+                                    </td>
+
+                                    <td>
+                                      {
+                                        batter.balls
+                                      }
+                                    </td>
+
+                                    <td>
+                                      {
+                                        batter.fours
+                                      }
+                                    </td>
+
+                                    <td>
+                                      {
+                                        batter.sixes
+                                      }
+                                    </td>
+
+                                    <td>
+                                      {
+                                        batter.strikeRate
+                                      }
+                                    </td>
+
+                                    <td>
+                                      {batter.isRetiredHurt ? (
+                                        <span className="score-badge retired">
+                                          Retired
+                                          hurt
+                                        </span>
+                                      ) : isNotOut ? (
+                                        <span className="score-badge notout">
+                                          not out
+                                        </span>
+                                      ) : (
+                                        batter.dismissal ||
+                                        "-"
+                                      )}
+                                    </td>
+                                  </tr>
+                                );
+                              }
+                            )}
+                          </tbody>
+                        </ProTable>
+
+                        <h3 className="live-section-title">
+                          🎯 Bowling
+                        </h3>
+
+                        <ProTable type="bowling">
+                          <thead>
+                            <tr>
+                              <th>
+                                Bowler
+                              </th>
+                              <th>
+                                Overs
+                              </th>
+                              <th>
+                                Runs
+                              </th>
+                              <th>
+                                Wickets
+                              </th>
+                              <th>
+                                Dots
+                              </th>
+                              <th>
+                                Economy
+                              </th>
+                            </tr>
+                          </thead>
+
+                          <tbody>
+                            {innings?.bowlingStats?.map(
+                              (
+                                bowler
+                              ) => {
+                                const isBestBowler =
+                                  Number(
+                                    bowler.wickets ||
+                                      0
+                                  ) ===
+                                    getBestWickets(
+                                      innings.bowlingStats
+                                    ) &&
+                                  Number(
+                                    bowler.wickets ||
+                                      0
+                                  ) > 0;
+
+                                return (
+                                  <tr
+                                    key={
+                                      bowler.playerId
+                                    }
+                                    className={
+                                      isBestBowler
+                                        ? "highlight-best-bowler"
+                                        : ""
+                                    }
+                                  >
+                                    <td className="name-cell">
+                                      {
+                                        bowler.playerName
+                                      }
+                                    </td>
+
+                                    <td>
+                                      {
+                                        bowler.overs
+                                      }
+                                    </td>
+
+                                    <td>
+                                      {
+                                        bowler.runs
+                                      }
+                                    </td>
+
+                                    <td>
+                                      {Number(
+                                        bowler.wickets ||
+                                          0
+                                      ) >
+                                      0 ? (
+                                        <span className="score-badge wicket">
+                                          {
+                                            bowler.wickets
+                                          }
+                                        </span>
+                                      ) : (
+                                        bowler.wickets
+                                      )}
+                                    </td>
+
+                                    <td>
+                                      {
+                                        bowler.dots
+                                      }
+                                    </td>
+
+                                    <td>
+                                      {
+                                        bowler.economy
+                                      }
+                                    </td>
+                                  </tr>
+                                );
+                              }
+                            )}
+                          </tbody>
+                        </ProTable>
+
+                        <h3 className="live-section-title">
+                          🤝 Partnerships
+                        </h3>
+
+                        <ProTable type="partnerships">
+                          <thead>
+                            <tr>
+                              <th>
+                                Batters
+                              </th>
+                              <th>
+                                Runs
+                              </th>
+                              <th>
+                                Balls
+                              </th>
+                              <th>
+                                Status
+                              </th>
+                            </tr>
+                          </thead>
+
+                          <tbody>
+                            {innings.partnerships?.map(
+                              (
+                                partnership,
+                                index
+                              ) => (
+                                <tr
+                                  key={`${partnership.batter1}-${partnership.batter2}-${index}`}
+                                >
+                                  <td className="name-cell">
+                                    {
+                                      partnership.batter1
+                                    }{" "}
+                                    &amp;{" "}
+                                    {
+                                      partnership.batter2
+                                    }
+                                  </td>
+
+                                  <td>
+                                    {
+                                      partnership.runs
+                                    }
+                                  </td>
+
+                                  <td>
+                                    {
+                                      partnership.balls
+                                    }
+                                  </td>
+
+                                  <td>
+                                    {partnership.ongoing
+                                      ? "Current"
+                                      : `W${partnership.wicketNumber}`}
+                                  </td>
+                                </tr>
+                              )
+                            )}
+                          </tbody>
+                        </ProTable>
+
+                        <h3 className="live-section-title">
+                          ☝️ Fall of wickets
+                        </h3>
+
+                        <ProTable type="wickets">
+                          <thead>
+                            <tr>
+                              <th>
+                                Wicket
+                              </th>
+                              <th>
+                                Score
+                              </th>
+                              <th>
+                                Player
+                              </th>
+                              <th>
+                                Over
+                              </th>
+                            </tr>
+                          </thead>
+
+                          <tbody>
+                            {innings.fallOfWickets?.map(
+                              (
+                                wicket,
+                                index
+                              ) => (
+                                <tr
+                                  key={`${wicket.wicketNumber}-${index}`}
+                                >
+                                  <td>
+                                    {
+                                      wicket.wicketNumber
+                                    }
+                                  </td>
+
+                                  <td>
+                                    {
+                                      wicket.score
+                                    }
+                                  </td>
+
+                                  <td className="name-cell">
+                                    {
+                                      wicket.playerOut
+                                    }
+                                  </td>
+
+                                  <td>
+                                    {
+                                      wicket.over
+                                    }
+                                  </td>
+                                </tr>
+                              )
+                            )}
+                          </tbody>
+                        </ProTable>
+                      </div>
+                    ) : null}
+                  </section>
+                );
+              }
             )}
-          </section>
-        );
-      })}
+          </div>
+        </AccordionSection>
+      ) : null}
+
+      {error ? (
+        <p className="live-inline-error">
+          {error}
+        </p>
+      ) : null}
     </main>
   );
 }

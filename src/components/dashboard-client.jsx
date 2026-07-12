@@ -6032,7 +6032,7 @@ onClick={() => {
 
 <Card
   title="🏏 Match Center"
-  defaultCollapsed={false}
+  defaultCollapsed={true}
 >
 <div className="match-center compact-match-center"> 
 <div className="match-command-single">
@@ -7675,10 +7675,6 @@ const playerRoleBadge = (row) => {
     <div className="mobile-secondary-actions scorer-secondary-row">
       <button type="button" className="btn btn-outline action-change-wk" disabled={isMatchCompleted || isMatchLocked || isMatchAbandoned} onClick={() => setShowKeeperChangeModal(true)}>
         🧤 Change WK
-      </button>
-
-      <button type="button" className="btn btn-outline action-rh-corrections" disabled={isMatchLocked || isMatchAbandoned} onClick={() => setShowCorrectionModal(true)}>
-        🛠️ Rtd H
       </button>
 
       {lastCorrectionId && (
