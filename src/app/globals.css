@@ -37635,50 +37635,6 @@ text-overflow:unset;
     min-width: 0;
   }
 
-  .mobile-active-match-card,
-  .mobile-active-match-card * {
-    box-sizing: border-box;
-  }
-
-  .mobile-active-match-card {
-    position: relative;
-
-    width: 100%;
-    min-width: 0;
-
-    padding: 12px;
-
-    overflow: hidden;
-
-    border-radius: 17px;
-    border: 1px solid rgba(148, 163, 184, 0.13);
-    border-left: 3px solid rgba(52, 211, 153, 0.62);
-
-    background:
-      radial-gradient(
-        circle at top right,
-        rgba(16, 185, 129, 0.06),
-        transparent 38%
-      ),
-      linear-gradient(
-        150deg,
-        rgba(19, 32, 54, 0.98),
-        rgba(11, 20, 37, 0.98)
-      );
-
-    box-shadow:
-      0 12px 25px rgba(2, 6, 23, 0.22),
-      inset 0 1px 0 rgba(255, 255, 255, 0.025);
-  }
-
-  .mobile-active-match-card.is-selected {
-    border-color: rgba(56, 189, 248, 0.34);
-    border-left-color: #38bdf8;
-
-    box-shadow:
-      0 13px 28px rgba(2, 6, 23, 0.24),
-      0 0 0 1px rgba(56, 189, 248, 0.05);
-  }
 
   /* Status and share */
 
@@ -37835,28 +37791,6 @@ text-overflow:unset;
 
   /* Live score strip */
 
-  .mobile-active-score-strip {
-    display: grid;
-    grid-template-columns: auto minmax(0, 1fr) auto;
-    align-items: center;
-    gap: 7px;
-
-    min-width: 0;
-
-    margin-top: 10px;
-    padding: 9px 10px;
-
-    border-radius: 12px;
-    border: 1px solid rgba(52, 211, 153, 0.13);
-
-    background:
-      linear-gradient(
-        135deg,
-        rgba(6, 78, 59, 0.16),
-        rgba(15, 23, 42, 0.42)
-      );
-  }
-
   .mobile-active-score-label {
     display: inline-flex;
     align-items: center;
@@ -37880,28 +37814,6 @@ text-overflow:unset;
     font-size: 8px;
     font-weight: 950;
     text-transform: uppercase;
-  }
-
-  .mobile-active-score-strip > strong {
-    min-width: 0;
-
-    color: #e2e8f0;
-
-    font-size: 10px;
-    font-weight: 850;
-    line-height: 1.35;
-
-    overflow: hidden;
-    text-overflow: ellipsis;
-    white-space: nowrap;
-  }
-
-  .mobile-active-score-strip > b {
-    color: #6ee7b7;
-
-    font-size: 19px;
-    font-weight: 700;
-    line-height: 1;
   }
 
   /* Action buttons */
@@ -38113,57 +38025,6 @@ text-overflow:unset;
     border-top: 1px solid rgba(148, 163, 184, 0.08);
   }
 
-  .mobile-active-rules-grid {
-    display: grid;
-    grid-template-columns: 1fr 1fr;
-    gap: 6px;
-
-    padding-top: 8px;
-  }
-
-  .mobile-active-rules-grid > div,
-  .mobile-active-role-list > div {
-    min-width: 0;
-
-    padding: 8px;
-
-    border-radius: 10px;
-
-    background: rgba(30, 41, 59, 0.47);
-  }
-
-  .mobile-active-rules-grid span,
-  .mobile-active-rules-grid strong,
-  .mobile-active-role-list span,
-  .mobile-active-role-list strong {
-    display: block;
-  }
-
-  .mobile-active-rules-grid span,
-  .mobile-active-role-list span {
-    color: #64748b;
-
-    font-size: 7px;
-    font-weight: 900;
-    line-height: 1.25;
-    text-transform: uppercase;
-
-    overflow-wrap: anywhere;
-  }
-
-  .mobile-active-rules-grid strong,
-  .mobile-active-role-list strong {
-    margin-top: 3px;
-
-    color: #e2e8f0;
-
-    font-size: 9px;
-    font-weight: 900;
-    line-height: 1.3;
-
-    overflow-wrap: anywhere;
-  }
-
   .mobile-active-role-list {
     display: grid;
     grid-template-columns: 1fr 1fr;
@@ -38175,16 +38036,10 @@ text-overflow:unset;
 
 /* Very narrow phones */
 @media (max-width: 370px) {
-  .mobile-active-match-card {
-    padding: 10px;
-  }
+
 
   .mobile-active-teams strong {
     font-size: 14px;
-  }
-
-  .mobile-active-score-strip {
-    grid-template-columns: 1fr auto;
   }
 
   .mobile-active-score-label {
@@ -38223,40 +38078,6 @@ text-overflow:unset;
 
     width: 100%;
     min-width: 0;
-  }
-
-  .mobile-scheduled-match-card,
-  .mobile-scheduled-match-card * {
-    box-sizing: border-box;
-  }
-
-  .mobile-scheduled-match-card {
-    width: 100%;
-    min-width: 0;
-
-    padding: 12px;
-
-    overflow: hidden;
-
-    border-radius: 17px;
-    border: 1px solid rgba(148, 163, 184, 0.13);
-    border-left: 3px solid rgba(56, 189, 248, 0.65);
-
-    background:
-      radial-gradient(
-        circle at top right,
-        rgba(14, 165, 233, 0.065),
-        transparent 38%
-      ),
-      linear-gradient(
-        150deg,
-        rgba(19, 32, 54, 0.98),
-        rgba(11, 20, 37, 0.98)
-      );
-
-    box-shadow:
-      0 12px 25px rgba(2, 6, 23, 0.22),
-      inset 0 1px 0 rgba(255, 255, 255, 0.025);
   }
 
   /* Status and share */
@@ -38390,49 +38211,6 @@ text-overflow:unset;
   }
 
   /* Three-value snapshot */
-
-  .mobile-scheduled-snapshot {
-    display: grid;
-    grid-template-columns: repeat(3, minmax(0, 1fr));
-    gap: 6px;
-
-    margin-top: 10px;
-  }
-
-  .mobile-scheduled-snapshot > div {
-    min-width: 0;
-
-    padding: 7px 5px;
-
-    border-radius: 10px;
-    border: 1px solid rgba(148, 163, 184, 0.1);
-
-    background: rgba(15, 23, 42, 0.4);
-
-    text-align: center;
-  }
-
-  .mobile-scheduled-snapshot span,
-  .mobile-scheduled-snapshot strong {
-    display: block;
-  }
-
-  .mobile-scheduled-snapshot span {
-    color: #64748b;
-
-    font-size: 7px;
-    font-weight: 900;
-    text-transform: uppercase;
-  }
-
-  .mobile-scheduled-snapshot strong {
-    margin-top: 2px;
-
-    color: #f8fafc;
-
-    font-size: 12px;
-    font-weight: 950;
-  }
 
   /* Actions */
 
@@ -38653,57 +38431,6 @@ text-overflow:unset;
     border-top: 1px solid rgba(148, 163, 184, 0.08);
   }
 
-  .mobile-scheduled-rules-grid {
-    display: grid;
-    grid-template-columns: 1fr 1fr;
-    gap: 6px;
-
-    padding-top: 8px;
-  }
-
-  .mobile-scheduled-rules-grid > div,
-  .mobile-scheduled-role-list > div {
-    min-width: 0;
-
-    padding: 8px;
-
-    border-radius: 10px;
-
-    background: rgba(30, 41, 59, 0.47);
-  }
-
-  .mobile-scheduled-rules-grid span,
-  .mobile-scheduled-rules-grid strong,
-  .mobile-scheduled-role-list span,
-  .mobile-scheduled-role-list strong {
-    display: block;
-  }
-
-  .mobile-scheduled-rules-grid span,
-  .mobile-scheduled-role-list span {
-    color: #64748b;
-
-    font-size: 7px;
-    font-weight: 900;
-    line-height: 1.25;
-    text-transform: uppercase;
-
-    overflow-wrap: anywhere;
-  }
-
-  .mobile-scheduled-rules-grid strong,
-  .mobile-scheduled-role-list strong {
-    margin-top: 3px;
-
-    color: #e2e8f0;
-
-    font-size: 9px;
-    font-weight: 900;
-    line-height: 1.3;
-
-    overflow-wrap: anywhere;
-  }
-
   .mobile-scheduled-role-list {
     display: grid;
     grid-template-columns: 1fr 1fr;
@@ -38715,9 +38442,7 @@ text-overflow:unset;
 
 /* Very narrow phones */
 @media (max-width: 370px) {
-  .mobile-scheduled-match-card {
-    padding: 10px;
-  }
+
 
   .mobile-scheduled-teams strong {
     font-size: 14px;
@@ -38739,5 +38464,614 @@ text-overflow:unset;
 
   .mobile-scheduled-role-list {
     grid-template-columns: 1fr;
+  }
+}
+/* =========================================================
+   CRIC4ALL MOBILE MATCH CARDS — READABLE WOW DESIGN
+========================================================= */
+
+@media (max-width: 760px) {
+  .mobile-wow-match-list {
+    display: grid;
+    gap: 14px;
+    width: 100%;
+  }
+
+  .mobile-wow-card,
+  .mobile-wow-card * {
+    box-sizing: border-box;
+  }
+
+  .mobile-wow-card {
+    width: 100%;
+    min-width: 0;
+    padding: 16px;
+
+    border: 1px solid rgba(148, 163, 184, 0.16);
+    border-radius: 20px;
+
+    background:
+      radial-gradient(
+        circle at 100% 0%,
+        rgba(59, 130, 246, 0.1),
+        transparent 42%
+      ),
+      linear-gradient(
+        155deg,
+        #14233c,
+        #0c172a
+      );
+
+    box-shadow:
+      0 16px 34px rgba(2, 6, 23, 0.3),
+      inset 0 1px 0 rgba(255, 255, 255, 0.035);
+
+    overflow: hidden;
+  }
+
+  .mobile-wow-active {
+    border-top: 3px solid rgba(52, 211, 153, 0.8);
+  }
+
+  .mobile-wow-scheduled {
+    border-top: 3px solid rgba(56, 189, 248, 0.82);
+  }
+
+  .mobile-wow-active.is-selected {
+    border-top-color: #38bdf8;
+  }
+
+  /* Header */
+
+  .mobile-wow-top {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 12px;
+  }
+
+  .mobile-wow-status {
+    min-height: 30px;
+
+    display: inline-flex;
+    align-items: center;
+    gap: 7px;
+
+    padding: 0 11px;
+
+    border-radius: 999px;
+
+    font-size: 11px;
+    font-weight: 900;
+    line-height: 1;
+    text-transform: uppercase;
+    white-space: nowrap;
+  }
+
+  .mobile-wow-status.live {
+    color: #a7f3d0;
+    background: rgba(16, 185, 129, 0.13);
+    border: 1px solid rgba(52, 211, 153, 0.28);
+  }
+
+  .mobile-wow-status.live i {
+    width: 7px;
+    height: 7px;
+    border-radius: 50%;
+    background: #34d399;
+    box-shadow: 0 0 9px rgba(52, 211, 153, 0.9);
+  }
+
+  .mobile-wow-status.scheduled {
+    color: #bae6fd;
+    background: rgba(14, 165, 233, 0.13);
+    border: 1px solid rgba(56, 189, 248, 0.28);
+  }
+
+  .mobile-wow-icon-btn {
+    width: 40px !important;
+    height: 40px !important;
+    min-width: 40px !important;
+    min-height: 40px !important;
+    flex: 0 0 40px;
+
+    display: inline-flex !important;
+    align-items: center;
+    justify-content: center;
+
+    padding: 0 !important;
+    margin: 0 !important;
+
+    border: 1px solid rgba(148, 163, 184, 0.19) !important;
+    border-radius: 13px !important;
+
+    background:
+      linear-gradient(
+        145deg,
+        rgba(71, 85, 105, 0.7),
+        rgba(30, 41, 59, 0.94)
+      ) !important;
+
+    color: #f8fafc !important;
+    font-size: 17px !important;
+    line-height: 1 !important;
+
+    box-shadow:
+      inset 0 1px 0 rgba(255, 255, 255, 0.05),
+      0 6px 14px rgba(2, 6, 23, 0.22) !important;
+  }
+
+  .mobile-wow-icon-btn:active:not(:disabled) {
+    transform: scale(0.92);
+  }
+
+  .mobile-wow-icon-btn:disabled {
+    opacity: 0.35;
+  }
+
+  /* Team names */
+
+  .mobile-wow-teams {
+    display: grid;
+    grid-template-columns: minmax(0, 1fr) auto minmax(0, 1fr);
+    align-items: center;
+    gap: 9px;
+
+    margin-top: 16px;
+  }
+
+  .mobile-wow-teams strong {
+    color: #ffffff;
+    font-size: 17px;
+    font-weight: 950;
+    line-height: 1.25;
+    overflow-wrap: anywhere;
+  }
+
+  .mobile-wow-teams strong:last-child {
+    text-align: right;
+  }
+
+  .mobile-wow-teams span {
+    color: #64748b;
+    font-size: 10px;
+    font-weight: 950;
+  }
+
+  .mobile-wow-subtitle {
+    margin-top: 7px;
+
+    color: #a8b4c7;
+    font-size: 12px;
+    font-weight: 700;
+    line-height: 1.4;
+  }
+
+  /* Active score */
+
+  .mobile-wow-live-score {
+    width: 100%;
+    min-width: 0;
+
+    display: grid;
+    grid-template-columns: minmax(0, 1fr) auto;
+    align-items: center;
+    gap: 12px;
+
+    margin-top: 14px;
+    padding: 13px 14px;
+
+    border: 1px solid rgba(52, 211, 153, 0.18);
+    border-radius: 15px;
+
+    background:
+      linear-gradient(
+        135deg,
+        rgba(6, 95, 70, 0.22),
+        rgba(15, 23, 42, 0.5)
+      );
+
+    text-align: left;
+  }
+
+  .mobile-wow-live-score > div {
+    min-width: 0;
+  }
+
+  .mobile-wow-live-score span {
+    display: flex;
+    align-items: center;
+    gap: 6px;
+
+    color: #6ee7b7;
+    font-size: 10px;
+    font-weight: 900;
+    text-transform: uppercase;
+  }
+
+  .mobile-wow-live-score span i {
+    width: 7px;
+    height: 7px;
+    border-radius: 50%;
+    background: #34d399;
+  }
+
+  .mobile-wow-live-score strong {
+    display: block;
+    margin-top: 6px;
+
+    color: #f8fafc;
+    font-size: 13px;
+    font-weight: 850;
+    line-height: 1.45;
+
+    white-space: normal;
+    overflow-wrap: anywhere;
+  }
+
+  .mobile-wow-live-score > b {
+    color: #6ee7b7;
+    font-size: 28px;
+    font-weight: 500;
+  }
+
+  /* Scheduled date */
+
+  .mobile-wow-schedule-line {
+    margin-top: 14px;
+    padding: 13px 14px;
+
+    border-radius: 15px;
+    border: 1px solid rgba(56, 189, 248, 0.18);
+
+    background:
+      linear-gradient(
+        135deg,
+        rgba(3, 105, 161, 0.16),
+        rgba(15, 23, 42, 0.47)
+      );
+  }
+
+  .mobile-wow-schedule-line span,
+  .mobile-wow-schedule-line strong {
+    display: block;
+  }
+
+  .mobile-wow-schedule-line span {
+    color: #7dd3fc;
+    font-size: 10px;
+    font-weight: 900;
+    text-transform: uppercase;
+  }
+
+  .mobile-wow-schedule-line strong {
+    margin-top: 5px;
+
+    color: #ffffff;
+    font-size: 14px;
+    font-weight: 900;
+    line-height: 1.4;
+  }
+
+  /* Actions */
+
+  .mobile-wow-actions {
+    display: flex;
+    align-items: center;
+    gap: 9px;
+
+    margin-top: 14px;
+  }
+
+  .mobile-wow-primary,
+  .mobile-wow-secondary {
+    min-height: 44px;
+
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+
+    padding: 0 15px;
+
+    border-radius: 13px;
+
+    font-family: inherit;
+    font-size: 13px;
+    font-weight: 900;
+    line-height: 1.15;
+  }
+
+  .mobile-wow-primary {
+    flex: 1;
+
+    border: 1px solid rgba(56, 189, 248, 0.32);
+
+    background:
+      linear-gradient(
+        135deg,
+        #2563eb,
+        #0ea5e9
+      );
+
+    color: #ffffff;
+
+    box-shadow:
+      0 9px 20px rgba(37, 99, 235, 0.24),
+      inset 0 1px 0 rgba(255, 255, 255, 0.15);
+  }
+
+  .mobile-wow-primary.is-open {
+    border-color: rgba(52, 211, 153, 0.3);
+
+    background:
+      linear-gradient(
+        135deg,
+        #059669,
+        #0d9488
+      );
+
+    box-shadow:
+      0 9px 20px rgba(5, 150, 105, 0.22),
+      inset 0 1px 0 rgba(255, 255, 255, 0.13);
+  }
+
+  .mobile-wow-secondary {
+    border: 1px solid rgba(167, 139, 250, 0.24);
+
+    background:
+      linear-gradient(
+        145deg,
+        rgba(91, 33, 182, 0.33),
+        rgba(30, 41, 59, 0.94)
+      );
+
+    color: #ede9fe;
+  }
+
+  .mobile-wow-delete {
+    width: 44px;
+    height: 44px;
+    flex: 0 0 44px;
+
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+
+    padding: 0;
+
+    border-radius: 13px;
+    border: 1px solid rgba(248, 113, 113, 0.26);
+
+    background: rgba(127, 29, 29, 0.21);
+    color: #fecaca;
+
+    font-size: 16px;
+  }
+
+  .mobile-wow-primary:active,
+  .mobile-wow-secondary:active,
+  .mobile-wow-delete:active {
+    transform: scale(0.97);
+  }
+
+  /* Details — no nested miniature cards */
+
+  .mobile-wow-details {
+    margin-top: 14px;
+
+    overflow: hidden;
+
+    border: 1px solid rgba(148, 163, 184, 0.13);
+    border-radius: 15px;
+
+    background: rgba(15, 23, 42, 0.46);
+  }
+
+  .mobile-wow-details > summary {
+    list-style: none;
+
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 10px;
+
+    min-height: 48px;
+    padding: 0 13px;
+
+    cursor: pointer;
+  }
+
+  .mobile-wow-details > summary::-webkit-details-marker {
+    display: none;
+  }
+
+  .mobile-wow-details > summary::marker {
+    content: "";
+  }
+
+  .mobile-wow-details > summary > div {
+    display: flex;
+    align-items: center;
+    gap: 9px;
+    min-width: 0;
+  }
+
+  .mobile-wow-details > summary > div > span {
+    width: 31px;
+    height: 31px;
+    flex: 0 0 31px;
+
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+
+    border-radius: 10px;
+    background: rgba(20, 184, 166, 0.14);
+
+    font-size: 15px;
+  }
+
+  .mobile-wow-details > summary strong {
+    color: #e8eef8;
+    font-size: 13px;
+    font-weight: 900;
+  }
+
+  .mobile-wow-details > summary > i {
+    width: 28px;
+    height: 28px;
+    flex: 0 0 28px;
+
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+
+    border-radius: 50%;
+
+    background: rgba(148, 163, 184, 0.09);
+    color: #cbd5e1;
+
+    font-size: 14px;
+    font-style: normal;
+
+    transition: transform 0.2s ease;
+  }
+
+  .mobile-wow-details[open] > summary > i {
+    transform: rotate(180deg);
+  }
+
+  .mobile-wow-details-body {
+    padding: 13px;
+
+    border-top: 1px solid rgba(148, 163, 184, 0.1);
+  }
+
+  .mobile-wow-rule-list {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 1px;
+
+    overflow: hidden;
+
+    border-radius: 12px;
+    background: rgba(148, 163, 184, 0.1);
+  }
+
+  .mobile-wow-rule-list > div {
+    min-width: 0;
+    padding: 11px;
+
+    background: #111e33;
+  }
+
+  .mobile-wow-rule-list span,
+  .mobile-wow-rule-list strong {
+    display: block;
+  }
+
+  .mobile-wow-rule-list span {
+    color: #8492a8;
+    font-size: 11px;
+    font-weight: 750;
+  }
+
+  .mobile-wow-rule-list strong {
+    margin-top: 4px;
+
+    color: #f8fafc;
+    font-size: 13px;
+    font-weight: 900;
+    line-height: 1.35;
+
+    overflow-wrap: anywhere;
+  }
+
+  .mobile-wow-role-section {
+    margin-top: 15px;
+  }
+
+  .mobile-wow-role-section h4 {
+    margin: 0 0 7px;
+
+    color: #a8b4c7;
+    font-size: 12px;
+    font-weight: 900;
+    text-transform: uppercase;
+    letter-spacing: 0.3px;
+  }
+
+  .mobile-wow-role-section > div {
+    display: flex;
+    align-items: flex-start;
+    justify-content: space-between;
+    gap: 12px;
+
+    padding: 10px 2px;
+
+    border-bottom: 1px solid rgba(148, 163, 184, 0.09);
+  }
+
+  .mobile-wow-role-section > div:last-child {
+    border-bottom: 0;
+  }
+
+  .mobile-wow-role-section span {
+    color: #a8b4c7;
+    font-size: 12px;
+    line-height: 1.35;
+  }
+
+  .mobile-wow-role-section strong {
+    max-width: 48%;
+
+    color: #ffffff;
+    font-size: 13px;
+    font-weight: 900;
+    line-height: 1.35;
+    text-align: right;
+
+    overflow-wrap: anywhere;
+  }
+}
+
+/* Narrow phones */
+@media (max-width: 380px) {
+  .mobile-wow-card {
+    padding: 14px;
+  }
+
+  .mobile-wow-teams strong {
+    font-size: 16px;
+  }
+
+  .mobile-wow-actions.scheduled-actions {
+    display: grid;
+    grid-template-columns: 1fr auto;
+  }
+
+  .mobile-wow-actions.scheduled-actions
+    .mobile-wow-primary {
+    grid-column: 1 / -1;
+    width: 100%;
+  }
+
+  .mobile-wow-secondary {
+    width: 100%;
+  }
+
+  .mobile-wow-rule-list {
+    grid-template-columns: 1fr;
+  }
+
+  .mobile-wow-role-section > div {
+    display: block;
+  }
+
+  .mobile-wow-role-section strong {
+    max-width: none;
+    display: block;
+    margin-top: 4px;
+    text-align: left;
   }
 }
