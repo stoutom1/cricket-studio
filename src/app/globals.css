@@ -34854,3 +34854,507 @@ text-overflow:unset;
 
   color: #fde68a;
 }
+/* Right side */
+.completed-top-right {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+}
+
+/* View Match Button */
+.completed-view-match-btn {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+
+  padding: 8px 16px;
+
+  border: none;
+  border-radius: 12px;
+
+  cursor: pointer;
+
+  font-size: 13px;
+  font-weight: 800;
+
+  color: #fff;
+
+  background: linear-gradient(
+    135deg,
+    #2563eb,
+    #3b82f6
+  );
+
+  box-shadow:
+    0 10px 20px rgba(37,99,235,.28),
+    inset 0 1px 0 rgba(255,255,255,.15);
+
+  transition: all .2s ease;
+}
+
+.completed-view-match-btn:hover {
+  transform: translateY(-2px);
+
+  background: linear-gradient(
+    135deg,
+    #1d4ed8,
+    #2563eb
+  );
+
+  box-shadow:
+    0 14px 26px rgba(37,99,235,.38);
+}
+
+.completed-view-match-btn:active {
+  transform: scale(.97);
+}
+@media (max-width:768px){
+
+.completed-scorecard-top{
+    display:flex;
+    flex-direction:column;
+    gap:10px;
+}
+
+.completed-top-left,
+.completed-top-right{
+    display:flex;
+    width:100%;
+    justify-content:space-between;
+    align-items:center;
+}
+
+.completed-view-match-btn{
+    padding:7px 14px;
+    font-size:12px;
+}
+
+}
+.completed-view-match-btn{
+    display:flex;
+    align-items:center;
+    gap:6px;
+
+    padding:8px 16px;
+
+    border-radius:12px;
+    border:1px solid rgba(245,158,11,.22);
+
+    background:
+        linear-gradient(
+            180deg,
+            rgba(51,65,85,.95),
+            rgba(30,41,59,.95)
+        );
+
+    color:#f8fafc;
+
+    font-size:13px;
+    font-weight:800;
+
+    cursor:pointer;
+
+    box-shadow:
+        inset 0 1px 0 rgba(255,255,255,.05),
+        0 8px 18px rgba(2,6,23,.18);
+
+    transition:.22s;
+}
+
+.completed-view-match-btn:hover{
+
+    transform:translateY(-2px);
+
+    border-color:rgba(245,158,11,.45);
+
+    background:
+        linear-gradient(
+            180deg,
+            rgba(71,85,105,.96),
+            rgba(30,41,59,.98)
+        );
+
+    box-shadow:
+        0 14px 26px rgba(245,158,11,.16);
+}
+/* =========================================================
+   FINAL MATCH SUMMARY
+   Completed / Completed Locked / Corrected / Abandoned only
+========================================================= */
+
+.final-match-summary-card {
+  width: 100%;
+  min-width: 0;
+  padding: 20px;
+  border-radius: 22px;
+
+  border: 1px solid rgba(148, 163, 184, 0.16);
+
+  background:
+    radial-gradient(
+      circle at top left,
+      rgba(16, 185, 129, 0.08),
+      transparent 38%
+    ),
+    radial-gradient(
+      circle at bottom right,
+      rgba(245, 158, 11, 0.06),
+      transparent 38%
+    ),
+    linear-gradient(
+      145deg,
+      rgba(21, 34, 56, 0.98),
+      rgba(15, 25, 43, 0.98)
+    );
+
+  box-shadow:
+    0 18px 44px rgba(2, 6, 23, 0.24),
+    inset 0 1px 0 rgba(255, 255, 255, 0.035);
+}
+
+.final-match-summary-top {
+  display: flex;
+  align-items: flex-start;
+  justify-content: space-between;
+  gap: 16px;
+}
+
+.final-match-summary-top > div {
+  min-width: 0;
+}
+
+.final-match-status-label {
+  display: inline-flex;
+  align-items: center;
+
+  min-height: 29px;
+  padding: 0 11px;
+
+  border-radius: 999px;
+  border: 1px solid rgba(52, 211, 153, 0.25);
+
+  background: rgba(16, 185, 129, 0.11);
+  color: #a7f3d0;
+
+  font-size: 10px;
+  font-weight: 950;
+  letter-spacing: 0.35px;
+  text-transform: uppercase;
+}
+
+.final-match-summary-top h1 {
+  margin: 10px 0 0;
+  color: #f8fafc;
+  font-size: clamp(20px, 3vw, 28px);
+  font-weight: 950;
+  line-height: 1.15;
+  overflow-wrap: anywhere;
+}
+
+.final-match-summary-top h1 span {
+  color: #64748b;
+  font-size: 0.65em;
+  font-weight: 800;
+  text-transform: uppercase;
+}
+
+.final-scorecard-label {
+  flex: 0 0 auto;
+
+  min-height: 30px;
+  display: inline-flex;
+  align-items: center;
+
+  padding: 0 11px;
+  border-radius: 999px;
+
+  border: 1px solid rgba(148, 163, 184, 0.14);
+  background: rgba(148, 163, 184, 0.07);
+  color: #cbd5e1;
+
+  font-size: 10px;
+  font-weight: 900;
+  white-space: nowrap;
+}
+
+.final-match-result {
+  margin-top: 15px;
+  padding: 12px 14px;
+
+  border-radius: 15px;
+  border: 1px solid rgba(245, 158, 11, 0.16);
+
+  background:
+    linear-gradient(
+      135deg,
+      rgba(120, 53, 15, 0.12),
+      rgba(15, 23, 42, 0.32)
+    );
+}
+
+.final-match-result span,
+.final-match-result strong {
+  display: block;
+}
+
+.final-match-result span {
+  color: #fbbf24;
+  font-size: 9px;
+  font-weight: 950;
+  letter-spacing: 0.45px;
+}
+
+.final-match-result strong {
+  margin-top: 4px;
+  color: #fef3c7;
+  font-size: 15px;
+  font-weight: 950;
+  line-height: 1.3;
+}
+
+.final-innings-summary-grid {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: 12px;
+  margin-top: 14px;
+}
+
+.final-innings-summary-grid.single-innings {
+  grid-template-columns: minmax(0, 1fr);
+}
+
+.final-innings-summary-card {
+  min-width: 0;
+  padding: 15px;
+
+  border-radius: 17px;
+  border: 1px solid rgba(96, 165, 250, 0.15);
+
+  background:
+    radial-gradient(
+      circle at top right,
+      rgba(59, 130, 246, 0.09),
+      transparent 42%
+    ),
+    rgba(15, 23, 42, 0.58);
+}
+
+.final-innings-card-top {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 9px;
+}
+
+.final-innings-card-top span {
+  color: #93c5fd;
+  font-size: 10px;
+  font-weight: 950;
+  text-transform: uppercase;
+  letter-spacing: 0.35px;
+}
+
+.final-innings-card-top small {
+  color: #94a3b8;
+  font-size: 10px;
+  font-weight: 800;
+  white-space: nowrap;
+}
+
+.final-innings-team-name {
+  display: block;
+  margin-top: 9px;
+
+  color: #f8fafc;
+  font-size: 14px;
+  font-weight: 950;
+
+  white-space: normal;
+  overflow-wrap: anywhere;
+}
+
+.final-innings-score {
+  display: flex;
+  align-items: flex-end;
+  gap: 8px;
+  margin-top: 7px;
+}
+
+.final-innings-score b {
+  color: #ffffff;
+  font-size: clamp(25px, 4vw, 37px);
+  font-weight: 1000;
+  line-height: 1;
+}
+
+.final-innings-score span {
+  padding-bottom: 3px;
+  color: #94a3b8;
+  font-size: 10px;
+  font-weight: 800;
+}
+
+.final-innings-mini-facts {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 7px;
+  margin-top: 12px;
+}
+
+.final-innings-mini-facts span {
+  display: inline-flex;
+  align-items: center;
+  gap: 4px;
+
+  min-height: 27px;
+  padding: 0 9px;
+
+  border-radius: 999px;
+  border: 1px solid rgba(148, 163, 184, 0.12);
+
+  background: rgba(148, 163, 184, 0.065);
+  color: #94a3b8;
+
+  font-size: 9px;
+  font-weight: 850;
+}
+
+.final-innings-mini-facts b {
+  color: #e2e8f0;
+}
+
+.final-match-next-step {
+  display: flex;
+  align-items: center;
+  gap: 11px;
+
+  margin-top: 14px;
+  padding: 11px 13px;
+
+  border-radius: 14px;
+  border: 1px solid rgba(167, 139, 250, 0.15);
+
+  background:
+    linear-gradient(
+      135deg,
+      rgba(91, 33, 182, 0.1),
+      rgba(30, 41, 59, 0.25)
+    );
+}
+
+.final-match-next-step > span {
+  flex: 0 0 auto;
+  font-size: 19px;
+}
+
+.final-match-next-step div {
+  min-width: 0;
+}
+
+.final-match-next-step strong,
+.final-match-next-step small {
+  display: block;
+}
+
+.final-match-next-step strong {
+  color: #ede9fe;
+  font-size: 11px;
+  font-weight: 950;
+}
+
+.final-match-next-step small {
+  margin-top: 2px;
+  color: #94a3b8;
+  font-size: 9px;
+  line-height: 1.35;
+}
+
+.final-no-innings {
+  margin-top: 14px;
+  padding: 13px;
+
+  border-radius: 14px;
+  border: 1px dashed rgba(148, 163, 184, 0.16);
+
+  background: rgba(15, 23, 42, 0.38);
+  color: #94a3b8;
+
+  font-size: 11px;
+  text-align: center;
+}
+
+/* Final match: expanded main sections remain visually connected */
+.live-page-shell
+  .live-detail-card.is-open {
+  scroll-margin-top: 12px;
+}
+
+/* =========================================================
+   MOBILE
+========================================================= */
+
+@media (max-width: 680px) {
+  .final-match-summary-card {
+    padding: 13px;
+    border-radius: 18px;
+  }
+
+  .final-match-summary-top {
+    display: grid;
+    grid-template-columns: 1fr;
+    gap: 8px;
+  }
+
+  .final-scorecard-label {
+    width: fit-content;
+  }
+
+  .final-match-summary-top h1 {
+    margin-top: 8px;
+    font-size: 20px;
+  }
+
+  .final-match-result {
+    margin-top: 11px;
+    padding: 10px 11px;
+  }
+
+  .final-match-result strong {
+    font-size: 13px;
+  }
+
+  .final-innings-summary-grid {
+    grid-template-columns: 1fr;
+    gap: 9px;
+    margin-top: 10px;
+  }
+
+  .final-innings-summary-card {
+    padding: 12px;
+    border-radius: 15px;
+  }
+
+  .final-innings-score b {
+    font-size: 29px;
+  }
+
+  .final-match-next-step {
+    margin-top: 10px;
+    padding: 10px;
+  }
+}
+
+@media (max-width: 390px) {
+  .final-innings-card-top {
+    align-items: flex-start;
+  }
+
+  .final-innings-score {
+    display: grid;
+    gap: 3px;
+  }
+
+  .final-innings-score span {
+    padding-bottom: 0;
+  }
+}

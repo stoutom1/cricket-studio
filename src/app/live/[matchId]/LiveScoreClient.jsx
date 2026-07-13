@@ -1,18 +1,25 @@
 "use client";
 
-import { useEffect, useMemo, useState } from "react";
+import {useEffect,useMemo,useRef,useState,} from "react";
 import { buildMatchInsights } from "@/lib/match-insights";
 
-const FINAL_MATCH_STATUSES = [
+const FINAL_MATCH_STATUSES = new Set([
   "ABANDONED",
   "COMPLETED",
   "COMPLETED_LOCKED",
   "COMPLETED_CORRECTED",
-];
+]);
+
+function normalizeMatchStatus(status) {
+  return String(status || "")
+    .trim()
+    .toUpperCase()
+    .replace(/[\s-]+/g, "_");
+}
 
 function isFinalMatchStatus(status) {
-  return FINAL_MATCH_STATUSES.includes(
-    String(status || "").toUpperCase()
+  return FINAL_MATCH_STATUSES.has(
+    normalizeMatchStatus(status)
   );
 }
 
@@ -369,9 +376,12 @@ export default function LiveScoreClient({
     setIsRefreshing,
   ] = useState(false);
 
+  const finalViewInitializedRef = useRef(false);
+
   useEffect(() => {
     let intervalId = null;
     let cancelled = false;
+    finalViewInitializedRef.current = false;
 
     async function loadScorecard() {
       try {
@@ -395,18 +405,61 @@ export default function LiveScoreClient({
           return;
         }
 
-        setScoreboard(data);
-        setError("");
+setScoreboard(data);
+setError("");
 
-        if (
-          isFinalMatchStatus(
-            data?.match?.status
-          ) &&
-          intervalId
-        ) {
-          clearInterval(intervalId);
-          intervalId = null;
-        }
+const loadedRawStatus =
+  data?.match?.status ??
+  data?.status ??
+  data?.matchStatus ??
+  data?.summary?.matchStatus ??
+  data?.summary?.status ??
+  "";
+
+const loadedHasFinalResult =
+  Boolean(
+    data?.summary?.resultText ||
+    data?.resultText ||
+    data?.match?.resultText
+  );
+
+const loadedMatchIsFinal =
+  isFinalMatchStatus(loadedRawStatus) ||
+  loadedHasFinalResult;
+
+if (
+  loadedMatchIsFinal &&
+  !finalViewInitializedRef.current
+) {
+  /*
+    Final-match default view:
+    - Match Insights expanded
+    - Full Scorecard expanded
+    - Every innings remains collapsed
+  */
+  setShowInsights(true);
+  setShowScorecard(true);
+
+  setCollapsedInnings(
+    Object.fromEntries(
+      (data?.innings || []).map((innings) => [
+        innings.number,
+        true,
+      ])
+    )
+  );
+
+  finalViewInitializedRef.current = true;
+}
+
+if (!loadedMatchIsFinal) {
+  finalViewInitializedRef.current = false;
+}
+
+if (loadedMatchIsFinal && intervalId) {
+  clearInterval(intervalId);
+  intervalId = null;
+}
       } catch (loadError) {
         if (!cancelled) {
           setError(
@@ -509,12 +562,67 @@ export default function LiveScoreClient({
   const matchInsights =
     buildMatchInsights(scoreboard);
 
-  const matchStatus = String(
-    scoreboard?.match?.status || ""
-  ).toUpperCase();
+  /*
+  Different live-view API versions may expose status
+  in different locations. Resolve every known location.
+*/
+const rawMatchStatus =
+  scoreboard?.match?.status ??
+  scoreboard?.status ??
+  scoreboard?.matchStatus ??
+  scoreboard?.summary?.matchStatus ??
+  scoreboard?.summary?.status ??
+  "";
 
-  const isMatchFinished =
-    isFinalMatchStatus(matchStatus);
+const matchStatus =
+  normalizeMatchStatus(rawMatchStatus);
+
+const hasRecordedFinalResult =
+  Boolean(
+    scoreboard?.summary?.resultText ||
+    scoreboard?.resultText ||
+    scoreboard?.match?.resultText
+  );
+
+const isMatchFinished =
+  isFinalMatchStatus(matchStatus) ||
+  hasRecordedFinalResult;
+  
+  const finalInnings = [...(scoreboard?.innings || [])]
+  .sort(
+    (first, second) =>
+      Number(first.number || 0) -
+      Number(second.number || 0)
+  );
+
+const finalMatchHeading =
+  matchStatus === "ABANDONED"
+    ? "Match Abandoned"
+    : matchStatus === "COMPLETED_LOCKED"
+      ? "Match Completed & Locked"
+      : matchStatus === "COMPLETED_CORRECTED"
+        ? "Match Completed & Corrected"
+        : "Match Completed";
+
+const finalResultText =
+  scoreboard?.summary?.resultText ||
+  scoreboard?.resultText ||
+  scoreboard?.match?.resultText ||
+  matchInsights?.resultText ||
+  scoreboard?.summary?.statusText ||
+  (matchStatus === "ABANDONED"
+    ? "The match was abandoned."
+    : "Match completed.");
+  
+  console.log("LIVE VIEW FINAL STATUS CHECK", {
+  rawMatchStatus,
+  normalizedStatus: matchStatus,
+  isMatchFinished,
+  matchStatusFromMatch: scoreboard?.match?.status,
+  topLevelStatus: scoreboard?.status,
+  summaryStatus: scoreboard?.summary?.status,
+  summaryMatchStatus: scoreboard?.summary?.matchStatus,
+});  
 
   const chaseRunsNeeded =
     scoreboard?.currentInnings === 2 &&
@@ -674,7 +782,7 @@ export default function LiveScoreClient({
           ✕ Exit TV Mode
         </button>
       ) : null}
-
+{!isMatchFinished ? (
       <section
         className="live-primary-card"
         aria-label="Live match summary"
@@ -882,9 +990,128 @@ export default function LiveScoreClient({
             </div>
           </div>
         ) : null}
-      </section>
+</section>
+) : (
+  <section
+    className="final-match-summary-card"
+    aria-label="Final match summary"
+  >
+    <div className="final-match-summary-top">
+      <div>
+        <span className="final-match-status-label">
+          {matchStatus === "ABANDONED"
+            ? "⚠️"
+            : "✅"}{" "}
+          {finalMatchHeading}
+        </span>
 
-      {!tvMode ? (
+        <h1>
+          {scoreboard?.match?.teamAName}
+          <span> vs </span>
+          {scoreboard?.match?.teamBName}
+        </h1>
+      </div>
+
+      <span className="final-scorecard-label">
+        Final Scorecard
+      </span>
+    </div>
+
+    <div className="final-match-result">
+      <span>
+        {matchStatus === "ABANDONED"
+          ? "MATCH STATUS"
+          : "MATCH RESULT"}
+      </span>
+
+      <strong>{finalResultText}</strong>
+    </div>
+
+    {finalInnings.length ? (
+      <div
+        className={`final-innings-summary-grid ${
+          finalInnings.length === 1
+            ? "single-innings"
+            : ""
+        }`}
+      >
+        {finalInnings.map((innings) => (
+          <div
+            key={`final-summary-${innings.number}`}
+            className="final-innings-summary-card"
+          >
+            <div className="final-innings-card-top">
+              <span>
+                Innings {innings.number}
+              </span>
+
+              <small>
+                {innings.oversDisplay || "0.0"} overs
+              </small>
+            </div>
+
+            <strong className="final-innings-team-name">
+              {innings.teamName ||
+                `Team ${innings.number}`}
+            </strong>
+
+            <div className="final-innings-score">
+              <b>
+                {Number(innings.runs || 0)}/
+                {Number(innings.wickets || 0)}
+              </b>
+
+              <span>
+                in{" "}
+                {innings.oversDisplay || "0.0"} overs
+              </span>
+            </div>
+
+            <div className="final-innings-mini-facts">
+              <span>
+                RR{" "}
+                <b>
+                  {innings.runRate ?? "0.00"}
+                </b>
+              </span>
+
+              <span>
+                PP{" "}
+                <b>
+                  {innings.powerplay?.runs || 0}/
+                  {innings.powerplay?.wickets || 0}
+                </b>
+              </span>
+            </div>
+          </div>
+        ))}
+      </div>
+    ) : (
+      <div className="final-no-innings">
+        No innings score was recorded for this match.
+      </div>
+    )}
+
+    <div className="final-match-next-step">
+      <span>👇</span>
+
+      <div>
+        <strong>
+          Match insights and full scorecard are
+          displayed below
+        </strong>
+
+        <small>
+          Tap either innings inside the scorecard to
+          view batting, bowling, partnerships, and
+          wickets.
+        </small>
+      </div>
+    </div>
+  </section>
+)}
+
+      {!tvMode && !isMatchFinished ? (
         <nav
           className="live-action-bar"
           aria-label="Scorecard actions"

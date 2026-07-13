@@ -9279,11 +9279,35 @@ const playedDateLabel = playedDate
             <div className="completed-desktop-card">
 <div className="completed-scorecard-top">
   <div className="completed-top-left">
-    <span className="completed-match-chip">Match #{matchNumber}</span>
-    <span className="completed-status-chip">{match.status}</span>
+    <span className="completed-match-chip">
+      Match #{matchNumber}
+    </span>
+
+    <span className="completed-status-chip">
+      {match.status}
+    </span>
   </div>
 
-  <span className="completed-date-chip">📅 {playedDateLabel}</span>
+  <div className="completed-top-right">
+    {match.shareCode && (
+      <button
+        type="button"
+        className="completed-view-match-btn"
+        onClick={() =>
+          window.open(
+            `https://cric4all.app/live/${match.shareCode}`,
+            "_blank"
+          )
+        }
+      >
+        🏏 Open Match
+      </button>
+    )}
+
+    <span className="completed-date-chip">
+      📅 {playedDateLabel}
+    </span>
+  </div>
 </div>
 
 <div className="completed-scorecard-hero compact-teams-line">

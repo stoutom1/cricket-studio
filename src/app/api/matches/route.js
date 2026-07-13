@@ -335,6 +335,7 @@ const teamBCaptainName = findPlayerName(
       endedAt: m.endedAt,
       startedAt: m.startedAt,
       lockedAt: m.lockedAt,
+      shareCode: m.shareCode,
     };
   });
   return NextResponse.json(formatted);
