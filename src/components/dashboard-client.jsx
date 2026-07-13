@@ -5832,7 +5832,91 @@ async function handleDeleteSeries(seriesId, seriesName) {
 const canUseAvailabilityBuilder =
   Boolean(permissions?.canUseTeamBuilder) ||
   Boolean(permissions?.canScoreMatch);
-  
+
+async function handleShareScheduledMatch(match) {
+  const shareCode =
+    match?.shareCode ||
+    match?.sharecode ||
+    match?.publicShareCode;
+
+  if (!shareCode) {
+    alert("Share code is not available for this match.");
+    return;
+  }
+
+  const shareUrl = `${window.location.origin}/live/${shareCode}`;
+
+  const shareText = `🏏 ${match.teamAName} vs ${match.teamBName}
+
+📅 ${
+    match.scheduledAt
+      ? formatDate(match.scheduledAt)
+      : "Schedule not decided"
+  }
+
+Follow the live score on Cric4All:
+${shareUrl}`;
+
+  try {
+    if (navigator.share) {
+      await navigator.share({
+        title: `${match.teamAName} vs ${match.teamBName}`,
+        text: shareText,
+        url: shareUrl,
+      });
+
+      return;
+    }
+
+    await navigator.clipboard.writeText(shareUrl);
+    alert("Match link copied.");
+  } catch (error) {
+    if (error?.name !== "AbortError") {
+      console.error("Share scheduled match failed:", error);
+      alert("Unable to share this match right now.");
+    }
+  }
+}
+
+async function handleShareActiveMatch(match) {
+  const shareCode =
+    match?.shareCode ||
+    match?.sharecode ||
+    match?.publicShareCode;
+
+  if (!shareCode) {
+    alert("Share code is not available for this match.");
+    return;
+  }
+
+  const shareUrl = `${window.location.origin}/live/${shareCode}`;
+
+  const shareText = `🏏 ${match.teamAName} vs ${match.teamBName}
+
+Follow the live score on Cric4All:
+${shareUrl}`;
+
+  try {
+    if (navigator.share) {
+      await navigator.share({
+        title: `${match.teamAName} vs ${match.teamBName}`,
+        text: shareText,
+        url: shareUrl,
+      });
+
+      return;
+    }
+
+    await navigator.clipboard.writeText(shareUrl);
+    alert("Live match link copied.");
+  } catch (error) {
+    if (error?.name !== "AbortError") {
+      console.error("Share active match failed:", error);
+      alert("Unable to share this match right now.");
+    }
+  }
+}
+
 function ContextLens() {
   const totalFilters =
     (contextFilters.teamIds?.length || 0) +
@@ -8793,20 +8877,42 @@ const playerRoleBadge = (row) => {
                 handleMatchSelect(match.id);
               }}
             >
-              <div className="pro-active-header">
-                <div>
-                  <span className="status-pill live-status-pill">
-                    ● {match.status}
-                  </span>
+<div className="pro-active-header">
+  <div className="pro-active-main-info">
+    <div className="active-card-topline">
+      <span className="status-pill live-status-pill">
+        ● {match.status}
+      </span>
 
-                  <h3>
-                    {match.teamAName}
-                    <b>vs</b>
-                    {match.teamBName}
-                  </h3>
+      <button
+        type="button"
+        className="active-share-icon-btn"
+        title="Share spectator link"
+        aria-label={`Share ${match.teamAName} versus ${match.teamBName}`}
+        onClick={(event) => {
+          event.stopPropagation();
+          handleShareActiveMatch(match);
+        }}
+        disabled={
+          !(
+            match?.shareCode ||
+            match?.sharecode ||
+            match?.publicShareCode
+          )
+        }
+      >
+        📤
+      </button>
+    </div>
 
-                  <p>🕒 {getMatchTimelineText(match)}</p>
-                </div>
+    <h3>
+      {match.teamAName}
+      <b>vs</b>
+      {match.teamBName}
+    </h3>
+
+    <p>🕒 {getMatchTimelineText(match)}</p>
+  </div>
 
                 <div className="pro-live-score-box">
                   <span>Live Score</span>
@@ -8945,24 +9051,44 @@ const playerRoleBadge = (row) => {
       key={match.id}
       className="pro-scheduled-card"
     >
-      <div className="pro-scheduled-header">
-        <div>
-          <span className="status-pill">
-            {match.status}
-          </span>
+<div className="pro-scheduled-header">
+  <div className="pro-scheduled-main-info">
+    <div className="scheduled-card-topline">
+      <span className="status-pill">
+        {match.status}
+      </span>
 
-          <h3>
-            {match.teamAName}
-            <b>vs</b>
-            {match.teamBName}
-          </h3>
+      <button
+        type="button"
+        className="scheduled-share-icon-btn"
+        title="Share spectator link"
+        aria-label={`Share ${match.teamAName} versus ${match.teamBName}`}
+        onClick={() => handleShareScheduledMatch(match)}
+        disabled={
+          !(
+            match?.shareCode ||
+            match?.sharecode ||
+            match?.publicShareCode
+          )
+        }
+      >
+        📤
+      </button>
+    </div>
 
-          <p>
-            📅 {match.scheduledAt
-              ? formatDate(match.scheduledAt)
-              : "Schedule not decided"}
-          </p>
-        </div>
+    <h3>
+      {match.teamAName}
+      <b>vs</b>
+      {match.teamBName}
+    </h3>
+
+    <p>
+      📅{" "}
+      {match.scheduledAt
+        ? formatDate(match.scheduledAt)
+        : "Schedule not decided"}
+    </p>
+  </div>
 
         <div className="pro-scheduled-actions">
           {permissions?.canScoreMatch && (
