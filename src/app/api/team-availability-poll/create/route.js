@@ -18,6 +18,7 @@ export async function POST(request) {
 
     const body = await request.json();
 
+    // Declare leagueId before any query uses it
     const leagueId = Number(body.leagueId);
 
     if (!Number.isInteger(leagueId) || leagueId <= 0) {
@@ -26,6 +27,48 @@ export async function POST(request) {
         { status: 400 }
       );
     }
+
+    const sourceTeamIds = Array.isArray(body.sourceTeamIds)
+      ? [
+          ...new Set(
+            body.sourceTeamIds
+              .map(Number)
+              .filter((id) => Number.isInteger(id) && id > 0)
+          ),
+        ]
+      : [];
+
+    if (!sourceTeamIds.length) {
+      return NextResponse.json(
+        { error: "At least one player-pool team is required." },
+        { status: 400 }
+      );
+    }
+
+    const validTeams = await prisma.team.findMany({
+      where: {
+        leagueId,
+        id: {
+          in: sourceTeamIds,
+        },
+      },
+      select: {
+        id: true,
+      },
+    });
+
+    if (validTeams.length !== sourceTeamIds.length) {
+      return NextResponse.json(
+        {
+          error:
+            "One or more selected player-pool teams do not belong to this league.",
+        },
+        { status: 400 }
+      );
+    }
+
+    // continue with user lookup, membership validation,
+    // cleanOptions, token generation, and poll creation...
 
     // Load the signed-in database user BEFORE using user.id
     const user = await prisma.user.findUnique({
@@ -112,6 +155,7 @@ if (!cleanOptions.length) {
         leagueId: leagueId ? Number(leagueId) : null,
         title: title || "Match Availability",
         matchText: matchText || null,
+        sourceTeamIds: sourceTeamIds.join(","),
         options: {
           create: cleanOptions.map((option, index) => ({
             label: option.label || `Option ${index + 1}`,

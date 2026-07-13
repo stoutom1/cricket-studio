@@ -394,16 +394,17 @@ model TeamBalanceSuggestion {
 }
 
 model TeamAvailabilityPoll {
-  id        Int                        @id @default(autoincrement())
-  token     String                     @unique
-  leagueId  Int?
-  title     String
-  matchText String?
-  startTime DateTime?
-  status    String                     @default("OPEN") // OPEN, CLOSED
-  createdAt DateTime                   @default(now())
-  options   TeamAvailabilityOption[]
-  responses TeamAvailabilityResponse[]
+  id            Int                        @id @default(autoincrement())
+  token         String                     @unique
+  leagueId      Int?
+  title         String
+  matchText     String?
+  startTime     DateTime?
+  status        String                     @default("OPEN") // OPEN, CLOSED
+  createdAt     DateTime                   @default(now())
+  options       TeamAvailabilityOption[]
+  responses     TeamAvailabilityResponse[]
+  sourceTeamIds String?
 }
 
 model TeamAvailabilityOption {

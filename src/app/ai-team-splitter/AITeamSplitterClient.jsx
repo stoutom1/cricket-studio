@@ -396,7 +396,10 @@ setSourceTeamsInitialized(true);
       alert("Please add at least one date option.");
       return;
     }
-
+if (!selectedSourceTeamIds.length) {
+  alert("Please select at least one player pool before creating the poll.");
+  return;
+}
     setCreatingPoll(true);
 
     try {
@@ -405,12 +408,16 @@ setSourceTeamsInitialized(true);
         headers: {
           "Content-Type": "application/json",
         },
-        body: JSON.stringify({
-          leagueId,
-          title: pollTitle,
-          matchText: pollText,
-          options: cleanOptions,
-        }),
+body: JSON.stringify({
+  leagueId,
+  title: pollTitle,
+  matchText: pollText,
+  options: cleanOptions,
+
+  sourceTeamIds: selectedSourceTeamIds
+    .map(Number)
+    .filter((id) => Number.isInteger(id) && id > 0),
+}),
       });
 
       const data = await res.json();

@@ -19,24 +19,29 @@ export default function TeamPollClient({ token }) {
     loadPoll();
   }, []);
 
-  async function loadPoll() {
+async function loadPoll() {
+  try {
     setLoading(true);
 
-    try {
-      const res = await fetch(`/api/team-availability-poll/${token}`);
-      const data = await res.json();
+    const response = await fetch(
+      `/api/team-availability-poll/${token}`
+    );
 
-      if (!res.ok) {
-        alert(data.error || "Failed to load poll.");
-        return;
-      }
+    const data = await response.json();
 
-      setPoll(data.poll);
-      setPlayers(data.players || []);
-    } finally {
-      setLoading(false);
+    if (!response.ok) {
+      throw new Error(data.error || "Failed to load poll.");
     }
+
+    setPoll(data.poll);
+    setPlayers(data.poll?.players || []);
+  } catch (error) {
+    console.error("Load poll failed:", error);
+    setError(error.message || "Failed to load poll.");
+  } finally {
+    setLoading(false);
   }
+}
 
   function setOptionResponse(optionId, response) {
     setDateResponses((prev) => ({
