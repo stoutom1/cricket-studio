@@ -437,8 +437,8 @@ if (
     - Full Scorecard expanded
     - Every innings remains collapsed
   */
-  setShowInsights(true);
-  setShowScorecard(true);
+  setShowInsights(false);
+  setShowScorecard(false);
 
   setCollapsedInnings(
     Object.fromEntries(
@@ -613,16 +613,6 @@ const finalResultText =
   (matchStatus === "ABANDONED"
     ? "The match was abandoned."
     : "Match completed.");
-  
-  console.log("LIVE VIEW FINAL STATUS CHECK", {
-  rawMatchStatus,
-  normalizedStatus: matchStatus,
-  isMatchFinished,
-  matchStatusFromMatch: scoreboard?.match?.status,
-  topLevelStatus: scoreboard?.status,
-  summaryStatus: scoreboard?.summary?.status,
-  summaryMatchStatus: scoreboard?.summary?.matchStatus,
-});  
 
   const chaseRunsNeeded =
     scoreboard?.currentInnings === 2 &&
