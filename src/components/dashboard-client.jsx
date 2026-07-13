@@ -9876,315 +9876,612 @@ const playerRoleBadge = (row) => {
 )}
 
 {activeLeagueId && matchesSubTab === "COMPLETED" && (
-<Card title="✅ Match History">
-  {completedMatches.length === 0 ? (
-    <div className="empty-state">No completed matches found.</div>
-  ) : (
-    <div className="completed-match-list pro-completed-list">
-      {filteredCompletedMatches.map((match, index) => {
-        const battingFirstTeamName =
-  match.battingFirstTeamName ||
-  match.teamAName;
-const matchNumber = filteredCompletedMatches.length - index;
-const bowlingSecondTeamName =
-  battingFirstTeamName === match.teamAName
-    ? match.teamBName
-    : match.teamAName;
-        const normalizedStatus = String(match.status || "")
-          .trim()
-          .replace(/[\s-]+/g, "_")
-          .toUpperCase();
-        
-const teamAScore = match.firstInningsTeamName === match.teamAName
-  ? match.firstInningsScore
-  : match.secondInningsScore;
+  <Card title="✅ Match History">
+    {completedMatches.length === 0 ? (
+      <div className="empty-state">
+        No completed matches found.
+      </div>
+    ) : (
+      <div className="completed-match-list pro-completed-list">
+        {filteredCompletedMatches.map((match, index) => {
+          const battingFirstTeamName =
+            match.battingFirstTeamName ||
+            match.teamAName;
 
-const teamBScore = match.firstInningsTeamName === match.teamBName
-  ? match.firstInningsScore
-  : match.secondInningsScore;
-const firstTeamName =
-  match.battingFirstTeamName || match.firstInningsTeamName || match.teamAName;
+          const matchNumber =
+            filteredCompletedMatches.length - index;
 
-const secondTeamName =
-  firstTeamName === match.teamAName ? match.teamBName : match.teamAName;
+          const bowlingSecondTeamName =
+            battingFirstTeamName === match.teamAName
+              ? match.teamBName
+              : match.teamAName;
 
-const firstTeamScore = match.firstInningsScore;
-const secondTeamScore = match.secondInningsScore;
+          const normalizedStatus = String(
+            match.status || ""
+          )
+            .trim()
+            .replace(/[\s-]+/g, "_")
+            .toUpperCase();
 
-const cleanScore = (score) =>
-  String(score || "")
-    .replace(`${match.teamAName}:`, "")
-    .replace(`${match.teamBName}:`, "")
-    .trim();
+          const firstTeamName =
+            match.battingFirstTeamName ||
+            match.firstInningsTeamName ||
+            match.teamAName;
 
-    const playedDate =
-  match.endedAt || match.startedAt || match.createdAt;
+          const secondTeamName =
+            firstTeamName === match.teamAName
+              ? match.teamBName
+              : match.teamAName;
 
-const playedDateLabel = playedDate
-  ? new Date(playedDate).toLocaleString("en-US", {
-      month: "long",
-      day: "numeric",
-      hour: "numeric",
-      minute: "2-digit",
-    }).replace(" at ", ", ")
-  : "Date unavailable";
+          const firstTeamScore =
+            match.firstInningsScore;
 
-        const canShowAi =
-          normalizedStatus === "COMPLETED" ||
-          normalizedStatus === "COMPLETED_CORRECTED" ||
-          normalizedStatus === "COMPLETED_LOCKED";
+          const secondTeamScore =
+            match.secondInningsScore;
 
-        const renderActions = () => (
-          <div className="completed-actions-bar">
-            <button
-              type="button"
-              className="completed-action-btn"
-              onClick={() => {
-                setSelectedMatchId(String(match.id));
-                handleMatchSelect(match.id);
-              }}
-            >
-              <span>📊</span>
-              <b>Scorecard</b>
-            </button>
+          const cleanScore = (score) =>
+            String(score || "")
+              .replace(`${match.teamAName}:`, "")
+              .replace(`${match.teamBName}:`, "")
+              .trim();
 
-            {canShowAi && (
+          const playedDate =
+            match.endedAt ||
+            match.startedAt ||
+            match.createdAt;
+
+          const playedDateLabel = playedDate
+            ? new Date(playedDate)
+                .toLocaleString("en-US", {
+                  month: "short",
+                  day: "numeric",
+                  year: "numeric",
+                  hour: "numeric",
+                  minute: "2-digit",
+                })
+                .replace(" at ", ", ")
+            : "Date unavailable";
+
+          const canShowAi =
+            normalizedStatus === "COMPLETED" ||
+            normalizedStatus ===
+              "COMPLETED_CORRECTED" ||
+            normalizedStatus ===
+              "COMPLETED_LOCKED";
+
+          const publicShareCode =
+            match?.shareCode ||
+            match?.sharecode ||
+            match?.publicShareCode;
+
+          const openCompletedMatch = () => {
+            if (!publicShareCode) {
+              alert(
+                "Spectator link is not available for this match."
+              );
+              return;
+            }
+
+            window.open(
+              `${window.location.origin}/live/${publicShareCode}`,
+              "_blank",
+              "noopener,noreferrer"
+            );
+          };
+
+          const renderDesktopActions = () => (
+            <div className="completed-actions-bar">
               <button
                 type="button"
                 className="completed-action-btn"
-                disabled={aiAnalysisLoading}
-                onClick={() => loadAiAnalysis(match.id)}
+                onClick={() => {
+                  setSelectedMatchId(
+                    String(match.id)
+                  );
+                  handleMatchSelect(match.id);
+                }}
               >
-                <span>🤖</span>
-                <b>{aiAnalysisLoading ? "Working..." : "AI Review"}</b>
+                <span>📊</span>
+                <b>Scorecard</b>
               </button>
-            )}
 
-            {permissions?.canScoreMatch && (
-              <button
-                type="button"
-                className="completed-action-btn"
-                onClick={() => openCorrectionCenter(match.id)}
-              >
-                <span>✏️</span>
-                <b>Corrections</b>
-              </button>
-            )}
+              {canShowAi && (
+                <button
+                  type="button"
+                  className="completed-action-btn"
+                  disabled={aiAnalysisLoading}
+                  onClick={() =>
+                    loadAiAnalysis(match.id)
+                  }
+                >
+                  <span>🤖</span>
 
-            {permissions?.canDeleteMatch && (
-              <button
-                type="button"
-                className="completed-action-btn completed-danger-btn"
-                onClick={() => handleDeleteMatch(match.id)}
-              >
-                <span>🗑️</span>
-                <b>Delete</b>
-              </button>
-            )}
-          </div>
-        );
+                  <b>
+                    {aiAnalysisLoading
+                      ? "Working..."
+                      : "AI Review"}
+                  </b>
+                </button>
+              )}
 
-        const renderSetupDetails = () => (
-          <details className="match-facts-wow completed-setup-row">
-            <summary className="match-facts-wow-summary">
-              <div className="match-facts-wow-left">
-                <span className="match-facts-wow-icon">📌</span>
-                <div>
-                  <strong>Match Setup & Timeline</strong>
-                  <small>Overs, wickets, powerplay, and match times</small>
-                </div>
-              </div>
+              {permissions?.canScoreMatch && (
+                <button
+                  type="button"
+                  className="completed-action-btn"
+                  onClick={() =>
+                    openCorrectionCenter(match.id)
+                  }
+                >
+                  <span>✏️</span>
+                  <b>Corrections</b>
+                </button>
+              )}
 
-              <span className="match-facts-wow-caret">⌄</span>
-            </summary>
-
-            <div className="match-facts-wow-content">
-              <div className="match-facts-grid">
-                <div>
-                  <span>🏏 Bat 1st</span>
-                  <strong>{match.battingFirstTeamName || "Not decided"}</strong>
-                </div>
-
-                <div>
-                  <span>🎯 Overs</span>
-                  <strong>{match.oversPerInnings}</strong>
-                </div>
-
-                <div>
-                  <span>⚾ Wickets</span>
-                  <strong>{match.maxWicketsPerInnings ?? "∞"}</strong>
-                </div>
-
-                <div>
-                  <span>⚡ Powerplay</span>
-                  <strong>{match.powerplayOversInnings ?? 0}</strong>
-                </div>
-
-                <div>
-                  <span>🎳 Max / Bowler</span>
-                  <strong>{match.maxOversPerBowler ?? "∞"}</strong>
-                </div>
-              </div>
-
-              {(match?.startedAt || match?.endedAt || match?.lockedAt) && (
-                <div className="match-timeline-wow">
-                  {match?.startedAt && (
-                    <div>
-                      <span>Started</span>
-                      <strong>{formatMatchDateTime(match.startedAt)}</strong>
-                    </div>
-                  )}
-
-                  {match?.endedAt && (
-                    <div>
-                      <span>Ended</span>
-                      <strong>{formatMatchDateTime(match.endedAt)}</strong>
-                    </div>
-                  )}
-
-                  {match?.lockedAt && (
-                    <div>
-                      <span>Locked</span>
-                      <strong>{formatMatchDateTime(match.lockedAt)}</strong>
-                    </div>
-                  )}
-                </div>
+              {permissions?.canDeleteMatch && (
+                <button
+                  type="button"
+                  className="completed-action-btn completed-danger-btn"
+                  onClick={() =>
+                    handleDeleteMatch(match.id)
+                  }
+                >
+                  <span>🗑️</span>
+                  <b>Delete</b>
+                </button>
               )}
             </div>
-          </details>
-        );
+          );
 
-        return (
-          <article key={match.id} className="completed-scorecard-card">
-            <div className="completed-desktop-card">
-<div className="completed-scorecard-top">
-  <div className="completed-top-left">
-    <span className="completed-match-chip">
-      Match #{matchNumber}
-    </span>
+          const renderDesktopSetup = () => (
+            <details className="match-facts-wow completed-setup-row">
+              <summary className="match-facts-wow-summary">
+                <div className="match-facts-wow-left">
+                  <span className="match-facts-wow-icon">
+                    📌
+                  </span>
 
-    <span className="completed-status-chip">
-      {match.status}
-    </span>
-  </div>
+                  <div>
+                    <strong>
+                      Match Setup & Timeline
+                    </strong>
 
-  <div className="completed-top-right">
-    {match.shareCode && (
-      <button
-        type="button"
-        className="completed-view-match-btn"
-        onClick={() =>
-          window.open(
-            `https://cric4all.app/live/${match.shareCode}`,
-            "_blank"
-          )
-        }
-      >
-        🏏 Open Match
-      </button>
-    )}
-
-    <span className="completed-date-chip">
-      📅 {playedDateLabel}
-    </span>
-  </div>
-</div>
-
-<div className="completed-scorecard-hero compact-teams-line">
-  <strong>{battingFirstTeamName}</strong>
-  <span>vs</span>
-  <strong>{bowlingSecondTeamName}</strong>
-</div>
-
-              <div className="completed-winner-banner">
-                🏆 {match.resultText || "Result unavailable"}
-              </div>
-
-              <div className="completed-innings-row">
-                <div className="completed-innings-box">
-                  <span>1st Innings</span>
-                  <strong>{match.firstInningsScore}</strong>
+                    <small>
+                      Overs, wickets, powerplay and
+                      match times
+                    </small>
+                  </div>
                 </div>
 
-                <div className="completed-innings-box">
-                  <span>2nd Innings</span>
-                  <strong>{match.secondInningsScore}</strong>
+                <span className="match-facts-wow-caret">
+                  ⌄
+                </span>
+              </summary>
+
+              <div className="match-facts-wow-content">
+                <div className="match-facts-grid">
+                  <div>
+                    <span>🏏 Bat 1st</span>
+
+                    <strong>
+                      {match.battingFirstTeamName ||
+                        "Not decided"}
+                    </strong>
+                  </div>
+
+                  <div>
+                    <span>🎯 Overs</span>
+                    <strong>
+                      {match.oversPerInnings}
+                    </strong>
+                  </div>
+
+                  <div>
+                    <span>⚾ Wickets</span>
+
+                    <strong>
+                      {match.maxWicketsPerInnings ??
+                        "∞"}
+                    </strong>
+                  </div>
+
+                  <div>
+                    <span>⚡ Powerplay</span>
+
+                    <strong>
+                      {match.powerplayOversInnings ??
+                        0}
+                    </strong>
+                  </div>
+
+                  <div>
+                    <span>🎳 Max / Bowler</span>
+
+                    <strong>
+                      {match.maxOversPerBowler ??
+                        "∞"}
+                    </strong>
+                  </div>
+                </div>
+
+                {(match?.startedAt ||
+                  match?.endedAt ||
+                  match?.lockedAt) && (
+                  <div className="match-timeline-wow">
+                    {match?.startedAt && (
+                      <div>
+                        <span>Started</span>
+
+                        <strong>
+                          {formatMatchDateTime(
+                            match.startedAt
+                          )}
+                        </strong>
+                      </div>
+                    )}
+
+                    {match?.endedAt && (
+                      <div>
+                        <span>Ended</span>
+
+                        <strong>
+                          {formatMatchDateTime(
+                            match.endedAt
+                          )}
+                        </strong>
+                      </div>
+                    )}
+
+                    {match?.lockedAt && (
+                      <div>
+                        <span>Locked</span>
+
+                        <strong>
+                          {formatMatchDateTime(
+                            match.lockedAt
+                          )}
+                        </strong>
+                      </div>
+                    )}
+                  </div>
+                )}
+              </div>
+            </details>
+          );
+
+          return (
+            <article
+              key={match.id}
+              className="completed-scorecard-card"
+            >
+              {/* ============================================
+                  DESKTOP / LAPTOP
+                  Existing layout retained
+              ============================================= */}
+              <div className="matches-desktop-only">
+                <div className="completed-desktop-card">
+                  <div className="completed-scorecard-top">
+                    <div className="completed-top-left">
+                      <span className="completed-match-chip">
+                        Match #{matchNumber}
+                      </span>
+
+                      <span className="completed-status-chip">
+                        {match.status}
+                      </span>
+                    </div>
+
+                    <div className="completed-top-right">
+                      {publicShareCode && (
+                        <button
+                          type="button"
+                          className="completed-view-match-btn"
+                          onClick={
+                            openCompletedMatch
+                          }
+                        >
+                          🏏 Open Match
+                        </button>
+                      )}
+
+                      <span className="completed-date-chip">
+                        📅 {playedDateLabel}
+                      </span>
+                    </div>
+                  </div>
+
+                  <div className="completed-scorecard-hero compact-teams-line">
+                    <strong>
+                      {battingFirstTeamName}
+                    </strong>
+
+                    <span>vs</span>
+
+                    <strong>
+                      {bowlingSecondTeamName}
+                    </strong>
+                  </div>
+
+                  <div className="completed-winner-banner">
+                    🏆{" "}
+                    {match.resultText ||
+                      "Result unavailable"}
+                  </div>
+
+                  <div className="completed-innings-row">
+                    <div className="completed-innings-box">
+                      <span>1st Innings</span>
+
+                      <strong>
+                        {match.firstInningsScore}
+                      </strong>
+                    </div>
+
+                    <div className="completed-innings-box">
+                      <span>2nd Innings</span>
+
+                      <strong>
+                        {match.secondInningsScore}
+                      </strong>
+                    </div>
+                  </div>
+
+                  {renderDesktopActions()}
+                  {renderDesktopSetup()}
                 </div>
               </div>
 
-              {renderActions()}
-              {renderSetupDetails()}
-            </div>
+              {/* ============================================
+                  MOBILE
+                  New readable compact design
+              ============================================= */}
+              <div className="matches-mobile-only">
+                <article className="mobile-completed-wow-card">
+                  <div className="mobile-completed-wow-top">
+                    <div className="mobile-completed-wow-meta">
+                      <span className="mobile-completed-match-number">
+                        Match #{matchNumber}
+                      </span>
 
-<details className="completed-mobile-card">
-  <summary className="completed-mobile-summary">
-<div className="completed-mobile-meta-wow">
-  <div className="completed-mobile-meta-top">
-    <span className="mobile-match-chip">Match #{matchNumber}</span>
-    <span className="mobile-status-chip">{match.status}</span>  
-  </div>
+                      <span className="mobile-completed-status">
+                        ✓{" "}
+                        {String(match.status || "")
+                          .replaceAll("_", " ")
+                          .trim()}
+                      </span>
+                    </div>
 
-  <div className="completed-top-right">
-    {match.shareCode && (
-      <button
-        type="button"
-        className="completed-view-match-btn"
-        onClick={() =>
-          window.open(
-            `https://cric4all.app/live/${match.shareCode}`,
-            "_blank"
-          )
-        }
-      >
-        🏏 View
-      </button>
+                    {publicShareCode && (
+                      <button
+                        type="button"
+                        className="mobile-completed-open-btn"
+                        title="Open spectator scorecard"
+                        aria-label={`Open ${match.teamAName} versus ${match.teamBName}`}
+                        onClick={openCompletedMatch}
+                      >
+                        ↗
+                      </button>
+                    )}
+                  </div>
+
+                  <div className="mobile-completed-date">
+                    📅 {playedDateLabel}
+                  </div>
+
+                  <div className="mobile-completed-score">
+                    <div className="mobile-completed-team">
+                      <span>{firstTeamName}</span>
+
+                      <strong>
+                        {cleanScore(firstTeamScore) ||
+                          "—"}
+                      </strong>
+
+                      <small>1st innings</small>
+                    </div>
+
+                    <div className="mobile-completed-versus">
+                      VS
+                    </div>
+
+                    <div className="mobile-completed-team right">
+                      <span>{secondTeamName}</span>
+
+                      <strong>
+                        {cleanScore(secondTeamScore) ||
+                          "—"}
+                      </strong>
+
+                      <small>2nd innings</small>
+                    </div>
+                  </div>
+
+                  <div className="mobile-completed-result">
+                    <span>🏆</span>
+
+                    <strong>
+                      {match.resultText ||
+                        "Result unavailable"}
+                    </strong>
+                  </div>
+
+                  <div className="mobile-completed-primary-actions">
+                    <button
+                      type="button"
+                      className="mobile-completed-scorecard-btn"
+                      onClick={() => {
+                        setSelectedMatchId(
+                          String(match.id)
+                        );
+                        handleMatchSelect(match.id);
+                      }}
+                    >
+                      <span>📊</span>
+                      View Scorecard
+                    </button>
+
+                    {canShowAi && (
+                      <button
+                        type="button"
+                        className="mobile-completed-ai-btn"
+                        disabled={aiAnalysisLoading}
+                        onClick={() =>
+                          loadAiAnalysis(match.id)
+                        }
+                      >
+                        <span>🤖</span>
+
+                        {aiAnalysisLoading
+                          ? "Working..."
+                          : "AI Review"}
+                      </button>
+                    )}
+                  </div>
+
+                  {(permissions?.canScoreMatch ||
+                    permissions?.canDeleteMatch) && (
+                    <div className="mobile-completed-secondary-actions">
+                      {permissions?.canScoreMatch && (
+                        <button
+                          type="button"
+                          onClick={() =>
+                            openCorrectionCenter(
+                              match.id
+                            )
+                          }
+                        >
+                          ✏️ Corrections
+                        </button>
+                      )}
+
+                      {permissions?.canDeleteMatch && (
+                        <button
+                          type="button"
+                          className="danger"
+                          onClick={() =>
+                            handleDeleteMatch(match.id)
+                          }
+                        >
+                          🗑️ Delete
+                        </button>
+                      )}
+                    </div>
+                  )}
+
+                  <details className="mobile-completed-details">
+                    <summary>
+                      <div>
+                        <span>⚙️</span>
+
+                        <strong>
+                          Match Setup & Timeline
+                        </strong>
+                      </div>
+
+                      <i>⌄</i>
+                    </summary>
+
+                    <div className="mobile-completed-details-body">
+                      <div className="mobile-completed-rule-list">
+                        <div>
+                          <span>Batting first</span>
+
+                          <strong>
+                            {match.battingFirstTeamName ||
+                              "Not decided"}
+                          </strong>
+                        </div>
+
+                        <div>
+                          <span>Overs</span>
+
+                          <strong>
+                            {match.oversPerInnings}
+                          </strong>
+                        </div>
+
+                        <div>
+                          <span>Wickets</span>
+
+                          <strong>
+                            {match.maxWicketsPerInnings ??
+                              "Unlimited"}
+                          </strong>
+                        </div>
+
+                        <div>
+                          <span>Powerplay</span>
+
+                          <strong>
+                            {match.powerplayOversInnings ??
+                              0}
+                          </strong>
+                        </div>
+
+                        <div>
+                          <span>
+                            Max overs / bowler
+                          </span>
+
+                          <strong>
+                            {match.maxOversPerBowler ??
+                              "Unlimited"}
+                          </strong>
+                        </div>
+                      </div>
+
+                      {(match?.startedAt ||
+                        match?.endedAt ||
+                        match?.lockedAt) && (
+                        <div className="mobile-completed-timeline">
+                          <h4>Match Timeline</h4>
+
+                          {match?.startedAt && (
+                            <div>
+                              <span>Started</span>
+
+                              <strong>
+                                {formatMatchDateTime(
+                                  match.startedAt
+                                )}
+                              </strong>
+                            </div>
+                          )}
+
+                          {match?.endedAt && (
+                            <div>
+                              <span>Ended</span>
+
+                              <strong>
+                                {formatMatchDateTime(
+                                  match.endedAt
+                                )}
+                              </strong>
+                            </div>
+                          )}
+
+                          {match?.lockedAt && (
+                            <div>
+                              <span>Locked</span>
+
+                              <strong>
+                                {formatMatchDateTime(
+                                  match.lockedAt
+                                )}
+                              </strong>
+                            </div>
+                          )}
+                        </div>
+                      )}
+                    </div>
+                  </details>
+                </article>
+              </div>
+            </article>
+          );
+        })}
+      </div>
     )}
-
-    <span className="mobile-date-chip">
-      📅 {playedDateLabel}
-    </span>
-  </div>
-</div>
-
-    <div className="completed-mobile-teams-grid">
-      <div className="mobile-team-score">
-        <strong>{firstTeamName}</strong>
-        <small>{cleanScore(firstTeamScore)}</small>
-      </div>
-
-      <div className="mobile-team-score right">
-        <strong>{secondTeamName}</strong>
-        <small>{cleanScore(secondTeamScore)}</small>
-      </div>
-    </div>
-
-    <div className="completed-mobile-vs">
-      <span></span>
-      <b>VS</b>
-      <span></span>
-    </div>
-
-    <div className="completed-mobile-result-clean">
-      🏆 {match.resultText || "Result unavailable"}
-    </div>
-
-    <div className="completed-mobile-expand">
-      <span>⚙️ Actions & Details</span>
-      <b>⌄</b>
-    </div>
-  </summary>
-
-  <div className="completed-mobile-expanded">
-    {renderActions()}
-    {renderSetupDetails()}
-  </div>
-</details>
-          </article>
-        );
-      })}
-    </div>
-  )}
-</Card>
+  </Card>
 )}
 </Card>
   </div> 
