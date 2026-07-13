@@ -9517,186 +9517,455 @@ const playerRoleBadge = (row) => {
   </Card>
 )}
 
-    {activeLeagueId && matchesSubTab === "SCHEDULED" && (
-      <Card title="📅 Scheduled Matches">
-        {scheduledMatches.length === 0 ? (
-          <div className="empty-state">No scheduled matches found.</div>
-        ) : (
-<div className="pro-scheduled-list">
-  {filteredScheduledMatches.map((match) => (
-    <article
-      key={match.id}
-      className="pro-scheduled-card"
-    >
-<div className="pro-scheduled-header">
-  <div className="pro-scheduled-main-info">
-    <div className="scheduled-card-topline">
-      <span className="status-pill">
-        {match.status}
-      </span>
-
-      <button
-        type="button"
-        className="active-share-icon-btn"
-        title="Share spectator link"
-        aria-label={`Share ${match.teamAName} versus ${match.teamBName}`}
-        onClick={() => handleShareScheduledMatch(match)}
-        disabled={
-          !(
-            match?.shareCode ||
-            match?.sharecode ||
-            match?.publicShareCode
-          )
-        }
-      >
-        📤
-      </button>
-    </div>
-
-    <h3>
-      {match.teamAName}
-      <b>vs</b>
-      {match.teamBName}
-    </h3>
-
-    <p>
-      📅{" "}
-      {match.scheduledAt
-        ? formatDate(match.scheduledAt)
-        : "Schedule not decided"}
-    </p>
-  </div>
-
-        <div className="pro-scheduled-actions">
-          {permissions?.canScoreMatch && (
-            <button
-              type="button"
-              className="start-match-btn"
-              onClick={() =>
-                handleStartMatch(match)
-              }
-            >
-              ▶ Start
-            </button>
-          )}
-
-          {normalizeStatus(match.status) === "SCHEDULED" && (
-            <button
-              type="button"
-              className="mini-action-btn"
-              onClick={() =>
-                openEditMatchModal(match)
-              }
-            >
-              ✏️ Edit
-            </button>
-          )}
-
-          {permissions?.canDeleteMatch && (
-            <button
-              type="button"
-              className="mini-action-btn danger-mini-btn"
-              onClick={() =>
-                handleDeleteMatch(match.id)
-              }
-            >
-              🗑️
-            </button>
-          )}
-        </div>
+ {activeLeagueId && matchesSubTab === "SCHEDULED" && (
+  <Card title="📅 Scheduled Matches">
+    {scheduledMatches.length === 0 ? (
+      <div className="empty-state">
+        No scheduled matches found.
       </div>
+    ) : (
+      <>
+        {/* =====================================================
+            DESKTOP / LAPTOP VIEW
+            Keep existing layout and functionality
+        ====================================================== */}
+        <div className="matches-desktop-only">
+          <div className="pro-scheduled-list">
+            {filteredScheduledMatches.map((match) => {
+              const shareCode =
+                match?.shareCode ||
+                match?.sharecode ||
+                match?.publicShareCode;
 
-{/* Desktop: keep existing perfect view */}
-<details className="scheduled-facts-wow">
-  <summary className="scheduled-facts-wow-summary">
-<div>
-  <strong>📌 Match Setup & Roles</strong>
-  <small>Click to view match rules, captains & wicketkeepers</small>
-</div>
+              return (
+                <article
+                  key={`desktop-scheduled-${match.id}`}
+                  className="pro-scheduled-card"
+                >
+                  <div className="pro-scheduled-header">
+                    <div className="pro-scheduled-main-info">
+                      <div className="scheduled-card-topline">
+                        <span className="status-pill">
+                          {match.status}
+                        </span>
 
-    <span>⌄</span>
-  </summary>
+                        <button
+                          type="button"
+                          className="active-share-icon-btn"
+                          title="Share spectator link"
+                          aria-label={`Share ${match.teamAName} versus ${match.teamBName}`}
+                          onClick={() =>
+                            handleShareScheduledMatch(match)
+                          }
+                          disabled={!shareCode}
+                        >
+                          📤
+                        </button>
+                      </div>
 
-  <div className="scheduled-facts-wow-grid">
-    <div><span>🏏 Bat 1st</span><strong>{match.battingFirstTeamName || "Not decided"}</strong></div>
-    <div><span>🎯 Overs</span><strong>{match.oversPerInnings}</strong></div>
-    <div><span>⚾ Wickets</span><strong>{match.maxWicketsPerInnings ?? "∞"}</strong></div>
-    <div><span>⚡ Powerplay</span><strong>{match.powerplayOversInnings ?? 0}</strong></div>
-    <div><span>🎳 Max / Bowler</span><strong>{match.maxOversPerBowler ?? "∞"}</strong></div>
+                      <h3>
+                        {match.teamAName}
+                        <b>vs</b>
+                        {match.teamBName}
+                      </h3>
 
-    <div><span>🧤 {match.teamAName} WK</span><strong>{match.teamAWicketKeeperName || "Not selected"}</strong></div>
-    <div><span>🧤 {match.teamBName} WK</span><strong>{match.teamBWicketKeeperName || "Not selected"}</strong></div>
-    <div><span>👑 {match.teamAName} Captain</span><strong>{match.teamACaptainName || "Not selected"}</strong></div>
-    <div><span>👑 {match.teamBName} Captain</span><strong>{match.teamBCaptainName || "Not selected"}</strong></div>
-  </div>
-</details>
+                      <p>
+                        📅{" "}
+                        {match.scheduledAt
+                          ? formatDate(match.scheduledAt)
+                          : "Schedule not decided"}
+                      </p>
+                    </div>
 
-{/* Mobile: collapsible wow view */}
-<details className="scheduled-mobile-setup">
-<summary className="scheduled-mobile-setup-summary">
-  <div className="scheduled-mobile-summary-left">
-    <span className="scheduled-mobile-summary-icon">⚙️</span>
-    <span className="scheduled-mobile-summary-text">
-      Match Setup
-    </span>
-  </div>
+                    <div className="pro-scheduled-actions">
+                      {permissions?.canScoreMatch && (
+                        <button
+                          type="button"
+                          className="start-match-btn"
+                          onClick={() =>
+                            handleStartMatch(match)
+                          }
+                        >
+                          ▶ Start
+                        </button>
+                      )}
 
-  <span className="scheduled-mobile-summary-arrow">⌄</span>
-</summary>
+                      {normalizeStatus(match.status) ===
+                        "SCHEDULED" && (
+                        <button
+                          type="button"
+                          className="mini-action-btn"
+                          onClick={() =>
+                            openEditMatchModal(match)
+                          }
+                        >
+                          ✏️ Edit
+                        </button>
+                      )}
 
-  <div className="scheduled-mobile-setup-grid">
-    <div>
-      <span>🏏 Bat 1st</span>
-      <strong>{match.battingFirstTeamName || "Not decided"}</strong>
-    </div>
+                      {permissions?.canDeleteMatch && (
+                        <button
+                          type="button"
+                          className="mini-action-btn danger-mini-btn"
+                          title={`Delete ${match.teamAName} vs ${match.teamBName}`}
+                          aria-label={`Delete ${match.teamAName} versus ${match.teamBName}`}
+                          onClick={() =>
+                            handleDeleteMatch(match.id)
+                          }
+                        >
+                          🗑️
+                        </button>
+                      )}
+                    </div>
+                  </div>
 
-    <div>
-      <span>🎯 Overs</span>
-      <strong>{match.oversPerInnings}</strong>
-    </div>
+                  <details className="scheduled-facts-wow">
+                    <summary className="scheduled-facts-wow-summary">
+                      <div>
+                        <strong>
+                          📌 Match Setup & Roles
+                        </strong>
 
-    <div>
-      <span>⚾ Wickets</span>
-      <strong>{match.maxWicketsPerInnings ?? "∞"}</strong>
-    </div>
+                        <small>
+                          Click to view match rules,
+                          captains & wicketkeepers
+                        </small>
+                      </div>
 
-    <div>
-      <span>⚡ Powerplay</span>
-      <strong>{match.powerplayOversInnings ?? 0}</strong>
-    </div>
+                      <span>⌄</span>
+                    </summary>
 
-    <div>
-      <span>🎳 Max / Bowler</span>
-      <strong>{match.maxOversPerBowler ?? "∞"}</strong>
-    </div>
+                    <div className="scheduled-facts-wow-grid">
+                      <div>
+                        <span>🏏 Bat 1st</span>
+                        <strong>
+                          {match.battingFirstTeamName ||
+                            "Not decided"}
+                        </strong>
+                      </div>
 
-    <div>
-  <span>🧤 {match.teamAName} WK</span>
-  <strong>{match.teamAWicketKeeperName || "Not selected"}</strong>
-</div>
+                      <div>
+                        <span>🎯 Overs</span>
+                        <strong>
+                          {match.oversPerInnings}
+                        </strong>
+                      </div>
 
-<div>
-  <span>🧤 {match.teamBName} WK</span>
-  <strong>{match.teamBWicketKeeperName || "Not selected"}</strong>
-</div>
+                      <div>
+                        <span>⚾ Wickets</span>
+                        <strong>
+                          {match.maxWicketsPerInnings ??
+                            "∞"}
+                        </strong>
+                      </div>
 
-<div>
-  <span>👑 {match.teamAName} Captain</span>
-  <strong>{match.teamACaptainName || "Not selected"}</strong>
-</div>
+                      <div>
+                        <span>⚡ Powerplay</span>
+                        <strong>
+                          {match.powerplayOversInnings ??
+                            0}
+                        </strong>
+                      </div>
 
-<div>
-  <span>👑 {match.teamBName} Captain</span>
-  <strong>{match.teamBCaptainName || "Not selected"}</strong>
-</div>
-  </div>
-</details>
-    </article>
-  ))}
-</div>
-        )}
-      </Card>
+                      <div>
+                        <span>🎳 Max / Bowler</span>
+                        <strong>
+                          {match.maxOversPerBowler ??
+                            "∞"}
+                        </strong>
+                      </div>
+
+                      <div>
+                        <span>
+                          🧤 {match.teamAName} WK
+                        </span>
+                        <strong>
+                          {match.teamAWicketKeeperName ||
+                            "Not selected"}
+                        </strong>
+                      </div>
+
+                      <div>
+                        <span>
+                          🧤 {match.teamBName} WK
+                        </span>
+                        <strong>
+                          {match.teamBWicketKeeperName ||
+                            "Not selected"}
+                        </strong>
+                      </div>
+
+                      <div>
+                        <span>
+                          👑 {match.teamAName} Captain
+                        </span>
+                        <strong>
+                          {match.teamACaptainName ||
+                            "Not selected"}
+                        </strong>
+                      </div>
+
+                      <div>
+                        <span>
+                          👑 {match.teamBName} Captain
+                        </span>
+                        <strong>
+                          {match.teamBCaptainName ||
+                            "Not selected"}
+                        </strong>
+                      </div>
+                    </div>
+                  </details>
+                </article>
+              );
+            })}
+          </div>
+        </div>
+
+        {/* =====================================================
+            MOBILE VIEW
+            New compact scheduled card
+        ====================================================== */}
+        <div className="matches-mobile-only">
+          <div className="mobile-scheduled-match-list">
+            {filteredScheduledMatches.map((match) => {
+              const shareCode =
+                match?.shareCode ||
+                match?.sharecode ||
+                match?.publicShareCode;
+
+              const statusLabel = String(
+                match.status || "SCHEDULED"
+              )
+                .replaceAll("_", " ")
+                .trim();
+
+              return (
+                <article
+                  key={`mobile-scheduled-${match.id}`}
+                  className="mobile-scheduled-match-card"
+                >
+                  {/* Status and share */}
+                  <div className="mobile-scheduled-topline">
+                    <span className="mobile-scheduled-status">
+                      <i>📅</i>
+                      {statusLabel}
+                    </span>
+
+                    <button
+                      type="button"
+                      className="mobile-scheduled-share-btn"
+                      title="Share spectator link"
+                      aria-label={`Share ${match.teamAName} versus ${match.teamBName}`}
+                      onClick={() =>
+                        handleShareScheduledMatch(match)
+                      }
+                      disabled={!shareCode}
+                    >
+                      📤
+                    </button>
+                  </div>
+
+                  {/* Team names and date */}
+                  <div className="mobile-scheduled-teams">
+                    <strong>{match.teamAName}</strong>
+                    <span>vs</span>
+                    <strong>{match.teamBName}</strong>
+                  </div>
+
+                  <small className="mobile-scheduled-date">
+                    📅{" "}
+                    {match.scheduledAt
+                      ? formatDate(match.scheduledAt)
+                      : "Schedule not decided"}
+                  </small>
+
+                  {/* Important setup snapshot */}
+                  <div className="mobile-scheduled-snapshot">
+                    <div>
+                      <span>Overs</span>
+                      <strong>
+                        {match.oversPerInnings}
+                      </strong>
+                    </div>
+
+                    <div>
+                      <span>Wickets</span>
+                      <strong>
+                        {match.maxWicketsPerInnings ??
+                          "∞"}
+                      </strong>
+                    </div>
+
+                    <div>
+                      <span>Powerplay</span>
+                      <strong>
+                        {match.powerplayOversInnings ??
+                          0}
+                      </strong>
+                    </div>
+                  </div>
+
+                  {/* Actions */}
+                  <div className="mobile-scheduled-actions">
+                    {permissions?.canScoreMatch && (
+                      <button
+                        type="button"
+                        className="mobile-scheduled-start-btn"
+                        onClick={() =>
+                          handleStartMatch(match)
+                        }
+                      >
+                        ▶ Start Match
+                      </button>
+                    )}
+
+                    {normalizeStatus(match.status) ===
+                      "SCHEDULED" && (
+                      <button
+                        type="button"
+                        className="mobile-scheduled-edit-btn"
+                        onClick={() =>
+                          openEditMatchModal(match)
+                        }
+                      >
+                        ✏️ Edit
+                      </button>
+                    )}
+
+                    {permissions?.canDeleteMatch && (
+                      <button
+                        type="button"
+                        className="mobile-scheduled-delete-btn"
+                        title={`Delete ${match.teamAName} vs ${match.teamBName}`}
+                        aria-label={`Delete ${match.teamAName} versus ${match.teamBName}`}
+                        onClick={() =>
+                          handleDeleteMatch(match.id)
+                        }
+                      >
+                        🗑️
+                      </button>
+                    )}
+                  </div>
+
+                  {/* Compact setup accordion */}
+                  <details className="mobile-scheduled-setup">
+                    <summary className="mobile-scheduled-setup-summary">
+                      <div className="mobile-scheduled-setup-left">
+                        <span className="mobile-scheduled-setup-icon">
+                          ⚙️
+                        </span>
+
+                        <div>
+                          <strong>
+                            Match Setup & Roles
+                          </strong>
+
+                          <small>
+                            Rules, captains and wicketkeepers
+                          </small>
+                        </div>
+                      </div>
+
+                      <span className="mobile-scheduled-setup-caret">
+                        ⌄
+                      </span>
+                    </summary>
+
+                    <div className="mobile-scheduled-setup-content">
+                      <div className="mobile-scheduled-rules-grid">
+                        <div>
+                          <span>🏏 Bat first</span>
+                          <strong>
+                            {match.battingFirstTeamName ||
+                              "Not decided"}
+                          </strong>
+                        </div>
+
+                        <div>
+                          <span>🎯 Overs</span>
+                          <strong>
+                            {match.oversPerInnings}
+                          </strong>
+                        </div>
+
+                        <div>
+                          <span>⚾ Wickets</span>
+                          <strong>
+                            {match.maxWicketsPerInnings ??
+                              "∞"}
+                          </strong>
+                        </div>
+
+                        <div>
+                          <span>⚡ Powerplay</span>
+                          <strong>
+                            {match.powerplayOversInnings ??
+                              0}
+                          </strong>
+                        </div>
+
+                        <div>
+                          <span>🎳 Max / Bowler</span>
+                          <strong>
+                            {match.maxOversPerBowler ??
+                              "∞"}
+                          </strong>
+                        </div>
+                      </div>
+
+                      <div className="mobile-scheduled-role-list">
+                        <div>
+                          <span>
+                            🧤 {match.teamAName} WK
+                          </span>
+                          <strong>
+                            {match.teamAWicketKeeperName ||
+                              "Not selected"}
+                          </strong>
+                        </div>
+
+                        <div>
+                          <span>
+                            🧤 {match.teamBName} WK
+                          </span>
+                          <strong>
+                            {match.teamBWicketKeeperName ||
+                              "Not selected"}
+                          </strong>
+                        </div>
+
+                        <div>
+                          <span>
+                            👑 {match.teamAName} Captain
+                          </span>
+                          <strong>
+                            {match.teamACaptainName ||
+                              "Not selected"}
+                          </strong>
+                        </div>
+
+                        <div>
+                          <span>
+                            👑 {match.teamBName} Captain
+                          </span>
+                          <strong>
+                            {match.teamBCaptainName ||
+                              "Not selected"}
+                          </strong>
+                        </div>
+                      </div>
+                    </div>
+                  </details>
+                </article>
+              );
+            })}
+          </div>
+        </div>
+      </>
     )}
+  </Card>
+)}
 
 {activeLeagueId && matchesSubTab === "COMPLETED" && (
 <Card title="✅ Match History">

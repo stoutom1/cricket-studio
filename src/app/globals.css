@@ -38195,3 +38195,549 @@ text-overflow:unset;
     grid-template-columns: 1fr;
   }
 }
+.matches-mobile-only {
+  display: none !important;
+}
+
+.matches-desktop-only {
+  display: block;
+}
+
+@media (max-width: 760px) {
+  .matches-desktop-only {
+    display: none !important;
+  }
+
+  .matches-mobile-only {
+    display: block !important;
+  }
+}
+/* =========================================================
+   SCHEDULED MATCHES — SLEEK MOBILE DESIGN
+========================================================= */
+
+@media (max-width: 760px) {
+  .mobile-scheduled-match-list {
+    display: grid;
+    gap: 11px;
+
+    width: 100%;
+    min-width: 0;
+  }
+
+  .mobile-scheduled-match-card,
+  .mobile-scheduled-match-card * {
+    box-sizing: border-box;
+  }
+
+  .mobile-scheduled-match-card {
+    width: 100%;
+    min-width: 0;
+
+    padding: 12px;
+
+    overflow: hidden;
+
+    border-radius: 17px;
+    border: 1px solid rgba(148, 163, 184, 0.13);
+    border-left: 3px solid rgba(56, 189, 248, 0.65);
+
+    background:
+      radial-gradient(
+        circle at top right,
+        rgba(14, 165, 233, 0.065),
+        transparent 38%
+      ),
+      linear-gradient(
+        150deg,
+        rgba(19, 32, 54, 0.98),
+        rgba(11, 20, 37, 0.98)
+      );
+
+    box-shadow:
+      0 12px 25px rgba(2, 6, 23, 0.22),
+      inset 0 1px 0 rgba(255, 255, 255, 0.025);
+  }
+
+  /* Status and share */
+
+  .mobile-scheduled-topline {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 9px;
+  }
+
+  .mobile-scheduled-status {
+    min-height: 25px;
+
+    display: inline-flex;
+    align-items: center;
+    gap: 6px;
+
+    padding: 0 9px;
+
+    border-radius: 999px;
+    border: 1px solid rgba(56, 189, 248, 0.2);
+
+    background: rgba(14, 165, 233, 0.1);
+    color: #bae6fd;
+
+    font-size: 9px;
+    font-weight: 950;
+    letter-spacing: 0.25px;
+    line-height: 1;
+    text-transform: uppercase;
+    white-space: nowrap;
+  }
+
+  .mobile-scheduled-status > i {
+    font-size: 10px;
+    font-style: normal;
+  }
+
+  .mobile-scheduled-share-btn {
+    width: 32px !important;
+    height: 32px !important;
+    min-width: 32px !important;
+    min-height: 32px !important;
+    flex: 0 0 32px !important;
+
+    display: inline-flex !important;
+    align-items: center;
+    justify-content: center;
+
+    padding: 0 !important;
+    margin: 0 !important;
+
+    border-radius: 10px !important;
+    border: 1px solid rgba(148, 163, 184, 0.17) !important;
+
+    background:
+      linear-gradient(
+        145deg,
+        rgba(51, 65, 85, 0.64),
+        rgba(30, 41, 59, 0.9)
+      ) !important;
+
+    color: #e2e8f0 !important;
+
+    font-family: inherit !important;
+    font-size: 14px !important;
+    line-height: 1 !important;
+
+    cursor: pointer;
+
+    box-shadow:
+      inset 0 1px 0 rgba(255, 255, 255, 0.04),
+      0 4px 10px rgba(2, 6, 23, 0.16) !important;
+  }
+
+  .mobile-scheduled-share-btn:active:not(:disabled) {
+    transform: scale(0.92);
+  }
+
+  .mobile-scheduled-share-btn:disabled {
+    opacity: 0.3 !important;
+    cursor: not-allowed;
+  }
+
+  /* Team names and date */
+
+  .mobile-scheduled-teams {
+    display: flex;
+    align-items: center;
+    flex-wrap: wrap;
+    gap: 5px;
+
+    min-width: 0;
+
+    margin-top: 10px;
+  }
+
+  .mobile-scheduled-teams strong {
+    min-width: 0;
+
+    color: #f8fafc;
+
+    font-size: 15px;
+    font-weight: 950;
+    line-height: 1.2;
+
+    overflow-wrap: anywhere;
+  }
+
+  .mobile-scheduled-teams span {
+    color: #38bdf8;
+
+    font-size: 9px;
+    font-weight: 950;
+    text-transform: uppercase;
+  }
+
+  .mobile-scheduled-date {
+    display: block;
+
+    margin-top: 5px;
+
+    color: #94a3b8;
+
+    font-size: 10px;
+    font-weight: 750;
+    line-height: 1.35;
+
+    overflow-wrap: anywhere;
+  }
+
+  /* Three-value snapshot */
+
+  .mobile-scheduled-snapshot {
+    display: grid;
+    grid-template-columns: repeat(3, minmax(0, 1fr));
+    gap: 6px;
+
+    margin-top: 10px;
+  }
+
+  .mobile-scheduled-snapshot > div {
+    min-width: 0;
+
+    padding: 7px 5px;
+
+    border-radius: 10px;
+    border: 1px solid rgba(148, 163, 184, 0.1);
+
+    background: rgba(15, 23, 42, 0.4);
+
+    text-align: center;
+  }
+
+  .mobile-scheduled-snapshot span,
+  .mobile-scheduled-snapshot strong {
+    display: block;
+  }
+
+  .mobile-scheduled-snapshot span {
+    color: #64748b;
+
+    font-size: 7px;
+    font-weight: 900;
+    text-transform: uppercase;
+  }
+
+  .mobile-scheduled-snapshot strong {
+    margin-top: 2px;
+
+    color: #f8fafc;
+
+    font-size: 12px;
+    font-weight: 950;
+  }
+
+  /* Actions */
+
+  .mobile-scheduled-actions {
+    display: flex;
+    align-items: center;
+    gap: 7px;
+
+    margin-top: 10px;
+  }
+
+  .mobile-scheduled-start-btn {
+    flex: 1;
+
+    min-height: 38px;
+
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+
+    padding: 0 13px;
+
+    border-radius: 11px;
+    border: 1px solid rgba(56, 189, 248, 0.25);
+
+    background:
+      linear-gradient(
+        135deg,
+        rgba(37, 99, 235, 0.94),
+        rgba(14, 165, 233, 0.88)
+      );
+
+    color: #ffffff;
+
+    font-family: inherit;
+    font-size: 10px;
+    font-weight: 950;
+
+    cursor: pointer;
+
+    box-shadow:
+      0 7px 16px rgba(37, 99, 235, 0.2),
+      inset 0 1px 0 rgba(255, 255, 255, 0.11);
+  }
+
+  .mobile-scheduled-edit-btn {
+    min-height: 38px;
+
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+
+    padding: 0 12px;
+
+    border-radius: 11px;
+    border: 1px solid rgba(167, 139, 250, 0.2);
+
+    background:
+      linear-gradient(
+        145deg,
+        rgba(76, 29, 149, 0.27),
+        rgba(30, 41, 59, 0.88)
+      );
+
+    color: #ede9fe;
+
+    font-family: inherit;
+    font-size: 10px;
+    font-weight: 950;
+
+    cursor: pointer;
+  }
+
+  .mobile-scheduled-delete-btn {
+    width: 38px;
+    height: 38px;
+    flex: 0 0 38px;
+
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+
+    padding: 0;
+
+    border-radius: 11px;
+    border: 1px solid rgba(248, 113, 113, 0.21);
+
+    background: rgba(127, 29, 29, 0.16);
+    color: #fecaca;
+
+    font-size: 13px;
+
+    cursor: pointer;
+  }
+
+  .mobile-scheduled-start-btn:active,
+  .mobile-scheduled-edit-btn:active,
+  .mobile-scheduled-delete-btn:active {
+    transform: scale(0.97);
+  }
+
+  /* Setup accordion */
+
+  .mobile-scheduled-setup {
+    margin-top: 10px;
+
+    overflow: hidden;
+
+    border-radius: 13px;
+    border: 1px solid rgba(148, 163, 184, 0.1);
+
+    background: rgba(15, 23, 42, 0.38);
+  }
+
+  .mobile-scheduled-setup-summary {
+    list-style: none;
+
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 8px;
+
+    padding: 9px 10px;
+
+    cursor: pointer;
+  }
+
+  .mobile-scheduled-setup-summary::-webkit-details-marker {
+    display: none;
+  }
+
+  .mobile-scheduled-setup-summary::marker {
+    content: "";
+  }
+
+  .mobile-scheduled-setup-left {
+    min-width: 0;
+
+    display: flex;
+    align-items: center;
+    gap: 8px;
+  }
+
+  .mobile-scheduled-setup-icon {
+    width: 29px;
+    height: 29px;
+    flex: 0 0 29px;
+
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+
+    border-radius: 9px;
+
+    background: rgba(14, 165, 233, 0.12);
+
+    font-size: 13px;
+  }
+
+  .mobile-scheduled-setup-left > div {
+    min-width: 0;
+  }
+
+  .mobile-scheduled-setup-left strong,
+  .mobile-scheduled-setup-left small {
+    display: block;
+  }
+
+  .mobile-scheduled-setup-left strong {
+    color: #e2e8f0;
+
+    font-size: 10px;
+    font-weight: 950;
+    line-height: 1.25;
+  }
+
+  .mobile-scheduled-setup-left small {
+    margin-top: 1px;
+
+    color: #64748b;
+
+    font-size: 8px;
+    line-height: 1.25;
+  }
+
+  .mobile-scheduled-setup-caret {
+    width: 25px;
+    height: 25px;
+    flex: 0 0 25px;
+
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+
+    border-radius: 999px;
+
+    background: rgba(148, 163, 184, 0.07);
+    color: #94a3b8;
+
+    font-size: 12px;
+
+    transition:
+      transform 0.2s ease,
+      background 0.2s ease;
+  }
+
+  .mobile-scheduled-setup[open]
+    .mobile-scheduled-setup-caret {
+    transform: rotate(180deg);
+
+    background: rgba(14, 165, 233, 0.18);
+    color: #e0f2fe;
+  }
+
+  .mobile-scheduled-setup-content {
+    padding: 0 9px 9px;
+
+    border-top: 1px solid rgba(148, 163, 184, 0.08);
+  }
+
+  .mobile-scheduled-rules-grid {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 6px;
+
+    padding-top: 8px;
+  }
+
+  .mobile-scheduled-rules-grid > div,
+  .mobile-scheduled-role-list > div {
+    min-width: 0;
+
+    padding: 8px;
+
+    border-radius: 10px;
+
+    background: rgba(30, 41, 59, 0.47);
+  }
+
+  .mobile-scheduled-rules-grid span,
+  .mobile-scheduled-rules-grid strong,
+  .mobile-scheduled-role-list span,
+  .mobile-scheduled-role-list strong {
+    display: block;
+  }
+
+  .mobile-scheduled-rules-grid span,
+  .mobile-scheduled-role-list span {
+    color: #64748b;
+
+    font-size: 7px;
+    font-weight: 900;
+    line-height: 1.25;
+    text-transform: uppercase;
+
+    overflow-wrap: anywhere;
+  }
+
+  .mobile-scheduled-rules-grid strong,
+  .mobile-scheduled-role-list strong {
+    margin-top: 3px;
+
+    color: #e2e8f0;
+
+    font-size: 9px;
+    font-weight: 900;
+    line-height: 1.3;
+
+    overflow-wrap: anywhere;
+  }
+
+  .mobile-scheduled-role-list {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 6px;
+
+    margin-top: 6px;
+  }
+}
+
+/* Very narrow phones */
+@media (max-width: 370px) {
+  .mobile-scheduled-match-card {
+    padding: 10px;
+  }
+
+  .mobile-scheduled-teams strong {
+    font-size: 14px;
+  }
+
+  .mobile-scheduled-actions {
+    display: grid;
+    grid-template-columns: 1fr auto;
+  }
+
+  .mobile-scheduled-start-btn {
+    grid-column: 1 / -1;
+    width: 100%;
+  }
+
+  .mobile-scheduled-edit-btn {
+    width: 100%;
+  }
+
+  .mobile-scheduled-role-list {
+    grid-template-columns: 1fr;
+  }
+}
