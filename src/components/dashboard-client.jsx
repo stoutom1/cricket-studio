@@ -8858,17 +8858,48 @@ const playerRoleBadge = (row) => {
     {activeLeagueId && matchesSubTab === "ACTIVE" && (
 <Card title="🟢 Active Matches">
   {activeMatches.length === 0 ? (
-    <div className="empty-state">No active matches found.</div>
+    <div className="empty-state">
+      No active matches found.
+    </div>
   ) : (
     <div className="pro-active-list">
       {filteredActiveMatches.map((match) => {
-        const isSelected = String(selectedMatchId) === String(match.id);
+        const isSelected =
+          String(selectedMatchId) === String(match.id);
+
+        const shareCode =
+          match?.shareCode ||
+          match?.sharecode ||
+          match?.publicShareCode;
 
         return (
           <article
             key={match.id}
-            className={`pro-active-card ${isSelected ? "selected" : ""}`}
+            className={`pro-active-card ${
+              isSelected ? "selected" : ""
+            }`}
           >
+            {/* Status and share */}
+            <div className="pro-active-card-topbar">
+              <span className="status-pill live-status-pill">
+                ● {match.status}
+              </span>
+
+              <button
+                type="button"
+                className="active-share-icon-btn"
+                title="Share spectator link"
+                aria-label={`Share ${match.teamAName} versus ${match.teamBName}`}
+                onClick={() =>
+                  handleShareActiveMatch(match)
+                }
+                disabled={!shareCode}
+              >
+                📤
+              </button>
+            </div>
+
+            {/* Main clickable match area */}
             <button
               type="button"
               className="pro-active-main"
@@ -8877,45 +8908,22 @@ const playerRoleBadge = (row) => {
                 handleMatchSelect(match.id);
               }}
             >
-<div className="pro-active-header">
-  <div className="pro-active-main-info">
-    <div className="active-card-topline">
-      <span className="status-pill live-status-pill">
-        ● {match.status}
-      </span>
+              <div className="pro-active-header">
+                <div className="pro-active-main-info">
+                  <h3>
+                    {match.teamAName}
+                    <b>vs</b>
+                    {match.teamBName}
+                  </h3>
 
-      <button
-        type="button"
-        className="active-share-icon-btn"
-        title="Share spectator link"
-        aria-label={`Share ${match.teamAName} versus ${match.teamBName}`}
-        onClick={(event) => {
-          event.stopPropagation();
-          handleShareActiveMatch(match);
-        }}
-        disabled={
-          !(
-            match?.shareCode ||
-            match?.sharecode ||
-            match?.publicShareCode
-          )
-        }
-      >
-        📤
-      </button>
-    </div>
-
-    <h3>
-      {match.teamAName}
-      <b>vs</b>
-      {match.teamBName}
-    </h3>
-
-    <p>🕒 {getMatchTimelineText(match)}</p>
-  </div>
+                  <p>
+                    🕒 {getMatchTimelineText(match)}
+                  </p>
+                </div>
 
                 <div className="pro-live-score-box">
                   <span>Live Score</span>
+
                   <strong>
                     {match.scoreSummary ||
                       match.liveScore ||
@@ -8924,17 +8932,25 @@ const playerRoleBadge = (row) => {
                 </div>
               </div>
             </button>
+
+            {/* Scoring and delete actions */}
             <div className="pro-active-actions">
               {permissions?.canScoreMatch && (
                 <button
                   type="button"
-                  className={`start-match-btn ${isSelected ? "is-open" : ""}`}
+                  className={`start-match-btn ${
+                    isSelected ? "is-open" : ""
+                  }`}
                   onClick={() => {
-                    setSelectedMatchId(String(match.id));
+                    setSelectedMatchId(
+                      String(match.id)
+                    );
                     handleMatchSelect(match.id);
                   }}
                 >
-                  {isSelected ? "✅ Scoring Open" : "🏏 Open Scoring"}
+                  {isSelected
+                    ? "✅ Scoring Open"
+                    : "🏏 Open Scoring"}
                 </button>
               )}
 
@@ -8942,96 +8958,137 @@ const playerRoleBadge = (row) => {
                 <button
                   type="button"
                   className="mini-action-btn danger-mini-btn"
-                  onClick={() => handleDeleteMatch(match.id)}
+                  title={`Delete ${match.teamAName} vs ${match.teamBName}`}
+                  aria-label={`Delete ${match.teamAName} versus ${match.teamBName}`}
+                  onClick={() =>
+                    handleDeleteMatch(match.id)
+                  }
                 >
                   🗑️
                 </button>
               )}
             </div>
-{/* Desktop: keep existing perfect view */}
-<details className="scheduled-facts-wow">
-  <summary className="scheduled-facts-wow-summary">
-<div>
-  <strong>📌 Match Setup & Roles</strong>
-  <small>Click to view match rules, captains & wicketkeepers</small>
-</div>
 
-    <span>⌄</span>
-  </summary>
+            {/* One collapsible section for desktop and mobile */}
+            <details className="active-match-facts-collapse">
+              <summary className="active-match-facts-summary">
+                <div className="active-match-facts-summary-left">
+                  <span className="active-match-facts-icon">
+                    ⚙️
+                  </span>
 
-  <div className="scheduled-facts-wow-grid">
-    <div><span>🏏 Bat 1st</span><strong>{match.battingFirstTeamName || "Not decided"}</strong></div>
-    <div><span>🎯 Overs</span><strong>{match.oversPerInnings}</strong></div>
-    <div><span>⚾ Wickets</span><strong>{match.maxWicketsPerInnings ?? "∞"}</strong></div>
-    <div><span>⚡ Powerplay</span><strong>{match.powerplayOversInnings ?? 0}</strong></div>
-    <div><span>🎳 Max / Bowler</span><strong>{match.maxOversPerBowler ?? "∞"}</strong></div>
+                  <div>
+                    <strong>
+                      Match Setup & Team Roles
+                    </strong>
 
-    <div><span>🧤 {match.teamAName} WK</span><strong>{match.teamAWicketKeeperName || "Not selected"}</strong></div>
-    <div><span>🧤 {match.teamBName} WK</span><strong>{match.teamBWicketKeeperName || "Not selected"}</strong></div>
-    <div><span>👑 {match.teamAName} Captain</span><strong>{match.teamACaptainName || "Not selected"}</strong></div>
-    <div><span>👑 {match.teamBName} Captain</span><strong>{match.teamBCaptainName || "Not selected"}</strong></div>
-  </div>
-</details>            
-            {/* Mobile: collapsible wow view */}
-<details className="scheduled-mobile-setup">
-<summary className="scheduled-mobile-setup-summary">
-  <div className="scheduled-mobile-summary-left">
-    <span className="scheduled-mobile-summary-icon">⚙️</span>
-    <span className="scheduled-mobile-summary-text">
-      Match Setup
-    </span>
-  </div>
+                    <small>
+                      Overs, wickets, powerplay,
+                      captains and wicketkeepers
+                    </small>
+                  </div>
+                </div>
 
-  <span className="scheduled-mobile-summary-arrow">⌄</span>
-</summary>
+                <div className="active-match-facts-summary-right">
+                  <span className="active-match-facts-count">
+                    9 details
+                  </span>
 
-  <div className="scheduled-mobile-setup-grid">
-    <div>
-      <span>🏏 Bat 1st</span>
-      <strong>{match.battingFirstTeamName || "Not decided"}</strong>
-    </div>
+                  <span className="active-match-facts-arrow">
+                    ⌄
+                  </span>
+                </div>
+              </summary>
 
-    <div>
-      <span>🎯 Overs</span>
-      <strong>{match.oversPerInnings}</strong>
-    </div>
+              <div className="active-match-facts-grid">
+                <div className="active-match-fact-item">
+                  <span>🏏 Batting First</span>
 
-    <div>
-      <span>⚾ Wickets</span>
-      <strong>{match.maxWicketsPerInnings ?? "∞"}</strong>
-    </div>
+                  <strong>
+                    {match.battingFirstTeamName ||
+                      "Not decided"}
+                  </strong>
+                </div>
 
-    <div>
-      <span>⚡ Powerplay</span>
-      <strong>{match.powerplayOversInnings ?? 0}</strong>
-    </div>
+                <div className="active-match-fact-item">
+                  <span>🎯 Overs</span>
 
-    <div>
-      <span>🎳 Max / Bowler</span>
-      <strong>{match.maxOversPerBowler ?? "∞"}</strong>
-    </div>
+                  <strong>
+                    {match.oversPerInnings}
+                  </strong>
+                </div>
 
-        <div>
-  <span>🧤 {match.teamAName} WK</span>
-  <strong>{match.teamAWicketKeeperName || "Not selected"}</strong>
-</div>
+                <div className="active-match-fact-item">
+                  <span>⚾ Wickets</span>
 
-<div>
-  <span>🧤 {match.teamBName} WK</span>
-  <strong>{match.teamBWicketKeeperName || "Not selected"}</strong>
-</div>
+                  <strong>
+                    {match.maxWicketsPerInnings ??
+                      "∞"}
+                  </strong>
+                </div>
 
-<div>
-  <span>👑 {match.teamAName} Captain</span>
-  <strong>{match.teamACaptainName || "Not selected"}</strong>
-</div>
+                <div className="active-match-fact-item">
+                  <span>⚡ Powerplay</span>
 
-<div>
-  <span>👑 {match.teamBName} Captain</span>
-  <strong>{match.teamBCaptainName || "Not selected"}</strong>
-</div>
-  </div>
-</details>
+                  <strong>
+                    {match.powerplayOversInnings ??
+                      0}
+                  </strong>
+                </div>
+
+                <div className="active-match-fact-item">
+                  <span>🎳 Max / Bowler</span>
+
+                  <strong>
+                    {match.maxOversPerBowler ?? "∞"}
+                  </strong>
+                </div>
+
+                <div className="active-match-fact-item role-item">
+                  <span>
+                    🧤 {match.teamAName} Wicketkeeper
+                  </span>
+
+                  <strong>
+                    {match.teamAWicketKeeperName ||
+                      "Not selected"}
+                  </strong>
+                </div>
+
+                <div className="active-match-fact-item role-item">
+                  <span>
+                    🧤 {match.teamBName} Wicketkeeper
+                  </span>
+
+                  <strong>
+                    {match.teamBWicketKeeperName ||
+                      "Not selected"}
+                  </strong>
+                </div>
+
+                <div className="active-match-fact-item role-item">
+                  <span>
+                    👑 {match.teamAName} Captain
+                  </span>
+
+                  <strong>
+                    {match.teamACaptainName ||
+                      "Not selected"}
+                  </strong>
+                </div>
+
+                <div className="active-match-fact-item role-item">
+                  <span>
+                    👑 {match.teamBName} Captain
+                  </span>
+
+                  <strong>
+                    {match.teamBCaptainName ||
+                      "Not selected"}
+                  </strong>
+                </div>
+              </div>
+            </details>
           </article>
         );
       })}
@@ -9060,7 +9117,7 @@ const playerRoleBadge = (row) => {
 
       <button
         type="button"
-        className="scheduled-share-icon-btn"
+        className="active-share-icon-btn"
         title="Share spectator link"
         aria-label={`Share ${match.teamAName} versus ${match.teamBName}`}
         onClick={() => handleShareScheduledMatch(match)}
@@ -9099,7 +9156,7 @@ const playerRoleBadge = (row) => {
                 handleStartMatch(match)
               }
             >
-              ▶ Start Match
+              ▶ Start
             </button>
           )}
 
