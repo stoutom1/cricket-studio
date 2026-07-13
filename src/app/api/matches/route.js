@@ -252,6 +252,8 @@ if (canAutoComplete && shouldComplete) {
   return players?.find((p) => Number(p.id) === Number(playerId))?.name || "";
 };
 
+
+
 const teamAWicketKeeperName = findPlayerName(
   m.teamA?.players,
   m.teamAWicketKeeperId

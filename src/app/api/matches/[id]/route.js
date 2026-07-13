@@ -71,6 +71,8 @@ export async function PATCH(request, { params }) {
   const { id } = await params;
   const matchId = Number(id);
   const body = await request.json();
+  const requestedTeamAId = Number(body.teamAId);
+  const requestedTeamBId = Number(body.teamBId);
 
   const match = await prisma.match.findUnique({
     where: { id: matchId },
@@ -86,6 +88,198 @@ export async function PATCH(request, { params }) {
       { status: 400 }
     );
   }
+if (
+  !Number.isInteger(requestedTeamAId) ||
+  requestedTeamAId <= 0 ||
+  !Number.isInteger(requestedTeamBId) ||
+  requestedTeamBId <= 0
+) {
+  return NextResponse.json(
+    { error: "Both teams are required." },
+    { status: 400 }
+  );
+}
+
+if (requestedTeamAId === requestedTeamBId) {
+  return NextResponse.json(
+    {
+      error:
+        "Team A and Team B must be different.",
+    },
+    { status: 400 }
+  );
+}
+
+const existingMatch =
+  await prisma.match.findUnique({
+    where: {
+      id: matchId,
+    },
+    select: {
+      id: true,
+      leagueId: true,
+      status: true,
+      battingFirstTeamId: true,
+    },
+  });
+
+if (!existingMatch) {
+  return NextResponse.json(
+    { error: "Match not found." },
+    { status: 404 }
+  );
+}
+
+const normalizedStatus = String(
+  existingMatch.status || ""
+)
+  .trim()
+  .toUpperCase()
+  .replace(/[\s-]+/g, "_");
+
+if (normalizedStatus !== "SCHEDULED") {
+  return NextResponse.json(
+    {
+      error:
+        "Teams can only be changed for scheduled matches.",
+    },
+    { status: 409 }
+  );
+}
+
+const selectedTeams =
+  await prisma.team.findMany({
+    where: {
+      leagueId: existingMatch.leagueId,
+
+      id: {
+        in: [
+          requestedTeamAId,
+          requestedTeamBId,
+        ],
+      },
+    },
+
+    select: {
+      id: true,
+      name: true,
+
+      players: {
+        select: {
+          id: true,
+        },
+      },
+    },
+  });
+
+if (selectedTeams.length !== 2) {
+  return NextResponse.json(
+    {
+      error:
+        "Both selected teams must belong to this match’s league.",
+    },
+    { status: 400 }
+  );
+}
+
+const selectedTeamA = selectedTeams.find(
+  (team) => Number(team.id) === requestedTeamAId
+);
+
+const selectedTeamB = selectedTeams.find(
+  (team) => Number(team.id) === requestedTeamBId
+);
+
+const teamACaptainId = body.teamACaptainId
+  ? Number(body.teamACaptainId)
+  : null;
+
+const teamBCaptainId = body.teamBCaptainId
+  ? Number(body.teamBCaptainId)
+  : null;
+
+const teamAWicketKeeperId =
+  body.teamAWicketKeeperId
+    ? Number(body.teamAWicketKeeperId)
+    : null;
+
+const teamBWicketKeeperId =
+  body.teamBWicketKeeperId
+    ? Number(body.teamBWicketKeeperId)
+    : null;
+
+
+    const teamAPlayerIds = new Set(
+  selectedTeamA.players.map((player) =>
+    Number(player.id)
+  )
+);
+
+const teamBPlayerIds = new Set(
+  selectedTeamB.players.map((player) =>
+    Number(player.id)
+  )
+);
+
+if (
+  teamACaptainId &&
+  !teamAPlayerIds.has(teamACaptainId)
+) {
+  return NextResponse.json(
+    {
+      error:
+        "Team A captain must belong to the selected Team A.",
+    },
+    { status: 400 }
+  );
+}
+
+if (
+  teamAWicketKeeperId &&
+  !teamAPlayerIds.has(teamAWicketKeeperId)
+) {
+  return NextResponse.json(
+    {
+      error:
+        "Team A wicketkeeper must belong to the selected Team A.",
+    },
+    { status: 400 }
+  );
+}
+
+if (
+  teamBCaptainId &&
+  !teamBPlayerIds.has(teamBCaptainId)
+) {
+  return NextResponse.json(
+    {
+      error:
+        "Team B captain must belong to the selected Team B.",
+    },
+    { status: 400 }
+  );
+}
+
+if (
+  teamBWicketKeeperId &&
+  !teamBPlayerIds.has(teamBWicketKeeperId)
+) {
+  return NextResponse.json(
+    {
+      error:
+        "Team B wicketkeeper must belong to the selected Team B.",
+    },
+    { status: 400 }
+  );
+}
+
+const battingFirstTeamId = [
+  requestedTeamAId,
+  requestedTeamBId,
+].includes(Number(existingMatch.battingFirstTeamId))
+  ? Number(existingMatch.battingFirstTeamId)
+  : null;
+
 
   const updated = await prisma.match.update({
     where: { id: matchId },
@@ -96,7 +290,9 @@ export async function PATCH(request, { params }) {
       maxWicketsPerInnings: body.maxWicketsPerInnings ?? null,
       maxOversPerBowler: body.maxOversPerBowler ?? null,
       seriesId: body.seriesId ? Number(body.seriesId) : null,
-
+teamAId: requestedTeamAId,
+teamBId: requestedTeamBId,
+battingFirstTeamId,
       teamACaptainId: body.teamACaptainId ?? null,
       teamBCaptainId: body.teamBCaptainId ?? null,
       teamAWicketKeeperId: body.teamAWicketKeeperId ?? null,

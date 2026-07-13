@@ -292,6 +292,8 @@ const [editMatchForm, setEditMatchForm] = useState({
   maxWicketsPerInnings: "",
   maxOversPerBowler: "",
   seriesId: "",
+  teamAId: "",
+  teamBId: "",
   teamACaptainId: "",
   teamBCaptainId: "",
   teamAWicketKeeperId: "",
@@ -1306,6 +1308,8 @@ async function openEditMatchModal(match) {
       maxWicketsPerInnings: fullMatch.maxWicketsPerInnings || "",
       maxOversPerBowler: fullMatch.maxOversPerBowler || "",
       seriesId: fullMatch.seriesId || "",
+      teamAId: String(match.teamAId || ""),
+      teamBId: String(match.teamBId || ""),
 
       teamACaptainId: fullMatch.teamACaptainId
         ? String(fullMatch.teamACaptainId)
@@ -1331,6 +1335,24 @@ async function handleUpdateScheduledMatch(e) {
 
   if (!editingMatch?.id) return;
 
+  const teamAId = Number(editMatchForm.teamAId);
+const teamBId = Number(editMatchForm.teamBId);
+
+if (
+  !Number.isInteger(teamAId) ||
+  teamAId <= 0 ||
+  !Number.isInteger(teamBId) ||
+  teamBId <= 0
+) {
+  alert("Please select both teams.");
+  return;
+}
+
+if (teamAId === teamBId) {
+  alert("Team A and Team B must be different.");
+  return;
+}
+
   try {
     await api(`/api/matches/${editingMatch.id}`, {
       method: "PATCH",
@@ -1347,6 +1369,9 @@ async function handleUpdateScheduledMatch(e) {
           ? Number(editMatchForm.maxOversPerBowler)
           : null,
         seriesId: editMatchForm.seriesId || null,
+        
+        teamAId,
+        teamBId,
 
         teamACaptainId: editMatchForm.teamACaptainId
           ? Number(editMatchForm.teamACaptainId)
@@ -4107,13 +4132,50 @@ function triggerQuickAction(actionKey, callback) {
     setActiveQuickAction(null);
   }, 50); // was 400
 }
-const editTeamA =
-  editingMatch?.teamA ||
-  teams.find((t) => Number(t.id) === Number(editingMatch?.teamAId));
 
-const editTeamB =
-  editingMatch?.teamB ||
-  teams.find((t) => Number(t.id) === Number(editingMatch?.teamBId));
+const editMatchLeagueTeams = useMemo(() => {
+  if (!editingMatch) return [];
+
+  const targetLeagueId = Number(
+    editingMatch.leagueId || activeLeagueId
+  );
+
+  return [...(teams || [])]
+    .filter(
+      (team) =>
+        Number(team.leagueId) === targetLeagueId
+    )
+    .sort((first, second) =>
+      String(first.name || "").localeCompare(
+        String(second.name || ""),
+        undefined,
+        {
+          sensitivity: "base",
+          numeric: true,
+        }
+      )
+    );
+}, [teams, editingMatch, activeLeagueId]);
+
+const editTeamA = useMemo(
+  () =>
+    editMatchLeagueTeams.find(
+      (team) =>
+        Number(team.id) ===
+        Number(editMatchForm.teamAId)
+    ) || null,
+  [editMatchLeagueTeams, editMatchForm.teamAId]
+);
+
+const editTeamB = useMemo(
+  () =>
+    editMatchLeagueTeams.find(
+      (team) =>
+        Number(team.id) ===
+        Number(editMatchForm.teamBId)
+    ) || null,
+  [editMatchLeagueTeams, editMatchForm.teamBId]
+);
 
 const displayScoreboard = optimisticScoreboard || scoreboard;
 
@@ -4146,6 +4208,8 @@ const activeInnings = useMemo(() => {
 
   return innings[currentInningsNo - 1] || innings[0];
 }, [displayScoreboard, ballForm?.inningsNo]);
+
+
 const recentBalls =
   displayScoreboard?.recentBalls || [];
 const maxLegalBalls =
@@ -8880,24 +8944,24 @@ const playerRoleBadge = (row) => {
             }`}
           >
             {/* Status and share */}
-            <div className="pro-active-card-topbar">
-              <span className="status-pill live-status-pill">
-                ● {match.status}
-              </span>
+<div className="pro-active-card-topbar">
+  <div className="active-status-row">
+    <span className="status-pill live-status-pill">
+      ● {match.status}
+    </span>
 
-              <button
-                type="button"
-                className="active-share-icon-btn"
-                title="Share spectator link"
-                aria-label={`Share ${match.teamAName} versus ${match.teamBName}`}
-                onClick={() =>
-                  handleShareActiveMatch(match)
-                }
-                disabled={!shareCode}
-              >
-                📤
-              </button>
-            </div>
+    <button
+      type="button"
+      className="active-share-icon-btn"
+      title="Share spectator link"
+      aria-label={`Share ${match.teamAName} versus ${match.teamBName}`}
+      onClick={() => handleShareActiveMatch(match)}
+      disabled={!shareCode}
+    >
+      📤
+    </button>
+  </div>
+</div>
 
             {/* Main clickable match area */}
             <button
@@ -9539,7 +9603,7 @@ const playedDateLabel = playedDate
           )
         }
       >
-        🏏 Open Match
+        🏏 View
       </button>
     )}
 
@@ -14032,11 +14096,21 @@ onClick={() => {
 
           <h2>Edit Match Details</h2>
 
-          <div className="edit-match-vs-v3">
-            <span>{editTeamA?.name || editingMatch.teamAName || "Team A"}</span>
-            <b>VS</b>
-            <span>{editTeamB?.name || editingMatch.teamBName || "Team B"}</span>
-          </div>
+<div className="edit-match-vs-v3">
+  <span>
+    {editTeamA?.name ||
+      editingMatch.teamAName ||
+      "Team A"}
+  </span>
+
+  <b>VS</b>
+
+  <span>
+    {editTeamB?.name ||
+      editingMatch.teamBName ||
+      "Team B"}
+  </span>
+</div>
         </div>
 
         <button
@@ -14052,6 +14126,107 @@ onClick={() => {
       </div>
 
       <form onSubmit={handleUpdateScheduledMatch} className="edit-match-form-v3">
+        <section className="edit-panel-v3 edit-teams-panel-v3">
+  <div className="edit-panel-title-v3">
+    <strong>🏏 Participating Teams</strong>
+
+    <span>
+      Choose two different teams from this league. Player role
+      options will refresh automatically.
+    </span>
+  </div>
+
+  <div className="edit-team-picker-grid-v3">
+    <label className="edit-field-v3">
+      <span>Team A</span>
+
+      <select
+        value={editMatchForm.teamAId}
+        onChange={(event) => {
+          const nextTeamAId = event.target.value;
+
+          setEditMatchForm((previous) => ({
+            ...previous,
+            teamAId: nextTeamAId,
+
+            // Clear old Team A player roles because
+            // they may not belong to the newly selected team.
+            teamACaptainId: "",
+            teamAWicketKeeperId: "",
+          }));
+        }}
+        required
+      >
+        <option value="">Select Team A</option>
+
+        {editMatchLeagueTeams
+          .filter(
+            (team) =>
+              Number(team.id) !==
+              Number(editMatchForm.teamBId)
+          )
+          .map((team) => (
+            <option key={team.id} value={team.id}>
+              {team.name}
+            </option>
+          ))}
+      </select>
+    </label>
+
+    <div className="edit-team-picker-vs-v3">
+      <span>VS</span>
+    </div>
+
+    <label className="edit-field-v3">
+      <span>Team B</span>
+
+      <select
+        value={editMatchForm.teamBId}
+        onChange={(event) => {
+          const nextTeamBId = event.target.value;
+
+          setEditMatchForm((previous) => ({
+            ...previous,
+            teamBId: nextTeamBId,
+
+            // Clear old Team B player roles because
+            // they may not belong to the newly selected team.
+            teamBCaptainId: "",
+            teamBWicketKeeperId: "",
+          }));
+        }}
+        required
+      >
+        <option value="">Select Team B</option>
+
+        {editMatchLeagueTeams
+          .filter(
+            (team) =>
+              Number(team.id) !==
+              Number(editMatchForm.teamAId)
+          )
+          .map((team) => (
+            <option key={team.id} value={team.id}>
+              {team.name}
+            </option>
+          ))}
+      </select>
+    </label>
+  </div>
+
+  <div className="edit-team-change-note-v3">
+    <span>ℹ️</span>
+
+    <div>
+      <strong>Teams are switched, not renamed</strong>
+
+      <small>
+        This changes which existing teams participate in this
+        scheduled match. It does not change any team’s saved name.
+      </small>
+    </div>
+  </div>
+</section>
         <section className="edit-panel-v3">
           <div className="edit-panel-title-v3">
             <strong>⚙️ Match Settings</strong>
@@ -14164,99 +14339,182 @@ onClick={() => {
           </div>
 
           <div className="edit-role-grid-v3">
-            <div className="edit-team-role-card-v3 team-a">
-              <div className="team-role-card-head-v3">
-                <span>A</span>
-                <strong>{editTeamA?.name || editingMatch.teamAName || "Team A"}</strong>
-              </div>
+<div className="edit-team-role-card-v3 team-a">
+  <div className="team-role-card-head-v3">
+    <span>A</span>
 
-              <label className="edit-field-v3">
-                <span>🧢 Captain</span>
-                <select
-                  value={editMatchForm.teamACaptainId}
-                  onChange={(e) =>
-                    setEditMatchForm((prev) => ({
-                      ...prev,
-                      teamACaptainId: e.target.value,
-                    }))
-                  }
-                >
-                  <option value="">Select Captain</option>
-                  {(editTeamA?.players || []).map((player) => (
-                    <option key={player.id} value={player.id}>
-                      {player.name}
-                    </option>
-                  ))}
-                </select>
-              </label>
+    <strong>
+      {editTeamA?.name || "Select Team A"}
+    </strong>
+  </div>
 
-              <label className="edit-field-v3">
-                <span>🧤 Wicketkeeper</span>
-                <select
-                  value={editMatchForm.teamAWicketKeeperId}
-                  onChange={(e) =>
-                    setEditMatchForm((prev) => ({
-                      ...prev,
-                      teamAWicketKeeperId: e.target.value,
-                    }))
-                  }
-                >
-                  <option value="">Select Wicketkeeper</option>
-                  {(editTeamA?.players || []).map((player) => (
-                    <option key={player.id} value={player.id}>
-                      {player.name}
-                    </option>
-                  ))}
-                </select>
-              </label>
-            </div>
+  <label className="edit-field-v3">
+    <span>🧢 Captain</span>
 
+    <select
+      value={editMatchForm.teamACaptainId}
+      disabled={!editTeamA}
+      onChange={(event) =>
+        setEditMatchForm((previous) => ({
+          ...previous,
+          teamACaptainId: event.target.value,
+        }))
+      }
+    >
+      <option value="">
+        {editTeamA
+          ? "Select Captain"
+          : "Select Team A first"}
+      </option>
+
+      {(editTeamA?.players || [])
+        .slice()
+        .sort((first, second) =>
+          String(first.name || "").localeCompare(
+            String(second.name || ""),
+            undefined,
+            {
+              sensitivity: "base",
+              numeric: true,
+            }
+          )
+        )
+        .map((player) => (
+          <option key={player.id} value={player.id}>
+            {player.name}
+          </option>
+        ))}
+    </select>
+  </label>
+
+  <label className="edit-field-v3">
+    <span>🧤 Wicketkeeper</span>
+
+    <select
+      value={editMatchForm.teamAWicketKeeperId}
+      disabled={!editTeamA}
+      onChange={(event) =>
+        setEditMatchForm((previous) => ({
+          ...previous,
+          teamAWicketKeeperId:
+            event.target.value,
+        }))
+      }
+    >
+      <option value="">
+        {editTeamA
+          ? "Select Wicketkeeper"
+          : "Select Team A first"}
+      </option>
+
+      {(editTeamA?.players || [])
+        .slice()
+        .sort((first, second) =>
+          String(first.name || "").localeCompare(
+            String(second.name || ""),
+            undefined,
+            {
+              sensitivity: "base",
+              numeric: true,
+            }
+          )
+        )
+        .map((player) => (
+          <option key={player.id} value={player.id}>
+            {player.name}
+          </option>
+        ))}
+    </select>
+  </label>
+</div>
             <div className="edit-team-role-card-v3 team-b">
-              <div className="team-role-card-head-v3">
-                <span>B</span>
-                <strong>{editTeamB?.name || editingMatch.teamBName || "Team B"}</strong>
-              </div>
+  <div className="team-role-card-head-v3">
+    <span>B</span>
 
-              <label className="edit-field-v3">
-                <span>🧢 Captain</span>
-                <select
-                  value={editMatchForm.teamBCaptainId}
-                  onChange={(e) =>
-                    setEditMatchForm((prev) => ({
-                      ...prev,
-                      teamBCaptainId: e.target.value,
-                    }))
-                  }
-                >
-                  <option value="">Select Captain</option>
-                  {(editTeamB?.players || []).map((player) => (
-                    <option key={player.id} value={player.id}>
-                      {player.name}
-                    </option>
-                  ))}
-                </select>
-              </label>
+    <strong>
+      {editTeamB?.name || "Select Team B"}
+    </strong>
+  </div>
 
-              <label className="edit-field-v3">
-                <span>🧤 Wicketkeeper</span>
-                <select
-                  value={editMatchForm.teamBWicketKeeperId}
-                  onChange={(e) =>
-                    setEditMatchForm((prev) => ({
-                      ...prev,
-                      teamBWicketKeeperId: e.target.value,
-                    }))
-                  }
-                >
-                  <option value="">Select Wicketkeeper</option>
-                  {(editTeamB?.players || []).map((player) => (
-                    <option key={player.id} value={player.id}>
-                      {player.name}
-                    </option>
-                  ))}
-                </select>
-              </label>
-            </div>
+  <label className="edit-field-v3">
+    <span>🧢 Captain</span>
+
+    <select
+      value={editMatchForm.teamBCaptainId}
+      disabled={!editTeamB}
+      onChange={(event) =>
+        setEditMatchForm((previous) => ({
+          ...previous,
+          teamBCaptainId: event.target.value,
+        }))
+      }
+    >
+      <option value="">
+        {editTeamB
+          ? "Select Captain"
+          : "Select Team B first"}
+      </option>
+
+      {(editTeamB?.players || [])
+        .slice()
+        .sort((first, second) =>
+          String(first.name || "").localeCompare(
+            String(second.name || ""),
+            undefined,
+            {
+              sensitivity: "base",
+              numeric: true,
+            }
+          )
+        )
+        .map((player) => (
+          <option key={player.id} value={player.id}>
+            {player.name}
+          </option>
+        ))}
+    </select>
+  </label>
+
+  <label className="edit-field-v3">
+    <span>🧤 Wicketkeeper</span>
+
+    <select
+      value={editMatchForm.teamBWicketKeeperId}
+      disabled={!editTeamB}
+      onChange={(event) =>
+        setEditMatchForm((previous) => ({
+          ...previous,
+          teamBWicketKeeperId:
+            event.target.value,
+        }))
+      }
+    >
+      <option value="">
+        {editTeamB
+          ? "Select Wicketkeeper"
+          : "Select Team B first"}
+      </option>
+
+      {(editTeamB?.players || [])
+        .slice()
+        .sort((first, second) =>
+          String(first.name || "").localeCompare(
+            String(second.name || ""),
+            undefined,
+            {
+              sensitivity: "base",
+              numeric: true,
+            }
+          )
+        )
+        .map((player) => (
+          <option key={player.id} value={player.id}>
+            {player.name}
+          </option>
+        ))}
+    </select>
+  </label>
+</div>
           </div>
         </section>
 
