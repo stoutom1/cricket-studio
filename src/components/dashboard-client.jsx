@@ -5981,6 +5981,130 @@ ${shareUrl}`;
   }
 }
 
+function MobileMatchSetup({ match, includeTimeline = false }) {
+  return (
+    <details className="mobile-match-setup">
+      <summary className="mobile-match-setup-summary">
+        <div>
+          <span className="mobile-match-setup-icon">⚙️</span>
+
+          <span>
+            <strong>Match Setup & Roles</strong>
+            <small>Rules, captains and wicketkeepers</small>
+          </span>
+        </div>
+
+        <i>⌄</i>
+      </summary>
+
+      <div className="mobile-match-setup-body">
+        <div className="mobile-match-facts">
+          <div>
+            <span>🏏 Bat first</span>
+            <strong>
+              {match.battingFirstTeamName || "Not decided"}
+            </strong>
+          </div>
+
+          <div>
+            <span>🎯 Overs</span>
+            <strong>{match.oversPerInnings}</strong>
+          </div>
+
+          <div>
+            <span>⚾ Wickets</span>
+            <strong>
+              {match.maxWicketsPerInnings ?? "∞"}
+            </strong>
+          </div>
+
+          <div>
+            <span>⚡ Powerplay</span>
+            <strong>
+              {match.powerplayOversInnings ?? 0}
+            </strong>
+          </div>
+
+          <div>
+            <span>🎳 Max / Bowler</span>
+            <strong>
+              {match.maxOversPerBowler ?? "∞"}
+            </strong>
+          </div>
+        </div>
+
+        <div className="mobile-match-role-list">
+          <div>
+            <span>🧤 {match.teamAName}</span>
+            <strong>
+              {match.teamAWicketKeeperName ||
+                "Wicketkeeper not selected"}
+            </strong>
+          </div>
+
+          <div>
+            <span>🧤 {match.teamBName}</span>
+            <strong>
+              {match.teamBWicketKeeperName ||
+                "Wicketkeeper not selected"}
+            </strong>
+          </div>
+
+          <div>
+            <span>👑 {match.teamAName}</span>
+            <strong>
+              {match.teamACaptainName ||
+                "Captain not selected"}
+            </strong>
+          </div>
+
+          <div>
+            <span>👑 {match.teamBName}</span>
+            <strong>
+              {match.teamBCaptainName ||
+                "Captain not selected"}
+            </strong>
+          </div>
+        </div>
+
+        {includeTimeline &&
+          (match.startedAt ||
+            match.endedAt ||
+            match.lockedAt) && (
+            <div className="mobile-match-timeline">
+              {match.startedAt && (
+                <div>
+                  <span>Started</span>
+                  <strong>
+                    {formatMatchDateTime(match.startedAt)}
+                  </strong>
+                </div>
+              )}
+
+              {match.endedAt && (
+                <div>
+                  <span>Ended</span>
+                  <strong>
+                    {formatMatchDateTime(match.endedAt)}
+                  </strong>
+                </div>
+              )}
+
+              {match.lockedAt && (
+                <div>
+                  <span>Locked</span>
+                  <strong>
+                    {formatMatchDateTime(match.lockedAt)}
+                  </strong>
+                </div>
+              )}
+            </div>
+          )}
+      </div>
+    </details>
+  );
+}
+
 function ContextLens() {
   const totalFilters =
     (contextFilters.teamIds?.length || 0) +
@@ -8919,247 +9043,479 @@ const playerRoleBadge = (row) => {
 </Card>
     )}
 
-    {activeLeagueId && matchesSubTab === "ACTIVE" && (
-<Card title="🟢 Active Matches">
-  {activeMatches.length === 0 ? (
-    <div className="empty-state">
-      No active matches found.
-    </div>
-  ) : (
-    <div className="pro-active-list">
-      {filteredActiveMatches.map((match) => {
-        const isSelected =
-          String(selectedMatchId) === String(match.id);
+{activeLeagueId && matchesSubTab === "ACTIVE" && (
+  <Card title="🟢 Active Matches">
+    {activeMatches.length === 0 ? (
+      <div className="empty-state">
+        No active matches found.
+      </div>
+    ) : (
+      <>
+        {/* =====================================================
+            DESKTOP / LAPTOP VIEW
+            Existing layout remains unchanged
+        ====================================================== */}
+        <div className="matches-desktop-only">
+          <div className="pro-active-list">
+            {filteredActiveMatches.map((match) => {
+              const isSelected =
+                String(selectedMatchId) === String(match.id);
 
-        const shareCode =
-          match?.shareCode ||
-          match?.sharecode ||
-          match?.publicShareCode;
+              const shareCode =
+                match?.shareCode ||
+                match?.sharecode ||
+                match?.publicShareCode;
 
-        return (
-          <article
-            key={match.id}
-            className={`pro-active-card ${
-              isSelected ? "selected" : ""
-            }`}
-          >
-            {/* Status and share */}
-<div className="pro-active-card-topbar">
-  <div className="active-status-row">
-    <span className="status-pill live-status-pill">
-      ● {match.status}
-    </span>
-
-    <button
-      type="button"
-      className="active-share-icon-btn"
-      title="Share spectator link"
-      aria-label={`Share ${match.teamAName} versus ${match.teamBName}`}
-      onClick={() => handleShareActiveMatch(match)}
-      disabled={!shareCode}
-    >
-      📤
-    </button>
-  </div>
-</div>
-
-            {/* Main clickable match area */}
-            <button
-              type="button"
-              className="pro-active-main"
-              onClick={() => {
-                setSelectedMatchId(String(match.id));
-                handleMatchSelect(match.id);
-              }}
-            >
-              <div className="pro-active-header">
-                <div className="pro-active-main-info">
-                  <h3>
-                    {match.teamAName}
-                    <b>vs</b>
-                    {match.teamBName}
-                  </h3>
-
-                  <p>
-                    🕒 {getMatchTimelineText(match)}
-                  </p>
-                </div>
-
-                <div className="pro-live-score-box">
-                  <span>Live Score</span>
-
-                  <strong>
-                    {match.scoreSummary ||
-                      match.liveScore ||
-                      "Open match to view"}
-                  </strong>
-                </div>
-              </div>
-            </button>
-
-            {/* Scoring and delete actions */}
-            <div className="pro-active-actions">
-              {permissions?.canScoreMatch && (
-                <button
-                  type="button"
-                  className={`start-match-btn ${
-                    isSelected ? "is-open" : ""
+              return (
+                <article
+                  key={`desktop-active-${match.id}`}
+                  className={`pro-active-card ${
+                    isSelected ? "selected" : ""
                   }`}
-                  onClick={() => {
-                    setSelectedMatchId(
-                      String(match.id)
-                    );
-                    handleMatchSelect(match.id);
-                  }}
                 >
-                  {isSelected
-                    ? "✅ Scoring Open"
-                    : "🏏 Open Scoring"}
-                </button>
-              )}
+                  <div className="pro-active-card-topbar">
+                    <div className="active-status-row">
+                      <span className="status-pill live-status-pill">
+                        ● {match.status}
+                      </span>
 
-              {permissions?.canDeleteMatch && (
-                <button
-                  type="button"
-                  className="mini-action-btn danger-mini-btn"
-                  title={`Delete ${match.teamAName} vs ${match.teamBName}`}
-                  aria-label={`Delete ${match.teamAName} versus ${match.teamBName}`}
-                  onClick={() =>
-                    handleDeleteMatch(match.id)
-                  }
-                >
-                  🗑️
-                </button>
-              )}
-            </div>
-
-            {/* One collapsible section for desktop and mobile */}
-            <details className="active-match-facts-collapse">
-              <summary className="active-match-facts-summary">
-                <div className="active-match-facts-summary-left">
-                  <span className="active-match-facts-icon">
-                    ⚙️
-                  </span>
-
-                  <div>
-                    <strong>
-                      Match Setup & Team Roles
-                    </strong>
-
-                    <small>
-                      Overs, wickets, powerplay,
-                      captains and wicketkeepers
-                    </small>
+                      <button
+                        type="button"
+                        className="active-share-icon-btn"
+                        title="Share spectator link"
+                        aria-label={`Share ${match.teamAName} versus ${match.teamBName}`}
+                        onClick={() =>
+                          handleShareActiveMatch(match)
+                        }
+                        disabled={!shareCode}
+                      >
+                        📤
+                      </button>
+                    </div>
                   </div>
-                </div>
 
-                <div className="active-match-facts-summary-right">
-                  <span className="active-match-facts-count">
-                    9 details
-                  </span>
+                  <button
+                    type="button"
+                    className="pro-active-main"
+                    onClick={() => {
+                      setSelectedMatchId(String(match.id));
+                      handleMatchSelect(match.id);
+                    }}
+                  >
+                    <div className="pro-active-header">
+                      <div className="pro-active-main-info">
+                        <h3>
+                          {match.teamAName}
+                          <b>vs</b>
+                          {match.teamBName}
+                        </h3>
 
-                  <span className="active-match-facts-arrow">
-                    ⌄
-                  </span>
-                </div>
-              </summary>
+                        <p>
+                          🕒 {getMatchTimelineText(match)}
+                        </p>
+                      </div>
 
-              <div className="active-match-facts-grid">
-                <div className="active-match-fact-item">
-                  <span>🏏 Batting First</span>
+                      <div className="pro-live-score-box">
+                        <span>Live Score</span>
 
-                  <strong>
-                    {match.battingFirstTeamName ||
-                      "Not decided"}
-                  </strong>
-                </div>
+                        <strong>
+                          {match.scoreSummary ||
+                            match.liveScore ||
+                            "Open match to view"}
+                        </strong>
+                      </div>
+                    </div>
+                  </button>
 
-                <div className="active-match-fact-item">
-                  <span>🎯 Overs</span>
+                  <div className="pro-active-actions">
+                    {permissions?.canScoreMatch && (
+                      <button
+                        type="button"
+                        className={`start-match-btn ${
+                          isSelected ? "is-open" : ""
+                        }`}
+                        onClick={() => {
+                          setSelectedMatchId(
+                            String(match.id)
+                          );
+                          handleMatchSelect(match.id);
+                        }}
+                      >
+                        {isSelected
+                          ? "✅ Scoring Open"
+                          : "🏏 Open Scoring"}
+                      </button>
+                    )}
 
-                  <strong>
-                    {match.oversPerInnings}
-                  </strong>
-                </div>
+                    {permissions?.canDeleteMatch && (
+                      <button
+                        type="button"
+                        className="mini-action-btn danger-mini-btn"
+                        title={`Delete ${match.teamAName} vs ${match.teamBName}`}
+                        aria-label={`Delete ${match.teamAName} versus ${match.teamBName}`}
+                        onClick={() =>
+                          handleDeleteMatch(match.id)
+                        }
+                      >
+                        🗑️
+                      </button>
+                    )}
+                  </div>
 
-                <div className="active-match-fact-item">
-                  <span>⚾ Wickets</span>
+                  <details className="active-match-facts-collapse">
+                    <summary className="active-match-facts-summary">
+                      <div className="active-match-facts-summary-left">
+                        <span className="active-match-facts-icon">
+                          ⚙️
+                        </span>
 
-                  <strong>
-                    {match.maxWicketsPerInnings ??
-                      "∞"}
-                  </strong>
-                </div>
+                        <div>
+                          <strong>
+                            Match Setup & Team Roles
+                          </strong>
 
-                <div className="active-match-fact-item">
-                  <span>⚡ Powerplay</span>
+                          <small>
+                            Overs, wickets, powerplay,
+                            captains and wicketkeepers
+                          </small>
+                        </div>
+                      </div>
 
-                  <strong>
-                    {match.powerplayOversInnings ??
-                      0}
-                  </strong>
-                </div>
+                      <div className="active-match-facts-summary-right">
+                        <span className="active-match-facts-count">
+                          9 details
+                        </span>
 
-                <div className="active-match-fact-item">
-                  <span>🎳 Max / Bowler</span>
+                        <span className="active-match-facts-arrow">
+                          ⌄
+                        </span>
+                      </div>
+                    </summary>
 
-                  <strong>
-                    {match.maxOversPerBowler ?? "∞"}
-                  </strong>
-                </div>
+                    <div className="active-match-facts-grid">
+                      <div className="active-match-fact-item">
+                        <span>🏏 Batting First</span>
+                        <strong>
+                          {match.battingFirstTeamName ||
+                            "Not decided"}
+                        </strong>
+                      </div>
 
-                <div className="active-match-fact-item role-item">
-                  <span>
-                    🧤 {match.teamAName} Wicketkeeper
-                  </span>
+                      <div className="active-match-fact-item">
+                        <span>🎯 Overs</span>
+                        <strong>
+                          {match.oversPerInnings}
+                        </strong>
+                      </div>
 
-                  <strong>
-                    {match.teamAWicketKeeperName ||
-                      "Not selected"}
-                  </strong>
-                </div>
+                      <div className="active-match-fact-item">
+                        <span>⚾ Wickets</span>
+                        <strong>
+                          {match.maxWicketsPerInnings ??
+                            "∞"}
+                        </strong>
+                      </div>
 
-                <div className="active-match-fact-item role-item">
-                  <span>
-                    🧤 {match.teamBName} Wicketkeeper
-                  </span>
+                      <div className="active-match-fact-item">
+                        <span>⚡ Powerplay</span>
+                        <strong>
+                          {match.powerplayOversInnings ??
+                            0}
+                        </strong>
+                      </div>
 
-                  <strong>
-                    {match.teamBWicketKeeperName ||
-                      "Not selected"}
-                  </strong>
-                </div>
+                      <div className="active-match-fact-item">
+                        <span>🎳 Max / Bowler</span>
+                        <strong>
+                          {match.maxOversPerBowler ??
+                            "∞"}
+                        </strong>
+                      </div>
 
-                <div className="active-match-fact-item role-item">
-                  <span>
-                    👑 {match.teamAName} Captain
-                  </span>
+                      <div className="active-match-fact-item role-item">
+                        <span>
+                          🧤 {match.teamAName} Wicketkeeper
+                        </span>
+                        <strong>
+                          {match.teamAWicketKeeperName ||
+                            "Not selected"}
+                        </strong>
+                      </div>
 
-                  <strong>
-                    {match.teamACaptainName ||
-                      "Not selected"}
-                  </strong>
-                </div>
+                      <div className="active-match-fact-item role-item">
+                        <span>
+                          🧤 {match.teamBName} Wicketkeeper
+                        </span>
+                        <strong>
+                          {match.teamBWicketKeeperName ||
+                            "Not selected"}
+                        </strong>
+                      </div>
 
-                <div className="active-match-fact-item role-item">
-                  <span>
-                    👑 {match.teamBName} Captain
-                  </span>
+                      <div className="active-match-fact-item role-item">
+                        <span>
+                          👑 {match.teamAName} Captain
+                        </span>
+                        <strong>
+                          {match.teamACaptainName ||
+                            "Not selected"}
+                        </strong>
+                      </div>
 
-                  <strong>
-                    {match.teamBCaptainName ||
-                      "Not selected"}
-                  </strong>
-                </div>
-              </div>
-            </details>
-          </article>
-        );
-      })}
-    </div>
-  )}
-</Card>
+                      <div className="active-match-fact-item role-item">
+                        <span>
+                          👑 {match.teamBName} Captain
+                        </span>
+                        <strong>
+                          {match.teamBCaptainName ||
+                            "Not selected"}
+                        </strong>
+                      </div>
+                    </div>
+                  </details>
+                </article>
+              );
+            })}
+          </div>
+        </div>
+
+        {/* =====================================================
+            MOBILE VIEW
+            New compact and sleek design
+        ====================================================== */}
+        <div className="matches-mobile-only">
+          <div className="mobile-active-match-list">
+            {filteredActiveMatches.map((match) => {
+              const isSelected =
+                String(selectedMatchId) === String(match.id);
+
+              const shareCode =
+                match?.shareCode ||
+                match?.sharecode ||
+                match?.publicShareCode;
+
+              const statusLabel = String(
+                match.status || "ACTIVE"
+              )
+                .replaceAll("_", " ")
+                .trim();
+
+              return (
+                <article
+                  key={`mobile-active-${match.id}`}
+                  className={`mobile-active-match-card ${
+                    isSelected ? "is-selected" : ""
+                  }`}
+                >
+                  {/* Status + compact share */}
+                  <div className="mobile-active-topline">
+                    <span className="mobile-active-status">
+                      <i />
+                      {statusLabel}
+                    </span>
+
+                    <button
+                      type="button"
+                      className="mobile-active-share-btn"
+                      title="Share spectator link"
+                      aria-label={`Share ${match.teamAName} versus ${match.teamBName}`}
+                      onClick={() =>
+                        handleShareActiveMatch(match)
+                      }
+                      disabled={!shareCode}
+                    >
+                      📤
+                    </button>
+                  </div>
+
+                  {/* Team names and match timeline */}
+                  <button
+                    type="button"
+                    className="mobile-active-main"
+                    onClick={() => {
+                      setSelectedMatchId(String(match.id));
+                      handleMatchSelect(match.id);
+                    }}
+                  >
+                    <div className="mobile-active-teams">
+                      <strong>{match.teamAName}</strong>
+                      <span>vs</span>
+                      <strong>{match.teamBName}</strong>
+                    </div>
+
+                    <small className="mobile-active-timeline">
+                      🕒 {getMatchTimelineText(match)}
+                    </small>
+
+                    <div className="mobile-active-score-strip">
+                      <div className="mobile-active-score-label">
+                        <i />
+                        <span>Live Score</span>
+                      </div>
+
+                      <strong>
+                        {match.scoreSummary ||
+                          match.liveScore ||
+                          "Tap to view live score"}
+                      </strong>
+
+                      <b>›</b>
+                    </div>
+                  </button>
+
+                  {/* Primary and destructive actions */}
+                  <div className="mobile-active-actions">
+                    {permissions?.canScoreMatch && (
+                      <button
+                        type="button"
+                        className={`mobile-open-scoring-btn ${
+                          isSelected ? "is-open" : ""
+                        }`}
+                        onClick={() => {
+                          setSelectedMatchId(
+                            String(match.id)
+                          );
+                          handleMatchSelect(match.id);
+                        }}
+                      >
+                        {isSelected
+                          ? "✅ Scoring Open"
+                          : "🏏 Open Scoring"}
+                      </button>
+                    )}
+
+                    {permissions?.canDeleteMatch && (
+                      <button
+                        type="button"
+                        className="mobile-active-delete-btn"
+                        title={`Delete ${match.teamAName} vs ${match.teamBName}`}
+                        aria-label={`Delete ${match.teamAName} versus ${match.teamBName}`}
+                        onClick={() =>
+                          handleDeleteMatch(match.id)
+                        }
+                      >
+                        🗑️
+                      </button>
+                    )}
+                  </div>
+
+                  {/* Compact setup accordion */}
+                  <details className="mobile-active-setup">
+                    <summary className="mobile-active-setup-summary">
+                      <div className="mobile-active-setup-left">
+                        <span className="mobile-active-setup-icon">
+                          ⚙️
+                        </span>
+
+                        <div>
+                          <strong>
+                            Match Setup & Roles
+                          </strong>
+                          <small>
+                            Rules, captains and wicketkeepers
+                          </small>
+                        </div>
+                      </div>
+
+                      <span className="mobile-active-setup-caret">
+                        ⌄
+                      </span>
+                    </summary>
+
+                    <div className="mobile-active-setup-content">
+                      <div className="mobile-active-rules-grid">
+                        <div>
+                          <span>🏏 Bat first</span>
+                          <strong>
+                            {match.battingFirstTeamName ||
+                              "Not decided"}
+                          </strong>
+                        </div>
+
+                        <div>
+                          <span>🎯 Overs</span>
+                          <strong>
+                            {match.oversPerInnings}
+                          </strong>
+                        </div>
+
+                        <div>
+                          <span>⚾ Wickets</span>
+                          <strong>
+                            {match.maxWicketsPerInnings ??
+                              "∞"}
+                          </strong>
+                        </div>
+
+                        <div>
+                          <span>⚡ Powerplay</span>
+                          <strong>
+                            {match.powerplayOversInnings ??
+                              0}
+                          </strong>
+                        </div>
+
+                        <div>
+                          <span>🎳 Max / Bowler</span>
+                          <strong>
+                            {match.maxOversPerBowler ??
+                              "∞"}
+                          </strong>
+                        </div>
+                      </div>
+
+                      <div className="mobile-active-role-list">
+                        <div>
+                          <span>
+                            🧤 {match.teamAName} WK
+                          </span>
+                          <strong>
+                            {match.teamAWicketKeeperName ||
+                              "Not selected"}
+                          </strong>
+                        </div>
+
+                        <div>
+                          <span>
+                            🧤 {match.teamBName} WK
+                          </span>
+                          <strong>
+                            {match.teamBWicketKeeperName ||
+                              "Not selected"}
+                          </strong>
+                        </div>
+
+                        <div>
+                          <span>
+                            👑 {match.teamAName} Captain
+                          </span>
+                          <strong>
+                            {match.teamACaptainName ||
+                              "Not selected"}
+                          </strong>
+                        </div>
+
+                        <div>
+                          <span>
+                            👑 {match.teamBName} Captain
+                          </span>
+                          <strong>
+                            {match.teamBCaptainName ||
+                              "Not selected"}
+                          </strong>
+                        </div>
+                      </div>
+                    </div>
+                  </details>
+                </article>
+              );
+            })}
+          </div>
+        </div>
+      </>
     )}
+  </Card>
+)}
 
     {activeLeagueId && matchesSubTab === "SCHEDULED" && (
       <Card title="📅 Scheduled Matches">
