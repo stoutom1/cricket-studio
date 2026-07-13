@@ -9524,11 +9524,28 @@ const playedDateLabel = playedDate
 <div className="completed-mobile-meta-wow">
   <div className="completed-mobile-meta-top">
     <span className="mobile-match-chip">Match #{matchNumber}</span>
-    <span className="mobile-status-chip">{match.status}</span>
+    <span className="mobile-status-chip">{match.status}</span>  
   </div>
 
-  <div className="mobile-date-chip">
-    📅 {playedDateLabel}
+  <div className="completed-top-right">
+    {match.shareCode && (
+      <button
+        type="button"
+        className="completed-view-match-btn"
+        onClick={() =>
+          window.open(
+            `https://cric4all.app/live/${match.shareCode}`,
+            "_blank"
+          )
+        }
+      >
+        🏏 Open Match
+      </button>
+    )}
+
+    <span className="mobile-date-chip">
+      📅 {playedDateLabel}
+    </span>
   </div>
 </div>
 
