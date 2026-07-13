@@ -81,6 +81,44 @@ function mergeStatsIntoPlayers(players, stats) {
   });
 }
 
+function TeamBuilderSection({
+  icon,
+  title,
+  description,
+  badge,
+  defaultOpen = false,
+  children,
+  className = "",
+}) {
+  return (
+    <details
+      className={`team-builder-collapse ${className}`}
+      open={defaultOpen}
+    >
+      <summary className="team-builder-collapse-summary">
+        <div className="team-builder-collapse-main">
+          <span className="team-builder-collapse-icon">{icon}</span>
+
+          <div className="team-builder-collapse-copy">
+            <strong>{title}</strong>
+            {description && <small>{description}</small>}
+          </div>
+        </div>
+
+        <div className="team-builder-collapse-right">
+          {badge !== undefined && badge !== null && (
+            <span className="team-builder-collapse-badge">{badge}</span>
+          )}
+
+          <span className="team-builder-collapse-arrow">⌄</span>
+        </div>
+      </summary>
+
+      <div className="team-builder-collapse-content">{children}</div>
+    </details>
+  );
+}
+
 export default function AITeamSplitterClient() {
   const searchParams = useSearchParams();
   const requestedLeagueId = Number(searchParams.get("leagueId"));
@@ -676,550 +714,824 @@ async function deletePoll(token) {
 const pollOptionResults = getPollOptionResults();
 
   const bestPollOption = getBestPollOption();
+const totalPollResponses = pollResponses.length;
 
-  return (
-    <main className="ai-splitter-page">
-      <div className="ai-splitter-topbar">
-        <Link href="/dashboard" className="ai-back-link">
-          ← Dashboard
-        </Link>
-      </div>
+const selectedPoolPlayerCount = players.length;
 
-      <section className="ai-splitter-hero">
+const completedResponseCount = pollOptionResults.reduce(
+  (total, group) => total + Number(group.totalResponses || 0),
+  0
+);
+
+const currentPollLabel = poll?.title || "No poll selected";
+
+return (
+  <main className="ai-splitter-page team-builder-compact-page">
+    <div className="ai-splitter-topbar">
+      <Link href="/dashboard" className="ai-back-link">
+        ← Dashboard
+      </Link>
+    </div>
+
+    <section className="ai-splitter-hero team-builder-compact-hero">
+      <div>
         <span className="ai-kicker">Cric4All Team Builder</span>
 
         <h1>⚖️ Availability & Balanced Teams</h1>
 
         <p>
-          Create a WhatsApp availability poll, collect player
-          responses, and generate evenly balanced teams for your
-          league.
+          Collect player availability, select your player pool, and create
+          balanced teams from one streamlined workspace.
         </p>
-      </section>
-
-      <section className="ai-splitter-card">
-        <div className="ai-splitter-toolbar">
-          <div>
-            <strong>📲 Team Availability Poll</strong>
-            <span>
-              Create date options like Friday, Saturday, or Sunday and share the
-              Cric4All voting link to WhatsApp.
-            </span>
-          </div>
-        </div>
-
-        <div className="poll-admin-grid">
-          <input
-            value={pollTitle}
-            onChange={(e) => setPollTitle(e.target.value)}
-            placeholder="Poll title"
-          />
-
-          <input
-            value={pollText}
-            onChange={(e) => setPollText(e.target.value)}
-            placeholder="Custom WhatsApp message"
-          />
-        </div>
-
-<div className="match-options-card">
-  <div className="match-options-header">
-    <div>
-      <strong>📅 Match Options</strong>
-      <span>Add one or more possible match dates/times.</span>
-    </div>
-
-    <button
-      type="button"
-      onClick={() => setShowOptionForm((prev) => !prev)}
-    >
-      ➕ Add Match Option
-    </button>
-  </div>
-
-  {pollOptions.length > 0 ? (
-    <div className="match-options-list">
-      {pollOptions.map((option, index) => (
-        <div key={`${option.label}-${index}`} className="match-option-pill">
-          <div>
-            <strong>{option.label}</strong>
-            {option.startTime && (
-              <small>{new Date(option.startTime).toLocaleString()}</small>
-            )}
-          </div>
-
-          <button
-            type="button"
-            onClick={() => removePollOption(index)}
-            title="Remove option"
-          >
-            ✕
-          </button>
-        </div>
-      ))}
-    </div>
-  ) : (
-    <div className="match-options-empty">
-      No match options added yet. Add at least one option before creating poll.
-    </div>
-  )}
-
-  {showOptionForm && (
-    <div className="match-option-form">
-      <input
-        value={newOptionLabel}
-        onChange={(e) => setNewOptionLabel(e.target.value)}
-        placeholder="Example: Friday Night Match"
-      />
-
-      <input
-        type="datetime-local"
-        value={newOptionStartTime}
-        onChange={(e) => setNewOptionStartTime(e.target.value)}
-      />
-
-      <div className="match-option-form-actions">
-        <button type="button" onClick={addMatchOption}>
-          Save Option
-        </button>
-
-        <button
-          type="button"
-          className="secondary"
-          onClick={() => setShowOptionForm(false)}
-        >
-          Cancel
-        </button>
       </div>
-    </div>
-  )}
-</div>
 
-        <div className="ai-toolbar-actions poll-actions">
-          <button type="button" onClick={createPoll} disabled={creatingPoll}>
-            {creatingPoll ? "Creating..." : "➕ Create Poll"}
-          </button>
-
-          <button type="button" onClick={sharePollToWhatsApp} disabled={!poll}>
-            📲 Share to WhatsApp
-          </button>
-
-          <button
-            type="button"
-            onClick={refreshPollResponses}
-            disabled={!poll || refreshingPoll}
-          >
-            {refreshingPoll ? "Refreshing..." : "🔄 Refresh Responses"}
-          </button>
-
-          <button
-            type="button"
-            onClick={useBestDatePlayersFromPoll}
-            disabled={!pollResponses.length}
-          >
-            🏆 Use Best Date Players
-          </button>
-        </div>
-{!!allPolls.length && (
-  <div className="existing-polls-box">
-    <strong>📋 Existing Polls</strong>
-
-    {allPolls.map((existingPoll) => (
-      <div key={existingPoll.token} className="existing-poll-row">
+      <div className="team-builder-hero-stats">
         <div>
-          <b>{existingPoll.title}</b>
-          <small>
-            {new Date(existingPoll.createdAt).toLocaleString()} •{" "}
-            {existingPoll.responses?.length || 0} responses
-          </small>
+          <span>Player pools</span>
+          <strong>{selectedSourceTeamIds.length}</strong>
         </div>
 
-        <div className="existing-poll-actions">
-          <button type="button" onClick={() => openExistingPoll(existingPoll)}>
-            Open
-          </button>
+        <div>
+          <span>Players selected</span>
+          <strong>
+            {selectedIds.length}/{players.length}
+          </strong>
+        </div>
+
+        <div>
+          <span>Poll responses</span>
+          <strong>{totalPollResponses}</strong>
+        </div>
+      </div>
+    </section>
+
+    <div className="team-builder-section-stack">
+      {/* =====================================================
+          SECTION 1: CREATE AVAILABILITY POLL
+      ====================================================== */}
+      <TeamBuilderSection
+        icon="📲"
+        title="Create Availability Poll"
+        description="Add match dates and share one voting link with your players."
+        badge={`${pollOptions.length} option${
+          pollOptions.length === 1 ? "" : "s"
+        }`}
+        defaultOpen={!poll}
+        className="poll-setup-collapse"
+      >
+        <div className="poll-admin-grid">
+          <label className="team-builder-field">
+            <span>Poll title</span>
+
+            <input
+              value={pollTitle}
+              onChange={(event) => setPollTitle(event.target.value)}
+              placeholder="Match Availability"
+            />
+          </label>
+
+          <label className="team-builder-field">
+            <span>WhatsApp message</span>
+
+            <input
+              value={pollText}
+              onChange={(event) => setPollText(event.target.value)}
+              placeholder="Please confirm your availability"
+            />
+          </label>
+        </div>
+
+        <div className="match-options-card compact-match-options-card">
+          <div className="match-options-header">
+            <div>
+              <strong>📅 Match Options</strong>
+              <span>Add one or more possible match dates and times.</span>
+            </div>
+
+            <button
+              type="button"
+              className="add-match-option-btn"
+              onClick={() => setShowOptionForm((previous) => !previous)}
+            >
+              {showOptionForm ? "✕ Close" : "➕ Add Option"}
+            </button>
+          </div>
+
+          {showOptionForm && (
+            <div className="match-option-form compact-match-option-form">
+              <label className="team-builder-field">
+                <span>Option name</span>
+
+                <input
+                  value={newOptionLabel}
+                  onChange={(event) =>
+                    setNewOptionLabel(event.target.value)
+                  }
+                  placeholder="Friday Night Match"
+                />
+              </label>
+
+              <label className="team-builder-field">
+                <span>Date and time</span>
+
+                <input
+                  type="datetime-local"
+                  value={newOptionStartTime}
+                  onChange={(event) =>
+                    setNewOptionStartTime(event.target.value)
+                  }
+                />
+              </label>
+
+              <div className="match-option-form-actions">
+                <button type="button" onClick={addMatchOption}>
+                  ✅ Save Option
+                </button>
+
+                <button
+                  type="button"
+                  className="secondary"
+                  onClick={() => {
+                    setShowOptionForm(false);
+                    setNewOptionLabel("");
+                    setNewOptionStartTime("");
+                  }}
+                >
+                  Cancel
+                </button>
+              </div>
+            </div>
+          )}
+
+          {pollOptions.length ? (
+            <div className="match-options-list compact-match-options-list">
+              {pollOptions.map((option, index) => (
+                <div
+                  key={`${option.label}-${option.startTime}-${index}`}
+                  className="match-option-pill"
+                >
+                  <div>
+                    <strong>
+                      {index + 1}. {option.label}
+                    </strong>
+
+                    {option.startTime && (
+                      <small>
+                        {new Date(option.startTime).toLocaleString()}
+                      </small>
+                    )}
+                  </div>
+
+                  <button
+                    type="button"
+                    onClick={() => removePollOption(index)}
+                    title={`Remove ${option.label}`}
+                    aria-label={`Remove ${option.label}`}
+                  >
+                    ✕
+                  </button>
+                </div>
+              ))}
+            </div>
+          ) : (
+            <div className="match-options-empty compact-empty-state">
+              Add at least one possible match date before creating the poll.
+            </div>
+          )}
+        </div>
+
+        <div className="poll-create-status-row">
+          <div>
+            <span>Selected player pools</span>
+            <strong>{selectedSourceTeamIds.length}</strong>
+          </div>
+
+          <div>
+            <span>Eligible players</span>
+            <strong>{players.length}</strong>
+          </div>
 
           <button
             type="button"
-            className="danger"
-            onClick={() => deletePoll(existingPoll.token)}
+            className="create-poll-primary-btn"
+            onClick={createPoll}
+            disabled={
+              creatingPoll ||
+              !pollOptions.length ||
+              !selectedSourceTeamIds.length
+            }
           >
-            Delete
+            {creatingPoll ? "Creating..." : "➕ Create Availability Poll"}
           </button>
         </div>
-      </div>
-    ))}
-  </div>
-)}
+      </TeamBuilderSection>
+
+      {/* =====================================================
+          SECTION 2: EXISTING POLLS AND SHARING
+      ====================================================== */}
+      <TeamBuilderSection
+        icon="📋"
+        title="Polls & Sharing"
+        description="Open, share, refresh, or delete existing availability polls."
+        badge={allPolls.length}
+        defaultOpen={false}
+        className="poll-management-collapse"
+      >
         {poll && (
-          <div className="poll-link-box">
-            <strong>Poll Link</strong>
-            <span>{typeof window !== "undefined"
-              ? `${window.location.origin}/team-poll/${poll.token}`
-              : `/team-poll/${poll.token}`}</span>
-          </div>
-        )}
-{poll && pollOptionResults.length > 0 && (
-  <section className="poll-results-card">
-    <div className="poll-results-header">
-      <div>
-        <strong>📊 Live Poll Results</strong>
-        <span>
-          Responses by date option. Use any date’s YES players to generate teams.
-        </span>
-      </div>
-    </div>
+          <div className="active-poll-compact-card">
+            <div className="active-poll-copy">
+              <span>Currently selected poll</span>
+              <strong>{currentPollLabel}</strong>
 
-    <div className="poll-results-grid">
-      {pollOptionResults.map((group) => {
-        const isBest =
-          bestPollOption &&
-          Number(bestPollOption.id) === Number(group.option.id);
+              <small>
+                {pollResponses.length} response
+                {pollResponses.length === 1 ? "" : "s"} received
+              </small>
+            </div>
 
-        return (
-          <div
-            key={group.option.id}
-            className={`poll-date-result-card ${isBest ? "best" : ""}`}
-          >
-            <div className="poll-date-result-title">
-              <div>
-                <strong>
-                  {isBest ? "🏆 " : "📅 "}
-                  {group.option.label}
-                </strong>
-
-                {group.option.startTime && (
-                  <small>
-                    {new Date(group.option.startTime).toLocaleString()}
-                  </small>
-                )}
-              </div>
+            <div className="active-poll-actions">
+              <button
+                type="button"
+                onClick={sharePollToWhatsApp}
+                disabled={!poll}
+              >
+                📲 Share
+              </button>
 
               <button
                 type="button"
-                onClick={() => useOptionPlayers(group.option.id)}
-                disabled={!group.yes.length}
+                onClick={refreshPollResponses}
+                disabled={!poll || refreshingPoll}
               >
-                Use YES Players
+                {refreshingPoll ? "Refreshing..." : "🔄 Refresh"}
+              </button>
+
+              <button
+                type="button"
+                onClick={useBestDatePlayersFromPoll}
+                disabled={!pollResponses.length}
+              >
+                🏆 Use Best Date
+              </button>
+            </div>
+          </div>
+        )}
+
+        {poll && (
+          <div className="poll-link-box compact-poll-link-box">
+            <div>
+              <strong>🔗 Public Poll Link</strong>
+
+              <span>
+                {typeof window !== "undefined"
+                  ? `${window.location.origin}/team-poll/${poll.token}`
+                  : `/team-poll/${poll.token}`}
+              </span>
+            </div>
+
+            <button
+              type="button"
+              onClick={async () => {
+                const pollUrl = `${window.location.origin}/team-poll/${poll.token}`;
+
+                try {
+                  await navigator.clipboard.writeText(pollUrl);
+                  alert("Poll link copied.");
+                } catch {
+                  alert(pollUrl);
+                }
+              }}
+            >
+              📋 Copy
+            </button>
+          </div>
+        )}
+
+        {!allPolls.length ? (
+          <div className="compact-empty-state">
+            No existing polls found for this league.
+          </div>
+        ) : (
+          <div className="existing-polls-box compact-existing-polls">
+            <div className="existing-polls-scroll">
+              {allPolls.map((existingPoll) => {
+                const isCurrent =
+                  String(existingPoll.token) === String(poll?.token);
+
+                return (
+                  <div
+                    key={existingPoll.token}
+                    className={`existing-poll-row ${
+                      isCurrent ? "current" : ""
+                    }`}
+                  >
+                    <div>
+                      <b>{existingPoll.title}</b>
+
+                      <small>
+                        {new Date(existingPoll.createdAt).toLocaleString()} •{" "}
+                        {existingPoll.responses?.length || 0} responses
+                      </small>
+                    </div>
+
+                    <div className="existing-poll-actions">
+                      <button
+                        type="button"
+                        onClick={() => openExistingPoll(existingPoll)}
+                      >
+                        {isCurrent ? "✓ Opened" : "Open"}
+                      </button>
+
+                      <button
+                        type="button"
+                        className="danger"
+                        onClick={() => deletePoll(existingPoll.token)}
+                      >
+                        Delete
+                      </button>
+                    </div>
+                  </div>
+                );
+              })}
+            </div>
+          </div>
+        )}
+      </TeamBuilderSection>
+
+      {/* =====================================================
+          SECTION 3: LIVE POLL RESULTS
+      ====================================================== */}
+      <TeamBuilderSection
+        icon="📊"
+        title="Live Poll Results"
+        description="Review Yes, Maybe, No, and pending responses by date."
+        badge={completedResponseCount}
+        defaultOpen={false}
+        className="poll-results-collapse"
+      >
+        {!poll ? (
+          <div className="compact-empty-state">
+            Create or open a poll to view live responses.
+          </div>
+        ) : !pollOptionResults.length ? (
+          <div className="compact-empty-state">
+            No match options are available for the selected poll.
+          </div>
+        ) : (
+          <>
+            {bestPollOption && (
+              <div className="poll-best-date-box polished-best-date">
+                <span className="best-date-label">🏆 Best Date</span>
+
+                <strong className="best-date-name">
+                  {bestPollOption.label}
+                </strong>
+
+                <small className="best-date-votes">
+                  {bestPollOption.yesCount} YES votes
+                </small>
+              </div>
+            )}
+
+            <div className="poll-results-grid compact-poll-results-grid">
+              {pollOptionResults.map((group) => {
+                const isBest =
+                  bestPollOption &&
+                  Number(bestPollOption.id) === Number(group.option.id);
+
+                return (
+                  <details
+                    key={group.option.id}
+                    className={`poll-date-result-card poll-option-collapse ${
+                      isBest ? "best" : ""
+                    }`}
+                  >
+                    <summary className="poll-option-collapse-summary">
+                      <div className="poll-option-summary-copy">
+                        <strong>
+                          {isBest ? "🏆 " : "📅 "}
+                          {group.option.label}
+                        </strong>
+
+                        {group.option.startTime && (
+                          <small>
+                            {new Date(
+                              group.option.startTime
+                            ).toLocaleString()}
+                          </small>
+                        )}
+                      </div>
+
+                      <div className="poll-option-summary-right">
+                        <span className="poll-option-yes-count">
+                          ✅ {group.yes.length}
+                        </span>
+
+                        <span className="poll-option-arrow">⌄</span>
+                      </div>
+                    </summary>
+
+                    <div className="poll-option-collapse-content">
+                      <div className="poll-mini-counts">
+                        <div className="yes">
+                          <span>✅ Yes</span>
+                          <strong>{group.yes.length}</strong>
+                        </div>
+
+                        <div className="maybe">
+                          <span>🤔 Maybe</span>
+                          <strong>{group.maybe.length}</strong>
+                        </div>
+
+                        <div className="no">
+                          <span>❌ No</span>
+                          <strong>{group.no.length}</strong>
+                        </div>
+
+                        <div className="pending">
+                          <span>⚪ No Reply</span>
+                          <strong>{group.notResponded.length}</strong>
+                        </div>
+                      </div>
+
+                      <button
+                        type="button"
+                        className="use-date-players-btn"
+                        onClick={() =>
+                          useOptionPlayers(group.option.id)
+                        }
+                        disabled={!group.yes.length}
+                      >
+                        ✅ Use {group.yes.length} YES Players
+                      </button>
+
+                      <details className="poll-player-breakdown">
+                        <summary className="poll-player-breakdown-summary">
+                          <div>
+                            <strong>👥 Player Response Details</strong>
+                            <small>
+                              Expand to see player names by response
+                            </small>
+                          </div>
+
+                          <span className="poll-player-breakdown-arrow">
+                            ⌄
+                          </span>
+                        </summary>
+
+                        <div className="poll-response-dropdowns">
+                          <details className="poll-response-group yes-group">
+                            <summary>
+                              <div>
+                                <span>✅ Yes</span>
+                                <b>{group.yes.length}</b>
+                              </div>
+
+                              <i>⌄</i>
+                            </summary>
+
+                            <div className="poll-response-player-list">
+                              {group.yes.length ? (
+                                group.yes.map((response) => (
+                                  <span
+                                    key={`yes-${group.option.id}-${response.playerKey}`}
+                                  >
+                                    {response.playerName}
+                                  </span>
+                                ))
+                              ) : (
+                                <small>None</small>
+                              )}
+                            </div>
+                          </details>
+
+                          <details className="poll-response-group maybe-group">
+                            <summary>
+                              <div>
+                                <span>🤔 Maybe</span>
+                                <b>{group.maybe.length}</b>
+                              </div>
+
+                              <i>⌄</i>
+                            </summary>
+
+                            <div className="poll-response-player-list">
+                              {group.maybe.length ? (
+                                group.maybe.map((response) => (
+                                  <span
+                                    key={`maybe-${group.option.id}-${response.playerKey}`}
+                                  >
+                                    {response.playerName}
+                                  </span>
+                                ))
+                              ) : (
+                                <small>None</small>
+                              )}
+                            </div>
+                          </details>
+
+                          <details className="poll-response-group no-group">
+                            <summary>
+                              <div>
+                                <span>❌ No</span>
+                                <b>{group.no.length}</b>
+                              </div>
+
+                              <i>⌄</i>
+                            </summary>
+
+                            <div className="poll-response-player-list">
+                              {group.no.length ? (
+                                group.no.map((response) => (
+                                  <span
+                                    key={`no-${group.option.id}-${response.playerKey}`}
+                                  >
+                                    {response.playerName}
+                                  </span>
+                                ))
+                              ) : (
+                                <small>None</small>
+                              )}
+                            </div>
+                          </details>
+
+                          <details className="poll-response-group pending-group">
+                            <summary>
+                              <div>
+                                <span>⚪ No Reply</span>
+                                <b>{group.notResponded.length}</b>
+                              </div>
+
+                              <i>⌄</i>
+                            </summary>
+
+                            <div className="poll-response-player-list">
+                              {group.notResponded.length ? (
+                                group.notResponded.map((player) => (
+                                  <span
+                                    key={`pending-${group.option.id}-${
+                                      player.playerKey || player.id
+                                    }`}
+                                  >
+                                    {player.playerName}
+                                  </span>
+                                ))
+                              ) : (
+                                <small>Everyone responded</small>
+                              )}
+                            </div>
+                          </details>
+                        </div>
+                      </details>
+                    </div>
+                  </details>
+                );
+              })}
+            </div>
+          </>
+        )}
+      </TeamBuilderSection>
+
+      {/* =====================================================
+          SECTION 4: PLAYER POOLS
+      ====================================================== */}
+      <TeamBuilderSection
+        icon="👥"
+        title="Player Pools"
+        description="Choose which league teams should contribute players."
+        badge={`${selectedSourceTeamIds.length}/${leagueTeams.length}`}
+        defaultOpen={false}
+        className="player-pools-collapse"
+      >
+        {!leagueTeams.length ? (
+          <div className="team-builder-source-empty">
+            No teams found in this league.
+          </div>
+        ) : (
+          <>
+            <div className="player-pool-quick-actions">
+              <button
+                type="button"
+                onClick={() =>
+                  setSelectedSourceTeamIds(
+                    leagueTeams.map((team) => Number(team.id))
+                  )
+                }
+              >
+                Select All Pools
+              </button>
+
+              <button
+                type="button"
+                onClick={() => setSelectedSourceTeamIds([])}
+              >
+                Clear Pools
               </button>
             </div>
 
-            <div className="poll-mini-counts">
-              <div className="yes">
-                <span>✅ Yes</span>
-                <strong>{group.yes.length}</strong>
-              </div>
+            <div className="team-builder-source-grid compact-source-grid">
+              {leagueTeams.map((team) => {
+                const teamId = Number(team.id);
+                const selected =
+                  selectedSourceTeamIds.includes(teamId);
 
-              <div className="maybe">
-                <span>🤔 Maybe</span>
-                <strong>{group.maybe.length}</strong>
-              </div>
+                return (
+                  <button
+                    key={team.id}
+                    type="button"
+                    className={`team-builder-source-option ${
+                      selected ? "selected" : ""
+                    }`}
+                    onClick={() => {
+                      setSelectedSourceTeamIds((previous) =>
+                        selected
+                          ? previous.filter(
+                              (id) => Number(id) !== teamId
+                            )
+                          : [...previous, teamId]
+                      );
+                    }}
+                  >
+                    <span>{selected ? "✅" : "⬜"}</span>
 
-              <div className="no">
-                <span>❌ No</span>
-                <strong>{group.no.length}</strong>
-              </div>
-
-              <div className="pending">
-                <span>⚪ No Reply</span>
-                <strong>{group.notResponded.length}</strong>
-              </div>
+                    <div>
+                      <strong>{team.name}</strong>
+                      <small>
+                        {team.playerCount ?? 0} players
+                      </small>
+                    </div>
+                  </button>
+                );
+              })}
             </div>
-
-<details className="poll-player-breakdown">
-  <summary className="poll-player-breakdown-summary">
-    <div>
-      <strong>👥 View Player Responses</strong>
-      <small>
-        Yes {group.yes.length} • Maybe {group.maybe.length} • No{" "}
-        {group.no.length} • No Reply {group.notResponded.length}
-      </small>
-    </div>
-
-    <span className="poll-player-breakdown-arrow">⌄</span>
-  </summary>
-
-  <div className="poll-response-dropdowns">
-    <details className="poll-response-group yes-group">
-      <summary>
-        <div>
-          <span>✅ Yes</span>
-          <b>{group.yes.length}</b>
-        </div>
-        <i>⌄</i>
-      </summary>
-
-      <div className="poll-response-player-list">
-        {group.yes.length ? (
-          group.yes.map((r) => (
-            <span key={`yes-${group.option.id}-${r.playerKey}`}>
-              {r.playerName}
-            </span>
-          ))
-        ) : (
-          <small>None</small>
+          </>
         )}
-      </div>
-    </details>
+      </TeamBuilderSection>
 
-    <details className="poll-response-group maybe-group">
-      <summary>
-        <div>
-          <span>🤔 Maybe</span>
-          <b>{group.maybe.length}</b>
-        </div>
-        <i>⌄</i>
-      </summary>
+      {/* =====================================================
+          SECTION 5: SELECT PLAYERS AND GENERATE TEAMS
+      ====================================================== */}
+      <TeamBuilderSection
+        icon="⚖️"
+        title="Select Players & Generate Teams"
+        description="Choose available players, name the teams, and balance them."
+        badge={`${selectedIds.length}/${players.length}`}
+        defaultOpen={true}
+        className="player-builder-collapse"
+      >
+        <div className="team-builder-players-head compact-player-builder-head">
+          <div className="team-builder-player-count">
+            <strong>Available Players</strong>
 
-      <div className="poll-response-player-list">
-        {group.maybe.length ? (
-          group.maybe.map((r) => (
-            <span key={`maybe-${group.option.id}-${r.playerKey}`}>
-              {r.playerName}
-            </span>
-          ))
-        ) : (
-          <small>None</small>
-        )}
-      </div>
-    </details>
-
-    <details className="poll-response-group no-group">
-      <summary>
-        <div>
-          <span>❌ No</span>
-          <b>{group.no.length}</b>
-        </div>
-        <i>⌄</i>
-      </summary>
-
-      <div className="poll-response-player-list">
-        {group.no.length ? (
-          group.no.map((r) => (
-            <span key={`no-${group.option.id}-${r.playerKey}`}>
-              {r.playerName}
-            </span>
-          ))
-        ) : (
-          <small>None</small>
-        )}
-      </div>
-    </details>
-
-    <details className="poll-response-group pending-group">
-      <summary>
-        <div>
-          <span>⚪ No Reply</span>
-          <b>{group.notResponded.length}</b>
-        </div>
-        <i>⌄</i>
-      </summary>
-
-      <div className="poll-response-player-list">
-        {group.notResponded.length ? (
-          group.notResponded.map((p) => (
-            <span key={`pending-${group.option.id}-${p.id}`}>
-              {p.playerName}
-            </span>
-          ))
-        ) : (
-          <small>Everyone responded</small>
-        )}
-      </div>
-    </details>
-  </div>
-</details>
-          </div>
-        );
-      })}
-    </div>
-  </section>
-)}
-{bestPollOption && (
-  <div className="poll-best-date-box polished-best-date">
-    <span className="best-date-label">🏆 Best Date</span>
-
-    <strong className="best-date-name">
-      {bestPollOption.label}
-    </strong>
-
-    <small className="best-date-votes">
-      {bestPollOption.yesCount} YES votes
-    </small>
-  </div>
-)}
-      </section>
-<section className="team-builder-source-card">
-  <div className="team-builder-source-head">
-    <div>
-      <strong>👥 Select Player Pools</strong>
-      <span>
-        Choose one or more league teams whose players can participate.
-      </span>
-    </div>
-
-    <small>
-      {selectedSourceTeamIds.length} selected
-    </small>
-  </div>
-
-  {!leagueTeams.length ? (
-    <div className="team-builder-source-empty">
-      No teams found in this league.
-    </div>
-  ) : (
-    <div className="team-builder-source-grid">
-      {leagueTeams.map((team) => {
-        const teamId = Number(team.id);
-
-        const selected =
-          selectedSourceTeamIds.includes(teamId);
-
-        return (
-          <button
-            key={team.id}
-            type="button"
-            className={`team-builder-source-option ${
-              selected ? "selected" : ""
-            }`}
-            onClick={() => {
-              setSelectedSourceTeamIds((previous) =>
-                selected
-                  ? previous.filter(
-                      (id) => Number(id) !== teamId
-                    )
-                  : [...previous, teamId]
-              );
-            }}
-          >
             <span>
-              {selected ? "✅" : "⬜"}
+              Selected {selectedIds.length} of {players.length}
             </span>
-
-            <div>
-              <strong>{team.name}</strong>
-              <small>
-                {team.playerCount ?? 0} players
-              </small>
-            </div>
-          </button>
-        );
-      })}
-    </div>
-  )}
-</section>
-<section className="ai-splitter-card team-builder-players-card">
-  <div className="team-builder-players-head">
-    <div className="team-builder-player-count">
-      <strong>Available Players</strong>
-      <span>
-        Selected {selectedIds.length} / {players.length}
-      </span>
-    </div>
-
-    <div className="team-builder-selection-actions">
-      <button
-        type="button"
-        onClick={selectAll}
-        disabled={!players.length}
-      >
-        Select All
-      </button>
-
-      <button
-        type="button"
-        onClick={clearAll}
-        disabled={!players.length}
-      >
-        Clear
-      </button>
-    </div>
-
-    <div className="generated-team-name-grid">
-      <label>
-        <span>Team 1 Name</span>
-        <input
-          value={generatedTeamAName}
-          onChange={(event) =>
-            setGeneratedTeamAName(event.target.value)
-          }
-          placeholder="Team A"
-        />
-      </label>
-
-      <label>
-        <span>Team 2 Name</span>
-        <input
-          value={generatedTeamBName}
-          onChange={(event) =>
-            setGeneratedTeamBName(event.target.value)
-          }
-          placeholder="Team B"
-        />
-      </label>
-    </div>
-
-    <button
-      type="button"
-      className="ai-primary-btn team-builder-generate-btn"
-      onClick={generateTeams}
-      disabled={
-        balancing ||
-        loadingPlayers ||
-        selectedPlayers.length < 4
-      }
-    >
-      {balancing
-        ? "Balancing..."
-        : "✨ Generate Balanced Teams"}
-    </button>
-  </div>
-
-  {loadingPlayers ? (
-    <div className="ai-empty-box">
-      Loading players...
-    </div>
-  ) : !selectedSourceTeamIds.length ? (
-    <div className="ai-empty-box">
-      Select at least one player pool above.
-    </div>
-  ) : !players.length ? (
-    <div className="ai-empty-box">
-      No players found in the selected team pools.
-    </div>
-  ) : (
-    <div className="ai-player-grid">
-      {players.map((player) => (
-        <button
-          key={player.id}
-          type="button"
-          className={`ai-player-chip ${
-            selectedIds.includes(player.id) ? "selected" : ""
-          }`}
-          onClick={() => togglePlayer(player.id)}
-        >
-          <span>{selectedIds.includes(player.id) ? "✅" : "⬜"}</span>
-
-          <div>
-            <strong>{player.playerName}</strong>
-
-            <small>
-              {player.sourceTeams?.join(" + ") || player.teamName || "League player"}
-            </small>
-
-            <small>
-              🏏 {player.runs || 0} runs • 🎯 {player.wickets || 0} wkts
-            </small>
           </div>
-        </button>
-      ))}
-    </div>
-  )}
-</section>
 
+          <div className="team-builder-selection-actions">
+            <button
+              type="button"
+              onClick={selectAll}
+              disabled={!players.length}
+            >
+              Select All
+            </button>
+
+            <button
+              type="button"
+              onClick={clearAll}
+              disabled={!players.length}
+            >
+              Clear
+            </button>
+          </div>
+
+          <div className="generated-team-name-grid">
+            <label>
+              <span>Team 1 Name</span>
+
+              <input
+                value={generatedTeamAName}
+                onChange={(event) =>
+                  setGeneratedTeamAName(event.target.value)
+                }
+                placeholder="Team A"
+              />
+            </label>
+
+            <label>
+              <span>Team 2 Name</span>
+
+              <input
+                value={generatedTeamBName}
+                onChange={(event) =>
+                  setGeneratedTeamBName(event.target.value)
+                }
+                placeholder="Team B"
+              />
+            </label>
+          </div>
+        </div>
+
+        {loadingPlayers ? (
+          <div className="ai-empty-box">Loading players...</div>
+        ) : !selectedSourceTeamIds.length ? (
+          <div className="ai-empty-box">
+            Select at least one player pool first.
+          </div>
+        ) : !players.length ? (
+          <div className="ai-empty-box">
+            No players found in the selected player pools.
+          </div>
+        ) : (
+          <details className="available-player-list-collapse">
+            <summary className="available-player-list-summary">
+              <div>
+                <strong>🏏 Choose Available Players</strong>
+                <small>
+                  {selectedIds.length} selected from{" "}
+                  {selectedPoolPlayerCount}
+                </small>
+              </div>
+
+              <span>⌄</span>
+            </summary>
+
+            <div className="ai-player-grid compact-ai-player-grid">
+              {players.map((player) => (
+                <button
+                  key={player.id}
+                  type="button"
+                  className={`ai-player-chip ${
+                    selectedIds.includes(player.id) ? "selected" : ""
+                  }`}
+                  onClick={() => togglePlayer(player.id)}
+                >
+                  <span>
+                    {selectedIds.includes(player.id) ? "✅" : "⬜"}
+                  </span>
+
+                  <div>
+                    <strong>{player.playerName}</strong>
+
+                    <small>
+                      {player.sourceTeams?.join(" + ") ||
+                        player.teamName ||
+                        "League player"}
+                    </small>
+
+                    <small>
+                      🏏 {player.runs || 0} runs • 🎯{" "}
+                      {player.wickets || 0} wkts
+                    </small>
+                  </div>
+                </button>
+              ))}
+            </div>
+          </details>
+        )}
+
+        <div className="team-builder-generate-sticky">
+          <div>
+            <span>Ready to balance</span>
+            <strong>
+              {selectedPlayers.length} player
+              {selectedPlayers.length === 1 ? "" : "s"}
+            </strong>
+          </div>
+
+          <button
+            type="button"
+            className="ai-primary-btn team-builder-generate-btn"
+            onClick={generateTeams}
+            disabled={
+              balancing ||
+              loadingPlayers ||
+              selectedPlayers.length < 4
+            }
+          >
+            {balancing
+              ? "Balancing..."
+              : "✨ Generate Balanced Teams"}
+          </button>
+        </div>
+      </TeamBuilderSection>
+
+      {/* =====================================================
+          GENERATED RESULTS
+      ====================================================== */}
       {result && (
-        <section className="ai-result-card">
-          <div className="ai-result-summary">
+        <TeamBuilderSection
+          icon="🏆"
+          title="Balanced Team Results"
+          description="Review both generated teams and captain suggestions."
+          badge={`${result.teamA?.length || 0} vs ${
+            result.teamB?.length || 0
+          }`}
+          defaultOpen={true}
+          className="generated-results-collapse"
+        >
+          <div className="ai-result-summary compact-result-summary">
             <div>
               <span>Balance Quality</span>
               <strong>{result.balanceQuality}%</strong>
@@ -1236,62 +1548,107 @@ const pollOptionResults = getPollOptionResults();
             </div>
           </div>
 
-          <div className="ai-teams-grid">
-            <div className="ai-team-box">
-              <h2>🔵 {generatedTeamAName || "Team A"}</h2>
+          <div className="ai-teams-grid compact-generated-team-grid">
+            <details className="generated-team-collapse" open>
+              <summary>
+                <strong>🔵 {generatedTeamAName || "Team A"}</strong>
+                <span>{result.teamA?.length || 0} players</span>
+                <i>⌄</i>
+              </summary>
 
-{[...result.teamA]
-  .sort((a, b) => a.playerName.localeCompare(b.playerName))
-  .map((player, idx) => (
-    <div key={`a-${player.id}-${idx}`} className="ai-team-row">
-      <span>
-        <b>{idx + 1}.</b> {player.playerName}
-      </span>
-    </div>
-  ))}
-            </div>
+              <div className="generated-team-player-scroll">
+                {[...(result.teamA || [])]
+                  .sort((a, b) =>
+                    a.playerName.localeCompare(b.playerName)
+                  )
+                  .map((player, index) => (
+                    <div
+                      key={`a-${player.id}-${index}`}
+                      className="ai-team-row"
+                    >
+                      <span>
+                        <b>{index + 1}.</b> {player.playerName}
+                      </span>
+                    </div>
+                  ))}
+              </div>
+            </details>
 
-            <div className="ai-team-box">
-              <h2>🟣 {generatedTeamBName || "Team B"}</h2>
+            <details className="generated-team-collapse" open>
+              <summary>
+                <strong>🟣 {generatedTeamBName || "Team B"}</strong>
+                <span>{result.teamB?.length || 0} players</span>
+                <i>⌄</i>
+              </summary>
 
-{[...result.teamB]
-  .sort((a, b) => a.playerName.localeCompare(b.playerName))
-  .map((player, idx) => (
-    <div key={`b-${player.id}-${idx}`} className="ai-team-row">
-      <span>
-        <b>{idx + 1}.</b> {player.playerName}
-      </span>
-    </div>
-  ))}
-            </div>
+              <div className="generated-team-player-scroll">
+                {[...(result.teamB || [])]
+                  .sort((a, b) =>
+                    a.playerName.localeCompare(b.playerName)
+                  )
+                  .map((player, index) => (
+                    <div
+                      key={`b-${player.id}-${index}`}
+                      className="ai-team-row"
+                    >
+                      <span>
+                        <b>{index + 1}.</b> {player.playerName}
+                      </span>
+                    </div>
+                  ))}
+              </div>
+            </details>
           </div>
+
           {captainSuggestions && (
-  <div className="captain-suggestions-card">
-    <h3>⭐ Cric4All Captain Suggestions</h3>
-    <p>Suggestions only. Organizer can choose anyone.</p>
+            <details className="captain-suggestions-card compact-captain-collapse">
+              <summary className="captain-suggestions-summary">
+                <div>
+                  <strong>⭐ Cric4All Captain Suggestions</strong>
+                  <small>
+                    Two suggested choices for each generated team
+                  </small>
+                </div>
 
-    <div className="captain-suggestion-grid">
-      {[
-        [generatedTeamAName || "Team A", captainSuggestions.teamA || []],
-        [generatedTeamBName || "Team B", captainSuggestions.teamB || []],
-      ].map(([teamName, suggestions]) => (
-        <div key={teamName} className="captain-team-card">
-          <h4>🏏 {teamName}</h4>
+                <span>⌄</span>
+              </summary>
 
-          {suggestions.map((suggestion) => (
-            <div key={suggestion.playerId} className="captain-choice-row">
-              <strong>{suggestion.playerName}</strong>
-              <span>{suggestion.label}</span>
-              <small>{suggestion.reason}</small>
-            </div>
-          ))}
-        </div>
-      ))}
-    </div>
-  </div>
-)}
-        </section>
+              <div className="captain-suggestion-grid">
+                {[
+                  [
+                    generatedTeamAName || "Team A",
+                    captainSuggestions.teamA || [],
+                  ],
+                  [
+                    generatedTeamBName || "Team B",
+                    captainSuggestions.teamB || [],
+                  ],
+                ].map(([teamName, suggestions]) => (
+                  <div key={teamName} className="captain-team-card">
+                    <h4>🏏 {teamName}</h4>
+
+                    {suggestions.length ? (
+                      suggestions.map((suggestion) => (
+                        <div
+                          key={suggestion.playerId}
+                          className="captain-choice-row"
+                        >
+                          <strong>{suggestion.playerName}</strong>
+                          <span>{suggestion.label}</span>
+                          <small>{suggestion.reason}</small>
+                        </div>
+                      ))
+                    ) : (
+                      <small>No suggestions available.</small>
+                    )}
+                  </div>
+                ))}
+              </div>
+            </details>
+          )}
+        </TeamBuilderSection>
       )}
-    </main>
-  );
+    </div>
+  </main>
+);
 }
