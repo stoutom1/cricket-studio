@@ -47128,3 +47128,118 @@ body.cric4all-scorer-open {
     z-index: 1 !important;
   }
 }
+/* =========================================================
+   MOBILE SCORER — LARGER RECENT DELIVERY CHIPS
+========================================================= */
+
+@media (max-width: 760px) {
+  .msc-v3-recent-overs {
+    width: 100% !important;
+    padding: 8px 9px !important;
+  }
+
+  .msc-v3-over-row {
+    /*
+      Smaller label/status columns give the balls more room.
+    */
+    grid-template-columns:
+      50px
+      minmax(0, 1fr)
+      20px !important;
+
+    width: 100% !important;
+    min-height: 38px !important;
+
+    gap: 5px !important;
+    padding: 5px 6px !important;
+  }
+
+  .msc-v3-over-label span {
+    font-size: 9px !important;
+  }
+
+  .msc-v3-over-label strong {
+    margin-top: 3px !important;
+
+    font-size: 11px !important;
+  }
+
+  .msc-v3-over-balls {
+    width: 100% !important;
+    min-width: 0 !important;
+
+    display: flex !important;
+    align-items: center !important;
+    justify-content: flex-start !important;
+
+    gap: 4px !important;
+
+    /*
+      Never wrap onto a second line.
+      Very long unusual overs remain horizontally scrollable.
+    */
+    flex-wrap: nowrap !important;
+    overflow-x: auto !important;
+    overflow-y: hidden !important;
+
+    scrollbar-width: none;
+  }
+
+  .msc-v3-over-balls::-webkit-scrollbar {
+    display: none;
+  }
+
+  .msc-v3-over-balls b {
+    min-width: 28px !important;
+    width: auto !important;
+    height: 28px !important;
+    flex: 0 0 auto !important;
+
+    padding: 0 5px !important;
+
+    border-radius: 7px !important;
+
+    font-size: 11px !important;
+    font-weight: 1000 !important;
+    line-height: 1 !important;
+  }
+
+  /*
+    Wides and no-balls can contain more characters,
+    such as Wd+2 or Nb+4.
+  */
+  .msc-v3-over-balls b.extra {
+    min-width: 31px !important;
+  }
+
+  .msc-v3-over-state {
+    width: 20px !important;
+    height: 20px !important;
+
+    font-size: 9px !important;
+  }
+}
+@media (max-width: 360px) {
+  .msc-v3-over-row {
+    grid-template-columns:
+      46px
+      minmax(0, 1fr)
+      18px !important;
+
+    gap: 3px !important;
+    padding-inline: 4px !important;
+  }
+
+  .msc-v3-over-balls {
+    gap: 3px !important;
+  }
+
+  .msc-v3-over-balls b {
+    min-width: 25px !important;
+    height: 26px !important;
+
+    padding-inline: 3px !important;
+
+    font-size: 10px !important;
+  }
+}
