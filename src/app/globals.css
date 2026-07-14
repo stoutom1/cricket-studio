@@ -46060,3 +46060,199 @@ body.cric4all-scorer-open {
     font-weight: 500;
   }
 }
+/* =========================================================
+   SCORER-MODE SCORING FORM CONTENT
+========================================================= */
+
+@media (max-width: 760px) {
+  .scoring-form-sheet-existing-form {
+    min-height: 0;
+  }
+
+  .scorer-mode-ball-form {
+    display: grid !important;
+    grid-template-columns:
+      repeat(2, minmax(0, 1fr)) !important;
+
+    gap: 11px !important;
+
+    padding: 2px 1px 14px !important;
+  }
+
+  .scorer-mode-ball-form label {
+    min-width: 0;
+
+    display: block;
+
+    margin: 0 !important;
+  }
+
+  .scorer-mode-ball-form label > span {
+    display: block;
+
+    margin: 0 0 5px;
+
+    color: #b8c5d6;
+
+    font-size: 11px;
+    font-weight: 900;
+    line-height: 1.25;
+  }
+
+  .scorer-mode-ball-form input:not([type="checkbox"]),
+  .scorer-mode-ball-form select {
+    width: 100%;
+    min-width: 0;
+    min-height: 44px;
+
+    padding: 0 10px;
+
+    border: 1px solid
+      rgba(148, 163, 184, 0.17);
+
+    border-radius: 10px;
+
+    background: rgba(15, 28, 48, 0.92);
+    color: #ffffff;
+
+    font-family: inherit;
+    font-size: 13px;
+    font-weight: 800;
+
+    outline: none;
+  }
+
+  .scorer-mode-ball-form
+    input:not([type="checkbox"]):focus,
+  .scorer-mode-ball-form select:focus {
+    border-color:
+      rgba(56, 189, 248, 0.65);
+
+    box-shadow:
+      0 0 0 3px
+      rgba(56, 189, 248, 0.1);
+  }
+
+  .scorer-mode-ball-form
+    input:disabled,
+  .scorer-mode-ball-form
+    select:disabled {
+    opacity: 0.48;
+    cursor: not-allowed;
+  }
+
+  .scorer-mode-ball-form .full-span {
+    grid-column: 1 / -1;
+  }
+
+  .scoring-sheet-wicket-toggle {
+    min-height: 44px;
+
+    display: flex !important;
+    align-items: center;
+    justify-content: space-between;
+
+    padding: 7px 10px;
+
+    border: 1px solid
+      rgba(248, 113, 113, 0.18);
+
+    border-radius: 10px;
+
+    background:
+      rgba(127, 29, 29, 0.12);
+  }
+
+  .scoring-sheet-wicket-toggle > span {
+    margin: 0 !important;
+
+    color: #fecaca !important;
+  }
+
+  .scoring-sheet-wicket-toggle
+    input[type="checkbox"] {
+    width: 23px;
+    height: 23px;
+
+    accent-color: #ef4444;
+  }
+
+  .scoring-form-sheet-actions {
+    position: sticky;
+    right: 0;
+    bottom: 0;
+    left: 0;
+
+    z-index: 5;
+
+    display: grid;
+    grid-template-columns: 0.8fr 1.2fr;
+
+    gap: 8px;
+
+    margin:
+      0
+      -12px
+      -12px;
+
+    padding:
+      10px
+      12px
+      max(
+        10px,
+        env(safe-area-inset-bottom)
+      );
+
+    border-top: 1px solid
+      rgba(148, 163, 184, 0.12);
+
+    background:
+      rgba(8, 18, 34, 0.98);
+
+    box-shadow:
+      0 -10px 24px
+      rgba(2, 6, 23, 0.28);
+  }
+
+  .scoring-form-sheet-actions .btn {
+    width: 100%;
+    min-height: 44px;
+
+    margin: 0;
+    padding: 0 10px;
+
+    border-radius: 11px;
+
+    font-size: 12px;
+    font-weight: 950;
+  }
+
+  .scoring-form-sheet-submit {
+    border: 1px solid
+      rgba(56, 189, 248, 0.35) !important;
+
+    background:
+      linear-gradient(
+        135deg,
+        #2563eb,
+        #0ea5e9
+      ) !important;
+
+    color: #ffffff !important;
+  }
+
+  .scoring-form-sheet-submit:disabled {
+    opacity: 0.48;
+  }
+}
+
+/* Narrow phones use one field per row */
+@media (max-width: 370px) {
+  .scorer-mode-ball-form {
+    grid-template-columns: 1fr !important;
+  }
+
+  .scorer-mode-ball-form .full-span {
+    grid-column: auto;
+  }
+}

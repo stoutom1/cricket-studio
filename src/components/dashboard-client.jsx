@@ -14001,13 +14001,19 @@ onClick={() => {
     </div>
   </div>
 )}
-{showBowlerModal &&
-  typeof document !== "undefined" &&
-  createPortal(
-    <div
-      className="bowler-modal-backdrop"
-      role="presentation"
-    >
+{showBowlerModal && (
+  <div
+    className="bowler-modal-backdrop"
+    role="presentation"
+    onMouseDown={(event) => {
+      if (
+        event.target === event.currentTarget &&
+        !mustChangeBowler
+      ) {
+        handleCloseBowlerModal();
+      }
+    }}
+  >
     <div
       className="bowler-modal bowler-modal-mobile-fit"
       role="dialog"
@@ -14184,9 +14190,8 @@ onClick={() => {
           Continue →
         </button>
       </div>
-     </div>
-  </div>,
-  document.body
+    </div>
+  </div>
 )}
 {showAddTeam && (
   <div className="modal-backdrop">
@@ -16832,9 +16837,502 @@ onChange={(e) => {
             Do not create new state for these inputs.
           */}
 
-          <div className="scoring-form-sheet-existing-form">
-            {/* EXISTING SCORING FORM JSX GOES HERE */}
-          </div>
+<div className="scoring-form-sheet-existing-form">
+  <form
+    id="scorer-mode-ball-form"
+    className="form grid-2 scorer-mode-ball-form"
+    onSubmit={handleAddBall}
+  >
+    {/* Innings */}
+    <label>
+      <span>Innings</span>
+
+      <select
+        value={ballForm.inningsNo || ""}
+        onChange={(event) =>
+          setBallForm((previous) => ({
+            ...previous,
+            inningsNo: event.target.value,
+          }))
+        }
+      >
+        <option value="1">Innings 1</option>
+        <option value="2">Innings 2</option>
+      </select>
+    </label>
+
+    {/* Bowler */}
+    <label>
+      <span>Bowler</span>
+
+      <select
+        value={ballForm.bowlerId || ""}
+        onChange={(event) =>
+          setBallForm((previous) => ({
+            ...previous,
+            bowlerId: event.target.value,
+          }))
+        }
+        required
+      >
+        <option value="">Select bowler</option>
+
+        {(bowlingTeam?.players || []).map((player) => (
+          <option
+            key={player.id}
+            value={player.id}
+          >
+            {player.name}
+          </option>
+        ))}
+      </select>
+    </label>
+
+    {/* Striker */}
+    <label>
+      <span>Striker</span>
+
+      <select
+        value={ballForm.strikerId || ""}
+        onChange={(event) => {
+          const strikerId = event.target.value;
+
+          setBallForm((previous) => ({
+            ...previous,
+            strikerId,
+
+            /*
+              Keep the dismissed-player default synchronized
+              with the striker unless RUN_OUT is selected.
+            */
+            dismissedPlayerId:
+              previous.wicketType === "RUN_OUT"
+                ? previous.dismissedPlayerId
+                : strikerId,
+          }));
+        }}
+        required
+      >
+        <option value="">Select striker</option>
+
+        {(battingTeam?.players || []).map((player) => (
+          <option
+            key={player.id}
+            value={player.id}
+          >
+            {player.name}
+          </option>
+        ))}
+      </select>
+    </label>
+
+    {/* Non-striker */}
+    <label>
+      <span>Non-striker</span>
+
+      <select
+        value={ballForm.nonStrikerId || ""}
+        onChange={(event) =>
+          setBallForm((previous) => ({
+            ...previous,
+            nonStrikerId: event.target.value,
+          }))
+        }
+        required
+      >
+        <option value="">Select non-striker</option>
+
+        {(battingTeam?.players || []).map((player) => (
+          <option
+            key={player.id}
+            value={player.id}
+          >
+            {player.name}
+          </option>
+        ))}
+      </select>
+    </label>
+
+    {/* Runs off bat */}
+    <label>
+      <span>Runs Off Bat</span>
+
+      <input
+        type="number"
+        min="0"
+        max="7"
+        inputMode="numeric"
+        value={ballForm.runsOffBat ?? ""}
+        onChange={(event) =>
+          setBallForm((previous) => ({
+            ...previous,
+            runsOffBat: event.target.value,
+          }))
+        }
+        required
+      />
+    </label>
+
+    {/* Extra type */}
+    <label>
+      <span>Extra Type</span>
+
+      <select
+        value={ballForm.extraType || "NONE"}
+        onChange={(event) => {
+          const extraType = event.target.value;
+
+          setBallForm((previous) => ({
+            ...previous,
+            extraType,
+
+            /*
+              Clear the extra count when switching back
+              to a normal delivery.
+            */
+            extras:
+              extraType === "NONE"
+                ? 0
+                : previous.extras,
+          }));
+        }}
+      >
+        {EXTRA_TYPES.map((type) => (
+          <option
+            key={type}
+            value={type}
+          >
+            {type}
+          </option>
+        ))}
+      </select>
+    </label>
+
+    {/* Extras */}
+    <label>
+      <span>Extras</span>
+
+      <input
+        type="number"
+        min="0"
+        max="7"
+        inputMode="numeric"
+        value={ballForm.extras ?? ""}
+        disabled={
+          !ballForm.extraType ||
+          ballForm.extraType === "NONE"
+        }
+        onChange={(event) =>
+          setBallForm((previous) => ({
+            ...previous,
+            extras: event.target.value,
+          }))
+        }
+        required={
+          Boolean(ballForm.extraType) &&
+          ballForm.extraType !== "NONE"
+        }
+      />
+    </label>
+
+    {/* Wicket */}
+    <label className="checkbox-row scoring-sheet-wicket-toggle">
+      <span>Wicket</span>
+
+      <input
+        type="checkbox"
+        checked={Boolean(ballForm.isWicket)}
+        onChange={(event) => {
+          const isWicket = event.target.checked;
+
+          if (!isWicket) {
+            setRunOutRuns(null);
+          }
+
+          setBallForm((previous) => ({
+            ...previous,
+            isWicket,
+
+            wicketType: isWicket
+              ? previous.wicketType || "BOWLED"
+              : "NONE",
+
+            dismissedPlayerId: isWicket
+              ? previous.dismissedPlayerId ||
+                previous.strikerId
+              : "",
+
+            newBatterId: isWicket
+              ? previous.newBatterId
+              : "",
+
+            fielderId: "",
+            assistantFielderId: "",
+          }));
+        }}
+      />
+    </label>
+
+    {/* Wicket type */}
+    <label>
+      <span>Wicket Type</span>
+
+      <select
+        value={ballForm.wicketType || "NONE"}
+        disabled={!ballForm.isWicket}
+        onChange={(event) => {
+          const wicketType = event.target.value;
+
+          setRunOutRuns(
+            wicketType === "RUN_OUT"
+              ? 0
+              : null
+          );
+
+          setBallForm((previous) => ({
+            ...previous,
+            wicketType,
+
+            dismissedPlayerId:
+              wicketType === "RUN_OUT"
+                ? previous.dismissedPlayerId ||
+                  previous.strikerId
+                : previous.strikerId,
+
+            newBatterId: "",
+            fielderId: "",
+            assistantFielderId: "",
+          }));
+        }}
+      >
+        {WICKET_TYPES
+          .filter(
+            (type) =>
+              type !== "NONE" &&
+              type !== "RETIRED_HURT"
+          )
+          .map((type) => (
+            <option
+              key={type}
+              value={type}
+            >
+              {type.replaceAll("_", " ")}
+            </option>
+          ))}
+      </select>
+    </label>
+
+    {/* Dismissed player */}
+    <label>
+      <span>Dismissed Player</span>
+
+      <select
+        value={ballForm.dismissedPlayerId || ""}
+        disabled={!ballForm.isWicket}
+        onChange={(event) =>
+          setBallForm((previous) => ({
+            ...previous,
+            dismissedPlayerId:
+              event.target.value,
+          }))
+        }
+      >
+        <option value="">
+          Select dismissed player
+        </option>
+
+        {(battingTeam?.players || []).map((player) => (
+          <option
+            key={player.id}
+            value={player.id}
+          >
+            {player.name}
+          </option>
+        ))}
+      </select>
+    </label>
+
+    {/* Run-out runs */}
+    {ballForm.isWicket &&
+      ballForm.wicketType === "RUN_OUT" && (
+        <label>
+          <span>Runs Completed</span>
+
+          <input
+            type="number"
+            min="0"
+            max="7"
+            inputMode="numeric"
+            value={runOutRuns ?? 0}
+            onChange={(event) => {
+              const nextRuns =
+                event.target.value === ""
+                  ? 0
+                  : Number(event.target.value);
+
+              setRunOutRuns(nextRuns);
+
+              /*
+                Your API currently receives runs through
+                runsOffBat. Keep it synchronized for a run-out.
+              */
+              setBallForm((previous) => ({
+                ...previous,
+                runsOffBat: String(nextRuns),
+              }));
+            }}
+          />
+        </label>
+      )}
+
+    {/* Primary fielder */}
+    {ballForm.isWicket &&
+      ["CAUGHT", "STUMPED", "RUN_OUT"].includes(
+        ballForm.wicketType
+      ) && (
+        <label>
+          <span>
+            {ballForm.wicketType === "CAUGHT"
+              ? "Caught By"
+              : ballForm.wicketType === "STUMPED"
+                ? "Stumped By / Wicketkeeper"
+                : "Run Out By"}
+          </span>
+
+          <select
+            value={ballForm.fielderId || ""}
+            onChange={(event) =>
+              setBallForm((previous) => ({
+                ...previous,
+                fielderId: event.target.value,
+              }))
+            }
+          >
+            <option value="">
+              Select fielder
+            </option>
+
+            {(bowlingTeam?.players || []).map(
+              (player) => (
+                <option
+                  key={player.id}
+                  value={player.id}
+                >
+                  {player.name}
+                </option>
+              )
+            )}
+          </select>
+        </label>
+      )}
+
+    {/* Assisted run-out fielder */}
+    {ballForm.isWicket &&
+      ballForm.wicketType === "RUN_OUT" && (
+        <label>
+          <span>
+            Assisted By / Stumps Broken By
+          </span>
+
+          <select
+            value={
+              ballForm.assistantFielderId || ""
+            }
+            onChange={(event) =>
+              setBallForm((previous) => ({
+                ...previous,
+                assistantFielderId:
+                  event.target.value,
+              }))
+            }
+          >
+            <option value="">Optional</option>
+
+            {(bowlingTeam?.players || []).map(
+              (player) => (
+                <option
+                  key={player.id}
+                  value={player.id}
+                >
+                  {player.name}
+                </option>
+              )
+            )}
+          </select>
+        </label>
+      )}
+
+    {/* New batter */}
+    <label>
+      <span>New Batter</span>
+
+      <select
+        value={ballForm.newBatterId || ""}
+        disabled={!ballForm.isWicket}
+        onChange={(event) =>
+          setBallForm((previous) => ({
+            ...previous,
+            newBatterId: event.target.value,
+          }))
+        }
+      >
+        <option value="">
+          Select new batter
+        </option>
+
+        {wicketNewBatterOptions.map((player) => (
+          <option
+            key={player.id}
+            value={player.id}
+          >
+            {player.name}
+          </option>
+        ))}
+      </select>
+    </label>
+
+    {/* Optional note */}
+    <label className="full-span">
+      <span>Note</span>
+
+      <input
+        type="text"
+        value={ballForm.note || ""}
+        onChange={(event) =>
+          setBallForm((previous) => ({
+            ...previous,
+            note: event.target.value,
+          }))
+        }
+        placeholder="Optional delivery note"
+      />
+    </label>
+  </form>
+
+  {/* Sticky form actions */}
+  <div className="scoring-form-sheet-actions">
+    <button
+      type="button"
+      className="btn btn-outline"
+      onClick={closeScoringFormSheet}
+    >
+      Cancel
+    </button>
+
+    <button
+      type="submit"
+      form="scorer-mode-ball-form"
+      className="btn scoring-form-sheet-submit"
+      disabled={
+        isMatchCompleted ||
+        isMatchLocked ||
+        isMatchAbandoned
+      }
+    >
+      🏏 Submit Delivery
+    </button>
+  </div>
+</div>
         </div>
       </section>
     </div>,
