@@ -7808,7 +7808,15 @@ const playerRoleBadge = (row) => {
             <p className="muted">Please select a match to view scoring, scoreboard, and commentary.</p>
           ) : (
             <>
-<div className={scorerMode ? "scorer-mode-shell active" : ""}>
+<div
+  className={`scorer-mode-shell ${
+    scorerMode ? "active" : ""
+  } ${
+    scorerMode && !isMobile
+      ? "desktop-scorer-modal-shell"
+      : ""
+  }`}
+>
 {scorerMode && !isMobile && (
   <div className="scorer-mode-banner mobile-scorer-mode-banner">
     <div className="scorer-mode-banner-copy">
@@ -8344,8 +8352,12 @@ const playerRoleBadge = (row) => {
 >
   {liveMatchCenter && (
     <>
-      {displayScoreboard && !scorerMode && !isMobile && (
-        <div className="match-insights-card scorer-insights-strip mobile-hide-scoring-insights">
+      {displayScoreboard && !isMobile && (
+  <div
+    className={`match-insights-card scorer-insights-strip ${
+      scorerMode ? "desktop-scorer-insights" : ""
+    }`}
+  >
           {matchInsights.resultText && (
             <div className="insight-result">
               <span>🏆 Match Result</span>
@@ -9011,10 +9023,29 @@ const playerRoleBadge = (row) => {
 )}
   </>
 ) : (
-<CollapsibleSection
-  title="🏏 Scoring Form"
-  defaultOpen={false}
+<div
+  className="desktop-scoring-form-anchor"
+  onClick={(event) => {
+    const summary = event.target.closest("summary");
+
+    if (!summary) return;
+
+    window.setTimeout(() => {
+      const formSection = summary.closest(
+        ".desktop-scoring-form-anchor"
+      );
+
+      formSection?.scrollIntoView({
+        behavior: "smooth",
+        block: "start",
+      });
+    }, 80);
+  }}
 >
+  <CollapsibleSection
+    title="🏏 Scoring Form"
+    defaultOpen={false}
+  >
                 <form id="add-ball-form" className="form grid-2" onSubmit={handleAddBall}>
                 <label>
                   <span>Innings</span>
@@ -9262,7 +9293,7 @@ const playerRoleBadge = (row) => {
                   />
                 </label>
 </form>
-              </CollapsibleSection>
+              </CollapsibleSection> </div>
 )
     )}           
     </div>

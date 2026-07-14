@@ -47243,3 +47243,2758 @@ body.cric4all-scorer-open {
     font-size: 10px !important;
   }
 }
+/* =========================================================
+   CRIC4ALL — DESKTOP SCORER MODE COMMAND CENTER
+   Desktop only. Mobile Scorer Mode remains unchanged.
+========================================================= */
+
+@media (min-width: 761px) {
+  /* -------------------------------------------------------
+     REMOVE THE ARTIFICIAL FULL-SCREEN HEIGHT
+  ------------------------------------------------------- */
+
+  .scorer-mode-shell.active {
+    width: 100% !important;
+
+    min-height: 0 !important;
+    height: auto !important;
+
+    padding: 0 !important;
+    margin: 0 !important;
+
+    overflow: visible !important;
+  }
+
+  .scorer-mode-shell.active
+    .scorer-wow-console.scorer-mode-flat {
+    width: 100% !important;
+
+    min-height: 0 !important;
+    height: auto !important;
+
+    margin: 0 !important;
+    padding: 14px !important;
+
+    overflow: visible !important;
+
+    border: 1px solid rgba(56, 189, 248, 0.2) !important;
+    border-radius: 20px !important;
+
+    background:
+      radial-gradient(
+        circle at top right,
+        rgba(14, 165, 233, 0.08),
+        transparent 34%
+      ),
+      linear-gradient(
+        150deg,
+        #071326,
+        #020817
+      ) !important;
+
+    box-shadow:
+      0 18px 42px rgba(2, 6, 23, 0.32),
+      inset 0 1px 0 rgba(255, 255, 255, 0.035) !important;
+  }
+
+  /* -------------------------------------------------------
+     SCORER MODE HEADER
+  ------------------------------------------------------- */
+
+  .scorer-mode-banner {
+    width: 100% !important;
+
+    min-height: 58px !important;
+
+    display: flex !important;
+    align-items: center !important;
+    justify-content: space-between !important;
+    gap: 16px !important;
+
+    margin: 0 0 10px !important;
+    padding: 10px 14px !important;
+
+    border: 1px solid rgba(56, 189, 248, 0.17) !important;
+    border-radius: 15px !important;
+
+    background:
+      linear-gradient(
+        135deg,
+        rgba(13, 42, 68, 0.94),
+        rgba(8, 25, 45, 0.96)
+      ) !important;
+  }
+
+  .scorer-mode-banner-copy {
+    display: flex !important;
+    align-items: center !important;
+    gap: 10px !important;
+  }
+
+  .scorer-mode-banner-copy > span {
+    width: 36px !important;
+    height: 36px !important;
+
+    display: inline-flex !important;
+    align-items: center !important;
+    justify-content: center !important;
+
+    border-radius: 11px !important;
+
+    background: rgba(14, 165, 233, 0.15) !important;
+
+    font-size: 18px !important;
+  }
+
+  .scorer-mode-banner-copy strong {
+    display: block !important;
+
+    color: #ffffff !important;
+
+    font-size: 16px !important;
+    font-weight: 950 !important;
+  }
+
+  .scorer-mode-banner-copy small {
+    display: block !important;
+
+    margin-top: 2px !important;
+
+    color: #94a3b8 !important;
+
+    font-size: 11px !important;
+    font-weight: 750 !important;
+  }
+
+  .scorer-mode-exit-btn {
+    min-width: 78px !important;
+    height: 38px !important;
+
+    padding: 0 13px !important;
+
+    border: 1px solid rgba(248, 113, 113, 0.32) !important;
+    border-radius: 11px !important;
+
+    background: rgba(127, 29, 29, 0.22) !important;
+    color: #fecaca !important;
+
+    font-size: 12px !important;
+    font-weight: 900 !important;
+  }
+
+  /* -------------------------------------------------------
+     LIVE SCORE PANEL
+  ------------------------------------------------------- */
+
+  .scorer-live-hud {
+    position: relative !important;
+    top: auto !important;
+
+    min-height: 0 !important;
+    height: auto !important;
+
+    padding: 14px !important;
+
+    border-radius: 18px !important;
+
+    background:
+      linear-gradient(
+        145deg,
+        rgba(4, 12, 34, 0.97),
+        rgba(4, 16, 38, 0.95)
+      ) !important;
+  }
+
+  .scorer-live-hud-top {
+    display: grid !important;
+    grid-template-columns: auto minmax(0, 1fr) !important;
+    align-items: start !important;
+    gap: 18px !important;
+  }
+
+  .scorer-live-score {
+    min-width: 180px !important;
+  }
+
+  .scorer-live-score > strong {
+    font-size: clamp(46px, 5vw, 68px) !important;
+    line-height: 0.95 !important;
+  }
+
+  .scorer-live-score small {
+    font-size: 13px !important;
+  }
+
+  .scorer-live-status {
+    align-self: center !important;
+
+    font-size: 14px !important;
+    font-weight: 900 !important;
+
+    text-align: right !important;
+  }
+
+  /* -------------------------------------------------------
+     PLAYER CARDS
+  ------------------------------------------------------- */
+
+  .scorer-live-player-grid {
+    display: grid !important;
+    grid-template-columns:
+      repeat(3, minmax(0, 1fr)) !important;
+
+    gap: 10px !important;
+
+    margin-top: 14px !important;
+  }
+
+  .scorer-live-player-card {
+    min-width: 0 !important;
+    min-height: 76px !important;
+
+    padding: 11px 13px !important;
+
+    border-radius: 14px !important;
+
+    background:
+      rgba(15, 27, 48, 0.78) !important;
+  }
+
+  .scorer-live-player-card > span {
+    font-size: 11px !important;
+  }
+
+  .scorer-live-player-card strong {
+    font-size: 17px !important;
+    line-height: 1.2 !important;
+  }
+
+  .scorer-live-player-card b {
+    font-size: 13px !important;
+  }
+
+  /* -------------------------------------------------------
+     CRR / RRR / PROJECTION / PARTNERSHIP
+  ------------------------------------------------------- */
+
+  .scorer-live-metrics {
+    display: grid !important;
+    grid-template-columns:
+      repeat(4, max-content) !important;
+
+    justify-content: start !important;
+    gap: 7px !important;
+
+    margin-top: 12px !important;
+  }
+
+  .scorer-live-metrics > div,
+  .scorer-live-metrics > span {
+    min-height: 34px !important;
+
+    display: inline-flex !important;
+    align-items: center !important;
+    gap: 5px !important;
+
+    padding: 6px 10px !important;
+
+    border-radius: 999px !important;
+
+    background:
+      rgba(30, 41, 59, 0.75) !important;
+
+    font-size: 11px !important;
+  }
+
+  .scorer-live-metrics strong,
+  .scorer-live-metrics b {
+    font-size: 12px !important;
+  }
+
+  /* -------------------------------------------------------
+     TWO-COLUMN DESKTOP WORKSPACE
+  ------------------------------------------------------- */
+
+  .scorer-mode-shell.active
+    .scorer-actions-panel {
+    display: grid !important;
+    grid-template-columns:
+      minmax(280px, 0.9fr)
+      minmax(460px, 1.4fr) !important;
+
+    align-items: start !important;
+    gap: 14px !important;
+
+    min-height: 0 !important;
+    height: auto !important;
+
+    margin-top: 12px !important;
+    padding: 0 !important;
+
+    overflow: visible !important;
+  }
+
+  /*
+    Left side:
+    recent deliveries + status/shortcuts
+  */
+  .scorer-actions-panel
+    .scorer-recent-panel,
+  .scorer-actions-panel
+    .recent-deliveries-panel,
+  .scorer-actions-panel
+    .scorer-recent-section {
+    grid-column: 1 !important;
+
+    min-height: 100% !important;
+
+    padding: 13px !important;
+
+    border: 1px solid rgba(148, 163, 184, 0.13) !important;
+    border-radius: 15px !important;
+
+    background:
+      linear-gradient(
+        145deg,
+        rgba(15, 28, 49, 0.88),
+        rgba(8, 18, 34, 0.9)
+      ) !important;
+  }
+
+  /*
+    Right side:
+    scoring keypad and match actions
+  */
+  .scorer-actions-panel
+    .scoring-button-grid,
+  .scorer-actions-panel
+    .quick-score-grid,
+  .scorer-actions-panel
+    .scorer-button-grid {
+    grid-column: 2 !important;
+
+    display: grid !important;
+    grid-template-columns:
+      repeat(6, minmax(0, 1fr)) !important;
+
+    gap: 8px !important;
+
+    margin: 0 !important;
+  }
+
+  .scorer-actions-panel
+    .scoring-button-grid button,
+  .scorer-actions-panel
+    .quick-score-grid button,
+  .scorer-actions-panel
+    .scorer-button-grid button {
+    min-width: 0 !important;
+    min-height: 48px !important;
+
+    padding: 0 10px !important;
+
+    border-radius: 11px !important;
+
+    font-size: 14px !important;
+    font-weight: 950 !important;
+  }
+
+  /* -------------------------------------------------------
+     FALLBACK FOR YOUR CURRENT FLAT BUTTON LAYOUT
+  ------------------------------------------------------- */
+
+  .scorer-mode-shell.active
+    .scorer-actions-panel {
+    grid-auto-flow: row !important;
+  }
+
+  .scorer-mode-shell.active
+    .scorer-actions-panel
+    > button {
+    min-height: 44px !important;
+
+    padding: 0 13px !important;
+
+    border-radius: 10px !important;
+
+    font-size: 13px !important;
+    font-weight: 900 !important;
+  }
+
+  /*
+    When buttons are direct children, keep them together
+    rather than stretched across the full page.
+  */
+  .scorer-mode-shell.active
+    .scorer-actions-panel
+    > .quick-score-actions,
+  .scorer-mode-shell.active
+    .scorer-actions-panel
+    > .scoring-quick-actions {
+    grid-column: 2 !important;
+
+    display: flex !important;
+    flex-wrap: wrap !important;
+
+    align-items: center !important;
+    gap: 7px !important;
+
+    padding: 12px !important;
+
+    border: 1px solid rgba(148, 163, 184, 0.13) !important;
+    border-radius: 15px !important;
+
+    background:
+      rgba(9, 20, 38, 0.76) !important;
+  }
+
+  /* -------------------------------------------------------
+     RECENT BALLS
+  ------------------------------------------------------- */
+
+  .scorer-mode-shell.active
+    .recent-ball-strip,
+  .scorer-mode-shell.active
+    .scorer-recent-balls,
+  .scorer-mode-shell.active
+    .live-recent-strip {
+    display: flex !important;
+    align-items: center !important;
+    flex-wrap: wrap !important;
+
+    gap: 7px !important;
+
+    margin-top: 10px !important;
+  }
+
+  .scorer-mode-shell.active
+    .recent-ball-strip b,
+  .scorer-mode-shell.active
+    .scorer-recent-balls b,
+  .scorer-mode-shell.active
+    .live-recent-strip b {
+    min-width: 34px !important;
+    height: 34px !important;
+
+    display: inline-flex !important;
+    align-items: center !important;
+    justify-content: center !important;
+
+    padding: 0 7px !important;
+
+    border-radius: 9px !important;
+
+    background:
+      rgba(51, 65, 85, 0.78) !important;
+
+    color: #ffffff !important;
+
+    font-size: 12px !important;
+    font-weight: 950 !important;
+  }
+
+  /* -------------------------------------------------------
+     ACTION ROW: SWAP / UNDO / WK / END INNINGS
+  ------------------------------------------------------- */
+
+  .scorer-mode-shell.active
+    .scorer-secondary-actions,
+  .scorer-mode-shell.active
+    .scorer-match-actions,
+  .scorer-mode-shell.active
+    .scorer-control-row {
+    display: flex !important;
+    align-items: center !important;
+    flex-wrap: wrap !important;
+
+    gap: 8px !important;
+
+    margin-top: 9px !important;
+  }
+
+  .scorer-mode-shell.active
+    .scorer-secondary-actions button,
+  .scorer-mode-shell.active
+    .scorer-match-actions button,
+  .scorer-mode-shell.active
+    .scorer-control-row button {
+    min-height: 42px !important;
+
+    padding: 0 14px !important;
+
+    border-radius: 10px !important;
+
+    font-size: 12px !important;
+    font-weight: 900 !important;
+  }
+
+  /* -------------------------------------------------------
+     KEYBOARD SHORTCUTS
+  ------------------------------------------------------- */
+
+  .scorer-keyboard-help,
+  .keyboard-shortcuts-text {
+    margin: 9px 0 0 !important;
+    padding: 8px 10px !important;
+
+    border-radius: 10px !important;
+
+    background:
+      rgba(15, 23, 42, 0.56) !important;
+
+    color: #94a3b8 !important;
+
+    font-size: 11px !important;
+    line-height: 1.45 !important;
+  }
+
+  /* -------------------------------------------------------
+     SCORING FORM
+  ------------------------------------------------------- */
+
+  .scorer-mode-shell.active
+    .scoring-form-card,
+  .scorer-mode-shell.active
+    .scoring-form,
+  .scorer-mode-shell.active
+    details.scoring-form-card {
+    width: 100% !important;
+
+    min-height: 0 !important;
+
+    margin: 12px 0 0 !important;
+
+    border: 1px solid rgba(148, 163, 184, 0.14) !important;
+    border-radius: 14px !important;
+
+    background:
+      rgba(15, 27, 47, 0.76) !important;
+  }
+
+  .scorer-mode-shell.active
+    details.scoring-form-card
+    > summary {
+    min-height: 48px !important;
+
+    display: flex !important;
+    align-items: center !important;
+    justify-content: space-between !important;
+
+    padding: 10px 14px !important;
+
+    font-size: 13px !important;
+    font-weight: 900 !important;
+  }
+
+  /* -------------------------------------------------------
+     REMOVE BLANK BOTTOM SPACE
+  ------------------------------------------------------- */
+
+  .scoring-console,
+  .mobile-scorer-console-card,
+  .scoring-console .card-body,
+  .scoring-console .card-content {
+    min-height: 0 !important;
+    height: auto !important;
+
+    padding-bottom: 14px !important;
+  }
+
+  .scorer-mode-shell.active::after,
+  .scorer-actions-panel::after,
+  .scorer-wow-console::after {
+    display: none !important;
+    content: none !important;
+  }
+}
+/* =========================================================
+   CRIC4ALL — DESKTOP SCORER MODE MODAL
+   Add this block at the absolute BOTTOM of your stylesheet.
+
+   This changes desktop/laptop only.
+   The existing mobile Scorer Mode remains untouched.
+========================================================= */
+
+@media (min-width: 761px) {
+  /* Lock the dashboard behind the scorer modal. */
+  html:has(.desktop-scorer-modal-shell),
+  body:has(.desktop-scorer-modal-shell) {
+    overflow: hidden !important;
+  }
+
+  /*
+    The existing scorer-mode-shell becomes the modal itself.
+    No scoring JSX or handlers are duplicated or moved.
+  */
+  .desktop-scorer-modal-shell {
+    position: fixed !important;
+    top: 50% !important;
+    left: 50% !important;
+    right: auto !important;
+    bottom: auto !important;
+    z-index: 110000 !important;
+
+    transform: translate(-50%, -50%) !important;
+
+    width: min(1180px, calc(100vw - 64px)) !important;
+    height: auto !important;
+    min-height: 0 !important;
+    max-height: calc(100dvh - 64px) !important;
+
+    display: block !important;
+
+    margin: 0 !important;
+    padding: 12px !important;
+
+    overflow-y: auto !important;
+    overflow-x: hidden !important;
+
+    border: 1px solid rgba(56, 189, 248, 0.24) !important;
+    border-radius: 24px !important;
+
+    background:
+      radial-gradient(
+        circle at 100% 0%,
+        rgba(14, 165, 233, 0.12),
+        transparent 34%
+      ),
+      linear-gradient(
+        155deg,
+        #0d1d33,
+        #050c1c
+      ) !important;
+
+    box-shadow:
+      0 0 0 100vmax rgba(2, 6, 23, 0.76),
+      0 35px 90px rgba(0, 0, 0, 0.62),
+      inset 0 1px 0 rgba(255, 255, 255, 0.04) !important;
+
+    overscroll-behavior: contain;
+    scrollbar-width: thin;
+  }
+
+  /* Remove old full-screen or stretched scorer rules. */
+  .desktop-scorer-modal-shell,
+  .desktop-scorer-modal-shell .scorer-mode-flat,
+  .desktop-scorer-modal-shell .scorer-wow-console,
+  .desktop-scorer-modal-shell .mobile-original-scorer-console,
+  .desktop-scorer-modal-shell .scorer-actions-panel,
+  .desktop-scorer-modal-shell .scoring-form,
+  .desktop-scorer-modal-shell .scoring-form-card {
+    min-height: 0 !important;
+    height: auto !important;
+    max-height: none !important;
+  }
+
+  .desktop-scorer-modal-shell::after,
+  .desktop-scorer-modal-shell
+    .mobile-original-scorer-console::after,
+  .desktop-scorer-modal-shell
+    .scorer-actions-panel::after {
+    display: none !important;
+    content: none !important;
+  }
+
+  /* =======================================================
+     MODAL HEADER
+  ======================================================= */
+
+  .desktop-scorer-modal-shell
+    .scorer-mode-banner {
+    position: sticky !important;
+    top: -12px !important;
+    z-index: 20 !important;
+
+    width: calc(100% + 24px) !important;
+    min-height: 62px !important;
+
+    display: flex !important;
+    align-items: center !important;
+    justify-content: space-between !important;
+    gap: 18px !important;
+
+    margin: -12px -12px 12px !important;
+    padding: 10px 16px !important;
+
+    border: 0 !important;
+    border-bottom:
+      1px solid rgba(148, 163, 184, 0.13) !important;
+    border-radius: 24px 24px 0 0 !important;
+
+    background:
+      linear-gradient(
+        135deg,
+        rgba(13, 42, 68, 0.98),
+        rgba(7, 22, 41, 0.99)
+      ) !important;
+
+    box-shadow:
+      0 8px 22px rgba(2, 6, 23, 0.22) !important;
+  }
+
+  .desktop-scorer-modal-shell
+    .scorer-mode-banner-copy {
+    display: flex !important;
+    align-items: center !important;
+    gap: 11px !important;
+  }
+
+  .desktop-scorer-modal-shell
+    .scorer-mode-banner-copy > span {
+    width: 40px !important;
+    height: 40px !important;
+    flex: 0 0 40px !important;
+
+    display: inline-flex !important;
+    align-items: center !important;
+    justify-content: center !important;
+
+    border-radius: 12px !important;
+
+    background: rgba(14, 165, 233, 0.16) !important;
+
+    font-size: 20px !important;
+  }
+
+  .desktop-scorer-modal-shell
+    .scorer-mode-banner-copy strong {
+    display: block !important;
+
+    color: #ffffff !important;
+
+    font-size: 17px !important;
+    font-weight: 950 !important;
+    line-height: 1.15 !important;
+  }
+
+  .desktop-scorer-modal-shell
+    .scorer-mode-banner-copy small {
+    display: block !important;
+
+    margin-top: 3px !important;
+
+    color: #9babc0 !important;
+
+    font-size: 11px !important;
+    font-weight: 750 !important;
+  }
+
+  .desktop-scorer-modal-shell
+    .scorer-mode-exit-btn {
+    min-width: 82px !important;
+    height: 40px !important;
+
+    padding: 0 14px !important;
+
+    border: 1px solid
+      rgba(248, 113, 113, 0.32) !important;
+    border-radius: 11px !important;
+
+    background:
+      rgba(127, 29, 29, 0.24) !important;
+    color: #fecaca !important;
+
+    font-size: 12px !important;
+    font-weight: 900 !important;
+  }
+
+  .desktop-scorer-modal-shell
+    .scorer-mode-exit-btn:hover {
+    border-color:
+      rgba(248, 113, 113, 0.56) !important;
+
+    background:
+      rgba(153, 27, 27, 0.36) !important;
+  }
+
+  /* =======================================================
+     SCORE CONSOLE
+  ======================================================= */
+
+  .desktop-scorer-modal-shell
+    .mobile-original-scorer-console {
+    width: 100% !important;
+
+    display: grid !important;
+    grid-template-columns:
+      minmax(0, 1fr) !important;
+
+    gap: 10px !important;
+
+    margin: 0 !important;
+    padding: 0 !important;
+
+    overflow: visible !important;
+
+    border: 0 !important;
+    background: transparent !important;
+    box-shadow: none !important;
+  }
+
+  .desktop-scorer-modal-shell
+    .scorer-live-hud {
+    position: relative !important;
+    top: auto !important;
+
+    width: 100% !important;
+    min-height: 0 !important;
+    height: auto !important;
+
+    padding: 16px !important;
+
+    border: 1px solid
+      rgba(56, 189, 248, 0.17) !important;
+    border-radius: 18px !important;
+
+    background:
+      radial-gradient(
+        circle at 100% 0%,
+        rgba(14, 165, 233, 0.08),
+        transparent 34%
+      ),
+      linear-gradient(
+        145deg,
+        rgba(4, 13, 34, 0.98),
+        rgba(5, 17, 39, 0.96)
+      ) !important;
+
+    box-shadow:
+      inset 0 1px 0
+      rgba(255, 255, 255, 0.025) !important;
+  }
+
+  .desktop-scorer-modal-shell
+    .scorer-hud-main {
+    display: grid !important;
+    grid-template-columns:
+      auto minmax(220px, 1fr) !important;
+
+    align-items: start !important;
+    gap: 20px !important;
+  }
+
+  .desktop-scorer-modal-shell
+    .scorer-hud-main > div:first-child {
+    min-width: 180px !important;
+  }
+
+  .desktop-scorer-modal-shell
+    .scorer-hud-main > div:first-child > strong {
+    display: block !important;
+
+    color: #ffffff !important;
+
+    font-size: clamp(48px, 4.5vw, 66px) !important;
+    font-weight: 1000 !important;
+    line-height: 0.92 !important;
+  }
+
+  .desktop-scorer-modal-shell
+    .scorer-hud-main > div:first-child > small {
+    display: block !important;
+
+    margin-top: 5px !important;
+
+    font-size: 13px !important;
+    font-weight: 800 !important;
+  }
+
+  .desktop-scorer-modal-shell
+    .scorer-hud-status {
+    align-self: center !important;
+
+    color: #fde047 !important;
+
+    font-size: 14px !important;
+    font-weight: 900 !important;
+    line-height: 1.35 !important;
+    text-align: right !important;
+  }
+
+  /* Players */
+  .desktop-scorer-modal-shell
+    .scorer-hud-players {
+    display: grid !important;
+    grid-template-columns:
+      repeat(3, minmax(0, 1fr)) !important;
+
+    gap: 10px !important;
+
+    margin-top: 14px !important;
+  }
+
+  .desktop-scorer-modal-shell
+    .scorer-hud-players > div {
+    min-width: 0 !important;
+    min-height: 78px !important;
+
+    display: grid !important;
+    grid-template-columns:
+      minmax(0, 1fr) auto !important;
+    align-content: center !important;
+
+    gap: 4px 10px !important;
+
+    padding: 11px 13px !important;
+
+    border-radius: 14px !important;
+
+    background:
+      rgba(15, 27, 48, 0.8) !important;
+  }
+
+  .desktop-scorer-modal-shell
+    .scorer-hud-players > div > span {
+    grid-column: 1 / -1 !important;
+
+    font-size: 11px !important;
+    font-weight: 900 !important;
+  }
+
+  .desktop-scorer-modal-shell
+    .scorer-hud-players > div > strong {
+    min-width: 0 !important;
+
+    overflow: hidden !important;
+
+    color: #ffffff !important;
+
+    font-size: 18px !important;
+    font-weight: 950 !important;
+
+    text-overflow: ellipsis !important;
+    white-space: nowrap !important;
+  }
+
+  .desktop-scorer-modal-shell
+    .scorer-hud-players > div > b {
+    color: #fcd34d !important;
+
+    font-size: 13px !important;
+    font-weight: 950 !important;
+    white-space: nowrap !important;
+  }
+
+  /* Metrics */
+  .desktop-scorer-modal-shell
+    .scorer-hud-metrics {
+    display: flex !important;
+    align-items: center !important;
+    flex-wrap: wrap !important;
+
+    gap: 7px !important;
+
+    margin-top: 12px !important;
+  }
+
+  .desktop-scorer-modal-shell
+    .scorer-hud-metrics > span {
+    min-height: 34px !important;
+
+    display: inline-flex !important;
+    align-items: center !important;
+    gap: 5px !important;
+
+    padding: 6px 10px !important;
+
+    border-radius: 999px !important;
+
+    background:
+      rgba(30, 41, 59, 0.76) !important;
+
+    font-size: 11px !important;
+    font-weight: 850 !important;
+  }
+
+  .desktop-scorer-modal-shell
+    .scorer-hud-metrics b {
+    font-size: 12px !important;
+    font-weight: 950 !important;
+  }
+
+  /* =======================================================
+     STATUS + RECENT DELIVERIES
+  ======================================================= */
+
+  .desktop-scorer-modal-shell
+    .normal-mobile-delivery-status {
+    margin: 0 !important;
+    padding: 8px 10px !important;
+
+    border: 1px solid
+      rgba(52, 211, 153, 0.14) !important;
+    border-radius: 11px !important;
+
+    background:
+      rgba(6, 78, 59, 0.11) !important;
+
+    font-size: 12px !important;
+    font-weight: 800 !important;
+  }
+
+  .desktop-scorer-modal-shell
+    .scorer-recent-wow {
+    min-height: 0 !important;
+
+    display: grid !important;
+    grid-template-columns:
+      95px minmax(0, 1fr) !important;
+
+    align-items: center !important;
+    gap: 10px !important;
+
+    margin: 0 !important;
+    padding: 11px 13px !important;
+
+    border: 1px solid
+      rgba(148, 163, 184, 0.13) !important;
+    border-radius: 14px !important;
+
+    background:
+      rgba(15, 27, 47, 0.72) !important;
+  }
+
+  .desktop-scorer-modal-shell
+    .scorer-recent-wow > span {
+    font-size: 11px !important;
+    font-weight: 950 !important;
+    text-transform: uppercase !important;
+  }
+
+  .desktop-scorer-modal-shell
+    .recent-ball-strip {
+    display: flex !important;
+    align-items: center !important;
+    flex-wrap: wrap !important;
+
+    gap: 6px !important;
+
+    min-width: 0 !important;
+  }
+
+  .desktop-scorer-modal-shell
+    .recent-ball-strip .ball-chip {
+    min-width: 32px !important;
+    height: 32px !important;
+
+    display: inline-flex !important;
+    align-items: center !important;
+    justify-content: center !important;
+
+    padding: 0 6px !important;
+
+    border-radius: 8px !important;
+
+    font-size: 11px !important;
+    font-weight: 950 !important;
+  }
+
+  /* =======================================================
+     QUICK SCORING CONTROLS
+  ======================================================= */
+
+  .desktop-scorer-modal-shell
+    .scorer-actions-panel {
+    width: 100% !important;
+
+    display: grid !important;
+    grid-template-columns:
+      minmax(0, 1fr) auto !important;
+
+    align-items: center !important;
+    gap: 12px !important;
+
+    margin: 0 !important;
+    padding: 12px !important;
+
+    overflow: visible !important;
+
+    border: 1px solid
+      rgba(148, 163, 184, 0.13) !important;
+    border-radius: 15px !important;
+
+    background:
+      linear-gradient(
+        145deg,
+        rgba(12, 25, 45, 0.88),
+        rgba(7, 17, 32, 0.9)
+      ) !important;
+  }
+
+  .desktop-scorer-modal-shell
+    .quick-actions {
+    display: grid !important;
+    grid-template-columns:
+      repeat(8, minmax(46px, 1fr)) !important;
+
+    gap: 7px !important;
+
+    margin: 0 !important;
+  }
+
+  .desktop-scorer-modal-shell
+    .quick-actions button {
+    min-width: 0 !important;
+    min-height: 44px !important;
+
+    padding: 0 9px !important;
+
+    border-radius: 10px !important;
+
+    font-size: 13px !important;
+    font-weight: 950 !important;
+  }
+
+  .desktop-scorer-modal-shell
+    .mobile-secondary-actions {
+    display: flex !important;
+    align-items: center !important;
+    justify-content: flex-end !important;
+    flex-wrap: wrap !important;
+
+    gap: 7px !important;
+
+    margin: 0 !important;
+  }
+
+  .desktop-scorer-modal-shell
+    .mobile-secondary-actions button {
+    min-height: 44px !important;
+
+    padding: 0 13px !important;
+
+    border-radius: 10px !important;
+
+    font-size: 12px !important;
+    font-weight: 900 !important;
+  }
+
+  .desktop-scorer-modal-shell
+    .action-end-innings small {
+    display: none !important;
+  }
+
+  /* Keyboard shortcuts */
+  .desktop-scorer-modal-shell
+    .mobile-original-scorer-console
+    > :last-child {
+    margin-bottom: 0 !important;
+  }
+
+  /* =======================================================
+     SCORING FORM
+  ======================================================= */
+
+  .desktop-scorer-modal-shell
+    .collapsible-section,
+  .desktop-scorer-modal-shell
+    details.scoring-form-card,
+  .desktop-scorer-modal-shell
+    .scoring-form-card {
+    width: 100% !important;
+
+    min-height: 0 !important;
+    height: auto !important;
+
+    margin: 0 !important;
+
+    border: 1px solid
+      rgba(148, 163, 184, 0.14) !important;
+    border-radius: 14px !important;
+
+    background:
+      rgba(15, 27, 47, 0.78) !important;
+  }
+
+  .desktop-scorer-modal-shell
+    summary {
+    min-height: 48px !important;
+
+    padding: 10px 14px !important;
+
+    font-size: 13px !important;
+    font-weight: 900 !important;
+  }
+
+  /*
+    Prevent the surrounding Advanced Scoring card from
+    reserving a full viewport-height blank area.
+  */
+  .scoring-console,
+  .mobile-scorer-console-card,
+  .scoring-console .card-body,
+  .scoring-console .card-content {
+    min-height: 0 !important;
+    height: auto !important;
+  }
+}
+
+/* Medium laptops */
+@media (min-width: 761px) and (max-width: 1100px) {
+  .desktop-scorer-modal-shell {
+    width: calc(100vw - 36px) !important;
+    max-height: calc(100dvh - 36px) !important;
+  }
+
+  .desktop-scorer-modal-shell
+    .scorer-actions-panel {
+    grid-template-columns: 1fr !important;
+  }
+
+  .desktop-scorer-modal-shell
+    .quick-actions {
+    grid-template-columns:
+      repeat(6, minmax(46px, 1fr)) !important;
+  }
+
+  .desktop-scorer-modal-shell
+    .mobile-secondary-actions {
+    justify-content: flex-start !important;
+  }
+}
+
+
+/* =========================================================
+   FINAL DESKTOP WIDTH CORRECTION
+   Keeps Scorer Mode centered and prevents full-width stretch.
+========================================================= */
+
+@media (min-width: 761px) {
+  .desktop-scorer-modal-shell {
+    inset: auto !important;
+
+    top: 50% !important;
+    left: 50% !important;
+    right: auto !important;
+    bottom: auto !important;
+
+    width: min(1080px, 90vw) !important;
+    max-width: 1080px !important;
+    min-width: 760px !important;
+
+    max-height: min(820px, calc(100dvh - 56px)) !important;
+
+    transform: translate(-50%, -50%) !important;
+
+    box-sizing: border-box !important;
+  }
+
+  /*
+    Prevent inherited width rules from stretching the modal.
+  */
+  .desktop-scorer-modal-shell.scorer-mode-shell,
+  .desktop-scorer-modal-shell.scorer-mode-shell.active {
+    width: min(1080px, 90vw) !important;
+    max-width: 1080px !important;
+    min-width: 760px !important;
+
+    margin-inline: 0 !important;
+  }
+
+  .desktop-scorer-modal-shell
+    .mobile-original-scorer-console,
+  .desktop-scorer-modal-shell
+    .scorer-live-hud,
+  .desktop-scorer-modal-shell
+    .scorer-actions-panel,
+  .desktop-scorer-modal-shell
+    .scorer-recent-wow {
+    max-width: 100% !important;
+    box-sizing: border-box !important;
+  }
+
+  /*
+    Keep the header inside the rounded modal instead of visually
+    appearing as a full-width page bar.
+  */
+  .desktop-scorer-modal-shell
+    .scorer-mode-banner {
+    width: auto !important;
+
+    margin:
+      -12px
+      -12px
+      12px !important;
+  }
+
+  /*
+    Use a balanced desktop layout so information is not stretched
+    across an excessive horizontal distance.
+  */
+  .desktop-scorer-modal-shell
+    .scorer-hud-main {
+    grid-template-columns:
+      minmax(210px, 0.34fr)
+      minmax(0, 0.66fr) !important;
+  }
+
+  .desktop-scorer-modal-shell
+    .scorer-hud-players {
+    grid-template-columns:
+      repeat(3, minmax(0, 1fr)) !important;
+  }
+
+  .desktop-scorer-modal-shell
+    .scorer-actions-panel {
+    grid-template-columns:
+      minmax(0, 1fr)
+      auto !important;
+  }
+
+  .desktop-scorer-modal-shell
+    .quick-actions {
+    grid-template-columns:
+      repeat(6, minmax(58px, 1fr)) !important;
+  }
+}
+
+/* Smaller laptops */
+@media (min-width: 761px) and (max-width: 900px) {
+  .desktop-scorer-modal-shell,
+  .desktop-scorer-modal-shell.scorer-mode-shell,
+  .desktop-scorer-modal-shell.scorer-mode-shell.active {
+    width: calc(100vw - 32px) !important;
+    min-width: 0 !important;
+    max-width: none !important;
+  }
+
+  .desktop-scorer-modal-shell
+    .scorer-actions-panel {
+    grid-template-columns: 1fr !important;
+  }
+
+  .desktop-scorer-modal-shell
+    .quick-actions {
+    grid-template-columns:
+      repeat(6, minmax(48px, 1fr)) !important;
+  }
+}
+/* =========================================================
+   DESKTOP SCORER — REAL BACKDROP AND LARGER MODAL
+========================================================= */
+
+@media (min-width: 761px) {
+  .desktop-scorer-modal-shell::before {
+    content: "";
+
+    position: fixed;
+    inset: 0;
+    z-index: -1;
+
+    background: rgba(2, 6, 23, 0.82);
+
+    backdrop-filter: blur(12px);
+    -webkit-backdrop-filter: blur(12px);
+
+    pointer-events: auto;
+  }
+
+  .desktop-scorer-modal-shell {
+    width: min(1240px, 94vw) !important;
+    max-width: 1240px !important;
+
+    max-height: calc(100dvh - 36px) !important;
+
+    padding: 14px !important;
+
+    border-radius: 25px !important;
+
+    /*
+      Remove the 100vmax shadow because the real ::before
+      backdrop now covers the underlying dashboard.
+    */
+    box-shadow:
+      0 36px 95px rgba(0, 0, 0, 0.64),
+      inset 0 1px 0 rgba(255, 255, 255, 0.045) !important;
+  }
+}
+@media (min-width: 761px) {
+  body:has(.desktop-scorer-modal-shell)
+    > *:not(#__next):not(script) {
+    pointer-events: none;
+  }
+
+  .desktop-scorer-modal-shell,
+  .desktop-scorer-modal-shell * {
+    pointer-events: auto;
+  }
+}
+@media (min-width: 761px) {
+  .desktop-scorer-modal-shell
+    .desktop-scorer-insights {
+    order: -10;
+
+    display: grid !important;
+    grid-template-columns:
+      minmax(0, 1.6fr)
+      minmax(180px, 0.7fr)
+      minmax(220px, 0.9fr) !important;
+
+    gap: 10px !important;
+
+    width: 100% !important;
+
+    margin: 0 0 11px !important;
+    padding: 0 !important;
+
+    border: 0 !important;
+    background: transparent !important;
+  }
+
+  .desktop-scorer-modal-shell
+    .desktop-scorer-insights
+    > div {
+    min-height: 68px;
+
+    display: flex;
+    flex-direction: column;
+    justify-content: center;
+
+    padding: 11px 13px;
+
+    border: 1px solid
+      rgba(148, 163, 184, 0.14);
+
+    border-radius: 13px;
+
+    background:
+      linear-gradient(
+        145deg,
+        rgba(18, 38, 65, 0.92),
+        rgba(10, 23, 42, 0.94)
+      );
+  }
+
+  .desktop-scorer-modal-shell
+    .desktop-scorer-insights span {
+    color: #9fb0c5;
+
+    font-size: 10px !important;
+    font-weight: 900 !important;
+    text-transform: uppercase;
+  }
+
+  .desktop-scorer-modal-shell
+    .desktop-scorer-insights strong {
+    margin-top: 5px;
+
+    color: #ffffff;
+
+    font-size: 16px !important;
+    font-weight: 950 !important;
+    line-height: 1.25;
+  }
+
+  .desktop-scorer-modal-shell
+    .desktop-scorer-insights
+    .insight-result {
+    border-color:
+      rgba(250, 204, 21, 0.22);
+  }
+
+  .desktop-scorer-modal-shell
+    .desktop-scorer-insights
+    .insight-result strong {
+    color: #fde68a;
+  }
+}
+@media (min-width: 761px) {
+  .desktop-scorer-modal-shell
+    .scorer-live-hud {
+    padding: 18px !important;
+  }
+
+  .desktop-scorer-modal-shell
+    .scorer-hud-main
+    > div:first-child
+    > strong {
+    font-size: clamp(
+      54px,
+      5vw,
+      72px
+    ) !important;
+  }
+
+  .desktop-scorer-modal-shell
+    .scorer-hud-players
+    > div {
+    min-height: 82px !important;
+  }
+
+  .desktop-scorer-modal-shell
+    .scorer-hud-players
+    > div
+    > strong {
+    font-size: 19px !important;
+  }
+}
+@media (min-width: 761px) {
+  .desktop-scorer-modal-shell
+    .mobile-original-scorer-console {
+    gap: 9px !important;
+  }
+
+  .desktop-scorer-modal-shell
+    .scorer-actions-panel {
+    margin-top: 2px !important;
+  }
+
+  .desktop-scorer-modal-shell
+    .collapsible-section {
+    margin-top: 2px !important;
+  }
+}
+/* =========================================================
+   CRIC4ALL — DESKTOP SCORER MODE MODAL
+   Add this block at the absolute BOTTOM of your stylesheet.
+
+   This changes desktop/laptop only.
+   The existing mobile Scorer Mode remains untouched.
+========================================================= */
+
+@media (min-width: 761px) {
+  /* Lock the dashboard behind the scorer modal. */
+  html:has(.desktop-scorer-modal-shell),
+  body:has(.desktop-scorer-modal-shell) {
+    overflow: hidden !important;
+  }
+
+  /*
+    The existing scorer-mode-shell becomes the modal itself.
+    No scoring JSX or handlers are duplicated or moved.
+  */
+  .desktop-scorer-modal-shell {
+    position: fixed !important;
+    top: 50% !important;
+    left: 50% !important;
+    right: auto !important;
+    bottom: auto !important;
+    z-index: 110000 !important;
+
+    transform: translate(-50%, -50%) !important;
+
+    width: min(1180px, calc(100vw - 64px)) !important;
+    height: auto !important;
+    min-height: 0 !important;
+    max-height: calc(100dvh - 64px) !important;
+
+    display: block !important;
+
+    margin: 0 !important;
+    padding: 12px !important;
+
+    overflow-y: auto !important;
+    overflow-x: hidden !important;
+
+    border: 1px solid rgba(56, 189, 248, 0.24) !important;
+    border-radius: 24px !important;
+
+    background:
+      radial-gradient(
+        circle at 100% 0%,
+        rgba(14, 165, 233, 0.12),
+        transparent 34%
+      ),
+      linear-gradient(
+        155deg,
+        #0d1d33,
+        #050c1c
+      ) !important;
+
+    box-shadow:
+      0 0 0 100vmax rgba(2, 6, 23, 0.76),
+      0 35px 90px rgba(0, 0, 0, 0.62),
+      inset 0 1px 0 rgba(255, 255, 255, 0.04) !important;
+
+    overscroll-behavior: contain;
+    scrollbar-width: thin;
+  }
+
+  /* Remove old full-screen or stretched scorer rules. */
+  .desktop-scorer-modal-shell,
+  .desktop-scorer-modal-shell .scorer-mode-flat,
+  .desktop-scorer-modal-shell .scorer-wow-console,
+  .desktop-scorer-modal-shell .mobile-original-scorer-console,
+  .desktop-scorer-modal-shell .scorer-actions-panel,
+  .desktop-scorer-modal-shell .scoring-form,
+  .desktop-scorer-modal-shell .scoring-form-card {
+    min-height: 0 !important;
+    height: auto !important;
+    max-height: none !important;
+  }
+
+  .desktop-scorer-modal-shell::after,
+  .desktop-scorer-modal-shell
+    .mobile-original-scorer-console::after,
+  .desktop-scorer-modal-shell
+    .scorer-actions-panel::after {
+    display: none !important;
+    content: none !important;
+  }
+
+  /* =======================================================
+     MODAL HEADER
+  ======================================================= */
+
+  .desktop-scorer-modal-shell
+    .scorer-mode-banner {
+    position: sticky !important;
+    top: -12px !important;
+    z-index: 20 !important;
+
+    width: calc(100% + 24px) !important;
+    min-height: 62px !important;
+
+    display: flex !important;
+    align-items: center !important;
+    justify-content: space-between !important;
+    gap: 18px !important;
+
+    margin: -12px -12px 12px !important;
+    padding: 10px 16px !important;
+
+    border: 0 !important;
+    border-bottom:
+      1px solid rgba(148, 163, 184, 0.13) !important;
+    border-radius: 24px 24px 0 0 !important;
+
+    background:
+      linear-gradient(
+        135deg,
+        rgba(13, 42, 68, 0.98),
+        rgba(7, 22, 41, 0.99)
+      ) !important;
+
+    box-shadow:
+      0 8px 22px rgba(2, 6, 23, 0.22) !important;
+  }
+
+  .desktop-scorer-modal-shell
+    .scorer-mode-banner-copy {
+    display: flex !important;
+    align-items: center !important;
+    gap: 11px !important;
+  }
+
+  .desktop-scorer-modal-shell
+    .scorer-mode-banner-copy > span {
+    width: 40px !important;
+    height: 40px !important;
+    flex: 0 0 40px !important;
+
+    display: inline-flex !important;
+    align-items: center !important;
+    justify-content: center !important;
+
+    border-radius: 12px !important;
+
+    background: rgba(14, 165, 233, 0.16) !important;
+
+    font-size: 20px !important;
+  }
+
+  .desktop-scorer-modal-shell
+    .scorer-mode-banner-copy strong {
+    display: block !important;
+
+    color: #ffffff !important;
+
+    font-size: 17px !important;
+    font-weight: 950 !important;
+    line-height: 1.15 !important;
+  }
+
+  .desktop-scorer-modal-shell
+    .scorer-mode-banner-copy small {
+    display: block !important;
+
+    margin-top: 3px !important;
+
+    color: #9babc0 !important;
+
+    font-size: 11px !important;
+    font-weight: 750 !important;
+  }
+
+  .desktop-scorer-modal-shell
+    .scorer-mode-exit-btn {
+    min-width: 82px !important;
+    height: 40px !important;
+
+    padding: 0 14px !important;
+
+    border: 1px solid
+      rgba(248, 113, 113, 0.32) !important;
+    border-radius: 11px !important;
+
+    background:
+      rgba(127, 29, 29, 0.24) !important;
+    color: #fecaca !important;
+
+    font-size: 12px !important;
+    font-weight: 900 !important;
+  }
+
+  .desktop-scorer-modal-shell
+    .scorer-mode-exit-btn:hover {
+    border-color:
+      rgba(248, 113, 113, 0.56) !important;
+
+    background:
+      rgba(153, 27, 27, 0.36) !important;
+  }
+
+  /* =======================================================
+     SCORE CONSOLE
+  ======================================================= */
+
+  .desktop-scorer-modal-shell
+    .mobile-original-scorer-console {
+    width: 100% !important;
+
+    display: grid !important;
+    grid-template-columns:
+      minmax(0, 1fr) !important;
+
+    gap: 10px !important;
+
+    margin: 0 !important;
+    padding: 0 !important;
+
+    overflow: visible !important;
+
+    border: 0 !important;
+    background: transparent !important;
+    box-shadow: none !important;
+  }
+
+  .desktop-scorer-modal-shell
+    .scorer-live-hud {
+    position: relative !important;
+    top: auto !important;
+
+    width: 100% !important;
+    min-height: 0 !important;
+    height: auto !important;
+
+    padding: 16px !important;
+
+    border: 1px solid
+      rgba(56, 189, 248, 0.17) !important;
+    border-radius: 18px !important;
+
+    background:
+      radial-gradient(
+        circle at 100% 0%,
+        rgba(14, 165, 233, 0.08),
+        transparent 34%
+      ),
+      linear-gradient(
+        145deg,
+        rgba(4, 13, 34, 0.98),
+        rgba(5, 17, 39, 0.96)
+      ) !important;
+
+    box-shadow:
+      inset 0 1px 0
+      rgba(255, 255, 255, 0.025) !important;
+  }
+
+  .desktop-scorer-modal-shell
+    .scorer-hud-main {
+    display: grid !important;
+    grid-template-columns:
+      auto minmax(220px, 1fr) !important;
+
+    align-items: start !important;
+    gap: 20px !important;
+  }
+
+  .desktop-scorer-modal-shell
+    .scorer-hud-main > div:first-child {
+    min-width: 180px !important;
+  }
+
+  .desktop-scorer-modal-shell
+    .scorer-hud-main > div:first-child > strong {
+    display: block !important;
+
+    color: #ffffff !important;
+
+    font-size: clamp(48px, 4.5vw, 66px) !important;
+    font-weight: 1000 !important;
+    line-height: 0.92 !important;
+  }
+
+  .desktop-scorer-modal-shell
+    .scorer-hud-main > div:first-child > small {
+    display: block !important;
+
+    margin-top: 5px !important;
+
+    font-size: 13px !important;
+    font-weight: 800 !important;
+  }
+
+  .desktop-scorer-modal-shell
+    .scorer-hud-status {
+    align-self: center !important;
+
+    color: #fde047 !important;
+
+    font-size: 14px !important;
+    font-weight: 900 !important;
+    line-height: 1.35 !important;
+    text-align: right !important;
+  }
+
+  /* Players */
+  .desktop-scorer-modal-shell
+    .scorer-hud-players {
+    display: grid !important;
+    grid-template-columns:
+      repeat(3, minmax(0, 1fr)) !important;
+
+    gap: 10px !important;
+
+    margin-top: 14px !important;
+  }
+
+  .desktop-scorer-modal-shell
+    .scorer-hud-players > div {
+    min-width: 0 !important;
+    min-height: 78px !important;
+
+    display: grid !important;
+    grid-template-columns:
+      minmax(0, 1fr) auto !important;
+    align-content: center !important;
+
+    gap: 4px 10px !important;
+
+    padding: 11px 13px !important;
+
+    border-radius: 14px !important;
+
+    background:
+      rgba(15, 27, 48, 0.8) !important;
+  }
+
+  .desktop-scorer-modal-shell
+    .scorer-hud-players > div > span {
+    grid-column: 1 / -1 !important;
+
+    font-size: 11px !important;
+    font-weight: 900 !important;
+  }
+
+  .desktop-scorer-modal-shell
+    .scorer-hud-players > div > strong {
+    min-width: 0 !important;
+
+    overflow: hidden !important;
+
+    color: #ffffff !important;
+
+    font-size: 18px !important;
+    font-weight: 950 !important;
+
+    text-overflow: ellipsis !important;
+    white-space: nowrap !important;
+  }
+
+  .desktop-scorer-modal-shell
+    .scorer-hud-players > div > b {
+    color: #fcd34d !important;
+
+    font-size: 13px !important;
+    font-weight: 950 !important;
+    white-space: nowrap !important;
+  }
+
+  /* Metrics */
+  .desktop-scorer-modal-shell
+    .scorer-hud-metrics {
+    display: flex !important;
+    align-items: center !important;
+    flex-wrap: wrap !important;
+
+    gap: 7px !important;
+
+    margin-top: 12px !important;
+  }
+
+  .desktop-scorer-modal-shell
+    .scorer-hud-metrics > span {
+    min-height: 34px !important;
+
+    display: inline-flex !important;
+    align-items: center !important;
+    gap: 5px !important;
+
+    padding: 6px 10px !important;
+
+    border-radius: 999px !important;
+
+    background:
+      rgba(30, 41, 59, 0.76) !important;
+
+    font-size: 11px !important;
+    font-weight: 850 !important;
+  }
+
+  .desktop-scorer-modal-shell
+    .scorer-hud-metrics b {
+    font-size: 12px !important;
+    font-weight: 950 !important;
+  }
+
+  /* =======================================================
+     STATUS + RECENT DELIVERIES
+  ======================================================= */
+
+  .desktop-scorer-modal-shell
+    .normal-mobile-delivery-status {
+    margin: 0 !important;
+    padding: 8px 10px !important;
+
+    border: 1px solid
+      rgba(52, 211, 153, 0.14) !important;
+    border-radius: 11px !important;
+
+    background:
+      rgba(6, 78, 59, 0.11) !important;
+
+    font-size: 12px !important;
+    font-weight: 800 !important;
+  }
+
+  .desktop-scorer-modal-shell
+    .scorer-recent-wow {
+    min-height: 0 !important;
+
+    display: grid !important;
+    grid-template-columns:
+      95px minmax(0, 1fr) !important;
+
+    align-items: center !important;
+    gap: 10px !important;
+
+    margin: 0 !important;
+    padding: 11px 13px !important;
+
+    border: 1px solid
+      rgba(148, 163, 184, 0.13) !important;
+    border-radius: 14px !important;
+
+    background:
+      rgba(15, 27, 47, 0.72) !important;
+  }
+
+  .desktop-scorer-modal-shell
+    .scorer-recent-wow > span {
+    font-size: 11px !important;
+    font-weight: 950 !important;
+    text-transform: uppercase !important;
+  }
+
+  .desktop-scorer-modal-shell
+    .recent-ball-strip {
+    display: flex !important;
+    align-items: center !important;
+    flex-wrap: wrap !important;
+
+    gap: 6px !important;
+
+    min-width: 0 !important;
+  }
+
+  .desktop-scorer-modal-shell
+    .recent-ball-strip .ball-chip {
+    min-width: 32px !important;
+    height: 32px !important;
+
+    display: inline-flex !important;
+    align-items: center !important;
+    justify-content: center !important;
+
+    padding: 0 6px !important;
+
+    border-radius: 8px !important;
+
+    font-size: 11px !important;
+    font-weight: 950 !important;
+  }
+
+  /* =======================================================
+     QUICK SCORING CONTROLS
+  ======================================================= */
+
+  .desktop-scorer-modal-shell
+    .scorer-actions-panel {
+    width: 100% !important;
+
+    display: grid !important;
+    grid-template-columns:
+      minmax(0, 1fr) auto !important;
+
+    align-items: center !important;
+    gap: 12px !important;
+
+    margin: 0 !important;
+    padding: 12px !important;
+
+    overflow: visible !important;
+
+    border: 1px solid
+      rgba(148, 163, 184, 0.13) !important;
+    border-radius: 15px !important;
+
+    background:
+      linear-gradient(
+        145deg,
+        rgba(12, 25, 45, 0.88),
+        rgba(7, 17, 32, 0.9)
+      ) !important;
+  }
+
+  .desktop-scorer-modal-shell
+    .quick-actions {
+    display: grid !important;
+    grid-template-columns:
+      repeat(8, minmax(46px, 1fr)) !important;
+
+    gap: 7px !important;
+
+    margin: 0 !important;
+  }
+
+  .desktop-scorer-modal-shell
+    .quick-actions button {
+    min-width: 0 !important;
+    min-height: 44px !important;
+
+    padding: 0 9px !important;
+
+    border-radius: 10px !important;
+
+    font-size: 13px !important;
+    font-weight: 950 !important;
+  }
+
+  .desktop-scorer-modal-shell
+    .mobile-secondary-actions {
+    display: flex !important;
+    align-items: center !important;
+    justify-content: flex-end !important;
+    flex-wrap: wrap !important;
+
+    gap: 7px !important;
+
+    margin: 0 !important;
+  }
+
+  .desktop-scorer-modal-shell
+    .mobile-secondary-actions button {
+    min-height: 44px !important;
+
+    padding: 0 13px !important;
+
+    border-radius: 10px !important;
+
+    font-size: 12px !important;
+    font-weight: 900 !important;
+  }
+
+  .desktop-scorer-modal-shell
+    .action-end-innings small {
+    display: none !important;
+  }
+
+  /* Keyboard shortcuts */
+  .desktop-scorer-modal-shell
+    .mobile-original-scorer-console
+    > :last-child {
+    margin-bottom: 0 !important;
+  }
+
+  /* =======================================================
+     SCORING FORM
+  ======================================================= */
+
+  .desktop-scorer-modal-shell
+    .collapsible-section,
+  .desktop-scorer-modal-shell
+    details.scoring-form-card,
+  .desktop-scorer-modal-shell
+    .scoring-form-card {
+    width: 100% !important;
+
+    min-height: 0 !important;
+    height: auto !important;
+
+    margin: 0 !important;
+
+    border: 1px solid
+      rgba(148, 163, 184, 0.14) !important;
+    border-radius: 14px !important;
+
+    background:
+      rgba(15, 27, 47, 0.78) !important;
+  }
+
+  .desktop-scorer-modal-shell
+    summary {
+    min-height: 48px !important;
+
+    padding: 10px 14px !important;
+
+    font-size: 13px !important;
+    font-weight: 900 !important;
+  }
+
+  /*
+    Prevent the surrounding Advanced Scoring card from
+    reserving a full viewport-height blank area.
+  */
+  .scoring-console,
+  .mobile-scorer-console-card,
+  .scoring-console .card-body,
+  .scoring-console .card-content {
+    min-height: 0 !important;
+    height: auto !important;
+  }
+}
+
+/* Medium laptops */
+@media (min-width: 761px) and (max-width: 1100px) {
+  .desktop-scorer-modal-shell {
+    width: calc(100vw - 36px) !important;
+    max-height: calc(100dvh - 36px) !important;
+  }
+
+  .desktop-scorer-modal-shell
+    .scorer-actions-panel {
+    grid-template-columns: 1fr !important;
+  }
+
+  .desktop-scorer-modal-shell
+    .quick-actions {
+    grid-template-columns:
+      repeat(6, minmax(46px, 1fr)) !important;
+  }
+
+  .desktop-scorer-modal-shell
+    .mobile-secondary-actions {
+    justify-content: flex-start !important;
+  }
+}
+
+
+/* =========================================================
+   FINAL DESKTOP WIDTH CORRECTION
+   Keeps Scorer Mode centered and prevents full-width stretch.
+========================================================= */
+
+@media (min-width: 761px) {
+  .desktop-scorer-modal-shell {
+    inset: auto !important;
+
+    top: 50% !important;
+    left: 50% !important;
+    right: auto !important;
+    bottom: auto !important;
+
+    width: min(1080px, 90vw) !important;
+    max-width: 1080px !important;
+    min-width: 760px !important;
+
+    max-height: min(820px, calc(100dvh - 56px)) !important;
+
+    transform: translate(-50%, -50%) !important;
+
+    box-sizing: border-box !important;
+  }
+
+  /*
+    Prevent inherited width rules from stretching the modal.
+  */
+  .desktop-scorer-modal-shell.scorer-mode-shell,
+  .desktop-scorer-modal-shell.scorer-mode-shell.active {
+    width: min(1080px, 90vw) !important;
+    max-width: 1080px !important;
+    min-width: 760px !important;
+
+    margin-inline: 0 !important;
+  }
+
+  .desktop-scorer-modal-shell
+    .mobile-original-scorer-console,
+  .desktop-scorer-modal-shell
+    .scorer-live-hud,
+  .desktop-scorer-modal-shell
+    .scorer-actions-panel,
+  .desktop-scorer-modal-shell
+    .scorer-recent-wow {
+    max-width: 100% !important;
+    box-sizing: border-box !important;
+  }
+
+  /*
+    Keep the header inside the rounded modal instead of visually
+    appearing as a full-width page bar.
+  */
+  .desktop-scorer-modal-shell
+    .scorer-mode-banner {
+    width: auto !important;
+
+    margin:
+      -12px
+      -12px
+      12px !important;
+  }
+
+  /*
+    Use a balanced desktop layout so information is not stretched
+    across an excessive horizontal distance.
+  */
+  .desktop-scorer-modal-shell
+    .scorer-hud-main {
+    grid-template-columns:
+      minmax(210px, 0.34fr)
+      minmax(0, 0.66fr) !important;
+  }
+
+  .desktop-scorer-modal-shell
+    .scorer-hud-players {
+    grid-template-columns:
+      repeat(3, minmax(0, 1fr)) !important;
+  }
+
+  .desktop-scorer-modal-shell
+    .scorer-actions-panel {
+    grid-template-columns:
+      minmax(0, 1fr)
+      auto !important;
+  }
+
+  .desktop-scorer-modal-shell
+    .quick-actions {
+    grid-template-columns:
+      repeat(6, minmax(58px, 1fr)) !important;
+  }
+}
+
+/* Smaller laptops */
+@media (min-width: 761px) and (max-width: 900px) {
+  .desktop-scorer-modal-shell,
+  .desktop-scorer-modal-shell.scorer-mode-shell,
+  .desktop-scorer-modal-shell.scorer-mode-shell.active {
+    width: calc(100vw - 32px) !important;
+    min-width: 0 !important;
+    max-width: none !important;
+  }
+
+  .desktop-scorer-modal-shell
+    .scorer-actions-panel {
+    grid-template-columns: 1fr !important;
+  }
+
+  .desktop-scorer-modal-shell
+    .quick-actions {
+    grid-template-columns:
+      repeat(6, minmax(48px, 1fr)) !important;
+  }
+}
+
+
+/* =========================================================
+   FINAL DESKTOP BACKDROP + SWAP / UNDO FIX
+   Add after every other desktop scorer rule.
+========================================================= */
+
+@media (min-width: 761px) {
+  /*
+    Use a body-level backdrop rather than a pseudo-element on
+    the modal itself. This fully covers the Advanced Scoring
+    card, Lock/Abandon controls, footer and the rest of the page.
+  */
+  body:has(.desktop-scorer-modal-shell)::before {
+    content: "";
+
+    position: fixed;
+    inset: 0;
+    z-index: 109999;
+
+    display: block;
+
+    background: rgba(2, 6, 23, 0.9);
+
+    -webkit-backdrop-filter: blur(15px);
+    backdrop-filter: blur(15px);
+
+    pointer-events: none;
+  }
+
+  /*
+    Keep the actual scorer window above the body backdrop.
+  */
+  .desktop-scorer-modal-shell,
+  .desktop-scorer-modal-shell.scorer-mode-shell,
+  .desktop-scorer-modal-shell.scorer-mode-shell.active {
+    z-index: 110000 !important;
+
+    isolation: isolate !important;
+
+    box-shadow:
+      0 34px 88px rgba(0, 0, 0, 0.7),
+      0 0 0 1px rgba(255, 255, 255, 0.03),
+      inset 0 1px 0 rgba(255, 255, 255, 0.045) !important;
+  }
+
+  /*
+    Disable the older modal pseudo-backdrop so there is only
+    one reliable backdrop layer.
+  */
+  .desktop-scorer-modal-shell::before {
+    display: none !important;
+    content: none !important;
+  }
+
+  /* =======================================================
+     SWAP + UNDO BUTTONS
+  ======================================================= */
+
+  .desktop-scorer-modal-shell
+    .quick-actions
+    .chip-swap,
+  .desktop-scorer-modal-shell
+    .quick-actions
+    .score-undo {
+    min-width: 92px !important;
+    width: auto !important;
+
+    padding: 0 15px !important;
+
+    font-size: 13px !important;
+    font-weight: 950 !important;
+
+    white-space: nowrap !important;
+    overflow: visible !important;
+    text-overflow: clip !important;
+  }
+
+  /*
+    Let the final two actions use their natural width instead
+    of being squeezed into the same narrow columns as run keys.
+  */
+  .desktop-scorer-modal-shell
+    .quick-actions {
+    grid-template-columns:
+      repeat(6, minmax(58px, 1fr))
+      minmax(92px, auto)
+      minmax(92px, auto) !important;
+  }
+
+  .desktop-scorer-modal-shell
+    .quick-actions
+    .chip-swap {
+    background:
+      linear-gradient(
+        135deg,
+        rgba(76, 29, 149, 0.54),
+        rgba(49, 46, 129, 0.64)
+      ) !important;
+
+    border-color:
+      rgba(167, 139, 250, 0.35) !important;
+  }
+
+  .desktop-scorer-modal-shell
+    .quick-actions
+    .score-undo {
+    background:
+      linear-gradient(
+        135deg,
+        rgba(153, 27, 27, 0.74),
+        rgba(220, 38, 38, 0.76)
+      ) !important;
+
+    border-color:
+      rgba(248, 113, 113, 0.4) !important;
+  }
+}
+
+/* Medium laptops: keep Swap and Undo readable without overflow. */
+@media (min-width: 761px) and (max-width: 1100px) {
+  .desktop-scorer-modal-shell
+    .quick-actions {
+    grid-template-columns:
+      repeat(6, minmax(48px, 1fr))
+      minmax(86px, auto)
+      minmax(86px, auto) !important;
+  }
+
+  .desktop-scorer-modal-shell
+    .quick-actions
+    .chip-swap,
+  .desktop-scorer-modal-shell
+    .quick-actions
+    .score-undo {
+    min-width: 86px !important;
+
+    padding-inline: 12px !important;
+  }
+}
+/* =========================================================
+   DESKTOP SCORER — SCORING FORM SCROLL FIX
+   Keeps the modal fixed while allowing expanded form scrolling.
+========================================================= */
+
+@media (min-width: 761px) {
+  /*
+    The complete scorer window owns the vertical scrolling.
+    When Scoring Form expands, the modal scrolls instead of
+    extending below the laptop viewport.
+  */
+  .desktop-scorer-modal-shell,
+  .desktop-scorer-modal-shell.scorer-mode-shell,
+  .desktop-scorer-modal-shell.scorer-mode-shell.active {
+    max-height: calc(100dvh - 40px) !important;
+
+    overflow-y: auto !important;
+    overflow-x: hidden !important;
+
+    overscroll-behavior: contain !important;
+    scrollbar-gutter: stable !important;
+    scrollbar-width: thin !important;
+    scrollbar-color:
+      rgba(56, 189, 248, 0.65)
+      rgba(15, 23, 42, 0.45) !important;
+  }
+
+  .desktop-scorer-modal-shell::-webkit-scrollbar {
+    width: 10px;
+  }
+
+  .desktop-scorer-modal-shell::-webkit-scrollbar-track {
+    margin-block: 68px 12px;
+
+    border-radius: 999px;
+
+    background:
+      rgba(15, 23, 42, 0.42);
+  }
+
+  .desktop-scorer-modal-shell::-webkit-scrollbar-thumb {
+    border: 2px solid transparent;
+    border-radius: 999px;
+
+    background:
+      linear-gradient(
+        180deg,
+        rgba(14, 165, 233, 0.92),
+        rgba(37, 99, 235, 0.92)
+      );
+
+    background-clip: padding-box;
+  }
+
+  .desktop-scorer-modal-shell::-webkit-scrollbar-thumb:hover {
+    background:
+      linear-gradient(
+        180deg,
+        rgba(56, 189, 248, 1),
+        rgba(59, 130, 246, 1)
+      );
+
+    background-clip: padding-box;
+  }
+
+  /*
+    Keep the Scorer Mode title and Exit button visible while
+    the expanded form scrolls.
+  */
+  .desktop-scorer-modal-shell
+    .scorer-mode-banner {
+    position: sticky !important;
+    top: -12px !important;
+    z-index: 100 !important;
+  }
+
+  /*
+    Let the expanded Scoring Form use its natural height.
+  */
+  .desktop-scorer-modal-shell
+    .collapsible-section,
+  .desktop-scorer-modal-shell
+    details,
+  .desktop-scorer-modal-shell
+    .scoring-form-card {
+    max-height: none !important;
+    overflow: visible !important;
+  }
+
+  .desktop-scorer-modal-shell
+    details[open] {
+    scroll-margin-top: 76px;
+  }
+}
+@media (min-width: 761px) {
+  .desktop-scoring-form-anchor {
+    width: 100%;
+    scroll-margin-top: 76px;
+  }
+}
+/* =========================================================
+   DESKTOP SCORER — FIX SWAP / UNDO OVERLAP
+========================================================= */
+
+@media (min-width: 761px) {
+  .desktop-scorer-modal-shell
+    .quick-actions {
+    display: grid !important;
+
+    grid-template-columns:
+      repeat(6, minmax(64px, 1fr)) !important;
+
+    grid-auto-flow: row !important;
+    gap: 8px !important;
+
+    align-items: stretch !important;
+  }
+
+  .desktop-scorer-modal-shell
+    .quick-actions
+    .chip-swap,
+  .desktop-scorer-modal-shell
+    .quick-actions
+    .score-undo {
+    min-width: 0 !important;
+    width: 100% !important;
+    max-width: none !important;
+
+    min-height: 44px !important;
+
+    margin: 0 !important;
+    padding: 0 12px !important;
+
+    position: static !important;
+    transform: none !important;
+
+    white-space: nowrap !important;
+    overflow: hidden !important;
+    text-overflow: ellipsis !important;
+
+    font-size: 13px !important;
+    font-weight: 950 !important;
+  }
+
+  .desktop-scorer-modal-shell
+    .quick-actions
+    .chip-swap {
+    grid-column: auto !important;
+
+    background:
+      linear-gradient(
+        135deg,
+        rgba(76, 29, 149, 0.58),
+        rgba(49, 46, 129, 0.68)
+      ) !important;
+
+    border-color:
+      rgba(167, 139, 250, 0.38) !important;
+  }
+
+  .desktop-scorer-modal-shell
+    .quick-actions
+    .score-undo {
+    grid-column: auto !important;
+
+    background:
+      linear-gradient(
+        135deg,
+        rgba(153, 27, 27, 0.76),
+        rgba(220, 38, 38, 0.8)
+      ) !important;
+
+    border-color:
+      rgba(248, 113, 113, 0.42) !important;
+  }
+}
+/* =========================================================
+   DESKTOP SCORER — LARGE SWAP / UNDO BUTTONS
+========================================================= */
+
+@media (min-width: 761px) {
+  .desktop-scorer-modal-shell
+    .quick-actions {
+    display: grid !important;
+
+    grid-template-columns:
+      repeat(6, minmax(62px, 1fr)) !important;
+
+    gap: 8px !important;
+  }
+
+  /*
+    Swap and Undo occupy wider cells on their own row.
+  */
+  .desktop-scorer-modal-shell
+    .quick-actions
+    .chip-swap,
+  .desktop-scorer-modal-shell
+    .quick-actions
+    .score-undo {
+    width: auto !important;
+    min-width: 132px !important;
+    max-width: none !important;
+    min-height: 46px !important;
+
+    padding: 0 18px !important;
+    margin: 0 !important;
+
+    display: inline-flex !important;
+    align-items: center !important;
+    justify-content: center !important;
+    gap: 7px !important;
+
+    position: static !important;
+    transform: none !important;
+
+    overflow: visible !important;
+    text-overflow: clip !important;
+    white-space: nowrap !important;
+
+    font-size: 14px !important;
+    font-weight: 950 !important;
+    line-height: 1 !important;
+  }
+
+  .desktop-scorer-modal-shell
+    .quick-actions
+    .chip-swap {
+    grid-column: 1 / span 2 !important;
+
+    justify-self: stretch !important;
+
+    background:
+      linear-gradient(
+        135deg,
+        rgba(76, 29, 149, 0.62),
+        rgba(49, 46, 129, 0.74)
+      ) !important;
+
+    border-color:
+      rgba(167, 139, 250, 0.42) !important;
+  }
+
+  .desktop-scorer-modal-shell
+    .quick-actions
+    .score-undo {
+    grid-column: 3 / span 2 !important;
+
+    justify-self: stretch !important;
+
+    background:
+      linear-gradient(
+        135deg,
+        rgba(153, 27, 27, 0.8),
+        rgba(220, 38, 38, 0.84)
+      ) !important;
+
+    border-color:
+      rgba(248, 113, 113, 0.46) !important;
+  }
+}
+/* =========================================================
+   DESKTOP SCORER — RESTORE POPUP INTERACTION
+========================================================= */
+
+@media (min-width: 761px) {
+  /*
+    Do not disable pointer events on main/dashboard ancestors.
+    The body backdrop visually covers the page while allowing
+    scorer dialogs and nested popups to remain interactive.
+  */
+  body:has(.desktop-scorer-modal-shell)
+    .dashboard-page,
+  body:has(.desktop-scorer-modal-shell)
+    .dashboard-shell,
+  body:has(.desktop-scorer-modal-shell)
+    main {
+    pointer-events: auto !important;
+  }
+
+  .desktop-scorer-modal-shell {
+    pointer-events: auto !important;
+  }
+
+  .desktop-scorer-modal-shell * {
+    pointer-events: auto;
+  }
+
+  /*
+    All scoring popups must remain above the desktop scorer.
+  */
+  .extra-popup-backdrop,
+  .extra-modal-backdrop,
+  .wicket-modal-backdrop,
+  .bowler-modal-backdrop,
+  .keeper-change-backdrop,
+  .retired-hurt-backdrop,
+  .modal-backdrop,
+  .scoring-form-sheet-backdrop {
+    position: fixed !important;
+    inset: 0 !important;
+
+    z-index: 130000 !important;
+
+    pointer-events: auto !important;
+  }
+
+  .extra-popup,
+  .extra-modal,
+  .wicket-modal,
+  .bowler-modal,
+  .keeper-change-modal,
+  .retired-hurt-modal,
+  .scoring-form-sheet {
+    position: relative !important;
+
+    z-index: 130001 !important;
+
+    pointer-events: auto !important;
+  }
+
+  /*
+    Ensure every control inside scoring popups can receive input.
+  */
+  .extra-popup-backdrop button,
+  .extra-popup-backdrop input,
+  .extra-popup-backdrop select,
+  .extra-modal-backdrop button,
+  .extra-modal-backdrop input,
+  .extra-modal-backdrop select,
+  .wicket-modal-backdrop button,
+  .wicket-modal-backdrop input,
+  .wicket-modal-backdrop select,
+  .bowler-modal-backdrop button,
+  .bowler-modal-backdrop input,
+  .bowler-modal-backdrop select,
+  .keeper-change-backdrop button,
+  .keeper-change-backdrop input,
+  .keeper-change-backdrop select,
+  .retired-hurt-backdrop button,
+  .retired-hurt-backdrop input,
+  .retired-hurt-backdrop select,
+  .modal-backdrop button,
+  .modal-backdrop input,
+  .modal-backdrop select,
+  .scoring-form-sheet-backdrop button,
+  .scoring-form-sheet-backdrop input,
+  .scoring-form-sheet-backdrop select {
+    pointer-events: auto !important;
+    touch-action: manipulation !important;
+  }
+}
