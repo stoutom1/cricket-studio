@@ -44951,3 +44951,147 @@ body.cric4all-scorer-open {
     display: none !important;
   }
 }
+/* =========================================================
+   FINAL MOBILE SCORE NAV
+   One row, readable labels, icon close to text
+========================================================= */
+
+@media (max-width: 760px) {
+  .score-hub-tabs.wow-main-tabs {
+    width: 100% !important;
+
+    display: grid !important;
+    grid-template-columns: repeat(3, minmax(0, 1fr)) !important;
+    grid-auto-flow: column !important;
+
+    gap: 5px !important;
+
+    margin: 8px 0 10px !important;
+    padding: 5px !important;
+
+    overflow: hidden !important;
+
+    border: 1px solid rgba(148, 163, 184, 0.14) !important;
+    border-radius: 14px !important;
+
+    background:
+      linear-gradient(
+        145deg,
+        rgba(12, 24, 43, 0.97),
+        rgba(7, 16, 30, 0.98)
+      ) !important;
+  }
+
+  .score-hub-tabs.wow-main-tabs .wow-score-tab {
+    width: 100% !important;
+    min-width: 0 !important;
+    max-width: none !important;
+
+    height: 48px !important;
+    min-height: 48px !important;
+
+    display: flex !important;
+    flex-direction: row !important;
+    align-items: center !important;
+    justify-content: center !important;
+
+    gap: 4px !important;
+
+    margin: 0 !important;
+    padding: 4px 5px !important;
+
+    overflow: hidden !important;
+
+    border: 1px solid rgba(148, 163, 184, 0.1) !important;
+    border-radius: 10px !important;
+
+    background: rgba(30, 41, 59, 0.52) !important;
+    color: #cbd5e1 !important;
+
+    white-space: nowrap !important;
+  }
+
+  .score-hub-tabs.wow-main-tabs .wow-score-tab.active {
+    border-color: rgba(56, 189, 248, 0.45) !important;
+
+    background:
+      linear-gradient(
+        135deg,
+        #2563eb,
+        #0ea5e9
+      ) !important;
+
+    color: #ffffff !important;
+  }
+
+  .score-hub-tabs.wow-main-tabs .wow-tab-icon {
+    width: 24px !important;
+    height: 24px !important;
+    min-width: 24px !important;
+    flex: 0 0 24px !important;
+
+    display: inline-flex !important;
+    align-items: center !important;
+    justify-content: center !important;
+
+    margin: 0 !important;
+
+    border-radius: 7px !important;
+
+    background: rgba(255, 255, 255, 0.09) !important;
+
+    font-size: 14px !important;
+    line-height: 1 !important;
+  }
+
+  .score-hub-tabs.wow-main-tabs .wow-tab-copy {
+    display: block !important;
+    min-width: 0 !important;
+
+    margin: 0 !important;
+    padding: 0 !important;
+  }
+
+  .score-hub-tabs.wow-main-tabs .wow-tab-copy strong {
+    display: block !important;
+
+    margin: 0 !important;
+
+    overflow: hidden !important;
+
+    color: inherit !important;
+
+    font-size: 12px !important;
+    font-weight: 950 !important;
+    line-height: 1 !important;
+
+    text-overflow: ellipsis !important;
+    white-space: nowrap !important;
+  }
+
+  .score-hub-tabs.wow-main-tabs .wow-tab-copy small {
+    display: none !important;
+  }
+}
+/* =========================================================
+   HIDE MATCH INSIGHTS ON NORMAL MOBILE SCORING TAB
+========================================================= */
+
+@media (max-width: 760px) {
+  .mobile-hide-scoring-insights {
+    display: none !important;
+  }
+}
+@media (max-width: 760px) {
+  .mobile-scorer-console-card {
+    padding-bottom: 8px !important;
+  }
+
+  .mobile-scoring-launch-card {
+    margin-bottom: 0 !important;
+  }
+
+  .mobile-hide-scoring-insights + * {
+    margin-top: 0 !important;
+  }
+}

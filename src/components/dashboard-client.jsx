@@ -8233,7 +8233,7 @@ const playerRoleBadge = (row) => {
   {liveMatchCenter && (
     <>
       {displayScoreboard && !scorerMode &&(
-        <div className="match-insights-card scorer-insights-strip">
+        <div className="match-insights-card scorer-insights-strip mobile-hide-scoring-insights">
           {matchInsights.resultText && (
             <div className="insight-result">
               <span>🏆 Match Result</span>
