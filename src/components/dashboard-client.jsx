@@ -7627,25 +7627,50 @@ const playerRoleBadge = (row) => {
   selectedMatchId &&
   !isSelectedMatchCompleted &&
   !scorerMode && (
-    <button
-      type="button"
-      className="mobile-enter-scorer-btn"
-      onClick={() => {
-        setScorerDrawer(null);
-        setScorerMode(true);
-      }}
-    >
-      <span>🎯</span>
+    <>
+      <div className="mobile-match-control-heading">
+        <div className="mobile-match-control-copy">
+          <span className="mobile-match-control-icon">🏏</span>
 
-      <div>
-        <strong>Enter Scorer Mode</strong>
-        <small>
-          Focused ball-by-ball scoring with fewer distractions
-        </small>
+          <div>
+            <strong>Match Control</strong>
+            <small>Review the match or open focused scoring</small>
+          </div>
+        </div>
+
+        <span className="mobile-match-control-status">
+          {String(
+            selectedMatch?.status ||
+              scoreboard?.match?.status ||
+              "ACTIVE"
+          ).replaceAll("_", " ")}
+        </span>
       </div>
 
-      <b>›</b>
-    </button>
+      <section className="mobile-scoring-launch-card">
+        <div className="mobile-scoring-launch-icon">🎯</div>
+
+        <div className="mobile-scoring-launch-copy">
+          <span>Ball-by-ball scoring</span>
+          <strong>Open Scorer Mode</strong>
+          <small>
+            Score every delivery in a focused full-screen mobile workspace.
+          </small>
+        </div>
+
+        <button
+          type="button"
+          className="mobile-scoring-launch-btn"
+          onClick={() => {
+            setScorerDrawer(null);
+            setScorerMode(true);
+          }}
+        >
+          Start Scoring
+          <b>›</b>
+        </button>
+      </section>
+    </>
   )}
           {!matchDetail ? (
             <p className="muted">Please select a match to view scoring, scoreboard, and commentary.</p>
@@ -8214,7 +8239,7 @@ const playerRoleBadge = (row) => {
         </div>
       )}
 
-      <div className="scorer-live-hud">
+      <div className="scorer-live-hud normal-mobile-live-hud">
         <div className="scorer-hud-main">
           <div>
             <span className="tv-live-pill">● LIVE</span>
@@ -8300,8 +8325,7 @@ const playerRoleBadge = (row) => {
             String(selectedMatch.status || "").toUpperCase()
           )
         ) && (
-          <div
-          >
+          <div className="normal-mobile-delivery-status">
             {error ||
               instantDeliveryStatus ||
               message ||
@@ -8311,7 +8335,7 @@ const playerRoleBadge = (row) => {
         )
       )}
 
-      <div className="scorer-recent-wow">
+      <div className="scorer-recent-wow normal-mobile-recent-balls">
         <span>
           Recent <small>last 10</small>
         </span>
@@ -8358,7 +8382,7 @@ const playerRoleBadge = (row) => {
         </div>
       </div>
       {liveMatchCenter?.isSecondInnings && liveMatchCenter?.target > 0 && (
-        <div className="tv-chase-mini scorer-chase-wow">
+        <div className="tv-chase-mini scorer-chase-wow normal-mobile-chase-strip">
           <span>Target <b>{liveMatchCenter.target}</b></span>
           <span>Need <b>{liveMatchCenter.runsRequired}</b></span>
           <span>Balls <b>{liveMatchCenter.ballsRemaining}</b></span>
@@ -8457,7 +8481,7 @@ const playerRoleBadge = (row) => {
   </div>
 )}  
 {permissions?.canScoreMatch && (
-  <div className="scorer-actions-panel mobile-original-actions-panel">
+  <div className="scorer-actions-panel mobile-original-actions-panel normal-mobile-scoring-actions">
 <div className="quick-actions scorer-run-buttons scorer-mobile-pad">
   {[0, 1, 2, 3, 4, 6].map((run) => (
     <button
@@ -8542,7 +8566,7 @@ const playerRoleBadge = (row) => {
   <>
     <button
   type="button"
-  className="chip score-chip score-wide"
+  className="chip score-chip score-wide mobile-normal-scoring-form-btn"
   onClick={() => setShowAdvancedSheet(true)}
 >
   ⚙️ Scoring Form
@@ -8556,7 +8580,7 @@ const playerRoleBadge = (row) => {
       }
     />
 
-    <div className="advanced-sheet">
+    <div className="advanced-sheet mobile-normal-scoring-sheet">
 
       <div className="sheet-header">
 
