@@ -6754,52 +6754,73 @@ onClick={() => {
       </details>
     )}
 
-<div
-  className={`score-hub-tabs wow-main-tabs ${
-    isSelectedMatchCompleted ? "completed-mode" : "live-mode"
-  }`}
->
-  {!isSelectedMatchCompleted && (
-    <button
-      type="button"
-      className={`wow-score-tab scoring-tab ${
-        effectiveScoringSubTab === "ADVANCED" ? "active" : ""
-      }`}
-      onClick={() => setScoringSubTab("ADVANCED")}
-    >
-      <span className="wow-tab-icon">🎯</span>
-      <span className="wow-tab-copy">
-        <strong>Scoring</strong>
-        <small>Score balls live</small>
-      </span>
-    </button>
-  )}
-
+<div className="score-hub-tabs wow-main-tabs">
   <button
     type="button"
-    className={`wow-score-tab scoreboard-tab ${
-      effectiveScoringSubTab === "SCOREBOARD" ? "active" : ""
+    className={`wow-score-tab ${
+      effectiveScoringSubTab === "ADVANCED"
+        ? "active"
+        : ""
     }`}
-    onClick={() => setScoringSubTab("SCOREBOARD")}
+    onClick={() => {
+      setScorerMode(false);
+      setScorerDrawer(null);
+      setScoringSubTab("ADVANCED");
+    }}
+    aria-label="Open Scoring"
+    title="Scoring"
   >
-    <span className="wow-tab-icon">🏏</span>
+    <span className="wow-tab-icon">🎯</span>
+
     <span className="wow-tab-copy">
-      <strong>Scoreboard</strong>
-      <small>Full scorecard</small>
+      <strong>Scoring</strong>
+      <small>Ball-by-ball scoring</small>
     </span>
   </button>
 
   <button
     type="button"
-    className={`wow-score-tab commentary-tab ${
-      effectiveScoringSubTab === "COMMENTARY" ? "active" : ""
+    className={`wow-score-tab ${
+      effectiveScoringSubTab === "SCOREBOARD"
+        ? "active"
+        : ""
     }`}
-    onClick={() => setScoringSubTab("COMMENTARY")}
+    onClick={() => {
+      setScorerMode(false);
+      setScorerDrawer(null);
+      setScoringSubTab("SCOREBOARD");
+    }}
+    aria-label="Open Scorecard"
+    title="Scorecard"
+  >
+    <span className="wow-tab-icon">📋</span>
+
+    <span className="wow-tab-copy">
+      <strong>Scorecard</strong>
+      <small>Batting and bowling</small>
+    </span>
+  </button>
+
+  <button
+    type="button"
+    className={`wow-score-tab ${
+      effectiveScoringSubTab === "COMMENTARY"
+        ? "active"
+        : ""
+    }`}
+    onClick={() => {
+      setScorerMode(false);
+      setScorerDrawer(null);
+      setScoringSubTab("COMMENTARY");
+    }}
+    aria-label="Open Commentary"
+    title="Commentary"
   >
     <span className="wow-tab-icon">📝</span>
+
     <span className="wow-tab-copy">
       <strong>Commentary</strong>
-      <small>Ball by ball</small>
+      <small>Ball-by-ball history</small>
     </span>
   </button>
 </div>
