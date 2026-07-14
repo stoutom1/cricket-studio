@@ -342,6 +342,7 @@ const [openPlayerActionId, setOpenPlayerActionId] = useState(null);
 const [selectedAuditLeagueKey, setSelectedAuditLeagueKey] = useState("ALL");
 const [showScoringFormSheet, setShowScoringFormSheet] = useState(false);
 const [bowlerSearchText, setBowlerSearchText] = useState("");
+const [scoringFormSubmitting, setScoringFormSubmitting] = useState(false);
 const isSuperAdmin =
   session?.user?.email ===
   "surprisecricket11@gmail.com";
@@ -2705,7 +2706,7 @@ async function handleEndFirstInnings() {
 
 async function handleAddBall(e) {
   e?.preventDefault();
-
+  try {
   await submitBall({
     matchId: Number(selectedMatchId),
     inningsNo: Number(ballForm.inningsNo),
@@ -2736,7 +2737,14 @@ assistantFielderId: ballForm.assistantFielderId
 
 wicketNote: ballForm.wicketNote || null
   });
+    return true;
+  } catch (error) {
+    console.error("Add ball failed:", error);
+    setError("Failed to add delivery.");
+    return false;
+  }
 }
+
 async function submitBall(data) {
   setMessage("");
   setError("");
@@ -4414,29 +4422,100 @@ const recentOverGroups = (() => {
     ? recentBalls
     : [];
 
-  /*
-    Never trust the API array order.
+  function readOverNumber(ball) {
+    const directValue =
+      ball?.overNumber ??
+      ball?.overNo ??
+      ball?.over ??
+      ball?.deliveryOver;
 
-    Sort oldest to newest so that:
-    - previous over is first;
-    - current over is last;
-    - newly scored balls append to the current-over row.
-  */
+    const directNumber = Number(directValue);
+
+    if (Number.isFinite(directNumber)) {
+      return directNumber;
+    }
+
+    const label = String(ball?.label || "");
+    const match = label.match(
+      /(?:^|\s)(\d+)\.(\d+)/
+    );
+
+    return match ? Number(match[1]) : null;
+  }
+
+  function readBallNumber(ball) {
+    const directValue =
+      ball?.ballNumber ??
+      ball?.ballNo ??
+      ball?.deliveryBall;
+
+    const directNumber = Number(directValue);
+
+    if (Number.isFinite(directNumber)) {
+      return directNumber;
+    }
+
+    const label = String(ball?.label || "");
+    const match = label.match(
+      /(?:^|\s)(\d+)\.(\d+)/
+    );
+
+    return match ? Number(match[2]) : null;
+  }
+
+  function readSequence(ball, fallbackIndex) {
+    const candidates = [
+      ball?.sequence,
+      ball?.sequenceNo,
+      ball?.deliverySequence,
+      ball?.ballSequence,
+    ];
+
+    for (const candidate of candidates) {
+      const number = Number(candidate);
+
+      if (Number.isFinite(number)) {
+        return number;
+      }
+    }
+
+    const overNumber = readOverNumber(ball);
+    const ballNumber = readBallNumber(ball);
+
+    if (
+      Number.isFinite(overNumber) &&
+      Number.isFinite(ballNumber)
+    ) {
+      return overNumber * 1000 + ballNumber;
+    }
+
+    const createdTime = ball?.createdAt
+      ? new Date(ball.createdAt).getTime()
+      : Number.NaN;
+
+    if (Number.isFinite(createdTime)) {
+      return createdTime;
+    }
+
+    const numericId = Number(ball?.id);
+
+    if (Number.isFinite(numericId)) {
+      return numericId;
+    }
+
+    return fallbackIndex;
+  }
+
   const chronologicalBalls = sourceBalls
-    .map((ball, originalIndex) => ({
+    .map((ball, index) => ({
       ...ball,
-      __originalIndex: originalIndex,
-      __sortValue: getRecentBallSequence(
-        ball,
-        originalIndex
-      ),
+      __originalIndex: index,
+      __sequence: readSequence(ball, index),
+      __overNumber: readOverNumber(ball),
     }))
     .sort((first, second) => {
-      const sequenceDifference =
-        first.__sortValue - second.__sortValue;
-
-      if (sequenceDifference !== 0) {
-        return sequenceDifference;
+      if (first.__sequence !== second.__sequence) {
+        return first.__sequence - second.__sequence;
       }
 
       return (
@@ -4445,116 +4524,79 @@ const recentOverGroups = (() => {
       );
     });
 
-  const groupsByOver = new Map();
+  const groups = new Map();
 
   chronologicalBalls.forEach((ball) => {
-    const overNumber =
-      getRecentBallOverNumber(ball);
+    if (!Number.isFinite(ball.__overNumber)) {
+      return;
+    }
 
-    /*
-      Balls must normally contain an over number.
-      The fallback keeps unnumbered balls together.
-    */
-    const groupKey = Number.isFinite(overNumber)
-      ? `over-${overNumber}`
-      : "unknown-over";
+    const key = `over-${ball.__overNumber}`;
 
-    if (!groupsByOver.has(groupKey)) {
-      groupsByOver.set(groupKey, {
-        key: groupKey,
-        overNumber:
-          Number.isFinite(overNumber)
-            ? overNumber
-            : null,
+    if (!groups.has(key)) {
+      groups.set(key, {
+        key,
+        overNumber: ball.__overNumber,
         balls: [],
       });
     }
 
-    groupsByOver.get(groupKey).balls.push(ball);
+    groups.get(key).balls.push(ball);
   });
 
-  /*
-  Explicitly sort the deliveries inside each over from
-  oldest to newest.
-
-  This guarantees:
-  left  = earliest delivery
-  right = latest delivery
-*/
-groupsByOver.forEach((group) => {
-  group.balls.sort((first, second) => {
-    const firstSequence = getRecentBallSequence(
-      first,
-      first.__originalIndex ?? 0
-    );
-
-    const secondSequence = getRecentBallSequence(
-      second,
-      second.__originalIndex ?? 0
-    );
-
-    return firstSequence - secondSequence;
-  });
-});
-
-  const sortedGroups = Array.from(
-    groupsByOver.values()
-  ).sort((first, second) => {
-    if (
-      first.overNumber === null &&
-      second.overNumber === null
-    ) {
-      return 0;
-    }
-
-    if (first.overNumber === null) return -1;
-    if (second.overNumber === null) return 1;
-
-    return (
-      first.overNumber -
-      second.overNumber
-    );
-  });
-
-  /*
-    Keep exactly:
-    1. previous over;
-    2. current over.
-
-    The newest/highest over number is always current.
-  */
-  const finalGroups =
-  sortedGroups.slice(-2);
-
-const currentOverFromScoreboard =
-  Number(
-    displayScoreboard?.currentState
-      ?.nextOverNumber ??
-      scoreboard?.currentState
-        ?.nextOverNumber
+  const orderedGroups = Array.from(
+    groups.values()
+  ).sort(
+    (first, second) =>
+      first.overNumber - second.overNumber
   );
 
-const latestGroup =
-  finalGroups[finalGroups.length - 1];
-
-if (
-  Number.isFinite(currentOverFromScoreboard) &&
-  latestGroup &&
-  Number(latestGroup.overNumber) <
-    currentOverFromScoreboard
-) {
-  finalGroups.push({
-    key: `over-${currentOverFromScoreboard}`,
-    overNumber: currentOverFromScoreboard,
-    balls: [],
+  /*
+    Guarantee oldest-to-newest delivery order inside
+    every row, so the latest ball appears on the right.
+  */
+  orderedGroups.forEach((group) => {
+    group.balls.sort(
+      (first, second) =>
+        first.__sequence - second.__sequence
+    );
   });
-}
 
-/*
-  If adding the empty current over creates three rows,
-  retain only previous + current.
-*/
-return finalGroups.slice(-2);
+  const currentOverNumber = Math.floor(
+    Number(
+      displayScoreboard?.currentState
+        ?.legalBalls ??
+        scoreboard?.currentState?.legalBalls ??
+        0
+    ) / 6
+  );
+
+  let finalGroups = orderedGroups.slice(-2);
+
+  const newestGroup =
+    finalGroups[finalGroups.length - 1];
+
+  /*
+    After an over is completed, create an empty current-over
+    row until the first delivery of the next over is entered.
+  */
+  if (
+    Number.isFinite(currentOverNumber) &&
+    (!newestGroup ||
+      newestGroup.overNumber <
+        currentOverNumber)
+  ) {
+    finalGroups = [
+      ...finalGroups,
+      {
+        key: `over-${currentOverNumber}`,
+        overNumber: currentOverNumber,
+        balls: [],
+      },
+    ].slice(-2);
+  }
+
+  return finalGroups;
 })();
 
 function getMatchOptionLabel(match) {
@@ -6295,6 +6337,35 @@ const availableBowlerOptions = (bowlingTeam?.players || [])
     )
   );
 
+  async function handleScoringFormSheetSubmit(event) {
+  event.preventDefault();
+
+  if (scoringFormSubmitting) return;
+
+  setScoringFormSubmitting(true);
+
+  try {
+    const saved = await handleAddBall(event);
+
+    if (!saved) {
+      return;
+    }
+
+    /*
+      Close only after the API and existing refresh logic
+      have completed successfully.
+    */
+    setShowScoringFormSheet(false);
+
+    /*
+      Keep Scorer Mode open and clear any sheet-only scroll.
+    */
+    setScorerDrawer(null);
+  } finally {
+    setScoringFormSubmitting(false);
+  }
+}
+
 function MobileMatchSetup({ match, includeTimeline = false }) {
   return (
     <details className="mobile-match-setup">
@@ -7929,21 +8000,12 @@ const playerRoleBadge = (row) => {
 
 <div className="msc-v3-recent-overs">
   <div className="msc-v3-recent-title">
-    <div>
-      <span>🎳</span>
-
-      <div>
-        <strong>Recent Deliveries</strong>
-        <small>
-          Previous over and current over
-        </small>
-      </div>
-    </div>
+    <strong>🎳 Recent Deliveries</strong>
   </div>
 
-  {recentOverGroups.length ? (
-    <div className="msc-v3-over-list">
-      {recentOverGroups.map(
+  <div className="msc-v3-over-list">
+    {recentOverGroups.length ? (
+      recentOverGroups.map(
         (group, groupIndex) => {
           const isCurrentOver =
             groupIndex ===
@@ -7966,59 +8028,52 @@ const playerRoleBadge = (row) => {
                 </span>
 
                 <strong>
-                  {group.overNumber !== null
-                    ? `Over ${
-                        group.overNumber + 1
-                      }`
-                    : "Over"}
+                  Over {group.overNumber + 1}
                 </strong>
               </div>
 
               <div className="msc-v3-over-balls">
-                {group.balls.map(
-                  (ball, ballIndex) => {
-                    const ballResult =
-                      getRecentBallText(ball);
+                {group.balls.length ? (
+                  group.balls.map(
+                    (ball, ballIndex) => {
+                      const result =
+                        getRecentBallText(ball);
 
-                    const normalizedResult =
-                      ballResult.toUpperCase();
+                      const normalized =
+                        result.toUpperCase();
 
-                    return (
-                      <b
-                        key={
-                          ball.id ||
-                          `${group.key}-${ballIndex}`
-                        }
-                        className={
-                          normalizedResult === "W"
-                            ? "wicket"
-                            : normalizedResult ===
-                                  "4" ||
-                                normalizedResult ===
-                                  "6"
-                              ? "boundary"
-                              : normalizedResult.startsWith(
-                                    "WD"
-                                  ) ||
-                                  normalizedResult.startsWith(
-                                    "NB"
-                                  )
-                                ? "extra"
-                                : ""
-                        }
-                      >
-                        {ballResult}
-                      </b>
-                    );
-                  }
+                      return (
+                        <b
+                          key={
+                            ball.id ||
+                            `${group.key}-${ballIndex}`
+                          }
+                          className={
+                            normalized === "W"
+                              ? "wicket"
+                              : normalized === "4" ||
+                                  normalized === "6"
+                                ? "boundary"
+                                : normalized.startsWith(
+                                      "WD"
+                                    ) ||
+                                    normalized.startsWith(
+                                      "NB"
+                                    )
+                                  ? "extra"
+                                  : ""
+                          }
+                        >
+                          {result}
+                        </b>
+                      );
+                    }
+                  )
+                ) : (
+                  <small>
+                    Waiting for delivery
+                  </small>
                 )}
-
-                {isCurrentOver &&
-                  group.balls.length === 0 && (
-                    <small>
-                      Waiting for first delivery
-                    </small>
-                  )}
               </div>
 
               <span
@@ -8033,13 +8088,13 @@ const playerRoleBadge = (row) => {
             </div>
           );
         }
-      )}
-    </div>
-  ) : (
-    <div className="msc-v3-no-recent">
-      No deliveries recorded yet
-    </div>
-  )}
+      )
+    ) : (
+      <div className="msc-v3-no-recent">
+        No deliveries yet
+      </div>
+    )}
+  </div>
 </div>
 
       {/* THUMB-REACH CONTROLS */}
@@ -16895,11 +16950,11 @@ onChange={(e) => {
           */}
 
 <div className="scoring-form-sheet-existing-form">
-  <form
-    id="scorer-mode-ball-form"
-    className="form grid-2 scorer-mode-ball-form"
-    onSubmit={handleAddBall}
-  >
+<form
+  id="scorer-mode-ball-form"
+  className="form grid-2 scorer-mode-ball-form"
+  onSubmit={handleScoringFormSheetSubmit}
+>
     {/* Innings */}
     <label>
       <span>Innings</span>
@@ -17376,18 +17431,22 @@ onChange={(e) => {
       Cancel
     </button>
 
-    <button
-      type="submit"
-      form="scorer-mode-ball-form"
-      className="btn scoring-form-sheet-submit"
-      disabled={
-        isMatchCompleted ||
-        isMatchLocked ||
-        isMatchAbandoned
-      }
-    >
-      🏏 Submit Delivery
-    </button>
+<button
+  type="submit"
+  form="scorer-mode-ball-form"
+  className="btn scoring-form-sheet-submit"
+  disabled={
+    scoringFormSubmitting ||
+    isMatchCompleted ||
+    isMatchLocked ||
+    isMatchAbandoned
+  }
+>
+  {scoringFormSubmitting
+    ? "Saving..."
+    : "🏏 Submit Delivery"}
+</button>
+
   </div>
 </div>
         </div>

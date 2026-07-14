@@ -46893,3 +46893,238 @@ body.cric4all-scorer-open {
     font-weight: 950 !important;
   }
 }
+/* =========================================================
+   MOBILE SCORER — STABLE RECENT OVERS PANEL
+========================================================= */
+
+@media (max-width: 760px) {
+  .msc-v3-recent-overs {
+    flex: 0 0 auto !important;
+
+    width: 100% !important;
+    height: auto !important;
+    min-height: 0 !important;
+    max-height: none !important;
+
+    margin: 0 !important;
+    padding: 7px 8px !important;
+
+    overflow: hidden !important;
+
+    border: 1px solid
+      rgba(148, 163, 184, 0.13) !important;
+
+    border-radius: 11px !important;
+
+    background:
+      linear-gradient(
+        145deg,
+        rgba(17, 31, 52, 0.9),
+        rgba(10, 21, 38, 0.92)
+      ) !important;
+  }
+
+  .msc-v3-recent-title {
+    margin: 0 0 5px !important;
+    padding: 0 !important;
+  }
+
+  .msc-v3-recent-title strong {
+    color: #e5edf8 !important;
+
+    font-size: 11px !important;
+    font-weight: 950 !important;
+  }
+
+  .msc-v3-over-list {
+    display: grid !important;
+    gap: 4px !important;
+
+    min-height: 0 !important;
+  }
+
+  .msc-v3-over-row {
+    width: 100% !important;
+    min-width: 0 !important;
+    min-height: 32px !important;
+
+    display: grid !important;
+    grid-template-columns:
+      55px minmax(0, 1fr) 22px !important;
+
+    align-items: center !important;
+    gap: 5px !important;
+
+    margin: 0 !important;
+    padding: 4px 6px !important;
+
+    overflow: hidden !important;
+
+    border: 0 !important;
+    border-radius: 8px !important;
+
+    background:
+      rgba(30, 41, 59, 0.58) !important;
+  }
+
+  .msc-v3-over-row.current-over {
+    border: 1px solid
+      rgba(52, 211, 153, 0.2) !important;
+
+    background:
+      linear-gradient(
+        135deg,
+        rgba(6, 78, 59, 0.18),
+        rgba(30, 41, 59, 0.62)
+      ) !important;
+  }
+
+  .msc-v3-over-label {
+    min-width: 0 !important;
+  }
+
+  .msc-v3-over-label span,
+  .msc-v3-over-label strong {
+    display: block !important;
+  }
+
+  .msc-v3-over-label span {
+    color: #8392a7 !important;
+
+    font-size: 8px !important;
+    font-weight: 900 !important;
+    line-height: 1 !important;
+    text-transform: uppercase;
+  }
+
+  .msc-v3-over-label strong {
+    margin-top: 2px !important;
+
+    color: #dbe5f2 !important;
+
+    font-size: 10px !important;
+    font-weight: 950 !important;
+    line-height: 1 !important;
+  }
+
+  .msc-v3-over-row.current-over
+    .msc-v3-over-label span {
+    color: #6ee7b7 !important;
+  }
+
+  .msc-v3-over-balls {
+    min-width: 0 !important;
+
+    display: flex !important;
+    align-items: center !important;
+    gap: 3px !important;
+
+    overflow-x: auto !important;
+    overflow-y: hidden !important;
+
+    scrollbar-width: none;
+  }
+
+  .msc-v3-over-balls::-webkit-scrollbar {
+    display: none;
+  }
+
+  .msc-v3-over-balls b {
+    min-width: 23px !important;
+    height: 23px !important;
+    flex: 0 0 auto !important;
+
+    display: inline-flex !important;
+    align-items: center !important;
+    justify-content: center !important;
+
+    padding: 0 3px !important;
+
+    border-radius: 6px !important;
+
+    background:
+      rgba(51, 65, 85, 0.84) !important;
+
+    color: #ffffff !important;
+
+    font-size: 9px !important;
+    font-weight: 1000 !important;
+  }
+
+  .msc-v3-over-balls b.wicket {
+    background:
+      rgba(185, 28, 28, 0.58) !important;
+
+    color: #fecaca !important;
+  }
+
+  .msc-v3-over-balls b.boundary {
+    background:
+      rgba(109, 40, 217, 0.58) !important;
+
+    color: #ede9fe !important;
+  }
+
+  .msc-v3-over-balls b.extra {
+    background:
+      rgba(161, 98, 7, 0.5) !important;
+
+    color: #fde68a !important;
+  }
+
+  .msc-v3-over-balls small {
+    color: #8291a7 !important;
+
+    font-size: 9px !important;
+    font-weight: 750 !important;
+    white-space: nowrap;
+  }
+
+  .msc-v3-over-state {
+    width: 21px !important;
+    height: 21px !important;
+
+    display: inline-flex !important;
+    align-items: center !important;
+    justify-content: center !important;
+
+    border-radius: 50% !important;
+
+    font-size: 9px !important;
+    font-weight: 1000 !important;
+  }
+
+  .msc-v3-over-state.complete {
+    background:
+      rgba(148, 163, 184, 0.12) !important;
+
+    color: #94a3b8 !important;
+  }
+
+  .msc-v3-over-state.live {
+    background:
+      rgba(16, 185, 129, 0.18) !important;
+
+    color: #34d399 !important;
+  }
+
+  /*
+    Ensure the keypad starts below the complete recent panel,
+    never underneath or inside it.
+  */
+  .msc-v3-control-zone {
+    position: relative !important;
+
+    width: 100% !important;
+
+    margin-top: auto !important;
+    padding-top: 7px !important;
+
+    overflow: visible !important;
+  }
+
+  .msc-v3-keypad {
+    position: relative !important;
+    z-index: 1 !important;
+  }
+}
