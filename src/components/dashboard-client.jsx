@@ -7331,7 +7331,8 @@ const playerRoleBadge = (row) => {
   title="🎯 Advanced Scoring"
   defaultCollapsed={false}
     right={
-    selectedMatchId && !isSelectedMatchCompleted && !isMobile ? (
+  selectedMatchId &&
+  !isSelectedMatchCompleted ? (
         <>
 <div className="advanced-scoring-actions">
   <button type="button" className="scorer-mode-btn" onClick={() => {setScorerMode(true); setScorerDrawer(null);}}>🎯 Scorer Mode</button>
@@ -7344,14 +7345,39 @@ const playerRoleBadge = (row) => {
             <p className="muted">Please select a match to view scoring, scoreboard, and commentary.</p>
           ) : (
             <>
-<div className={scorerMode || isMobile ? "scorer-mode-shell active" : ""}>
-  {scorerMode && !isMobile && (
-    <div className="scorer-mode-banner">
-      🎯 Scorer Mode Active
-    </div>
-  )}
+<div className={scorerMode ? "scorer-mode-shell active" : ""}>
+{scorerMode && (
+  <div className="scorer-mode-banner mobile-scorer-mode-banner">
+    <div>
+      <span>🎯</span>
 
-  <div className={scorerMode || isMobile ? "scorer-wow-console scorer-mode-flat" : "tv-score-console scorer-wow-console"}>
+      <div>
+        <strong>Scorer Mode</strong>
+        <small>Focused ball-by-ball scoring</small>
+      </div>
+    </div>
+
+    <button
+      type="button"
+      className="scorer-mode-exit-btn"
+      onClick={() => {
+        setScorerDrawer(null);
+        setScorerMode(false);
+        setScoringSubTab("ADVANCED");
+      }}
+    >
+      ✕ Exit
+    </button>
+  </div>
+)}
+
+  <div
+  className={
+    scorerMode
+      ? "scorer-wow-console scorer-mode-flat"
+      : "tv-score-console scorer-wow-console"
+  }
+>
   {liveMatchCenter && (
     <>
       {displayScoreboard && (
@@ -7534,8 +7560,12 @@ const playerRoleBadge = (row) => {
       )}
     </>
   )}
-  {(scorerMode || isMobile) && (
-  <div className={`scorer-workspace ${scorerDrawer ? "open" : ""}`}>
+{scorerMode && (
+  <div
+    className={`scorer-workspace ${
+      scorerDrawer ? "open" : ""
+    }`}
+  >
     <div className="scorer-workspace-panel">
       <div className="scorer-workspace-head">
         <strong>
@@ -8560,64 +8590,66 @@ const playerRoleBadge = (row) => {
               </CollapsibleSection>
 )
     )}         
-{scorerMode && (
-  <div className="scorer-dock-area">
-    <div className="scorer-quick-dock compact">
-      <button
-        type="button"
-        className={scorerDrawer === "scoreboard" ? "active" : ""}
-        onClick={() =>
-          setScorerDrawer((prev) => (prev === "scoreboard" ? null : "scoreboard"))
-        }
-      >
-        <span className="dock-icon">📊</span>
-        <span className="dock-text">Scorecard</span>
-      </button>
+{isMobile && scorerMode && !isSelectedMatchCompleted && (
+  <nav
+    className="mobile-scorer-dock"
+    aria-label="Scorer tools"
+  >
+    <button
+      type="button"
+      className={
+        !scorerDrawer ? "active" : ""
+      }
+      onClick={() => setScorerDrawer(null)}
+    >
+      <span>🎯</span>
+      <small>Scoring</small>
+    </button>
 
-      <button
-        type="button"
-        className={scorerDrawer === "commentary" ? "active" : ""}
-        onClick={() =>
-          setScorerDrawer((prev) => (prev === "commentary" ? null : "commentary"))
-        }
-      >
-        <span className="dock-icon">📝</span>
-        <span className="dock-text">Commentary</span>
-      </button>
+    <button
+      type="button"
+      onClick={() => {
+        setScorerDrawer(null);
+        setScorerMode(false);
+        setScoringSubTab("SCOREBOARD");
+      }}
+    >
+      <span>📊</span>
+      <small>Scoreboard</small>
+    </button>
 
-      <button
-        type="button"
-        className={scorerDrawer === "setup" ? "active" : ""}
-        onClick={() =>
-          setScorerDrawer((prev) => (prev === "setup" ? null : "setup"))
-        }
-      >
-        <span className="dock-icon">⚙️</span>
-        <span className="dock-text">Setup</span>
-      </button>
+    <button
+      type="button"
+      onClick={() => {
+        setScorerDrawer(null);
+        setScorerMode(false);
+        setScoringSubTab("COMMENTARY");
+      }}
+    >
+      <span>📝</span>
+      <small>Commentary</small>
+    </button>
 
-      <button
-        type="button"
-        className="voice-btn"
-        onClick={startBrowserVoiceScore}
-      >
-        <span className="dock-icon">🎤</span>
-        <span className="dock-text">Voice</span>
-      </button>
-
-      <button type="button" onClick={() => setScorerMode(false)}>
-        <span className="dock-icon">✕</span>
-        <span className="dock-text">Exit</span>
-      </button>
-    </div>
-
-    {(voiceMessage || voiceStatus) && (
-      <div className="voice-score-message compact">
-        {voiceMessage || voiceStatus}
-      </div>
-    )}
-  </div>
-)}     
+    <button
+      type="button"
+      className={
+        scorerDrawer === "setup"
+          ? "active"
+          : ""
+      }
+      onClick={() =>
+        setScorerDrawer(
+          scorerDrawer === "setup"
+            ? null
+            : "setup"
+        )
+      }
+    >
+      <span>⚙️</span>
+      <small>Setup</small>
+    </button>
+  </nav>
+)}   
     </div>
             </>            
           )}
