@@ -4465,6 +4465,30 @@ const recentOverGroups = (() => {
     groupsByOver.get(groupKey).balls.push(ball);
   });
 
+  /*
+  Explicitly sort the deliveries inside each over from
+  oldest to newest.
+
+  This guarantees:
+  left  = earliest delivery
+  right = latest delivery
+*/
+groupsByOver.forEach((group) => {
+  group.balls.sort((first, second) => {
+    const firstSequence = getRecentBallSequence(
+      first,
+      first.__originalIndex ?? 0
+    );
+
+    const secondSequence = getRecentBallSequence(
+      second,
+      second.__originalIndex ?? 0
+    );
+
+    return firstSequence - secondSequence;
+  });
+});
+
   const sortedGroups = Array.from(
     groupsByOver.values()
   ).sort((first, second) => {
@@ -6185,16 +6209,19 @@ function getRecentBallNumber(ball) {
 }
 
 function getRecentBallSequence(ball, fallbackIndex = 0) {
-  const possibleSequence =
-    ball?.sequence ??
-    ball?.sequenceNo ??
-    ball?.deliverySequence ??
-    ball?.id;
+  const sequenceCandidates = [
+    ball?.sequence,
+    ball?.sequenceNo,
+    ball?.deliverySequence,
+    ball?.ballSequence,
+  ];
 
-  const sequenceNumber = Number(possibleSequence);
+  for (const candidate of sequenceCandidates) {
+    const parsed = Number(candidate);
 
-  if (Number.isFinite(sequenceNumber)) {
-    return sequenceNumber;
+    if (Number.isFinite(parsed)) {
+      return parsed;
+    }
   }
 
   const overNumber = getRecentBallOverNumber(ball);
@@ -6204,6 +6231,10 @@ function getRecentBallSequence(ball, fallbackIndex = 0) {
     Number.isFinite(overNumber) &&
     Number.isFinite(ballNumber)
   ) {
+    /*
+      4.1, 4.2, 4.3 become:
+      401, 402, 403
+    */
     return overNumber * 100 + ballNumber;
   }
 
@@ -6213,6 +6244,12 @@ function getRecentBallSequence(ball, fallbackIndex = 0) {
 
   if (Number.isFinite(createdAtTime)) {
     return createdAtTime;
+  }
+
+  const numericId = Number(ball?.id);
+
+  if (Number.isFinite(numericId)) {
+    return numericId;
   }
 
   return fallbackIndex;

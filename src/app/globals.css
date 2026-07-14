@@ -44167,3 +44167,167 @@ body.cric4all-scorer-open {
     font-weight: 750;
   }
 }
+/* =========================================================
+   MOBILE SCORER — FIXED THUMB CONTROL AREA
+========================================================= */
+
+@media (max-width: 760px) {
+  .mobile-scorer-cockpit-v3 {
+    display: grid !important;
+
+    /*
+      Top information uses only the space it needs.
+      The scoring area is always retained at the bottom.
+    */
+    grid-template-rows:
+      auto  /* score header */
+      auto  /* status */
+      auto  /* players */
+      auto  /* metrics */
+      auto  /* chase, when present */
+      auto  /* delivery heading */
+      minmax(0, 1fr) /* recent-delivery area */
+      auto; /* scoring controls */
+
+    gap: 5px !important;
+
+    height: 100% !important;
+    min-height: 0 !important;
+
+    padding: 7px !important;
+    overflow: hidden !important;
+  }
+
+  /*
+    Recent deliveries may use remaining space, but they cannot
+    force the scoring controls outside the screen.
+  */
+  .msc-v3-recent-overs {
+    min-height: 0 !important;
+    max-height: 106px !important;
+
+    padding: 6px 7px !important;
+
+    overflow: hidden !important;
+  }
+
+  .msc-v3-recent-title {
+    margin-bottom: 5px !important;
+  }
+
+  .msc-v3-recent-title strong {
+    font-size: 12px !important;
+  }
+
+  .msc-v3-recent-title small {
+    display: none !important;
+  }
+
+  .msc-v3-over-list {
+    gap: 4px !important;
+  }
+
+  .msc-v3-over-row {
+    min-height: 34px !important;
+    padding: 4px 6px !important;
+  }
+
+  /*
+    The scoring zone is always the final grid row.
+    It cannot be pushed below the viewport.
+  */
+  .msc-v3-control-zone {
+    align-self: end !important;
+
+    width: 100% !important;
+
+    margin: 0 !important;
+    padding: 3px 0 0 !important;
+
+    flex-shrink: 0 !important;
+  }
+
+  .msc-v3-keypad {
+    gap: 5px !important;
+  }
+
+  .msc-v3-key {
+    height: 38px !important;
+    min-height: 38px !important;
+
+    font-size: 14px !important;
+  }
+
+  .msc-v3-safety {
+    gap: 5px !important;
+    margin-top: 5px !important;
+  }
+
+  .msc-v3-safety button {
+    height: 37px !important;
+    min-height: 37px !important;
+
+    font-size: 12px !important;
+  }
+
+  /*
+    These controls must always remain visible.
+  */
+  .msc-v3-tools {
+    display: grid !important;
+    grid-template-columns:
+      repeat(
+        auto-fit,
+        minmax(110px, 1fr)
+      ) !important;
+
+    gap: 5px !important;
+
+    margin: 5px 0 0 !important;
+  }
+
+  .msc-v3-tools button {
+    width: 100% !important;
+    min-width: 0 !important;
+
+    height: 38px !important;
+    min-height: 38px !important;
+
+    padding: 0 8px !important;
+
+    font-size: 12px !important;
+    font-weight: 950 !important;
+    line-height: 1.15 !important;
+
+    white-space: normal !important;
+  }
+
+  .msc-v3-tools button.end {
+    border-color:
+      rgba(248, 113, 113, 0.3) !important;
+
+    background:
+      rgba(127, 29, 29, 0.24) !important;
+
+    color: #fecaca !important;
+  }
+}
+@media (max-width: 760px) {
+  .msc-v3-chase {
+    gap: 4px !important;
+    margin-top: 3px !important;
+  }
+
+  .msc-v3-chase span {
+    min-height: 27px !important;
+
+    padding: 3px 4px !important;
+
+    font-size: 10px !important;
+    line-height: 1.1 !important;
+  }
+
+  .msc-v3-chase b {
+    font-size: 11px !important;
+  }
+}
