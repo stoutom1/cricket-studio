@@ -43553,3 +43553,475 @@ body.cric4all-scorer-open {
     font-size: 9px !important;
   }
 }
+/* =========================================================
+   FINAL MOBILE SCORER — TYPOGRAPHY, OVERS AND SPACING
+========================================================= */
+
+@media (max-width: 760px) {
+  /* -------------------------------------------------------
+     TOP SCORE AREA — LARGER AND CLEARER
+  ------------------------------------------------------- */
+
+  .msc-v3-header {
+    padding: 11px 12px !important;
+  }
+
+  .msc-v3-live {
+    font-size: 13px !important;
+    letter-spacing: 0.35px !important;
+  }
+
+  .msc-v3-score-line {
+    margin-top: 4px !important;
+    gap: 10px !important;
+  }
+
+  .msc-v3-score-line strong {
+    font-size: clamp(
+      46px,
+      14vw,
+      58px
+    ) !important;
+
+    line-height: 0.9 !important;
+  }
+
+  .msc-v3-score-line small {
+    padding-bottom: 6px !important;
+
+    font-size: 14px !important;
+    font-weight: 900 !important;
+  }
+
+  .msc-v3-exit {
+    min-width: 70px !important;
+    height: 40px !important;
+
+    font-size: 13px !important;
+  }
+
+  .msc-v3-status {
+    margin-top: 7px !important;
+    padding: 8px 10px !important;
+
+    font-size: 14px !important;
+    font-weight: 900 !important;
+    line-height: 1.35 !important;
+  }
+
+  /* -------------------------------------------------------
+     BATTERS AND BOWLER
+  ------------------------------------------------------- */
+
+  .msc-v3-players {
+    gap: 7px !important;
+    margin-top: 7px !important;
+  }
+
+  .msc-v3-player {
+    padding: 10px 11px !important;
+
+    border-radius: 12px !important;
+  }
+
+  .msc-v3-player > span {
+    margin-bottom: 5px !important;
+
+    font-size: 11px !important;
+    font-weight: 950 !important;
+  }
+
+  .msc-v3-player strong {
+    font-size: clamp(
+      17px,
+      5vw,
+      20px
+    ) !important;
+
+    font-weight: 1000 !important;
+    line-height: 1.15 !important;
+  }
+
+  .msc-v3-player b {
+    font-size: 15px !important;
+    font-weight: 1000 !important;
+  }
+
+  /* -------------------------------------------------------
+     CRR / RRR / PROJECTION / PARTNERSHIP
+  ------------------------------------------------------- */
+
+  .msc-v3-metrics {
+    gap: 6px !important;
+    margin-top: 7px !important;
+  }
+
+  .msc-v3-metrics > div {
+    min-height: 46px !important;
+
+    display: flex !important;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+
+    padding: 6px 3px !important;
+  }
+
+  .msc-v3-metrics span {
+    font-size: 11px !important;
+    font-weight: 900 !important;
+  }
+
+  .msc-v3-metrics strong {
+    margin-top: 3px !important;
+
+    font-size: 14px !important;
+    font-weight: 1000 !important;
+  }
+
+  /* -------------------------------------------------------
+     TARGET / REQUIRED / BALLS
+  ------------------------------------------------------- */
+
+  .msc-v3-chase {
+    gap: 6px !important;
+    margin-top: 6px !important;
+  }
+
+  .msc-v3-chase span {
+    min-height: 34px;
+
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 4px;
+
+    padding: 6px 4px !important;
+
+    font-size: 12px !important;
+    font-weight: 900 !important;
+  }
+
+  .msc-v3-chase b {
+    font-size: 13px !important;
+  }
+
+  /* -------------------------------------------------------
+     DELIVERY SECTION TITLE
+  ------------------------------------------------------- */
+
+  .msc-v3-delivery-head {
+    margin: 8px 0 5px !important;
+  }
+
+  .msc-v3-delivery-head b {
+    font-size: 11px !important;
+    letter-spacing: 0.5px !important;
+  }
+
+  /* -------------------------------------------------------
+     TWO-OVER RECENT DELIVERIES PANEL
+  ------------------------------------------------------- */
+
+  .msc-v3-recent {
+    display: none !important;
+  }
+
+  .msc-v3-recent-overs {
+    padding: 9px 10px;
+
+    border: 1px solid
+      rgba(148, 163, 184, 0.13);
+
+    border-radius: 13px;
+
+    background:
+      linear-gradient(
+        145deg,
+        rgba(17, 31, 52, 0.88),
+        rgba(10, 21, 38, 0.9)
+      );
+  }
+
+  .msc-v3-recent-title {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+
+    margin-bottom: 7px;
+  }
+
+  .msc-v3-recent-title > div {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+  }
+
+  .msc-v3-recent-title > div > span {
+    font-size: 17px;
+  }
+
+  .msc-v3-recent-title strong,
+  .msc-v3-recent-title small {
+    display: block;
+  }
+
+  .msc-v3-recent-title strong {
+    color: #f8fafc;
+
+    font-size: 13px;
+    font-weight: 950;
+  }
+
+  .msc-v3-recent-title small {
+    margin-top: 1px;
+
+    color: #8998ad;
+
+    font-size: 10px;
+    font-weight: 750;
+  }
+
+  .msc-v3-over-list {
+    display: grid;
+    gap: 6px;
+  }
+
+  .msc-v3-over-row {
+    display: grid;
+    grid-template-columns:
+      58px minmax(0, 1fr) auto;
+
+    align-items: center;
+    gap: 7px;
+
+    min-height: 35px;
+    padding: 5px 7px;
+
+    border-radius: 10px;
+
+    background: rgba(30, 41, 59, 0.56);
+  }
+
+  .msc-v3-over-label {
+    color: #a8b4c7;
+
+    font-size: 10px;
+    font-weight: 900;
+    white-space: nowrap;
+  }
+
+  .msc-v3-over-balls {
+    display: flex;
+    align-items: center;
+    gap: 4px;
+
+    min-width: 0;
+
+    overflow-x: auto;
+    overflow-y: hidden;
+
+    scrollbar-width: none;
+  }
+
+  .msc-v3-over-balls::-webkit-scrollbar {
+    display: none;
+  }
+
+  .msc-v3-over-balls b {
+    min-width: 27px;
+    height: 27px;
+    flex: 0 0 auto;
+
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+
+    padding: 0 4px;
+
+    border-radius: 7px;
+
+    background: rgba(51, 65, 85, 0.84);
+    color: #ffffff;
+
+    font-size: 11px;
+    font-weight: 1000;
+  }
+
+  .msc-v3-over-balls b.wicket {
+    background: rgba(185, 28, 28, 0.58);
+    color: #fecaca;
+  }
+
+  .msc-v3-over-balls b.boundary {
+    background: rgba(109, 40, 217, 0.58);
+    color: #ede9fe;
+  }
+
+  .msc-v3-over-balls b.extra {
+    background: rgba(161, 98, 7, 0.48);
+    color: #fde68a;
+  }
+
+  .msc-v3-over-complete {
+    width: 23px;
+    height: 23px;
+
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+
+    border-radius: 50%;
+
+    background: rgba(16, 185, 129, 0.16);
+    color: #6ee7b7;
+
+    font-size: 11px;
+    font-weight: 1000;
+  }
+
+  .msc-v3-no-recent {
+    padding: 8px;
+
+    color: #94a3b8;
+
+    font-size: 12px;
+    font-weight: 750;
+
+    text-align: center;
+  }
+
+  /* -------------------------------------------------------
+     POSITION THE KEYPAD WITHOUT A LARGE EMPTY GAP
+  ------------------------------------------------------- */
+
+  .msc-v3-control-zone {
+    /*
+      Do not use margin-top:auto here.
+      The enlarged match information and two-over panel now
+      occupy the middle of the screen naturally.
+    */
+    margin-top: clamp(
+      10px,
+      1.8dvh,
+      16px
+    ) !important;
+
+    padding-top: 0 !important;
+  }
+
+  .msc-v3-keypad {
+    gap: 6px !important;
+  }
+
+  .msc-v3-key {
+    height: clamp(
+      41px,
+      5.6dvh,
+      47px
+    ) !important;
+
+    font-size: 15px !important;
+  }
+
+  .msc-v3-safety button {
+    height: 41px !important;
+
+    font-size: 13px !important;
+  }
+
+  /* -------------------------------------------------------
+     CHANGE WK / END INNINGS
+  ------------------------------------------------------- */
+
+  .msc-v3-tools {
+    gap: 6px !important;
+    margin-top: 7px !important;
+  }
+
+  .msc-v3-tools button {
+    min-height: 37px !important;
+    height: 37px !important;
+
+    padding: 0 8px !important;
+
+    font-size: 12px !important;
+    font-weight: 950 !important;
+  }
+
+  /*
+    When Change WK is the only available tool,
+    it remains full-width and easy to tap.
+  */
+  .msc-v3-tools button:only-child {
+    flex-basis: 100%;
+  }
+}
+@media (max-width: 760px) and (max-height: 700px) {
+  .msc-v3-score-line strong {
+    font-size: 40px !important;
+  }
+
+  .msc-v3-status {
+    font-size: 12px !important;
+  }
+
+  .msc-v3-player {
+    padding: 7px 8px !important;
+  }
+
+  .msc-v3-player strong {
+    font-size: 15px !important;
+  }
+
+  .msc-v3-player b {
+    font-size: 13px !important;
+  }
+
+  .msc-v3-metrics > div {
+    min-height: 38px !important;
+  }
+
+  .msc-v3-metrics span {
+    font-size: 9px !important;
+  }
+
+  .msc-v3-metrics strong {
+    font-size: 12px !important;
+  }
+
+  .msc-v3-recent-overs {
+    padding: 6px 7px;
+  }
+
+  .msc-v3-over-row {
+    min-height: 31px;
+    padding: 3px 5px;
+  }
+
+  .msc-v3-over-balls b {
+    min-width: 24px;
+    height: 24px;
+
+    font-size: 10px;
+  }
+
+  .msc-v3-control-zone {
+    margin-top: 7px !important;
+  }
+
+  .msc-v3-key {
+    height: 36px !important;
+  }
+
+  .msc-v3-safety button {
+    height: 35px !important;
+  }
+
+  .msc-v3-tools button {
+    min-height: 31px !important;
+    height: 31px !important;
+
+    font-size: 10px !important;
+  }
+}

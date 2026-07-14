@@ -4401,6 +4401,55 @@ const previousOverInfo = (() => {
   };
 })();
 
+const recentOverGroups = (() => {
+  const balls = Array.isArray(recentBalls)
+    ? recentBalls.slice(-14)
+    : [];
+
+  const groups = [];
+
+  balls.forEach((ball, index) => {
+    const overNumber = getRecentBallOverNumber(ball);
+
+    /*
+      If an over number is unavailable, retain the ball in the
+      previous group rather than losing it.
+    */
+    const groupKey =
+      overNumber !== null
+        ? `over-${overNumber}`
+        : groups.length
+          ? groups[groups.length - 1].key
+          : "recent";
+
+    let group = groups.find(
+      (existingGroup) =>
+        existingGroup.key === groupKey
+    );
+
+    if (!group) {
+      group = {
+        key: groupKey,
+        overNumber,
+        balls: [],
+      };
+
+      groups.push(group);
+    }
+
+    group.balls.push({
+      ...ball,
+      recentDisplayIndex: index,
+    });
+  });
+
+  /*
+    Showing the last two overs uses the middle space meaningfully
+    without making the screen busy.
+  */
+  return groups.slice(-2);
+})();
+
 function getMatchOptionLabel(match) {
   const teams = `${match.teamAName || "Team A"} vs ${
     match.teamBName || "Team B"
@@ -5994,6 +6043,39 @@ ${shareUrl}`;
   }
 }
 
+function getRecentBallText(ball) {
+  const label = String(ball?.label || "").trim();
+
+  return (
+    label.split(" ").slice(1).join(" ") ||
+    label ||
+    "-"
+  ).replace(/[()]/g, "");
+}
+
+function getRecentBallOverNumber(ball) {
+  const directValue =
+    ball?.overNumber ??
+    ball?.overNo ??
+    ball?.over ??
+    ball?.deliveryOver;
+
+  const directNumber = Number(directValue);
+
+  if (Number.isFinite(directNumber)) {
+    return directNumber;
+  }
+
+  /*
+    Fallback for labels such as:
+    "4.1 2", "4.2 W", "5.1 Wd"
+  */
+  const label = String(ball?.label || "");
+  const match = label.match(/(?:^|\s)(\d+)\.(\d+)/);
+
+  return match ? Number(match[1]) : null;
+}
+
 function MobileMatchSetup({ match, includeTimeline = false }) {
   return (
     <details className="mobile-match-setup">
@@ -7580,40 +7662,88 @@ const playerRoleBadge = (row) => {
         <span />
       </div>
 
-      <div className="msc-v3-recent">
-        <span>Recent</span>
+<div className="msc-v3-recent-overs">
+  <div className="msc-v3-recent-title">
+    <div>
+      <span>🎳</span>
 
-        <div>
-          {recentBalls.length ? (
-            recentBalls.slice(0, 10).map((ball, index) => {
-              const label = ball.label || "";
+      <div>
+        <strong>Recent Deliveries</strong>
+        <small>Latest two overs</small>
+      </div>
+    </div>
+  </div>
 
-              const ballResult = (
-                label.split(" ").slice(1).join(" ") ||
-                label
-              ).replace(/[()]/g, "");
+  {recentOverGroups.length ? (
+    <div className="msc-v3-over-list">
+      {recentOverGroups.map((group, groupIndex) => (
+        <div
+          key={group.key}
+          className="msc-v3-over-row"
+        >
+          <span className="msc-v3-over-label">
+            {group.overNumber !== null
+              ? `Over ${group.overNumber + 1}`
+              : groupIndex ===
+                  recentOverGroups.length - 1
+                ? "Current"
+                : "Previous"}
+          </span>
+
+          <div className="msc-v3-over-balls">
+            {group.balls.map((ball, ballIndex) => {
+              const ballResult =
+                getRecentBallText(ball);
+
+              const normalizedResult =
+                ballResult.toUpperCase();
 
               return (
                 <b
-                  key={ball.id || index}
+                  key={
+                    ball.id ||
+                    `${group.key}-${ballIndex}`
+                  }
                   className={
-                    ballResult === "W"
+                    normalizedResult === "W"
                       ? "wicket"
-                      : ballResult === "4" ||
-                          ballResult === "6"
+                      : normalizedResult === "4" ||
+                          normalizedResult === "6"
                         ? "boundary"
-                        : ""
+                        : normalizedResult.startsWith(
+                              "WD"
+                            ) ||
+                            normalizedResult.startsWith(
+                              "NB"
+                            )
+                          ? "extra"
+                          : ""
                   }
                 >
                   {ballResult}
                 </b>
               );
-            })
-          ) : (
-            <small>No balls yet</small>
+            })}
+          </div>
+
+          {groupIndex <
+            recentOverGroups.length - 1 && (
+            <span
+              className="msc-v3-over-complete"
+              title="Over completed"
+            >
+              ✓
+            </span>
           )}
         </div>
-      </div>
+      ))}
+    </div>
+  ) : (
+    <div className="msc-v3-no-recent">
+      No deliveries recorded yet
+    </div>
+  )}
+</div>
 
       {/* THUMB-REACH CONTROLS */}
       <div className="msc-v3-control-zone">
