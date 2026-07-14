@@ -4402,52 +4402,127 @@ const previousOverInfo = (() => {
 })();
 
 const recentOverGroups = (() => {
-  const balls = Array.isArray(recentBalls)
-    ? recentBalls.slice(-14)
+  const sourceBalls = Array.isArray(recentBalls)
+    ? recentBalls
     : [];
 
-  const groups = [];
+  /*
+    Never trust the API array order.
 
-  balls.forEach((ball, index) => {
-    const overNumber = getRecentBallOverNumber(ball);
+    Sort oldest to newest so that:
+    - previous over is first;
+    - current over is last;
+    - newly scored balls append to the current-over row.
+  */
+  const chronologicalBalls = sourceBalls
+    .map((ball, originalIndex) => ({
+      ...ball,
+      __originalIndex: originalIndex,
+      __sortValue: getRecentBallSequence(
+        ball,
+        originalIndex
+      ),
+    }))
+    .sort((first, second) => {
+      const sequenceDifference =
+        first.__sortValue - second.__sortValue;
+
+      if (sequenceDifference !== 0) {
+        return sequenceDifference;
+      }
+
+      return (
+        first.__originalIndex -
+        second.__originalIndex
+      );
+    });
+
+  const groupsByOver = new Map();
+
+  chronologicalBalls.forEach((ball) => {
+    const overNumber =
+      getRecentBallOverNumber(ball);
 
     /*
-      If an over number is unavailable, retain the ball in the
-      previous group rather than losing it.
+      Balls must normally contain an over number.
+      The fallback keeps unnumbered balls together.
     */
-    const groupKey =
-      overNumber !== null
-        ? `over-${overNumber}`
-        : groups.length
-          ? groups[groups.length - 1].key
-          : "recent";
+    const groupKey = Number.isFinite(overNumber)
+      ? `over-${overNumber}`
+      : "unknown-over";
 
-    let group = groups.find(
-      (existingGroup) =>
-        existingGroup.key === groupKey
-    );
-
-    if (!group) {
-      group = {
+    if (!groupsByOver.has(groupKey)) {
+      groupsByOver.set(groupKey, {
         key: groupKey,
-        overNumber,
+        overNumber:
+          Number.isFinite(overNumber)
+            ? overNumber
+            : null,
         balls: [],
-      };
-
-      groups.push(group);
+      });
     }
 
-    group.balls.push({
-      ...ball,
-      recentDisplayIndex: index,
-    });
+    groupsByOver.get(groupKey).balls.push(ball);
+  });
+
+  const sortedGroups = Array.from(
+    groupsByOver.values()
+  ).sort((first, second) => {
+    if (
+      first.overNumber === null &&
+      second.overNumber === null
+    ) {
+      return 0;
+    }
+
+    if (first.overNumber === null) return -1;
+    if (second.overNumber === null) return 1;
+
+    return (
+      first.overNumber -
+      second.overNumber
+    );
   });
 
   /*
-    Showing the last two overs uses the middle space meaningfully
-    without making the screen busy.
+    Keep exactly:
+    1. previous over;
+    2. current over.
+
+    The newest/highest over number is always current.
   */
-  return groups.slice(-2);
+  const finalGroups =
+  sortedGroups.slice(-2);
+
+const currentOverFromScoreboard =
+  Number(
+    displayScoreboard?.currentState
+      ?.nextOverNumber ??
+      scoreboard?.currentState
+        ?.nextOverNumber
+  );
+
+const latestGroup =
+  finalGroups[finalGroups.length - 1];
+
+if (
+  Number.isFinite(currentOverFromScoreboard) &&
+  latestGroup &&
+  Number(latestGroup.overNumber) <
+    currentOverFromScoreboard
+) {
+  finalGroups.push({
+    key: `over-${currentOverFromScoreboard}`,
+    overNumber: currentOverFromScoreboard,
+    balls: [],
+  });
+}
+
+/*
+  If adding the empty current over creates three rows,
+  retain only previous + current.
+*/
+return finalGroups.slice(-2);
 })();
 
 function getMatchOptionLabel(match) {
@@ -6044,13 +6119,32 @@ ${shareUrl}`;
 }
 
 function getRecentBallText(ball) {
+  const directText =
+    ball?.shortText ||
+    ball?.displayText ||
+    ball?.resultText;
+
+  if (directText) {
+    return String(directText)
+      .replace(/[()]/g, "")
+      .trim();
+  }
+
   const label = String(ball?.label || "").trim();
 
+  /*
+    Handles labels such as:
+    "4.1 2"
+    "4.2 W"
+    "5.1 Wd"
+  */
   return (
-    label.split(" ").slice(1).join(" ") ||
+    label.replace(/^\s*\d+\.\d+\s*/, "") ||
     label ||
     "-"
-  ).replace(/[()]/g, "");
+  )
+    .replace(/[()]/g, "")
+    .trim();
 }
 
 function getRecentBallOverNumber(ball) {
@@ -6066,14 +6160,62 @@ function getRecentBallOverNumber(ball) {
     return directNumber;
   }
 
-  /*
-    Fallback for labels such as:
-    "4.1 2", "4.2 W", "5.1 Wd"
-  */
   const label = String(ball?.label || "");
   const match = label.match(/(?:^|\s)(\d+)\.(\d+)/);
 
   return match ? Number(match[1]) : null;
+}
+
+function getRecentBallNumber(ball) {
+  const directValue =
+    ball?.ballNumber ??
+    ball?.ballNo ??
+    ball?.deliveryBall;
+
+  const directNumber = Number(directValue);
+
+  if (Number.isFinite(directNumber)) {
+    return directNumber;
+  }
+
+  const label = String(ball?.label || "");
+  const match = label.match(/(?:^|\s)(\d+)\.(\d+)/);
+
+  return match ? Number(match[2]) : null;
+}
+
+function getRecentBallSequence(ball, fallbackIndex = 0) {
+  const possibleSequence =
+    ball?.sequence ??
+    ball?.sequenceNo ??
+    ball?.deliverySequence ??
+    ball?.id;
+
+  const sequenceNumber = Number(possibleSequence);
+
+  if (Number.isFinite(sequenceNumber)) {
+    return sequenceNumber;
+  }
+
+  const overNumber = getRecentBallOverNumber(ball);
+  const ballNumber = getRecentBallNumber(ball);
+
+  if (
+    Number.isFinite(overNumber) &&
+    Number.isFinite(ballNumber)
+  ) {
+    return overNumber * 100 + ballNumber;
+  }
+
+  const createdAtTime = ball?.createdAt
+    ? new Date(ball.createdAt).getTime()
+    : Number.NaN;
+
+  if (Number.isFinite(createdAtTime)) {
+    return createdAtTime;
+  }
+
+  return fallbackIndex;
 }
 
 function MobileMatchSetup({ match, includeTimeline = false }) {
@@ -7669,74 +7811,106 @@ const playerRoleBadge = (row) => {
 
       <div>
         <strong>Recent Deliveries</strong>
-        <small>Latest two overs</small>
+        <small>
+          Previous over and current over
+        </small>
       </div>
     </div>
   </div>
 
   {recentOverGroups.length ? (
     <div className="msc-v3-over-list">
-      {recentOverGroups.map((group, groupIndex) => (
-        <div
-          key={group.key}
-          className="msc-v3-over-row"
-        >
-          <span className="msc-v3-over-label">
-            {group.overNumber !== null
-              ? `Over ${group.overNumber + 1}`
-              : groupIndex ===
-                  recentOverGroups.length - 1
-                ? "Current"
-                : "Previous"}
-          </span>
+      {recentOverGroups.map(
+        (group, groupIndex) => {
+          const isCurrentOver =
+            groupIndex ===
+            recentOverGroups.length - 1;
 
-          <div className="msc-v3-over-balls">
-            {group.balls.map((ball, ballIndex) => {
-              const ballResult =
-                getRecentBallText(ball);
-
-              const normalizedResult =
-                ballResult.toUpperCase();
-
-              return (
-                <b
-                  key={
-                    ball.id ||
-                    `${group.key}-${ballIndex}`
-                  }
-                  className={
-                    normalizedResult === "W"
-                      ? "wicket"
-                      : normalizedResult === "4" ||
-                          normalizedResult === "6"
-                        ? "boundary"
-                        : normalizedResult.startsWith(
-                              "WD"
-                            ) ||
-                            normalizedResult.startsWith(
-                              "NB"
-                            )
-                          ? "extra"
-                          : ""
-                  }
-                >
-                  {ballResult}
-                </b>
-              );
-            })}
-          </div>
-
-          {groupIndex <
-            recentOverGroups.length - 1 && (
-            <span
-              className="msc-v3-over-complete"
-              title="Over completed"
+          return (
+            <div
+              key={group.key}
+              className={`msc-v3-over-row ${
+                isCurrentOver
+                  ? "current-over"
+                  : "previous-over"
+              }`}
             >
-              ✓
-            </span>
-          )}
-        </div>
-      ))}
+              <div className="msc-v3-over-label">
+                <span>
+                  {isCurrentOver
+                    ? "Current"
+                    : "Previous"}
+                </span>
+
+                <strong>
+                  {group.overNumber !== null
+                    ? `Over ${
+                        group.overNumber + 1
+                      }`
+                    : "Over"}
+                </strong>
+              </div>
+
+              <div className="msc-v3-over-balls">
+                {group.balls.map(
+                  (ball, ballIndex) => {
+                    const ballResult =
+                      getRecentBallText(ball);
+
+                    const normalizedResult =
+                      ballResult.toUpperCase();
+
+                    return (
+                      <b
+                        key={
+                          ball.id ||
+                          `${group.key}-${ballIndex}`
+                        }
+                        className={
+                          normalizedResult === "W"
+                            ? "wicket"
+                            : normalizedResult ===
+                                  "4" ||
+                                normalizedResult ===
+                                  "6"
+                              ? "boundary"
+                              : normalizedResult.startsWith(
+                                    "WD"
+                                  ) ||
+                                  normalizedResult.startsWith(
+                                    "NB"
+                                  )
+                                ? "extra"
+                                : ""
+                        }
+                      >
+                        {ballResult}
+                      </b>
+                    );
+                  }
+                )}
+
+                {isCurrentOver &&
+                  group.balls.length === 0 && (
+                    <small>
+                      Waiting for first delivery
+                    </small>
+                  )}
+              </div>
+
+              <span
+                className={`msc-v3-over-state ${
+                  isCurrentOver
+                    ? "live"
+                    : "complete"
+                }`}
+              >
+                {isCurrentOver ? "●" : "✓"}
+              </span>
+            </div>
+          );
+        }
+      )}
     </div>
   ) : (
     <div className="msc-v3-no-recent">

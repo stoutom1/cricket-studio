@@ -44025,3 +44025,145 @@ body.cric4all-scorer-open {
     font-size: 10px !important;
   }
 }
+@media (max-width: 760px) {
+  .msc-v3-tools {
+    display: grid !important;
+    grid-template-columns:
+      repeat(
+        auto-fit,
+        minmax(0, 1fr)
+      ) !important;
+
+    gap: 7px !important;
+    margin-top: 7px !important;
+  }
+
+  .msc-v3-tools button {
+    width: 100% !important;
+    min-width: 0 !important;
+
+    height: 42px !important;
+    min-height: 42px !important;
+
+    padding: 0 10px !important;
+
+    border-radius: 10px !important;
+
+    font-size: 13px !important;
+    font-weight: 950 !important;
+    line-height: 1.15 !important;
+
+    white-space: normal !important;
+  }
+
+  .msc-v3-tools button.end {
+    border-color:
+      rgba(248, 113, 113, 0.28) !important;
+
+    background:
+      rgba(127, 29, 29, 0.22) !important;
+
+    color: #fecaca !important;
+  }
+
+  .msc-v3-tools button:only-child {
+    grid-column: 1 / -1;
+  }
+}
+@media (max-width: 760px) {
+  .msc-v3-over-row {
+    grid-template-columns:
+      66px
+      minmax(0, 1fr)
+      25px !important;
+
+    min-height: 40px !important;
+    padding: 6px 8px !important;
+  }
+
+  .msc-v3-over-row.previous-over {
+    opacity: 0.78;
+  }
+
+  .msc-v3-over-row.current-over {
+    border: 1px solid
+      rgba(52, 211, 153, 0.2);
+
+    background:
+      linear-gradient(
+        135deg,
+        rgba(6, 78, 59, 0.18),
+        rgba(30, 41, 59, 0.62)
+      );
+  }
+
+  .msc-v3-over-label {
+    display: block;
+  }
+
+  .msc-v3-over-label span,
+  .msc-v3-over-label strong {
+    display: block;
+  }
+
+  .msc-v3-over-label span {
+    color: #8291a7;
+
+    font-size: 9px;
+    font-weight: 900;
+    text-transform: uppercase;
+  }
+
+  .msc-v3-over-label strong {
+    margin-top: 2px;
+
+    color: #dbe4f0;
+
+    font-size: 11px;
+    font-weight: 950;
+  }
+
+  .msc-v3-over-row.current-over
+    .msc-v3-over-label span {
+    color: #6ee7b7;
+  }
+
+  .msc-v3-over-state {
+    width: 24px;
+    height: 24px;
+
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+
+    border-radius: 50%;
+
+    font-size: 10px;
+    font-weight: 1000;
+  }
+
+  .msc-v3-over-state.complete {
+    background:
+      rgba(148, 163, 184, 0.12);
+
+    color: #94a3b8;
+  }
+
+  .msc-v3-over-state.live {
+    background:
+      rgba(16, 185, 129, 0.16);
+
+    color: #34d399;
+
+    box-shadow:
+      0 0 8px
+      rgba(52, 211, 153, 0.18);
+  }
+
+  .msc-v3-over-balls small {
+    color: #8291a7;
+
+    font-size: 10px;
+    font-weight: 750;
+  }
+}
