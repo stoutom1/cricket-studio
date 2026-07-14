@@ -339,6 +339,7 @@ const [correctionInnings, setCorrectionInnings] = useState(1);
 const [activeScoreboardInnings, setActiveScoreboardInnings] = useState(1);
 const [openPlayerActionId, setOpenPlayerActionId] = useState(null);
 const [selectedAuditLeagueKey, setSelectedAuditLeagueKey] = useState("ALL");
+const [showScoringFormSheet, setShowScoringFormSheet] = useState(false);
 const isSuperAdmin =
   session?.user?.email ===
   "surprisecricket11@gmail.com";
@@ -6255,49 +6256,7 @@ function getRecentBallSequence(ball, fallbackIndex = 0) {
   return fallbackIndex;
 }
 
-function openScoringFormFromScorerMode() {
-  setScorerDrawer(null);
-  setScorerMode(false);
-  setScoringSubTab("ADVANCED");
 
-  window.requestAnimationFrame(() => {
-    window.requestAnimationFrame(() => {
-      const scoringForm =
-        document.getElementById("add-ball-form") ||
-        document.querySelector(".scoring-form") ||
-        document.querySelector(".scoring-form-card");
-
-      if (!scoringForm) {
-        console.warn(
-          "Scoring Form could not be located. Add id=\"add-ball-form\" to the form container."
-        );
-        return;
-      }
-
-      /*
-        Open the form when it is contained inside a collapsed
-        <details> section.
-      */
-      const parentDetails = scoringForm.closest("details");
-
-      if (parentDetails) {
-        parentDetails.open = true;
-      }
-
-      /*
-        Also support the form container itself being <details>.
-      */
-      if (scoringForm instanceof HTMLDetailsElement) {
-        scoringForm.open = true;
-      }
-
-      scoringForm.scrollIntoView({
-        behavior: "smooth",
-        block: "start",
-      });
-    });
-  });
-}
 
 function MobileMatchSetup({ match, includeTimeline = false }) {
   return (
@@ -16807,6 +16766,51 @@ onChange={(e) => {
         )}
       </div>
     </div>
+  </div>
+)}
+{showScoringFormSheet && (
+  <div
+    className="scoring-form-sheet-backdrop"
+    role="presentation"
+    onMouseDown={(event) => {
+      if (event.target === event.currentTarget) {
+        setShowScoringFormSheet(false);
+      }
+    }}
+  >
+    <section
+      className="scoring-form-sheet"
+      role="dialog"
+      aria-modal="true"
+      aria-label="Advanced Scoring Form"
+    >
+      <header className="scoring-form-sheet-header">
+        <div>
+          <span>⚙️ Advanced Delivery</span>
+          <strong>Scoring Form</strong>
+        </div>
+
+        <button
+          type="button"
+          onClick={() => setShowScoringFormSheet(false)}
+          aria-label="Close scoring form"
+        >
+          ✕
+        </button>
+      </header>
+
+      <div className="scoring-form-sheet-body">
+        {/*
+          MOVE or render your existing Scoring Form JSX here.
+
+          Do not create a second set of inputs with different state.
+          Use the same ballForm fields and the same submit handlers.
+        */}
+        <div id="scorer-mode-advanced-form">
+          {/* Paste the existing Scoring Form contents here */}
+        </div>
+      </div>
+    </section>
   </div>
 )}
 {showRetiredHurtModal && (

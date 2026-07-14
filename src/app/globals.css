@@ -45618,3 +45618,187 @@ body.cric4all-scorer-open {
     min-height: 40px !important;
   }
 }
+/* =========================================================
+   SCORER MODE — ADVANCED SCORING FORM SHEET
+========================================================= */
+
+@media (max-width: 760px) {
+  .msc-v3-scoring-form-btn {
+    width: 100%;
+    min-height: 44px;
+
+    display: grid;
+    grid-template-columns:
+      auto minmax(0, 1fr) auto;
+    align-items: center;
+    gap: 9px;
+
+    margin-top: 7px;
+    padding: 7px 11px;
+
+    border: 1px solid rgba(56, 189, 248, 0.22);
+    border-radius: 10px;
+
+    background:
+      linear-gradient(
+        145deg,
+        rgba(14, 116, 144, 0.2),
+        rgba(30, 41, 59, 0.76)
+      );
+
+    color: #ffffff;
+    text-align: left;
+  }
+
+  .msc-v3-scoring-form-btn > span {
+    width: 30px;
+    height: 30px;
+
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+
+    border-radius: 8px;
+    background: rgba(14, 165, 233, 0.15);
+
+    font-size: 15px;
+  }
+
+  .msc-v3-scoring-form-btn > div {
+    min-width: 0;
+  }
+
+  .msc-v3-scoring-form-btn strong,
+  .msc-v3-scoring-form-btn small {
+    display: block;
+  }
+
+  .msc-v3-scoring-form-btn strong {
+    font-size: 13px;
+    font-weight: 950;
+  }
+
+  .msc-v3-scoring-form-btn small {
+    margin-top: 2px;
+
+    color: #9fb1c7;
+
+    font-size: 10px;
+    font-weight: 750;
+  }
+
+  .msc-v3-scoring-form-btn > b {
+    color: #7dd3fc;
+
+    font-size: 21px;
+    font-weight: 500;
+  }
+
+  .scoring-form-sheet-backdrop {
+    position: fixed;
+    inset: 0;
+    z-index: 13000;
+
+    display: flex;
+    align-items: flex-end;
+    justify-content: center;
+
+    padding-top: env(safe-area-inset-top);
+
+    background: rgba(2, 6, 23, 0.72);
+
+    backdrop-filter: blur(10px);
+    -webkit-backdrop-filter: blur(10px);
+  }
+
+  .scoring-form-sheet {
+    width: 100%;
+    max-width: 460px;
+    max-height: 88dvh;
+
+    display: flex;
+    flex-direction: column;
+
+    overflow: hidden;
+
+    border: 1px solid rgba(56, 189, 248, 0.2);
+    border-radius: 22px 22px 0 0;
+
+    background:
+      linear-gradient(
+        160deg,
+        #12223a,
+        #091426
+      );
+
+    box-shadow:
+      0 -20px 50px rgba(0, 0, 0, 0.48);
+  }
+
+  .scoring-form-sheet-header {
+    flex: 0 0 auto;
+
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 12px;
+
+    padding: 12px 14px;
+
+    border-bottom: 1px solid rgba(148, 163, 184, 0.12);
+
+    background: rgba(8, 18, 34, 0.96);
+  }
+
+  .scoring-form-sheet-header span,
+  .scoring-form-sheet-header strong {
+    display: block;
+  }
+
+  .scoring-form-sheet-header span {
+    color: #7dd3fc;
+
+    font-size: 10px;
+    font-weight: 900;
+    text-transform: uppercase;
+  }
+
+  .scoring-form-sheet-header strong {
+    margin-top: 2px;
+
+    color: #ffffff;
+
+    font-size: 17px;
+    font-weight: 950;
+  }
+
+  .scoring-form-sheet-header button {
+    width: 38px;
+    height: 38px;
+
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+
+    padding: 0;
+
+    border: 1px solid rgba(248, 113, 113, 0.22);
+    border-radius: 11px;
+
+    background: rgba(127, 29, 29, 0.18);
+    color: #fecaca;
+
+    font-size: 16px;
+  }
+
+  .scoring-form-sheet-body {
+    flex: 1 1 auto;
+    min-height: 0;
+
+    padding: 12px;
+
+    overflow-y: auto;
+    overscroll-behavior: contain;
+    -webkit-overflow-scrolling: touch;
+  }
+}
