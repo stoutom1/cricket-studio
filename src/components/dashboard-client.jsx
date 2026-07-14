@@ -341,6 +341,7 @@ const [activeScoreboardInnings, setActiveScoreboardInnings] = useState(1);
 const [openPlayerActionId, setOpenPlayerActionId] = useState(null);
 const [selectedAuditLeagueKey, setSelectedAuditLeagueKey] = useState("ALL");
 const [showScoringFormSheet, setShowScoringFormSheet] = useState(false);
+const [bowlerSearchText, setBowlerSearchText] = useState("");
 const isSuperAdmin =
   session?.user?.email ===
   "surprisecricket11@gmail.com";
@@ -2289,6 +2290,7 @@ useEffect(() => {
       ?.needNewBowler
   ) {
     //alert("Opening bowler popup555");
+    setBowlerSearchText("");
     setShowBowlerModal(true);
   }
 }, [scoreboard]);
@@ -2959,6 +2961,7 @@ if (scoreboard?.currentState && !showDeliverySetupModal) {
     if (wasLegalLastBallOfOver) {
       setPendingBallData(null);
       setMustChangeBowler(true);
+      setBowlerSearchText("");
       setShowBowlerModal(true);
       return;
     }
@@ -2993,7 +2996,7 @@ if (scoreboard?.currentState && !showDeliverySetupModal) {
         note: data.note,
         matchStatus: data.matchStatus,
       });
-
+      setBowlerSearchText("");
       setShowBowlerModal(true);
       return;
     }
@@ -3175,6 +3178,7 @@ async function confirmWicket() {
       setError("Please select a new bowler before scoring the next ball.");
       setShowWicketModal(false);
       setShowRetiredHurtModal(false);
+      setBowlerSearchText("");
       setShowBowlerModal(true);
       return;
     }
@@ -3689,6 +3693,7 @@ async function handleRetiredHurtSubmit() {
   setError("Please select a new bowler before scoring the next ball.");
   setShowRetiredHurtModal(false);
   setShowWicketModal(false);
+  setBowlerSearchText("");
   setShowBowlerModal(true);
   return;
 }
@@ -3962,6 +3967,7 @@ async function confirmBowlerChange() {
 function handleCloseBowlerModal() {
   if (mustChangeBowler) {
     setError("Please select a new bowler before scoring the next ball.");
+    setBowlerSearchText("");
     setShowBowlerModal(true);
     return;
   }
@@ -6269,6 +6275,25 @@ function openScoringFormSheet() {
 function closeScoringFormSheet() {
   setShowScoringFormSheet(false);
 }
+
+const availableBowlerOptions = (bowlingTeam?.players || [])
+  .filter(
+    (player) =>
+      String(player.id) !==
+      String(pendingBallData?.bowlerId)
+  )
+  .filter((player) =>
+    String(player.name || "")
+      .toLowerCase()
+      .includes(
+        bowlerSearchText.trim().toLowerCase()
+      )
+  )
+  .sort((first, second) =>
+    String(first.name || "").localeCompare(
+      String(second.name || "")
+    )
+  );
 
 function MobileMatchSetup({ match, includeTimeline = false }) {
   return (
@@ -14117,56 +14142,88 @@ onClick={() => {
       </div>
 
       {/* Only this area scrolls */}
-      <div className="bowler-list bowler-list-scroll-area">
-        {bowlingTeam?.players
-          ?.filter(
-            (player) =>
-              String(player.id) !==
-              String(pendingBallData?.bowlerId)
-          )
-          .map((player) => {
-            const isSelected =
-              String(ballForm.bowlerId) ===
-              String(player.id);
+      <div className="bowler-modal-player-area">
+  <div className="bowler-search-box">
+    <span>🔎</span>
 
-            return (
-              <button
-                key={player.id}
-                type="button"
-                className={`bowler-option ${
-                  isSelected ? "selected" : ""
-                }`}
-                aria-pressed={isSelected}
-                onClick={() =>
-                  setBallForm((previous) => ({
-                    ...previous,
-                    bowlerId: player.id,
-                  }))
-                }
-              >
-                <div className="bowler-avatar">
-                  🏏
-                </div>
+    <input
+      type="search"
+      value={bowlerSearchText}
+      onChange={(event) =>
+        setBowlerSearchText(event.target.value)
+      }
+      placeholder="Search bowler name"
+      autoComplete="off"
+    />
 
-                <div className="bowler-option-copy">
-                  <div className="bowler-name">
-                    {player.name}
-                  </div>
+    {bowlerSearchText && (
+      <button
+        type="button"
+        onClick={() =>
+          setBowlerSearchText("")
+        }
+        aria-label="Clear bowler search"
+      >
+        ✕
+      </button>
+    )}
+  </div>
 
-                  {isSelected && (
-                    <small>Selected for next over</small>
-                  )}
-                </div>
+  <div className="bowler-list bowler-list-scroll-area">
+    {availableBowlerOptions.length ? (
+      availableBowlerOptions.map((player) => {
+        const isSelected =
+          String(ballForm.bowlerId) ===
+          String(player.id);
 
-                {isSelected && (
-                  <span className="bowler-selected-check">
-                    ✓
-                  </span>
-                )}
-              </button>
-            );
-          })}
+        return (
+          <button
+            key={player.id}
+            type="button"
+            className={`bowler-option ${
+              isSelected ? "selected" : ""
+            }`}
+            aria-pressed={isSelected}
+            onClick={() =>
+              setBallForm((previous) => ({
+                ...previous,
+                bowlerId: player.id,
+              }))
+            }
+          >
+            <span className="bowler-avatar">
+              🎳
+            </span>
+
+            <span className="bowler-option-copy">
+              <strong className="bowler-name">
+                {player.name}
+              </strong>
+
+              <small>
+                {isSelected
+                  ? "Selected for next over"
+                  : "Tap to select"}
+              </small>
+            </span>
+
+            <span
+              className={`bowler-selection-indicator ${
+                isSelected ? "selected" : ""
+              }`}
+            >
+              {isSelected ? "✓" : "›"}
+            </span>
+          </button>
+        );
+      })
+    ) : (
+      <div className="bowler-search-empty">
+        No matching bowlers found.
       </div>
+    )}
+  </div>
+</div>
 
       {/* Always visible at the bottom */}
       <div className="bowler-modal-actions bowler-modal-sticky-actions">
