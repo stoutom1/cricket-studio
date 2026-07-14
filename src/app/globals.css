@@ -44775,3 +44775,179 @@ body.cric4all-scorer-open {
     font-size: 19px !important;
   }
 }
+/* =========================================================
+   FINAL MOBILE SCORING NAVIGATION
+   Always one compact row
+========================================================= */
+
+@media (max-width: 760px) {
+  .score-hub-tabs.wow-main-tabs {
+    position: relative !important;
+    top: auto !important;
+
+    width: 100% !important;
+
+    display: grid !important;
+    grid-template-columns:
+      repeat(3, minmax(0, 1fr)) !important;
+    grid-template-rows: 52px !important;
+
+    align-items: stretch !important;
+    gap: 6px !important;
+
+    margin: 8px 0 10px !important;
+    padding: 6px !important;
+
+    overflow: hidden !important;
+
+    border: 1px solid
+      rgba(148, 163, 184, 0.14) !important;
+    border-radius: 15px !important;
+
+    background:
+      linear-gradient(
+        145deg,
+        rgba(12, 24, 43, 0.97),
+        rgba(7, 16, 30, 0.98)
+      ) !important;
+
+    box-shadow:
+      0 8px 20px rgba(2, 6, 23, 0.23) !important;
+  }
+
+  .score-hub-tabs.wow-main-tabs
+    .wow-score-tab {
+    width: 100% !important;
+    min-width: 0 !important;
+    max-width: none !important;
+    height: 52px !important;
+    min-height: 52px !important;
+
+    display: flex !important;
+    flex-direction: row !important;
+    align-items: center !important;
+    justify-content: center !important;
+    gap: 7px !important;
+
+    margin: 0 !important;
+    padding: 5px 6px !important;
+
+    overflow: hidden !important;
+
+    border: 1px solid
+      rgba(148, 163, 184, 0.1) !important;
+    border-radius: 11px !important;
+
+    background:
+      rgba(30, 41, 59, 0.5) !important;
+
+    color: #a8b4c7 !important;
+
+    box-shadow: none !important;
+
+    white-space: nowrap !important;
+  }
+
+  .score-hub-tabs.wow-main-tabs
+    .wow-score-tab.active {
+    border-color:
+      rgba(56, 189, 248, 0.42) !important;
+
+    background:
+      linear-gradient(
+        135deg,
+        #2563eb,
+        #0ea5e9
+      ) !important;
+
+    color: #ffffff !important;
+
+    box-shadow:
+      0 6px 15px rgba(37, 99, 235, 0.23),
+      inset 0 1px 0
+        rgba(255, 255, 255, 0.13) !important;
+  }
+
+  .score-hub-tabs.wow-main-tabs
+    .wow-tab-icon {
+    width: 30px !important;
+    height: 30px !important;
+    min-width: 30px !important;
+    flex: 0 0 30px !important;
+
+    display: inline-flex !important;
+    align-items: center !important;
+    justify-content: center !important;
+
+    margin: 0 !important;
+
+    border-radius: 9px !important;
+
+    background:
+      rgba(255, 255, 255, 0.08) !important;
+
+    font-size: 17px !important;
+    line-height: 1 !important;
+  }
+
+  .score-hub-tabs.wow-main-tabs
+    .wow-tab-copy {
+    display: block !important;
+    min-width: 0 !important;
+  }
+
+  .score-hub-tabs.wow-main-tabs
+    .wow-tab-copy strong {
+    display: block !important;
+
+    overflow: hidden !important;
+
+    color: inherit !important;
+
+    font-size: 10px !important;
+    font-weight: 900 !important;
+    line-height: 1.1 !important;
+
+    text-overflow: ellipsis !important;
+    white-space: nowrap !important;
+  }
+
+  .score-hub-tabs.wow-main-tabs
+    .wow-tab-copy small {
+    display: none !important;
+  }
+}
+/* =========================================================
+   MOBILE SCORING OVERVIEW
+   Hide post-match insights from normal Scoring screen
+========================================================= */
+
+@media (max-width: 760px) {
+  body:not(:has(.mobile-scorer-overlay-v3))
+    .mobile-scorer-console-card
+    .match-insights-card.scorer-insights-strip {
+    display: none !important;
+  }
+}
+@media (max-width: 760px) {
+  .mobile-scorer-console-card {
+    padding-bottom: 10px !important;
+  }
+
+  .mobile-scorer-console-card
+    .card-content,
+  .mobile-scorer-console-card
+    .card-body {
+    padding-bottom: 8px !important;
+  }
+
+  .mobile-scoring-launch-card {
+    margin-bottom: 0 !important;
+  }
+}
+@media (max-width: 760px) {
+  .mobile-scorer-console-card
+    > .card-header {
+    display: none !important;
+  }
+}
