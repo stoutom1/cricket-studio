@@ -45802,3 +45802,261 @@ body.cric4all-scorer-open {
     -webkit-overflow-scrolling: touch;
   }
 }
+/* =========================================================
+   MODALS ABOVE MOBILE SCORER MODE
+========================================================= */
+
+@media (max-width: 760px) {
+  /*
+    Scorer Mode remains below every operational modal.
+  */
+  .mobile-scorer-overlay-v3 {
+    z-index: 100000 !important;
+  }
+
+  /*
+    Change Bowler appears above Scorer Mode.
+  */
+  .bowler-modal-backdrop {
+    position: fixed !important;
+    inset: 0 !important;
+    z-index: 120000 !important;
+
+    pointer-events: auto !important;
+    touch-action: manipulation !important;
+  }
+
+  .bowler-modal {
+    position: relative !important;
+    z-index: 120001 !important;
+
+    pointer-events: auto !important;
+    touch-action: manipulation !important;
+  }
+
+  /*
+    Scoring Form appears above Scorer Mode and bowler modal.
+  */
+  .scoring-form-sheet-backdrop {
+    position: fixed !important;
+    inset: 0 !important;
+    z-index: 130000 !important;
+
+    display: flex !important;
+    align-items: flex-end;
+    justify-content: center;
+
+    padding-top:
+      env(safe-area-inset-top);
+
+    overflow: hidden !important;
+
+    background:
+      rgba(2, 6, 23, 0.76);
+
+    backdrop-filter: blur(12px);
+    -webkit-backdrop-filter: blur(12px);
+
+    pointer-events: auto !important;
+    touch-action: manipulation !important;
+  }
+
+  .scoring-form-sheet {
+    position: relative !important;
+    z-index: 130001 !important;
+
+    width: 100%;
+    max-width: 460px;
+    max-height: 90dvh;
+
+    display: flex;
+    flex-direction: column;
+
+    overflow: hidden;
+
+    border:
+      1px solid
+      rgba(56, 189, 248, 0.22);
+
+    border-radius:
+      22px 22px 0 0;
+
+    background:
+      linear-gradient(
+        160deg,
+        #12223a,
+        #091426
+      );
+
+    box-shadow:
+      0 -22px 55px
+      rgba(0, 0, 0, 0.52);
+
+    pointer-events: auto !important;
+    touch-action: manipulation !important;
+  }
+
+  .scoring-form-sheet-header {
+    flex: 0 0 auto;
+
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 12px;
+
+    min-height: 62px;
+    padding: 10px 14px;
+
+    border-bottom:
+      1px solid
+      rgba(148, 163, 184, 0.12);
+
+    background:
+      rgba(8, 18, 34, 0.98);
+  }
+
+  .scoring-form-sheet-header span,
+  .scoring-form-sheet-header strong {
+    display: block;
+  }
+
+  .scoring-form-sheet-header span {
+    color: #7dd3fc;
+
+    font-size: 10px;
+    font-weight: 900;
+    text-transform: uppercase;
+  }
+
+  .scoring-form-sheet-header strong {
+    margin-top: 2px;
+
+    color: #ffffff;
+
+    font-size: 18px;
+    font-weight: 950;
+  }
+
+  .scoring-form-sheet-header button {
+    width: 39px;
+    height: 39px;
+    min-width: 39px;
+
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+
+    padding: 0;
+
+    border:
+      1px solid
+      rgba(248, 113, 113, 0.25);
+
+    border-radius: 11px;
+
+    background:
+      rgba(127, 29, 29, 0.2);
+
+    color: #fecaca;
+
+    font-size: 16px;
+  }
+
+  .scoring-form-sheet-body {
+    flex: 1 1 auto;
+    min-height: 0;
+
+    padding: 12px;
+
+    overflow-y: auto !important;
+    overflow-x: hidden !important;
+
+    overscroll-behavior: contain;
+    -webkit-overflow-scrolling: touch;
+
+    pointer-events: auto !important;
+    touch-action: pan-y !important;
+  }
+
+  /*
+    Full-width button below Change WK / End Innings.
+  */
+  .msc-v3-scoring-form-btn {
+    width: 100% !important;
+    min-height: 44px !important;
+
+    display: grid !important;
+    grid-template-columns:
+      auto minmax(0, 1fr) auto;
+
+    align-items: center;
+    gap: 9px;
+
+    margin-top: 7px !important;
+    padding: 7px 11px !important;
+
+    border:
+      1px solid
+      rgba(56, 189, 248, 0.24);
+
+    border-radius: 10px;
+
+    background:
+      linear-gradient(
+        145deg,
+        rgba(14, 116, 144, 0.23),
+        rgba(30, 41, 59, 0.82)
+      );
+
+    color: #ffffff;
+
+    font-family: inherit;
+    text-align: left;
+  }
+
+  .msc-v3-scoring-form-btn > span {
+    width: 31px;
+    height: 31px;
+
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+
+    border-radius: 8px;
+
+    background:
+      rgba(14, 165, 233, 0.16);
+
+    font-size: 15px;
+  }
+
+  .msc-v3-scoring-form-btn > div {
+    min-width: 0;
+  }
+
+  .msc-v3-scoring-form-btn strong,
+  .msc-v3-scoring-form-btn small {
+    display: block;
+  }
+
+  .msc-v3-scoring-form-btn strong {
+    font-size: 13px;
+    font-weight: 950;
+  }
+
+  .msc-v3-scoring-form-btn small {
+    margin-top: 2px;
+
+    color: #a3b4c9;
+
+    font-size: 10px;
+    font-weight: 750;
+  }
+
+  .msc-v3-scoring-form-btn > b {
+    color: #7dd3fc;
+
+    font-size: 21px;
+    font-weight: 500;
+  }
+}

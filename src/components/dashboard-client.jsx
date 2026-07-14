@@ -6,6 +6,7 @@ import "@/app/globals.css";
 import { useRouter } from "next/navigation";
 import {formatMatchDateTime,getMatchTimelineText,} from "@/lib/date";
 import { buildMatchInsights } from "@/lib/match-insights";
+import { createPortal } from "react-dom";
 import Link from "next/link";
 
 function Card({
@@ -6256,7 +6257,18 @@ function getRecentBallSequence(ball, fallbackIndex = 0) {
   return fallbackIndex;
 }
 
+function openScoringFormSheet() {
+  /*
+    Do not close Scorer Mode.
+    The scoring form opens above it as a modal sheet.
+  */
+  setScorerDrawer(null);
+  setShowScoringFormSheet(true);
+}
 
+function closeScoringFormSheet() {
+  setShowScoringFormSheet(false);
+}
 
 function MobileMatchSetup({ match, includeTimeline = false }) {
   return (
@@ -8219,20 +8231,23 @@ const playerRoleBadge = (row) => {
                     </button>
                   )}
               </div>
+{/* This is outside msc-v3-tools */}
 <button
   type="button"
   className="msc-v3-scoring-form-btn"
-  onClick={() => setShowScoringFormSheet(true)}
+  onClick={openScoringFormSheet}
 >
   <span>⚙️</span>
 
   <div>
     <strong>Scoring Form</strong>
-    <small>Advanced delivery options</small>
+    <small>
+      Advanced delivery options
+    </small>
   </div>
 
   <b>›</b>
-</button>              
+</button>         
             </>
           )
         )}
@@ -13986,19 +14001,13 @@ onClick={() => {
     </div>
   </div>
 )}
-{showBowlerModal && (
-  <div
-    className="bowler-modal-backdrop"
-    role="presentation"
-    onMouseDown={(event) => {
-      if (
-        event.target === event.currentTarget &&
-        !mustChangeBowler
-      ) {
-        handleCloseBowlerModal();
-      }
-    }}
-  >
+{showBowlerModal &&
+  typeof document !== "undefined" &&
+  createPortal(
+    <div
+      className="bowler-modal-backdrop"
+      role="presentation"
+    >
     <div
       className="bowler-modal bowler-modal-mobile-fit"
       role="dialog"
@@ -14175,8 +14184,9 @@ onClick={() => {
           Continue →
         </button>
       </div>
-    </div>
-  </div>
+     </div>
+  </div>,
+  document.body
 )}
 {showAddTeam && (
   <div className="modal-backdrop">
@@ -16768,51 +16778,68 @@ onChange={(e) => {
     </div>
   </div>
 )}
-{showScoringFormSheet && (
-  <div
-    className="scoring-form-sheet-backdrop"
-    role="presentation"
-    onMouseDown={(event) => {
-      if (event.target === event.currentTarget) {
-        setShowScoringFormSheet(false);
-      }
-    }}
-  >
-    <section
-      className="scoring-form-sheet"
-      role="dialog"
-      aria-modal="true"
-      aria-label="Advanced Scoring Form"
+{showScoringFormSheet &&
+  typeof document !== "undefined" &&
+  createPortal(
+    <div
+      className="scoring-form-sheet-backdrop"
+      role="presentation"
+      onMouseDown={(event) => {
+        if (event.target === event.currentTarget) {
+          closeScoringFormSheet();
+        }
+      }}
     >
-      <header className="scoring-form-sheet-header">
-        <div>
-          <span>⚙️ Advanced Delivery</span>
-          <strong>Scoring Form</strong>
+      <section
+        className="scoring-form-sheet"
+        role="dialog"
+        aria-modal="true"
+        aria-labelledby="scoring-form-sheet-title"
+        onMouseDown={(event) =>
+          event.stopPropagation()
+        }
+      >
+        <header className="scoring-form-sheet-header">
+          <div>
+            <span>⚙️ Advanced Delivery</span>
+
+            <strong id="scoring-form-sheet-title">
+              Scoring Form
+            </strong>
+          </div>
+
+          <button
+            type="button"
+            onClick={closeScoringFormSheet}
+            aria-label="Close scoring form"
+          >
+            ✕
+          </button>
+        </header>
+
+        <div className="scoring-form-sheet-body">
+          {/*
+            Put the existing contents of your Scoring Form
+            here.
+
+            Use the same:
+            ballForm
+            setBallForm
+            submit handler
+            extras handlers
+            wicket handlers
+
+            Do not create new state for these inputs.
+          */}
+
+          <div className="scoring-form-sheet-existing-form">
+            {/* EXISTING SCORING FORM JSX GOES HERE */}
+          </div>
         </div>
-
-        <button
-          type="button"
-          onClick={() => setShowScoringFormSheet(false)}
-          aria-label="Close scoring form"
-        >
-          ✕
-        </button>
-      </header>
-
-      <div className="scoring-form-sheet-body">
-        {/*
-          MOVE or render your existing Scoring Form JSX here.
-
-          Do not create a second set of inputs with different state.
-          Use the same ballForm fields and the same submit handlers.
-        */}
-        <div id="scorer-mode-advanced-form">
-          {/* Paste the existing Scoring Form contents here */}
-        </div>
-      </div>
-    </section>
-  </div>
-)}
+      </section>
+    </div>,
+    document.body
+  )}
 {showRetiredHurtModal && (
   <div className="modal-backdrop">
     <div className="modal-card">
