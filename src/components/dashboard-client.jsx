@@ -7425,19 +7425,22 @@ const playerRoleBadge = (row) => {
   </div>
 )}
 {isMobile && scorerMode && liveMatchCenter && (
-  <div className="mobile-scorer-overlay">
-    <section className="mobile-cockpit-v2">
-      {/* ==================================================
-          SCORE HEADER
-      =================================================== */}
-      <header className="mobile-cockpit-v2-header">
-        <div className="mobile-cockpit-v2-score">
-          <span className="mobile-cockpit-v2-live">
+  <div className="mobile-scorer-overlay-v3">
+    <section
+      className="mobile-scorer-cockpit-v3"
+      role="dialog"
+      aria-modal="true"
+      aria-label="Cric4All Scorer Mode"
+    >
+      {/* SCORE + EXIT */}
+      <header className="msc-v3-header">
+        <div className="msc-v3-score-block">
+          <span className="msc-v3-live">
             <i />
             Live
           </span>
 
-          <div className="mobile-cockpit-v2-score-line">
+          <div className="msc-v3-score-line">
             <strong>
               {liveMatchCenter.runs}/{liveMatchCenter.wickets}
             </strong>
@@ -7449,32 +7452,32 @@ const playerRoleBadge = (row) => {
           </div>
         </div>
 
-        <div className="mobile-cockpit-v2-header-right">
-          <span className="mobile-cockpit-v2-status">
-            {displayScoreboard?.summary?.statusText ||
-              "Ready for next delivery"}
-          </span>
-
-          <button
-            type="button"
-            className="mobile-cockpit-v2-exit"
-            onClick={() => {
-              setScorerDrawer(null);
-              setScorerMode(false);
-              setScoringSubTab("ADVANCED");
-            }}
-          >
-            ✕ Exit
-          </button>
-        </div>
+        <button
+          type="button"
+          className="msc-v3-exit"
+          onClick={() => {
+            setScorerDrawer(null);
+            setScorerMode(false);
+            setScoringSubTab("ADVANCED");
+          }}
+        >
+          ✕ Exit
+        </button>
       </header>
 
-      {/* ==================================================
-          PLAYERS
-      =================================================== */}
+      <div className="msc-v3-status">
+        {error ||
+          instantDeliveryStatus ||
+          message ||
+          overCompleteNotice ||
+          displayScoreboard?.summary?.statusText ||
+          "Ready for next delivery"}
+      </div>
+
+      {/* PLAYERS */}
       {!matchEnded && scoreboard?.currentState && (
-        <div className="mobile-cockpit-v2-players">
-          <div className="mobile-cockpit-v2-player striker">
+        <div className="msc-v3-players">
+          <div className="msc-v3-player striker">
             <span>⚡ Striker</span>
 
             <div>
@@ -7491,7 +7494,7 @@ const playerRoleBadge = (row) => {
             </div>
           </div>
 
-          <div className="mobile-cockpit-v2-player non-striker">
+          <div className="msc-v3-player non-striker">
             <span>🏃 Non-striker</span>
 
             <div>
@@ -7508,7 +7511,7 @@ const playerRoleBadge = (row) => {
             </div>
           </div>
 
-          <div className="mobile-cockpit-v2-player bowler">
+          <div className="msc-v3-player bowler">
             <span>🎯 Bowler</span>
 
             <div>
@@ -7527,10 +7530,8 @@ const playerRoleBadge = (row) => {
         </div>
       )}
 
-      {/* ==================================================
-          MATCH METRICS
-      =================================================== */}
-      <div className="mobile-cockpit-v2-metrics">
+      {/* METRICS */}
+      <div className="msc-v3-metrics">
         <div>
           <span>CRR</span>
           <strong>{liveMatchCenter.crr}</strong>
@@ -7555,10 +7556,9 @@ const playerRoleBadge = (row) => {
         </div>
       </div>
 
-      {/* Chase information */}
       {liveMatchCenter?.isSecondInnings &&
         liveMatchCenter?.target > 0 && (
-          <div className="mobile-cockpit-v2-chase">
+          <div className="msc-v3-chase">
             <span>
               Target <b>{liveMatchCenter.target}</b>
             </span>
@@ -7573,19 +7573,14 @@ const playerRoleBadge = (row) => {
           </div>
         )}
 
-      {/* ==================================================
-          VISUAL SEPARATOR
-      =================================================== */}
-      <div className="mobile-cockpit-v2-divider">
+      {/* SEPARATION + RECENT BALLS */}
+      <div className="msc-v3-delivery-head">
         <span />
         <b>Delivery Controls</b>
         <span />
       </div>
 
-      {/* ==================================================
-          RECENT BALLS
-      =================================================== */}
-      <div className="mobile-cockpit-v2-recent">
+      <div className="msc-v3-recent">
         <span>Recent</span>
 
         <div>
@@ -7620,24 +7615,20 @@ const playerRoleBadge = (row) => {
         </div>
       </div>
 
-      {/* ==================================================
-          COMPACT SCORING CONTROLS
-      =================================================== */}
-      <div className="mobile-cockpit-v2-controls">
+      {/* THUMB-REACH CONTROLS */}
+      <div className="msc-v3-control-zone">
         {needsDeliverySetup ? (
           <button
             type="button"
-            className="mobile-cockpit-v2-setup"
-            onClick={() =>
-              setShowDeliverySetupModal(true)
-            }
+            className="msc-v3-setup"
+            onClick={() => setShowDeliverySetupModal(true)}
           >
             🎯 Select striker, non-striker and bowler
           </button>
         ) : (
           permissions?.canScoreMatch && (
             <>
-              <div className="mobile-cockpit-v2-keypad">
+              <div className="msc-v3-keypad">
                 {[0, 1, 2, 3, 4, 6].map((run) => (
                   <button
                     key={run}
@@ -7647,7 +7638,7 @@ const playerRoleBadge = (row) => {
                       isMatchLocked ||
                       isMatchAbandoned
                     }
-                    className={`cockpit-v2-key ${
+                    className={`msc-v3-key ${
                       run === 4 ? "four" : ""
                     } ${run === 6 ? "six" : ""} ${
                       activeQuickAction === String(run)
@@ -7667,7 +7658,7 @@ const playerRoleBadge = (row) => {
 
                 <button
                   type="button"
-                  className="cockpit-v2-key extra"
+                  className="msc-v3-key extra"
                   disabled={
                     isMatchCompleted ||
                     isMatchLocked ||
@@ -7685,7 +7676,7 @@ const playerRoleBadge = (row) => {
 
                 <button
                   type="button"
-                  className="cockpit-v2-key extra"
+                  className="msc-v3-key extra"
                   disabled={
                     isMatchCompleted ||
                     isMatchLocked ||
@@ -7703,7 +7694,7 @@ const playerRoleBadge = (row) => {
 
                 <button
                   type="button"
-                  className="cockpit-v2-key"
+                  className="msc-v3-key"
                   disabled={
                     isMatchCompleted ||
                     isMatchLocked ||
@@ -7721,7 +7712,7 @@ const playerRoleBadge = (row) => {
 
                 <button
                   type="button"
-                  className="cockpit-v2-key"
+                  className="msc-v3-key"
                   disabled={
                     isMatchCompleted ||
                     isMatchLocked ||
@@ -7739,7 +7730,7 @@ const playerRoleBadge = (row) => {
 
                 <button
                   type="button"
-                  className="cockpit-v2-key wicket"
+                  className="msc-v3-key wicket"
                   disabled={
                     isMatchCompleted ||
                     isMatchLocked ||
@@ -7757,21 +7748,19 @@ const playerRoleBadge = (row) => {
 
                 <button
                   type="button"
-                  className="cockpit-v2-key retired"
+                  className="msc-v3-key retired"
                   disabled={
                     isMatchCompleted ||
                     isMatchLocked ||
                     isMatchAbandoned
                   }
-                  onClick={() =>
-                    setShowRetiredHurtModal(true)
-                  }
+                  onClick={() => setShowRetiredHurtModal(true)}
                 >
                   RTD
                 </button>
               </div>
 
-              <div className="mobile-cockpit-v2-safety">
+              <div className="msc-v3-safety">
                 <button
                   type="button"
                   className="swap"
@@ -7800,7 +7789,7 @@ const playerRoleBadge = (row) => {
                 </button>
               </div>
 
-              <div className="mobile-cockpit-v2-tools">
+              <div className="msc-v3-tools">
                 <button
                   type="button"
                   disabled={
@@ -7808,9 +7797,7 @@ const playerRoleBadge = (row) => {
                     isMatchLocked ||
                     isMatchAbandoned
                   }
-                  onClick={() =>
-                    setShowKeeperChangeModal(true)
-                  }
+                  onClick={() => setShowKeeperChangeModal(true)}
                 >
                   🧤 Change WK
                 </button>
@@ -7830,12 +7817,9 @@ const playerRoleBadge = (row) => {
                 )}
 
                 {Number(ballForm.inningsNo) === 1 &&
-                  scoreboard?.match?.status !==
-                    "COMPLETED" &&
-                  scoreboard?.match?.status !==
-                    "COMPLETED_LOCKED" &&
-                  scoreboard?.match?.status !==
-                    "COMPLETED_CORRECTED" && (
+                  scoreboard?.match?.status !== "COMPLETED" &&
+                  scoreboard?.match?.status !== "COMPLETED_LOCKED" &&
+                  scoreboard?.match?.status !== "COMPLETED_CORRECTED" && (
                     <button
                       type="button"
                       className="end"
@@ -7849,18 +7833,6 @@ const playerRoleBadge = (row) => {
           )
         )}
       </div>
-
-      {/* ==================================================
-          SCORER MODE FOOTER
-      =================================================== */}
-      <footer className="mobile-cockpit-v2-footer">
-        <span>🎯</span>
-
-        <div>
-          <strong>Scorer Mode</strong>
-          <small>Focused ball-by-ball scoring</small>
-        </div>
-      </footer>
     </section>
   </div>
 )}

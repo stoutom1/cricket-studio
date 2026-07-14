@@ -42655,3 +42655,635 @@ body.cric4all-scorer-open {
     display: none !important;
   }
 }
+/* =========================================================
+   CRIC4ALL — MOBILE SCORER MODE V3
+   Add this block at the VERY BOTTOM of your stylesheet.
+   It overrides the previous mobile scorer experiments.
+========================================================= */
+
+/* Lock and blur the page behind Scorer Mode without another hook. */
+@supports selector(body:has(.mobile-scorer-overlay-v3)) {
+  html:has(.mobile-scorer-overlay-v3),
+  body:has(.mobile-scorer-overlay-v3) {
+    overflow: hidden !important;
+    overscroll-behavior: none !important;
+    touch-action: none;
+  }
+}
+
+.mobile-scorer-overlay-v3,
+.mobile-scorer-cockpit-v3 {
+  display: none;
+}
+
+@media (max-width: 760px) {
+  /* Hide the old mobile/desktop scorer UI only while focused mode is active. */
+  .scorer-mode-shell.active .mobile-original-scorer-console,
+  .scorer-mode-shell.active .mobile-original-actions-panel,
+  .scorer-mode-shell.active .mobile-scorer-mode-banner,
+  .scorer-mode-shell.active .mobile-cockpit,
+  .scorer-mode-shell.active .mobile-scorer-overlay,
+  .scorer-mode-shell.active .mobile-cockpit-v2 {
+    display: none !important;
+  }
+
+  .mobile-scorer-overlay-v3 {
+    position: fixed;
+    inset: 0;
+    z-index: 99999;
+
+    display: flex;
+    align-items: stretch;
+    justify-content: center;
+
+    width: 100%;
+    height: 100dvh;
+
+    padding:
+      max(6px, env(safe-area-inset-top))
+      6px
+      max(6px, env(safe-area-inset-bottom));
+
+    overflow: hidden;
+
+    background: rgba(2, 6, 23, 0.72);
+
+    -webkit-backdrop-filter: blur(16px);
+    backdrop-filter: blur(16px);
+
+    touch-action: manipulation;
+  }
+
+  .mobile-scorer-cockpit-v3 {
+    display: flex;
+    flex-direction: column;
+
+    width: min(100%, 460px);
+    height: 100%;
+    min-height: 0;
+
+    padding: 8px;
+
+    overflow: hidden;
+
+    border: 1px solid rgba(56, 189, 248, 0.22);
+    border-radius: 18px;
+
+    background:
+      radial-gradient(
+        circle at 100% 0%,
+        rgba(14, 165, 233, 0.1),
+        transparent 34%
+      ),
+      linear-gradient(160deg, #101f35, #071321);
+
+    box-shadow:
+      0 24px 60px rgba(0, 0, 0, 0.55),
+      inset 0 1px 0 rgba(255, 255, 255, 0.04);
+  }
+
+  /* Score header */
+  .msc-v3-header {
+    display: grid;
+    grid-template-columns: minmax(0, 1fr) auto;
+    align-items: center;
+    gap: 10px;
+
+    padding: 7px 8px;
+
+    border-radius: 13px;
+
+    background:
+      linear-gradient(
+        135deg,
+        rgba(6, 78, 59, 0.22),
+        rgba(15, 23, 42, 0.58)
+      );
+  }
+
+  .msc-v3-live {
+    display: inline-flex;
+    align-items: center;
+    gap: 6px;
+
+    color: #6ee7b7;
+
+    font-size: 11px;
+    font-weight: 950;
+    text-transform: uppercase;
+  }
+
+  .msc-v3-live i {
+    width: 7px;
+    height: 7px;
+
+    border-radius: 50%;
+    background: #34d399;
+
+    box-shadow: 0 0 9px rgba(52, 211, 153, 0.9);
+  }
+
+  .msc-v3-score-line {
+    display: flex;
+    align-items: flex-end;
+    gap: 8px;
+
+    margin-top: 2px;
+  }
+
+  .msc-v3-score-line strong {
+    color: #fff;
+
+    font-size: clamp(36px, 11vw, 46px);
+    font-weight: 1000;
+    line-height: 0.94;
+  }
+
+  .msc-v3-score-line small {
+    padding-bottom: 4px;
+
+    color: #c3cede;
+
+    font-size: 12px;
+    font-weight: 850;
+    white-space: nowrap;
+  }
+
+  .msc-v3-exit {
+    min-width: 64px;
+    height: 35px;
+
+    padding: 0 10px;
+
+    border: 1px solid rgba(248, 113, 113, 0.3);
+    border-radius: 10px;
+
+    background: rgba(127, 29, 29, 0.24);
+    color: #fecaca;
+
+    font-family: inherit;
+    font-size: 11px;
+    font-weight: 900;
+  }
+
+  .msc-v3-status {
+    margin-top: 5px;
+    padding: 5px 8px;
+
+    border-radius: 9px;
+
+    background: rgba(15, 23, 42, 0.45);
+    color: #dce7f5;
+
+    font-size: 11px;
+    font-weight: 800;
+    line-height: 1.25;
+    text-align: center;
+  }
+
+  /* Players */
+  .msc-v3-players {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 5px;
+
+    margin-top: 5px;
+  }
+
+  .msc-v3-player {
+    min-width: 0;
+
+    padding: 7px 8px;
+
+    border: 1px solid rgba(148, 163, 184, 0.12);
+    border-radius: 10px;
+
+    background: rgba(30, 41, 59, 0.58);
+  }
+
+  .msc-v3-player.striker {
+    border-left: 3px solid #22c55e;
+  }
+
+  .msc-v3-player.non-striker {
+    border-left: 3px solid #3b82f6;
+  }
+
+  .msc-v3-player.bowler {
+    grid-column: 1 / -1;
+    border-left: 3px solid #f59e0b;
+  }
+
+  .msc-v3-player > span {
+    display: block;
+
+    margin-bottom: 3px;
+
+    color: #a8b4c7;
+
+    font-size: 10px;
+    font-weight: 900;
+    text-transform: uppercase;
+  }
+
+  .msc-v3-player > div {
+    display: flex;
+    align-items: flex-start;
+    justify-content: space-between;
+    gap: 8px;
+  }
+
+  .msc-v3-player strong {
+    min-width: 0;
+
+    color: #fff;
+
+    font-size: clamp(14px, 4.4vw, 17px);
+    font-weight: 950;
+    line-height: 1.15;
+
+    white-space: normal;
+    overflow-wrap: anywhere;
+  }
+
+  .msc-v3-player b {
+    flex: 0 0 auto;
+
+    color: #f1f5f9;
+
+    font-size: 13px;
+    font-weight: 950;
+    white-space: nowrap;
+  }
+
+  /* Metrics and chase */
+  .msc-v3-metrics {
+    display: grid;
+    grid-template-columns: repeat(4, minmax(0, 1fr));
+    gap: 4px;
+
+    margin-top: 5px;
+  }
+
+  .msc-v3-metrics > div {
+    min-width: 0;
+
+    padding: 5px 2px;
+
+    border: 1px solid rgba(148, 163, 184, 0.1);
+    border-radius: 8px;
+
+    background: rgba(30, 41, 59, 0.64);
+
+    text-align: center;
+  }
+
+  .msc-v3-metrics span,
+  .msc-v3-metrics strong {
+    display: block;
+  }
+
+  .msc-v3-metrics span {
+    color: #9aa8bc;
+
+    font-size: 9px;
+    font-weight: 850;
+  }
+
+  .msc-v3-metrics strong {
+    margin-top: 1px;
+
+    color: #fff;
+
+    font-size: 12px;
+    font-weight: 950;
+    white-space: nowrap;
+  }
+
+  .msc-v3-chase {
+    display: grid;
+    grid-template-columns: repeat(3, 1fr);
+    gap: 4px;
+
+    margin-top: 4px;
+  }
+
+  .msc-v3-chase span {
+    padding: 4px;
+
+    border-radius: 7px;
+
+    background: rgba(120, 53, 15, 0.18);
+    color: #fcd34d;
+
+    font-size: 10px;
+    font-weight: 800;
+    text-align: center;
+  }
+
+  /* Divider and recent balls */
+  .msc-v3-delivery-head {
+    display: grid;
+    grid-template-columns: 1fr auto 1fr;
+    align-items: center;
+    gap: 7px;
+
+    margin: 5px 0 3px;
+  }
+
+  .msc-v3-delivery-head span {
+    height: 1px;
+
+    background:
+      linear-gradient(
+        90deg,
+        transparent,
+        rgba(56, 189, 248, 0.45),
+        transparent
+      );
+  }
+
+  .msc-v3-delivery-head b {
+    color: #7dd3fc;
+
+    font-size: 9px;
+    font-weight: 900;
+    letter-spacing: 0.35px;
+    text-transform: uppercase;
+  }
+
+  .msc-v3-recent {
+    display: grid;
+    grid-template-columns: auto minmax(0, 1fr);
+    align-items: center;
+    gap: 7px;
+
+    padding: 5px 7px;
+
+    border-radius: 9px;
+
+    background: rgba(15, 23, 42, 0.55);
+  }
+
+  .msc-v3-recent > span {
+    color: #a8b4c7;
+
+    font-size: 10px;
+    font-weight: 900;
+    text-transform: uppercase;
+  }
+
+  .msc-v3-recent > div {
+    display: flex;
+    align-items: center;
+    gap: 4px;
+
+    min-width: 0;
+
+    overflow-x: auto;
+    overflow-y: hidden;
+
+    scrollbar-width: none;
+  }
+
+  .msc-v3-recent > div::-webkit-scrollbar {
+    display: none;
+  }
+
+  .msc-v3-recent b {
+    min-width: 25px;
+    height: 25px;
+    flex: 0 0 auto;
+
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+
+    padding: 0 3px;
+
+    border-radius: 7px;
+
+    background: rgba(51, 65, 85, 0.8);
+    color: #fff;
+
+    font-size: 10px;
+    font-weight: 950;
+  }
+
+  .msc-v3-recent b.wicket {
+    background: rgba(185, 28, 28, 0.52);
+    color: #fecaca;
+  }
+
+  .msc-v3-recent b.boundary {
+    background: rgba(109, 40, 217, 0.54);
+    color: #ede9fe;
+  }
+
+  /* Thumb-reach scoring zone */
+  .msc-v3-control-zone {
+    margin-top: clamp(8px, 2.2dvh, 18px);
+  }
+
+  .msc-v3-keypad {
+    display: grid;
+    grid-template-columns: repeat(4, minmax(0, 1fr));
+    gap: 5px;
+  }
+
+  .msc-v3-key {
+    min-width: 0;
+    height: clamp(37px, 5.3dvh, 43px);
+
+    padding: 0;
+
+    border: 1px solid rgba(96, 165, 250, 0.2);
+    border-radius: 9px;
+
+    background:
+      linear-gradient(
+        145deg,
+        rgba(30, 64, 175, 0.24),
+        rgba(30, 41, 59, 0.9)
+      );
+
+    color: #fff;
+
+    font-family: inherit;
+    font-size: 14px;
+    font-weight: 950;
+  }
+
+  .msc-v3-key.extra {
+    border-color: rgba(250, 204, 21, 0.28);
+    color: #fde047;
+  }
+
+  .msc-v3-key.wicket {
+    border-color: rgba(248, 113, 113, 0.34);
+
+    background: rgba(153, 27, 27, 0.42);
+    color: #fecaca;
+  }
+
+  .msc-v3-key.retired {
+    border-color: rgba(251, 191, 36, 0.27);
+    color: #fcd34d;
+  }
+
+  .msc-v3-key.active,
+  .msc-v3-key:active {
+    transform: scale(0.95);
+
+    border-color: #38bdf8;
+
+    box-shadow:
+      0 0 0 2px rgba(56, 189, 248, 0.13);
+  }
+
+  .msc-v3-safety {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 5px;
+
+    margin-top: 5px;
+  }
+
+  .msc-v3-safety button {
+    height: 38px;
+
+    border-radius: 9px;
+
+    font-family: inherit;
+    font-size: 12px;
+    font-weight: 900;
+  }
+
+  .msc-v3-safety .swap {
+    border: 1px solid rgba(167, 139, 250, 0.25);
+
+    background: rgba(76, 29, 149, 0.31);
+    color: #ddd6fe;
+  }
+
+  .msc-v3-safety .undo {
+    border: 1px solid rgba(248, 113, 113, 0.34);
+
+    background:
+      linear-gradient(135deg, #dc2626, #ef4444);
+
+    color: #fff;
+  }
+
+  .msc-v3-tools {
+    display: flex;
+    align-items: center;
+    gap: 5px;
+
+    margin-top: 5px;
+  }
+
+  .msc-v3-tools button {
+    flex: 1;
+    min-width: 0;
+    height: 30px;
+
+    padding: 0 5px;
+
+    border: 1px solid rgba(148, 163, 184, 0.15);
+    border-radius: 8px;
+
+    background: rgba(30, 41, 59, 0.64);
+    color: #d4deeb;
+
+    font-family: inherit;
+    font-size: 9px;
+    font-weight: 850;
+    white-space: nowrap;
+  }
+
+  .msc-v3-tools button.end {
+    border-color: rgba(248, 113, 113, 0.22);
+    color: #fecaca;
+  }
+
+  .msc-v3-setup {
+    width: 100%;
+    min-height: 48px;
+
+    border: 1px solid rgba(56, 189, 248, 0.3);
+    border-radius: 12px;
+
+    background:
+      linear-gradient(135deg, #2563eb, #0ea5e9);
+
+    color: #fff;
+
+    font-family: inherit;
+    font-size: 12px;
+    font-weight: 900;
+  }
+
+  /*
+    Remove any old artificial bottom spacing while the v3 overlay is open.
+  */
+  body:has(.mobile-scorer-overlay-v3) {
+    padding-bottom: 0 !important;
+  }
+}
+
+/* Short phone/browser viewport: compress gently without making text unreadable. */
+@media (max-width: 760px) and (max-height: 680px) {
+  .mobile-scorer-cockpit-v3 {
+    padding: 6px;
+  }
+
+  .msc-v3-header {
+    padding: 5px 7px;
+  }
+
+  .msc-v3-score-line strong {
+    font-size: 33px;
+  }
+
+  .msc-v3-status {
+    padding: 3px 7px;
+    font-size: 10px;
+  }
+
+  .msc-v3-player {
+    padding: 5px 7px;
+  }
+
+  .msc-v3-player > span {
+    font-size: 9px;
+  }
+
+  .msc-v3-player strong {
+    font-size: 13px;
+  }
+
+  .msc-v3-player b {
+    font-size: 11px;
+  }
+
+  .msc-v3-metrics > div {
+    padding: 3px 2px;
+  }
+
+  .msc-v3-control-zone {
+    margin-top: 5px;
+  }
+
+  .msc-v3-key {
+    height: 34px;
+  }
+
+  .msc-v3-safety button {
+    height: 34px;
+  }
+
+  .msc-v3-tools button {
+    height: 27px;
+  }
+}
