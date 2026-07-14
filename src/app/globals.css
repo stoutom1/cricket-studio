@@ -39735,11 +39735,6 @@ text-overflow:unset;
 
 @media (max-width: 760px) {
   /* Prevent bottom dock from covering content */
-  body {
-    padding-bottom: calc(
-      78px + env(safe-area-inset-bottom)
-    );
-  }
 
   /* -----------------------------------------
      Remove unnecessary outer-card bulk
@@ -40503,40 +40498,6 @@ text-overflow:unset;
      Fixed scorer navigation
   ----------------------------------------- */
 
-  .mobile-scorer-dock {
-    position: fixed;
-    right: 8px;
-    bottom: calc(
-      7px + env(safe-area-inset-bottom)
-    );
-    left: 8px;
-    z-index: 1000;
-
-    display: grid;
-    grid-template-columns:
-      repeat(4, minmax(0, 1fr));
-
-    gap: 4px;
-
-    min-height: 62px;
-    padding: 5px;
-
-    border: 1px solid rgba(148, 163, 184, 0.18);
-    border-radius: 18px;
-
-    background:
-      linear-gradient(
-        145deg,
-        rgba(15, 28, 49, 0.97),
-        rgba(8, 17, 31, 0.98)
-      );
-
-    box-shadow:
-      0 16px 38px rgba(2, 6, 23, 0.48);
-
-    backdrop-filter: blur(18px);
-  }
-
   .mobile-scorer-dock button {
     min-width: 0;
 
@@ -40750,5 +40711,438 @@ text-overflow:unset;
 
   .scorer-mode-exit-btn {
     flex: 0 0 auto;
+  }
+}
+/* =========================================================
+   CRIC4ALL — CLEAN, READABLE MOBILE SCORER
+========================================================= */
+
+@media (max-width: 760px) {
+  /* Remove space left by the old fixed dock */
+  body {
+    padding-bottom: 0 !important;
+  }
+
+  .mobile-scorer-dock {
+    display: none !important;
+  }
+
+  /* Keep the three primary tabs readable */
+  .score-hub-tabs.wow-main-tabs {
+    position: sticky;
+    top: 0;
+    z-index: 50;
+
+    display: grid !important;
+    grid-template-columns: repeat(3, minmax(0, 1fr));
+
+    gap: 6px !important;
+
+    margin: 8px 0 12px !important;
+    padding: 6px !important;
+
+    border-radius: 15px !important;
+
+    background: rgba(9, 18, 33, 0.96) !important;
+
+    box-shadow:
+      0 8px 20px rgba(2, 6, 23, 0.24);
+
+    backdrop-filter: blur(12px);
+  }
+
+  .wow-score-tab {
+    min-width: 0 !important;
+    min-height: 54px !important;
+
+    display: flex !important;
+    align-items: center !important;
+    justify-content: center !important;
+    gap: 7px !important;
+
+    padding: 8px 6px !important;
+
+    border-radius: 11px !important;
+  }
+
+  .wow-tab-icon {
+    font-size: 18px !important;
+  }
+
+  .wow-tab-copy strong {
+    font-size: 13px !important;
+    font-weight: 900 !important;
+    line-height: 1.2 !important;
+  }
+
+  .wow-tab-copy small {
+    display: none !important;
+  }
+
+  /* Visible mobile Scorer Mode entry */
+  .mobile-enter-scorer-btn {
+    width: 100%;
+
+    display: grid;
+    grid-template-columns: auto minmax(0, 1fr) auto;
+    align-items: center;
+    gap: 11px;
+
+    margin: 0 0 12px;
+    padding: 13px 14px;
+
+    border: 1px solid rgba(56, 189, 248, 0.28);
+    border-radius: 15px;
+
+    background:
+      radial-gradient(
+        circle at top right,
+        rgba(14, 165, 233, 0.16),
+        transparent 45%
+      ),
+      linear-gradient(
+        145deg,
+        rgba(20, 45, 72, 0.98),
+        rgba(11, 25, 45, 0.98)
+      );
+
+    color: #ffffff;
+    text-align: left;
+
+    box-shadow:
+      0 10px 22px rgba(2, 6, 23, 0.24),
+      inset 0 1px 0 rgba(255, 255, 255, 0.06);
+  }
+
+  .mobile-enter-scorer-btn > span {
+    width: 42px;
+    height: 42px;
+
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+
+    border-radius: 13px;
+
+    background: rgba(14, 165, 233, 0.16);
+
+    font-size: 20px;
+  }
+
+  .mobile-enter-scorer-btn > div {
+    min-width: 0;
+  }
+
+  .mobile-enter-scorer-btn strong,
+  .mobile-enter-scorer-btn small {
+    display: block;
+  }
+
+  .mobile-enter-scorer-btn strong {
+    font-size: 15px;
+    font-weight: 950;
+    line-height: 1.25;
+  }
+
+  .mobile-enter-scorer-btn small {
+    margin-top: 3px;
+
+    color: #a9bdd4;
+
+    font-size: 12px;
+    line-height: 1.35;
+  }
+
+  .mobile-enter-scorer-btn > b {
+    color: #7dd3fc;
+
+    font-size: 26px;
+    font-weight: 500;
+  }
+
+  /* Scorer Mode header and Exit */
+  .mobile-scorer-mode-banner {
+    position: sticky;
+    top: 0;
+    z-index: 70;
+
+    display: flex !important;
+    align-items: center;
+    justify-content: space-between;
+    gap: 10px;
+
+    margin: 0 0 10px !important;
+    padding: 11px 12px !important;
+
+    border: 1px solid rgba(56, 189, 248, 0.2) !important;
+    border-radius: 14px !important;
+
+    background:
+      linear-gradient(
+        145deg,
+        rgba(14, 116, 144, 0.2),
+        rgba(15, 23, 42, 0.96)
+      ) !important;
+
+    box-shadow:
+      0 8px 20px rgba(2, 6, 23, 0.22);
+  }
+
+  .scorer-mode-banner-copy {
+    min-width: 0;
+
+    display: flex;
+    align-items: center;
+    gap: 9px;
+  }
+
+  .scorer-mode-banner-copy > span {
+    font-size: 21px;
+  }
+
+  .scorer-mode-banner-copy strong,
+  .scorer-mode-banner-copy small {
+    display: block;
+  }
+
+  .scorer-mode-banner-copy strong {
+    color: #ffffff;
+
+    font-size: 15px !important;
+    font-weight: 950;
+  }
+
+  .scorer-mode-banner-copy small {
+    margin-top: 2px;
+
+    color: #a9bdd4;
+
+    font-size: 11px !important;
+  }
+
+  .scorer-mode-exit-btn {
+    min-width: 74px;
+    min-height: 38px;
+
+    padding: 0 11px;
+
+    border: 1px solid rgba(248, 113, 113, 0.27);
+    border-radius: 11px;
+
+    background: rgba(127, 29, 29, 0.2);
+    color: #fecaca;
+
+    font-family: inherit;
+    font-size: 12px !important;
+    font-weight: 900;
+  }
+
+  /* Live score HUD */
+  .scorer-live-hud {
+    margin: 0 0 10px !important;
+    padding: 14px !important;
+
+    border-radius: 17px !important;
+  }
+
+  .scorer-hud-main {
+    display: grid !important;
+    grid-template-columns: auto minmax(0, 1fr);
+    align-items: center;
+    gap: 12px !important;
+  }
+
+  .scorer-hud-main strong {
+    font-size: 32px !important;
+    line-height: 1 !important;
+  }
+
+  .scorer-hud-main small {
+    font-size: 12px !important;
+  }
+
+  .scorer-hud-status {
+    font-size: 12px !important;
+    line-height: 1.4 !important;
+  }
+
+  .scorer-hud-players {
+    display: grid !important;
+    grid-template-columns: 1fr 1fr;
+    gap: 8px !important;
+
+    margin-top: 11px !important;
+  }
+
+  .scorer-hud-players > div {
+    min-width: 0;
+
+    padding: 10px !important;
+
+    border-radius: 12px !important;
+  }
+
+  .scorer-hud-players > .bowler {
+    grid-column: 1 / -1;
+  }
+
+  .scorer-hud-players span {
+    font-size: 11px !important;
+  }
+
+  .scorer-hud-players strong {
+    font-size: 14px !important;
+    line-height: 1.3 !important;
+  }
+
+  .scorer-hud-players b {
+    font-size: 12px !important;
+  }
+
+  .scorer-hud-metrics {
+    display: grid !important;
+    grid-template-columns: 1fr 1fr;
+
+    gap: 7px !important;
+
+    margin-top: 9px !important;
+  }
+
+  .scorer-hud-metrics span {
+    min-height: 36px;
+
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+
+    padding: 0 10px !important;
+
+    border-radius: 10px !important;
+
+    font-size: 11px !important;
+  }
+
+  /* Recent deliveries */
+  .scorer-recent-wow {
+    margin: 9px 0 !important;
+    padding: 10px !important;
+
+    border-radius: 13px !important;
+  }
+
+  .scorer-recent-wow > span {
+    font-size: 12px !important;
+  }
+
+  .scorer-recent-wow small {
+    font-size: 10px !important;
+  }
+
+  .recent-ball-strip {
+    gap: 6px !important;
+    overflow-x: auto;
+  }
+
+  .ball-chip {
+    width: 32px !important;
+    height: 32px !important;
+    min-width: 32px !important;
+
+    font-size: 12px !important;
+    font-weight: 900 !important;
+  }
+
+  /* Main scoring controls */
+  .scorer-actions-panel {
+    padding: 12px !important;
+
+    border-radius: 17px !important;
+  }
+
+  .scorer-run-buttons {
+    display: grid !important;
+    grid-template-columns: repeat(3, minmax(0, 1fr)) !important;
+
+    gap: 9px !important;
+  }
+
+  .scorer-run-buttons .score-chip {
+    width: 100% !important;
+    min-width: 0 !important;
+    min-height: 58px !important;
+
+    margin: 0 !important;
+    padding: 8px !important;
+
+    border-radius: 14px !important;
+
+    font-size: 18px !important;
+    font-weight: 950 !important;
+    line-height: 1 !important;
+  }
+
+  .scorer-run-buttons .score-wide {
+    grid-column: auto !important;
+  }
+
+  .scorer-run-buttons .score-undo {
+    grid-column: span 2 !important;
+  }
+
+  /* Secondary scoring controls */
+  .scorer-secondary-row {
+    display: grid !important;
+    grid-template-columns: 1fr 1fr;
+
+    gap: 8px !important;
+
+    margin-top: 9px !important;
+  }
+
+  .scorer-secondary-row button {
+    width: 100% !important;
+    min-height: 44px !important;
+
+    padding: 8px 10px !important;
+
+    border-radius: 12px !important;
+
+    font-size: 12px !important;
+    font-weight: 850 !important;
+  }
+
+  /* Setup drawer only */
+  .scorer-workspace {
+    position: fixed !important;
+    inset: 0 !important;
+    z-index: 1100 !important;
+
+    background: rgba(2, 6, 23, 0.66);
+  }
+
+  .scorer-workspace-panel {
+    position: absolute !important;
+    right: 0 !important;
+    bottom: 0 !important;
+    left: 0 !important;
+
+    width: 100% !important;
+    max-height: 82dvh !important;
+
+    border-radius: 22px 22px 0 0 !important;
+  }
+
+  .scorer-workspace-head {
+    min-height: 58px;
+  }
+
+  .scorer-workspace-head strong {
+    font-size: 15px !important;
+  }
+
+  .scorer-workspace-body {
+    max-height: calc(82dvh - 58px);
+
+    overflow-y: auto;
   }
 }

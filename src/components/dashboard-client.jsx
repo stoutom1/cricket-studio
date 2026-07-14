@@ -7330,17 +7330,49 @@ const playerRoleBadge = (row) => {
   className="scoring-console mobile-scorer-console-card"
   title="🎯 Advanced Scoring"
   defaultCollapsed={false}
-    right={
-  selectedMatchId &&
-  !isSelectedMatchCompleted ? (
-        <>
-<div className="advanced-scoring-actions">
-  <button type="button" className="scorer-mode-btn" onClick={() => {setScorerMode(true); setScorerDrawer(null);}}>🎯 Scorer Mode</button>
-</div>
-          </>
+  right={
+    selectedMatchId &&
+    !isSelectedMatchCompleted &&
+    !isMobile ? (
+      <div className="advanced-scoring-actions">
+        <button
+          type="button"
+          className="scorer-mode-btn"
+          onClick={() => {
+            setScorerMode(true);
+            setScorerDrawer(null);
+          }}
+        >
+          🎯 Scorer Mode
+        </button>
+      </div>
     ) : null
   }
 >
+  {isMobile &&
+  selectedMatchId &&
+  !isSelectedMatchCompleted &&
+  !scorerMode && (
+    <button
+      type="button"
+      className="mobile-enter-scorer-btn"
+      onClick={() => {
+        setScorerDrawer(null);
+        setScorerMode(true);
+      }}
+    >
+      <span>🎯</span>
+
+      <div>
+        <strong>Enter Scorer Mode</strong>
+        <small>
+          Focused ball-by-ball scoring with fewer distractions
+        </small>
+      </div>
+
+      <b>›</b>
+    </button>
+  )}
           {!matchDetail ? (
             <p className="muted">Please select a match to view scoring, scoreboard, and commentary.</p>
           ) : (
@@ -7348,7 +7380,7 @@ const playerRoleBadge = (row) => {
 <div className={scorerMode ? "scorer-mode-shell active" : ""}>
 {scorerMode && (
   <div className="scorer-mode-banner mobile-scorer-mode-banner">
-    <div>
+    <div className="scorer-mode-banner-copy">
       <span>🎯</span>
 
       <div>
@@ -7364,6 +7396,15 @@ const playerRoleBadge = (row) => {
         setScorerDrawer(null);
         setScorerMode(false);
         setScoringSubTab("ADVANCED");
+
+        window.requestAnimationFrame(() => {
+          document
+            .querySelector(".score-hub-tabs")
+            ?.scrollIntoView({
+              behavior: "smooth",
+              block: "start",
+            });
+        });
       }}
     >
       ✕ Exit
@@ -7560,23 +7601,11 @@ const playerRoleBadge = (row) => {
       )}
     </>
   )}
-{scorerMode && (
-  <div
-    className={`scorer-workspace ${
-      scorerDrawer ? "open" : ""
-    }`}
-  >
+{scorerMode && scorerDrawer === "setup" && (
+  <div className="scorer-workspace open">
     <div className="scorer-workspace-panel">
       <div className="scorer-workspace-head">
-        <strong>
-          {scorerDrawer === "scoreboard"
-            ? "📊 Scoreboard"
-            : scorerDrawer === "commentary"
-            ? "📝 Commentary"
-            : scorerDrawer === "setup"
-            ? "⚙️ Match Setup"
-            : ""}
-        </strong>
+<strong>⚙️ Match Setup</strong>
 
         <button type="button" onClick={() => setScorerDrawer(null)}>
           ✕
@@ -7584,282 +7613,6 @@ const playerRoleBadge = (row) => {
       </div>
 
       <div className="scorer-workspace-body">
-  {scorerDrawer === "scoreboard" && (
-  <div className="scorer-scoreboard-panel">
-    {(() => {
-      const currentInningsNo = Number(scoreboard?.currentInnings || 1);
-      const activeInnings =
-        scoreboard?.innings?.[currentInningsNo - 1] ||
-        scoreboard?.innings?.[0];
-
-      const battingRows =
-        activeInnings?.battingStats ||
-        activeInnings?.battingRows ||
-        [];
-
-      const bowlingRows =
-        activeInnings?.bowlingStats ||
-        activeInnings?.bowlingRows ||
-        [];
-
-      const topBatters = [...battingRows]
-        .filter((p) => Number(p.runs || 0) > 0)
-        .sort((a, b) => Number(b.runs || 0) - Number(a.runs || 0))
-        .slice(0, 3);
-
-      const topBowlers = [...bowlingRows]
-        .filter((p) => Number(p.wickets || 0) > 0 || Number(p.runs || 0) > 0)
-        .sort((a, b) => {
-          const wicketDiff =
-            Number(b.wickets || 0) - Number(a.wickets || 0);
-
-          if (wicketDiff !== 0) return wicketDiff;
-
-          return Number(a.runs || 0) - Number(b.runs || 0);
-        })
-        .slice(0, 3);
-
-      return (
-        <>
-          <div className="scorer-scoreboard-summary">
-            <div className="drawer-stat-card score-main">
-              <span>Score</span>
-              <strong>
-                {activeInnings?.runs ?? 0}/{activeInnings?.wickets ?? 0}
-              </strong>
-              <small>
-                Inn {currentInningsNo} • {activeInnings?.oversDisplay || "0.0"} ov
-              </small>
-            </div>
-
-            <div className="drawer-stat-card">
-              <span>Run Rate</span>
-              <strong>{activeInnings?.runRate || "0.00"}</strong>
-            </div>
-
-            <div className="drawer-stat-card">
-              <span>Powerplay</span>
-              <strong>
-                {activeInnings?.powerplay?.runs ?? 0}/
-                {activeInnings?.powerplay?.wickets ?? 0}
-              </strong>
-            </div>
-
-            {liveMatchCenter?.isSecondInnings && liveMatchCenter?.target > 0 ? (
-              <div className="drawer-stat-card chase-card">
-                <span>Chase</span>
-                <strong>
-                  Need {liveMatchCenter?.runsRequired ?? "-"}
-                </strong>
-                <small>
-                  {liveMatchCenter?.ballsRemaining ?? "-"} balls left
-                </small>
-              </div>
-            ) : (
-              <div className="drawer-stat-card">
-                <span>Projected</span>
-                <strong>{liveMatchCenter?.projected || "-"}</strong>
-              </div>
-            )}
-          </div>
-
-          <div className="scorer-current-pair">
-            <div className="current-player-mini striker">
-              <span>⚡ Striker</span>
-              <strong>{scoreboard?.currentState?.strikerName || "-"}</strong>
-              <b>
-                {scoreboard?.currentState?.strikerStats
-                  ? `${scoreboard.currentState.strikerStats.runs} (${scoreboard.currentState.strikerStats.balls})`
-                  : "0 (0)"}
-              </b>
-            </div>
-
-            <div className="current-player-mini">
-              <span>🏃 Non-striker</span>
-              <strong>{scoreboard?.currentState?.nonStrikerName || "-"}</strong>
-              <b>
-                {scoreboard?.currentState?.nonStrikerStats
-                  ? `${scoreboard.currentState.nonStrikerStats.runs} (${scoreboard.currentState.nonStrikerStats.balls})`
-                  : "0 (0)"}
-              </b>
-            </div>
-
-            <div className="current-player-mini bowler">
-              <span>🎯 Bowler</span>
-              <strong>{scoreboard?.currentState?.bowlerName || "-"}</strong>
-              <b>
-                {scoreboard?.currentState?.bowlerStats
-                  ? `${scoreboard.currentState.bowlerStats.wickets}/${scoreboard.currentState.bowlerStats.runs} (${scoreboard.currentState.bowlerStats.overs} ov)`
-                  : "0/0"}
-              </b>
-            </div>
-          </div>
-
-          <div className="scorer-scoreboard-columns">
-            <div className="mini-score-table-card">
-              <div className="mini-score-table-head">
-                <strong>🏏 Top Batters</strong>
-                <span>Runs</span>
-              </div>
-
-              {topBatters.length ? (
-                topBatters.map((p) => (
-                  <div key={p.playerId || p.playerName} className="mini-score-row">
-                    <span>{p.playerName || p.name}</span>
-                    <strong>
-                      {p.runs} ({p.balls})
-                    </strong>
-                  </div>
-                ))
-              ) : (
-                <div className="mini-empty-row">No batting stats yet</div>
-              )}
-            </div>
-
-            <div className="mini-score-table-card">
-              <div className="mini-score-table-head">
-                <strong>🎯 Top Bowlers</strong>
-                <span>Figures</span>
-              </div>
-
-              {topBowlers.length ? (
-                topBowlers.map((p) => (
-                  <div key={p.playerId || p.playerName} className="mini-score-row">
-                    <span>{p.playerName || p.name}</span>
-                    <strong>
-                      {p.wickets}/{p.runs} ({p.overs})
-                    </strong>
-                  </div>
-                ))
-              ) : (
-                <div className="mini-empty-row">No bowling stats yet</div>
-              )}
-            </div>
-          </div>
-
-          <div className="scorer-scoreboard-footer">
-            <span>
-              Partnership:{" "}
-              <b>
-                {liveMatchCenter?.partnershipRuns ?? 0} (
-                {liveMatchCenter?.partnershipBalls ?? 0})
-              </b>
-            </span>
-
-            <span>
-              CRR: <b>{liveMatchCenter?.crr || "0.00"}</b>
-            </span>
-
-            {liveMatchCenter?.rrr && liveMatchCenter?.rrr !== "—" && (
-              <span>
-                RRR: <b>{liveMatchCenter.rrr}</b>
-              </span>
-            )}
-          </div>
-        </>
-      );
-    })()}
-  </div>
-)}
-
-{scorerDrawer === "commentary" && (
-  <div className="scorer-commentary-panel">
-    <div className="scorer-commentary-summary">
-      <div>
-        <span>Current Score</span>
-        <strong>
-          {liveMatchCenter?.runs ?? 0}/{liveMatchCenter?.wickets ?? 0}
-        </strong>
-      </div>
-
-      <div>
-        <span>Overs</span>
-        <strong>{liveMatchCenter?.oversDisplay || "0.0"}</strong>
-      </div>
-
-      <div>
-        <span>CRR</span>
-        <strong>{liveMatchCenter?.crr || "0.00"}</strong>
-      </div>
-
-      {liveMatchCenter?.isSecondInnings && liveMatchCenter?.target > 0 && (
-        <div>
-          <span>Need</span>
-          <strong>
-            {liveMatchCenter?.runsRequired ?? "-"} from{" "}
-            {liveMatchCenter?.ballsRemaining ?? "-"}
-          </strong>
-        </div>
-      )}
-    </div>
-
-    <div className="scorer-commentary-list">
-      {scoreboard?.recentBalls?.length ? (
-        scoreboard.recentBalls.slice(0, 18).map((ball, index) => {
-          const label = ball.label || "";
-          const cleanBallText =
-            label
-              .split(" ")
-              .slice(1)
-              .join(" ")
-              .replace(/[()]/g, "") || "-";
-
-          const isWicket =
-            cleanBallText.toUpperCase().includes("W") &&
-            !cleanBallText.toUpperCase().includes("WD");
-
-          const isBoundary =
-            cleanBallText === "4" || cleanBallText === "6";
-
-          const isExtra =
-            cleanBallText.toUpperCase().includes("WD") ||
-            cleanBallText.toUpperCase().includes("NB") ||
-            cleanBallText.toUpperCase().includes("LB") ||
-            cleanBallText.toUpperCase() === "B";
-
-          return (
-            <div
-              key={ball.id || index}
-              className={`scorer-commentary-item ${
-                isWicket
-                  ? "wicket"
-                  : isBoundary
-                  ? "boundary"
-                  : isExtra
-                  ? "extra"
-                  : ""
-              }`}
-            >
-              <div className="commentary-ball-badge">
-                {cleanBallText}
-              </div>
-
-              <div className="commentary-ball-main">
-                <strong>{label}</strong>
-
-                <span>
-                  {ball.text ||
-                    ball.note ||
-                    (isWicket
-                      ? "Wicket recorded"
-                      : isBoundary
-                      ? "Boundary scored"
-                      : isExtra
-                      ? "Extra run"
-                      : "Delivery recorded")}
-                </span>
-              </div>
-            </div>
-          );
-        })
-      ) : (
-        <div className="scorer-commentary-empty">
-          No commentary yet. Score the first ball to start the match story.
-        </div>
-      )}
-    </div>
-  </div>
-)}
 
 {scorerDrawer === "setup" && (
   <div className="scorer-setup-panel">
@@ -8589,67 +8342,7 @@ const playerRoleBadge = (row) => {
 </form>
               </CollapsibleSection>
 )
-    )}         
-{isMobile && scorerMode && !isSelectedMatchCompleted && (
-  <nav
-    className="mobile-scorer-dock"
-    aria-label="Scorer tools"
-  >
-    <button
-      type="button"
-      className={
-        !scorerDrawer ? "active" : ""
-      }
-      onClick={() => setScorerDrawer(null)}
-    >
-      <span>🎯</span>
-      <small>Scoring</small>
-    </button>
-
-    <button
-      type="button"
-      onClick={() => {
-        setScorerDrawer(null);
-        setScorerMode(false);
-        setScoringSubTab("SCOREBOARD");
-      }}
-    >
-      <span>📊</span>
-      <small>Scoreboard</small>
-    </button>
-
-    <button
-      type="button"
-      onClick={() => {
-        setScorerDrawer(null);
-        setScorerMode(false);
-        setScoringSubTab("COMMENTARY");
-      }}
-    >
-      <span>📝</span>
-      <small>Commentary</small>
-    </button>
-
-    <button
-      type="button"
-      className={
-        scorerDrawer === "setup"
-          ? "active"
-          : ""
-      }
-      onClick={() =>
-        setScorerDrawer(
-          scorerDrawer === "setup"
-            ? null
-            : "setup"
-        )
-      }
-    >
-      <span>⚙️</span>
-      <small>Setup</small>
-    </button>
-  </nav>
-)}   
+    )}           
     </div>
             </>            
           )}
