@@ -8259,20 +8259,21 @@ const playerRoleBadge = (row) => {
                       🔴 End innings
                     </button>
                   )}
-                  <button
+              </div>
+<button
   type="button"
   className="msc-v3-scoring-form-btn"
-  onClick={openScoringFormFromScorerMode}
+  onClick={() => setShowScoringFormSheet(true)}
 >
   <span>⚙️</span>
 
-  <strong>Scoring Form</strong>
-
-  <small>Open advanced delivery options</small>
+  <div>
+    <strong>Scoring Form</strong>
+    <small>Advanced delivery options</small>
+  </div>
 
   <b>›</b>
-</button>
-              </div>
+</button>              
             </>
           )
         )}
@@ -14027,140 +14028,194 @@ onClick={() => {
   </div>
 )}
 {showBowlerModal && (
-  <div className="bowler-modal-backdrop">
-    <div className="bowler-modal">
-<div className="live-popup-snapshot">
-  <div className="live-popup-topline">
-    <span className="live-dot">● LIVE</span>
-    <span className="live-popup-over">Over {bowlerChangeScore.overs}</span>
-  </div>
-
-  <div className="live-popup-main">
-    <div>
-      <span>Current Score</span>
-      <strong>{bowlerChangeScore.score}</strong>
-    </div>
-
-    <div>
-      <span>CRR</span>
-      <strong>{bowlerChangeScore.crr}</strong>
-    </div>
-  </div>
-
-  <div className="live-popup-recent">
-    <div className="live-popup-recent-head">
-      <span>Previous Over</span>
-      <b>{previousOverInfo.overNo}</b>
-    </div>
-
-    <div className="live-popup-balls">
-      {previousOverInfo.balls.length ? (
-        previousOverInfo.balls.map((ball) => {
-          const label = ball.label || "";
-          const result = (
-            label.split(" ").slice(1).join(" ") || label
-          ).replace(/[()]/g, "");
-
-          const ballClass =
-            result === "W"
-              ? "wicket"
-              : result === "4"
-              ? "four"
-              : result === "6"
-              ? "six"
-              : result.toUpperCase().includes("WD")
-              ? "wide"
-              : result.toUpperCase().includes("NB")
-              ? "noball"
-              : "";
-
-          return (
-            <b key={ball.id} className={ballClass}>
-              {result}
-            </b>
-          );
-        })
-      ) : (
-        <small>No balls yet</small>
-      )}
-    </div>
-  </div>
-</div>
+  <div
+    className="bowler-modal-backdrop"
+    role="presentation"
+    onMouseDown={(event) => {
+      if (
+        event.target === event.currentTarget &&
+        !mustChangeBowler
+      ) {
+        handleCloseBowlerModal();
+      }
+    }}
+  >
+    <div
+      className="bowler-modal bowler-modal-mobile-fit"
+      role="dialog"
+      aria-modal="true"
+      aria-labelledby="change-bowler-title"
+    >
+      {/* Fixed modal header */}
       <div className="bowler-modal-header">
         <div>
-          <h3>🏏 Change Bowler</h3>
-          <p>
-            Select a different bowler for the next over
-          </p>
+          <h3 id="change-bowler-title">
+            🏏 Change Bowler
+          </h3>
+
+          <p>Select a different bowler for the next over</p>
         </div>
 
-        <button
-          className="icon-btn"
-          onClick={handleCloseBowlerModal}
-        >
-          ✕
-        </button>
+        {!mustChangeBowler && (
+          <button
+            type="button"
+            className="icon-btn"
+            onClick={handleCloseBowlerModal}
+            aria-label="Close change bowler modal"
+          >
+            ✕
+          </button>
+        )}
+      </div>
+
+      {/* Compact live match snapshot */}
+      <div className="live-popup-snapshot bowler-popup-snapshot">
+        <div className="live-popup-topline">
+          <span className="live-dot">● LIVE</span>
+
+          <span className="live-popup-over">
+            Over {bowlerChangeScore.overs}
+          </span>
+        </div>
+
+        <div className="live-popup-main">
+          <div>
+            <span>Current Score</span>
+            <strong>{bowlerChangeScore.score}</strong>
+          </div>
+
+          <div>
+            <span>CRR</span>
+            <strong>{bowlerChangeScore.crr}</strong>
+          </div>
+        </div>
+
+        <div className="live-popup-recent">
+          <div className="live-popup-recent-head">
+            <span>Previous Over</span>
+            <b>{previousOverInfo.overNo}</b>
+          </div>
+
+          <div className="live-popup-balls">
+            {previousOverInfo.balls.length ? (
+              previousOverInfo.balls.map((ball) => {
+                const label = ball.label || "";
+
+                const result = (
+                  label.split(" ").slice(1).join(" ") ||
+                  label
+                ).replace(/[()]/g, "");
+
+                const normalizedResult =
+                  result.toUpperCase();
+
+                const ballClass =
+                  result === "W"
+                    ? "wicket"
+                    : result === "4"
+                      ? "four"
+                      : result === "6"
+                        ? "six"
+                        : normalizedResult.includes("WD")
+                          ? "wide"
+                          : normalizedResult.includes("NB")
+                            ? "noball"
+                            : "";
+
+                return (
+                  <b
+                    key={ball.id}
+                    className={ballClass}
+                  >
+                    {result}
+                  </b>
+                );
+              })
+            ) : (
+              <small>No balls yet</small>
+            )}
+          </div>
+        </div>
       </div>
 
       <div className="bowler-warning">
         Same bowler cannot bowl consecutive overs.
       </div>
 
-      <div className="bowler-list">
+      {/* Only this area scrolls */}
+      <div className="bowler-list bowler-list-scroll-area">
         {bowlingTeam?.players
           ?.filter(
             (player) =>
               String(player.id) !==
-              String(
-                pendingBallData?.bowlerId
-              )
+              String(pendingBallData?.bowlerId)
           )
-          .map((player) => (
-            <button
-              key={player.id}
-              className={`bowler-option ${
-                String(ballForm.bowlerId) ===
-                String(player.id)
-                  ? "selected"
-                  : ""
-              }`}
-              onClick={() =>
-                setBallForm((prev) => ({
-                  ...prev,
-                  bowlerId: player.id
-                }))
-              }
-            >
-              <div className="bowler-avatar">
-                🏏
-              </div>
+          .map((player) => {
+            const isSelected =
+              String(ballForm.bowlerId) ===
+              String(player.id);
 
-              <div>
-                <div className="bowler-name">
-                  {player.name}
+            return (
+              <button
+                key={player.id}
+                type="button"
+                className={`bowler-option ${
+                  isSelected ? "selected" : ""
+                }`}
+                aria-pressed={isSelected}
+                onClick={() =>
+                  setBallForm((previous) => ({
+                    ...previous,
+                    bowlerId: player.id,
+                  }))
+                }
+              >
+                <div className="bowler-avatar">
+                  🏏
                 </div>
-              </div>
-            </button>
-          ))}
+
+                <div className="bowler-option-copy">
+                  <div className="bowler-name">
+                    {player.name}
+                  </div>
+
+                  {isSelected && (
+                    <small>Selected for next over</small>
+                  )}
+                </div>
+
+                {isSelected && (
+                  <span className="bowler-selected-check">
+                    ✓
+                  </span>
+                )}
+              </button>
+            );
+          })}
       </div>
 
-      <div className="bowler-modal-actions">
-<button
-  className="btn btn-outline"
-  onClick={handleCloseBowlerModal}
->
-  {mustChangeBowler ? "Select Bowler Required" : "Cancel"}
-</button>
+      {/* Always visible at the bottom */}
+      <div className="bowler-modal-actions bowler-modal-sticky-actions">
+        <button
+          type="button"
+          className="btn btn-outline"
+          disabled={mustChangeBowler}
+          onClick={handleCloseBowlerModal}
+        >
+          {mustChangeBowler
+            ? "Bowler Required"
+            : "Cancel"}
+        </button>
 
         <button
-          className="btn"
+          type="button"
+          className="btn bowler-continue-btn"
           disabled={!ballForm.bowlerId}
           onClick={confirmBowlerChange}
         >
           Continue →
         </button>
       </div>
-
     </div>
   </div>
 )}
