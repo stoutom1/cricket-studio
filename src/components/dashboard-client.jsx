@@ -8232,7 +8232,7 @@ const playerRoleBadge = (row) => {
 >
   {liveMatchCenter && (
     <>
-      {displayScoreboard && !scorerMode &&(
+      {displayScoreboard && !scorerMode && !isMobile && (
         <div className="match-insights-card scorer-insights-strip mobile-hide-scoring-insights">
           {matchInsights.resultText && (
             <div className="insight-result">
