@@ -8222,7 +8222,7 @@ const playerRoleBadge = (row) => {
 <button
   type="button"
   className="msc-v3-scoring-form-btn"
-  onClick={() => setShowScoringFormSheet(true)}
+  onClick={() => setShowAdvancedSheet(true)}
 >
   <span>⚙️</span>
 
@@ -16792,7 +16792,7 @@ onChange={(e) => {
 
         <button
           type="button"
-          onClick={() => setShowScoringFormSheet(false)}
+          onClick={() => setShowAdvancedSheet(false)}
           aria-label="Close scoring form"
         >
           ✕
