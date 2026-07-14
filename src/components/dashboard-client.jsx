@@ -6255,6 +6255,50 @@ function getRecentBallSequence(ball, fallbackIndex = 0) {
   return fallbackIndex;
 }
 
+function openScoringFormFromScorerMode() {
+  setScorerDrawer(null);
+  setScorerMode(false);
+  setScoringSubTab("ADVANCED");
+
+  window.requestAnimationFrame(() => {
+    window.requestAnimationFrame(() => {
+      const scoringForm =
+        document.getElementById("add-ball-form") ||
+        document.querySelector(".scoring-form") ||
+        document.querySelector(".scoring-form-card");
+
+      if (!scoringForm) {
+        console.warn(
+          "Scoring Form could not be located. Add id=\"add-ball-form\" to the form container."
+        );
+        return;
+      }
+
+      /*
+        Open the form when it is contained inside a collapsed
+        <details> section.
+      */
+      const parentDetails = scoringForm.closest("details");
+
+      if (parentDetails) {
+        parentDetails.open = true;
+      }
+
+      /*
+        Also support the form container itself being <details>.
+      */
+      if (scoringForm instanceof HTMLDetailsElement) {
+        scoringForm.open = true;
+      }
+
+      scoringForm.scrollIntoView({
+        behavior: "smooth",
+        block: "start",
+      });
+    });
+  });
+}
+
 function MobileMatchSetup({ match, includeTimeline = false }) {
   return (
     <details className="mobile-match-setup">
@@ -8215,6 +8259,19 @@ const playerRoleBadge = (row) => {
                       🔴 End innings
                     </button>
                   )}
+                  <button
+  type="button"
+  className="msc-v3-scoring-form-btn"
+  onClick={openScoringFormFromScorerMode}
+>
+  <span>⚙️</span>
+
+  <strong>Scoring Form</strong>
+
+  <small>Open advanced delivery options</small>
+
+  <b>›</b>
+</button>
               </div>
             </>
           )
