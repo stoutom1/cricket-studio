@@ -49998,3 +49998,116 @@ body.cric4all-scorer-open {
     touch-action: manipulation !important;
   }
 }
+/* =========================================================
+   MOBILE SCORER — TRUE FULL-VIEWPORT LOCK
+========================================================= */
+
+@media (max-width: 760px) {
+  html.mobile-scorer-open,
+  body.mobile-scorer-open {
+    width: 100% !important;
+    height: 100% !important;
+
+    margin: 0 !important;
+
+    overflow: hidden !important;
+    overscroll-behavior: none !important;
+  }
+
+  body.mobile-scorer-open {
+    position: fixed !important;
+    inset-inline: 0 !important;
+
+    touch-action: none;
+  }
+
+  /*
+    The overlay must own the complete visible viewport.
+  */
+  .mobile-scorer-overlay-v3 {
+    position: fixed !important;
+    inset: 0 !important;
+    z-index: 100000 !important;
+
+    width: 100vw !important;
+    height: 100dvh !important;
+    min-height: 100dvh !important;
+    max-height: 100dvh !important;
+
+    display: flex !important;
+    align-items: stretch !important;
+    justify-content: stretch !important;
+
+    margin: 0 !important;
+
+    padding:
+      max(5px, env(safe-area-inset-top))
+      5px
+      max(5px, env(safe-area-inset-bottom)) !important;
+
+    overflow: hidden !important;
+
+    background:
+      linear-gradient(
+        160deg,
+        #071322,
+        #020817
+      ) !important;
+
+    overscroll-behavior: none !important;
+    touch-action: none !important;
+  }
+
+  .mobile-scorer-cockpit-v3 {
+    position: relative !important;
+
+    width: 100% !important;
+    height: 100% !important;
+    min-height: 0 !important;
+    max-height: 100% !important;
+
+    display: flex !important;
+    flex-direction: column !important;
+
+    margin: 0 !important;
+
+    overflow: hidden !important;
+
+    overscroll-behavior: none !important;
+  }
+
+  /*
+    Allow normal taps inside the scorer controls.
+  */
+  .mobile-scorer-cockpit-v3 button,
+  .mobile-scorer-cockpit-v3 input,
+  .mobile-scorer-cockpit-v3 select,
+  .mobile-scorer-cockpit-v3 textarea,
+  .mobile-scorer-cockpit-v3 label {
+    touch-action: manipulation !important;
+  }
+
+  /*
+    Prevent the original page content from visually leaking
+    through behind the fixed scorer.
+  */
+  body.mobile-scorer-open
+    .dashboard-page,
+  body.mobile-scorer-open
+    .dashboard-shell,
+  body.mobile-scorer-open
+    main {
+    visibility: hidden !important;
+  }
+
+  /*
+    Restore visibility for the scorer overlay, even when it is
+    rendered inside the dashboard tree.
+  */
+  body.mobile-scorer-open
+    .mobile-scorer-overlay-v3,
+  body.mobile-scorer-open
+    .mobile-scorer-overlay-v3 * {
+    visibility: visible !important;
+  }
+}
