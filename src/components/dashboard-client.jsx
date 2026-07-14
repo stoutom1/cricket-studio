@@ -7327,11 +7327,11 @@ const playerRoleBadge = (row) => {
 )}
 {selectedMatchId && !isSelectedMatchCompleted && scoringSubTab === "ADVANCED" && ( 
 <Card
-  className="scoring-console"
+  className="scoring-console mobile-scorer-console-card"
   title="🎯 Advanced Scoring"
   defaultCollapsed={false}
     right={
-    selectedMatchId && !isSelectedMatchCompleted ? (
+    selectedMatchId && !isSelectedMatchCompleted && !isMobile ? (
         <>
 <div className="advanced-scoring-actions">
   <button type="button" className="scorer-mode-btn" onClick={() => {setScorerMode(true); setScorerDrawer(null);}}>🎯 Scorer Mode</button>
@@ -7344,14 +7344,14 @@ const playerRoleBadge = (row) => {
             <p className="muted">Please select a match to view scoring, scoreboard, and commentary.</p>
           ) : (
             <>
-<div className={scorerMode ? "scorer-mode-shell active" : ""}>
-  {scorerMode && (
+<div className={scorerMode || isMobile ? "scorer-mode-shell active" : ""}>
+  {scorerMode && !isMobile && (
     <div className="scorer-mode-banner">
       🎯 Scorer Mode Active
     </div>
   )}
 
-  <div className={scorerMode ? "scorer-wow-console scorer-mode-flat" : "tv-score-console scorer-wow-console"}>
+  <div className={scorerMode || isMobile ? "scorer-wow-console scorer-mode-flat" : "tv-score-console scorer-wow-console"}>
   {liveMatchCenter && (
     <>
       {displayScoreboard && (
@@ -7534,7 +7534,7 @@ const playerRoleBadge = (row) => {
       )}
     </>
   )}
-  {scorerMode && (
+  {(scorerMode || isMobile) && (
   <div className={`scorer-workspace ${scorerDrawer ? "open" : ""}`}>
     <div className="scorer-workspace-panel">
       <div className="scorer-workspace-head">

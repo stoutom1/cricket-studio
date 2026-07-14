@@ -39723,3 +39723,937 @@ text-overflow:unset;
     text-align: left;
   }
 }
+/* =========================================================
+   CRIC4ALL MOBILE SCORER COCKPIT
+   Laptop rules remain unchanged
+========================================================= */
+
+.mobile-scorer-match-bar,
+.mobile-scorer-dock {
+  display: none;
+}
+
+@media (max-width: 760px) {
+  /* Prevent bottom dock from covering content */
+  body {
+    padding-bottom: calc(
+      78px + env(safe-area-inset-bottom)
+    );
+  }
+
+  /* -----------------------------------------
+     Remove unnecessary outer-card bulk
+  ----------------------------------------- */
+
+  .score-details-shell,
+  .mobile-scorer-console-card {
+    margin: 0 !important;
+    padding: 0 !important;
+
+    border: 0 !important;
+    border-radius: 0 !important;
+
+    background: transparent !important;
+    box-shadow: none !important;
+  }
+
+  .score-details-shell > header,
+  .mobile-scorer-console-card > header {
+    display: none !important;
+  }
+
+  .score-hub-shell {
+    margin: 0 !important;
+    padding: 0 !important;
+  }
+
+  .score-details-shell .share-score-btn,
+  .advanced-scoring-actions,
+  .scorer-mode-banner {
+    display: none !important;
+  }
+
+  /* Match setup stays available, but no longer
+     consumes valuable scoring space */
+  .mobile-score-match-setup {
+    display: none !important;
+  }
+
+  /* -----------------------------------------
+     Compact match header
+  ----------------------------------------- */
+
+  .mobile-scorer-match-bar {
+    position: sticky;
+    top: 0;
+    z-index: 55;
+
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 12px;
+
+    min-height: 58px;
+    padding:
+      8px
+      12px;
+
+    border: 1px solid rgba(148, 163, 184, 0.13);
+    border-radius: 15px;
+
+    background:
+      linear-gradient(
+        145deg,
+        rgba(15, 28, 49, 0.97),
+        rgba(8, 17, 31, 0.98)
+      );
+
+    box-shadow:
+      0 10px 24px rgba(2, 6, 23, 0.28);
+
+    backdrop-filter: blur(14px);
+  }
+
+  .mobile-scorer-match-copy {
+    min-width: 0;
+  }
+
+  .mobile-scorer-match-copy > strong {
+    display: block;
+
+    margin-top: 4px;
+
+    color: #f8fafc;
+    font-size: 14px;
+    font-weight: 950;
+    line-height: 1.25;
+
+    overflow: hidden;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+  }
+
+  .mobile-scorer-live-dot {
+    display: inline-flex;
+    align-items: center;
+    gap: 6px;
+
+    color: #6ee7b7;
+
+    font-size: 9px;
+    font-weight: 950;
+    text-transform: uppercase;
+  }
+
+  .mobile-scorer-live-dot i {
+    width: 7px;
+    height: 7px;
+
+    border-radius: 50%;
+    background: #34d399;
+
+    box-shadow:
+      0 0 8px rgba(52, 211, 153, 0.9);
+  }
+
+  .mobile-scorer-share-icon {
+    width: 39px !important;
+    height: 39px !important;
+    min-width: 39px !important;
+    flex: 0 0 39px;
+
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+
+    padding: 0 !important;
+
+    border: 1px solid rgba(148, 163, 184, 0.18);
+    border-radius: 12px;
+
+    background:
+      linear-gradient(
+        145deg,
+        rgba(51, 65, 85, 0.72),
+        rgba(30, 41, 59, 0.95)
+      );
+
+    color: #ffffff;
+    font-size: 16px;
+  }
+
+  /* -----------------------------------------
+     Compact top navigation
+  ----------------------------------------- */
+
+  .score-hub-tabs.wow-main-tabs {
+    position: sticky;
+    top: 62px;
+    z-index: 50;
+
+    display: grid !important;
+    grid-template-columns:
+      repeat(3, minmax(0, 1fr));
+
+    gap: 4px !important;
+
+    margin: 7px 0 !important;
+    padding: 4px !important;
+
+    border-radius: 13px !important;
+
+    background: rgba(8, 17, 31, 0.95) !important;
+
+    backdrop-filter: blur(12px);
+  }
+
+  .wow-score-tab {
+    min-width: 0 !important;
+    min-height: 42px !important;
+
+    padding: 5px 4px !important;
+
+    border-radius: 10px !important;
+  }
+
+  .wow-tab-icon {
+    font-size: 14px !important;
+  }
+
+  .wow-tab-copy strong {
+    font-size: 10px !important;
+  }
+
+  .wow-tab-copy small {
+    display: none !important;
+  }
+
+  /* -----------------------------------------
+     Sticky live HUD
+  ----------------------------------------- */
+
+  .mobile-scorer-hud {
+    position: sticky;
+    top: 112px;
+    z-index: 45;
+
+    margin: 0 !important;
+    padding: 12px !important;
+
+    border: 1px solid rgba(52, 211, 153, 0.16) !important;
+    border-radius: 17px !important;
+
+    background:
+      radial-gradient(
+        circle at top right,
+        rgba(16, 185, 129, 0.09),
+        transparent 40%
+      ),
+      linear-gradient(
+        150deg,
+        rgba(16, 31, 51, 0.98),
+        rgba(8, 17, 31, 0.99)
+      ) !important;
+
+    box-shadow:
+      0 14px 30px rgba(2, 6, 23, 0.3) !important;
+
+    backdrop-filter: blur(14px);
+  }
+
+  .scorer-hud-main {
+    display: grid !important;
+    grid-template-columns: auto minmax(0, 1fr);
+    align-items: center;
+
+    gap: 12px !important;
+  }
+
+  .scorer-hud-main > div:first-child
+    > strong {
+    color: #ffffff !important;
+
+    font-size: 35px !important;
+    font-weight: 1000 !important;
+    line-height: 1 !important;
+  }
+
+  .scorer-hud-main > div:first-child
+    > small {
+    margin-top: 4px;
+
+    color: #a8b4c7 !important;
+
+    font-size: 11px !important;
+  }
+
+  .scorer-hud-status {
+    padding: 8px 10px !important;
+
+    border-radius: 11px !important;
+
+    color: #dbeafe !important;
+
+    font-size: 10px !important;
+    line-height: 1.35 !important;
+
+    text-align: right;
+  }
+
+  .scorer-hud-players {
+    display: grid !important;
+    grid-template-columns: 1fr 1fr !important;
+
+    gap: 7px !important;
+
+    margin-top: 10px !important;
+  }
+
+  .scorer-hud-players > div {
+    min-width: 0;
+
+    padding: 9px !important;
+
+    border-radius: 11px !important;
+
+    background: rgba(30, 41, 59, 0.55) !important;
+  }
+
+  .scorer-hud-players > .bowler {
+    grid-column: 1 / -1;
+
+    display: grid;
+    grid-template-columns:
+      auto minmax(0, 1fr) auto;
+    align-items: center;
+
+    gap: 8px;
+  }
+
+  .scorer-hud-players span {
+    color: #8492a8 !important;
+
+    font-size: 9px !important;
+  }
+
+  .scorer-hud-players strong {
+    color: #ffffff !important;
+
+    font-size: 13px !important;
+
+    overflow: hidden;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+  }
+
+  .scorer-hud-players b {
+    color: #cbd5e1 !important;
+
+    font-size: 11px !important;
+  }
+
+  .scorer-hud-metrics {
+    display: flex !important;
+
+    gap: 6px !important;
+
+    margin-top: 8px !important;
+
+    overflow-x: auto;
+
+    scrollbar-width: none;
+  }
+
+  .scorer-hud-metrics::-webkit-scrollbar {
+    display: none;
+  }
+
+  .scorer-hud-metrics span {
+    flex: 0 0 auto;
+
+    min-height: 29px;
+
+    display: inline-flex;
+    align-items: center;
+    gap: 4px;
+
+    padding: 0 9px !important;
+
+    border-radius: 999px !important;
+
+    background: rgba(30, 41, 59, 0.7) !important;
+
+    color: #8492a8 !important;
+
+    font-size: 9px !important;
+  }
+
+  .scorer-hud-metrics b {
+    color: #ffffff;
+  }
+
+  /* -----------------------------------------
+     Recent balls and chase
+  ----------------------------------------- */
+
+  .mobile-recent-balls {
+    display: grid !important;
+    grid-template-columns: auto minmax(0, 1fr);
+    align-items: center;
+
+    gap: 8px !important;
+
+    margin: 8px 0 0 !important;
+    padding: 8px 10px !important;
+
+    border-radius: 12px !important;
+
+    background: rgba(15, 23, 42, 0.55) !important;
+  }
+
+  .mobile-recent-balls > span {
+    font-size: 10px !important;
+    white-space: nowrap;
+  }
+
+  .recent-ball-strip {
+    display: flex !important;
+
+    gap: 5px !important;
+
+    overflow-x: auto;
+
+    scrollbar-width: none;
+  }
+
+  .recent-ball-strip::-webkit-scrollbar {
+    display: none;
+  }
+
+  .ball-chip {
+    width: 27px !important;
+    height: 27px !important;
+    min-width: 27px !important;
+
+    font-size: 10px !important;
+  }
+
+  .mobile-chase-strip {
+    display: flex !important;
+
+    gap: 6px !important;
+
+    margin-top: 7px !important;
+
+    overflow-x: auto;
+  }
+
+  .mobile-chase-strip span {
+    flex: 1;
+
+    min-width: 82px;
+
+    padding: 8px !important;
+
+    border-radius: 10px !important;
+
+    text-align: center;
+
+    font-size: 10px !important;
+  }
+
+  /* -----------------------------------------
+     Scoring pad
+  ----------------------------------------- */
+
+  .scorer-actions-panel {
+    margin-top: 10px !important;
+    padding: 0 0 8px !important;
+
+    border: 0 !important;
+    background: transparent !important;
+  }
+
+  .mobile-scorer-pad {
+    width: 100%;
+
+    padding: 12px;
+
+    border: 1px solid rgba(148, 163, 184, 0.13);
+    border-radius: 18px;
+
+    background:
+      linear-gradient(
+        150deg,
+        rgba(17, 31, 52, 0.97),
+        rgba(8, 17, 31, 0.98)
+      );
+
+    box-shadow:
+      0 12px 28px rgba(2, 6, 23, 0.24);
+  }
+
+  .mobile-run-grid {
+    display: grid;
+    grid-template-columns:
+      repeat(3, minmax(0, 1fr));
+
+    gap: 9px;
+  }
+
+  .mobile-run-btn {
+    min-width: 0;
+    min-height: 67px;
+
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+
+    padding: 7px;
+
+    border: 1px solid rgba(96, 165, 250, 0.2);
+    border-radius: 15px;
+
+    background:
+      linear-gradient(
+        145deg,
+        rgba(30, 64, 175, 0.28),
+        rgba(30, 41, 59, 0.88)
+      );
+
+    color: #ffffff;
+
+    box-shadow:
+      inset 0 1px 0 rgba(255, 255, 255, 0.05);
+  }
+
+  .mobile-run-btn strong {
+    font-size: 25px;
+    font-weight: 1000;
+    line-height: 1;
+  }
+
+  .mobile-run-btn small {
+    margin-top: 5px;
+
+    color: #a8b4c7;
+
+    font-size: 9px;
+    font-weight: 750;
+  }
+
+  .mobile-run-btn.run-4 {
+    border-color: rgba(34, 211, 238, 0.26);
+
+    background:
+      linear-gradient(
+        145deg,
+        rgba(8, 145, 178, 0.4),
+        rgba(30, 41, 59, 0.9)
+      );
+  }
+
+  .mobile-run-btn.run-6 {
+    border-color: rgba(167, 139, 250, 0.28);
+
+    background:
+      linear-gradient(
+        145deg,
+        rgba(109, 40, 217, 0.42),
+        rgba(30, 41, 59, 0.9)
+      );
+  }
+
+  .mobile-run-btn.is-active,
+  .mobile-delivery-btn.is-active {
+    transform: scale(0.96);
+
+    border-color: rgba(251, 191, 36, 0.7);
+
+    box-shadow:
+      0 0 0 2px rgba(251, 191, 36, 0.14),
+      inset 0 1px 0 rgba(255, 255, 255, 0.08);
+  }
+
+  .mobile-delivery-grid {
+    display: grid;
+    grid-template-columns:
+      repeat(3, minmax(0, 1fr));
+
+    gap: 9px;
+
+    margin-top: 9px;
+  }
+
+  .mobile-delivery-btn {
+    min-height: 56px;
+
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+
+    padding: 7px;
+
+    border-radius: 14px;
+
+    font-family: inherit;
+  }
+
+  .mobile-delivery-btn strong {
+    font-size: 17px;
+    font-weight: 1000;
+  }
+
+  .mobile-delivery-btn small {
+    margin-top: 3px;
+
+    font-size: 9px;
+    font-weight: 750;
+  }
+
+  .mobile-delivery-btn.extra {
+    border: 1px solid rgba(251, 191, 36, 0.25);
+
+    background:
+      linear-gradient(
+        145deg,
+        rgba(180, 83, 9, 0.3),
+        rgba(30, 41, 59, 0.88)
+      );
+
+    color: #fde68a;
+  }
+
+  .mobile-delivery-btn.wicket {
+    border: 1px solid rgba(248, 113, 113, 0.3);
+
+    background:
+      linear-gradient(
+        145deg,
+        rgba(185, 28, 28, 0.42),
+        rgba(30, 41, 59, 0.9)
+      );
+
+    color: #fecaca;
+  }
+
+  /* -----------------------------------------
+     More actions accordion
+  ----------------------------------------- */
+
+  .mobile-more-actions {
+    margin-top: 9px;
+
+    overflow: hidden;
+
+    border: 1px solid rgba(148, 163, 184, 0.13);
+    border-radius: 14px;
+
+    background: rgba(15, 23, 42, 0.52);
+  }
+
+  .mobile-more-actions > summary {
+    list-style: none;
+
+    min-height: 44px;
+
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+
+    padding: 0 12px;
+  }
+
+  .mobile-more-actions
+    > summary::-webkit-details-marker {
+    display: none;
+  }
+
+  .mobile-more-actions > summary > div {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+  }
+
+  .mobile-more-actions > summary strong {
+    color: #dbe4f0;
+
+    font-size: 11px;
+    font-weight: 900;
+  }
+
+  .mobile-more-actions > summary i {
+    color: #94a3b8;
+
+    font-style: normal;
+
+    transition: transform 0.2s ease;
+  }
+
+  .mobile-more-actions[open] > summary i {
+    transform: rotate(180deg);
+  }
+
+  .mobile-more-actions-grid {
+    display: grid;
+    grid-template-columns:
+      repeat(3, minmax(0, 1fr));
+
+    gap: 7px;
+
+    padding: 9px;
+
+    border-top: 1px solid rgba(148, 163, 184, 0.09);
+  }
+
+  .mobile-more-actions-grid button {
+    min-height: 55px;
+
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+
+    padding: 6px;
+
+    border: 1px solid rgba(148, 163, 184, 0.13);
+    border-radius: 12px;
+
+    background: rgba(30, 41, 59, 0.66);
+    color: #e2e8f0;
+  }
+
+  .mobile-more-actions-grid strong {
+    font-size: 15px;
+    font-weight: 950;
+  }
+
+  .mobile-more-actions-grid small {
+    margin-top: 3px;
+
+    color: #94a3b8;
+
+    font-size: 8px;
+  }
+
+  /* -----------------------------------------
+     Swap / Undo safety controls
+  ----------------------------------------- */
+
+  .mobile-scorer-safety-row {
+    display: grid;
+    grid-template-columns: 0.8fr 1.2fr;
+
+    gap: 8px;
+
+    margin-top: 9px;
+  }
+
+  .mobile-swap-btn,
+  .mobile-undo-btn {
+    min-height: 45px;
+
+    border-radius: 13px;
+
+    font-family: inherit;
+    font-size: 11px;
+    font-weight: 900;
+  }
+
+  .mobile-swap-btn {
+    border: 1px solid rgba(167, 139, 250, 0.21);
+
+    background: rgba(91, 33, 182, 0.2);
+    color: #ddd6fe;
+  }
+
+  .mobile-undo-btn {
+    border: 1px solid rgba(251, 191, 36, 0.25);
+
+    background:
+      linear-gradient(
+        145deg,
+        rgba(180, 83, 9, 0.26),
+        rgba(30, 41, 59, 0.88)
+      );
+
+    color: #fde68a;
+  }
+
+  .mobile-end-innings-btn {
+    width: 100%;
+    min-height: 42px;
+
+    margin-top: 9px;
+
+    border: 1px solid rgba(248, 113, 113, 0.22);
+    border-radius: 12px;
+
+    background: rgba(127, 29, 29, 0.17);
+    color: #fecaca;
+
+    font-family: inherit;
+    font-size: 11px;
+    font-weight: 900;
+  }
+
+  /* -----------------------------------------
+     Fixed scorer navigation
+  ----------------------------------------- */
+
+  .mobile-scorer-dock {
+    position: fixed;
+    right: 8px;
+    bottom: calc(
+      7px + env(safe-area-inset-bottom)
+    );
+    left: 8px;
+    z-index: 1000;
+
+    display: grid;
+    grid-template-columns:
+      repeat(4, minmax(0, 1fr));
+
+    gap: 4px;
+
+    min-height: 62px;
+    padding: 5px;
+
+    border: 1px solid rgba(148, 163, 184, 0.18);
+    border-radius: 18px;
+
+    background:
+      linear-gradient(
+        145deg,
+        rgba(15, 28, 49, 0.97),
+        rgba(8, 17, 31, 0.98)
+      );
+
+    box-shadow:
+      0 16px 38px rgba(2, 6, 23, 0.48);
+
+    backdrop-filter: blur(18px);
+  }
+
+  .mobile-scorer-dock button {
+    min-width: 0;
+
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+
+    gap: 3px;
+
+    padding: 4px;
+
+    border: 0;
+    border-radius: 13px;
+
+    background: transparent;
+    color: #8492a8;
+  }
+
+  .mobile-scorer-dock button.active {
+    background:
+      linear-gradient(
+        145deg,
+        rgba(37, 99, 235, 0.7),
+        rgba(14, 165, 233, 0.52)
+      );
+
+    color: #ffffff;
+  }
+
+  .mobile-scorer-dock span {
+    font-size: 18px;
+  }
+
+  .mobile-scorer-dock small {
+    font-size: 9px;
+    font-weight: 850;
+  }
+
+  /* -----------------------------------------
+     Drawers become full-screen mobile sheets
+  ----------------------------------------- */
+
+  .scorer-workspace {
+    position: fixed !important;
+    inset: 0 !important;
+    z-index: 1100 !important;
+
+    pointer-events: none;
+  }
+
+  .scorer-workspace.open {
+    pointer-events: auto;
+  }
+
+  .scorer-workspace-panel {
+    position: absolute !important;
+    right: 0 !important;
+    bottom: 0 !important;
+    left: 0 !important;
+
+    width: 100% !important;
+    max-width: none !important;
+    max-height: 88dvh !important;
+
+    overflow: hidden;
+
+    border-radius: 22px 22px 0 0 !important;
+
+    background:
+      linear-gradient(
+        155deg,
+        #14233c,
+        #091426
+      ) !important;
+
+    transform: translateY(105%);
+
+    transition: transform 0.25s ease;
+  }
+
+  .scorer-workspace.open
+    .scorer-workspace-panel {
+    transform: translateY(0);
+  }
+
+  .scorer-workspace-head {
+    position: sticky;
+    top: 0;
+    z-index: 5;
+
+    min-height: 58px;
+
+    padding: 0 15px !important;
+
+    background: rgba(9, 20, 38, 0.96);
+  }
+
+  .scorer-workspace-head strong {
+    font-size: 15px !important;
+  }
+
+  .scorer-workspace-head button {
+    width: 38px;
+    height: 38px;
+
+    border-radius: 12px;
+
+    font-size: 17px;
+  }
+
+  .scorer-workspace-body {
+    max-height: calc(88dvh - 58px);
+
+    padding: 13px !important;
+
+    overflow-y: auto;
+    overscroll-behavior: contain;
+  }
+}
