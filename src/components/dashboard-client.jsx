@@ -836,6 +836,19 @@ useEffect(() => {
   }
 }, [activeLeagueId]);
 
+useEffect(() => {
+  if (!isMobile || !scorerMode) {
+    document.body.classList.remove("cric4all-scorer-open");
+    return;
+  }
+
+  document.body.classList.add("cric4all-scorer-open");
+
+  return () => {
+    document.body.classList.remove("cric4all-scorer-open");
+  };
+}, [isMobile, scorerMode]);
+
 async function handleCreateLeague() {
   const league = await api("/api/leagues", {
     method: "POST",
@@ -7378,7 +7391,7 @@ const playerRoleBadge = (row) => {
           ) : (
             <>
 <div className={scorerMode ? "scorer-mode-shell active" : ""}>
-{scorerMode && (
+{scorerMode && !isMobile && (
   <div className="scorer-mode-banner mobile-scorer-mode-banner">
     <div className="scorer-mode-banner-copy">
       <span>🎯</span>
@@ -7412,396 +7425,444 @@ const playerRoleBadge = (row) => {
   </div>
 )}
 {isMobile && scorerMode && liveMatchCenter && (
-  <section className="mobile-cockpit">
-    {/* SCORE HEADER */}
-    <div className="mobile-cockpit-score">
-      <div className="mobile-cockpit-score-main">
-        <span className="mobile-cockpit-live">
-          <i />
-          Live
-        </span>
+  <div className="mobile-scorer-overlay">
+    <section className="mobile-cockpit-v2">
+      {/* ==================================================
+          SCORE HEADER
+      =================================================== */}
+      <header className="mobile-cockpit-v2-header">
+        <div className="mobile-cockpit-v2-score">
+          <span className="mobile-cockpit-v2-live">
+            <i />
+            Live
+          </span>
 
-        <strong>
-          {liveMatchCenter.runs}/{liveMatchCenter.wickets}
-        </strong>
-
-        <small>
-          Inn {liveMatchCenter.inningsNo} •{" "}
-          {liveMatchCenter.oversDisplay} ov
-        </small>
-      </div>
-
-      <div className="mobile-cockpit-status">
-        {error ||
-          instantDeliveryStatus ||
-          message ||
-          overCompleteNotice ||
-          displayScoreboard?.summary?.statusText ||
-          "Ready for next delivery"}
-      </div>
-    </div>
-
-    {/* PLAYERS */}
-    {!matchEnded && scoreboard?.currentState && (
-      <div className="mobile-cockpit-players">
-        <div className="mobile-cockpit-player striker">
-          <span>⚡ Striker</span>
-
-          <div>
+          <div className="mobile-cockpit-v2-score-line">
             <strong>
-              {displayScoreboard?.currentState?.strikerName ||
-                "Not selected"}
+              {liveMatchCenter.runs}/{liveMatchCenter.wickets}
             </strong>
 
-            <b>
-              {displayScoreboard?.currentState?.strikerStats
-                ? `${displayScoreboard.currentState.strikerStats.runs} (${displayScoreboard.currentState.strikerStats.balls})`
-                : "0 (0)"}
-            </b>
+            <small>
+              Inn {liveMatchCenter.inningsNo} •{" "}
+              {liveMatchCenter.oversDisplay} ov
+            </small>
           </div>
         </div>
 
-        <div className="mobile-cockpit-player non-striker">
-          <span>🏃 Non-striker</span>
+        <div className="mobile-cockpit-v2-header-right">
+          <span className="mobile-cockpit-v2-status">
+            {displayScoreboard?.summary?.statusText ||
+              "Ready for next delivery"}
+          </span>
 
-          <div>
-            <strong>
-              {displayScoreboard?.currentState?.nonStrikerName ||
-                "Not selected"}
-            </strong>
-
-            <b>
-              {displayScoreboard?.currentState?.nonStrikerStats
-                ? `${displayScoreboard.currentState.nonStrikerStats.runs} (${displayScoreboard.currentState.nonStrikerStats.balls})`
-                : "0 (0)"}
-            </b>
-          </div>
+          <button
+            type="button"
+            className="mobile-cockpit-v2-exit"
+            onClick={() => {
+              setScorerDrawer(null);
+              setScorerMode(false);
+              setScoringSubTab("ADVANCED");
+            }}
+          >
+            ✕ Exit
+          </button>
         </div>
+      </header>
 
-        <div className="mobile-cockpit-player bowler">
-          <span>🎯 Bowler</span>
+      {/* ==================================================
+          PLAYERS
+      =================================================== */}
+      {!matchEnded && scoreboard?.currentState && (
+        <div className="mobile-cockpit-v2-players">
+          <div className="mobile-cockpit-v2-player striker">
+            <span>⚡ Striker</span>
 
-          <div>
-            <strong>
-              {displayScoreboard?.currentState?.bowlerName ||
-                "Not selected"}
-            </strong>
+            <div>
+              <strong>
+                {displayScoreboard?.currentState?.strikerName ||
+                  "Not selected"}
+              </strong>
 
-            <b>
-              {displayScoreboard?.currentState?.bowlerStats
-                ? `${displayScoreboard.currentState.bowlerStats.wickets}/${displayScoreboard.currentState.bowlerStats.runs} (${displayScoreboard.currentState.bowlerStats.overs} ov)`
-                : "0/0"}
-            </b>
+              <b>
+                {displayScoreboard?.currentState?.strikerStats
+                  ? `${displayScoreboard.currentState.strikerStats.runs} (${displayScoreboard.currentState.strikerStats.balls})`
+                  : "0 (0)"}
+              </b>
+            </div>
           </div>
-        </div>
-      </div>
-    )}
 
-    {/* METRICS */}
-    <div className="mobile-cockpit-metrics">
-      <span>
-        CRR <b>{liveMatchCenter.crr}</b>
-      </span>
+          <div className="mobile-cockpit-v2-player non-striker">
+            <span>🏃 Non-striker</span>
 
-      <span>
-        RRR <b>{liveMatchCenter.rrr}</b>
-      </span>
+            <div>
+              <strong>
+                {displayScoreboard?.currentState?.nonStrikerName ||
+                  "Not selected"}
+              </strong>
 
-      <span>
-        Proj <b>{liveMatchCenter.projected}</b>
-      </span>
+              <b>
+                {displayScoreboard?.currentState?.nonStrikerStats
+                  ? `${displayScoreboard.currentState.nonStrikerStats.runs} (${displayScoreboard.currentState.nonStrikerStats.balls})`
+                  : "0 (0)"}
+              </b>
+            </div>
+          </div>
 
-      <span>
-        P'ship{" "}
-        <b>
-          {liveMatchCenter.partnershipRuns} (
-          {liveMatchCenter.partnershipBalls})
-        </b>
-      </span>
-    </div>
+          <div className="mobile-cockpit-v2-player bowler">
+            <span>🎯 Bowler</span>
 
-    {/* CHASE */}
-    {liveMatchCenter?.isSecondInnings &&
-      liveMatchCenter?.target > 0 && (
-        <div className="mobile-cockpit-chase">
-          <span>
-            Target <b>{liveMatchCenter.target}</b>
-          </span>
+            <div>
+              <strong>
+                {displayScoreboard?.currentState?.bowlerName ||
+                  "Not selected"}
+              </strong>
 
-          <span>
-            Need <b>{liveMatchCenter.runsRequired}</b>
-          </span>
-
-          <span>
-            Balls <b>{liveMatchCenter.ballsRemaining}</b>
-          </span>
+              <b>
+                {displayScoreboard?.currentState?.bowlerStats
+                  ? `${displayScoreboard.currentState.bowlerStats.wickets}/${displayScoreboard.currentState.bowlerStats.runs} (${displayScoreboard.currentState.bowlerStats.overs} ov)`
+                  : "0/0"}
+              </b>
+            </div>
+          </div>
         </div>
       )}
 
-    {/* RECENT BALLS */}
-    <div className="mobile-cockpit-recent">
-      <span>Recent</span>
+      {/* ==================================================
+          MATCH METRICS
+      =================================================== */}
+      <div className="mobile-cockpit-v2-metrics">
+        <div>
+          <span>CRR</span>
+          <strong>{liveMatchCenter.crr}</strong>
+        </div>
 
-      <div>
-        {recentBalls.length ? (
-          recentBalls.slice(0, 10).map((ball, index) => {
-            const label = ball.label || "";
+        <div>
+          <span>RRR</span>
+          <strong>{liveMatchCenter.rrr}</strong>
+        </div>
 
-            const ballResult = (
-              label.split(" ").slice(1).join(" ") ||
-              label
-            ).replace(/[()]/g, "");
+        <div>
+          <span>Proj</span>
+          <strong>{liveMatchCenter.projected}</strong>
+        </div>
 
-            return (
-              <b
-                key={ball.id || index}
-                className={
-                  ballResult === "W"
-                    ? "wicket"
-                    : ballResult === "4" ||
-                        ballResult === "6"
-                      ? "boundary"
-                      : ""
-                }
-              >
-                {ballResult}
-              </b>
-            );
-          })
-        ) : (
-          <small>No balls yet</small>
-        )}
+        <div>
+          <span>P'ship</span>
+          <strong>
+            {liveMatchCenter.partnershipRuns} (
+            {liveMatchCenter.partnershipBalls})
+          </strong>
+        </div>
       </div>
-    </div>
 
-    {/* DELIVERY SETUP */}
-    {needsDeliverySetup ? (
-      <button
-        type="button"
-        className="mobile-cockpit-setup-btn"
-        onClick={() =>
-          setShowDeliverySetupModal(true)
-        }
-      >
-        🎯 Select striker, non-striker and bowler
-      </button>
-    ) : (
-      permissions?.canScoreMatch && (
-        <>
-          {/* COMPACT SCORING KEYPAD */}
-          <div className="mobile-cockpit-keypad">
-            {[0, 1, 2, 3, 4, 6].map((run) => (
-              <button
-                key={run}
-                type="button"
-                disabled={
-                  isMatchCompleted ||
-                  isMatchLocked ||
-                  isMatchAbandoned
-                }
-                className={`cockpit-key run-key ${
-                  run === 4 ? "four" : ""
-                } ${run === 6 ? "six" : ""} ${
-                  activeQuickAction === String(run)
-                    ? "active"
-                    : ""
-                }`}
-                onClick={() =>
-                  triggerQuickAction(
-                    String(run),
-                    () => quickNormalBall(run)
-                  )
-                }
-              >
-                {run}
-              </button>
-            ))}
+      {/* Chase information */}
+      {liveMatchCenter?.isSecondInnings &&
+        liveMatchCenter?.target > 0 && (
+          <div className="mobile-cockpit-v2-chase">
+            <span>
+              Target <b>{liveMatchCenter.target}</b>
+            </span>
 
-            <button
-              type="button"
-              className="cockpit-key extra-key"
-              disabled={
-                isMatchCompleted ||
-                isMatchLocked ||
-                isMatchAbandoned
-              }
-              onClick={() =>
-                triggerQuickAction(
-                  "Wd",
-                  () => quickExtra("WIDE")
-                )
-              }
-            >
-              WD
-            </button>
+            <span>
+              Need <b>{liveMatchCenter.runsRequired}</b>
+            </span>
 
-            <button
-              type="button"
-              className="cockpit-key extra-key"
-              disabled={
-                isMatchCompleted ||
-                isMatchLocked ||
-                isMatchAbandoned
-              }
-              onClick={() =>
-                triggerQuickAction(
-                  "Nb",
-                  () => quickExtra("NOBALL")
-                )
-              }
-            >
-              NB
-            </button>
-
-            <button
-              type="button"
-              className="cockpit-key"
-              disabled={
-                isMatchCompleted ||
-                isMatchLocked ||
-                isMatchAbandoned
-              }
-              onClick={() =>
-                triggerQuickAction(
-                  "B",
-                  () => quickExtra("BYE")
-                )
-              }
-            >
-              B
-            </button>
-
-            <button
-              type="button"
-              className="cockpit-key"
-              disabled={
-                isMatchCompleted ||
-                isMatchLocked ||
-                isMatchAbandoned
-              }
-              onClick={() =>
-                triggerQuickAction(
-                  "LB",
-                  () => quickExtra("LEGBYE")
-                )
-              }
-            >
-              LB
-            </button>
-
-            <button
-              type="button"
-              className="cockpit-key wicket-key"
-              disabled={
-                isMatchCompleted ||
-                isMatchLocked ||
-                isMatchAbandoned
-              }
-              onClick={() =>
-                triggerQuickAction(
-                  "W",
-                  () => quickWicket("BOWLED")
-                )
-              }
-            >
-              WKT
-            </button>
-
-            <button
-              type="button"
-              className="cockpit-key retired-key"
-              disabled={
-                isMatchCompleted ||
-                isMatchLocked ||
-                isMatchAbandoned
-              }
-              onClick={() =>
-                setShowRetiredHurtModal(true)
-              }
-            >
-              RTD
-            </button>
+            <span>
+              Balls <b>{liveMatchCenter.ballsRemaining}</b>
+            </span>
           </div>
+        )}
 
-          {/* TWO PRIMARY SAFETY ACTIONS */}
-          <div className="mobile-cockpit-safety">
-            <button
-              type="button"
-              disabled={
-                isMatchCompleted ||
-                isMatchLocked ||
-                isMatchAbandoned
-              }
-              onClick={swapBatters}
-            >
-              ⇄ Swap
-            </button>
+      {/* ==================================================
+          VISUAL SEPARATOR
+      =================================================== */}
+      <div className="mobile-cockpit-v2-divider">
+        <span />
+        <b>Delivery Controls</b>
+        <span />
+      </div>
 
-            <button
-              type="button"
-              className="undo"
-              disabled={isMatchLocked}
-              onClick={() =>
-                triggerQuickAction(
-                  "Undo",
-                  handleUndoBall
-                )
-              }
-            >
-              ↩ Undo
-            </button>
-          </div>
+      {/* ==================================================
+          RECENT BALLS
+      =================================================== */}
+      <div className="mobile-cockpit-v2-recent">
+        <span>Recent</span>
 
-          {/* LESS-FREQUENT ACTIONS */}
-          <div className="mobile-cockpit-tools">
-            <button
-              type="button"
-              disabled={
-                isMatchCompleted ||
-                isMatchLocked ||
-                isMatchAbandoned
-              }
-              onClick={() =>
-                setShowKeeperChangeModal(true)
-              }
-            >
-              🧤 Change WK
-            </button>
+        <div>
+          {recentBalls.length ? (
+            recentBalls.slice(0, 10).map((ball, index) => {
+              const label = ball.label || "";
 
-            {lastCorrectionId && (
-              <button
-                type="button"
-                disabled={rollbackSaving}
-                onClick={() =>
-                  rollbackCorrection(lastCorrectionId)
-                }
-              >
-                {rollbackSaving
-                  ? "Restoring..."
-                  : "↶ Rollback"}
-              </button>
-            )}
+              const ballResult = (
+                label.split(" ").slice(1).join(" ") ||
+                label
+              ).replace(/[()]/g, "");
 
-            {Number(ballForm.inningsNo) === 1 &&
-              scoreboard?.match?.status !==
-                "COMPLETED" &&
-              scoreboard?.match?.status !==
-                "COMPLETED_LOCKED" &&
-              scoreboard?.match?.status !==
-                "COMPLETED_CORRECTED" && (
+              return (
+                <b
+                  key={ball.id || index}
+                  className={
+                    ballResult === "W"
+                      ? "wicket"
+                      : ballResult === "4" ||
+                          ballResult === "6"
+                        ? "boundary"
+                        : ""
+                  }
+                >
+                  {ballResult}
+                </b>
+              );
+            })
+          ) : (
+            <small>No balls yet</small>
+          )}
+        </div>
+      </div>
+
+      {/* ==================================================
+          COMPACT SCORING CONTROLS
+      =================================================== */}
+      <div className="mobile-cockpit-v2-controls">
+        {needsDeliverySetup ? (
+          <button
+            type="button"
+            className="mobile-cockpit-v2-setup"
+            onClick={() =>
+              setShowDeliverySetupModal(true)
+            }
+          >
+            🎯 Select striker, non-striker and bowler
+          </button>
+        ) : (
+          permissions?.canScoreMatch && (
+            <>
+              <div className="mobile-cockpit-v2-keypad">
+                {[0, 1, 2, 3, 4, 6].map((run) => (
+                  <button
+                    key={run}
+                    type="button"
+                    disabled={
+                      isMatchCompleted ||
+                      isMatchLocked ||
+                      isMatchAbandoned
+                    }
+                    className={`cockpit-v2-key ${
+                      run === 4 ? "four" : ""
+                    } ${run === 6 ? "six" : ""} ${
+                      activeQuickAction === String(run)
+                        ? "active"
+                        : ""
+                    }`}
+                    onClick={() =>
+                      triggerQuickAction(
+                        String(run),
+                        () => quickNormalBall(run)
+                      )
+                    }
+                  >
+                    {run}
+                  </button>
+                ))}
+
                 <button
                   type="button"
-                  className="end"
-                  onClick={handleEndFirstInnings}
+                  className="cockpit-v2-key extra"
+                  disabled={
+                    isMatchCompleted ||
+                    isMatchLocked ||
+                    isMatchAbandoned
+                  }
+                  onClick={() =>
+                    triggerQuickAction(
+                      "Wd",
+                      () => quickExtra("WIDE")
+                    )
+                  }
                 >
-                  🛑 End innings
+                  WD
                 </button>
-              )}
-          </div>
-        </>
-      )
-    )}
-  </section>
+
+                <button
+                  type="button"
+                  className="cockpit-v2-key extra"
+                  disabled={
+                    isMatchCompleted ||
+                    isMatchLocked ||
+                    isMatchAbandoned
+                  }
+                  onClick={() =>
+                    triggerQuickAction(
+                      "Nb",
+                      () => quickExtra("NOBALL")
+                    )
+                  }
+                >
+                  NB
+                </button>
+
+                <button
+                  type="button"
+                  className="cockpit-v2-key"
+                  disabled={
+                    isMatchCompleted ||
+                    isMatchLocked ||
+                    isMatchAbandoned
+                  }
+                  onClick={() =>
+                    triggerQuickAction(
+                      "B",
+                      () => quickExtra("BYE")
+                    )
+                  }
+                >
+                  B
+                </button>
+
+                <button
+                  type="button"
+                  className="cockpit-v2-key"
+                  disabled={
+                    isMatchCompleted ||
+                    isMatchLocked ||
+                    isMatchAbandoned
+                  }
+                  onClick={() =>
+                    triggerQuickAction(
+                      "LB",
+                      () => quickExtra("LEGBYE")
+                    )
+                  }
+                >
+                  LB
+                </button>
+
+                <button
+                  type="button"
+                  className="cockpit-v2-key wicket"
+                  disabled={
+                    isMatchCompleted ||
+                    isMatchLocked ||
+                    isMatchAbandoned
+                  }
+                  onClick={() =>
+                    triggerQuickAction(
+                      "W",
+                      () => quickWicket("BOWLED")
+                    )
+                  }
+                >
+                  WKT
+                </button>
+
+                <button
+                  type="button"
+                  className="cockpit-v2-key retired"
+                  disabled={
+                    isMatchCompleted ||
+                    isMatchLocked ||
+                    isMatchAbandoned
+                  }
+                  onClick={() =>
+                    setShowRetiredHurtModal(true)
+                  }
+                >
+                  RTD
+                </button>
+              </div>
+
+              <div className="mobile-cockpit-v2-safety">
+                <button
+                  type="button"
+                  className="swap"
+                  disabled={
+                    isMatchCompleted ||
+                    isMatchLocked ||
+                    isMatchAbandoned
+                  }
+                  onClick={swapBatters}
+                >
+                  ⇄ Swap
+                </button>
+
+                <button
+                  type="button"
+                  className="undo"
+                  disabled={isMatchLocked}
+                  onClick={() =>
+                    triggerQuickAction(
+                      "Undo",
+                      handleUndoBall
+                    )
+                  }
+                >
+                  ↩ Undo
+                </button>
+              </div>
+
+              <div className="mobile-cockpit-v2-tools">
+                <button
+                  type="button"
+                  disabled={
+                    isMatchCompleted ||
+                    isMatchLocked ||
+                    isMatchAbandoned
+                  }
+                  onClick={() =>
+                    setShowKeeperChangeModal(true)
+                  }
+                >
+                  🧤 Change WK
+                </button>
+
+                {lastCorrectionId && (
+                  <button
+                    type="button"
+                    disabled={rollbackSaving}
+                    onClick={() =>
+                      rollbackCorrection(lastCorrectionId)
+                    }
+                  >
+                    {rollbackSaving
+                      ? "Restoring..."
+                      : "↶ Rollback"}
+                  </button>
+                )}
+
+                {Number(ballForm.inningsNo) === 1 &&
+                  scoreboard?.match?.status !==
+                    "COMPLETED" &&
+                  scoreboard?.match?.status !==
+                    "COMPLETED_LOCKED" &&
+                  scoreboard?.match?.status !==
+                    "COMPLETED_CORRECTED" && (
+                    <button
+                      type="button"
+                      className="end"
+                      onClick={handleEndFirstInnings}
+                    >
+                      🔴 End innings
+                    </button>
+                  )}
+              </div>
+            </>
+          )
+        )}
+      </div>
+
+      {/* ==================================================
+          SCORER MODE FOOTER
+      =================================================== */}
+      <footer className="mobile-cockpit-v2-footer">
+        <span>🎯</span>
+
+        <div>
+          <strong>Scorer Mode</strong>
+          <small>Focused ball-by-ball scoring</small>
+        </div>
+      </footer>
+    </section>
+  </div>
 )}
 <div
   className={`${
