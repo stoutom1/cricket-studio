@@ -173,6 +173,21 @@ function MobileBowlingCards({ rows = [] }) {
     </div>
   );
 }
+
+function getBallInningsNumber(ball) {
+  const value =
+    ball?.inningsNo ??
+    ball?.inningsNumber ??
+    ball?.innings ??
+    ball?.inningNo;
+
+  const inningsNumber = Number(value);
+
+  return Number.isInteger(inningsNumber)
+    ? inningsNumber
+    : null;
+}
+
 export default function DashboardClient() {
   const { data: session } = useSession();
   const [teams, setTeams] = useState([]);
@@ -4418,8 +4433,39 @@ const previousOverInfo = (() => {
 })();
 
 const recentOverGroups = (() => {
+  const currentInningsNo =
+    Number(
+      ballForm?.inningsNo ??
+      displayScoreboard?.currentState?.inningsNo ??
+      scoreboard?.currentState?.inningsNo ??
+      scoreboard?.currentInningsNo ??
+      1
+    ) || 1;
+
+  /*
+    Critical:
+    Only use deliveries from the innings currently being scored.
+
+    This ensures innings 2 starts with:
+    - no previous over;
+    - an empty current over;
+    - no deliveries carried over from innings 1.
+  */
   const sourceBalls = Array.isArray(recentBalls)
-    ? recentBalls
+    ? recentBalls.filter((ball) => {
+        const ballInningsNo =
+          getBallInningsNumber(ball);
+
+        /*
+          Keep the ball only when it belongs to the active innings.
+          A missing innings number is not trusted because it could
+          accidentally carry innings-1 deliveries into innings 2.
+        */
+        return (
+          ballInningsNo !== null &&
+          ballInningsNo === currentInningsNo
+        );
+      })
     : [];
 
   function readOverNumber(ball) {
@@ -4531,7 +4577,8 @@ const recentOverGroups = (() => {
       return;
     }
 
-    const key = `over-${ball.__overNumber}`;
+    const key =
+  `innings-${currentInningsNo}-over-${ball.__overNumber}`;
 
     if (!groups.has(key)) {
       groups.set(key, {
@@ -4562,41 +4609,69 @@ const recentOverGroups = (() => {
     );
   });
 
-  const currentOverNumber = Math.floor(
-    Number(
-      displayScoreboard?.currentState
-        ?.legalBalls ??
-        scoreboard?.currentState?.legalBalls ??
-        0
-    ) / 6
-  );
+const currentInningsLegalBalls =
+  Number(
+    displayScoreboard?.currentState
+      ?.legalBalls ??
+    scoreboard?.currentState
+      ?.legalBalls ??
+    displayScoreboard?.innings?.find(
+      (innings) =>
+        Number(innings.inningsNo) ===
+        currentInningsNo
+    )?.legalBalls ??
+    scoreboard?.innings?.find(
+      (innings) =>
+        Number(innings.inningsNo) ===
+        currentInningsNo
+    )?.legalBalls ??
+    0
+  ) || 0;
+
+const currentOverNumber = Math.floor(
+  currentInningsLegalBalls / 6
+);
 
   let finalGroups = orderedGroups.slice(-2);
 
-  const newestGroup =
-    finalGroups[finalGroups.length - 1];
+const newestGroup =
+  finalGroups[finalGroups.length - 1];
 
-  /*
-    After an over is completed, create an empty current-over
-    row until the first delivery of the next over is entered.
-  */
-  if (
-    Number.isFinite(currentOverNumber) &&
-    (!newestGroup ||
-      newestGroup.overNumber <
-        currentOverNumber)
-  ) {
-    finalGroups = [
-      ...finalGroups,
-      {
-        key: `over-${currentOverNumber}`,
-        overNumber: currentOverNumber,
-        balls: [],
-      },
-    ].slice(-2);
-  }
+/*
+  At the start of a new innings there are no deliveries,
+  so create Current Over 1 immediately.
+*/
+if (!finalGroups.length) {
+  return [
+    {
+      key: `innings-${currentInningsNo}-over-0`,
+      overNumber: 0,
+      balls: [],
+    },
+  ];
+}
 
-  return finalGroups;
+/*
+  After a completed over, create the next empty current row
+  until its first delivery is recorded.
+*/
+if (
+  Number.isFinite(currentOverNumber) &&
+  newestGroup &&
+  newestGroup.overNumber < currentOverNumber
+) {
+  finalGroups = [
+    ...finalGroups,
+    {
+      key:
+        `innings-${currentInningsNo}-over-${currentOverNumber}`,
+      overNumber: currentOverNumber,
+      balls: [],
+    },
+  ].slice(-2);
+}
+
+return finalGroups;
 })();
 
 function getMatchOptionLabel(match) {
@@ -6421,6 +6496,22 @@ const availableBowlerOptions = (bowlingTeam?.players || [])
     setScoringFormSubmitting(false);
   }
 }
+const activeScoringInningsNo =
+  Number(
+    ballForm?.inningsNo ??
+    displayScoreboard?.currentState?.inningsNo ??
+    scoreboard?.currentState?.inningsNo ??
+    1
+  ) || 1;
+
+useEffect(() => {
+  /*
+    Clear UI-only scorer drawers when innings changes.
+    The filtered API deliveries will rebuild the recent-over
+    panel using only the new innings.
+  */
+  setScorerDrawer(null);
+}, [activeScoringInningsNo]);
 
 function MobileMatchSetup({ match, includeTimeline = false }) {
   return (
