@@ -6264,9 +6264,7 @@ const mobileRecentDeliveryItems = useMemo(() => {
     left  = newest
     right = oldest
   */
-  const newestFirstBalls = [...sourceBalls]
-    .slice(-24)
-    .reverse();
+const newestFirstBalls = sourceBalls.slice(0, 24);
 
   /*
     Count legal balls from oldest to newest first, because an
