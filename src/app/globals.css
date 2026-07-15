@@ -50200,3 +50200,102 @@ body.cric4all-scorer-open {
     visibility: visible !important;
   }
 }
+/* =========================================================
+   FINAL MOBILE SCORER — FIT SCORING FORM BUTTON
+   Does not change score, overs, players, recent balls,
+   keypad, or any other font sizes.
+========================================================= */
+
+@media (max-width: 760px) {
+  /*
+    Remove only the unnecessary space below the final control.
+  */
+  .mobile-scorer-cockpit-v3 .msc-v3-control-zone {
+    padding-bottom: 0 !important;
+  }
+
+  /*
+    Keep the Scoring Form button fully visible above the
+    Safari toolbar without changing the other scorer controls.
+  */
+  .mobile-scorer-cockpit-v3
+    .msc-v3-scoring-form-btn {
+    width: 100% !important;
+
+    min-height: 36px !important;
+    height: 36px !important;
+
+    display: grid !important;
+    grid-template-columns:
+      27px minmax(0, 1fr) 18px !important;
+    align-items: center !important;
+    gap: 7px !important;
+
+    margin:
+      4px
+      0
+      0 !important;
+
+    padding:
+      3px
+      8px !important;
+
+    border-radius: 9px !important;
+
+    overflow: hidden !important;
+  }
+
+  .mobile-scorer-cockpit-v3
+    .msc-v3-scoring-form-btn
+    > span {
+    width: 27px !important;
+    height: 27px !important;
+
+    display: inline-flex !important;
+    align-items: center !important;
+    justify-content: center !important;
+
+    font-size: 13px !important;
+  }
+
+  .mobile-scorer-cockpit-v3
+    .msc-v3-scoring-form-btn
+    > div {
+    min-width: 0 !important;
+  }
+
+  .mobile-scorer-cockpit-v3
+    .msc-v3-scoring-form-btn
+    strong {
+    display: block !important;
+
+    color: #ffffff !important;
+
+    font-size: 12px !important;
+    font-weight: 950 !important;
+    line-height: 1.05 !important;
+
+    overflow: visible !important;
+    text-overflow: clip !important;
+    white-space: nowrap !important;
+  }
+
+  /*
+    Hide only the secondary description on this compact
+    mobile button. The complete “Scoring Form” label remains.
+  */
+  .mobile-scorer-cockpit-v3
+    .msc-v3-scoring-form-btn
+    small {
+    display: none !important;
+  }
+
+  .mobile-scorer-cockpit-v3
+    .msc-v3-scoring-form-btn
+    > b {
+    color: #7dd3fc !important;
+
+    font-size: 18px !important;
+    line-height: 1 !important;
+  }
+}
