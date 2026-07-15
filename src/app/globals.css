@@ -42976,7 +42976,7 @@ body.cric4all-scorer-open {
     background: rgba(120, 53, 15, 0.18);
     color: #fcd34d;
 
-    font-size: 10px;
+    font-size: 14px;
     font-weight: 800;
     text-align: center;
   }
@@ -43389,7 +43389,7 @@ body.cric4all-scorer-open {
 
   .msc-v3-chase span {
     padding: 6px 4px !important;
-    font-size: 11px !important;
+    font-size: 13px !important;
   }
 
   .msc-v3-delivery-head {
@@ -43513,7 +43513,7 @@ body.cric4all-scorer-open {
 
   .msc-v3-chase span {
     padding: 4px 3px !important;
-    font-size: 9px !important;
+    font-size: 13px !important;
   }
 
   .msc-v3-delivery-head {
@@ -43698,12 +43698,12 @@ body.cric4all-scorer-open {
 
     padding: 6px 4px !important;
 
-    font-size: 12px !important;
+    font-size: 15px !important;
     font-weight: 900 !important;
   }
 
   .msc-v3-chase b {
-    font-size: 13px !important;
+    font-size: 15px !important;
   }
 
   /* -------------------------------------------------------
@@ -44151,12 +44151,12 @@ body.cric4all-scorer-open {
 
     padding: 3px 4px !important;
 
-    font-size: 10px !important;
+    font-size: 14px !important;
     line-height: 1.1 !important;
   }
 
   .msc-v3-chase b {
-    font-size: 11px !important;
+    font-size: 14px !important;
   }
 }
 /* =========================================================
