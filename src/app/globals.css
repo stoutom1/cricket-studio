@@ -50200,3 +50200,59 @@ body.cric4all-scorer-open {
     visibility: visible !important;
   }
 }
+/* ==========================================
+   MOBILE - FINAL SCORING FORM BUTTON
+========================================== */
+
+@media (max-width:760px){
+
+  .mobile-scorer-cockpit-v3 .msc-v3-scoring-form-btn{
+      height:34px !important;
+      min-height:34px !important;
+
+      display:flex !important;
+      align-items:center !important;
+      justify-content:center !important;
+
+      gap:8px !important;
+
+      padding:0 12px !important;
+
+      margin-top:3px !important;
+      margin-bottom:0 !important;
+
+      overflow:hidden !important;
+  }
+
+  .mobile-scorer-cockpit-v3 .msc-v3-scoring-form-btn span{
+      display:flex;
+      align-items:center;
+      justify-content:center;
+
+      width:22px;
+      height:22px;
+
+      font-size:15px;
+      flex:none;
+  }
+
+  .mobile-scorer-cockpit-v3 .msc-v3-scoring-form-btn strong{
+      font-size:13px !important;
+      line-height:1 !important;
+      margin:0 !important;
+      white-space:nowrap;
+  }
+
+  .mobile-scorer-cockpit-v3 .msc-v3-scoring-form-btn small{
+      display:none !important;
+  }
+
+  .mobile-scorer-cockpit-v3 .msc-v3-scoring-form-btn>b{
+      margin-left:auto;
+      font-size:18px;
+  }
+
+  .mobile-scorer-cockpit-v3{
+    padding-bottom:calc(env(safe-area-inset-bottom) + 6px) !important;
+}
+}

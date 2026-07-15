@@ -8382,8 +8382,6 @@ const playerRoleBadge = (row) => {
   <div>
     <strong>Scoring Form</strong>
   </div>
-
-  <b>›</b>
 </button>         
             </>
           )
