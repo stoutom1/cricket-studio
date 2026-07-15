@@ -179,14 +179,46 @@ function getRecentBallInningsNo(ball) {
     ball?.inningsNo ??
     ball?.inningsNumber ??
     ball?.inningNo ??
-    ball?.inning ??
-    null;
+    ball?.inning;
 
   const parsed = Number(value);
 
   return Number.isInteger(parsed) && parsed > 0
     ? parsed
     : null;
+}
+
+function getRecentBallOverNumber(ball) {
+  const directValue =
+    ball?.overNumber ??
+    ball?.overNo ??
+    ball?.deliveryOver ??
+    ball?.over;
+
+  const directNumber = Number(directValue);
+
+  if (Number.isFinite(directNumber)) {
+    return directNumber;
+  }
+
+  /*
+    Fallback for labels such as:
+    "4.2 1"
+    "4.3 Wd"
+    "4.4 (6)"
+  */
+  const rawLabel = String(
+    ball?.label ??
+      ball?.shortText ??
+      ball?.displayText ??
+      ""
+  );
+
+  const match = rawLabel.match(
+    /^\s*(\d+)\.(\d+)/
+  );
+
+  return match ? Number(match[1]) : null;
 }
 
 function getRecentBallExtraType(ball) {
@@ -252,6 +284,7 @@ function isRecentBallLegal(ball) {
     text.startsWith("NOBALL")
   );
 }
+
 
 export default function DashboardClient() {
   const { data: session } = useSession();
@@ -6258,86 +6291,43 @@ const mobileRecentDeliveryItems = useMemo(() => {
     : [];
 
   /*
-    The laptop list is assumed to be oldest-to-newest.
+    Your recentBalls array already arrives newest-first.
 
-    Reverse a copied array so:
-    left  = newest
-    right = oldest
+    Do not reverse it:
+    index 0 = newest delivery shown on the left.
   */
-const newestFirstBalls = sourceBalls.slice(0, 24);
+  return sourceBalls
+    .slice(0, 24)
+    .map((ball, index) => {
+      const inningsNo =
+        getRecentBallInningsNo(ball);
 
-  /*
-    Count legal balls from oldest to newest first, because an
-    over completes after the sixth legal delivery.
-  */
-  const chronologicalBalls = [...newestFirstBalls].reverse();
+      const overNumber =
+        getRecentBallOverNumber(ball);
 
-  let previousInningsNo = null;
-  let legalBallsInCurrentOver = 0;
+      return {
+        key:
+          ball?.id ??
+          ball?.sequence ??
+          `recent-${index}`,
 
-  const chronologicalItems = [];
+        ball,
+        inningsNo,
+        overNumber,
 
-  chronologicalBalls.forEach((ball, index) => {
-    const inningsNo =
-      getRecentBallInningsNo(ball);
-
-    const inningsChanged =
-      inningsNo !== null &&
-      previousInningsNo !== null &&
-      inningsNo !== previousInningsNo;
-
-    /*
-      Reset legal-ball counting when a new innings starts.
-    */
-    if (inningsChanged) {
-      legalBallsInCurrentOver = 0;
-    }
-
-    /*
-      Also treat the first available ball as an innings start.
-    */
-    const startsInnings =
-      inningsNo !== null &&
-      (previousInningsNo === null ||
-        inningsChanged);
-
-    const legalDelivery = isRecentBallLegal(ball);
-
-const startsNewOver =
-  legalDelivery &&
-  legalBallsInCurrentOver === 0 &&
-  chronologicalItems.length > 0;
-
-if (legalDelivery) {
-  legalBallsInCurrentOver += 1;
-}
-
-chronologicalItems.push({
-  key:
-    ball?.id ??
-    ball?.sequence ??
-    `recent-${index}`,
-
-  ball,
-  inningsNo,
-  startsInnings,
-  startsNewOver,
-});
-
-if (legalBallsInCurrentOver === 6) {
-  legalBallsInCurrentOver = 0;
-}
-
-    if (inningsNo !== null) {
-      previousInningsNo = inningsNo;
-    }
-  });
-
-  /*
-    Reverse the completed items so the newest delivery is
-    displayed on the left.
-  */
-  return chronologicalItems.reverse();
+        /*
+          Unique boundary key prevents innings 1 over 1
+          and innings 2 over 1 from being treated alike.
+        */
+        overKey:
+          inningsNo !== null &&
+          overNumber !== null
+            ? `${inningsNo}-${overNumber}`
+            : overNumber !== null
+              ? `unknown-${overNumber}`
+              : null,
+      };
+    });
 }, [recentBalls]);
 
 function MobileMatchSetup({ match, includeTimeline = false }) {
@@ -7982,88 +7972,116 @@ const playerRoleBadge = (row) => {
 
 <div className="msc-v3-recent-simple">
   <div className="msc-v3-recent-simple-strip">
-    {mobileRecentDeliveryItems.length ? (
-      mobileRecentDeliveryItems.map(
-        (item, index) => {
-          const result =
-            getRecentBallDisplayText(item.ball);
+{mobileRecentDeliveryItems.length ? (
+  mobileRecentDeliveryItems.map(
+    (item, index) => {
+      const nextOlderItem =
+        mobileRecentDeliveryItems[index + 1] ||
+        null;
 
-          const normalized =
-            result.toUpperCase();
+      const result =
+        getRecentBallDisplayText(item.ball);
 
-          const ballClass =
-            normalized === "W" ||
-            normalized === "WKT"
-              ? "wicket"
-              : normalized === "4" ||
-                  normalized === "6"
-                ? "boundary"
-                : normalized.startsWith("WD") ||
-                    normalized.startsWith("NB")
-                  ? "extra"
-                  : "";
+      const normalized =
+        result.toUpperCase();
 
-          const isNewest = index === 0;
+      const ballClass =
+        normalized === "W" ||
+        normalized === "WKT"
+          ? "wicket"
+          : normalized === "4" ||
+              normalized === "6"
+            ? "boundary"
+            : normalized.startsWith("WD") ||
+                normalized.startsWith("NB")
+              ? "extra"
+              : "";
 
-          return (
-            <div
-              key={item.key}
-              className="msc-v3-recent-entry"
+      const isNewest = index === 0;
+
+      /*
+        In newest-first display, the separator belongs
+        AFTER the newest ball of an over and BEFORE the
+        oldest ball of the next earlier over.
+
+        Example with 15 legal balls:
+
+        [15][14][13] | OVER | [12]...[7] | OVER | [6]...[1]
+      */
+      const inningsChanged =
+        nextOlderItem &&
+        item.inningsNo !== null &&
+        nextOlderItem.inningsNo !== null &&
+        item.inningsNo !==
+          nextOlderItem.inningsNo;
+
+      const overChanged =
+        nextOlderItem &&
+        !inningsChanged &&
+        item.overKey !== null &&
+        nextOlderItem.overKey !== null &&
+        item.overKey !==
+          nextOlderItem.overKey;
+
+      return (
+        <div
+          key={item.key}
+          className="msc-v3-recent-entry"
+        >
+          <div
+            className={`msc-v3-recent-ball-wrap ${
+              isNewest ? "newest" : ""
+            }`}
+          >
+            {isNewest && (
+              <span className="msc-v3-new-ball-label">
+                NEW
+              </span>
+            )}
+
+            <b
+              className={`msc-v3-recent-ball ${ballClass}`}
             >
-              {/*
-                In newest-first display, the innings divider
-                belongs after the oldest ball of that innings.
-              */}
-              {item.startsInnings && (
-                <span className="msc-v3-innings-divider">
-                  <i></i>
+              {result || "-"}
+            </b>
+          </div>
 
-                  <b>
-                    Innings {item.inningsNo || ""}
-                  </b>
+          {inningsChanged ? (
+            <span
+              className="msc-v3-innings-divider"
+              aria-label="New innings"
+              title="New innings"
+            >
+              <i />
 
-                  <i></i>
-                </span>
-              )}
+              <b>
+                INNINGS {item.inningsNo}
+              </b>
 
-<div
-  className={`msc-v3-recent-ball-wrap ${
-    isNewest ? "newest" : ""
-  }`}
->
-  {isNewest && (
-    <span className="msc-v3-new-ball-label">
-      NEW
-    </span>
-  )}
+              <i />
+            </span>
+          ) : overChanged ? (
+            <span
+              className="msc-v3-over-separator"
+              aria-label="Over boundary"
+              title="Over boundary"
+            >
+              <i />
 
-  <b
-    className={`msc-v3-recent-ball ${ballClass}`}
-  >
-    {result || "-"}
-  </b>
-</div>
+              <b>OVER</b>
 
-{item.startsNewOver && (
-  <span
-    className="msc-v3-over-separator"
-    aria-label="New over"
-    title="New over"
-  >
-    <i></i>
-    <b>OVER</b>
-    <i></i>
+              <i />
+            </span>
+          ) : null}
+        </div>
+      );
+    }
+  )
+) : (
+  <span className="msc-v3-recent-simple-empty">
+    No deliveries yet
   </span>
 )}
-            </div>
-          );
-        }
-      )
-    ) : (
-      <span className="msc-v3-recent-simple-empty">
-        No deliveries yet
-      </span>
-    )}
   </div>
 </div>
 
