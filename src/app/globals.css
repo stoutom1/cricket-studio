@@ -50299,7 +50299,8 @@ body.cric4all-scorer-open {
 
     display: flex;
     align-items: center;
-    gap: 5px;
+    gap:8px;
+    padding:8px 2px 6px;
 
     flex-wrap: nowrap;
 
@@ -50335,29 +50336,28 @@ body.cric4all-scorer-open {
   }
 
   .msc-v3-recent-ball {
-    min-width: 29px;
-    height: 29px;
+    min-width: 38px;
+    height: 38px;
+    flex: 0 0 38px;
 
     display: inline-flex;
     align-items: center;
     justify-content: center;
 
-    padding: 0 5px;
+    padding: 0 6px;
 
-    border: 1px solid
-      rgba(148, 163, 184, 0.11);
+    border-radius: 10px;
 
-    border-radius: 7px;
+    border: 1px solid rgba(148,163,184,.18);
 
-    background:
-      rgba(51, 65, 85, 0.86);
-
-    color: #ffffff;
-
-    font-size: 11px;
-    font-weight: 1000;
+    font-size: 15px;
+    font-weight: 900;
     line-height: 1;
-  }
+
+    letter-spacing: .2px;
+
+    transition: all .18s ease;
+}
 
   .msc-v3-recent-ball-wrap.newest
     .msc-v3-recent-ball {
@@ -50373,22 +50373,22 @@ body.cric4all-scorer-open {
 
   .msc-v3-new-ball-label {
     position: absolute;
-    top: -8px;
+    top: -10px;
     left: 50%;
 
     z-index: 2;
 
     transform: translateX(-50%);
 
-    padding: 2px 4px;
+    padding: 3px 6px;
 
     border-radius: 999px;
 
     background: #10b981;
     color: #03130e;
 
-    font-size: 6px;
-    font-weight: 1000;
+    font-size: 8px;
+    font-weight: 900;
     line-height: 1;
   }
 
@@ -50407,7 +50407,9 @@ body.cric4all-scorer-open {
   }
 
   .msc-v3-recent-ball.extra {
-    min-width: 32px;
+    min-width:48px;
+    flex:0 0 48px;
+    font-size:13px;
 
     background:
       rgba(161, 98, 7, 0.58);
@@ -50417,9 +50419,9 @@ body.cric4all-scorer-open {
 
   /* Completed-over separator */
   .msc-v3-over-separator {
-    width: 14px;
+    width: 20px;
     height: 31px;
-    flex: 0 0 14px;
+    flex: 0 0 20px;
 
     display: flex;
     flex-direction: column;
@@ -50442,8 +50444,8 @@ body.cric4all-scorer-open {
   .msc-v3-over-separator b {
     color: #7dd3fc;
 
-    font-size: 5px;
-    font-weight: 1000;
+    font-size: 7px;
+    font-weight: 900;
 
     writing-mode: vertical-rl;
     transform: rotate(180deg);
@@ -50485,8 +50487,8 @@ body.cric4all-scorer-open {
   .msc-v3-innings-divider b {
     color: #fde047;
 
-    font-size: 6px;
-    font-weight: 1000;
+    font-size: 8px;
+    font-weight: 900;
     line-height: 1;
 
     white-space: nowrap;
