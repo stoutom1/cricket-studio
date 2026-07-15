@@ -43720,178 +43720,6 @@ body.cric4all-scorer-open {
   }
 
   /* -------------------------------------------------------
-     TWO-OVER RECENT DELIVERIES PANEL
-  ------------------------------------------------------- */
-
-  .msc-v3-recent {
-    display: none !important;
-  }
-
-  .msc-v3-recent-overs {
-    padding: 9px 10px;
-
-    border: 1px solid
-      rgba(148, 163, 184, 0.13);
-
-    border-radius: 13px;
-
-    background:
-      linear-gradient(
-        145deg,
-        rgba(17, 31, 52, 0.88),
-        rgba(10, 21, 38, 0.9)
-      );
-  }
-
-  .msc-v3-recent-title {
-    display: flex;
-    align-items: center;
-    justify-content: space-between;
-
-    margin-bottom: 7px;
-  }
-
-  .msc-v3-recent-title > div {
-    display: flex;
-    align-items: center;
-    gap: 8px;
-  }
-
-  .msc-v3-recent-title > div > span {
-    font-size: 17px;
-  }
-
-  .msc-v3-recent-title strong,
-  .msc-v3-recent-title small {
-    display: block;
-  }
-
-  .msc-v3-recent-title strong {
-    color: #f8fafc;
-
-    font-size: 13px;
-    font-weight: 950;
-  }
-
-  .msc-v3-recent-title small {
-    margin-top: 1px;
-
-    color: #8998ad;
-
-    font-size: 10px;
-    font-weight: 750;
-  }
-
-  .msc-v3-over-list {
-    display: grid;
-    gap: 6px;
-  }
-
-  .msc-v3-over-row {
-    display: grid;
-    grid-template-columns:
-      58px minmax(0, 1fr) auto;
-
-    align-items: center;
-    gap: 7px;
-
-    min-height: 35px;
-    padding: 5px 7px;
-
-    border-radius: 10px;
-
-    background: rgba(30, 41, 59, 0.56);
-  }
-
-  .msc-v3-over-label {
-    color: #a8b4c7;
-
-    font-size: 10px;
-    font-weight: 900;
-    white-space: nowrap;
-  }
-
-  .msc-v3-over-balls {
-    display: flex;
-    align-items: center;
-    gap: 4px;
-
-    min-width: 0;
-
-    overflow-x: auto;
-    overflow-y: hidden;
-
-    scrollbar-width: none;
-  }
-
-  .msc-v3-over-balls::-webkit-scrollbar {
-    display: none;
-  }
-
-  .msc-v3-over-balls b {
-    min-width: 27px;
-    height: 27px;
-    flex: 0 0 auto;
-
-    display: inline-flex;
-    align-items: center;
-    justify-content: center;
-
-    padding: 0 4px;
-
-    border-radius: 7px;
-
-    background: rgba(51, 65, 85, 0.84);
-    color: #ffffff;
-
-    font-size: 11px;
-    font-weight: 1000;
-  }
-
-  .msc-v3-over-balls b.wicket {
-    background: rgba(185, 28, 28, 0.58);
-    color: #fecaca;
-  }
-
-  .msc-v3-over-balls b.boundary {
-    background: rgba(109, 40, 217, 0.58);
-    color: #ede9fe;
-  }
-
-  .msc-v3-over-balls b.extra {
-    background: rgba(161, 98, 7, 0.48);
-    color: #fde68a;
-  }
-
-  .msc-v3-over-complete {
-    width: 23px;
-    height: 23px;
-
-    display: inline-flex;
-    align-items: center;
-    justify-content: center;
-
-    border-radius: 50%;
-
-    background: rgba(16, 185, 129, 0.16);
-    color: #6ee7b7;
-
-    font-size: 11px;
-    font-weight: 1000;
-  }
-
-  .msc-v3-no-recent {
-    padding: 8px;
-
-    color: #94a3b8;
-
-    font-size: 12px;
-    font-weight: 750;
-
-    text-align: center;
-  }
-
-  /* -------------------------------------------------------
      POSITION THE KEYPAD WITHOUT A LARGE EMPTY GAP
   ------------------------------------------------------- */
 
@@ -50255,4 +50083,132 @@ body.cric4all-scorer-open {
   .mobile-scorer-cockpit-v3{
     padding-bottom:calc(env(safe-area-inset-bottom) + 6px) !important;
 }
+}
+/* =========================================================
+   MOBILE SCORER — SIMPLE RECENT BALLS
+   Reuses the laptop-style recent delivery strip.
+========================================================= */
+
+@media (max-width: 760px) {
+  .msc-v3-recent-simple {
+    width: 100%;
+
+    margin: 0;
+    padding: 7px 8px;
+
+    border: 1px solid
+      rgba(148, 163, 184, 0.13);
+
+    border-radius: 11px;
+
+    background:
+      linear-gradient(
+        145deg,
+        rgba(17, 31, 52, 0.9),
+        rgba(10, 21, 38, 0.92)
+      );
+
+    overflow: hidden;
+  }
+
+  .msc-v3-recent-simple-head {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 8px;
+
+    margin-bottom: 6px;
+  }
+
+  .msc-v3-recent-simple-head strong {
+    color: #e5edf8;
+
+    font-size: 11px;
+    font-weight: 950;
+  }
+
+  .msc-v3-recent-simple-head small {
+    color: #8291a7;
+
+    font-size: 8px;
+    font-weight: 750;
+  }
+
+  .msc-v3-recent-simple-strip {
+    display: flex;
+    align-items: center;
+    gap: 4px;
+
+    width: 100%;
+    min-width: 0;
+
+    overflow-x: auto;
+    overflow-y: hidden;
+
+    flex-wrap: nowrap;
+
+    scrollbar-width: none;
+    -webkit-overflow-scrolling: touch;
+  }
+
+  .msc-v3-recent-simple-strip::-webkit-scrollbar {
+    display: none;
+  }
+
+  .msc-v3-recent-simple-strip b {
+    min-width: 27px;
+    height: 27px;
+    flex: 0 0 auto;
+
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+
+    padding: 0 4px;
+
+    border-radius: 7px;
+
+    background:
+      rgba(51, 65, 85, 0.84);
+
+    color: #ffffff;
+
+    font-size: 10px;
+    font-weight: 1000;
+    line-height: 1;
+  }
+
+  .msc-v3-recent-simple-strip b.wicket {
+    background:
+      rgba(185, 28, 28, 0.62);
+
+    color: #fecaca;
+  }
+
+  .msc-v3-recent-simple-strip b.boundary {
+    background:
+      rgba(109, 40, 217, 0.62);
+
+    color: #ede9fe;
+  }
+
+  .msc-v3-recent-simple-strip b.extra {
+    min-width: 30px;
+
+    background:
+      rgba(161, 98, 7, 0.55);
+
+    color: #fde68a;
+  }
+
+  .msc-v3-recent-simple-empty {
+    display: block;
+
+    padding: 4px 2px;
+
+    color: #8291a7;
+
+    font-size: 10px;
+    font-weight: 750;
+  }
 }

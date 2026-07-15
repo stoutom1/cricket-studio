@@ -174,23 +174,6 @@ function MobileBowlingCards({ rows = [] }) {
   );
 }
 
-function getBallInningsNumber(ball) {
-  const value =
-    ball?.inningsNo ??
-    ball?.inningsNumber ??
-    ball?.inningNo ??
-    ball?.inning ??
-    ball?.innings?.inningsNo ??
-    ball?.innings?.number;
-
-  const inningsNumber = Number(value);
-
-  return Number.isInteger(inningsNumber) &&
-    inningsNumber > 0
-    ? inningsNumber
-    : null;
-}
-
 export default function DashboardClient() {
   const { data: session } = useSession();
   const [teams, setTeams] = useState([]);
@@ -361,7 +344,6 @@ const [selectedAuditLeagueKey, setSelectedAuditLeagueKey] = useState("ALL");
 const [showScoringFormSheet, setShowScoringFormSheet] = useState(false);
 const [bowlerSearchText, setBowlerSearchText] = useState("");
 const [scoringFormSubmitting, setScoringFormSubmitting] = useState(false);
-const [recentBallsInningsNo,setRecentBallsInningsNo,] = useState(null);
 const isSuperAdmin =
   session?.user?.email ===
   "surprisecricket11@gmail.com";
@@ -4436,278 +4418,6 @@ const previousOverInfo = (() => {
   };
 })();
 
-const recentOverGroups = (() => {
-const currentInningsNo =
-  Number(
-    ballForm?.inningsNo ??
-    displayScoreboard?.currentState?.inningsNo ??
-    scoreboard?.currentState?.inningsNo ??
-    scoreboard?.currentInningsNo ??
-    1
-  ) || 1;
-
-/*
-  Prefer a complete ball collection because those records
-  normally include inningsNo.
-*/
-const completeBallSource =
-  Array.isArray(displayScoreboard?.balls) &&
-  displayScoreboard.balls.length
-    ? displayScoreboard.balls
-    : Array.isArray(scoreboard?.balls) &&
-        scoreboard.balls.length
-      ? scoreboard.balls
-      : [];
-
-/*
-  Check whether the complete source actually contains innings
-  metadata before using it.
-*/
-const completeSourceHasInnings = completeBallSource.some(
-  (ball) => getBallInningsNumber(ball) !== null
-);
-
-let sourceBalls = [];
-
-if (completeSourceHasInnings) {
-  /*
-    Best case:
-    use only deliveries from the currently active innings.
-  */
-  sourceBalls = completeBallSource.filter(
-    (ball) =>
-      getBallInningsNumber(ball) ===
-      currentInningsNo
-  );
-} else {
-  /*
-    recentBalls may already be scoped to the active innings
-    by the API, but its objects may not contain inningsNo.
-
-    Do not remove those deliveries merely because the field
-    is absent.
-  */
-sourceBalls =
-  recentBallsInningsNo === currentInningsNo &&
-  Array.isArray(recentBalls)
-    ? recentBalls
-    : [];
-}
-
-  function readOverNumber(ball) {
-    const directValue =
-      ball?.overNumber ??
-      ball?.overNo ??
-      ball?.over ??
-      ball?.deliveryOver;
-
-    const directNumber = Number(directValue);
-
-    if (Number.isFinite(directNumber)) {
-      return directNumber;
-    }
-
-    const label = String(ball?.label || "");
-    const match = label.match(
-      /(?:^|\s)(\d+)\.(\d+)/
-    );
-
-    return match ? Number(match[1]) : null;
-  }
-
-  function readBallNumber(ball) {
-    const directValue =
-      ball?.ballNumber ??
-      ball?.ballNo ??
-      ball?.deliveryBall;
-
-    const directNumber = Number(directValue);
-
-    if (Number.isFinite(directNumber)) {
-      return directNumber;
-    }
-
-    const label = String(ball?.label || "");
-    const match = label.match(
-      /(?:^|\s)(\d+)\.(\d+)/
-    );
-
-    return match ? Number(match[2]) : null;
-  }
-
-  function readSequence(ball, fallbackIndex) {
-    const candidates = [
-      ball?.sequence,
-      ball?.sequenceNo,
-      ball?.deliverySequence,
-      ball?.ballSequence,
-    ];
-
-    for (const candidate of candidates) {
-      const number = Number(candidate);
-
-      if (Number.isFinite(number)) {
-        return number;
-      }
-    }
-
-    const overNumber = readOverNumber(ball);
-    const ballNumber = readBallNumber(ball);
-
-    if (
-      Number.isFinite(overNumber) &&
-      Number.isFinite(ballNumber)
-    ) {
-      return overNumber * 1000 + ballNumber;
-    }
-
-    const createdTime = ball?.createdAt
-      ? new Date(ball.createdAt).getTime()
-      : Number.NaN;
-
-    if (Number.isFinite(createdTime)) {
-      return createdTime;
-    }
-
-    const numericId = Number(ball?.id);
-
-    if (Number.isFinite(numericId)) {
-      return numericId;
-    }
-
-    return fallbackIndex;
-  }
-
-  const chronologicalBalls = sourceBalls
-    .map((ball, index) => ({
-      ...ball,
-      __originalIndex: index,
-      __sequence: readSequence(ball, index),
-      __overNumber: readOverNumber(ball),
-    }))
-    .sort((first, second) => {
-      if (first.__sequence !== second.__sequence) {
-        return first.__sequence - second.__sequence;
-      }
-
-      return (
-        first.__originalIndex -
-        second.__originalIndex
-      );
-    });
-
-  const groups = new Map();
-
-  chronologicalBalls.forEach((ball) => {
-    if (!Number.isFinite(ball.__overNumber)) {
-      return;
-    }
-
-    const key =
-  `innings-${currentInningsNo}-over-${ball.__overNumber}`;
-
-    if (!groups.has(key)) {
-      groups.set(key, {
-        key,
-        overNumber: ball.__overNumber,
-        balls: [],
-      });
-    }
-
-    groups.get(key).balls.push(ball);
-  });
-
-  const orderedGroups = Array.from(
-    groups.values()
-  ).sort(
-    (first, second) =>
-      first.overNumber - second.overNumber
-  );
-
-  /*
-    Guarantee oldest-to-newest delivery order inside
-    every row, so the latest ball appears on the right.
-  */
-  orderedGroups.forEach((group) => {
-    group.balls.sort(
-      (first, second) =>
-        first.__sequence - second.__sequence
-    );
-  });
-
-  const activeInningsSummary =
-  displayScoreboard?.innings?.find(
-    (innings) =>
-      Number(
-        innings.inningsNo ??
-        innings.inningsNumber
-      ) === currentInningsNo
-  ) ||
-  scoreboard?.innings?.find(
-    (innings) =>
-      Number(
-        innings.inningsNo ??
-        innings.inningsNumber
-      ) === currentInningsNo
-  );
-  
-const currentInningsLegalBalls =
-  Number(
-    activeInningsSummary?.legalBalls ??
-    activeInningsSummary?.balls ??
-    displayScoreboard?.currentState
-      ?.legalBalls ??
-    scoreboard?.currentState
-      ?.legalBalls ??
-    0
-  ) || 0;
-
-const currentOverNumber = Math.floor(
-  currentInningsLegalBalls / 6
-);
-
-  let finalGroups = orderedGroups.slice(-2);
-
-const newestGroup =
-  finalGroups[finalGroups.length - 1];
-
-/*
-  At the start of a new innings there are no deliveries,
-  so create Current Over 1 immediately.
-*/
-if (!finalGroups.length) {
-  return [
-    {
-      key: `innings-${currentInningsNo}-over-0`,
-      overNumber: 0,
-      balls: [],
-    },
-  ];
-}
-
-/*
-  After a completed over, create the next empty current row
-  until its first delivery is recorded.
-*/
-if (
-  Number.isFinite(currentOverNumber) &&
-  newestGroup &&
-  newestGroup.overNumber < currentOverNumber
-) {
-  finalGroups = [
-    ...finalGroups,
-    {
-      key:
-        `innings-${currentInningsNo}-over-${currentOverNumber}`,
-      overNumber: currentOverNumber,
-      balls: [],
-    },
-  ].slice(-2);
-}
-
-return finalGroups;
-})();
-
 function getMatchOptionLabel(match) {
   const teams = `${match.teamAName || "Team A"} vs ${
     match.teamBName || "Team B"
@@ -6386,90 +6096,6 @@ function getRecentBallText(ball) {
     .trim();
 }
 
-function getRecentBallOverNumber(ball) {
-  const directValue =
-    ball?.overNumber ??
-    ball?.overNo ??
-    ball?.over ??
-    ball?.deliveryOver;
-
-  const directNumber = Number(directValue);
-
-  if (Number.isFinite(directNumber)) {
-    return directNumber;
-  }
-
-  const label = String(ball?.label || "");
-  const match = label.match(/(?:^|\s)(\d+)\.(\d+)/);
-
-  return match ? Number(match[1]) : null;
-}
-
-function getRecentBallNumber(ball) {
-  const directValue =
-    ball?.ballNumber ??
-    ball?.ballNo ??
-    ball?.deliveryBall;
-
-  const directNumber = Number(directValue);
-
-  if (Number.isFinite(directNumber)) {
-    return directNumber;
-  }
-
-  const label = String(ball?.label || "");
-  const match = label.match(/(?:^|\s)(\d+)\.(\d+)/);
-
-  return match ? Number(match[2]) : null;
-}
-
-function getRecentBallSequence(ball, fallbackIndex = 0) {
-  const sequenceCandidates = [
-    ball?.sequence,
-    ball?.sequenceNo,
-    ball?.deliverySequence,
-    ball?.ballSequence,
-  ];
-
-  for (const candidate of sequenceCandidates) {
-    const parsed = Number(candidate);
-
-    if (Number.isFinite(parsed)) {
-      return parsed;
-    }
-  }
-
-  const overNumber = getRecentBallOverNumber(ball);
-  const ballNumber = getRecentBallNumber(ball);
-
-  if (
-    Number.isFinite(overNumber) &&
-    Number.isFinite(ballNumber)
-  ) {
-    /*
-      4.1, 4.2, 4.3 become:
-      401, 402, 403
-    */
-    return overNumber * 100 + ballNumber;
-  }
-
-  const createdAtTime = ball?.createdAt
-    ? new Date(ball.createdAt).getTime()
-    : Number.NaN;
-
-  if (Number.isFinite(createdAtTime)) {
-    return createdAtTime;
-  }
-
-  const numericId = Number(ball?.id);
-
-  if (Number.isFinite(numericId)) {
-    return numericId;
-  }
-
-  return fallbackIndex;
-}
-
 function openScoringFormSheet() {
   /*
     Do not close Scorer Mode.
@@ -6546,11 +6172,6 @@ useEffect(() => {
   */
   setScorerDrawer(null);
 }, [activeScoringInningsNo]);
-useEffect(() => {
-  if (!currentInningsNo) return;
-
-  setRecentBallsInningsNo(currentInningsNo);
-}, [currentInningsNo]);
 
 
 function MobileMatchSetup({ match, includeTimeline = false }) {
@@ -8193,97 +7814,59 @@ const playerRoleBadge = (row) => {
         <span />
       </div>
 
-<div className="msc-v3-recent-overs">
-  <div className="msc-v3-over-list">
-    {recentOverGroups.length ? (
-      recentOverGroups.map(
-        (group, groupIndex) => {
-          const isCurrentOver =
-            groupIndex ===
-            recentOverGroups.length - 1;
+<div className="msc-v3-recent-simple">
+  <div className="msc-v3-recent-simple-head">
+    <strong>🎳 Recent Deliveries</strong>
 
-          return (
-            <div
-              key={group.key}
-              className={`msc-v3-over-row ${
-                isCurrentOver
-                  ? "current-over"
-                  : "previous-over"
-              }`}
-            >
-              <div className="msc-v3-over-label">
-                <span>
-                  {isCurrentOver
-                    ? "Current"
-                    : "Previous"}
-                </span>
+    <small>Latest ball on the right</small>
+  </div>
 
-                <strong>
-                  Over {group.overNumber + 1}
-                </strong>
-              </div>
+  <div className="msc-v3-recent-simple-strip">
+    {Array.isArray(recentBalls) && recentBalls.length ? (
+      recentBalls.slice(-12).map((ball, index) => {
+        const rawLabel =
+          ball?.shortText ||
+          ball?.displayText ||
+          ball?.resultText ||
+          ball?.label ||
+          "-";
 
-              <div className="msc-v3-over-balls">
-                {group.balls.length ? (
-                  group.balls.map(
-                    (ball, ballIndex) => {
-                      const result =
-                        getRecentBallText(ball);
+        const result = String(rawLabel)
+          .replace(/^\s*\d+\.\d+\s*/, "")
+          .replace(/[()]/g, "")
+          .trim();
 
-                      const normalized =
-                        result.toUpperCase();
+        const normalized = result.toUpperCase();
 
-                      return (
-                        <b
-                          key={
-                            ball.id ||
-                            `${group.key}-${ballIndex}`
-                          }
-                          className={
-                            normalized === "W"
-                              ? "wicket"
-                              : normalized === "4" ||
-                                  normalized === "6"
-                                ? "boundary"
-                                : normalized.startsWith(
-                                      "WD"
-                                    ) ||
-                                    normalized.startsWith(
-                                      "NB"
-                                    )
-                                  ? "extra"
-                                  : ""
-                          }
-                        >
-                          {result}
-                        </b>
-                      );
-                    }
-                  )
-                ) : (
-                  <small>
-                    Waiting for delivery
-                  </small>
-                )}
-              </div>
+        const ballClass =
+          normalized === "W" ||
+          normalized === "WKT"
+            ? "wicket"
+            : normalized === "4" ||
+                normalized === "6"
+              ? "boundary"
+              : normalized.startsWith("WD") ||
+                  normalized.startsWith("NB")
+                ? "extra"
+                : "";
 
-              <span
-                className={`msc-v3-over-state ${
-                  isCurrentOver
-                    ? "live"
-                    : "complete"
-                }`}
-              >
-                {isCurrentOver ? "●" : "✓"}
-              </span>
-            </div>
-          );
-        }
-      )
+        return (
+          <b
+            key={
+              ball?.id ||
+              ball?.sequence ||
+              `recent-${index}`
+            }
+            className={ballClass}
+          >
+            {result || "-"}
+          </b>
+        );
+      })
     ) : (
-      <div className="msc-v3-no-recent">
+      <span className="msc-v3-recent-simple-empty">
         No deliveries yet
-      </div>
+      </span>
     )}
   </div>
 </div>
