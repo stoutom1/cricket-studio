@@ -14168,7 +14168,7 @@ onClick={() => {
     </div>
   </div>
 )}
-{showBowlerModal && (
+{showBowlerModal &&   typeof document !== "undefined" && createPortal(
   <div
     className="bowler-modal-backdrop"
     role="presentation"
@@ -14390,7 +14390,8 @@ onClick={() => {
         </button>
       </div>
     </div>
-  </div>
+  </div>,
+  document.body
 )}
 {showAddTeam && (
   <div className="modal-backdrop">
@@ -14580,7 +14581,7 @@ KL Rahul`}
     </div>
   </div>
 )}
-{showExtrasModal && (
+{showExtrasModal &&   typeof document !== "undefined" && createPortal(
   <div className="modal-backdrop">
     <div className="modal-card">
 <div className="live-popup-snapshot">
@@ -14686,7 +14687,8 @@ KL Rahul`}
         </button>
       </div>
     </div>
-  </div>
+  </div>,
+  document.body
 )}
 {showStartMatchModal && (
   <div className="modal-backdrop">
@@ -15236,7 +15238,7 @@ onClick={() => {
     </div>
   </div>
 )}
-{showWicketModal && (
+{showWicketModal && typeof document !== "undefined" && createPortal(
 <div className="modal-backdrop wicket-modal-backdrop">
   <div className="modal-card app-modal-card wicket-modal-card">
     <button
@@ -15555,7 +15557,8 @@ onClick={() => {
         </button>
       </div>
     </div>
-  </div>
+  </div>,
+  document.body
 )}
 {showDeliverySetupModal && (
   <div className="modal-backdrop">
@@ -16189,7 +16192,7 @@ onClick={() => {
   </div>
 )}
 
-{showKeeperChangeModal && (
+{showKeeperChangeModal && typeof document !== "undefined" && createPortal(
   <div className="modal-backdrop">
     <div className="correction-modal">
       <div className="bowler-change-score-card">
@@ -16292,7 +16295,8 @@ onClick={() => {
         </button>
       </div>
     </div>
-  </div>
+  </div>,
+  document.body
 )}
 {showFollowedLeaguesDrawer && (
   <div className="public-league-drawer-backdrop">
@@ -16982,9 +16986,7 @@ onChange={(e) => {
     </div>
   </div>
 )}
-{showScoringFormSheet &&
-  typeof document !== "undefined" &&
-  createPortal(
+{showScoringFormSheet && typeof document !== "undefined" && createPortal(
     <div
       className="scoring-form-sheet-backdrop"
       role="presentation"
@@ -17541,7 +17543,7 @@ onChange={(e) => {
     </div>,
     document.body
   )}
-{showRetiredHurtModal && (
+{showRetiredHurtModal && typeof document !== "undefined" && createPortal(
   <div className="modal-backdrop">
     <div className="modal-card">
 <div className="live-popup-snapshot">
@@ -17702,7 +17704,8 @@ onChange={(e) => {
   </button>
 </div>
     </div>
-  </div>
+  </div>,
+  document.body
 )}
 {correctionSaving && (
   <div className="correction-overlay">

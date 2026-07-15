@@ -50094,9 +50094,7 @@ body.cric4all-scorer-open {
   body.mobile-scorer-open
     .dashboard-page,
   body.mobile-scorer-open
-    .dashboard-shell,
-  body.mobile-scorer-open
-    main {
+    .dashboard-shell{
     visibility: hidden !important;
   }
 
@@ -50108,6 +50106,97 @@ body.cric4all-scorer-open {
     .mobile-scorer-overlay-v3,
   body.mobile-scorer-open
     .mobile-scorer-overlay-v3 * {
+    visibility: visible !important;
+  }
+}
+@media (max-width: 760px) {
+  .mobile-scorer-overlay-v3 {
+    z-index: 100000 !important;
+  }
+
+  .extra-modal-backdrop,
+  .extra-popup-backdrop,
+  .wicket-modal-backdrop,
+  .retired-hurt-backdrop,
+  .bowler-modal-backdrop,
+  .keeper-change-backdrop,
+  .scoring-form-sheet-backdrop,
+  .modal-backdrop {
+    position: fixed !important;
+    inset: 0 !important;
+    z-index: 200000 !important;
+
+    pointer-events: auto !important;
+    visibility: visible !important;
+  }
+
+  .extra-modal,
+  .extra-popup,
+  .wicket-modal,
+  .retired-hurt-modal,
+  .bowler-modal,
+  .keeper-change-modal,
+  .scoring-form-sheet,
+  .modal {
+    position: relative !important;
+    z-index: 200001 !important;
+
+    pointer-events: auto !important;
+    visibility: visible !important;
+  }
+
+  .extra-modal-backdrop *,
+  .extra-popup-backdrop *,
+  .wicket-modal-backdrop *,
+  .retired-hurt-backdrop *,
+  .bowler-modal-backdrop *,
+  .keeper-change-backdrop *,
+  .scoring-form-sheet-backdrop *,
+  .modal-backdrop * {
+    pointer-events: auto !important;
+    visibility: visible !important;
+  }
+}
+@media (max-width: 760px) {
+  body.mobile-scorer-open
+    .dashboard-page > *:not(.mobile-scorer-overlay-v3),
+  body.mobile-scorer-open
+    .dashboard-shell > *:not(.mobile-scorer-overlay-v3) {
+    visibility: hidden !important;
+  }
+
+  body.mobile-scorer-open
+    .mobile-scorer-overlay-v3,
+  body.mobile-scorer-open
+    .mobile-scorer-overlay-v3 *,
+  body.mobile-scorer-open
+    .extra-modal-backdrop,
+  body.mobile-scorer-open
+    .extra-modal-backdrop *,
+  body.mobile-scorer-open
+    .extra-popup-backdrop,
+  body.mobile-scorer-open
+    .extra-popup-backdrop *,
+  body.mobile-scorer-open
+    .wicket-modal-backdrop,
+  body.mobile-scorer-open
+    .wicket-modal-backdrop *,
+  body.mobile-scorer-open
+    .retired-hurt-backdrop,
+  body.mobile-scorer-open
+    .retired-hurt-backdrop *,
+  body.mobile-scorer-open
+    .bowler-modal-backdrop,
+  body.mobile-scorer-open
+    .bowler-modal-backdrop *,
+  body.mobile-scorer-open
+    .keeper-change-backdrop,
+  body.mobile-scorer-open
+    .keeper-change-backdrop *,
+  body.mobile-scorer-open
+    .scoring-form-sheet-backdrop,
+  body.mobile-scorer-open
+    .scoring-form-sheet-backdrop * {
     visibility: visible !important;
   }
 }
