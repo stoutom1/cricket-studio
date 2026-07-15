@@ -7983,12 +7983,6 @@ const playerRoleBadge = (row) => {
       </div>
 
 <div className="msc-v3-recent-simple">
-  <div className="msc-v3-recent-simple-head">
-    <span className="msc-v3-newest-direction">
-      ← NEW
-    </span>
-  </div>
-
   <div className="msc-v3-recent-simple-strip">
     {mobileRecentDeliveryItems.length ? (
       mobileRecentDeliveryItems.map(
