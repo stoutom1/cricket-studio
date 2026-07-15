@@ -8063,10 +8063,6 @@ const playerRoleBadge = (row) => {
       </div>
 
 <div className="msc-v3-recent-overs">
-  <div className="msc-v3-recent-title">
-    <strong>🎳 Recent Deliveries</strong>
-  </div>
-
   <div className="msc-v3-over-list">
     {recentOverGroups.length ? (
       recentOverGroups.map(
