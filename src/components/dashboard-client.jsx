@@ -7984,14 +7984,6 @@ const playerRoleBadge = (row) => {
 
 <div className="msc-v3-recent-simple">
   <div className="msc-v3-recent-simple-head">
-    <div>
-      <strong>🎳 Recent Deliveries</strong>
-
-      <small>
-        Newest delivery appears on the left
-      </small>
-    </div>
-
     <span className="msc-v3-newest-direction">
       ← NEW
     </span>
