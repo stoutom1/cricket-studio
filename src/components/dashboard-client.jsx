@@ -178,12 +178,15 @@ function getBallInningsNumber(ball) {
   const value =
     ball?.inningsNo ??
     ball?.inningsNumber ??
-    ball?.innings ??
-    ball?.inningNo;
+    ball?.inningNo ??
+    ball?.inning ??
+    ball?.innings?.inningsNo ??
+    ball?.innings?.number;
 
   const inningsNumber = Number(value);
 
-  return Number.isInteger(inningsNumber)
+  return Number.isInteger(inningsNumber) &&
+    inningsNumber > 0
     ? inningsNumber
     : null;
 }
@@ -358,6 +361,7 @@ const [selectedAuditLeagueKey, setSelectedAuditLeagueKey] = useState("ALL");
 const [showScoringFormSheet, setShowScoringFormSheet] = useState(false);
 const [bowlerSearchText, setBowlerSearchText] = useState("");
 const [scoringFormSubmitting, setScoringFormSubmitting] = useState(false);
+const [recentBallsInningsNo,setRecentBallsInningsNo,] = useState(null);
 const isSuperAdmin =
   session?.user?.email ===
   "surprisecricket11@gmail.com";
@@ -4433,40 +4437,62 @@ const previousOverInfo = (() => {
 })();
 
 const recentOverGroups = (() => {
-  const currentInningsNo =
-    Number(
-      ballForm?.inningsNo ??
-      displayScoreboard?.currentState?.inningsNo ??
-      scoreboard?.currentState?.inningsNo ??
-      scoreboard?.currentInningsNo ??
-      1
-    ) || 1;
+const currentInningsNo =
+  Number(
+    ballForm?.inningsNo ??
+    displayScoreboard?.currentState?.inningsNo ??
+    scoreboard?.currentState?.inningsNo ??
+    scoreboard?.currentInningsNo ??
+    1
+  ) || 1;
 
+/*
+  Prefer a complete ball collection because those records
+  normally include inningsNo.
+*/
+const completeBallSource =
+  Array.isArray(displayScoreboard?.balls) &&
+  displayScoreboard.balls.length
+    ? displayScoreboard.balls
+    : Array.isArray(scoreboard?.balls) &&
+        scoreboard.balls.length
+      ? scoreboard.balls
+      : [];
+
+/*
+  Check whether the complete source actually contains innings
+  metadata before using it.
+*/
+const completeSourceHasInnings = completeBallSource.some(
+  (ball) => getBallInningsNumber(ball) !== null
+);
+
+let sourceBalls = [];
+
+if (completeSourceHasInnings) {
   /*
-    Critical:
-    Only use deliveries from the innings currently being scored.
-
-    This ensures innings 2 starts with:
-    - no previous over;
-    - an empty current over;
-    - no deliveries carried over from innings 1.
+    Best case:
+    use only deliveries from the currently active innings.
   */
-  const sourceBalls = Array.isArray(recentBalls)
-    ? recentBalls.filter((ball) => {
-        const ballInningsNo =
-          getBallInningsNumber(ball);
+  sourceBalls = completeBallSource.filter(
+    (ball) =>
+      getBallInningsNumber(ball) ===
+      currentInningsNo
+  );
+} else {
+  /*
+    recentBalls may already be scoped to the active innings
+    by the API, but its objects may not contain inningsNo.
 
-        /*
-          Keep the ball only when it belongs to the active innings.
-          A missing innings number is not trusted because it could
-          accidentally carry innings-1 deliveries into innings 2.
-        */
-        return (
-          ballInningsNo !== null &&
-          ballInningsNo === currentInningsNo
-        );
-      })
+    Do not remove those deliveries merely because the field
+    is absent.
+  */
+sourceBalls =
+  recentBallsInningsNo === currentInningsNo &&
+  Array.isArray(recentBalls)
+    ? recentBalls
     : [];
+}
 
   function readOverNumber(ball) {
     const directValue =
@@ -4609,22 +4635,30 @@ const recentOverGroups = (() => {
     );
   });
 
+  const activeInningsSummary =
+  displayScoreboard?.innings?.find(
+    (innings) =>
+      Number(
+        innings.inningsNo ??
+        innings.inningsNumber
+      ) === currentInningsNo
+  ) ||
+  scoreboard?.innings?.find(
+    (innings) =>
+      Number(
+        innings.inningsNo ??
+        innings.inningsNumber
+      ) === currentInningsNo
+  );
+  
 const currentInningsLegalBalls =
   Number(
+    activeInningsSummary?.legalBalls ??
+    activeInningsSummary?.balls ??
     displayScoreboard?.currentState
       ?.legalBalls ??
     scoreboard?.currentState
       ?.legalBalls ??
-    displayScoreboard?.innings?.find(
-      (innings) =>
-        Number(innings.inningsNo) ===
-        currentInningsNo
-    )?.legalBalls ??
-    scoreboard?.innings?.find(
-      (innings) =>
-        Number(innings.inningsNo) ===
-        currentInningsNo
-    )?.legalBalls ??
     0
   ) || 0;
 
@@ -6512,6 +6546,12 @@ useEffect(() => {
   */
   setScorerDrawer(null);
 }, [activeScoringInningsNo]);
+useEffect(() => {
+  if (!currentInningsNo) return;
+
+  setRecentBallsInningsNo(currentInningsNo);
+}, [currentInningsNo]);
+
 
 function MobileMatchSetup({ match, includeTimeline = false }) {
   return (
