@@ -8766,7 +8766,9 @@ const playerRoleBadge = (row) => {
 
 {!isMobile && (
   <>
-      Keyboard shortcuts: 0 1 2 3 4 6 • W wicket • D wide • N no-ball • U undo
+      <div className="msc-v3-delivery-head">
+        <span> Keyboard shortcuts: 0 1 2 3 4 6 • W wicket • D wide • N no-ball • U undo </span>
+      </div>
 </>
 )}
       </div>
@@ -14218,74 +14220,124 @@ onClick={() => {
       </div>
 
       {/* Compact live match snapshot */}
-      <div className="live-popup-snapshot bowler-popup-snapshot">
-        <div className="live-popup-topline">
-          <span className="live-dot">● LIVE</span>
+        <div className="live-popup-snapshot">
+          <div className="live-popup-topline">
+            <span className="live-dot">
+              ● LIVE
+            </span>
 
-          <span className="live-popup-over">
-            Over {bowlerChangeScore.overs}
-          </span>
+            <span className="live-popup-over">
+              Over {bowlerChangeScore.overs}
+            </span>
+          </div>
+
+          <div className="live-popup-main">
+            <div>
+              <span>Current Score</span>
+
+              <strong>
+                {bowlerChangeScore.score}
+              </strong>
+            </div>
+
+            <div>
+              <span>CRR</span>
+
+              <strong>
+                {bowlerChangeScore.crr}
+              </strong>
+            </div>
+          </div>
+
+          <div className="live-popup-recent">
+            <div className="live-popup-recent-head">
+              <span>Current Over</span>
+
+              <b>
+                Over {extrasModalCurrentOver.overNo}
+              </b>
+            </div>
+
+            <div className="live-popup-recent-direction">
+              ← Latest delivery
+            </div>
+
+            <div className="live-popup-balls">
+              {extrasModalCurrentOver.balls.length ? (
+                extrasModalCurrentOver.balls.map(
+                  (ball, index) => {
+                    const label =
+                      ball.shortText ||
+                      ball.displayText ||
+                      ball.resultText ||
+                      ball.label ||
+                      "";
+
+                    const result = String(label)
+                      .replace(
+                        /^\s*\d+\.\d+\s*/,
+                        ""
+                      )
+                      .replace(/[()]/g, "")
+                      .trim();
+
+                    const normalized =
+                      result.toUpperCase();
+
+                    const ballClass =
+                      normalized === "W" ||
+                      normalized === "WKT"
+                        ? "wicket"
+                        : normalized === "4"
+                          ? "four"
+                          : normalized === "6"
+                            ? "six"
+                            : normalized.startsWith(
+                                  "WD"
+                                ) ||
+                                normalized.includes(
+                                  "WIDE"
+                                )
+                              ? "wide"
+                              : normalized.startsWith(
+                                    "NB"
+                                  ) ||
+                                  normalized.includes(
+                                    "NO BALL"
+                                  ) ||
+                                  normalized.includes(
+                                    "NOBALL"
+                                  )
+                                ? "noball"
+                                : "";
+
+                    return (
+                      <b
+                        key={
+                          ball.id ||
+                          ball.sequence ||
+                          `extra-recent-${index}`
+                        }
+                        className={`${ballClass} ${
+                          index === 0
+                            ? "latest"
+                            : ""
+                        }`}
+                      >
+                        {result || "-"}
+                      </b>
+                    );
+                  }
+                )
+              ) : (
+                <small>
+                  No deliveries in the current
+                  over yet
+                </small>
+              )}
+            </div>
+          </div>
         </div>
-
-        <div className="live-popup-main">
-          <div>
-            <span>Current Score</span>
-            <strong>{bowlerChangeScore.score}</strong>
-          </div>
-
-          <div>
-            <span>CRR</span>
-            <strong>{bowlerChangeScore.crr}</strong>
-          </div>
-        </div>
-
-        <div className="live-popup-recent">
-          <div className="live-popup-recent-head">
-            <span>Previous Over</span>
-            <b>{previousOverInfo.overNo}</b>
-          </div>
-
-          <div className="live-popup-balls">
-            {previousOverInfo.balls.length ? (
-              previousOverInfo.balls.map((ball) => {
-                const label = ball.label || "";
-
-                const result = (
-                  label.split(" ").slice(1).join(" ") ||
-                  label
-                ).replace(/[()]/g, "");
-
-                const normalizedResult =
-                  result.toUpperCase();
-
-                const ballClass =
-                  result === "W"
-                    ? "wicket"
-                    : result === "4"
-                      ? "four"
-                      : result === "6"
-                        ? "six"
-                        : normalizedResult.includes("WD")
-                          ? "wide"
-                          : normalizedResult.includes("NB")
-                            ? "noball"
-                            : "";
-
-                return (
-                  <b
-                    key={ball.id}
-                    className={ballClass}
-                  >
-                    {result}
-                  </b>
-                );
-              })
-            ) : (
-              <small>No balls yet</small>
-            )}
-          </div>
-        </div>
-      </div>
 
       <div className="bowler-warning">
         Same bowler cannot bowl consecutive overs.
@@ -15725,63 +15777,124 @@ onClick={() => {
 {showDeliverySetupModal && (
   <div className="modal-backdrop">
     <div className="add-player-pro-modal">
-<div className="live-popup-snapshot">
-  <div className="live-popup-topline">
-    <span className="live-dot">● LIVE</span>
-    <span className="live-popup-over">Over {bowlerChangeScore.overs}</span>
-  </div>
+        <div className="live-popup-snapshot">
+          <div className="live-popup-topline">
+            <span className="live-dot">
+              ● LIVE
+            </span>
 
-  <div className="live-popup-main">
-    <div>
-      <span>Current Score</span>
-      <strong>{bowlerChangeScore.score}</strong>
-    </div>
+            <span className="live-popup-over">
+              Over {bowlerChangeScore.overs}
+            </span>
+          </div>
 
-    <div>
-      <span>CRR</span>
-      <strong>{bowlerChangeScore.crr}</strong>
-    </div>
-  </div>
+          <div className="live-popup-main">
+            <div>
+              <span>Current Score</span>
 
-  <div className="live-popup-recent">
-    <div className="live-popup-recent-head">
-      <span>Previous Over</span>
-      <b>{previousOverInfo.overNo}</b>
-    </div>
+              <strong>
+                {bowlerChangeScore.score}
+              </strong>
+            </div>
 
-    <div className="live-popup-balls">
-      {previousOverInfo.balls.length ? (
-        previousOverInfo.balls.map((ball) => {
-          const label = ball.label || "";
-          const result = (
-            label.split(" ").slice(1).join(" ") || label
-          ).replace(/[()]/g, "");
+            <div>
+              <span>CRR</span>
 
-          const ballClass =
-            result === "W"
-              ? "wicket"
-              : result === "4"
-              ? "four"
-              : result === "6"
-              ? "six"
-              : result.toUpperCase().includes("WD")
-              ? "wide"
-              : result.toUpperCase().includes("NB")
-              ? "noball"
-              : "";
+              <strong>
+                {bowlerChangeScore.crr}
+              </strong>
+            </div>
+          </div>
 
-          return (
-            <b key={ball.id} className={ballClass}>
-              {result}
-            </b>
-          );
-        })
-      ) : (
-        <small>No balls yet</small>
-      )}
-    </div>
-  </div>
-</div>
+          <div className="live-popup-recent">
+            <div className="live-popup-recent-head">
+              <span>Current Over</span>
+
+              <b>
+                Over {extrasModalCurrentOver.overNo}
+              </b>
+            </div>
+
+            <div className="live-popup-recent-direction">
+              ← Latest delivery
+            </div>
+
+            <div className="live-popup-balls">
+              {extrasModalCurrentOver.balls.length ? (
+                extrasModalCurrentOver.balls.map(
+                  (ball, index) => {
+                    const label =
+                      ball.shortText ||
+                      ball.displayText ||
+                      ball.resultText ||
+                      ball.label ||
+                      "";
+
+                    const result = String(label)
+                      .replace(
+                        /^\s*\d+\.\d+\s*/,
+                        ""
+                      )
+                      .replace(/[()]/g, "")
+                      .trim();
+
+                    const normalized =
+                      result.toUpperCase();
+
+                    const ballClass =
+                      normalized === "W" ||
+                      normalized === "WKT"
+                        ? "wicket"
+                        : normalized === "4"
+                          ? "four"
+                          : normalized === "6"
+                            ? "six"
+                            : normalized.startsWith(
+                                  "WD"
+                                ) ||
+                                normalized.includes(
+                                  "WIDE"
+                                )
+                              ? "wide"
+                              : normalized.startsWith(
+                                    "NB"
+                                  ) ||
+                                  normalized.includes(
+                                    "NO BALL"
+                                  ) ||
+                                  normalized.includes(
+                                    "NOBALL"
+                                  )
+                                ? "noball"
+                                : "";
+
+                    return (
+                      <b
+                        key={
+                          ball.id ||
+                          ball.sequence ||
+                          `extra-recent-${index}`
+                        }
+                        className={`${ballClass} ${
+                          index === 0
+                            ? "latest"
+                            : ""
+                        }`}
+                      >
+                        {result || "-"}
+                      </b>
+                    );
+                  }
+                )
+              ) : (
+                <small>
+                  No deliveries in the current
+                  over yet
+                </small>
+              )}
+            </div>
+          </div>
+        </div>
       <div className="add-player-pro-hero">
         <div className="add-player-pro-icon">🎯</div>
 
