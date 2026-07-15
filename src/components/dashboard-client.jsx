@@ -6301,32 +6301,32 @@ const newestFirstBalls = sourceBalls.slice(0, 24);
       (previousInningsNo === null ||
         inningsChanged);
 
-    const legalDelivery =
-      isRecentBallLegal(ball);
+    const legalDelivery = isRecentBallLegal(ball);
 
-    if (legalDelivery) {
-      legalBallsInCurrentOver += 1;
-    }
+const startsNewOver =
+  legalDelivery &&
+  legalBallsInCurrentOver === 0 &&
+  chronologicalItems.length > 0;
 
-    const completesOver =
-      legalDelivery &&
-      legalBallsInCurrentOver === 6;
+if (legalDelivery) {
+  legalBallsInCurrentOver += 1;
+}
 
-    chronologicalItems.push({
-      key:
-        ball?.id ??
-        ball?.sequence ??
-        `recent-${index}`,
+chronologicalItems.push({
+  key:
+    ball?.id ??
+    ball?.sequence ??
+    `recent-${index}`,
 
-      ball,
-      inningsNo,
-      startsInnings,
-      completesOver,
-    });
+  ball,
+  inningsNo,
+  startsInnings,
+  startsNewOver,
+});
 
-    if (completesOver) {
-      legalBallsInCurrentOver = 0;
-    }
+if (legalBallsInCurrentOver === 6) {
+  legalBallsInCurrentOver = 0;
+}
 
     if (inningsNo !== null) {
       previousInningsNo = inningsNo;
@@ -8026,37 +8026,35 @@ const playerRoleBadge = (row) => {
                 </span>
               )}
 
-              <div
-                className={`msc-v3-recent-ball-wrap ${
-                  isNewest ? "newest" : ""
-                }`}
-              >
-                {isNewest && (
-                  <span className="msc-v3-new-ball-label">
-                    NEW
-                  </span>
-                )}
+<div
+  className={`msc-v3-recent-ball-wrap ${
+    isNewest ? "newest" : ""
+  }`}
+>
+  {isNewest && (
+    <span className="msc-v3-new-ball-label">
+      NEW
+    </span>
+  )}
 
-                <b
-                  className={`msc-v3-recent-ball ${ballClass}`}
-                >
-                  {result || "-"}
-                </b>
-              </div>
+  <b
+    className={`msc-v3-recent-ball ${ballClass}`}
+  >
+    {result || "-"}
+  </b>
+</div>
 
-              {item.completesOver && (
-                <span
-                  className="msc-v3-over-separator"
-                  aria-label="Over completed"
-                  title="Over completed"
-                >
-                  <i></i>
-
-                  <b>OVER</b>
-
-                  <i></i>
-                </span>
-              )}
+{item.startsNewOver && (
+  <span
+    className="msc-v3-over-separator"
+    aria-label="New over"
+    title="New over"
+  >
+    <i></i>
+    <b>OVER</b>
+    <i></i>
+  </span>
+)}
             </div>
           );
         }
