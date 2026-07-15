@@ -50212,3 +50212,295 @@ body.cric4all-scorer-open {
     font-weight: 750;
   }
 }
+/* =========================================================
+   MOBILE SCORER — RECENT BALL SEPARATORS
+   Newest delivery appears on the left.
+========================================================= */
+
+@media (max-width: 760px) {
+  .msc-v3-recent-simple {
+    width: 100%;
+
+    margin: 0;
+    padding: 7px 8px;
+
+    overflow: hidden;
+
+    border: 1px solid
+      rgba(148, 163, 184, 0.13);
+
+    border-radius: 11px;
+
+    background:
+      linear-gradient(
+        145deg,
+        rgba(17, 31, 52, 0.92),
+        rgba(10, 21, 38, 0.94)
+      );
+  }
+
+  .msc-v3-recent-simple-head {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 8px;
+
+    margin-bottom: 7px;
+  }
+
+  .msc-v3-recent-simple-head > div {
+    min-width: 0;
+  }
+
+  .msc-v3-recent-simple-head strong,
+  .msc-v3-recent-simple-head small {
+    display: block;
+  }
+
+  .msc-v3-recent-simple-head strong {
+    color: #e5edf8;
+
+    font-size: 11px;
+    font-weight: 950;
+  }
+
+  .msc-v3-recent-simple-head small {
+    margin-top: 2px;
+
+    color: #8291a7;
+
+    font-size: 8px;
+    font-weight: 750;
+  }
+
+  .msc-v3-newest-direction {
+    flex: 0 0 auto;
+
+    padding: 4px 7px;
+
+    border: 1px solid
+      rgba(52, 211, 153, 0.24);
+
+    border-radius: 999px;
+
+    background:
+      rgba(16, 185, 129, 0.12);
+
+    color: #6ee7b7;
+
+    font-size: 8px;
+    font-weight: 1000;
+    letter-spacing: 0.35px;
+  }
+
+  .msc-v3-recent-simple-strip {
+    width: 100%;
+    min-width: 0;
+
+    display: flex;
+    align-items: center;
+    gap: 5px;
+
+    flex-wrap: nowrap;
+
+    overflow-x: auto;
+    overflow-y: hidden;
+
+    padding:
+      4px
+      1px
+      2px;
+
+    scrollbar-width: none;
+
+    -webkit-overflow-scrolling: touch;
+  }
+
+  .msc-v3-recent-simple-strip::-webkit-scrollbar {
+    display: none;
+  }
+
+  .msc-v3-recent-entry {
+    display: flex;
+    align-items: center;
+    gap: 5px;
+
+    flex: 0 0 auto;
+  }
+
+  .msc-v3-recent-ball-wrap {
+    position: relative;
+
+    flex: 0 0 auto;
+  }
+
+  .msc-v3-recent-ball {
+    min-width: 29px;
+    height: 29px;
+
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+
+    padding: 0 5px;
+
+    border: 1px solid
+      rgba(148, 163, 184, 0.11);
+
+    border-radius: 7px;
+
+    background:
+      rgba(51, 65, 85, 0.86);
+
+    color: #ffffff;
+
+    font-size: 11px;
+    font-weight: 1000;
+    line-height: 1;
+  }
+
+  .msc-v3-recent-ball-wrap.newest
+    .msc-v3-recent-ball {
+    border-color:
+      rgba(52, 211, 153, 0.62);
+
+    box-shadow:
+      0 0 0 2px
+        rgba(52, 211, 153, 0.09),
+      0 0 12px
+        rgba(16, 185, 129, 0.18);
+  }
+
+  .msc-v3-new-ball-label {
+    position: absolute;
+    top: -8px;
+    left: 50%;
+
+    z-index: 2;
+
+    transform: translateX(-50%);
+
+    padding: 2px 4px;
+
+    border-radius: 999px;
+
+    background: #10b981;
+    color: #03130e;
+
+    font-size: 6px;
+    font-weight: 1000;
+    line-height: 1;
+  }
+
+  .msc-v3-recent-ball.wicket {
+    background:
+      rgba(185, 28, 28, 0.66);
+
+    color: #fecaca;
+  }
+
+  .msc-v3-recent-ball.boundary {
+    background:
+      rgba(109, 40, 217, 0.66);
+
+    color: #ede9fe;
+  }
+
+  .msc-v3-recent-ball.extra {
+    min-width: 32px;
+
+    background:
+      rgba(161, 98, 7, 0.58);
+
+    color: #fde68a;
+  }
+
+  /* Completed-over separator */
+  .msc-v3-over-separator {
+    width: 14px;
+    height: 31px;
+    flex: 0 0 14px;
+
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+
+    gap: 2px;
+  }
+
+  .msc-v3-over-separator i {
+    width: 1px;
+    height: 7px;
+
+    display: block;
+
+    background:
+      rgba(125, 211, 252, 0.48);
+  }
+
+  .msc-v3-over-separator b {
+    color: #7dd3fc;
+
+    font-size: 5px;
+    font-weight: 1000;
+
+    writing-mode: vertical-rl;
+    transform: rotate(180deg);
+
+    letter-spacing: 0.15px;
+  }
+
+  /* New-innings separator */
+  .msc-v3-innings-divider {
+    min-width: 46px;
+    height: 31px;
+    flex: 0 0 auto;
+
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+
+    gap: 2px;
+
+    padding: 0 4px;
+  }
+
+  .msc-v3-innings-divider i {
+    width: 100%;
+    height: 1px;
+
+    display: block;
+
+    background:
+      linear-gradient(
+        90deg,
+        transparent,
+        rgba(250, 204, 21, 0.72),
+        transparent
+      );
+  }
+
+  .msc-v3-innings-divider b {
+    color: #fde047;
+
+    font-size: 6px;
+    font-weight: 1000;
+    line-height: 1;
+
+    white-space: nowrap;
+    text-transform: uppercase;
+  }
+
+  .msc-v3-recent-simple-empty {
+    display: block;
+
+    padding: 5px 2px;
+
+    color: #8291a7;
+
+    font-size: 10px;
+    font-weight: 750;
+  }
+}

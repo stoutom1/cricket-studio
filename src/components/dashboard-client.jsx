@@ -174,6 +174,85 @@ function MobileBowlingCards({ rows = [] }) {
   );
 }
 
+function getRecentBallInningsNo(ball) {
+  const value =
+    ball?.inningsNo ??
+    ball?.inningsNumber ??
+    ball?.inningNo ??
+    ball?.inning ??
+    null;
+
+  const parsed = Number(value);
+
+  return Number.isInteger(parsed) && parsed > 0
+    ? parsed
+    : null;
+}
+
+function getRecentBallExtraType(ball) {
+  return String(
+    ball?.extraType ??
+      ball?.extrasType ??
+      ball?.deliveryExtraType ??
+      ""
+  )
+    .trim()
+    .toUpperCase();
+}
+
+function getRecentBallDisplayText(ball) {
+  const rawText =
+    ball?.shortText ??
+    ball?.displayText ??
+    ball?.resultText ??
+    ball?.label ??
+    "-";
+
+  return String(rawText)
+    .replace(/^\s*\d+\.\d+\s*/, "")
+    .replace(/[()]/g, "")
+    .trim();
+}
+
+function isRecentBallLegal(ball) {
+  /*
+    Prefer an explicit API value when available.
+  */
+  if (typeof ball?.isLegal === "boolean") {
+    return ball.isLegal;
+  }
+
+  if (typeof ball?.legalDelivery === "boolean") {
+    return ball.legalDelivery;
+  }
+
+  const extraType = getRecentBallExtraType(ball);
+
+  if (
+    extraType === "WIDE" ||
+    extraType === "WD" ||
+    extraType === "NOBALL" ||
+    extraType === "NO_BALL" ||
+    extraType === "NB"
+  ) {
+    return false;
+  }
+
+  /*
+    Fallback when extraType is missing.
+  */
+  const text = getRecentBallDisplayText(ball)
+    .toUpperCase();
+
+  return !(
+    text.startsWith("WD") ||
+    text.startsWith("WIDE") ||
+    text.startsWith("NB") ||
+    text.startsWith("NO BALL") ||
+    text.startsWith("NOBALL")
+  );
+}
+
 export default function DashboardClient() {
   const { data: session } = useSession();
   const [teams, setTeams] = useState([]);
@@ -6173,6 +6252,95 @@ useEffect(() => {
   setScorerDrawer(null);
 }, [activeScoringInningsNo]);
 
+const mobileRecentDeliveryItems = useMemo(() => {
+  const sourceBalls = Array.isArray(recentBalls)
+    ? recentBalls
+    : [];
+
+  /*
+    The laptop list is assumed to be oldest-to-newest.
+
+    Reverse a copied array so:
+    left  = newest
+    right = oldest
+  */
+  const newestFirstBalls = [...sourceBalls]
+    .slice(-24)
+    .reverse();
+
+  /*
+    Count legal balls from oldest to newest first, because an
+    over completes after the sixth legal delivery.
+  */
+  const chronologicalBalls = [...newestFirstBalls].reverse();
+
+  let previousInningsNo = null;
+  let legalBallsInCurrentOver = 0;
+
+  const chronologicalItems = [];
+
+  chronologicalBalls.forEach((ball, index) => {
+    const inningsNo =
+      getRecentBallInningsNo(ball);
+
+    const inningsChanged =
+      inningsNo !== null &&
+      previousInningsNo !== null &&
+      inningsNo !== previousInningsNo;
+
+    /*
+      Reset legal-ball counting when a new innings starts.
+    */
+    if (inningsChanged) {
+      legalBallsInCurrentOver = 0;
+    }
+
+    /*
+      Also treat the first available ball as an innings start.
+    */
+    const startsInnings =
+      inningsNo !== null &&
+      (previousInningsNo === null ||
+        inningsChanged);
+
+    const legalDelivery =
+      isRecentBallLegal(ball);
+
+    if (legalDelivery) {
+      legalBallsInCurrentOver += 1;
+    }
+
+    const completesOver =
+      legalDelivery &&
+      legalBallsInCurrentOver === 6;
+
+    chronologicalItems.push({
+      key:
+        ball?.id ??
+        ball?.sequence ??
+        `recent-${index}`,
+
+      ball,
+      inningsNo,
+      startsInnings,
+      completesOver,
+    });
+
+    if (completesOver) {
+      legalBallsInCurrentOver = 0;
+    }
+
+    if (inningsNo !== null) {
+      previousInningsNo = inningsNo;
+    }
+  });
+
+  /*
+    Reverse the completed items so the newest delivery is
+    displayed on the left.
+  */
+  return chronologicalItems.reverse();
+}, [recentBalls]);
 
 function MobileMatchSetup({ match, includeTimeline = false }) {
   return (
@@ -7816,53 +7984,99 @@ const playerRoleBadge = (row) => {
 
 <div className="msc-v3-recent-simple">
   <div className="msc-v3-recent-simple-head">
-    <strong>🎳 Recent Deliveries</strong>
+    <div>
+      <strong>🎳 Recent Deliveries</strong>
 
-    <small>Latest ball on the right</small>
+      <small>
+        Newest delivery appears on the left
+      </small>
+    </div>
+
+    <span className="msc-v3-newest-direction">
+      ← NEW
+    </span>
   </div>
 
   <div className="msc-v3-recent-simple-strip">
-    {Array.isArray(recentBalls) && recentBalls.length ? (
-      recentBalls.slice(-12).map((ball, index) => {
-        const rawLabel =
-          ball?.shortText ||
-          ball?.displayText ||
-          ball?.resultText ||
-          ball?.label ||
-          "-";
+    {mobileRecentDeliveryItems.length ? (
+      mobileRecentDeliveryItems.map(
+        (item, index) => {
+          const result =
+            getRecentBallDisplayText(item.ball);
 
-        const result = String(rawLabel)
-          .replace(/^\s*\d+\.\d+\s*/, "")
-          .replace(/[()]/g, "")
-          .trim();
+          const normalized =
+            result.toUpperCase();
 
-        const normalized = result.toUpperCase();
+          const ballClass =
+            normalized === "W" ||
+            normalized === "WKT"
+              ? "wicket"
+              : normalized === "4" ||
+                  normalized === "6"
+                ? "boundary"
+                : normalized.startsWith("WD") ||
+                    normalized.startsWith("NB")
+                  ? "extra"
+                  : "";
 
-        const ballClass =
-          normalized === "W" ||
-          normalized === "WKT"
-            ? "wicket"
-            : normalized === "4" ||
-                normalized === "6"
-              ? "boundary"
-              : normalized.startsWith("WD") ||
-                  normalized.startsWith("NB")
-                ? "extra"
-                : "";
+          const isNewest = index === 0;
 
-        return (
-          <b
-            key={
-              ball?.id ||
-              ball?.sequence ||
-              `recent-${index}`
-            }
-            className={ballClass}
-          >
-            {result || "-"}
-          </b>
-        );
-      })
+          return (
+            <div
+              key={item.key}
+              className="msc-v3-recent-entry"
+            >
+              {/*
+                In newest-first display, the innings divider
+                belongs after the oldest ball of that innings.
+              */}
+              {item.startsInnings && (
+                <span className="msc-v3-innings-divider">
+                  <i></i>
+
+                  <b>
+                    Innings {item.inningsNo || ""}
+                  </b>
+
+                  <i></i>
+                </span>
+              )}
+
+              <div
+                className={`msc-v3-recent-ball-wrap ${
+                  isNewest ? "newest" : ""
+                }`}
+              >
+                {isNewest && (
+                  <span className="msc-v3-new-ball-label">
+                    NEW
+                  </span>
+                )}
+
+                <b
+                  className={`msc-v3-recent-ball ${ballClass}`}
+                >
+                  {result || "-"}
+                </b>
+              </div>
+
+              {item.completesOver && (
+                <span
+                  className="msc-v3-over-separator"
+                  aria-label="Over completed"
+                  title="Over completed"
+                >
+                  <i></i>
+
+                  <b>OVER</b>
+
+                  <i></i>
+                </span>
+              )}
+            </div>
+          );
+        }
+      )
     ) : (
       <span className="msc-v3-recent-simple-empty">
         No deliveries yet
