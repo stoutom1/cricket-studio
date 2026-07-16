@@ -2295,3 +2295,702 @@
     font-size: 10px;
   }
 }
+
+
+/* =========================================================
+   POPPED-OUT LIVE BROADCAST LAYER
+   Adds depth, separation and controlled live energy.
+========================================================= */
+
+.live-page-shell {
+  position: relative;
+  isolation: isolate;
+  padding-top: 46px;
+}
+
+.live-page-shell::before {
+  content: "";
+  position: fixed;
+  inset: 76px 0 0;
+  z-index: -2;
+  pointer-events: none;
+  background:
+    radial-gradient(circle at 50% 5%, rgba(35, 126, 222, 0.12), transparent 34%),
+    radial-gradient(circle at 12% 26%, rgba(24, 184, 200, 0.055), transparent 24%),
+    linear-gradient(180deg, #07111f 0%, #081321 38%, #07101d 100%);
+}
+
+.live-page-shell::after {
+  content: "";
+  position: absolute;
+  top: 18px;
+  left: 50%;
+  z-index: -1;
+  width: min(980px, 88vw);
+  height: 420px;
+  border-radius: 50%;
+  pointer-events: none;
+  transform: translateX(-50%);
+  background: rgba(38, 132, 231, 0.09);
+  filter: blur(72px);
+}
+
+/* Main live surface now visibly floats above the page. */
+.live-primary-card {
+  transform: translateZ(0);
+  border-color: rgba(74, 128, 186, 0.72);
+  background:
+    linear-gradient(140deg, rgba(29, 74, 123, 0.30), transparent 45%),
+    radial-gradient(circle at 88% 8%, rgba(55, 153, 255, 0.22), transparent 28%),
+    linear-gradient(145deg, #10243c 0%, #0a182b 62%, #091523 100%);
+  box-shadow:
+    0 34px 90px rgba(0, 0, 0, 0.50),
+    0 0 0 1px rgba(87, 163, 238, 0.06),
+    0 18px 34px rgba(27, 105, 187, 0.13),
+    inset 0 1px 0 rgba(255, 255, 255, 0.045);
+}
+
+.live-primary-card::before {
+  width: 5px;
+  background:
+    linear-gradient(
+      180deg,
+      #ff6573 0%,
+      #ee4254 48%,
+      rgba(238, 66, 84, 0.28) 100%
+    );
+  box-shadow: 4px 0 20px rgba(239, 81, 95, 0.22);
+}
+
+.live-primary-card::after {
+  top: -210px;
+  right: -165px;
+  width: 470px;
+  height: 470px;
+  border: 0;
+  background:
+    radial-gradient(
+      circle,
+      rgba(65, 160, 255, 0.18) 0%,
+      rgba(65, 160, 255, 0.055) 45%,
+      transparent 70%
+    );
+}
+
+/* Stronger live identity without neon overload. */
+.live-pill {
+  padding: 7px 11px;
+  border: 1px solid rgba(241, 81, 95, 0.30);
+  border-radius: 999px;
+  background: rgba(138, 25, 36, 0.17);
+}
+
+.live-pill i {
+  box-shadow:
+    0 0 0 5px rgba(241, 81, 95, 0.11),
+    0 0 18px rgba(241, 81, 95, 0.75);
+}
+
+.live-refresh-copy {
+  padding: 7px 10px;
+  border: 1px solid rgba(73, 105, 145, 0.45);
+  border-radius: 999px;
+  background: rgba(5, 17, 31, 0.32);
+}
+
+.live-main-score {
+  text-shadow:
+    0 12px 34px rgba(0, 0, 0, 0.34),
+    0 0 34px rgba(86, 167, 255, 0.10);
+}
+
+.live-over-focus {
+  border-color: rgba(75, 133, 190, 0.72);
+  background:
+    linear-gradient(145deg, rgba(29, 72, 116, 0.54), rgba(6, 20, 37, 0.78));
+  box-shadow:
+    0 16px 32px rgba(0, 0, 0, 0.24),
+    inset 0 1px 0 rgba(255, 255, 255, 0.035);
+}
+
+/* Metrics look like lifted broadcast tiles. */
+.live-key-metrics {
+  gap: 10px;
+  overflow: visible;
+  border: 0;
+  background: transparent;
+}
+
+.live-info-pill {
+  border: 1px solid rgba(54, 86, 124, 0.74);
+  border-radius: 12px;
+  background:
+    linear-gradient(145deg, rgba(17, 41, 68, 0.96), rgba(8, 23, 40, 0.96));
+  box-shadow:
+    0 12px 24px rgba(0, 0, 0, 0.20),
+    inset 0 1px 0 rgba(255, 255, 255, 0.025);
+}
+
+.live-info-pill + .live-info-pill {
+  border-left: 1px solid rgba(54, 86, 124, 0.74);
+}
+
+.live-info-pill.is-emphasis {
+  border-color: rgba(56, 135, 215, 0.80);
+  background:
+    linear-gradient(145deg, rgba(20, 62, 104, 0.95), rgba(9, 28, 49, 0.96));
+  box-shadow:
+    0 12px 27px rgba(23, 95, 169, 0.18),
+    inset 0 1px 0 rgba(255, 255, 255, 0.035);
+}
+
+/* Current players now read as a true on-field panel. */
+.live-current-grid {
+  gap: 10px;
+  overflow: visible;
+  border: 0;
+  background: transparent;
+}
+
+.live-player-card {
+  border: 1px solid rgba(54, 86, 124, 0.72);
+  border-radius: 12px;
+  background:
+    linear-gradient(145deg, rgba(14, 35, 59, 0.98), rgba(7, 22, 39, 0.98));
+  box-shadow:
+    0 12px 24px rgba(0, 0, 0, 0.19),
+    inset 0 1px 0 rgba(255, 255, 255, 0.022);
+}
+
+.live-player-card + .live-player-card {
+  border-left: 1px solid rgba(54, 86, 124, 0.72);
+}
+
+.live-player-card.is-active {
+  border-color: rgba(48, 197, 144, 0.55);
+  background:
+    linear-gradient(145deg, rgba(16, 65, 57, 0.72), rgba(7, 30, 36, 0.98));
+  box-shadow:
+    0 12px 26px rgba(14, 113, 79, 0.16),
+    inset 4px 0 0 var(--live-green);
+}
+
+/* Delivery ticker floats separately from score board. */
+.live-recent-section {
+  margin-top: 26px;
+  padding: 17px 18px;
+  border: 1px solid rgba(48, 79, 114, 0.64);
+  border-radius: 13px;
+  background: rgba(5, 18, 33, 0.60);
+  box-shadow:
+    0 13px 28px rgba(0, 0, 0, 0.18),
+    inset 0 1px 0 rgba(255, 255, 255, 0.02);
+}
+
+.live-ball {
+  box-shadow:
+    0 7px 13px rgba(0, 0, 0, 0.20),
+    inset 0 1px 0 rgba(255, 255, 255, 0.035);
+}
+
+.live-ball-wicket {
+  box-shadow:
+    0 7px 15px rgba(78, 12, 20, 0.25),
+    0 0 16px rgba(239, 81, 95, 0.11);
+}
+
+.live-momentum-strip {
+  border-color: rgba(61, 117, 173, 0.64);
+  background:
+    linear-gradient(90deg, rgba(18, 62, 105, 0.74), rgba(7, 24, 43, 0.72));
+  box-shadow:
+    0 13px 26px rgba(0, 0, 0, 0.18),
+    inset 0 1px 0 rgba(255, 255, 255, 0.025);
+}
+
+/* Action toolbar becomes unmistakably interactive. */
+.live-action-bar {
+  margin-top: 22px;
+  border-color: rgba(72, 117, 162, 0.72);
+  background:
+    linear-gradient(145deg, rgba(16, 38, 64, 0.97), rgba(6, 19, 34, 0.98));
+  box-shadow:
+    0 22px 46px rgba(0, 0, 0, 0.40),
+    0 0 0 1px rgba(82, 151, 220, 0.04),
+    inset 0 1px 0 rgba(255, 255, 255, 0.035);
+}
+
+.live-action-bar button {
+  min-width: 108px;
+  border-color: rgba(55, 90, 128, 0.46);
+  background: rgba(9, 27, 47, 0.66);
+}
+
+.live-action-bar button:hover {
+  transform: translateY(-1px);
+  border-color: rgba(74, 145, 214, 0.80);
+  background: #15375c;
+  box-shadow: 0 9px 18px rgba(0, 0, 0, 0.22);
+}
+
+/* Lower sections are elevated and connected visually. */
+.live-detail-card {
+  border-color: rgba(61, 101, 143, 0.70);
+  background:
+    linear-gradient(145deg, rgba(13, 31, 52, 0.98), rgba(7, 21, 37, 0.98));
+  box-shadow:
+    0 22px 52px rgba(0, 0, 0, 0.28),
+    inset 0 1px 0 rgba(255, 255, 255, 0.025);
+}
+
+.live-detail-header {
+  background:
+    radial-gradient(circle at 0% 50%, rgba(44, 137, 231, 0.16), transparent 34%),
+    linear-gradient(90deg, rgba(32, 82, 133, 0.13), transparent 60%);
+}
+
+.live-detail-header i {
+  border-color: rgba(82, 150, 217, 0.80);
+  background:
+    linear-gradient(145deg, #226fc0, #17497c);
+  box-shadow:
+    0 10px 22px rgba(25, 94, 163, 0.28),
+    inset 0 1px 0 rgba(255, 255, 255, 0.08);
+}
+
+.live-detail-card.is-open {
+  border-color: rgba(77, 130, 181, 0.80);
+}
+
+/* Final score presentation gets the same dimensional system. */
+.final-match-summary-card {
+  border-color: rgba(66, 132, 109, 0.64);
+  background:
+    radial-gradient(circle at 88% 0%, rgba(45, 197, 142, 0.15), transparent 28%),
+    linear-gradient(145deg, #10283a, #091727 68%);
+  box-shadow:
+    0 32px 80px rgba(0, 0, 0, 0.42),
+    0 16px 32px rgba(21, 105, 79, 0.08),
+    inset 0 1px 0 rgba(255, 255, 255, 0.03);
+}
+
+.final-innings-summary-card {
+  box-shadow:
+    0 12px 25px rgba(0, 0, 0, 0.17),
+    inset 0 1px 0 rgba(255, 255, 255, 0.025);
+}
+
+/* Subtle floating movement for the live board only. */
+@media (prefers-reduced-motion: no-preference) {
+  .live-primary-card {
+    animation: liveBoardArrival 0.48s ease-out both;
+  }
+
+  .live-detail-card {
+    animation: livePanelArrival 0.42s ease-out both;
+  }
+
+  .live-detail-card:nth-of-type(2) {
+    animation-delay: 0.05s;
+  }
+}
+
+@keyframes liveBoardArrival {
+  from {
+    opacity: 0;
+    transform: translateY(14px) scale(0.992);
+  }
+
+  to {
+    opacity: 1;
+    transform: translateY(0) scale(1);
+  }
+}
+
+@keyframes livePanelArrival {
+  from {
+    opacity: 0;
+    transform: translateY(8px);
+  }
+
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+/* Mobile keeps depth but removes excess visual weight. */
+@media (max-width: 640px) {
+  .live-page-shell {
+    padding-top: 18px;
+  }
+
+  .live-page-shell::before {
+    inset-top: 60px;
+  }
+
+  .live-page-shell::after {
+    top: 8px;
+    width: 94vw;
+    height: 320px;
+    filter: blur(54px);
+  }
+
+  .live-primary-card {
+    border-color: rgba(65, 119, 172, 0.78);
+    box-shadow:
+      0 24px 54px rgba(0, 0, 0, 0.44),
+      0 10px 22px rgba(26, 93, 157, 0.10),
+      inset 0 1px 0 rgba(255, 255, 255, 0.035);
+  }
+
+  .live-pill {
+    padding: 6px 9px;
+  }
+
+  .live-refresh-copy {
+    padding: 6px 8px;
+  }
+
+  .live-key-metrics {
+    gap: 8px;
+  }
+
+  .live-info-pill {
+    border-radius: 10px;
+    box-shadow: 0 8px 17px rgba(0, 0, 0, 0.18);
+  }
+
+  .live-current-grid {
+    gap: 8px;
+  }
+
+  .live-player-card {
+    border-radius: 10px;
+    box-shadow: 0 8px 17px rgba(0, 0, 0, 0.17);
+  }
+
+  .live-recent-section {
+    padding: 14px;
+    border-radius: 11px;
+  }
+
+  .live-action-bar button {
+    min-width: 0;
+  }
+
+  .live-detail-card {
+    box-shadow:
+      0 16px 34px rgba(0, 0, 0, 0.27),
+      inset 0 1px 0 rgba(255, 255, 255, 0.022);
+  }
+}
+
+
+/* =========================================================
+   V2: LARGER ACTIONS + ONE-SCREEN MOBILE COMPOSITION
+========================================================= */
+
+/* Larger, more obvious actions on every screen. */
+.live-action-bar {
+  gap: 10px;
+  padding: 9px;
+}
+
+.live-action-bar button {
+  min-width: 132px;
+  min-height: 48px;
+  justify-content: center;
+  padding: 11px 18px;
+  border-color: rgba(66, 108, 151, 0.62);
+  border-radius: 10px;
+  color: #eef5fc;
+  background:
+    linear-gradient(145deg, rgba(19, 53, 88, 0.92), rgba(8, 26, 46, 0.94));
+  font-size: 13px;
+  font-weight: 900;
+}
+
+.live-action-bar button:hover {
+  border-color: rgba(79, 157, 229, 0.88);
+  background:
+    linear-gradient(145deg, #1b5b98, #123b65);
+}
+
+/*
+  On phones, the collapsed experience is composed to fit in one viewport:
+  hero + large actions + two compact collapsed sections.
+  Expanded sections naturally continue below.
+*/
+@media (max-width: 640px) {
+  .live-page-shell:not(.live-tv-mode) {
+    min-height: 100svh;
+    display: flex;
+    flex-direction: column;
+    padding-top: 8px;
+    padding-bottom: max(10px, env(safe-area-inset-bottom));
+  }
+
+  .live-page-shell:not(.live-tv-mode) .live-primary-card {
+    flex: 0 0 auto;
+    padding: 14px 13px;
+    border-radius: 14px;
+  }
+
+  .live-page-shell:not(.live-tv-mode) .live-primary-topline {
+    min-height: 28px;
+  }
+
+  .live-page-shell:not(.live-tv-mode) .live-pill {
+    padding: 5px 8px;
+    font-size: 9px;
+  }
+
+  .live-page-shell:not(.live-tv-mode) .live-refresh-copy {
+    padding: 5px 7px;
+    font-size: 9px;
+  }
+
+  .live-page-shell:not(.live-tv-mode) .live-match-title {
+    margin-top: 13px;
+    font-size: 16px;
+  }
+
+  .live-page-shell:not(.live-tv-mode) .live-score-focus {
+    margin-top: 12px;
+  }
+
+  .live-page-shell:not(.live-tv-mode) .live-batting-team {
+    margin-bottom: 4px;
+    font-size: 9px;
+  }
+
+  .live-page-shell:not(.live-tv-mode) .live-main-score {
+    font-size: clamp(56px, 18vw, 72px);
+  }
+
+  .live-page-shell:not(.live-tv-mode) .live-over-focus {
+    min-width: 72px;
+    padding: 10px 8px;
+  }
+
+  .live-page-shell:not(.live-tv-mode) .live-over-focus strong {
+    font-size: 22px;
+  }
+
+  .live-page-shell:not(.live-tv-mode) .live-over-focus span {
+    margin-top: 4px;
+    font-size: 8px;
+  }
+
+  .live-page-shell:not(.live-tv-mode) .live-status-text {
+    margin-top: 9px;
+    font-size: 13px;
+  }
+
+  .live-page-shell:not(.live-tv-mode) .live-chase-card {
+    margin-top: 10px;
+    padding: 9px 10px;
+  }
+
+  .live-page-shell:not(.live-tv-mode) .live-key-metrics {
+    gap: 6px;
+    margin-top: 11px;
+  }
+
+  .live-page-shell:not(.live-tv-mode) .live-info-pill {
+    padding: 9px 10px;
+  }
+
+  .live-page-shell:not(.live-tv-mode) .live-info-pill span {
+    font-size: 8px;
+  }
+
+  .live-page-shell:not(.live-tv-mode) .live-info-pill strong {
+    margin-top: 3px;
+    font-size: 17px;
+  }
+
+  /* Players stay visible but consume far less height. */
+  .live-page-shell:not(.live-tv-mode) .live-current-grid {
+    grid-template-columns: repeat(3, minmax(0, 1fr)) !important;
+    gap: 6px;
+    margin-top: 9px;
+  }
+
+  .live-page-shell:not(.live-tv-mode) .live-player-card {
+    padding: 9px 8px;
+  }
+
+  .live-page-shell:not(.live-tv-mode) .live-player-card + .live-player-card {
+    border-top: 1px solid rgba(54, 86, 124, 0.72);
+    border-left: 1px solid rgba(54, 86, 124, 0.72);
+  }
+
+  .live-page-shell:not(.live-tv-mode) .live-player-card span {
+    font-size: 7px;
+  }
+
+  .live-page-shell:not(.live-tv-mode) .live-player-card strong {
+    margin-top: 3px;
+    font-size: 14px;
+  }
+
+  .live-page-shell:not(.live-tv-mode) .live-player-card small {
+    margin-top: 2px;
+    font-size: 9px;
+  }
+
+  /* Compact ticker instead of a tall block. */
+  .live-page-shell:not(.live-tv-mode) .live-recent-section {
+    margin-top: 10px;
+    padding: 9px 10px;
+  }
+
+  .live-page-shell:not(.live-tv-mode) .live-section-label {
+    display: none;
+  }
+
+  .live-page-shell:not(.live-tv-mode) .live-recent-strip {
+    gap: 5px;
+    margin-top: 0;
+  }
+
+  .live-page-shell:not(.live-tv-mode) .live-ball {
+    min-width: 28px;
+    height: 28px;
+    padding: 0 6px;
+    font-size: 9px;
+  }
+
+  .live-page-shell:not(.live-tv-mode) .live-momentum-strip {
+    margin-top: 8px;
+    padding: 8px 10px;
+  }
+
+  .live-page-shell:not(.live-tv-mode) .live-momentum-strip > span {
+    font-size: 8px;
+  }
+
+  .live-page-shell:not(.live-tv-mode) .live-momentum-strip b {
+    padding: 4px 6px;
+    font-size: 8px;
+  }
+
+  /* Larger buttons, arranged in one clear row. */
+  .live-page-shell:not(.live-tv-mode) .live-action-bar {
+    position: static;
+    width: 100%;
+    display: grid;
+    grid-template-columns: repeat(3, minmax(0, 1fr));
+    gap: 7px;
+    margin: 9px 0 0;
+    padding: 7px;
+    overflow: visible;
+  }
+
+  .live-page-shell:not(.live-tv-mode) .live-action-bar button {
+    min-width: 0;
+    min-height: 48px;
+    padding: 8px 5px;
+    font-size: 11px;
+    line-height: 1.15;
+  }
+
+  /* Collapsed sections become compact side-by-side launch tiles. */
+  .live-page-shell:not(.live-tv-mode) > .live-detail-card {
+    flex: 0 0 auto;
+  }
+
+  .live-page-shell:not(.live-tv-mode) > .live-detail-card:not(.is-open) {
+    display: inline-block;
+    width: calc(50% - 5px);
+    margin-top: 9px;
+    vertical-align: top;
+  }
+
+  .live-page-shell:not(.live-tv-mode)
+    > .live-detail-card:not(.is-open)
+    + .live-detail-card:not(.is-open) {
+    margin-left: 6px;
+  }
+
+  .live-page-shell:not(.live-tv-mode)
+    > .live-detail-card:not(.is-open)
+    .live-detail-header {
+    min-height: 66px;
+    align-items: center;
+    padding: 10px;
+  }
+
+  .live-page-shell:not(.live-tv-mode)
+    > .live-detail-card:not(.is-open)
+    .live-detail-header strong {
+    font-size: 14px;
+    line-height: 1.15;
+  }
+
+  .live-page-shell:not(.live-tv-mode)
+    > .live-detail-card:not(.is-open)
+    .live-detail-header small {
+    display: none;
+  }
+
+  .live-page-shell:not(.live-tv-mode)
+    > .live-detail-card:not(.is-open)
+    .live-detail-header i {
+    flex-basis: 32px;
+    width: 32px;
+    height: 32px;
+    font-size: 17px;
+  }
+
+  /* When opened, a section returns to full width and normal flow. */
+  .live-page-shell:not(.live-tv-mode) > .live-detail-card.is-open {
+    width: 100%;
+    margin-top: 10px;
+  }
+}
+
+@media (max-width: 380px) {
+  .live-page-shell:not(.live-tv-mode) .live-current-grid {
+    grid-template-columns: 1fr 1fr !important;
+  }
+
+  .live-page-shell:not(.live-tv-mode) .live-player-card:last-child {
+    grid-column: 1 / -1;
+  }
+
+  .live-page-shell:not(.live-tv-mode) .live-action-bar button {
+    font-size: 10px;
+  }
+
+  .live-page-shell:not(.live-tv-mode)
+    > .live-detail-card:not(.is-open)
+    .live-detail-header strong {
+    font-size: 13px;
+  }
+}
+
+/* Short-height phones need an even tighter collapsed board. */
+@media (max-width: 640px) and (max-height: 720px) {
+  .live-page-shell:not(.live-tv-mode) .live-match-title {
+    margin-top: 9px;
+  }
+
+  .live-page-shell:not(.live-tv-mode) .live-main-score {
+    font-size: 54px;
+  }
+
+  .live-page-shell:not(.live-tv-mode) .live-status-text {
+    margin-top: 6px;
+  }
+
+  .live-page-shell:not(.live-tv-mode) .live-recent-section {
+    display: none;
+  }
+
+  .live-page-shell:not(.live-tv-mode) .live-momentum-strip {
+    display: none;
+  }
+}
