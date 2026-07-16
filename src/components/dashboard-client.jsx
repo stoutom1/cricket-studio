@@ -10453,7 +10453,6 @@ const playerRoleBadge = (row) => {
         key={`mobile-scheduled-${match.id}`}
         className="mobile-wow-card mobile-wow-scheduled"
       >
-        {/* Header */}
         <div className="mobile-wow-top">
           <span className="mobile-wow-status scheduled">
             📅 Scheduled
