@@ -1976,3 +1976,322 @@
   .live-over-focus strong { font-size:24px; }
   .live-action-bar button { padding-left:8px; padding-right:8px; font-size:10px; }
 }
+
+
+/* =========================================================
+   BROADCAST COMPOSITION OVERRIDE
+   A different information architecture using existing JSX.
+========================================================= */
+
+@media (min-width: 901px) {
+  .live-page-shell {
+    width: min(1280px, calc(100% - 42px));
+    padding-top: 28px;
+  }
+
+  .live-primary-card {
+    display: grid;
+    grid-template-columns: minmax(0, 1.35fr) minmax(310px, 0.65fr);
+    grid-template-rows: auto auto auto auto auto auto;
+    column-gap: 30px;
+    row-gap: 0;
+    padding: 30px 32px 26px;
+    border-radius: 18px;
+    background:
+      linear-gradient(100deg, rgba(39, 136, 245, 0.08), transparent 38%),
+      linear-gradient(180deg, #0b1a2c, #081523);
+  }
+
+  .live-primary-card::after {
+    top: -150px;
+    right: -120px;
+    width: 360px;
+    height: 360px;
+    background: radial-gradient(circle, rgba(50, 184, 217, 0.10), transparent 68%);
+  }
+
+  .live-primary-topline {
+    grid-column: 1 / -1;
+    grid-row: 1;
+    padding-bottom: 17px;
+    border-bottom: 1px solid var(--ls-line);
+  }
+
+  .live-match-title {
+    grid-column: 1;
+    grid-row: 2;
+    margin-top: 25px;
+    font-size: 22px;
+  }
+
+  .live-score-focus {
+    grid-column: 1;
+    grid-row: 3;
+    margin-top: 18px;
+  }
+
+  .live-main-score {
+    font-size: clamp(82px, 8vw, 126px);
+  }
+
+  .live-over-focus {
+    min-width: 132px;
+    border-radius: 13px;
+  }
+
+  .live-status-text {
+    grid-column: 1;
+    grid-row: 4;
+    margin-top: 16px;
+  }
+
+  .live-chase-card {
+    grid-column: 1;
+    grid-row: 5;
+    margin-top: 18px;
+  }
+
+  .live-key-metrics {
+    grid-column: 1;
+    grid-row: 6;
+    margin-top: 19px;
+  }
+
+  .live-current-grid {
+    grid-column: 2;
+    grid-row: 2 / 7;
+    display: flex;
+    flex-direction: column;
+    align-self: stretch;
+    margin-top: 25px;
+    border-radius: 16px;
+    background:
+      linear-gradient(180deg, rgba(50, 184, 217, 0.08), transparent 46%),
+      rgba(5, 16, 29, 0.58);
+  }
+
+  .live-current-grid::before {
+    content: "ON FIELD";
+    display: block;
+    padding: 15px 18px 11px;
+    border-bottom: 1px solid var(--ls-line);
+    color: #78a6cf;
+    font-size: 10px;
+    font-weight: 900;
+    letter-spacing: 0.14em;
+  }
+
+  .live-player-card {
+    flex: 1;
+    display: flex;
+    flex-direction: column;
+    justify-content: center;
+    min-height: 104px;
+    padding: 20px 21px;
+  }
+
+  .live-player-card + .live-player-card {
+    border-top: 1px solid var(--ls-line);
+    border-left: 0;
+  }
+
+  .live-player-card.is-active {
+    box-shadow: inset 4px 0 0 var(--ls-green);
+  }
+
+  .live-player-card span {
+    font-size: 10px;
+  }
+
+  .live-player-card strong {
+    margin-top: 8px;
+    font-size: 24px;
+  }
+
+  .live-player-card small {
+    margin-top: 7px;
+    font-size: 13px;
+  }
+
+  .live-recent-section {
+    grid-column: 1 / -1;
+    grid-row: 7;
+    margin-top: 26px;
+    padding-top: 20px;
+  }
+
+  .live-recent-section .live-section-label {
+    align-items: center;
+  }
+
+  .live-recent-strip {
+    flex-wrap: nowrap;
+    overflow-x: auto;
+    padding-bottom: 3px;
+  }
+
+  .live-ball {
+    flex: 0 0 auto;
+    min-width: 39px;
+    height: 39px;
+  }
+
+  .live-momentum-strip {
+    grid-column: 1 / -1;
+    grid-row: 8;
+    margin-top: 16px;
+    border-radius: 10px;
+  }
+
+  .live-action-bar {
+    margin-top: 14px;
+  }
+
+  .live-detail-card {
+    border-radius: 14px;
+  }
+
+  .live-detail-header {
+    min-height: 72px;
+  }
+}
+
+/* Compact mobile broadcast view */
+@media (max-width: 640px) {
+  .live-page-shell {
+    width: calc(100% - 12px);
+    padding-top: 8px;
+  }
+
+  .live-primary-card {
+    padding: 17px 14px 15px;
+    border-radius: 15px;
+    box-shadow: 0 18px 48px rgba(0, 0, 0, 0.26);
+  }
+
+  .live-primary-card::before {
+    width: 3px;
+  }
+
+  .live-primary-topline {
+    padding-bottom: 12px;
+    border-bottom: 1px solid var(--ls-line);
+  }
+
+  .live-refresh-copy {
+    font-size: 10px;
+  }
+
+  .live-match-title {
+    margin-top: 17px;
+    font-size: 17px;
+  }
+
+  .live-score-focus {
+    align-items: center;
+    margin-top: 15px;
+  }
+
+  .live-main-score {
+    font-size: clamp(68px, 21vw, 92px);
+  }
+
+  .live-over-focus {
+    min-width: 82px;
+    padding: 12px 8px;
+  }
+
+  .live-status-text {
+    margin-top: 13px;
+  }
+
+  .live-key-metrics {
+    margin-top: 16px;
+    border-radius: 11px;
+  }
+
+  .live-info-pill {
+    min-height: 68px;
+    padding: 12px 11px;
+  }
+
+  .live-info-pill span {
+    font-size: 8px;
+  }
+
+  .live-info-pill strong {
+    font-size: 21px;
+  }
+
+  .live-current-grid {
+    margin-top: 14px;
+    border-radius: 11px;
+  }
+
+  .live-player-card {
+    min-height: 76px;
+    padding: 13px 12px;
+  }
+
+  .live-player-card strong {
+    margin-top: 5px;
+    font-size: 19px;
+  }
+
+  .live-player-card small {
+    margin-top: 4px;
+    font-size: 12px;
+  }
+
+  .live-recent-section {
+    margin-top: 17px;
+    padding-top: 15px;
+  }
+
+  .live-recent-strip {
+    gap: 7px;
+  }
+
+  .live-ball {
+    min-width: 35px;
+    height: 35px;
+    font-size: 10px;
+  }
+
+  .live-momentum-strip {
+    margin-top: 14px;
+    padding: 12px;
+  }
+
+  .live-action-bar {
+    position: static;
+    width: 100%;
+    margin-top: 12px;
+    padding: 5px;
+    border-radius: 11px;
+  }
+
+  .live-action-bar button {
+    min-height: 42px;
+    padding: 8px 7px;
+    font-size: 10px;
+  }
+
+  .live-detail-card {
+    margin-top: 13px;
+  }
+
+  .live-detail-header {
+    min-height: 66px;
+    padding: 12px;
+  }
+
+  .live-detail-header strong {
+    font-size: 17px;
+  }
+
+  .live-detail-header small {
+    margin-top: 3px;
+    font-size: 10px;
+  }
+}
