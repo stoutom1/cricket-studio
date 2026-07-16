@@ -224,36 +224,6 @@ export default function CricChatbot() {
 } 
       `}</style>
 
-      {!open && showIntro && (
-        <div className="cric-ai-intro">
-          <div className="cric-ai-intro-title">👋 Need help?</div>
-          <div>
-            Cric4All AI can help with scoring, no-balls, wides, matches,
-            leagues, and spectator links.
-          </div>
-
-          <div className="cric-ai-intro-actions">
-<button
-  type="button"
-  className={`cric-ai-fab ${pulse ? "pulse" : ""}`}
-  onClick={openChat}
-  title="Cric4All AI Assistant"
-  aria-label="Open Cric4All AI Assistant"
->
-  🤖
-</button>
-
-            <button
-              type="button"
-              className="cric-ai-dismiss"
-              onClick={markIntroSeen}
-            >
-              Hide
-            </button>
-          </div>
-        </div>
-      )}
-
       <button
         type="button"
         className={`cric-ai-fab ${pulse ? "pulse" : ""}`}

@@ -1,6 +1,40 @@
 import prisma from "@/lib/prisma";
 import { notFound } from "next/navigation";
 import Link from "next/link";
+import "@/app/public-league-wow.css";
+
+function normalizeStatus(status) {
+  return String(status || "SCHEDULED").toUpperCase();
+}
+
+function formatStatus(status) {
+  return normalizeStatus(status).replaceAll("_", " ");
+}
+
+function getStatusClass(status) {
+  const value = normalizeStatus(status);
+
+  if (["LIVE", "IN_PROGRESS"].includes(value)) return "is-live";
+  if (value === "SCHEDULED") return "is-scheduled";
+  if (["COMPLETED", "COMPLETED_LOCKED", "COMPLETED_CORRECTED"].includes(value)) {
+    return "is-completed";
+  }
+  if (value === "ABANDONED") return "is-abandoned";
+
+  return "is-neutral";
+}
+
+function getInitials(name) {
+  return (
+    String(name || "Player")
+      .trim()
+      .split(/\s+/)
+      .filter(Boolean)
+      .slice(0, 2)
+      .map((part) => part[0]?.toUpperCase())
+      .join("") || "PL"
+  );
+}
 
 export async function generateMetadata({ params }) {
   const { slug, playerId } = await params;
@@ -192,160 +226,258 @@ export default async function PublicPlayerPage({ params }) {
     .slice(0, 10);
 
   return (
-    <main className="public-league-portal public-wow-page">
-      <section className="public-wow-hero public-one-piece-card">
-        <div className="public-wow-top">
-          <div className="public-breadcrumb">
-            <Link href="/explore">Explore</Link>
-            <span>/</span>
-            <Link href={`/leagues/${league.slug}`}>{league.name}</Link>
-            <span>/</span>
-            <Link href={`/leagues/${league.slug}/teams/${player.teamId}`}>
-              {player.teamName}
-            </Link>
-            <span>/</span>
-            <strong>{player.name}</strong>
-          </div>
+    <main className="spp-page">
+      <section className="spp-shell">
+        <header className="spp-hero">
+          <div className="spp-topline">
+            <nav className="spp-breadcrumb" aria-label="Breadcrumb">
+              <Link href="/explore">Explore</Link>
+              <span>/</span>
+              <Link href={`/leagues/${league.slug}`}>{league.name}</Link>
+              <span>/</span>
+              <Link href={`/leagues/${league.slug}/teams/${player.teamId}`}>
+                {player.teamName}
+              </Link>
+              <span>/</span>
+              <strong>{player.name}</strong>
+            </nav>
 
-          <div className="spectator-pill">🏏 Player Profile</div>
-        </div>
-
-        <div className="public-wow-hero-main">
-          <div>
-            <h2>{player.name}</h2>
-            <p>
-              Public player profile for {league.name}. View batting, bowling,
-              match history, and team information in one premium cricket profile.
-            </p>
-          </div>
-
-          <div className="public-wow-stats">
-            <div>
-              <span>Team</span>
-              <strong>{player.teamName}</strong>
-            </div>
-
-            <div>
-              <span>Runs</span>
-              <strong>{runs}</strong>
-            </div>
-
-            <div>
-              <span>Wickets</span>
-              <strong>{wickets}</strong>
-            </div>
-
-            <div>
-              <span>Matches</span>
-              <strong>{playerMatches.length}</strong>
-            </div>
-          </div>
-        </div>
-
-        <div className="public-wow-controls player-profile-actions">
-          <Link href={`/leagues/${league.slug}`}>🏆 Back to League</Link>
-          <Link href={`/leagues/${league.slug}/teams/${player.teamId}`}>
-            👥 Back to Team
-          </Link>
-          <Link href="/explore">🧭 Explore Leagues</Link>
-        </div>
-
-        <div className="public-tab-content">
-          <div className="public-section-head">
-            <h2>Player Stats</h2>
-          </div>
-
-          <div className="public-card-grid player-stat-grid">
-            <div className="public-card">
-              <span>Runs</span>
-              <strong>{runs}</strong>
-              <small>Total batting runs</small>
-            </div>
-
-            <div className="public-card">
-              <span>Balls Faced</span>
-              <strong>{ballsFaced}</strong>
-              <small>Legal balls faced</small>
-            </div>
-
-            <div className="public-card">
-              <span>Strike Rate</span>
-              <strong>{strikeRate}</strong>
-              <small>Runs per 100 balls</small>
-            </div>
-
-            <div className="public-card">
-              <span>4s / 6s</span>
-              <strong>
-                {fours} / {sixes}
-              </strong>
-              <small>Boundaries hit</small>
-            </div>
-
-            <div className="public-card">
-              <span>Wickets</span>
-              <strong>{wickets}</strong>
-              <small>Bowling wickets</small>
-            </div>
-
-            <div className="public-card">
-              <span>Overs</span>
-              <strong>{overs}</strong>
-              <small>Overs bowled</small>
-            </div>
-
-            <div className="public-card">
-              <span>Runs Conceded</span>
-              <strong>{runsConceded}</strong>
-              <small>Bowling runs</small>
-            </div>
-
-            <div className="public-card">
-              <span>Economy</span>
-              <strong>{economy}</strong>
-              <small>Runs per over</small>
-            </div>
-          </div>
-
-          <div className="public-section-head player-history-head">
-            <h2>Recent Match History</h2>
-            <span className="team-roster-count">
-              {playerMatches.length} appearances
+            <span className="spp-public-label">
+              <span aria-hidden="true" />
+              Public player
             </span>
           </div>
 
-          {playerMatches.length === 0 ? (
-            <div className="public-empty-state">
-              <strong>📭 No match history yet</strong>
-              <span>This player has not appeared in scored matches yet.</span>
+          <div className="spp-hero-main">
+            <div className="spp-player-identity">
+              <span className="spp-player-mark" aria-hidden="true">
+                {getInitials(player.name)}
+              </span>
+
+              <div>
+                <p className="spp-kicker">Cric4All Player Profile</p>
+                <h1>{player.name}</h1>
+                <p className="spp-subtitle">
+                  <strong>{player.teamName}</strong> · {league.name}
+                </p>
+              </div>
             </div>
-          ) : (
-            <div className="public-match-list player-history-list">
-              {playerMatches.map((match) => (
-                <div
-                  key={match.id}
-                  className="public-match-card public-match-card-pro"
-                >
-                  <div className="public-match-main">
-                    <span className="public-match-status">
-                      {match.status || "SCHEDULED"}
-                    </span>
 
-                    <strong>{match.title}</strong>
+            <div className="spp-actions">
+              <Link href={`/leagues/${league.slug}`}>Back to league</Link>
+              <Link href={`/leagues/${league.slug}/teams/${player.teamId}`}>
+                Back to team
+              </Link>
+              <Link className="spp-primary-action" href="/explore">
+                Explore leagues
+              </Link>
+            </div>
+          </div>
 
-                    <small>
-                      {match.runs} runs off {match.balls} balls •{" "}
-                      {match.wickets} wickets
-                    </small>
+          <div className="spp-career-line">
+            <span><b>{runs}</b> Runs</span>
+            <span><b>{wickets}</b> Wickets</span>
+            <span><b>{playerMatches.length}</b> Appearances</span>
+            <span><b>{strikeRate}</b> Strike rate</span>
+            <span><b>{economy}</b> Economy</span>
+          </div>
+        </header>
+
+        <div className="spp-content">
+          <section className="spp-profile-grid">
+            <div className="spp-main-column">
+              <section className="spp-stats-section">
+                <div className="spp-section-heading">
+                  <div>
+                    <p>Career snapshot</p>
+                    <h2>Player statistics</h2>
                   </div>
 
-                  {match.shareCode && (
-                    <a href={`/live/${match.shareCode}`}>Scorecard</a>
-                  )}
+                  <span>{player.teamName}</span>
                 </div>
-              ))}
+
+                <div className="spp-discipline-grid">
+                  <article className="spp-discipline">
+                    <div className="spp-discipline-heading">
+                      <div>
+                        <p>Batting</p>
+                        <h3>{runs} runs</h3>
+                      </div>
+                    </div>
+
+                    <div className="spp-stat-list">
+                      <div>
+                        <span>Runs</span>
+                        <strong>{runs}</strong>
+                      </div>
+
+                      <div>
+                        <span>Balls faced</span>
+                        <strong>{ballsFaced}</strong>
+                      </div>
+
+                      <div>
+                        <span>Strike rate</span>
+                        <strong>{strikeRate}</strong>
+                      </div>
+
+                      <div>
+                        <span>Fours</span>
+                        <strong>{fours}</strong>
+                      </div>
+
+                      <div>
+                        <span>Sixes</span>
+                        <strong>{sixes}</strong>
+                      </div>
+                    </div>
+                  </article>
+
+                  <article className="spp-discipline">
+                    <div className="spp-discipline-heading">
+                      <div>
+                        <p>Bowling</p>
+                        <h3>{wickets} wickets</h3>
+                      </div>
+                    </div>
+
+                    <div className="spp-stat-list">
+                      <div>
+                        <span>Wickets</span>
+                        <strong>{wickets}</strong>
+                      </div>
+
+                      <div>
+                        <span>Overs</span>
+                        <strong>{overs}</strong>
+                      </div>
+
+                      <div>
+                        <span>Runs conceded</span>
+                        <strong>{runsConceded}</strong>
+                      </div>
+
+                      <div>
+                        <span>Economy</span>
+                        <strong>{economy}</strong>
+                      </div>
+                    </div>
+                  </article>
+                </div>
+              </section>
+
+              <section className="spp-history-section">
+                <div className="spp-section-heading">
+                  <div>
+                    <p>Recent appearances</p>
+                    <h2>Match history</h2>
+                  </div>
+
+                  <span>
+                    {playerMatches.length}{" "}
+                    {playerMatches.length === 1 ? "appearance" : "appearances"}
+                  </span>
+                </div>
+
+                {playerMatches.length === 0 ? (
+                  <div className="spp-empty">
+                    <span aria-hidden="true">—</span>
+                    <div>
+                      <strong>No match history yet</strong>
+                      <p>This player has not appeared in scored matches yet.</p>
+                    </div>
+                  </div>
+                ) : (
+                  <div className="spp-match-list">
+                    {playerMatches.map((match, index) => {
+                      const statusClass = getStatusClass(match.status);
+
+                      return (
+                        <article className="spp-match-row" key={match.id}>
+                          <span className="spp-match-number" aria-hidden="true">
+                            {String(index + 1).padStart(2, "0")}
+                          </span>
+
+                          <div className="spp-match-copy">
+                            <div className="spp-match-title-line">
+                              <span className={`spp-status ${statusClass}`}>
+                                <span aria-hidden="true" />
+                                {formatStatus(match.status)}
+                              </span>
+                              <strong>{match.title}</strong>
+                            </div>
+
+                            <div className="spp-performance-line">
+                              <span><b>{match.runs}</b> runs</span>
+                              <span><b>{match.balls}</b> balls</span>
+                              <span><b>{match.wickets}</b> wickets</span>
+                            </div>
+                          </div>
+
+                          {match.shareCode ? (
+                            <a href={`/live/${match.shareCode}`}>
+                              Scorecard
+                              <span aria-hidden="true">→</span>
+                            </a>
+                          ) : (
+                            <span className="spp-unavailable">No scorecard</span>
+                          )}
+                        </article>
+                      );
+                    })}
+                  </div>
+                )}
+              </section>
             </div>
-          )}
+
+            <aside className="spp-side-column">
+              <section className="spp-player-summary">
+                <p>Player overview</p>
+                <h2>{player.name}</h2>
+                <span>
+                  Public batting, bowling and match-performance data generated
+                  from scored league matches.
+                </span>
+              </section>
+
+              <section className="spp-summary-list">
+                <div>
+                  <span>Team</span>
+                  <strong>{player.teamName}</strong>
+                </div>
+
+                <div>
+                  <span>League</span>
+                  <strong>{league.name}</strong>
+                </div>
+
+                <div>
+                  <span>Runs</span>
+                  <strong>{runs}</strong>
+                </div>
+
+                <div>
+                  <span>Wickets</span>
+                  <strong>{wickets}</strong>
+                </div>
+
+                <div>
+                  <span>Strike rate</span>
+                  <strong>{strikeRate}</strong>
+                </div>
+
+                <div>
+                  <span>Economy</span>
+                  <strong>{economy}</strong>
+                </div>
+              </section>
+            </aside>
+          </section>
+
+          <footer className="spp-footer-note">
+            This public profile updates automatically as new league deliveries
+            are scored.
+          </footer>
         </div>
       </section>
     </main>

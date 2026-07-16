@@ -1,6 +1,23 @@
 import prisma from "@/lib/prisma";
 import { notFound } from "next/navigation";
 import Link from "next/link";
+import "@/app/public-league-wow.css";
+
+function normalizeStatus(status) {
+  return String(status || "SCHEDULED").toUpperCase();
+}
+
+function getInitials(name) {
+  return (
+    String(name || "Team")
+      .trim()
+      .split(/\s+/)
+      .filter(Boolean)
+      .slice(0, 2)
+      .map((part) => part[0]?.toUpperCase())
+      .join("") || "TM"
+  );
+}
 
 export async function generateMetadata({ params }) {
   const { slug, teamId } = await params;
@@ -81,7 +98,7 @@ export default async function PublicTeamPage({ params }) {
 
   const completedMatches = teamMatches.filter((match) =>
     ["COMPLETED", "COMPLETED_LOCKED"].includes(
-      String(match.status || "").toUpperCase()
+      normalizeStatus(match.status)
     )
   );
 
@@ -92,117 +109,167 @@ export default async function PublicTeamPage({ params }) {
   ).length;
 
   const losses = completedMatches.length - wins;
+  const playerCount = team.players?.length || 0;
+  const winRate = completedMatches.length
+    ? Math.round((wins / completedMatches.length) * 100)
+    : 0;
 
   return (
-    <main className="public-league-portal public-wow-page">
-      <section className="public-wow-hero public-one-piece-card">
-        <div className="public-wow-top">
-          <div className="public-breadcrumb">
-            <Link href="/explore">Explore</Link>
-            <span>/</span>
-            <Link href={`/leagues/${league.slug}`}>{league.name}</Link>
-            <span>/</span>
-            <strong>{team.name}</strong>
-          </div>
+    <main className="stp-page">
+      <section className="stp-shell">
+        <header className="stp-hero">
+          <div className="stp-topline">
+            <nav className="stp-breadcrumb" aria-label="Breadcrumb">
+              <Link href="/explore">Explore</Link>
+              <span>/</span>
+              <Link href={`/leagues/${league.slug}`}>{league.name}</Link>
+              <span>/</span>
+              <strong>{team.name}</strong>
+            </nav>
 
-          <div className="spectator-pill">👥 Team Profile</div>
-        </div>
-
-        <div className="public-wow-hero-main">
-          <div>
-            <h2>{team.name}</h2>
-            <p>
-              Public team profile for {league.name}. View roster, match record,
-              results, and player links in one place.
-            </p>
-          </div>
-
-          <div className="public-wow-stats">
-            <div>
-              <span>Players</span>
-              <strong>{team.players?.length || 0}</strong>
-            </div>
-
-            <div>
-              <span>Matches</span>
-              <strong>{teamMatches.length}</strong>
-            </div>
-
-            <div>
-              <span>Wins</span>
-              <strong>{wins}</strong>
-            </div>
-
-            <div>
-              <span>Losses</span>
-              <strong>{losses}</strong>
-            </div>
-          </div>
-        </div>
-
-        <div className="public-wow-controls team-profile-actions">
-          <Link href={`/leagues/${league.slug}`}>🏆 Back to League</Link>
-          <Link href="/explore">🧭 Explore Leagues</Link>
-        </div>
-
-        <div className="public-tab-content">
-          <div className="public-section-head">
-            <h2>Team Summary</h2>
-          </div>
-
-          <div className="public-card-grid">
-            <div className="public-card">
-              <span>Players</span>
-              <strong>{team.players?.length || 0}</strong>
-              <small>Registered roster</small>
-            </div>
-
-            <div className="public-card">
-              <span>Matches</span>
-              <strong>{teamMatches.length}</strong>
-              <small>Total fixtures</small>
-            </div>
-
-            <div className="public-card">
-              <span>Wins</span>
-              <strong>{wins}</strong>
-              <small>Completed matches</small>
-            </div>
-
-            <div className="public-card">
-              <span>Losses</span>
-              <strong>{losses}</strong>
-              <small>Completed matches</small>
-            </div>
-          </div>
-
-          <div className="public-section-head team-roster-head">
-            <h2>Players</h2>
-            <span className="team-roster-count">
-              {team.players?.length || 0} players
+            <span className="stp-public-label">
+              <span aria-hidden="true" />
+              Public team
             </span>
           </div>
 
-          {team.players?.length ? (
-            <div className="public-card-grid team-player-grid">
-              {team.players.map((player) => (
-                <Link
-                  key={player.id}
-                  href={`/leagues/${league.slug}/players/${player.id}`}
-                  className="public-card public-card-link team-player-card"
-                >
-                  <span>Player</span>
-                  <strong>{player.name}</strong>
-                  <small>View player profile →</small>
-                </Link>
-              ))}
+          <div className="stp-hero-main">
+            <div className="stp-team-identity">
+              <span className="stp-team-mark" aria-hidden="true">
+                {getInitials(team.name)}
+              </span>
+
+              <div>
+                <p className="stp-kicker">Cric4All Team Profile</p>
+                <h1>{team.name}</h1>
+                <p className="stp-subtitle">
+                  Competing in <strong>{league.name}</strong>
+                </p>
+              </div>
             </div>
-          ) : (
-            <div className="public-empty-state">
-              <strong>👥 No players yet</strong>
-              <span>Players will appear here once they are added.</span>
+
+            <div className="stp-actions">
+              <Link href={`/leagues/${league.slug}`}>Back to league</Link>
+              <Link className="stp-primary-action" href="/explore">
+                Explore leagues
+              </Link>
             </div>
-          )}
+          </div>
+
+          <div className="stp-record-line">
+            <span><b>{playerCount}</b> Players</span>
+            <span><b>{teamMatches.length}</b> Matches</span>
+            <span><b>{wins}</b> Wins</span>
+            <span><b>{losses}</b> Losses</span>
+            <span>
+              <b>{completedMatches.length ? `${winRate}%` : "—"}</b> Win rate
+            </span>
+          </div>
+        </header>
+
+        <div className="stp-content">
+          <section className="stp-summary">
+            <div className="stp-section-heading">
+              <div>
+                <p>Team record</p>
+                <h2>Season overview</h2>
+              </div>
+
+              <span>
+                {completedMatches.length
+                  ? `${wins} wins from ${completedMatches.length} completed matches`
+                  : "No completed matches yet"}
+              </span>
+            </div>
+
+            <div className="stp-summary-list">
+              <div>
+                <span>Squad size</span>
+                <strong>{playerCount}</strong>
+                <small>Registered players</small>
+              </div>
+
+              <div>
+                <span>Total fixtures</span>
+                <strong>{teamMatches.length}</strong>
+                <small>League matches involving this team</small>
+              </div>
+
+              <div>
+                <span>Wins</span>
+                <strong>{wins}</strong>
+                <small>Completed matches won</small>
+              </div>
+
+              <div>
+                <span>Losses</span>
+                <strong>{losses}</strong>
+                <small>Completed matches lost</small>
+              </div>
+
+              <div>
+                <span>Win rate</span>
+                <strong>{completedMatches.length ? `${winRate}%` : "—"}</strong>
+                <small>Based on completed matches</small>
+              </div>
+            </div>
+          </section>
+
+          <section className="stp-roster">
+            <div className="stp-section-heading">
+              <div>
+                <p>Team directory</p>
+                <h2>Squad</h2>
+              </div>
+
+              <span>
+                {playerCount} {playerCount === 1 ? "player" : "players"}
+              </span>
+            </div>
+
+            {playerCount ? (
+              <div className="stp-player-list">
+                {team.players.map((player, index) => (
+                  <Link
+                    key={player.id}
+                    href={`/leagues/${league.slug}/players/${player.id}`}
+                    className="stp-player-row"
+                  >
+                    <span className="stp-player-number" aria-hidden="true">
+                      {String(index + 1).padStart(2, "0")}
+                    </span>
+
+                    <span className="stp-player-avatar" aria-hidden="true">
+                      {getInitials(player.name)}
+                    </span>
+
+                    <span className="stp-player-copy">
+                      <small>Player</small>
+                      <strong>{player.name}</strong>
+                    </span>
+
+                    <span className="stp-player-action">
+                      View profile
+                      <b aria-hidden="true">→</b>
+                    </span>
+                  </Link>
+                ))}
+              </div>
+            ) : (
+              <div className="stp-empty">
+                <span aria-hidden="true">—</span>
+                <div>
+                  <strong>No players yet</strong>
+                  <p>Players will appear here once they are added.</p>
+                </div>
+              </div>
+            )}
+          </section>
+
+          <footer className="stp-footer-note">
+            This public team profile updates automatically from the league roster
+            and match records.
+          </footer>
         </div>
       </section>
     </main>
