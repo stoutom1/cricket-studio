@@ -1,6 +1,6 @@
 "use client";
 
-import { useMemo, useState } from "react";
+import { useEffect, useMemo, useRef, useState } from "react";
 import "@/app/public-league-wow.css";
 
 function normalizeStatus(status) {
@@ -698,55 +698,17 @@ function OverviewSection({
   leagueSlug,
   openTab,
 }) {
-  const featuredMatch =
-    liveMatches[0] || scheduledMatches[0] || completedMatches[0] || null;
+  const fallbackMatch =
+    scheduledMatches[0] || completedMatches[0] || null;
 
   return (
     <section className="slp-overview">
-      {featuredMatch ? (
-        <article className={`slp-feature-match ${liveMatches[0] ? "is-live" : ""}`}>
-          <div className="slp-feature-label">
-            {liveMatches[0] ? (
-              <>
-                <span aria-hidden="true" />
-                Live now
-              </>
-            ) : scheduledMatches[0] === featuredMatch ? (
-              "Next match"
-            ) : (
-              "Latest result"
-            )}
-          </div>
-
-          <div className="slp-feature-main">
-            <div>
-              <p>{featuredMatch.series?.name || "League match"}</p>
-              <h2>{formatMatchTitle(featuredMatch)}</h2>
-              <span>
-                {featuredMatch.statusText ||
-                  formatStatusLabel(featuredMatch.status)}
-              </span>
-            </div>
-
-            {featuredMatch.shareCode ? (
-              <a href={`/leagues/${leagueSlug}/matches/${featuredMatch.id}`}>
-                Open match center
-                <Icon name="arrowRight" />
-              </a>
-            ) : (
-              <button type="button" onClick={() => openTab("matches")}>
-                View matches
-                <Icon name="arrowRight" />
-              </button>
-            )}
-          </div>
-        </article>
-      ) : (
-        <EmptyState
-          title="No matches yet"
-          message="Fixtures will appear here when they are created."
-        />
-      )}
+      <LiveMatchRail
+        liveMatches={liveMatches}
+        fallbackMatch={fallbackMatch}
+        leagueSlug={leagueSlug}
+        openTab={openTab}
+      />
 
       <div className="slp-overview-layout">
         <section className="slp-overview-block">
@@ -837,6 +799,239 @@ function OverviewSection({
           )}
         </section>
       </div>
+    </section>
+  );
+}
+
+function LiveMatchRail({
+  liveMatches,
+  fallbackMatch,
+  leagueSlug,
+  openTab,
+}) {
+  const railRef = useRef(null);
+  const [activeIndex, setActiveIndex] = useState(0);
+  const [isPaused, setIsPaused] = useState(false);
+
+  const matches = liveMatches.length
+    ? liveMatches
+    : fallbackMatch
+      ? [fallbackMatch]
+      : [];
+
+  const hasMultipleLiveMatches = liveMatches.length > 1;
+  const isShowingLiveMatches = liveMatches.length > 0;
+
+  function scrollToMatch(index) {
+    const rail = railRef.current;
+    if (!rail || !matches.length) return;
+
+    const normalizedIndex =
+      (index + matches.length) % matches.length;
+    const card = rail.children[normalizedIndex];
+
+    if (!card) return;
+
+    rail.scrollTo({
+      left: card.offsetLeft - rail.offsetLeft,
+      behavior: "smooth",
+    });
+
+    setActiveIndex(normalizedIndex);
+  }
+
+  function handleRailScroll() {
+    const rail = railRef.current;
+    if (!rail || !matches.length) return;
+
+    const cards = Array.from(rail.children);
+    const nearestIndex = cards.reduce(
+      (bestIndex, card, index) => {
+        const bestCard = cards[bestIndex];
+        const cardDistance = Math.abs(card.offsetLeft - rail.scrollLeft);
+        const bestDistance = Math.abs(
+          bestCard.offsetLeft - rail.scrollLeft
+        );
+
+        return cardDistance < bestDistance ? index : bestIndex;
+      },
+      0
+    );
+
+    setActiveIndex(nearestIndex);
+  }
+
+  useEffect(() => {
+    if (!hasMultipleLiveMatches || isPaused) return undefined;
+
+    const timer = window.setInterval(() => {
+      setActiveIndex((currentIndex) => {
+        const nextIndex = (currentIndex + 1) % matches.length;
+
+        window.requestAnimationFrame(() => {
+          const rail = railRef.current;
+          const card = rail?.children?.[nextIndex];
+
+          if (rail && card) {
+            rail.scrollTo({
+              left: card.offsetLeft - rail.offsetLeft,
+              behavior: "smooth",
+            });
+          }
+        });
+
+        return nextIndex;
+      });
+    }, 7000);
+
+    return () => window.clearInterval(timer);
+  }, [hasMultipleLiveMatches, isPaused, matches.length]);
+
+  if (!matches.length) {
+    return (
+      <EmptyState
+        title="No matches yet"
+        message="Fixtures will appear here when they are created."
+      />
+    );
+  }
+
+  return (
+    <section
+      className="slp-live-rail-section"
+      aria-label={
+        isShowingLiveMatches ? "Live matches" : "Featured match"
+      }
+      onMouseEnter={() => setIsPaused(true)}
+      onMouseLeave={() => setIsPaused(false)}
+      onFocusCapture={() => setIsPaused(true)}
+      onBlurCapture={() => setIsPaused(false)}
+    >
+      <div className="slp-live-rail-head">
+        <div>
+          <p>
+            {isShowingLiveMatches
+              ? "Live cricket"
+              : normalizeStatus(matches[0]?.status) === "SCHEDULED"
+                ? "Next fixture"
+                : "Latest result"}
+          </p>
+          <h2>
+            {isShowingLiveMatches
+              ? `${liveMatches.length} ${
+                  liveMatches.length === 1 ? "match" : "matches"
+                } live now`
+              : "Featured match"}
+          </h2>
+        </div>
+
+        <div className="slp-live-rail-tools">
+          {hasMultipleLiveMatches && (
+            <>
+              <span>
+                {activeIndex + 1} / {matches.length}
+              </span>
+
+              <button
+                type="button"
+                onClick={() => scrollToMatch(activeIndex - 1)}
+                aria-label="Previous live match"
+              >
+                ←
+              </button>
+
+              <button
+                type="button"
+                onClick={() => scrollToMatch(activeIndex + 1)}
+                aria-label="Next live match"
+              >
+                →
+              </button>
+            </>
+          )}
+
+          <button
+            type="button"
+            className="slp-view-all-live"
+            onClick={() => openTab("matches")}
+          >
+            View all
+          </button>
+        </div>
+      </div>
+
+      <div
+        ref={railRef}
+        className="slp-live-rail"
+        onScroll={handleRailScroll}
+      >
+        {matches.map((match, index) => {
+          const isLive = ["LIVE", "IN_PROGRESS"].includes(
+            normalizeStatus(match.status)
+          );
+
+          return (
+            <article
+              key={match.id}
+              className={`slp-live-card ${
+                isLive ? "is-live" : ""
+              }`}
+              aria-current={activeIndex === index ? "true" : undefined}
+            >
+              <div className="slp-live-card-status">
+                {isLive && <span aria-hidden="true" />}
+                {isLive
+                  ? "Live now"
+                  : normalizeStatus(match.status) === "SCHEDULED"
+                    ? "Upcoming"
+                    : "Latest result"}
+              </div>
+
+              <div className="slp-live-card-copy">
+                <small>{match.series?.name || "League match"}</small>
+                <h3>{formatMatchTitle(match)}</h3>
+                <p>
+                  {match.statusText ||
+                    formatStatusLabel(match.status)}
+                </p>
+              </div>
+
+              {match.shareCode ? (
+                <a href={`/leagues/${leagueSlug}/matches/${match.id}`}>
+                  Match center
+                  <Icon name="arrowRight" />
+                </a>
+              ) : (
+                <button
+                  type="button"
+                  onClick={() => openTab("matches")}
+                >
+                  View fixture
+                  <Icon name="arrowRight" />
+                </button>
+              )}
+            </article>
+          );
+        })}
+      </div>
+
+      {hasMultipleLiveMatches && (
+        <div
+          className="slp-live-dots"
+          aria-label="Select live match"
+        >
+          {matches.map((match, index) => (
+            <button
+              key={match.id}
+              type="button"
+              className={activeIndex === index ? "active" : ""}
+              onClick={() => scrollToMatch(index)}
+              aria-label={`Show live match ${index + 1}`}
+              aria-current={activeIndex === index ? "true" : undefined}
+            />
+          ))}
+        </div>
+      )}
     </section>
   );
 }
