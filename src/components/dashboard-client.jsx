@@ -17568,7 +17568,6 @@ onChange={(e) => {
       </select>
     </label>
 
-    {/* Extras */}
     <label>
       <span>Extras</span>
 
