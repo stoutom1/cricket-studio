@@ -10897,10 +10897,10 @@ const playerRoleBadge = (row) => {
               key={match.id}
               className="completed-scorecard-card"
             >
-              {/* ============================================
+              {/* =========
                   DESKTOP / LAPTOP
                   Existing layout retained
-              ============================================= */}
+              ============= */}
               <div className="matches-desktop-only">
                 <div className="completed-desktop-card">
                   <div className="completed-scorecard-top">
