@@ -346,7 +346,7 @@ return (
           <div className="slp-hero-main">
             <div className="slp-league-copy">
               <p className="slp-kicker">Cric4All Competition</p>
-              <h1>{league.name}</h1>
+              <h2>{league.name}</h2>
               <p>
                 Scores, fixtures, standings and player performances—built for
                 spectators who want the cricket first.

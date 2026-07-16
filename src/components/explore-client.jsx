@@ -2,6 +2,19 @@
 
 import { useMemo, useState } from "react";
 import Link from "next/link";
+import "@/app/public-league-wow.css";
+
+function getInitials(name) {
+  return (
+    String(name || "League")
+      .trim()
+      .split(/\s+/)
+      .filter(Boolean)
+      .slice(0, 2)
+      .map((part) => part[0]?.toUpperCase())
+      .join("") || "LG"
+  );
+}
 
 export default function ExploreClient({ leagues }) {
   const [query, setQuery] = useState("");
@@ -42,114 +55,158 @@ export default function ExploreClient({ leagues }) {
   );
 
   return (
-    <main className="public-league-portal public-wow-page">
-      <section className="public-wow-hero public-one-piece-card">
-        <div className="public-wow-top">
-          <div className="public-breadcrumb">
+    <main className="sep-page">
+      <section className="sep-shell">
+        <header className="sep-hero">
+          <div className="sep-topline">
             <strong>Explore</strong>
+
+            <span className="sep-public-label">
+              <span aria-hidden="true" />
+              Public leagues
+            </span>
           </div>
 
-          <div className="spectator-pill">🌐 Public Leagues</div>
-        </div>
-
-        <div className="public-wow-hero-main">
-          <div>
-            <h2>Explore Cricket Leagues</h2>
-            <p>
-              Discover public cricket leagues, live matches, teams, series,
-              standings, and scoreboards powered by Cric4All.
-            </p>
-          </div>
-
-          <div className="public-wow-stats">
-            <div>
-              <span>Leagues</span>
-              <strong>{leagues.length}</strong>
+          <div className="sep-hero-main">
+            <div className="sep-copy">
+              <p className="sep-kicker">Cric4All Discovery</p>
+              <h2>Explore cricket leagues</h2>
+              <p>
+                Discover public competitions, teams, fixtures, standings and
+                live scoreboards across Cric4All.
+              </p>
             </div>
 
-            <div>
-              <span>Teams</span>
-              <strong>{totalTeams}</strong>
-            </div>
-
-            <div>
-              <span>Matches</span>
-              <strong>{totalMatches}</strong>
-            </div>
-
-            <div>
-              <span>Series</span>
-              <strong>{totalSeries}</strong>
+            <div className="sep-summary" aria-label="Public league totals">
+              <span><b>{leagues.length}</b> Leagues</span>
+              <span><b>{totalTeams}</b> Teams</span>
+              <span><b>{totalMatches}</b> Matches</span>
+              <span><b>{totalSeries}</b> Series</span>
             </div>
           </div>
-        </div>
+        </header>
 
-        <div className="public-wow-search">
-          <span>🔎 Search</span>
+        <section className="sep-toolbar">
+          <div className="sep-search">
+            <svg
+              viewBox="0 0 24 24"
+              fill="none"
+              stroke="currentColor"
+              strokeWidth="1.8"
+              strokeLinecap="round"
+              strokeLinejoin="round"
+              aria-hidden="true"
+            >
+              <circle cx="11" cy="11" r="7" />
+              <path d="m20 20-4-4" />
+            </svg>
 
-          <input
-            value={query}
-            onChange={(e) => setQuery(e.target.value)}
-            placeholder="Search league, team, series..."
-          />
+            <input
+              value={query}
+              onChange={(e) => setQuery(e.target.value)}
+              placeholder="Search league, team or series"
+              aria-label="Search public leagues"
+            />
 
-          {query && (
-            <button type="button" onClick={() => setQuery("")}>
-              Clear
-            </button>
-          )}
-        </div>
+            {query && (
+              <button
+                type="button"
+                onClick={() => setQuery("")}
+                aria-label="Clear search"
+              >
+                Clear
+              </button>
+            )}
+          </div>
 
-        <div className="public-tab-content">
+          <span className="sep-result-count">
+            {filteredLeagues.length}{" "}
+            {filteredLeagues.length === 1 ? "league" : "leagues"}
+          </span>
+        </section>
+
+        <section className="sep-content">
+          <div className="sep-section-heading">
+            <div>
+              <p>Public competitions</p>
+              <h2>League directory</h2>
+            </div>
+
+            <span>
+              Browse active public leagues and open any competition for scores,
+              teams and standings.
+            </span>
+          </div>
+
           {!filteredLeagues.length ? (
-            <div className="public-empty-state">
-              <strong>🔍 No leagues found</strong>
-              <span>Try searching by league, team, or series name.</span>
+            <div className="sep-empty">
+              <span aria-hidden="true">—</span>
+              <div>
+                <strong>No leagues found</strong>
+                <p>Try searching by league, team or series name.</p>
+              </div>
             </div>
           ) : (
-            <div className="explore-league-list">
-              {filteredLeagues.map((league) => (
+            <div className="sep-league-list">
+              {filteredLeagues.map((league, index) => (
                 <Link
                   key={league.id}
                   href={`/leagues/${league.slug}`}
-                  className="explore-league-row"
+                  className="sep-league-row"
                 >
-                  <div className="league-main">
+                  <span className="sep-index" aria-hidden="true">
+                    {String(index + 1).padStart(2, "0")}
+                  </span>
+
+                  <span className="sep-league-mark" aria-hidden="true">
+                    {getInitials(league.name)}
+                  </span>
+
+                  <span className="sep-league-main">
+                    <small>{league.visibility || "PUBLIC"}</small>
                     <strong>{league.name}</strong>
-                    <small>
+                    <em>
                       {league.description || "Public cricket league"}
-                    </small>
-                  </div>
+                    </em>
+                  </span>
 
-                  <div className="league-stat">
-                    <span>Teams</span>
+                  <span className="sep-league-stat">
+                    <small>Teams</small>
                     <strong>{league.teams?.length || 0}</strong>
-                  </div>
+                  </span>
 
-                  <div className="league-stat">
-                    <span>Matches</span>
+                  <span className="sep-league-stat">
+                    <small>Matches</small>
                     <strong>{league.matches?.length || 0}</strong>
-                  </div>
+                  </span>
 
-                  <div className="league-stat">
-                    <span>Series</span>
+                  <span className="sep-league-stat">
+                    <small>Series</small>
                     <strong>{league.series?.length || 0}</strong>
-                  </div>
+                  </span>
 
-<div className="league-follow-cell">
-  {league.isFollowing ? (
-    <span className="following-pill">⭐ Following</span>
-  ) : (
-    <span className="follow-muted-pill">☆ Not following</span>
-  )}
-</div>
+                  <span
+                    className={`sep-follow-state ${
+                      league.isFollowing ? "is-following" : ""
+                    }`}
+                  >
+                    <span aria-hidden="true" />
+                    {league.isFollowing ? "Following" : "Not following"}
+                  </span>
 
-                  <div className="league-arrow">→</div>
+                  <span className="sep-open-action">
+                    Open league
+                    <b aria-hidden="true">→</b>
+                  </span>
                 </Link>
               ))}
             </div>
           )}
-        </div>
+        </section>
+
+        <footer className="sep-footer-note">
+          Public leagues shown here are available for spectator viewing.
+        </footer>
       </section>
     </main>
   );

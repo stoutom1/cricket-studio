@@ -256,7 +256,7 @@ export default async function PublicPlayerPage({ params }) {
 
               <div>
                 <p className="spp-kicker">Cric4All Player Profile</p>
-                <h1>{player.name}</h1>
+                <h2>{player.name}</h2>
                 <p className="spp-subtitle">
                   <strong>{player.teamName}</strong> · {league.name}
                 </p>

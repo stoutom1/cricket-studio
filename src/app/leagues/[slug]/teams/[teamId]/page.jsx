@@ -141,7 +141,7 @@ export default async function PublicTeamPage({ params }) {
 
               <div>
                 <p className="stp-kicker">Cric4All Team Profile</p>
-                <h1>{team.name}</h1>
+                <h2>{team.name}</h2>
                 <p className="stp-subtitle">
                   Competing in <strong>{league.name}</strong>
                 </p>
