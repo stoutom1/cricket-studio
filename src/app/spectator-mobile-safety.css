@@ -1,31 +1,38 @@
 /*
-  Cric4All Spectator Mobile Safety Overrides
-  Import this stylesheet AFTER all spectator page styles.
+  Cric4All Mobile Spectator Recovery
+  Import this file LAST, after every other stylesheet.
 
-  Scope:
-  - League: .slp-*
-  - Match: .smp-*
-  - Team: .stp-*
-  - Player: .spp-*
-  - Explore: .sep-*
-  - Live score: .live-*
-
-  This file is presentation-only. It does not change React behavior,
-  links, filtering, polling, accordions, score calculations, or API calls.
+  Desktop/laptop is intentionally untouched.
+  All rules apply only at 768px and below.
 */
 
-/* =========================================================
-   GLOBAL MOBILE CONTAINMENT
-========================================================= */
+@media (max-width: 768px) {
+  :root {
+    --mobile-page-pad: 16px;
+    --mobile-card-radius: 16px;
+    --mobile-touch: 46px;
+    --mobile-title: clamp(30px, 10vw, 42px);
+    --mobile-section-title: 24px;
+    --mobile-body: 15px;
+    --mobile-small: 12px;
+  }
 
-@media (max-width: 820px) {
+  /* ---------- Global mobile reset ---------- */
+
   .slp-page,
   .smp-page,
   .stp-page,
   .spp-page,
-  .sep-page,
+  .sep-page {
+    min-height: 100vh;
+    padding: 18px var(--mobile-page-pad) 56px !important;
+    overflow-x: hidden;
+  }
+
   .live-page-shell {
-    overflow-x: clip;
+    width: calc(100% - 20px) !important;
+    padding: 14px 0 56px !important;
+    overflow-x: hidden;
   }
 
   .slp-shell,
@@ -34,23 +41,18 @@
   .spp-shell,
   .sep-shell,
   .live-page-shell {
-    min-width: 0;
-    max-width: 100%;
+    width: 100% !important;
+    max-width: 100% !important;
+    min-width: 0 !important;
   }
 
-  .slp-page img,
-  .smp-page img,
-  .stp-page img,
-  .spp-page img,
-  .sep-page img,
-  .live-page-shell img,
-  .slp-page svg,
-  .smp-page svg,
-  .stp-page svg,
-  .spp-page svg,
-  .sep-page svg,
-  .live-page-shell svg {
-    max-width: 100%;
+  .slp-page *,
+  .smp-page *,
+  .stp-page *,
+  .spp-page *,
+  .sep-page *,
+  .live-page-shell * {
+    min-width: 0;
   }
 
   .slp-page button,
@@ -70,554 +72,1098 @@
 
   .slp-page input,
   .slp-page select,
-  .smp-page input,
-  .smp-page select,
-  .stp-page input,
-  .stp-page select,
-  .spp-page input,
-  .spp-page select,
   .sep-page input,
-  .sep-page select,
-  .live-page-shell input,
-  .live-page-shell select {
+  .sep-page select {
+    font-size: 16px !important;
+  }
+
+  /* =====================================================
+     LEAGUE PAGE
+  ===================================================== */
+
+  .slp-hero {
+    padding: 10px 0 22px !important;
+  }
+
+  .slp-topline {
+    display: flex !important;
+    align-items: center !important;
+    justify-content: space-between !important;
+    flex-direction: row !important;
+    gap: 10px !important;
+  }
+
+  .slp-breadcrumb {
+    max-width: 66%;
+    overflow: hidden;
+    font-size: 11px !important;
+  }
+
+  .slp-public-label {
+    order: initial !important;
+    font-size: 9px !important;
+    white-space: nowrap;
+  }
+
+  .slp-hero-main {
+    display: block !important;
+    padding-top: 26px !important;
+  }
+
+  .slp-league-copy {
     max-width: 100%;
-    font-size: 16px;
-  }
-}
-
-/* =========================================================
-   LEAGUE PAGE
-========================================================= */
-
-@media (max-width: 820px) {
-  .slp-topline,
-  .slp-hero-main,
-  .slp-utility-bar,
-  .slp-section-heading,
-  .slp-feature-main,
-  .slp-live-rail-head {
-    min-width: 0;
   }
 
-  .slp-league-copy,
-  .slp-league-copy h1,
-  .slp-league-copy p,
-  .slp-feature-main > div,
-  .slp-section-heading > div,
-  .slp-block-heading > div {
-    min-width: 0;
+  .slp-kicker {
+    margin-bottom: 8px !important;
+    font-size: 10px !important;
+  }
+
+  .slp-league-copy h1 {
     max-width: 100%;
-  }
-
-  .slp-league-copy h1,
-  .slp-feature-main h2,
-  .slp-section-heading h1,
-  .slp-block-heading h2 {
+    font-size: var(--mobile-title) !important;
+    line-height: 1.03 !important;
+    letter-spacing: -0.045em !important;
     overflow-wrap: anywhere;
   }
 
-  .slp-tabs {
-    position: sticky;
-    top: 0;
-    z-index: 30;
-    max-width: 100%;
-    overflow-x: auto;
-    overscroll-behavior-inline: contain;
-    scroll-snap-type: x proximity;
-    -webkit-overflow-scrolling: touch;
+  .slp-league-copy > p:not(.slp-kicker) {
+    margin-top: 13px !important;
+    font-size: 15px !important;
+    line-height: 1.55 !important;
   }
 
-  .slp-tabs button {
-    flex: 0 0 auto;
-    min-height: 42px;
-    scroll-snap-align: start;
+  .slp-league-facts {
+    display: grid !important;
+    grid-template-columns: repeat(4, 1fr);
+    gap: 0 !important;
+    margin-top: 20px !important;
+    padding: 13px 0;
+    border-top: 1px solid var(--slp-line);
+    border-bottom: 1px solid var(--slp-line);
   }
 
-  .slp-search-wrap,
-  .slp-search,
-  .slp-search-results {
-    min-width: 0;
-    max-width: 100%;
+  .slp-league-facts span {
+    text-align: center;
+    font-size: 10px !important;
   }
 
-  .slp-search-results {
-    right: 0;
-    left: auto;
-    width: min(520px, calc(100vw - 26px));
+  .slp-league-facts span + span::before {
+    display: none !important;
   }
 
-  .slp-live-rail {
-    max-width: 100%;
-    -webkit-overflow-scrolling: touch;
-  }
-
-  .slp-live-card {
-    min-width: 0;
-  }
-
-  .slp-table-wrap {
-    width: 100%;
-    max-width: 100%;
-    overflow-x: auto;
-    overscroll-behavior-inline: contain;
-    -webkit-overflow-scrolling: touch;
-  }
-}
-
-@media (max-width: 620px) {
-  .slp-page {
-    padding-right: 12px;
-    padding-left: 12px;
+  .slp-league-facts b {
+    display: block;
+    margin: 0 0 3px !important;
+    color: white;
+    font-size: 18px;
   }
 
   .slp-actions {
+    display: grid !important;
+    grid-template-columns: 1fr 1fr;
+    gap: 9px !important;
     width: 100%;
+    margin-top: 18px;
   }
 
   .slp-actions > * {
-    min-height: 42px;
+    min-height: var(--mobile-touch) !important;
+    padding: 10px 12px !important;
+    border-radius: 10px !important;
+    font-size: 13px !important;
+  }
+
+  .slp-actions .slp-follow {
+    grid-column: 1 / -1;
+    min-height: 50px !important;
+    font-size: 14px !important;
+  }
+
+  .slp-utility-bar {
+    display: grid !important;
+    grid-template-columns: 1fr 1fr;
+    gap: 10px !important;
+    padding: 14px 0 !important;
   }
 
   .slp-filters {
-    width: 100%;
+    display: contents !important;
   }
 
   .slp-filters label,
   .slp-filters label:nth-child(2) {
-    min-width: 0;
-    max-width: 100%;
+    width: 100% !important;
+    min-width: 0 !important;
+    height: 48px !important;
+    padding: 6px 10px !important;
+    border-radius: 10px !important;
   }
 
-  .slp-live-card-copy h3,
-  .slp-match-copy strong,
-  .slp-team-row strong,
-  .slp-leader-row strong {
-    white-space: normal;
-    overflow-wrap: anywhere;
-  }
-}
-
-/* =========================================================
-   MATCH PAGE
-========================================================= */
-
-@media (max-width: 820px) {
-  .smp-team,
-  .smp-team > div,
-  .smp-content,
-  .smp-main-column,
-  .smp-side-column,
-  .smp-scorecard-panel,
-  .smp-overview-list {
-    min-width: 0;
+  .slp-filters label > span {
+    font-size: 8px !important;
   }
 
-  .smp-team h1,
-  .smp-result-line p,
-  .smp-story h2,
-  .smp-scorecard-panel h2,
-  .smp-info-list strong {
-    overflow-wrap: anywhere;
+  .slp-search-wrap {
+    grid-column: 1 / -1;
+    width: 100% !important;
   }
 
-  .smp-actions {
-    flex-wrap: wrap;
+  .slp-search {
+    min-height: 48px !important;
+    border-radius: 10px !important;
   }
 
-  .smp-actions > * {
-    min-height: 42px;
+  .slp-search input {
+    font-size: 16px !important;
   }
 
-  .smp-score-band {
-    max-width: 100%;
+  .slp-search-results {
+    position: fixed !important;
+    top: auto !important;
+    right: 12px !important;
+    bottom: 12px !important;
+    left: 12px !important;
+    width: auto !important;
+    max-height: 62vh !important;
+    border-radius: 16px !important;
   }
 
-  .smp-score-band strong {
-    white-space: normal;
-    overflow-wrap: anywhere;
-  }
-}
-
-@media (max-width: 520px) {
-  .smp-team {
-    align-items: flex-start;
-  }
-
-  .smp-team-b {
-    align-items: flex-end;
-  }
-
-  .smp-team h1 {
-    line-height: 1.05;
+  .slp-tabs {
+    position: sticky !important;
+    top: 0;
+    z-index: 40;
+    display: flex !important;
+    gap: 8px !important;
+    margin: 0 calc(var(--mobile-page-pad) * -1) !important;
+    padding: 10px var(--mobile-page-pad) !important;
+    overflow-x: auto;
+    border-bottom: 1px solid var(--slp-line);
+    background: rgba(7, 16, 29, 0.97) !important;
+    backdrop-filter: blur(14px);
+    scrollbar-width: none;
   }
 
-  .smp-actions {
-    width: 100%;
+  .slp-tabs::-webkit-scrollbar {
+    display: none;
   }
 
-  .smp-actions > * {
-    flex: 1 1 100%;
-  }
-}
-
-/* =========================================================
-   TEAM PAGE
-========================================================= */
-
-@media (max-width: 820px) {
-  .stp-team-identity,
-  .stp-team-identity > div,
-  .stp-section-heading,
-  .stp-summary-list,
-  .stp-player-list,
-  .stp-player-row,
-  .stp-player-copy {
-    min-width: 0;
-  }
-
-  .stp-team-identity h1,
-  .stp-section-heading h2,
-  .stp-summary-list strong,
-  .stp-player-copy strong {
-    overflow-wrap: anywhere;
-  }
-
-  .stp-actions > * {
-    min-height: 42px;
-  }
-}
-
-@media (max-width: 680px) {
-  .stp-player-list {
-    width: 100%;
-  }
-
-  .stp-player-row {
-    width: 100%;
-  }
-
-  .stp-player-action {
+  .slp-tabs button {
+    flex: 0 0 auto !important;
+    min-width: auto !important;
+    min-height: 42px !important;
+    padding: 10px 16px !important;
+    border-radius: 999px !important;
+    font-size: 12px !important;
     white-space: nowrap;
   }
-}
 
-/* =========================================================
-   PLAYER PAGE
-========================================================= */
-
-@media (max-width: 820px) {
-  .spp-player-identity,
-  .spp-player-identity > div,
-  .spp-profile-grid,
-  .spp-main-column,
-  .spp-side-column,
-  .spp-discipline,
-  .spp-match-copy,
-  .spp-section-heading {
-    min-width: 0;
+  .slp-content {
+    padding-top: 26px !important;
   }
 
-  .spp-player-identity h1,
-  .spp-section-heading h2,
-  .spp-discipline-heading h3,
-  .spp-player-summary h2,
-  .spp-match-title-line strong {
-    overflow-wrap: anywhere;
+  .slp-live-rail-head {
+    align-items: center !important;
+    flex-direction: row !important;
+    gap: 10px !important;
   }
 
-  .spp-actions > * {
+  .slp-live-rail-head h2 {
+    font-size: 21px !important;
+  }
+
+  .slp-live-rail-tools {
+    width: auto !important;
+  }
+
+  .slp-live-rail-tools > span,
+  .slp-live-rail-tools button:not(.slp-view-all-live) {
+    display: none !important;
+  }
+
+  .slp-live-rail-tools .slp-view-all-live {
+    min-height: 38px;
+    padding: 0 13px !important;
+    border-radius: 9px !important;
+    font-size: 11px !important;
+  }
+
+  .slp-live-rail {
+    grid-auto-columns: 88% !important;
+    gap: 10px !important;
+    padding-bottom: 4px;
+    scroll-padding-left: 0;
+  }
+
+  .slp-live-card {
+    min-height: 168px !important;
+    display: grid !important;
+    grid-template-columns: 1fr !important;
+    gap: 12px !important;
+    padding: 17px !important;
+    border-radius: 14px !important;
+  }
+
+  .slp-live-card-copy h3 {
+    font-size: 23px !important;
+    white-space: normal !important;
+  }
+
+  .slp-live-card-copy p {
+    font-size: 12px !important;
+  }
+
+  .slp-live-card > a,
+  .slp-live-card > button {
     min-height: 42px;
-  }
-}
-
-@media (max-width: 680px) {
-  .spp-match-title-line strong {
-    white-space: normal;
+    justify-self: stretch !important;
+    justify-content: center;
+    font-size: 11px !important;
   }
 
-  .spp-match-row > a {
-    min-height: 36px;
-    align-items: center;
-  }
-}
-
-/* =========================================================
-   EXPLORE PAGE
-========================================================= */
-
-@media (max-width: 820px) {
-  .sep-copy,
-  .sep-copy h1,
-  .sep-copy p,
-  .sep-toolbar,
-  .sep-search,
-  .sep-content,
-  .sep-section-heading,
-  .sep-league-row,
-  .sep-league-main {
-    min-width: 0;
+  .slp-overview-layout {
+    grid-template-columns: 1fr !important;
+    gap: 32px !important;
+    margin-top: 30px !important;
   }
 
-  .sep-copy h1,
-  .sep-section-heading h2,
-  .sep-league-main strong,
-  .sep-league-main em {
-    overflow-wrap: anywhere;
+  .slp-block-heading h2 {
+    font-size: var(--mobile-section-title) !important;
+  }
+
+  .slp-numbers button {
+    grid-template-columns: minmax(90px, .7fr) auto !important;
+    gap: 12px !important;
+    min-height: 66px;
+    padding: 14px 2px !important;
+  }
+
+  .slp-numbers span {
+    font-size: 10px !important;
+  }
+
+  .slp-numbers strong {
+    font-size: 24px !important;
+  }
+
+  .slp-numbers small {
+    grid-column: 1 / -1;
+    font-size: 12px !important;
+  }
+
+  .slp-performers button {
+    min-height: 72px;
+    padding: 14px 2px !important;
+  }
+
+  .slp-performers strong {
+    font-size: 15px !important;
+  }
+
+  .slp-performers small,
+  .slp-performers em {
+    font-size: 11px !important;
+  }
+
+  /* =====================================================
+     EXPLORE PAGE
+  ===================================================== */
+
+  .sep-hero {
+    padding: 10px 0 22px !important;
+  }
+
+  .sep-topline {
+    flex-direction: row !important;
+    align-items: center !important;
+  }
+
+  .sep-public-label {
+    order: initial !important;
+  }
+
+  .sep-hero-main {
+    display: block !important;
+    padding-top: 28px !important;
+  }
+
+  .sep-copy h1 {
+    font-size: var(--mobile-title) !important;
+    line-height: 1.03 !important;
+  }
+
+  .sep-copy > p:not(.sep-kicker) {
+    font-size: 15px !important;
+    line-height: 1.55 !important;
+  }
+
+  .sep-summary {
+    display: grid !important;
+    grid-template-columns: repeat(4, 1fr);
+    gap: 0 !important;
+    margin-top: 20px;
+    padding: 13px 0;
+    border-top: 1px solid var(--sep-line);
+    border-bottom: 1px solid var(--sep-line);
+  }
+
+  .sep-summary span {
+    text-align: center;
+    font-size: 10px !important;
+  }
+
+  .sep-summary span + span::before {
+    display: none !important;
+  }
+
+  .sep-summary b {
+    display: block;
+    margin: 0 0 3px !important;
+    color: white;
+    font-size: 18px;
+  }
+
+  .sep-toolbar {
+    align-items: stretch !important;
+    gap: 10px !important;
+    padding: 14px 0 !important;
   }
 
   .sep-search {
-    width: 100%;
+    min-height: 48px !important;
+    border-radius: 10px !important;
+  }
+
+  .sep-result-count {
+    font-size: 11px !important;
+  }
+
+  .sep-content {
+    padding-top: 26px !important;
+  }
+
+  .sep-section-heading {
+    gap: 10px !important;
+  }
+
+  .sep-section-heading h2 {
+    font-size: var(--mobile-section-title) !important;
+  }
+
+  .sep-section-heading > span {
+    font-size: 12px !important;
+    line-height: 1.55;
   }
 
   .sep-league-row {
-    max-width: 100%;
+    display: grid !important;
+    grid-template-columns: auto minmax(0, 1fr) !important;
+    gap: 12px !important;
+    padding: 17px 0 !important;
   }
-}
 
-@media (max-width: 740px) {
-  .sep-league-main strong,
+  .sep-index {
+    display: none !important;
+  }
+
+  .sep-league-mark {
+    width: 46px !important;
+    height: 46px !important;
+    font-size: 12px !important;
+  }
+
+  .sep-league-main strong {
+    font-size: 16px !important;
+    white-space: normal !important;
+  }
+
   .sep-league-main em {
-    white-space: normal;
+    margin-top: 5px !important;
+    font-size: 12px !important;
+    line-height: 1.4;
+    white-space: normal !important;
+  }
+
+  .sep-league-stat {
+    display: none !important;
+  }
+
+  .sep-follow-state {
+    display: inline-flex !important;
+    grid-column: 2;
+    font-size: 11px !important;
   }
 
   .sep-open-action {
-    min-height: 36px;
-  }
-}
-
-/* =========================================================
-   LIVE SCOREBOARD
-========================================================= */
-
-@media (max-width: 820px) {
-  .live-page-shell {
-    width: calc(100% - 20px);
+    grid-column: 2;
+    min-height: 42px;
+    justify-content: center;
+    justify-self: stretch !important;
+    margin-top: 3px;
+    font-size: 11px !important;
   }
 
-  .live-primary-card,
-  .final-match-summary-card,
-  .live-detail-card,
-  .live-innings-card,
-  .live-detail-body,
-  .live-innings-body,
-  .live-table-shell,
-  .live-table-wrap {
-    min-width: 0;
-    max-width: 100%;
+  /* =====================================================
+     TEAM PAGE
+  ===================================================== */
+
+  .stp-hero {
+    padding: 10px 0 22px !important;
   }
 
-  .live-match-title,
-  .live-status-text,
-  .final-match-summary-top h1,
-  .final-match-result strong,
-  .live-detail-header strong,
-  .live-detail-header small,
-  .live-innings-header div strong {
-    overflow-wrap: anywhere;
+  .stp-topline {
+    flex-direction: row !important;
+    align-items: center !important;
+  }
+
+  .stp-public-label {
+    order: initial !important;
+  }
+
+  .stp-hero-main {
+    display: block !important;
+    padding-top: 27px !important;
+  }
+
+  .stp-team-identity {
+    gap: 14px !important;
+  }
+
+  .stp-team-mark {
+    display: grid !important;
+    flex-basis: 54px !important;
+    width: 54px !important;
+    height: 54px !important;
+    font-size: 14px !important;
+  }
+
+  .stp-team-identity h1 {
+    font-size: var(--mobile-title) !important;
+    line-height: 1.02 !important;
+  }
+
+  .stp-subtitle {
+    margin-top: 9px !important;
+    font-size: 14px !important;
+  }
+
+  .stp-actions {
+    display: grid !important;
+    grid-template-columns: 1fr 1fr;
+    gap: 9px !important;
+    width: 100%;
+    margin-top: 20px;
+  }
+
+  .stp-actions > * {
+    min-height: var(--mobile-touch) !important;
+    font-size: 12px !important;
+  }
+
+  .stp-record-line {
+    display: grid !important;
+    grid-template-columns: repeat(5, 1fr);
+    gap: 0 !important;
+    margin-top: 20px !important;
+    padding: 13px 0;
+    border-top: 1px solid var(--stp-line);
+    border-bottom: 1px solid var(--stp-line);
+  }
+
+  .stp-record-line span {
+    text-align: center;
+    font-size: 9px !important;
+  }
+
+  .stp-record-line span + span::before {
+    display: none !important;
+  }
+
+  .stp-record-line b {
+    display: block;
+    margin: 0 0 3px !important;
+    color: white;
+    font-size: 17px;
+  }
+
+  .stp-content {
+    padding-top: 28px !important;
+  }
+
+  .stp-section-heading {
+    gap: 9px !important;
+  }
+
+  .stp-section-heading h2 {
+    font-size: var(--mobile-section-title) !important;
+  }
+
+  .stp-section-heading > span {
+    font-size: 12px !important;
+    line-height: 1.5;
+  }
+
+  .stp-summary-list {
+    display: grid !important;
+    grid-auto-flow: column;
+    grid-auto-columns: 78%;
+    gap: 10px;
+    overflow-x: auto;
+    padding-bottom: 5px;
+    border-top: 0 !important;
+    scroll-snap-type: x mandatory;
+    scrollbar-width: none;
+  }
+
+  .stp-summary-list::-webkit-scrollbar {
+    display: none;
+  }
+
+  .stp-summary-list > div {
+    display: block !important;
+    min-height: 136px;
+    padding: 18px !important;
+    border: 1px solid var(--stp-line) !important;
+    border-radius: 14px;
+    background: #0a1829;
+    scroll-snap-align: start;
+  }
+
+  .stp-summary-list span {
+    font-size: 10px !important;
+  }
+
+  .stp-summary-list strong {
+    display: block;
+    margin-top: 10px;
+    font-size: 34px !important;
+  }
+
+  .stp-summary-list small {
+    display: block;
+    margin-top: 10px;
+    font-size: 12px !important;
+    line-height: 1.45;
+  }
+
+  .stp-roster {
+    margin-top: 34px !important;
+  }
+
+  .stp-player-list {
+    grid-template-columns: 1fr !important;
+  }
+
+  .stp-player-row {
+    grid-template-columns: auto auto minmax(0, 1fr) !important;
+    gap: 12px !important;
+    min-height: 68px;
+    padding: 13px 0 !important;
+    border-right: 0 !important;
+  }
+
+  .stp-player-copy strong {
+    font-size: 15px !important;
+  }
+
+  .stp-player-action {
+    grid-column: 3;
+    justify-self: start;
+    font-size: 11px !important;
+  }
+
+  /* =====================================================
+     MATCH PAGE
+  ===================================================== */
+
+  .smp-hero {
+    padding: 10px 0 22px !important;
+  }
+
+  .smp-topline {
+    flex-direction: row !important;
+    align-items: center !important;
+  }
+
+  .smp-status-label {
+    order: initial !important;
+  }
+
+  .smp-match-stage {
+    padding-top: 28px !important;
+  }
+
+  .smp-teams {
+    gap: 10px !important;
+    margin-top: 18px !important;
+  }
+
+  .smp-team {
+    gap: 9px !important;
+  }
+
+  .smp-team-mark {
+    width: 46px !important;
+    height: 46px !important;
+    flex-basis: 46px !important;
+  }
+
+  .smp-team h1 {
+    font-size: clamp(23px, 8vw, 34px) !important;
+    line-height: 1.02 !important;
+  }
+
+  .smp-versus {
+    width: 38px !important;
+    height: 38px !important;
+  }
+
+  .smp-result-line {
+    margin-top: 20px !important;
+  }
+
+  .smp-result-line p {
+    font-size: 14px !important;
+  }
+
+  .smp-actions {
+    display: grid !important;
+    grid-template-columns: 1fr 1fr;
+    gap: 9px !important;
+    width: 100%;
+  }
+
+  .smp-actions > * {
+    min-height: var(--mobile-touch) !important;
+    font-size: 12px !important;
+  }
+
+  .smp-actions .smp-primary-action {
+    grid-column: 1 / -1;
+  }
+
+  .smp-score-band {
+    grid-template-columns: repeat(2, 1fr) !important;
+  }
+
+  .smp-score-band > div {
+    min-height: 80px;
+    padding: 15px 9px !important;
+  }
+
+  .smp-score-band strong {
+    font-size: 23px !important;
+  }
+
+  .smp-content {
+    gap: 32px !important;
+    padding-top: 28px !important;
+  }
+
+  .smp-section-heading h2 {
+    font-size: var(--mobile-section-title) !important;
+  }
+
+  .smp-overview-list > div {
+    grid-template-columns: 1fr auto !important;
+    gap: 12px !important;
+    min-height: 66px;
+  }
+
+  .smp-overview-list strong {
+    font-size: 17px !important;
+  }
+
+  .smp-overview-list small {
+    grid-column: 1 / -1;
+    font-size: 12px !important;
+  }
+
+  .smp-scorecard-panel {
+    padding: 20px 0 !important;
+  }
+
+  .smp-scorecard-panel h2 {
+    font-size: 24px !important;
+  }
+
+  .smp-scorecard-panel > a {
+    min-height: 46px;
+    width: 100%;
+    justify-content: center;
+  }
+
+  /* =====================================================
+     PLAYER PAGE
+  ===================================================== */
+
+  .spp-hero {
+    padding: 10px 0 22px !important;
+  }
+
+  .spp-topline {
+    flex-direction: row !important;
+    align-items: center !important;
+  }
+
+  .spp-public-label {
+    order: initial !important;
+  }
+
+  .spp-hero-main {
+    display: block !important;
+    padding-top: 27px !important;
+  }
+
+  .spp-player-mark {
+    display: grid !important;
+    flex-basis: 54px !important;
+    width: 54px !important;
+    height: 54px !important;
+  }
+
+  .spp-player-identity h1 {
+    font-size: var(--mobile-title) !important;
+  }
+
+  .spp-actions {
+    display: grid !important;
+    grid-template-columns: 1fr 1fr;
+    gap: 9px !important;
+    width: 100%;
+    margin-top: 20px;
+  }
+
+  .spp-actions > * {
+    min-height: var(--mobile-touch) !important;
+    font-size: 12px !important;
+  }
+
+  .spp-actions .spp-primary-action {
+    grid-column: 1 / -1;
+  }
+
+  .spp-career-line {
+    display: grid !important;
+    grid-template-columns: repeat(5, 1fr);
+    gap: 0 !important;
+    padding: 13px 0;
+    border-top: 1px solid var(--spp-line);
+    border-bottom: 1px solid var(--spp-line);
+  }
+
+  .spp-career-line span {
+    text-align: center;
+    font-size: 9px !important;
+  }
+
+  .spp-career-line span + span::before {
+    display: none !important;
+  }
+
+  .spp-career-line b {
+    display: block;
+    margin: 0 0 3px !important;
+    color: white;
+    font-size: 16px;
+  }
+
+  .spp-content {
+    padding-top: 28px !important;
+  }
+
+  .spp-profile-grid {
+    gap: 32px !important;
+  }
+
+  .spp-section-heading h2 {
+    font-size: var(--mobile-section-title) !important;
+  }
+
+  .spp-discipline-grid {
+    gap: 28px !important;
+  }
+
+  .spp-discipline-heading h3 {
+    font-size: 22px !important;
+  }
+
+  .spp-stat-list > div {
+    grid-template-columns: 1fr auto !important;
+    min-height: 66px;
+  }
+
+  .spp-stat-list strong {
+    font-size: 20px !important;
+  }
+
+  .spp-stat-list small {
+    grid-column: 1 / -1;
+    font-size: 12px !important;
+  }
+
+  .spp-match-row {
+    min-height: 78px;
+  }
+
+  .spp-match-title-line strong {
+    font-size: 15px !important;
+  }
+
+  .spp-performance-line {
+    font-size: 12px !important;
+  }
+
+  /* =====================================================
+     LIVE SCORECARD
+  ===================================================== */
+
+  .live-primary-card {
+    padding: 20px 16px !important;
+    border-radius: 16px !important;
+  }
+
+  .live-primary-topline {
+    align-items: flex-start !important;
+  }
+
+  .live-pill {
+    font-size: 11px !important;
+  }
+
+  .live-refresh-copy {
+    max-width: 44%;
+    font-size: 11px !important;
+    text-align: right;
+  }
+
+  .live-match-title {
+    margin-top: 21px !important;
+    font-size: 19px !important;
+  }
+
+  .live-score-focus {
+    gap: 12px !important;
+    margin-top: 18px !important;
+  }
+
+  .live-batting-team {
+    font-size: 10px !important;
+  }
+
+  .live-main-score {
+    font-size: clamp(66px, 21vw, 92px) !important;
+  }
+
+  .live-over-focus {
+    min-width: 88px !important;
+    padding: 13px 10px !important;
+  }
+
+  .live-over-focus strong {
+    font-size: 28px !important;
+  }
+
+  .live-status-text {
+    margin-top: 17px !important;
+    font-size: 15px !important;
+  }
+
+  .live-key-metrics {
+    grid-template-columns: repeat(2, 1fr) !important;
+    margin-top: 19px !important;
+  }
+
+  .live-info-pill {
+    padding: 14px 12px !important;
+  }
+
+  .live-info-pill strong {
+    font-size: 22px !important;
+  }
+
+  .live-current-grid {
+    grid-template-columns: 1fr !important;
+  }
+
+  .live-player-card {
+    padding: 15px 14px !important;
+  }
+
+  .live-player-card strong {
+    font-size: 19px !important;
+  }
+
+  .live-player-card small {
+    font-size: 13px !important;
+  }
+
+  .live-recent-strip {
+    flex-wrap: nowrap !important;
+    overflow-x: auto;
+    padding-bottom: 5px;
+    scrollbar-width: none;
+  }
+
+  .live-recent-strip::-webkit-scrollbar {
+    display: none;
+  }
+
+  .live-ball {
+    flex: 0 0 auto;
+    min-width: 38px !important;
+    height: 38px !important;
   }
 
   .live-action-bar {
-    max-width: calc(100vw - 24px);
-    overflow-x: auto;
-    overscroll-behavior-inline: contain;
-    -webkit-overflow-scrolling: touch;
+    width: calc(100% - 6px) !important;
+    bottom: max(8px, env(safe-area-inset-bottom)) !important;
   }
 
   .live-action-bar button {
-    flex: 0 0 auto;
-    min-height: 42px;
+    flex: 1 0 auto !important;
+    min-height: 46px !important;
+    justify-content: center;
+    font-size: 11px !important;
+  }
+
+  .live-detail-card {
+    border-radius: 14px !important;
+  }
+
+  .live-detail-header {
+    min-height: 74px !important;
+    padding: 15px 14px !important;
+  }
+
+  .live-detail-header strong {
+    font-size: 18px !important;
+  }
+
+  .live-detail-header small {
+    font-size: 11px !important;
+    line-height: 1.45;
+  }
+
+  .live-detail-header i {
+    width: 38px !important;
+    height: 38px !important;
+    flex-basis: 38px !important;
+  }
+
+  .live-detail-body {
+    padding: 14px !important;
+  }
+
+  .live-innings-header {
+    min-height: 68px !important;
+    padding: 12px !important;
+  }
+
+  .live-innings-header div strong {
+    font-size: 16px !important;
+  }
+
+  .live-innings-header > b {
+    font-size: 20px !important;
+  }
+
+  .live-innings-body {
+    padding: 11px !important;
+  }
+
+  .live-summary-grid {
+    grid-template-columns: repeat(2, 1fr) !important;
+  }
+
+  .live-section-title {
+    min-height: 40px !important;
+    margin-top: 19px !important;
+    font-size: 13px !important;
+  }
+
+  .table-scroll-hint {
+    display: flex !important;
   }
 
   .live-table-wrap {
-    overflow-x: auto;
-    overscroll-behavior-inline: contain;
+    overflow-x: auto !important;
     -webkit-overflow-scrolling: touch;
-  }
-
-  .live-pro-table {
-    width: max-content;
-    max-width: none;
-  }
-
-  .table-type-batting .live-pro-table {
-    min-width: 720px;
-  }
-
-  .table-type-bowling .live-pro-table {
-    min-width: 650px;
-  }
-
-  .table-type-partnerships .live-pro-table,
-  .table-type-wickets .live-pro-table {
-    min-width: 560px;
-  }
-
-  .sticky-first-col-table th:first-child,
-  .sticky-first-col-table td:first-child {
-    position: sticky;
-    left: 0;
-    z-index: 3;
-  }
-
-  .sticky-first-col-table th:first-child {
-    background: #0a1728;
-  }
-
-  .sticky-first-col-table td:first-child {
-    background: #081321;
   }
 
   .live-pro-table th,
   .live-pro-table td {
-    white-space: nowrap;
+    height: 46px !important;
+    padding: 10px 11px !important;
+    font-size: 11px !important;
   }
 
-  .table-type-batting td:nth-child(7) {
-    min-width: 190px;
-    white-space: normal;
+  .live-pro-table th {
+    font-size: 9px !important;
   }
-}
 
-@media (max-width: 560px) {
-  .live-primary-card,
+  .sticky-first-col-table th:first-child,
+  .sticky-first-col-table td:first-child {
+    min-width: 145px;
+  }
+
   .final-match-summary-card {
-    padding-right: 15px;
-    padding-left: 15px;
+    padding: 20px 16px !important;
   }
 
-  .live-main-score {
-    font-size: clamp(42px, 16vw, 64px);
+  .final-match-summary-top {
+    flex-direction: column !important;
   }
 
-  .live-score-focus {
-    gap: 14px;
+  .final-match-summary-top h1 {
+    font-size: 31px !important;
   }
 
-  .live-over-focus {
-    flex: 0 0 auto;
+  .final-innings-summary-grid {
+    grid-template-columns: 1fr !important;
   }
 
-  .live-detail-header,
-  .live-innings-header {
-    min-height: 48px;
-  }
-
-  .live-detail-header i,
-  .live-innings-header > i {
-    min-width: 34px;
-    min-height: 34px;
-  }
-
-  .live-action-bar {
-    width: calc(100% - 10px);
-  }
-
-  .live-action-bar button {
-    flex: 1 0 auto;
-    justify-content: center;
+  .final-innings-score b {
+    font-size: 36px !important;
   }
 }
-
-/* =========================================================
-   VERY SMALL DEVICES
-========================================================= */
 
 @media (max-width: 390px) {
-  .slp-page,
-  .smp-page,
-  .stp-page,
-  .spp-page,
-  .sep-page {
-    padding-right: 10px;
-    padding-left: 10px;
+  :root {
+    --mobile-page-pad: 12px;
   }
 
-  .live-page-shell {
-    width: calc(100% - 12px);
+  .slp-league-facts,
+  .sep-summary {
+    grid-template-columns: repeat(2, 1fr);
+    row-gap: 12px !important;
   }
 
-  .slp-tabs {
-    margin-right: -10px;
-    margin-left: -10px;
-    padding-right: 10px;
-    padding-left: 10px;
-  }
-
-  .slp-tabs button {
-    min-height: 40px;
-    padding-right: 11px;
-    padding-left: 11px;
+  .stp-record-line,
+  .spp-career-line {
+    grid-template-columns: repeat(3, 1fr);
+    row-gap: 12px !important;
   }
 
   .slp-actions,
-  .smp-actions,
   .stp-actions,
-  .spp-actions {
-    display: grid;
-    grid-template-columns: 1fr;
+  .spp-actions,
+  .smp-actions {
+    grid-template-columns: 1fr !important;
   }
 
-  .slp-actions > *,
-  .smp-actions > *,
-  .stp-actions > *,
-  .spp-actions > * {
-    width: 100%;
+  .slp-actions .slp-follow,
+  .stp-actions .stp-primary-action,
+  .spp-actions .spp-primary-action,
+  .smp-actions .smp-primary-action {
+    grid-column: auto !important;
   }
 
-  .live-action-bar button span {
-    display: inline;
-  }
-}
-
-/* =========================================================
-   LANDSCAPE PHONE SAFETY
-========================================================= */
-
-@media (max-width: 900px) and (orientation: landscape) {
-  .slp-page,
-  .smp-page,
-  .stp-page,
-  .spp-page,
-  .sep-page,
-  .live-page-shell {
-    padding-top: 12px;
+  .live-main-score {
+    font-size: 64px !important;
   }
 
-  .slp-tabs {
-    top: 0;
-  }
-
-  .live-tv-mode .live-primary-card {
-    min-height: auto;
-  }
-}
-
-/* =========================================================
-   ACCESSIBILITY / MOTION / SAFE AREAS
-========================================================= */
-
-@media (max-width: 820px) {
-  .slp-page,
-  .smp-page,
-  .stp-page,
-  .spp-page,
-  .sep-page,
-  .live-page-shell {
-    padding-bottom: max(42px, env(safe-area-inset-bottom));
-  }
-
-  .live-action-bar {
-    bottom: max(8px, env(safe-area-inset-bottom));
-  }
-}
-
-@media (prefers-reduced-motion: reduce) {
-  .slp-page *,
-  .smp-page *,
-  .stp-page *,
-  .spp-page *,
-  .sep-page *,
-  .live-page-shell * {
-    scroll-behavior: auto !important;
+  .live-over-focus {
+    min-width: 76px !important;
   }
 }

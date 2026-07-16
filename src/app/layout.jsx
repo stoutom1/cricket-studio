@@ -1,5 +1,5 @@
 import "@/app/globals.css";
-import "@/app/cric4all-mobile-recovery";
+import "@/app/spectator-mobile-safety.css";
 import Providers from "@/components/providers";
 import AuthNav from "@/components/auth-nav";
 import { Analytics } from "@vercel/analytics/next";
