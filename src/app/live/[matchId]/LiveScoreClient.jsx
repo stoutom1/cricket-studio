@@ -932,6 +932,9 @@ const finalResultText =
       ? `${scoreboard.currentState.bowlerStats.wickets}/${scoreboard.currentState.bowlerStats.runs} • ${scoreboard.currentState.bowlerStats.overs} ov`
       : "";
 
+  const recentBalls =
+    scoreboard?.recentBalls?.slice(-12) || [];
+
   function toggleInnings(inningsNo) {
     setCollapsedInnings((previous) => ({
       ...previous,
@@ -1050,7 +1053,7 @@ const finalResultText =
       ) : null}
 {!isMatchFinished ? (
       <section
-        className="live-primary-card"
+        className="live-primary-card live-primary-card-compact"
         aria-label="Live match summary"
       >
 <div className="live-primary-topline">
@@ -1156,7 +1159,7 @@ const finalResultText =
           {scoreboard?.match?.teamBName}
         </div>
 
-        <div className="live-score-focus">
+        <div className="live-score-focus live-score-focus-compact">
           <div>
             <span className="live-batting-team">
               {latestInnings?.teamName ||
@@ -1207,7 +1210,7 @@ const finalResultText =
           </div>
         ) : null}
 
-        <div className="live-key-metrics">
+        <div className="live-key-metrics live-key-metrics-compact">
           <InfoPill
             label="CRR"
             value={rateTrend.crr}
@@ -1241,7 +1244,7 @@ const finalResultText =
         </div>
 
         <section
-          className="live-current-grid"
+          className="live-current-grid live-current-grid-compact"
           aria-label="Players currently involved"
         >
           <PlayerCard
@@ -1273,21 +1276,20 @@ const finalResultText =
           />
         </section>
 
-        <div className="live-recent-section">
-          <div className="live-section-label">
-            <strong>
-              Recent balls
-            </strong>
+        {recentBalls.length > 0 ? (
+          <div className="live-recent-section">
+            <div className="live-section-label">
+              <strong>
+                Recent balls
+              </strong>
 
-            <span>
-              Latest delivery on the right
-            </span>
-          </div>
+              <span>
+                Latest delivery on the right
+              </span>
+            </div>
 
-          <div className="live-recent-strip">
-            {scoreboard?.recentBalls
-              ?.slice(-12)
-              .map((ball, index) => {
+            <div className="live-recent-strip">
+              {recentBalls.map((ball, index) => {
                 const item =
                   getBallDisplay(
                     ball.label
@@ -1304,8 +1306,9 @@ const finalResultText =
                   </b>
                 );
               })}
+            </div>
           </div>
-        </div>
+        ) : null}
 
         {lastThreeOvers.length > 0 ? (
           <div className="live-momentum-strip">

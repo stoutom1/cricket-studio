@@ -3154,3 +3154,348 @@
     min-width: 122px;
   }
 }
+/* =========================================================
+   CRIC4ALL LIVE SCORE — COMPACT PREMIUM OVERRIDE
+   Append this entire block to the END of:
+   src/app/live-score-premium.css
+   ========================================================= */
+
+.live-score-final {
+  --compact-border: rgba(104, 172, 229, 0.34);
+  --compact-surface: rgba(9, 30, 51, 0.86);
+  --compact-muted: #7f9db6;
+}
+
+/* Main score card */
+.live-score-final .live-primary-card.live-primary-card-compact {
+  width: min(100%, 940px);
+  padding: 18px 20px 20px;
+  border-radius: 17px;
+  box-shadow:
+    0 18px 42px rgba(0, 0, 0, 0.24),
+    inset 0 1px 0 rgba(255, 255, 255, 0.045);
+}
+
+.live-score-final .live-primary-topline {
+  align-items: center;
+  gap: 12px;
+  padding-bottom: 14px;
+}
+
+.live-score-final .live-primary-utilities {
+  gap: 7px;
+}
+
+.live-score-final .live-refresh-copy {
+  min-height: 29px;
+  padding-inline: 10px;
+  font-size: 9px;
+}
+
+.live-score-final .live-inline-actions {
+  gap: 3px;
+  padding: 3px;
+  border-radius: 10px;
+}
+
+.live-score-final .live-inline-action {
+  min-height: 29px;
+  padding-inline: 8px;
+  gap: 6px;
+  font-size: 9px;
+}
+
+.live-score-final .live-inline-action-icon {
+  width: 19px;
+  height: 19px;
+  font-size: 10px;
+}
+
+/* Match title */
+.live-score-final .live-match-title {
+  margin-top: 16px;
+  font-size: clamp(19px, 2vw, 25px);
+  line-height: 1.12;
+  letter-spacing: -0.035em;
+}
+
+/* Score and overs */
+.live-score-final .live-score-focus.live-score-focus-compact {
+  align-items: flex-end;
+  gap: 18px;
+  margin-top: 18px;
+}
+
+.live-score-final .live-batting-team {
+  margin-bottom: 5px;
+  font-size: 9px;
+  letter-spacing: 0.1em;
+}
+
+.live-score-final .live-main-score {
+  font-size: clamp(58px, 7vw, 82px);
+  line-height: 0.88;
+  letter-spacing: -0.07em;
+}
+
+.live-score-final .live-over-focus {
+  width: 76px;
+  height: 66px;
+  min-width: 76px;
+  padding: 0;
+  border-radius: 13px;
+}
+
+.live-score-final .live-over-focus strong {
+  font-size: 24px;
+  line-height: 1;
+}
+
+.live-score-final .live-over-focus span {
+  margin-top: 5px;
+  font-size: 8px;
+}
+
+.live-score-final .live-status-text {
+  margin: 8px 0 0;
+  font-size: 10px;
+}
+
+/* Metrics */
+.live-score-final .live-key-metrics.live-key-metrics-compact {
+  gap: 7px;
+  margin-top: 16px;
+}
+
+.live-score-final .live-info-pill {
+  min-height: 58px;
+  padding: 10px 11px;
+  border-radius: 10px;
+}
+
+.live-score-final .live-info-pill span {
+  font-size: 8px;
+}
+
+.live-score-final .live-info-pill strong {
+  margin-top: 6px;
+  font-size: 17px;
+}
+
+/* Player panels */
+.live-score-final .live-current-grid.live-current-grid-compact {
+  gap: 8px;
+}
+
+.live-score-final .live-player-card {
+  min-height: 74px;
+  padding: 11px 13px;
+  border-radius: 11px;
+}
+
+.live-score-final .live-player-card > span {
+  font-size: 8px;
+}
+
+.live-score-final .live-player-card > strong {
+  margin-top: 6px;
+  font-size: 16px;
+  line-height: 1.1;
+}
+
+.live-score-final .live-player-card > small {
+  margin-top: 5px;
+  font-size: 9px;
+}
+
+/* Recent deliveries */
+.live-score-final .live-recent-section {
+  margin-top: 14px;
+}
+
+.live-score-final .live-section-label {
+  margin-bottom: 7px;
+}
+
+.live-score-final .live-section-label strong {
+  font-size: 9px;
+}
+
+.live-score-final .live-section-label span {
+  font-size: 8px;
+}
+
+.live-score-final .live-recent-strip {
+  min-height: 46px;
+  padding: 7px 10px;
+  border-radius: 10px;
+}
+
+/* Last overs */
+.live-score-final .live-momentum-strip {
+  min-height: 42px;
+  margin-top: 12px;
+  padding: 8px 10px;
+  border-radius: 10px;
+}
+
+/* Accordion cards */
+.live-score-final .live-detail-card {
+  margin-top: 13px;
+  border-radius: 13px;
+  box-shadow:
+    0 10px 25px rgba(0, 0, 0, 0.16),
+    inset 0 1px 0 rgba(255, 255, 255, 0.03);
+}
+
+.live-score-final .live-detail-header {
+  min-height: 58px;
+  padding: 9px 13px 9px 15px;
+  gap: 11px;
+}
+
+.live-score-final .live-detail-header > span > strong {
+  font-size: 15px;
+  line-height: 1.1;
+}
+
+.live-score-final .live-detail-header > span > small {
+  margin-top: 4px;
+  font-size: 8px;
+}
+
+.live-score-final .live-detail-header > i {
+  width: 31px;
+  height: 31px;
+  border-radius: 8px;
+  font-size: 15px;
+}
+
+/* Slightly tighter space between major blocks */
+.live-score-final .live-primary-card + .live-detail-card {
+  margin-top: 13px;
+}
+
+/* =========================================================
+   TABLET / MOBILE
+   ========================================================= */
+
+@media (max-width: 760px) {
+  .live-score-final .live-primary-card.live-primary-card-compact {
+    width: 100%;
+    padding: 14px 13px 15px;
+    border-radius: 15px;
+  }
+
+  .live-score-final .live-primary-topline {
+    gap: 8px;
+    padding-bottom: 11px;
+  }
+
+  .live-score-final .live-refresh-copy {
+    display: none;
+  }
+
+  .live-score-final .live-inline-action {
+    width: 31px;
+    min-height: 31px;
+    padding: 0;
+  }
+
+  .live-score-final .live-inline-action-label {
+    position: absolute;
+    width: 1px;
+    height: 1px;
+    overflow: hidden;
+    clip: rect(0, 0, 0, 0);
+    white-space: nowrap;
+  }
+
+  .live-score-final .live-match-title {
+    margin-top: 13px;
+    font-size: 18px;
+  }
+
+  .live-score-final .live-score-focus.live-score-focus-compact {
+    gap: 12px;
+    margin-top: 14px;
+  }
+
+  .live-score-final .live-main-score {
+    font-size: clamp(54px, 18vw, 70px);
+  }
+
+  .live-score-final .live-over-focus {
+    width: 66px;
+    height: 58px;
+    min-width: 66px;
+  }
+
+  .live-score-final .live-over-focus strong {
+    font-size: 21px;
+  }
+
+  .live-score-final .live-key-metrics.live-key-metrics-compact {
+    grid-template-columns: repeat(4, minmax(0, 1fr));
+    gap: 5px;
+    margin-top: 13px;
+  }
+
+  .live-score-final .live-info-pill {
+    min-height: 50px;
+    padding: 8px 7px;
+  }
+
+  .live-score-final .live-info-pill strong {
+    font-size: 14px;
+  }
+
+  .live-score-final .live-current-grid.live-current-grid-compact {
+    grid-template-columns: repeat(3, minmax(0, 1fr));
+    gap: 6px;
+    margin-top: 12px;
+  }
+
+  .live-score-final .live-player-card {
+    min-width: 0;
+    min-height: 67px;
+    padding: 9px 8px;
+  }
+
+  .live-score-final .live-player-card > strong {
+    overflow: hidden;
+    font-size: 13px;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+  }
+
+  .live-score-final .live-player-card > small {
+    overflow: hidden;
+    font-size: 8px;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+  }
+
+  .live-score-final .live-detail-header {
+    min-height: 54px;
+    padding: 8px 10px 8px 12px;
+  }
+
+  .live-score-final .live-detail-header > span > strong {
+    font-size: 14px;
+  }
+}
+
+@media (max-width: 430px) {
+  .live-score-final .live-key-metrics.live-key-metrics-compact {
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+  }
+
+  .live-score-final .live-current-grid.live-current-grid-compact {
+    grid-template-columns: 1fr;
+  }
+
+  .live-score-final .live-player-card {
+    min-height: 56px;
+  }
+}
