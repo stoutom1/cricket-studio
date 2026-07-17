@@ -2664,3 +2664,293 @@
     font-size: 16px;
   }
 }
+
+
+/* =========================================================
+   FINAL V6 — UNIFORM TYPOGRAPHY PASS
+   Larger readable text across live, insights, leaders,
+   scorecard summaries, and last-over information.
+========================================================= */
+
+/* Remove the Recent balls heading/helper but keep delivery bubbles. */
+.live-score-final .live-recent-section .live-section-label {
+  display: none !important;
+}
+
+.live-score-final .live-recent-strip {
+  margin-top: 0 !important;
+}
+
+/* LAST OVERS — stronger label and values on all screens. */
+.live-score-final .live-momentum-strip > span {
+  font-size: 12px !important;
+  letter-spacing: 0.075em !important;
+}
+
+.live-score-final .live-momentum-strip b {
+  padding: 7px 11px !important;
+  font-size: 13px !important;
+  line-height: 1.2 !important;
+}
+
+/* Batting & bowling leaders / quick snapshot. */
+.live-score-final .live-quick-scorecard-head span {
+  font-size: 11px !important;
+}
+
+.live-score-final .live-quick-scorecard-head strong {
+  font-size: 21px !important;
+}
+
+.live-score-final .live-quick-scorecard-head button {
+  min-height: 44px !important;
+  padding: 9px 13px !important;
+  font-size: 12px !important;
+}
+
+.live-score-final .live-quick-stat span {
+  font-size: 10px !important;
+}
+
+.live-score-final .live-quick-stat strong {
+  margin-top: 7px !important;
+  font-size: 19px !important;
+}
+
+.live-score-final .live-quick-stat b {
+  margin-top: 7px !important;
+  font-size: 18px !important;
+}
+
+.live-score-final .live-quick-stat small {
+  margin-top: 6px !important;
+  font-size: 13px !important;
+  line-height: 1.45 !important;
+}
+
+/* Match Insights typography. */
+.live-score-final .insight-result span {
+  font-size: 11px !important;
+}
+
+.live-score-final .insight-result strong {
+  margin-top: 7px !important;
+  font-size: 19px !important;
+  line-height: 1.4 !important;
+}
+
+.live-score-final .live-star-card span,
+.live-score-final .insight-mini > span {
+  font-size: 10px !important;
+}
+
+.live-score-final .live-star-card strong,
+.live-score-final .insight-mini > strong {
+  margin-top: 7px !important;
+  font-size: 18px !important;
+}
+
+.live-score-final .live-star-card small,
+.live-score-final .insight-mini > small {
+  margin-top: 6px !important;
+  font-size: 13px !important;
+  line-height: 1.45 !important;
+}
+
+.live-score-final .win-prob-row b,
+.live-score-final .rate-row span {
+  font-size: 12px !important;
+}
+
+.live-score-final .win-prob-row > span:last-child,
+.live-score-final .rate-row > strong,
+.live-score-final .rate-row > b {
+  font-size: 13px !important;
+}
+
+/* Accordion descriptions and headings. */
+.live-score-final .live-detail-header strong {
+  font-size: 22px !important;
+}
+
+.live-score-final .live-detail-header small {
+  margin-top: 6px !important;
+  font-size: 14px !important;
+  line-height: 1.4 !important;
+}
+
+/* Innings and summary labels. */
+.live-score-final .live-innings-header div span {
+  font-size: 11px !important;
+}
+
+.live-score-final .live-innings-header div strong {
+  font-size: 19px !important;
+}
+
+.live-score-final .live-innings-header > b {
+  font-size: 25px !important;
+}
+
+.live-score-final .live-innings-header > b small {
+  font-size: 12px !important;
+}
+
+.live-score-final .live-summary-grid .live-info-pill span {
+  font-size: 11px !important;
+}
+
+.live-score-final .live-summary-grid .live-info-pill strong {
+  font-size: 25px !important;
+}
+
+/* Completed match supporting typography. */
+.live-score-final .final-match-next-step strong {
+  font-size: 15px !important;
+}
+
+.live-score-final .final-match-next-step small {
+  font-size: 13px !important;
+  line-height: 1.5 !important;
+}
+
+.live-score-final .final-innings-card-top span,
+.live-score-final .final-innings-card-top small {
+  font-size: 10px !important;
+}
+
+.live-score-final .final-innings-team-name {
+  font-size: 18px !important;
+}
+
+.live-score-final .final-innings-mini-facts span {
+  font-size: 11px !important;
+}
+
+/* General small text harmonization on laptop/desktop. */
+@media (min-width: 701px) {
+  .live-score-final .live-refresh-copy {
+    font-size: 13px !important;
+  }
+
+  .live-score-final .live-status-text {
+    font-size: 18px !important;
+  }
+
+  .live-score-final .live-player-card span {
+    font-size: 11px !important;
+  }
+
+  .live-score-final .live-player-card strong {
+    font-size: 23px !important;
+  }
+
+  .live-score-final .live-player-card small {
+    font-size: 14px !important;
+  }
+
+  .live-score-final .live-ball {
+    min-width: 39px !important;
+    height: 39px !important;
+    font-size: 12px !important;
+  }
+
+  .live-score-final .live-action-bar button {
+    font-size: 14px !important;
+  }
+}
+
+/* Mobile-specific proportional increases without breaking layout. */
+@media (max-width: 700px) {
+  .live-score-final .live-momentum-strip {
+    padding: 12px 13px !important;
+  }
+
+  .live-score-final .live-momentum-strip > span {
+    font-size: 11px !important;
+  }
+
+  .live-score-final .live-momentum-strip b {
+    padding: 6px 9px !important;
+    font-size: 12px !important;
+  }
+
+  .live-score-final .live-quick-scorecard-head strong {
+    font-size: 19px !important;
+  }
+
+  .live-score-final .live-quick-scorecard-head button {
+    font-size: 11px !important;
+  }
+
+  .live-score-final .live-quick-stat strong {
+    font-size: 18px !important;
+  }
+
+  .live-score-final .live-quick-stat b {
+    font-size: 17px !important;
+  }
+
+  .live-score-final .live-quick-stat small {
+    font-size: 12px !important;
+  }
+
+  .live-score-final .live-detail-header strong {
+    font-size: 19px !important;
+  }
+
+  .live-score-final .live-detail-header small {
+    font-size: 12px !important;
+  }
+
+  .live-score-final .insight-result strong {
+    font-size: 17px !important;
+  }
+
+  .live-score-final .live-star-card strong,
+  .live-score-final .insight-mini > strong {
+    font-size: 17px !important;
+  }
+
+  .live-score-final .live-star-card small,
+  .live-score-final .insight-mini > small {
+    font-size: 12px !important;
+  }
+
+  .live-score-final .win-prob-row b,
+  .live-score-final .rate-row span {
+    font-size: 11px !important;
+  }
+
+  .live-score-final .live-innings-header div strong {
+    font-size: 18px !important;
+  }
+
+  .live-score-final .live-innings-header > b {
+    font-size: 22px !important;
+  }
+
+  .live-score-final .live-summary-grid .live-info-pill span {
+    font-size: 10px !important;
+  }
+
+  .live-score-final .live-summary-grid .live-info-pill strong {
+    font-size: 23px !important;
+  }
+
+  .live-score-final .final-innings-team-name {
+    font-size: 15px !important;
+  }
+
+  .live-score-final .final-innings-mini-facts span {
+    font-size: 9px !important;
+  }
+
+  .live-score-final .final-match-next-step strong {
+    font-size: 12px !important;
+  }
+
+  .live-score-final .final-match-next-step small {
+    font-size: 10px !important;
+  }
+}
