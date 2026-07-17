@@ -1053,25 +1053,100 @@ const finalResultText =
         className="live-primary-card"
         aria-label="Live match summary"
       >
-        <div className="live-primary-topline">
+<div className="live-primary-topline">
+  <span
+    className={`live-pill ${
+      isMatchFinished
+        ? "completed"
+        : ""
+    }`}
+  >
+    <i aria-hidden="true" />
+
+    {livePillText}
+  </span>
+
+  <div className="live-primary-utilities">
+    <span className="live-refresh-copy">
+      {isMatchFinished
+        ? "Final scorecard"
+        : "Updates every 5 seconds"}
+    </span>
+
+    {!tvMode && !isMatchFinished ? (
+      <nav
+        className="live-inline-actions"
+        aria-label="Live score actions"
+      >
+        <button
+          type="button"
+          onClick={shareLiveScore}
+          className="live-inline-action"
+          aria-label="Share live score"
+          title="Share live score"
+        >
           <span
-            className={`live-pill ${
-              isMatchFinished
-                ? "completed"
-                : ""
-            }`}
+            className="live-inline-action-icon"
+            aria-hidden="true"
           >
-            <i aria-hidden="true" />
-
-            {livePillText}
+            ↗
           </span>
 
-          <span className="live-refresh-copy">
-            {isMatchFinished
-              ? "Final scorecard"
-              : "Updates every 5 seconds"}
+          <span className="live-inline-action-label">
+            Share
           </span>
-        </div>
+        </button>
+
+        <button
+          type="button"
+          onClick={() => setTvMode(true)}
+          className="live-inline-action"
+          aria-label="Open TV mode"
+          title="Open TV mode"
+        >
+          <span
+            className="live-inline-action-icon"
+            aria-hidden="true"
+          >
+            ▣
+          </span>
+
+          <span className="live-inline-action-label">
+            TV mode
+          </span>
+        </button>
+
+        <button
+          type="button"
+          onClick={refreshNow}
+          disabled={isRefreshing}
+          className={`live-inline-action ${
+            isRefreshing ? "is-refreshing" : ""
+          }`}
+          aria-label={
+            isRefreshing
+              ? "Refreshing live score"
+              : "Refresh live score"
+          }
+          title="Refresh live score"
+        >
+          <span
+            className="live-inline-action-icon"
+            aria-hidden="true"
+          >
+            ↻
+          </span>
+
+          <span className="live-inline-action-label">
+            {isRefreshing
+              ? "Refreshing"
+              : "Refresh"}
+          </span>
+        </button>
+      </nav>
+    ) : null}
+  </div>
+</div>
 
         <div className="live-match-title">
           {scoreboard?.match?.teamAName}
@@ -1376,42 +1451,6 @@ const finalResultText =
     </div>
   </section>
 )}
-
-      {!tvMode && !isMatchFinished ? (
-        <nav
-          className="live-action-bar"
-          aria-label="Scorecard actions"
-        >
-          <button
-            type="button"
-            onClick={shareLiveScore}
-          >
-            📤 <span>Share</span>
-          </button>
-
-          <button
-            type="button"
-            onClick={() =>
-              setTvMode(true)
-            }
-          >
-            📺 <span>TV mode</span>
-          </button>
-
-          <button
-            type="button"
-            onClick={refreshNow}
-            disabled={isRefreshing}
-          >
-            🔄{" "}
-            <span>
-              {isRefreshing
-                ? "Refreshing"
-                : "Refresh"}
-            </span>
-          </button>
-        </nav>
-      ) : null}
 
       {!tvMode && (topBatter || bestBowler) ? (
         <section

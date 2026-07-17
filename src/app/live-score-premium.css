@@ -2954,3 +2954,175 @@
     font-size: 10px !important;
   }
 }
+/* =========================================================
+   LIVE SCORE — INLINE UTILITY ACTIONS
+   ========================================================= */
+
+.live-primary-topline {
+  display: flex;
+  align-items: flex-start;
+  justify-content: space-between;
+  gap: 18px;
+}
+
+.live-primary-utilities {
+  display: flex;
+  align-items: center;
+  justify-content: flex-end;
+  flex-wrap: wrap;
+  gap: 10px;
+}
+
+.live-inline-actions {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+
+  padding: 5px;
+
+  border: 1px solid rgba(111, 174, 229, 0.2);
+  border-radius: 12px;
+
+  background: rgba(5, 22, 39, 0.52);
+
+  box-shadow:
+    inset 0 1px 0 rgba(255, 255, 255, 0.035),
+    0 8px 22px rgba(0, 0, 0, 0.13);
+}
+
+.live-inline-action {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 7px;
+
+  min-height: 34px;
+  padding: 0 10px;
+
+  border: 1px solid transparent;
+  border-radius: 8px;
+
+  color: #a9c5dc;
+  background: transparent;
+
+  font: inherit;
+  font-size: 10px;
+  font-weight: 800;
+
+  cursor: pointer;
+
+  transition:
+    color 0.18s ease,
+    background 0.18s ease,
+    border-color 0.18s ease,
+    transform 0.18s ease;
+}
+
+.live-inline-action:hover {
+  color: #ffffff;
+
+  border-color: rgba(83, 166, 236, 0.28);
+
+  background: rgba(33, 105, 166, 0.2);
+
+  transform: translateY(-1px);
+}
+
+.live-inline-action:focus-visible {
+  outline: 2px solid rgba(71, 168, 255, 0.8);
+  outline-offset: 2px;
+}
+
+.live-inline-action:disabled {
+  opacity: 0.58;
+  cursor: wait;
+  transform: none;
+}
+
+.live-inline-action-icon {
+  display: grid;
+  width: 22px;
+  height: 22px;
+  place-items: center;
+
+  border: 1px solid rgba(103, 174, 232, 0.18);
+  border-radius: 7px;
+
+  color: #7dc5ff;
+  background: rgba(38, 109, 168, 0.14);
+
+  font-size: 13px;
+  line-height: 1;
+}
+
+.live-inline-action.is-refreshing
+  .live-inline-action-icon {
+  animation: liveInlineRefreshSpin 0.9s linear infinite;
+}
+
+@keyframes liveInlineRefreshSpin {
+  to {
+    transform: rotate(360deg);
+  }
+}
+@media (max-width: 720px) {
+  .live-primary-topline {
+    align-items: center;
+  }
+
+  .live-primary-utilities {
+    gap: 7px;
+  }
+
+  .live-primary-utilities
+    .live-refresh-copy {
+    display: none;
+  }
+
+  .live-inline-actions {
+    gap: 4px;
+    padding: 4px;
+  }
+
+  .live-inline-action {
+    width: 34px;
+    min-height: 34px;
+    padding: 0;
+  }
+
+  .live-inline-action-label {
+    position: absolute;
+
+    width: 1px;
+    height: 1px;
+    overflow: hidden;
+
+    clip: rect(0, 0, 0, 0);
+    white-space: nowrap;
+  }
+
+  .live-inline-action-icon {
+    width: 24px;
+    height: 24px;
+  }
+}
+@media (max-width: 390px) {
+  .live-primary-topline {
+    gap: 8px;
+  }
+
+  .live-inline-actions {
+    gap: 2px;
+  }
+
+  .live-inline-action {
+    width: 31px;
+    min-height: 31px;
+  }
+
+  .live-inline-action-icon {
+    width: 22px;
+    height: 22px;
+    font-size: 12px;
+  }
+}
