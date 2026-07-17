@@ -1465,6 +1465,154 @@ function OverviewSection({
   );
 }
 
+function FeaturedMatchSpotlight({
+  match,
+  leagueSlug,
+  openTab,
+}) {
+  const status = normalizeStatus(match?.status);
+
+  const isLive = [
+    "LIVE",
+    "IN_PROGRESS",
+    "INPROGRESS",
+    "STARTED",
+  ].includes(status);
+
+  const isScheduled = status === "SCHEDULED";
+  const isAbandoned = status === "ABANDONED";
+
+  const timeline = getMatchTimeline(match);
+
+  const stateLabel = isLive
+    ? "Live now"
+    : isScheduled
+      ? "Upcoming"
+      : isAbandoned
+        ? "Abandoned"
+        : "Latest result";
+
+  const timelineLabel =
+    timeline?.type === "scheduled"
+      ? "Scheduled"
+      : timeline?.type === "started"
+        ? "Started"
+        : timeline?.type === "locked"
+          ? "Scorecard locked"
+          : timeline?.type === "abandoned"
+            ? "Abandoned"
+            : "Completed";
+
+ return (
+  <article
+    className={`slp-spotlight-match ${
+      isLive ? "is-live" : ""
+    }`}
+  >
+    <span
+      className="slp-spotlight-accent"
+      aria-hidden="true"
+    />
+
+    <div className="slp-spotlight-main">
+      <div className="slp-spotlight-copy">
+        <div className="slp-spotlight-meta">
+          <span
+            className={`slp-spotlight-state ${
+              isLive ? "is-live" : ""
+            }`}
+          >
+            {isLive && <i aria-hidden="true" />}
+
+            {stateLabel}
+          </span>
+
+          <span
+            className="slp-spotlight-dot"
+            aria-hidden="true"
+          >
+            •
+          </span>
+
+          <span className="slp-spotlight-series">
+            {match.series?.name || "League match"}
+          </span>
+        </div>
+
+        <h3>{formatMatchTitle(match)}</h3>
+
+        <p>
+          {match.statusText ||
+            formatStatusLabel(match.status)}
+        </p>
+      </div>
+
+      {timeline ? (
+        <time
+          className={`slp-spotlight-time is-${timeline.type}`}
+          dateTime={timeline.rawDate?.toISOString()}
+        >
+          <span
+            className="slp-spotlight-time-icon"
+            aria-hidden="true"
+          >
+            {timeline.type === "scheduled"
+              ? "◷"
+              : timeline.type === "started"
+                ? "●"
+                : timeline.type === "locked"
+                  ? "✓"
+                  : timeline.type === "abandoned"
+                    ? "!"
+                    : "■"}
+          </span>
+
+          <span className="slp-spotlight-time-copy">
+            <small>{timelineLabel}</small>
+
+            <span className="slp-spotlight-time-line">
+              <strong>{timeline.date}</strong>
+
+              {timeline.time ? (
+                <>
+                  <span
+                    className="slp-spotlight-time-divider"
+                    aria-hidden="true"
+                  >
+                    •
+                  </span>
+
+                  <em>{timeline.time}</em>
+                </>
+              ) : null}
+            </span>
+          </span>
+        </time>
+      ) : null}
+
+      <div className="slp-spotlight-action">
+        {match.shareCode ? (
+          <a
+            href={`/leagues/${leagueSlug}/matches/${match.id}`}
+          >
+            <span>Match center</span>
+            <Icon name="arrowRight" />
+          </a>
+        ) : (
+          <button
+            type="button"
+            onClick={() => openTab("matches")}
+          >
+            <span>View fixture</span>
+            <Icon name="arrowRight" />
+          </button>
+        )}
+      </div>
+    </div>
+  </article>
+);
+}
+
 function LiveMatchRail({
   liveMatches,
   fallbackMatch,
@@ -1557,7 +1705,97 @@ function LiveMatchRail({
       />
     );
   }
+  if (matches.length === 1) {
+  const match = matches[0];
 
+  const sectionEyebrow = isShowingLiveMatches
+    ? "Live cricket"
+    : normalizeStatus(match.status) === "SCHEDULED"
+      ? "Next fixture"
+      : "Latest result";
+
+  const sectionTitle = isShowingLiveMatches
+    ? "Live match"
+    : "Featured match";
+
+  return (
+    <section
+      className="slp-spotlight-section"
+      aria-label={sectionTitle}
+    >
+<div className="slp-spotlight-heading">
+  <div className="slp-spotlight-heading-copy">
+    <p>{sectionEyebrow}</p>
+    <h2>{sectionTitle}</h2>
+  </div>
+
+  <button
+    type="button"
+    className="slp-spotlight-view-all"
+    onClick={() => openTab("matches")}
+  >
+    View all
+  </button>
+</div>
+
+      <FeaturedMatchSpotlight
+        match={match}
+        leagueSlug={leagueSlug}
+        openTab={openTab}
+      />
+    </section>
+  );
+}
+
+if (matches.length === 1) {
+  const match = matches[0];
+
+  return (
+    <section
+      className="slp-wow-feature-section"
+      aria-label={
+        isShowingLiveMatches
+          ? "Live match"
+          : "Featured match"
+      }
+    >
+      <div className="slp-wow-feature-heading">
+        <div>
+          <p>
+            {isShowingLiveMatches
+              ? "Live cricket"
+              : normalizeStatus(
+                    match.status
+                  ) === "SCHEDULED"
+                ? "Next fixture"
+                : "Latest result"}
+          </p>
+
+          <h2>
+            {isShowingLiveMatches
+              ? "Live match"
+              : "Featured match"}
+          </h2>
+        </div>
+
+        <button
+          type="button"
+          onClick={() =>
+            openTab("matches")
+          }
+        >
+          View all
+        </button>
+      </div>
+
+      <FeaturedMatchSpotlight
+        match={match}
+        leagueSlug={leagueSlug}
+        openTab={openTab}
+      />
+    </section>
+  );
+}
   return (
     <section
       className="slp-live-rail-section"
@@ -1622,57 +1860,81 @@ function LiveMatchRail({
         </div>
       </div>
 
-      <div
-        ref={railRef}
-        className="slp-live-rail"
-        onScroll={handleRailScroll}
-      >
+<div
+  ref={railRef}
+  className={`slp-live-rail ${
+    matches.length === 1
+      ? "is-single-match"
+      : "has-multiple-matches"
+  }`}
+  onScroll={handleRailScroll}
+>
         {matches.map((match, index) => {
-          const isLive = ["LIVE", "IN_PROGRESS"].includes(
-            normalizeStatus(match.status)
-          );
+  const normalizedMatchStatus =
+    normalizeStatus(match.status);
 
-          return (
-            <article
-              key={match.id}
-              className={`slp-live-card ${
-                isLive ? "is-live" : ""
-              }`}
-              aria-current={activeIndex === index ? "true" : undefined}
-            >
-              <div className="slp-live-card-status">
-                {isLive && <span aria-hidden="true" />}
-                {isLive
-                  ? "Live now"
-                  : normalizeStatus(match.status) === "SCHEDULED"
-                    ? "Upcoming"
-                    : "Latest result"}
-              </div>
+  const isLive = [
+    "LIVE",
+    "IN_PROGRESS",
+    "INPROGRESS",
+    "STARTED",
+  ].includes(normalizedMatchStatus);
 
-              <div className="slp-live-card-copy">
-                <small>{match.series?.name || "League match"}</small>
-                <h3>{formatMatchTitle(match)}</h3>
-                <p>
-                  {match.statusText ||
-                    formatStatusLabel(match.status)}
-                </p>
-              </div>
+  const matchTimeline =
+    getMatchTimeline(match);
 
-              {match.shareCode ? (
-                <a href={`/leagues/${leagueSlug}/matches/${match.id}`}>
-                  Match center
-                  <Icon name="arrowRight" />
-                </a>
-              ) : (
-                <button
-                  type="button"
-                  onClick={() => openTab("matches")}
-                >
-                  View fixture
-                  <Icon name="arrowRight" />
-                </button>
-              )}
-            </article>
+  return (
+<article
+  key={match.id}
+  className={`slp-live-card ${
+    isLive ? "is-live" : ""
+  }`}
+  aria-current={
+    activeIndex === index ? "true" : undefined
+  }
+>
+  <div className="slp-live-card-status">
+    {isLive && <span aria-hidden="true" />}
+
+    {isLive
+      ? "Live now"
+      : normalizedMatchStatus === "SCHEDULED"
+        ? "Upcoming"
+        : normalizedMatchStatus === "ABANDONED"
+          ? "Abandoned"
+          : "Latest result"}
+  </div>
+
+  <div className="slp-live-card-copy">
+    <small>
+      {match.series?.name || "League match"}
+    </small>
+
+    <h3>{formatMatchTitle(match)}</h3>
+
+    <p>
+      {match.statusText ||
+        formatStatusLabel(match.status)}
+    </p>
+  </div>
+
+  {match.shareCode ? (
+    <a
+      href={`/leagues/${leagueSlug}/matches/${match.id}`}
+    >
+      Match center
+      <Icon name="arrowRight" />
+    </a>
+  ) : (
+    <button
+      type="button"
+      onClick={() => openTab("matches")}
+    >
+      View fixture
+      <Icon name="arrowRight" />
+    </button>
+  )}
+</article>
           );
         })}
       </div>
@@ -2060,6 +2322,170 @@ function getMatchDatePart(match, part) {
   return date
     .toLocaleString("en-US", { month: "short" })
     .toUpperCase();
+}
+
+function firstValidDate(...candidates) {
+  for (const candidate of candidates) {
+    if (!candidate) continue;
+
+    const date = new Date(candidate);
+
+    if (!Number.isNaN(date.getTime())) {
+      return date;
+    }
+  }
+
+  return null;
+}
+
+function formatFeaturedMatchDate(date) {
+  if (!date) return null;
+
+  return date.toLocaleDateString("en-US", {
+    weekday: "short",
+    month: "short",
+    day: "numeric",
+    year: "numeric",
+  });
+}
+
+function formatFeaturedMatchTime(date) {
+  if (!date) return null;
+
+  return date.toLocaleTimeString("en-US", {
+    hour: "numeric",
+    minute: "2-digit",
+  });
+}
+
+function getMatchTimeline(match) {
+  const status = normalizeStatus(match?.status);
+
+  const isLive = [
+    "LIVE",
+    "IN_PROGRESS",
+    "INPROGRESS",
+    "STARTED",
+  ].includes(status);
+
+  const isCompleted = [
+    "COMPLETED",
+    "COMPLETED_LOCKED",
+    "COMPLETED_CORRECTED",
+  ].includes(status);
+
+  const isAbandoned = status === "ABANDONED";
+
+  /*
+   * Completed/locked match:
+   * Prefer the lock date because it represents the final
+   * published scorecard. Otherwise use completion/end time.
+   */
+  if (isCompleted) {
+    const lockDate = firstValidDate(
+      match.lockedAt,
+      match.lockDate,
+      match.scorecardLockedAt
+    );
+
+    if (lockDate) {
+      return {
+        type: "locked",
+        eyebrow: "Scorecard locked",
+        date: formatFeaturedMatchDate(lockDate),
+        time: formatFeaturedMatchTime(lockDate),
+        rawDate: lockDate,
+      };
+    }
+
+    const completedDate = firstValidDate(
+      match.completedAt,
+      match.endedAt,
+      match.endTime,
+      match.endDate,
+      match.matchEndedAt,
+      match.updatedAt
+    );
+
+    if (completedDate) {
+      return {
+        type: "completed",
+        eyebrow: "Match ended",
+        date: formatFeaturedMatchDate(completedDate),
+        time: formatFeaturedMatchTime(completedDate),
+        rawDate: completedDate,
+      };
+    }
+  }
+
+  /*
+   * Abandoned match.
+   */
+  if (isAbandoned) {
+    const abandonedDate = firstValidDate(
+      match.abandonedAt,
+      match.endedAt,
+      match.endTime,
+      match.updatedAt
+    );
+
+    if (abandonedDate) {
+      return {
+        type: "abandoned",
+        eyebrow: "Match abandoned",
+        date: formatFeaturedMatchDate(abandonedDate),
+        time: formatFeaturedMatchTime(abandonedDate),
+        rawDate: abandonedDate,
+      };
+    }
+  }
+
+  /*
+   * Live match:
+   * Prefer the actual start time over the scheduled time.
+   */
+  if (isLive) {
+    const startedDate = firstValidDate(
+      match.startedAt,
+      match.matchStartedAt,
+      match.actualStartTime,
+      match.startTime,
+      match.matchDate,
+      match.scheduledAt
+    );
+
+    if (startedDate) {
+      return {
+        type: "started",
+        eyebrow: "Started",
+        date: formatFeaturedMatchDate(startedDate),
+        time: formatFeaturedMatchTime(startedDate),
+        rawDate: startedDate,
+      };
+    }
+  }
+
+  /*
+   * Scheduled/upcoming match.
+   */
+  const scheduledDate = firstValidDate(
+    match.scheduledAt,
+    match.matchDate,
+    match.scheduledDate,
+    match.startTime
+  );
+
+  if (scheduledDate) {
+    return {
+      type: "scheduled",
+      eyebrow: "Scheduled",
+      date: formatFeaturedMatchDate(scheduledDate),
+      time: formatFeaturedMatchTime(scheduledDate),
+      rawDate: scheduledDate,
+    };
+  }
+
+  return null;
 }
 
 function formatStatusLabel(status) {
