@@ -10738,3 +10738,1734 @@ strong {
     padding-inline: 10px !important;
   }
 }
+/*
+  Cric4All Public Spectator Design System V2
+  ==========================================
+  REPLACES: public-pages-final-typography.css
+
+  Import this file LAST in src/app/layout.jsx.
+
+  Pages:
+  - League  .slp-*
+  - Match   .smp-*
+  - Team    .stp-*
+  - Player  .spp-*
+  - Explore .sep-*
+
+  Presentation only. No React behavior is changed.
+*/
+
+/* =========================================================
+   1. SHARED TOKENS + FONT SYSTEM
+========================================================= */
+
+:is(.slp-page, .smp-page, .stp-page, .spp-page, .sep-page) {
+  --public-font:
+    Inter, ui-sans-serif, system-ui, -apple-system, BlinkMacSystemFont,
+    "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
+  --public-text-xs: 12px;
+  --public-text-sm: 14px;
+  --public-text-md: 16px;
+  --public-text-lg: 18px;
+  --public-text-xl: 22px;
+  --public-heading-sm: 26px;
+  --public-heading-lg: 38px;
+  --public-touch: 46px;
+  --public-radius-sm: 10px;
+  --public-radius-md: 14px;
+  --public-content-width: 1160px;
+
+  font-family: var(--public-font) !important;
+  font-size: var(--public-text-md) !important;
+  line-height: 1.5 !important;
+  text-rendering: optimizeLegibility;
+  -webkit-font-smoothing: antialiased;
+}
+
+:is(.slp-page, .smp-page, .stp-page, .spp-page, .sep-page) *,
+:is(.slp-page, .smp-page, .stp-page, .spp-page, .sep-page) *::before,
+:is(.slp-page, .smp-page, .stp-page, .spp-page, .sep-page) *::after {
+  box-sizing: border-box;
+}
+
+:is(.slp-page, .smp-page, .stp-page, .spp-page, .sep-page)
+:is(button, input, select, textarea) {
+  font-family: var(--public-font) !important;
+}
+
+:is(.slp-shell, .smp-shell, .stp-shell, .spp-shell, .sep-shell) {
+  width: min(var(--public-content-width), 100%) !important;
+  margin-inline: auto !important;
+}
+
+/* =========================================================
+   2. CONSISTENT TOP BAR / BREADCRUMBS
+========================================================= */
+
+:is(.slp-topline, .smp-topline, .stp-topline, .spp-topline, .sep-topline) {
+  min-height: 38px !important;
+  display: flex !important;
+  align-items: center !important;
+  justify-content: space-between !important;
+  gap: 16px !important;
+}
+
+:is(.slp-breadcrumb, .smp-breadcrumb, .stp-breadcrumb, .spp-breadcrumb, .sep-breadcrumb) {
+  min-width: 0 !important;
+  display: flex !important;
+  align-items: center !important;
+  gap: 8px !important;
+  font-size: var(--public-text-sm) !important;
+  line-height: 1.35 !important;
+}
+
+:is(.slp-breadcrumb, .smp-breadcrumb, .stp-breadcrumb, .spp-breadcrumb, .sep-breadcrumb)
+strong {
+  overflow: hidden !important;
+  text-overflow: ellipsis !important;
+  white-space: nowrap !important;
+}
+
+:is(.slp-public-label, .smp-status-label, .stp-public-label, .spp-public-label, .sep-public-label) {
+  flex: 0 0 auto !important;
+  min-height: 34px !important;
+  display: inline-flex !important;
+  align-items: center !important;
+  justify-content: center !important;
+  gap: 7px !important;
+  padding: 7px 11px !important;
+  border-radius: 999px !important;
+  font-size: 11px !important;
+  font-weight: 850 !important;
+  line-height: 1 !important;
+  letter-spacing: 0.07em !important;
+  white-space: nowrap !important;
+}
+
+/* =========================================================
+   3. HERO ALIGNMENT + TYPOGRAPHY
+========================================================= */
+
+:is(.slp-hero-main, .smp-match-stage, .stp-hero-main, .spp-hero-main, .sep-hero-main) {
+  min-width: 0 !important;
+}
+
+:is(.slp-kicker, .smp-kicker, .stp-kicker, .spp-kicker, .sep-kicker) {
+  margin-bottom: 10px !important;
+  font-size: var(--public-text-xs) !important;
+  font-weight: 850 !important;
+  line-height: 1.3 !important;
+  letter-spacing: 0.11em !important;
+}
+
+:is(.slp-league-copy h1, .stp-team-identity h1, .spp-player-identity h1, .sep-copy h1) {
+  margin: 0 !important;
+  font-size: clamp(44px, 6vw, 72px) !important;
+  font-weight: 850 !important;
+  line-height: 0.98 !important;
+  letter-spacing: -0.055em !important;
+}
+
+.smp-team h1 {
+  margin: 0 !important;
+  font-size: clamp(32px, 4vw, 54px) !important;
+  font-weight: 850 !important;
+  line-height: 1 !important;
+  letter-spacing: -0.045em !important;
+}
+
+:is(
+  .slp-league-copy > p:not(.slp-kicker),
+  .stp-subtitle,
+  .spp-subtitle,
+  .sep-copy > p:not(.sep-kicker),
+  .smp-result-line p
+) {
+  max-width: 760px !important;
+  margin-top: 14px !important;
+  font-size: var(--public-text-md) !important;
+  line-height: 1.65 !important;
+}
+
+/* Hero actions */
+:is(.slp-actions, .smp-actions, .stp-actions, .spp-actions) {
+  display: flex !important;
+  align-items: center !important;
+  justify-content: flex-end !important;
+  flex-wrap: wrap !important;
+  gap: 10px !important;
+}
+
+:is(.slp-actions, .smp-actions, .stp-actions, .spp-actions) > * {
+  min-height: var(--public-touch) !important;
+  display: inline-flex !important;
+  align-items: center !important;
+  justify-content: center !important;
+  gap: 8px !important;
+  padding: 10px 16px !important;
+  border-radius: var(--public-radius-sm) !important;
+  font-size: var(--public-text-sm) !important;
+  font-weight: 850 !important;
+  line-height: 1.1 !important;
+}
+
+/* =========================================================
+   4. SUMMARY STRIPS — SAME ALIGNMENT ON EVERY PAGE
+========================================================= */
+
+:is(.slp-league-facts, .stp-record-line, .spp-career-line, .sep-summary) {
+  display: grid !important;
+  grid-auto-flow: column !important;
+  grid-auto-columns: minmax(90px, 1fr) !important;
+  align-items: stretch !important;
+  gap: 0 !important;
+}
+
+:is(.slp-league-facts, .stp-record-line, .spp-career-line, .sep-summary) > span {
+  min-height: 68px !important;
+  display: flex !important;
+  flex-direction: column !important;
+  align-items: center !important;
+  justify-content: center !important;
+  padding: 10px 12px !important;
+  font-size: 11px !important;
+  line-height: 1.25 !important;
+  text-align: center !important;
+}
+
+:is(.slp-league-facts, .stp-record-line, .spp-career-line, .sep-summary) b {
+  display: block !important;
+  margin: 0 0 5px !important;
+  font-size: 23px !important;
+  font-weight: 850 !important;
+  line-height: 1 !important;
+  font-variant-numeric: tabular-nums;
+}
+
+/* Match score strip */
+.smp-score-band {
+  display: grid !important;
+  grid-template-columns: repeat(4, minmax(0, 1fr)) !important;
+  align-items: stretch !important;
+}
+
+.smp-score-band > div {
+  min-height: 88px !important;
+  display: flex !important;
+  flex-direction: column !important;
+  align-items: center !important;
+  justify-content: center !important;
+  padding: 14px !important;
+  text-align: center !important;
+}
+
+.smp-score-band span {
+  font-size: 11px !important;
+  line-height: 1.25 !important;
+}
+
+.smp-score-band strong {
+  margin-top: 6px !important;
+  font-size: 28px !important;
+  line-height: 1 !important;
+  font-variant-numeric: tabular-nums;
+}
+
+/* =========================================================
+   5. SEARCH / FILTERS / TABS
+========================================================= */
+
+.slp-utility-bar,
+.sep-toolbar {
+  align-items: center !important;
+  gap: 12px !important;
+}
+
+.slp-filters {
+  display: flex !important;
+  align-items: stretch !important;
+  gap: 10px !important;
+}
+
+.slp-filters label {
+  min-height: 50px !important;
+  display: flex !important;
+  flex-direction: column !important;
+  justify-content: center !important;
+  padding: 7px 12px !important;
+  border-radius: var(--public-radius-sm) !important;
+}
+
+.slp-filters label > span {
+  margin-bottom: 3px !important;
+  font-size: 10px !important;
+  line-height: 1 !important;
+}
+
+.slp-filters select {
+  font-size: var(--public-text-sm) !important;
+  line-height: 1.2 !important;
+}
+
+:is(.slp-search, .sep-search) {
+  min-height: 50px !important;
+  display: flex !important;
+  align-items: center !important;
+  gap: 9px !important;
+  padding: 8px 13px !important;
+  border-radius: var(--public-radius-sm) !important;
+}
+
+:is(.slp-search, .sep-search) input {
+  min-width: 0 !important;
+  font-size: var(--public-text-md) !important;
+}
+
+.slp-tabs {
+  display: flex !important;
+  align-items: center !important;
+  gap: 8px !important;
+}
+
+.slp-tabs button {
+  min-height: 44px !important;
+  display: inline-flex !important;
+  align-items: center !important;
+  justify-content: center !important;
+  padding: 10px 17px !important;
+  border-radius: 999px !important;
+  font-size: var(--public-text-sm) !important;
+  font-weight: 850 !important;
+  line-height: 1 !important;
+}
+
+/* =========================================================
+   6. SECTION HEADERS — ONE STANDARD
+========================================================= */
+
+:is(
+  .slp-section-heading,
+  .slp-block-heading,
+  .slp-live-rail-head,
+  .smp-section-heading,
+  .stp-section-heading,
+  .spp-section-heading,
+  .sep-section-heading
+) {
+  min-width: 0 !important;
+  display: flex !important;
+  align-items: flex-end !important;
+  justify-content: space-between !important;
+  gap: 18px !important;
+}
+
+:is(
+  .slp-section-heading h1,
+  .slp-section-heading h2,
+  .slp-block-heading h2,
+  .slp-live-rail-head h2,
+  .smp-section-heading h2,
+  .stp-section-heading h2,
+  .spp-section-heading h2,
+  .sep-section-heading h2
+) {
+  margin: 0 !important;
+  font-size: var(--public-heading-sm) !important;
+  font-weight: 850 !important;
+  line-height: 1.15 !important;
+  letter-spacing: -0.025em !important;
+}
+
+:is(
+  .slp-section-heading p,
+  .slp-block-heading p,
+  .smp-section-heading p,
+  .stp-section-heading p,
+  .spp-section-heading p,
+  .sep-section-heading p
+) {
+  margin: 0 0 6px !important;
+  font-size: 11px !important;
+  font-weight: 850 !important;
+  line-height: 1.3 !important;
+  letter-spacing: 0.09em !important;
+}
+
+:is(
+  .slp-section-heading > span,
+  .smp-section-heading > span,
+  .stp-section-heading > span,
+  .spp-section-heading > span,
+  .sep-section-heading > span
+) {
+  max-width: 430px !important;
+  font-size: var(--public-text-sm) !important;
+  line-height: 1.55 !important;
+  text-align: right !important;
+}
+
+/* =========================================================
+   7. ROW / CARD ALIGNMENT
+========================================================= */
+
+/* League numeric rows */
+.slp-numbers button {
+  min-height: 78px !important;
+  align-items: center !important;
+  gap: 14px !important;
+  padding: 14px 4px !important;
+}
+
+.slp-numbers span {
+  font-size: 11px !important;
+}
+
+.slp-numbers strong {
+  font-size: 28px !important;
+  line-height: 1 !important;
+}
+
+.slp-numbers small {
+  font-size: 13px !important;
+  line-height: 1.4 !important;
+}
+
+/* League performers */
+.slp-performers button,
+.slp-leader-row {
+  min-height: 74px !important;
+  align-items: center !important;
+  gap: 13px !important;
+  padding-block: 13px !important;
+}
+
+.slp-performers strong,
+.slp-leader-row strong {
+  font-size: var(--public-text-md) !important;
+  line-height: 1.3 !important;
+}
+
+.slp-performers small,
+.slp-performers em,
+.slp-leader-row span,
+.slp-leader-row small {
+  font-size: var(--public-text-xs) !important;
+  line-height: 1.45 !important;
+}
+
+/* Match rows */
+.slp-match-row {
+  min-height: 82px !important;
+  align-items: center !important;
+}
+
+.slp-match-copy strong {
+  font-size: var(--public-text-md) !important;
+  line-height: 1.35 !important;
+}
+
+.slp-match-copy span,
+.slp-match-copy small {
+  font-size: var(--public-text-xs) !important;
+  line-height: 1.45 !important;
+}
+
+.slp-match-score strong {
+  font-size: var(--public-text-lg) !important;
+}
+
+/* Team / series rows */
+.slp-team-row,
+.slp-series-row,
+.stp-player-row,
+.spp-match-row {
+  min-height: 72px !important;
+  align-items: center !important;
+}
+
+.slp-team-row strong,
+.slp-series-row strong,
+.stp-player-copy strong,
+.spp-match-title-line strong {
+  font-size: var(--public-text-md) !important;
+  line-height: 1.3 !important;
+}
+
+.slp-team-row span,
+.slp-team-row small,
+.slp-series-row span,
+.slp-series-row small,
+.stp-player-copy em,
+.stp-player-action,
+.spp-performance-line,
+.spp-match-copy span,
+.spp-match-copy small {
+  font-size: var(--public-text-xs) !important;
+  line-height: 1.45 !important;
+}
+
+/* Team summary cards */
+.stp-summary-list > div {
+  min-height: 94px !important;
+  display: grid !important;
+  grid-template-columns: minmax(110px, 0.55fr) auto minmax(160px, 1fr) !important;
+  align-items: center !important;
+  gap: 16px !important;
+}
+
+.stp-summary-list span {
+  font-size: 11px !important;
+}
+
+.stp-summary-list strong {
+  font-size: 29px !important;
+  line-height: 1 !important;
+}
+
+.stp-summary-list small {
+  font-size: 13px !important;
+  line-height: 1.45 !important;
+}
+
+/* Player stat rows */
+.spp-stat-list > div {
+  min-height: 76px !important;
+  align-items: center !important;
+  gap: 16px !important;
+}
+
+.spp-stat-list span {
+  font-size: 11px !important;
+}
+
+.spp-stat-list strong {
+  font-size: 23px !important;
+  line-height: 1 !important;
+}
+
+.spp-stat-list small {
+  font-size: 13px !important;
+  line-height: 1.45 !important;
+}
+
+/* Match info rows */
+.smp-overview-list > div,
+.smp-info-list > div {
+  min-height: 68px !important;
+  display: grid !important;
+  grid-template-columns: minmax(120px, 0.55fr) minmax(0, 1fr) !important;
+  align-items: center !important;
+  gap: 18px !important;
+}
+
+.smp-overview-list span,
+.smp-info-list span {
+  font-size: 11px !important;
+}
+
+.smp-overview-list strong,
+.smp-info-list strong {
+  font-size: 15px !important;
+  line-height: 1.4 !important;
+  text-align: right !important;
+}
+
+.smp-overview-list small {
+  grid-column: 1 / -1 !important;
+  font-size: 13px !important;
+  line-height: 1.45 !important;
+}
+
+/* Explore list */
+.sep-league-row {
+  min-height: 88px !important;
+  align-items: center !important;
+  gap: 15px !important;
+  padding-block: 17px !important;
+}
+
+.sep-league-main small {
+  font-size: 10px !important;
+}
+
+.sep-league-main strong {
+  margin-top: 4px !important;
+  font-size: var(--public-text-lg) !important;
+  line-height: 1.3 !important;
+}
+
+.sep-league-main em {
+  margin-top: 5px !important;
+  font-size: 13px !important;
+  line-height: 1.45 !important;
+}
+
+.sep-league-stat small {
+  font-size: 10px !important;
+}
+
+.sep-league-stat strong {
+  margin-top: 5px !important;
+  font-size: 19px !important;
+}
+
+.sep-follow-state,
+.sep-open-action {
+  font-size: var(--public-text-xs) !important;
+}
+
+.sep-open-action {
+  min-height: 42px !important;
+  padding: 9px 13px !important;
+}
+
+/* =========================================================
+   8. TABLE ALIGNMENT
+========================================================= */
+
+.slp-table {
+  width: 100% !important;
+  border-collapse: collapse !important;
+}
+
+.slp-table th {
+  height: 50px !important;
+  padding: 12px 14px !important;
+  font-size: 12px !important;
+  line-height: 1.2 !important;
+  text-align: center !important;
+  vertical-align: middle !important;
+}
+
+.slp-table td {
+  height: 56px !important;
+  padding: 13px 14px !important;
+  font-size: 14px !important;
+  line-height: 1.35 !important;
+  text-align: center !important;
+  vertical-align: middle !important;
+}
+
+.slp-table th:first-child,
+.slp-table td:first-child {
+  min-width: 180px !important;
+  text-align: left !important;
+}
+
+.slp-table td:first-child {
+  font-size: 15px !important;
+  font-weight: 850 !important;
+}
+
+/* =========================================================
+   9. MOBILE — CONSISTENT, READABLE, ALIGNED
+========================================================= */
+
+@media (max-width: 700px) {
+  :is(.slp-page, .smp-page, .stp-page, .spp-page, .sep-page) {
+    --public-text-xs: 12px;
+    --public-text-sm: 14px;
+    --public-text-md: 16px;
+    --public-text-lg: 18px;
+    --public-heading-sm: 24px;
+
+    padding: 14px 13px 50px !important;
+    overflow-x: clip !important;
+    font-size: 16px !important;
+  }
+
+  /* Top bar stays on one aligned line */
+  :is(.slp-topline, .smp-topline, .stp-topline, .spp-topline, .sep-topline) {
+    min-height: 34px !important;
+    flex-direction: row !important;
+    align-items: center !important;
+    gap: 10px !important;
+  }
+
+  :is(.slp-breadcrumb, .smp-breadcrumb, .stp-breadcrumb, .spp-breadcrumb, .sep-breadcrumb) {
+    max-width: 68% !important;
+    font-size: 11px !important;
+  }
+
+  :is(.slp-public-label, .smp-status-label, .stp-public-label, .spp-public-label, .sep-public-label) {
+    order: initial !important;
+    min-height: 30px !important;
+    padding: 6px 9px !important;
+    font-size: 9px !important;
+  }
+
+  /* Hero */
+  :is(.slp-hero-main, .stp-hero-main, .spp-hero-main, .sep-hero-main) {
+    align-items: stretch !important;
+    flex-direction: column !important;
+    gap: 20px !important;
+    padding-top: 28px !important;
+  }
+
+  :is(.slp-league-copy h1, .stp-team-identity h1, .spp-player-identity h1, .sep-copy h1) {
+    font-size: clamp(34px, 10vw, 46px) !important;
+  }
+
+  .smp-match-stage {
+    padding-top: 28px !important;
+  }
+
+  .smp-team h1 {
+    font-size: clamp(24px, 7.5vw, 34px) !important;
+  }
+
+  :is(
+    .slp-league-copy > p:not(.slp-kicker),
+    .stp-subtitle,
+    .spp-subtitle,
+    .sep-copy > p:not(.sep-kicker),
+    .smp-result-line p
+  ) {
+    font-size: 15px !important;
+    line-height: 1.55 !important;
+  }
+
+  /* Actions align in a clean 2-column grid */
+  :is(.slp-actions, .smp-actions, .stp-actions, .spp-actions) {
+    width: 100% !important;
+    display: grid !important;
+    grid-template-columns: repeat(2, minmax(0, 1fr)) !important;
+    gap: 9px !important;
+  }
+
+  :is(.slp-actions, .smp-actions, .stp-actions, .spp-actions) > * {
+    width: 100% !important;
+    min-height: 47px !important;
+    padding: 9px 10px !important;
+    font-size: 12px !important;
+    text-align: center !important;
+  }
+
+  .slp-actions .slp-follow,
+  .smp-actions .smp-primary-action,
+  .spp-actions .spp-primary-action {
+    grid-column: 1 / -1 !important;
+  }
+
+  /* Summary strips */
+  :is(.slp-league-facts, .stp-record-line, .spp-career-line, .sep-summary) {
+    grid-auto-flow: row !important;
+    grid-template-columns: repeat(4, minmax(0, 1fr)) !important;
+  }
+
+  :is(.slp-league-facts, .stp-record-line, .spp-career-line, .sep-summary) > span {
+    min-height: 62px !important;
+    padding: 8px 5px !important;
+    font-size: 9px !important;
+  }
+
+  :is(.slp-league-facts, .stp-record-line, .spp-career-line, .sep-summary) b {
+    font-size: 19px !important;
+  }
+
+  /* Filters */
+  .slp-utility-bar,
+  .sep-toolbar {
+    align-items: stretch !important;
+    flex-direction: column !important;
+    gap: 10px !important;
+  }
+
+  .slp-filters {
+    width: 100% !important;
+    display: grid !important;
+    grid-template-columns: repeat(2, minmax(0, 1fr)) !important;
+    gap: 9px !important;
+  }
+
+  .slp-filters label {
+    width: 100% !important;
+    min-width: 0 !important;
+  }
+
+  :is(.slp-search, .sep-search) {
+    width: 100% !important;
+  }
+
+  /* Tabs */
+  .slp-tabs {
+    position: sticky !important;
+    top: 0 !important;
+    z-index: 30 !important;
+    margin-inline: -13px !important;
+    padding: 10px 13px !important;
+    overflow-x: auto !important;
+    flex-wrap: nowrap !important;
+    scrollbar-width: none;
+  }
+
+  .slp-tabs::-webkit-scrollbar {
+    display: none;
+  }
+
+  .slp-tabs button {
+    flex: 0 0 auto !important;
+    min-width: auto !important;
+    min-height: 42px !important;
+    padding: 10px 15px !important;
+    font-size: 12px !important;
+    white-space: nowrap !important;
+  }
+
+  /* Section headings stack consistently */
+  :is(
+    .slp-section-heading,
+    .slp-block-heading,
+    .slp-live-rail-head,
+    .smp-section-heading,
+    .stp-section-heading,
+    .spp-section-heading,
+    .sep-section-heading
+  ) {
+    align-items: flex-start !important;
+    flex-direction: column !important;
+    gap: 7px !important;
+  }
+
+  :is(
+    .slp-section-heading h1,
+    .slp-section-heading h2,
+    .slp-block-heading h2,
+    .slp-live-rail-head h2,
+    .smp-section-heading h2,
+    .stp-section-heading h2,
+    .spp-section-heading h2,
+    .sep-section-heading h2
+  ) {
+    font-size: 24px !important;
+  }
+
+  :is(
+    .slp-section-heading > span,
+    .smp-section-heading > span,
+    .stp-section-heading > span,
+    .spp-section-heading > span,
+    .sep-section-heading > span
+  ) {
+    max-width: 100% !important;
+    font-size: 12px !important;
+    text-align: left !important;
+  }
+
+  /* League live cards become swipe rail */
+  .slp-live-rail {
+    grid-auto-columns: min(88%, 390px) !important;
+    gap: 10px !important;
+  }
+
+  .slp-live-card {
+    min-height: 176px !important;
+    padding: 17px !important;
+  }
+
+  .slp-live-card-copy h3 {
+    font-size: 20px !important;
+  }
+
+  .slp-live-card-copy p {
+    font-size: 12px !important;
+  }
+
+  /* Row alignment */
+  .slp-numbers button {
+    min-height: 72px !important;
+  }
+
+  .slp-numbers strong {
+    font-size: 24px !important;
+  }
+
+  .slp-performers button,
+  .slp-leader-row,
+  .slp-match-row,
+  .slp-team-row,
+  .slp-series-row,
+  .stp-player-row,
+  .spp-match-row,
+  .sep-league-row {
+    min-height: 72px !important;
+  }
+
+  /* Team summary: horizontal rail, same card dimensions */
+  .stp-summary-list {
+    display: grid !important;
+    grid-auto-flow: column !important;
+    grid-auto-columns: 78% !important;
+    gap: 10px !important;
+    overflow-x: auto !important;
+    scroll-snap-type: x mandatory !important;
+    scrollbar-width: none;
+  }
+
+  .stp-summary-list::-webkit-scrollbar {
+    display: none;
+  }
+
+  .stp-summary-list > div {
+    min-height: 142px !important;
+    display: block !important;
+    padding: 18px !important;
+    border-radius: var(--public-radius-md) !important;
+    scroll-snap-align: start !important;
+  }
+
+  .stp-summary-list strong {
+    display: block !important;
+    margin-top: 10px !important;
+    font-size: 32px !important;
+  }
+
+  .stp-summary-list small {
+    display: block !important;
+    margin-top: 10px !important;
+    font-size: 12px !important;
+  }
+
+  /* Match info */
+  .smp-score-band {
+    grid-template-columns: repeat(2, minmax(0, 1fr)) !important;
+  }
+
+  .smp-score-band > div {
+    min-height: 78px !important;
+  }
+
+  .smp-score-band strong {
+    font-size: 24px !important;
+  }
+
+  .smp-overview-list > div,
+  .smp-info-list > div {
+    min-height: 66px !important;
+    grid-template-columns: minmax(95px, 0.48fr) minmax(0, 1fr) !important;
+    gap: 12px !important;
+  }
+
+  .smp-overview-list strong,
+  .smp-info-list strong {
+    font-size: 14px !important;
+  }
+
+  /* Explore: clean two-column row */
+  .sep-league-row {
+    grid-template-columns: auto minmax(0, 1fr) !important;
+    gap: 12px !important;
+    padding: 16px 0 !important;
+  }
+
+  .sep-index,
+  .sep-league-stat {
+    display: none !important;
+  }
+
+  .sep-league-mark {
+    width: 48px !important;
+    height: 48px !important;
+    font-size: 12px !important;
+  }
+
+  .sep-league-main strong {
+    white-space: normal !important;
+    font-size: 17px !important;
+  }
+
+  .sep-league-main em {
+    white-space: normal !important;
+    font-size: 12px !important;
+  }
+
+  .sep-follow-state,
+  .sep-open-action {
+    grid-column: 2 !important;
+    justify-self: stretch !important;
+  }
+
+  .sep-open-action {
+    justify-content: center !important;
+  }
+
+  /* Tables */
+  .slp-table-wrap {
+    overflow-x: auto !important;
+    -webkit-overflow-scrolling: touch;
+  }
+
+  .slp-table {
+    min-width: 700px !important;
+  }
+
+  .slp-table th {
+    font-size: 11px !important;
+  }
+
+  .slp-table td {
+    font-size: 13px !important;
+  }
+}
+
+/* =========================================================
+   10. SMALL PHONES
+========================================================= */
+
+@media (max-width: 390px) {
+  :is(.slp-page, .smp-page, .stp-page, .spp-page, .sep-page) {
+    padding-inline: 10px !important;
+  }
+
+  :is(.slp-actions, .smp-actions, .stp-actions, .spp-actions) {
+    grid-template-columns: 1fr !important;
+  }
+
+  .slp-actions .slp-follow,
+  .smp-actions .smp-primary-action,
+  .spp-actions .spp-primary-action {
+    grid-column: auto !important;
+  }
+
+  :is(.slp-league-facts, .sep-summary) {
+    grid-template-columns: repeat(2, minmax(0, 1fr)) !important;
+  }
+
+  :is(.stp-record-line, .spp-career-line) {
+    grid-template-columns: repeat(3, minmax(0, 1fr)) !important;
+  }
+
+  .slp-tabs {
+    margin-inline: -10px !important;
+    padding-inline: 10px !important;
+  }
+}
+
+
+/* =========================================================
+   PUBLIC SPECTATOR DESIGN SYSTEM V3
+   League navigation, actions, and tab-bar refinement
+========================================================= */
+
+/* ---------------------------------------------------------
+   1. OBVIOUS BACK NAVIGATION / BREADCRUMB
+--------------------------------------------------------- */
+
+.slp-breadcrumb {
+  display: inline-flex !important;
+  align-items: center !important;
+  gap: 8px !important;
+  width: fit-content !important;
+  max-width: 100% !important;
+  padding: 5px !important;
+  border: 1px solid rgba(58, 91, 130, 0.72) !important;
+  border-radius: 12px !important;
+  background:
+    linear-gradient(
+      145deg,
+      rgba(14, 35, 59, 0.94),
+      rgba(7, 21, 37, 0.96)
+    ) !important;
+  box-shadow:
+    0 10px 24px rgba(0, 0, 0, 0.18),
+    inset 0 1px 0 rgba(255, 255, 255, 0.025) !important;
+}
+
+.slp-breadcrumb > span {
+  display: none !important;
+}
+
+.slp-breadcrumb > a {
+  min-height: 36px !important;
+  display: inline-flex !important;
+  align-items: center !important;
+  justify-content: center !important;
+  gap: 8px !important;
+  padding: 8px 12px !important;
+  border: 1px solid rgba(66, 119, 177, 0.7) !important;
+  border-radius: 8px !important;
+  color: #e9f3fd !important;
+  background:
+    linear-gradient(
+      145deg,
+      rgba(30, 85, 143, 0.95),
+      rgba(17, 53, 91, 0.97)
+    ) !important;
+  box-shadow:
+    0 8px 18px rgba(15, 69, 125, 0.2),
+    inset 0 1px 0 rgba(255, 255, 255, 0.05) !important;
+  font-size: 13px !important;
+  font-weight: 850 !important;
+  line-height: 1 !important;
+  white-space: nowrap !important;
+  transition:
+    transform 0.18s ease,
+    border-color 0.18s ease,
+    background 0.18s ease !important;
+}
+
+.slp-breadcrumb > a::before {
+  content: "←" !important;
+  color: #9ed2ff !important;
+  font-size: 16px !important;
+  font-weight: 900 !important;
+  line-height: 1 !important;
+}
+
+.slp-breadcrumb > a:hover {
+  transform: translateX(-2px) !important;
+  border-color: rgba(91, 166, 239, 0.95) !important;
+  background:
+    linear-gradient(
+      145deg,
+      rgba(37, 105, 177, 0.98),
+      rgba(20, 64, 109, 0.98)
+    ) !important;
+}
+
+.slp-breadcrumb > strong {
+  min-width: 0 !important;
+  max-width: min(340px, 40vw) !important;
+  padding: 7px 10px !important;
+  color: #cbd9e8 !important;
+  font-size: 12px !important;
+  font-weight: 800 !important;
+  line-height: 1.2 !important;
+  text-overflow: ellipsis !important;
+  white-space: nowrap !important;
+}
+
+/* ---------------------------------------------------------
+   2. POLISHED LEAGUE ACTION GROUP
+--------------------------------------------------------- */
+
+.slp-actions {
+  position: relative !important;
+  display: grid !important;
+  grid-template-columns: repeat(2, minmax(0, auto)) !important;
+  gap: 9px !important;
+  padding: 10px !important;
+  border: 1px solid rgba(51, 84, 122, 0.72) !important;
+  border-radius: 15px !important;
+  background:
+    linear-gradient(
+      145deg,
+      rgba(13, 31, 52, 0.96),
+      rgba(7, 20, 35, 0.98)
+    ) !important;
+  box-shadow:
+    0 18px 40px rgba(0, 0, 0, 0.24),
+    inset 0 1px 0 rgba(255, 255, 255, 0.025) !important;
+}
+
+.slp-actions > * {
+  min-width: 118px !important;
+  min-height: 44px !important;
+  padding: 10px 14px !important;
+  border: 1px solid rgba(61, 98, 139, 0.76) !important;
+  border-radius: 10px !important;
+  color: #dce8f4 !important;
+  background:
+    linear-gradient(
+      145deg,
+      rgba(18, 45, 75, 0.96),
+      rgba(8, 25, 43, 0.98)
+    ) !important;
+  box-shadow:
+    inset 0 1px 0 rgba(255, 255, 255, 0.025) !important;
+  font-size: 13px !important;
+  font-weight: 850 !important;
+  transition:
+    transform 0.17s ease,
+    border-color 0.17s ease,
+    box-shadow 0.17s ease !important;
+}
+
+.slp-actions > *:hover {
+  transform: translateY(-1px) !important;
+  border-color: rgba(83, 151, 219, 0.9) !important;
+  box-shadow: 0 10px 20px rgba(0, 0, 0, 0.18) !important;
+}
+
+.slp-actions .slp-follow {
+  grid-column: 1 / -1 !important;
+  min-width: 100% !important;
+  border-color: rgba(57, 137, 214, 0.86) !important;
+  color: #ffffff !important;
+  background:
+    linear-gradient(
+      145deg,
+      #1d69ae,
+      #134675
+    ) !important;
+  box-shadow:
+    0 12px 25px rgba(21, 93, 157, 0.25),
+    inset 0 1px 0 rgba(255, 255, 255, 0.08) !important;
+}
+
+.slp-actions .slp-follow.is-following,
+.slp-actions .slp-follow[aria-pressed="true"] {
+  border-color: rgba(44, 197, 141, 0.75) !important;
+  color: #e9fff7 !important;
+  background:
+    linear-gradient(
+      145deg,
+      rgba(21, 114, 82, 0.98),
+      rgba(12, 74, 54, 0.99)
+    ) !important;
+  box-shadow:
+    0 12px 25px rgba(13, 105, 74, 0.22),
+    inset 0 1px 0 rgba(255, 255, 255, 0.06) !important;
+}
+
+/* ---------------------------------------------------------
+   3. STRONG SEGMENTED TAB NAVIGATION
+--------------------------------------------------------- */
+
+.slp-tabs {
+  position: sticky !important;
+  top: 0 !important;
+  z-index: 40 !important;
+  display: grid !important;
+  grid-template-columns: repeat(6, minmax(0, 1fr)) !important;
+  gap: 8px !important;
+  padding: 10px !important;
+  border: 1px solid rgba(51, 84, 122, 0.74) !important;
+  border-radius: 15px !important;
+  background:
+    linear-gradient(
+      145deg,
+      rgba(12, 30, 51, 0.97),
+      rgba(6, 19, 34, 0.98)
+    ) !important;
+  box-shadow:
+    0 16px 38px rgba(0, 0, 0, 0.22),
+    inset 0 1px 0 rgba(255, 255, 255, 0.025) !important;
+  backdrop-filter: blur(14px) !important;
+}
+
+.slp-tabs button {
+  position: relative !important;
+  min-width: 0 !important;
+  min-height: 46px !important;
+  padding: 10px 12px !important;
+  border: 1px solid rgba(51, 82, 118, 0.72) !important;
+  border-radius: 10px !important;
+  color: #9eb0c5 !important;
+  background:
+    linear-gradient(
+      145deg,
+      rgba(14, 35, 59, 0.88),
+      rgba(8, 23, 40, 0.92)
+    ) !important;
+  font-size: 13px !important;
+  font-weight: 850 !important;
+  line-height: 1 !important;
+  transition:
+    color 0.17s ease,
+    transform 0.17s ease,
+    border-color 0.17s ease,
+    background 0.17s ease !important;
+}
+
+.slp-tabs button:hover {
+  transform: translateY(-1px) !important;
+  border-color: rgba(77, 137, 199, 0.84) !important;
+  color: #e6f0fa !important;
+  background:
+    linear-gradient(
+      145deg,
+      rgba(23, 57, 94, 0.95),
+      rgba(10, 32, 55, 0.96)
+    ) !important;
+}
+
+/* Supports common active-tab implementations */
+.slp-tabs button.is-active,
+.slp-tabs button.active,
+.slp-tabs button[aria-selected="true"],
+.slp-tabs button[data-active="true"] {
+  border-color: rgba(76, 159, 239, 0.95) !important;
+  color: #ffffff !important;
+  background:
+    linear-gradient(
+      145deg,
+      #236fb6,
+      #174b7d
+    ) !important;
+  box-shadow:
+    0 10px 24px rgba(20, 93, 159, 0.28),
+    inset 0 1px 0 rgba(255, 255, 255, 0.07) !important;
+}
+
+.slp-tabs button.is-active::after,
+.slp-tabs button.active::after,
+.slp-tabs button[aria-selected="true"]::after,
+.slp-tabs button[data-active="true"]::after {
+  content: "" !important;
+  position: absolute !important;
+  right: 16px !important;
+  bottom: 5px !important;
+  left: 16px !important;
+  height: 2px !important;
+  border-radius: 999px !important;
+  background: #8ed0ff !important;
+  box-shadow: 0 0 12px rgba(90, 180, 255, 0.55) !important;
+}
+
+/* ---------------------------------------------------------
+   4. MOBILE REFINEMENT
+--------------------------------------------------------- */
+
+@media (max-width: 700px) {
+  .slp-topline {
+    align-items: center !important;
+    flex-direction: row !important;
+  }
+
+  .slp-breadcrumb {
+    max-width: calc(100% - 98px) !important;
+    padding: 4px !important;
+  }
+
+  .slp-breadcrumb > a {
+    min-height: 38px !important;
+    padding: 8px 10px !important;
+    font-size: 12px !important;
+  }
+
+  .slp-breadcrumb > strong {
+    max-width: 38vw !important;
+    padding-inline: 8px !important;
+    font-size: 11px !important;
+  }
+
+  .slp-actions {
+    width: 100% !important;
+    grid-template-columns: repeat(2, minmax(0, 1fr)) !important;
+    padding: 8px !important;
+  }
+
+  .slp-actions > * {
+    width: 100% !important;
+    min-width: 0 !important;
+    min-height: 46px !important;
+    font-size: 12px !important;
+  }
+
+  .slp-actions .slp-follow {
+    grid-column: 1 / -1 !important;
+  }
+
+  .slp-tabs {
+    position: sticky !important;
+    top: 0 !important;
+    display: flex !important;
+    grid-template-columns: none !important;
+    gap: 7px !important;
+    margin-inline: -13px !important;
+    padding: 9px 13px !important;
+    border-right: 0 !important;
+    border-left: 0 !important;
+    border-radius: 0 !important;
+    overflow-x: auto !important;
+    scroll-snap-type: x proximity !important;
+    scrollbar-width: none !important;
+  }
+
+  .slp-tabs::-webkit-scrollbar {
+    display: none !important;
+  }
+
+  .slp-tabs button {
+    flex: 0 0 auto !important;
+    min-width: 108px !important;
+    min-height: 44px !important;
+    padding: 10px 14px !important;
+    scroll-snap-align: start !important;
+    font-size: 12px !important;
+    white-space: nowrap !important;
+  }
+}
+
+@media (max-width: 390px) {
+  .slp-breadcrumb {
+    max-width: calc(100% - 82px) !important;
+  }
+
+  .slp-breadcrumb > strong {
+    display: none !important;
+  }
+
+  .slp-tabs {
+    margin-inline: -10px !important;
+    padding-inline: 10px !important;
+  }
+}
+
+
+/* =========================================================
+   PUBLIC SPECTATOR DESIGN SYSTEM V4
+   Extends polished navigation/actions to Match, Team, Player
+========================================================= */
+
+/* ---------------------------------------------------------
+   SHARED BACK-NAVIGATION CONTAINER
+--------------------------------------------------------- */
+
+:is(.smp-breadcrumb, .stp-breadcrumb, .spp-breadcrumb) {
+  display: inline-flex !important;
+  align-items: center !important;
+  gap: 7px !important;
+  width: fit-content !important;
+  max-width: 100% !important;
+  padding: 5px !important;
+  border: 1px solid rgba(58, 91, 130, 0.72) !important;
+  border-radius: 12px !important;
+  background:
+    linear-gradient(
+      145deg,
+      rgba(14, 35, 59, 0.94),
+      rgba(7, 21, 37, 0.96)
+    ) !important;
+  box-shadow:
+    0 10px 24px rgba(0, 0, 0, 0.18),
+    inset 0 1px 0 rgba(255, 255, 255, 0.025) !important;
+}
+
+/* Hide slash separators—the controls now provide hierarchy. */
+:is(.smp-breadcrumb, .stp-breadcrumb, .spp-breadcrumb) > span {
+  display: none !important;
+}
+
+/* First breadcrumb link is the primary Back button. */
+:is(.smp-breadcrumb, .stp-breadcrumb, .spp-breadcrumb) > a:first-child {
+  min-height: 36px !important;
+  display: inline-flex !important;
+  align-items: center !important;
+  justify-content: center !important;
+  gap: 8px !important;
+  padding: 8px 12px !important;
+  border: 1px solid rgba(66, 119, 177, 0.7) !important;
+  border-radius: 8px !important;
+  color: #e9f3fd !important;
+  background:
+    linear-gradient(
+      145deg,
+      rgba(30, 85, 143, 0.95),
+      rgba(17, 53, 91, 0.97)
+    ) !important;
+  box-shadow:
+    0 8px 18px rgba(15, 69, 125, 0.2),
+    inset 0 1px 0 rgba(255, 255, 255, 0.05) !important;
+  font-size: 13px !important;
+  font-weight: 850 !important;
+  line-height: 1 !important;
+  white-space: nowrap !important;
+  transition:
+    transform 0.18s ease,
+    border-color 0.18s ease,
+    background 0.18s ease !important;
+}
+
+:is(.smp-breadcrumb, .stp-breadcrumb, .spp-breadcrumb) > a:first-child::before {
+  content: "←" !important;
+  color: #9ed2ff !important;
+  font-size: 16px !important;
+  font-weight: 900 !important;
+  line-height: 1 !important;
+}
+
+:is(.smp-breadcrumb, .stp-breadcrumb, .spp-breadcrumb) > a:first-child:hover {
+  transform: translateX(-2px) !important;
+  border-color: rgba(91, 166, 239, 0.95) !important;
+  background:
+    linear-gradient(
+      145deg,
+      rgba(37, 105, 177, 0.98),
+      rgba(20, 64, 109, 0.98)
+    ) !important;
+}
+
+/* Intermediate league link becomes a compact navigation chip. */
+:is(.smp-breadcrumb, .stp-breadcrumb, .spp-breadcrumb) > a:not(:first-child) {
+  min-height: 34px !important;
+  display: inline-flex !important;
+  align-items: center !important;
+  justify-content: center !important;
+  padding: 7px 10px !important;
+  border: 1px solid rgba(51, 83, 120, 0.7) !important;
+  border-radius: 8px !important;
+  color: #b9cbe0 !important;
+  background: rgba(9, 27, 47, 0.68) !important;
+  font-size: 12px !important;
+  font-weight: 800 !important;
+  line-height: 1 !important;
+  white-space: nowrap !important;
+}
+
+:is(.smp-breadcrumb, .stp-breadcrumb, .spp-breadcrumb) > a:not(:first-child):hover {
+  border-color: rgba(75, 137, 199, 0.84) !important;
+  color: #ecf5fe !important;
+  background: rgba(18, 52, 87, 0.88) !important;
+}
+
+/* Current page label. */
+:is(.smp-breadcrumb, .stp-breadcrumb, .spp-breadcrumb) > strong {
+  min-width: 0 !important;
+  max-width: min(300px, 32vw) !important;
+  padding: 7px 10px !important;
+  overflow: hidden !important;
+  color: #d6e1ec !important;
+  font-size: 12px !important;
+  font-weight: 850 !important;
+  line-height: 1.2 !important;
+  text-overflow: ellipsis !important;
+  white-space: nowrap !important;
+}
+
+/* ---------------------------------------------------------
+   MATCH CENTER ACTION GROUP
+--------------------------------------------------------- */
+
+.smp-actions {
+  position: relative !important;
+  display: grid !important;
+  grid-template-columns: repeat(2, minmax(130px, 1fr)) !important;
+  gap: 9px !important;
+  padding: 10px !important;
+  border: 1px solid rgba(51, 84, 122, 0.72) !important;
+  border-radius: 15px !important;
+  background:
+    linear-gradient(
+      145deg,
+      rgba(13, 31, 52, 0.96),
+      rgba(7, 20, 35, 0.98)
+    ) !important;
+  box-shadow:
+    0 18px 40px rgba(0, 0, 0, 0.24),
+    inset 0 1px 0 rgba(255, 255, 255, 0.025) !important;
+}
+
+.smp-actions > * {
+  min-width: 0 !important;
+  min-height: 45px !important;
+  padding: 10px 14px !important;
+  border: 1px solid rgba(61, 98, 139, 0.76) !important;
+  border-radius: 10px !important;
+  color: #dce8f4 !important;
+  background:
+    linear-gradient(
+      145deg,
+      rgba(18, 45, 75, 0.96),
+      rgba(8, 25, 43, 0.98)
+    ) !important;
+  font-size: 13px !important;
+  font-weight: 850 !important;
+}
+
+.smp-actions .smp-primary-action {
+  grid-column: 1 / -1 !important;
+  border-color: rgba(57, 137, 214, 0.86) !important;
+  color: #fff !important;
+  background:
+    linear-gradient(
+      145deg,
+      #1d69ae,
+      #134675
+    ) !important;
+  box-shadow:
+    0 12px 25px rgba(21, 93, 157, 0.25),
+    inset 0 1px 0 rgba(255, 255, 255, 0.08) !important;
+}
+
+/* ---------------------------------------------------------
+   TEAM PROFILE ACTION GROUP
+--------------------------------------------------------- */
+
+.stp-actions {
+  position: relative !important;
+  display: grid !important;
+  grid-template-columns: repeat(2, minmax(140px, 1fr)) !important;
+  gap: 9px !important;
+  padding: 10px !important;
+  border: 1px solid rgba(51, 84, 122, 0.72) !important;
+  border-radius: 15px !important;
+  background:
+    linear-gradient(
+      145deg,
+      rgba(13, 31, 52, 0.96),
+      rgba(7, 20, 35, 0.98)
+    ) !important;
+  box-shadow:
+    0 18px 40px rgba(0, 0, 0, 0.24),
+    inset 0 1px 0 rgba(255, 255, 255, 0.025) !important;
+}
+
+.stp-actions > * {
+  min-width: 0 !important;
+  min-height: 45px !important;
+  padding: 10px 14px !important;
+  border: 1px solid rgba(61, 98, 139, 0.76) !important;
+  border-radius: 10px !important;
+  color: #dce8f4 !important;
+  background:
+    linear-gradient(
+      145deg,
+      rgba(18, 45, 75, 0.96),
+      rgba(8, 25, 43, 0.98)
+    ) !important;
+  font-size: 13px !important;
+  font-weight: 850 !important;
+}
+
+/* Last action receives primary emphasis. */
+.stp-actions > *:last-child {
+  border-color: rgba(57, 137, 214, 0.86) !important;
+  color: #fff !important;
+  background:
+    linear-gradient(
+      145deg,
+      #1d69ae,
+      #134675
+    ) !important;
+  box-shadow:
+    0 12px 25px rgba(21, 93, 157, 0.25),
+    inset 0 1px 0 rgba(255, 255, 255, 0.08) !important;
+}
+
+/* ---------------------------------------------------------
+   PLAYER PROFILE ACTION GROUP
+--------------------------------------------------------- */
+
+.spp-actions {
+  position: relative !important;
+  display: grid !important;
+  grid-template-columns: repeat(2, minmax(130px, 1fr)) !important;
+  gap: 9px !important;
+  padding: 10px !important;
+  border: 1px solid rgba(51, 84, 122, 0.72) !important;
+  border-radius: 15px !important;
+  background:
+    linear-gradient(
+      145deg,
+      rgba(13, 31, 52, 0.96),
+      rgba(7, 20, 35, 0.98)
+    ) !important;
+  box-shadow:
+    0 18px 40px rgba(0, 0, 0, 0.24),
+    inset 0 1px 0 rgba(255, 255, 255, 0.025) !important;
+}
+
+.spp-actions > * {
+  min-width: 0 !important;
+  min-height: 45px !important;
+  padding: 10px 14px !important;
+  border: 1px solid rgba(61, 98, 139, 0.76) !important;
+  border-radius: 10px !important;
+  color: #dce8f4 !important;
+  background:
+    linear-gradient(
+      145deg,
+      rgba(18, 45, 75, 0.96),
+      rgba(8, 25, 43, 0.98)
+    ) !important;
+  font-size: 13px !important;
+  font-weight: 850 !important;
+}
+
+.spp-actions .spp-primary-action {
+  grid-column: 1 / -1 !important;
+  border-color: rgba(57, 137, 214, 0.86) !important;
+  color: #fff !important;
+  background:
+    linear-gradient(
+      145deg,
+      #1d69ae,
+      #134675
+    ) !important;
+  box-shadow:
+    0 12px 25px rgba(21, 93, 157, 0.25),
+    inset 0 1px 0 rgba(255, 255, 255, 0.08) !important;
+}
+
+/* Shared interaction feedback */
+:is(.smp-actions, .stp-actions, .spp-actions) > * {
+  transition:
+    transform 0.17s ease,
+    border-color 0.17s ease,
+    box-shadow 0.17s ease !important;
+}
+
+:is(.smp-actions, .stp-actions, .spp-actions) > *:hover {
+  transform: translateY(-1px) !important;
+  border-color: rgba(83, 151, 219, 0.9) !important;
+  box-shadow: 0 10px 20px rgba(0, 0, 0, 0.18) !important;
+}
+
+/* ---------------------------------------------------------
+   MOBILE
+--------------------------------------------------------- */
+
+@media (max-width: 700px) {
+  :is(.smp-breadcrumb, .stp-breadcrumb, .spp-breadcrumb) {
+    max-width: calc(100% - 96px) !important;
+    padding: 4px !important;
+  }
+
+  :is(.smp-breadcrumb, .stp-breadcrumb, .spp-breadcrumb) > a:first-child {
+    min-height: 38px !important;
+    padding: 8px 10px !important;
+    font-size: 12px !important;
+  }
+
+  :is(.smp-breadcrumb, .stp-breadcrumb, .spp-breadcrumb)
+    > a:not(:first-child) {
+    display: none !important;
+  }
+
+  :is(.smp-breadcrumb, .stp-breadcrumb, .spp-breadcrumb) > strong {
+    max-width: 43vw !important;
+    padding-inline: 8px !important;
+    font-size: 11px !important;
+  }
+
+  :is(.smp-actions, .stp-actions, .spp-actions) {
+    width: 100% !important;
+    grid-template-columns: repeat(2, minmax(0, 1fr)) !important;
+    padding: 8px !important;
+  }
+
+  :is(.smp-actions, .stp-actions, .spp-actions) > * {
+    width: 100% !important;
+    min-width: 0 !important;
+    min-height: 46px !important;
+    padding: 9px 8px !important;
+    font-size: 12px !important;
+    text-align: center !important;
+  }
+
+  .smp-actions .smp-primary-action,
+  .spp-actions .spp-primary-action {
+    grid-column: 1 / -1 !important;
+  }
+}
+
+@media (max-width: 390px) {
+  :is(.smp-breadcrumb, .stp-breadcrumb, .spp-breadcrumb) {
+    max-width: calc(100% - 82px) !important;
+  }
+
+  :is(.smp-breadcrumb, .stp-breadcrumb, .spp-breadcrumb) > strong {
+    display: none !important;
+  }
+
+  :is(.smp-actions, .stp-actions, .spp-actions) {
+    grid-template-columns: 1fr !important;
+  }
+
+  .smp-actions .smp-primary-action,
+  .spp-actions .spp-primary-action {
+    grid-column: auto !important;
+  }
+}
