@@ -12469,3 +12469,96 @@ strong {
     grid-column: auto !important;
   }
 }
+/* =========================================================
+   MOBILE FIX: SEASON / SERIES SELECTED VALUES
+========================================================= */
+
+.slp-filters label {
+  position: relative !important;
+  overflow: visible !important;
+}
+
+.slp-filters select {
+  width: 100% !important;
+  min-width: 0 !important;
+  height: 28px !important;
+  min-height: 28px !important;
+  display: block !important;
+
+  margin: 0 !important;
+  padding: 0 28px 0 0 !important;
+
+  border: 0 !important;
+  outline: 0 !important;
+
+  color: #f4f8fc !important;
+  background-color: transparent !important;
+
+  font-size: 14px !important;
+  font-weight: 800 !important;
+  line-height: 28px !important;
+
+  opacity: 1 !important;
+  visibility: visible !important;
+
+  -webkit-appearance: menulist !important;
+  appearance: menulist !important;
+
+  -webkit-text-fill-color: #f4f8fc !important;
+  text-overflow: ellipsis !important;
+  white-space: nowrap !important;
+}
+
+.slp-filters select option {
+  color: #0b1728 !important;
+  background: #ffffff !important;
+  font-size: 16px !important;
+  font-weight: 600 !important;
+}
+
+@media (max-width: 700px) {
+  .slp-filters {
+    align-items: stretch !important;
+  }
+
+  .slp-filters label {
+    min-width: 0 !important;
+    min-height: 62px !important;
+    display: flex !important;
+    flex-direction: column !important;
+    justify-content: center !important;
+
+    padding: 8px 10px !important;
+    overflow: visible !important;
+  }
+
+  .slp-filters label > span {
+    flex: 0 0 auto !important;
+    display: block !important;
+
+    margin: 0 0 4px !important;
+
+    color: #7890aa !important;
+    font-size: 9px !important;
+    font-weight: 900 !important;
+    line-height: 1.1 !important;
+    letter-spacing: 0.08em !important;
+    text-transform: uppercase !important;
+  }
+
+  .slp-filters select {
+    flex: 0 0 30px !important;
+    width: 100% !important;
+    height: 30px !important;
+    min-height: 30px !important;
+
+    padding-right: 24px !important;
+
+    color: #ffffff !important;
+    font-size: 14px !important;
+    font-weight: 850 !important;
+    line-height: 30px !important;
+
+    -webkit-text-fill-color: #ffffff !important;
+  }
+}
