@@ -3126,3 +3126,31 @@
     font-size: 12px;
   }
 }
+@media (max-width: 680px) {
+  .slp-filter-row {
+    display: flex;
+    align-items: flex-end;
+    gap: 8px;
+  }
+
+  .slp-filter-group {
+    flex: 0 0 auto;
+  }
+
+  .slp-filter-group select {
+    width: 118px;
+    min-width: 118px;
+  }
+}
+@media (max-width: 680px) {
+  .slp-season-filter,
+  .slp-series-filter {
+    flex: 0 0 auto;
+  }
+
+  .slp-season-filter select,
+  .slp-series-filter select {
+    width: 122px;
+    min-width: 122px;
+  }
+}
