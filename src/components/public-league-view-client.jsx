@@ -2,6 +2,10 @@
 
 import { useEffect, useMemo, useRef, useState } from "react";
 import "@/app/public-league-wow.css";
+import {
+  combineSurpriseBattingRows,
+  combineSurpriseBowlingRows,
+} from "@/lib/surprise-player-stats";
 
 function normalizeStatus(status) {
   return String(status || "SCHEDULED").toUpperCase();
@@ -13,10 +17,10 @@ function formatMatchTitle(match) {
   }`;
 }
 
-function buildPointsTable(matches, teams) {
+function buildPointsTable(matches = [], teams = []) {
   const table = new Map();
 
-  (teams || []).forEach((team) => {
+  for (const team of teams || []) {
     table.set(Number(team.id), {
       teamId: Number(team.id),
       teamName: team.name,
@@ -24,54 +28,525 @@ function buildPointsTable(matches, teams) {
       won: 0,
       lost: 0,
       tied: 0,
+      noResult: 0,
       points: 0,
     });
-  });
+  }
 
-  (matches || []).forEach((match) => {
+  for (const match of matches || []) {
     const status = normalizeStatus(match.status);
-    if (!["COMPLETED", "COMPLETED_LOCKED", "COMPLETED_CORRECTED"].includes(status)) return;
 
-    const teamA = table.get(Number(match.teamAId));
-    const teamB = table.get(Number(match.teamBId));
-    if (!teamA || !teamB) return;
+    const isCompleted = [
+      "COMPLETED",
+      "COMPLETED_LOCKED",
+      "COMPLETED_CORRECTED",
+    ].includes(status);
+
+    const isNoResultStatus = [
+      "ABANDONED",
+      "CANCELLED",
+      "NO_RESULT",
+    ].includes(status);
+
+    if (!isCompleted && !isNoResultStatus) {
+      continue;
+    }
+
+    const teamAId = Number(match.teamAId);
+    const teamBId = Number(match.teamBId);
+
+    const teamA = table.get(teamAId);
+    const teamB = table.get(teamBId);
+
+    if (!teamA || !teamB) {
+      continue;
+    }
 
     teamA.played += 1;
     teamB.played += 1;
 
-    const statusText = String(match.statusText || "").toLowerCase();
+    /*
+     * Abandoned, cancelled, or explicitly no-result matches.
+     */
+    if (isNoResultStatus) {
+      teamA.noResult += 1;
+      teamB.noResult += 1;
 
-    if (statusText.includes("tied")) {
+      /*
+       * Change this to 0 if your league does not award
+       * points for an abandoned/no-result match.
+       */
+      teamA.points += 1;
+      teamB.points += 1;
+      continue;
+    }
+
+    const outcome = resolvePointsTableOutcome(match);
+
+    if (outcome.type === "TIE") {
       teamA.tied += 1;
       teamB.tied += 1;
       teamA.points += 1;
       teamB.points += 1;
-      return;
+      continue;
     }
 
-    if (statusText.includes(String(teamA.teamName).toLowerCase())) {
-      teamA.won += 1;
-      teamB.lost += 1;
-      teamA.points += 2;
-      return;
+    if (outcome.type === "WIN") {
+      const winner = table.get(Number(outcome.winnerTeamId));
+
+      const loserTeamId =
+        Number(outcome.winnerTeamId) === teamAId
+          ? teamBId
+          : teamAId;
+
+      const loser = table.get(loserTeamId);
+
+      if (winner && loser) {
+        winner.won += 1;
+        winner.points += 2;
+        loser.lost += 1;
+        continue;
+      }
     }
 
-    if (statusText.includes(String(teamB.teamName).toLowerCase())) {
-      teamB.won += 1;
-      teamA.lost += 1;
-      teamB.points += 2;
-    }
-  });
+    /*
+     * A completed match whose result still cannot be resolved
+     * is tracked as no-result instead of silently leaving
+     * W/L/T totals inconsistent.
+     */
+    teamA.noResult += 1;
+    teamB.noResult += 1;
+  }
 
   return [...table.values()].sort(
     (a, b) =>
       b.points - a.points ||
       b.won - a.won ||
+      a.lost - b.lost ||
       a.teamName.localeCompare(b.teamName)
   );
 }
 
-function buildPublicStats(matches) {
+function resolvePointsTableOutcome(match) {
+  const teamAId = Number(match.teamAId);
+  const teamBId = Number(match.teamBId);
+
+  const teamAName = String(
+    match.teamA?.name ||
+    match.teamAName ||
+    ""
+  )
+    .trim()
+    .toLowerCase();
+
+  const teamBName = String(
+    match.teamB?.name ||
+    match.teamBName ||
+    ""
+  )
+    .trim()
+    .toLowerCase();
+
+  /*
+   * First preference: explicit winner ID stored by the app.
+   * This supports several likely field names safely.
+   */
+  const explicitWinnerId = Number(
+    match.winnerTeamId ||
+    match.winningTeamId ||
+    match.winnerId ||
+    match.winner?.id ||
+    0
+  );
+
+  if (
+    explicitWinnerId === teamAId ||
+    explicitWinnerId === teamBId
+  ) {
+    return {
+      type: "WIN",
+      winnerTeamId: explicitWinnerId,
+      source: "winner-id",
+    };
+  }
+
+  const statusText = String(
+    match.statusText ||
+    match.resultText ||
+    match.result ||
+    ""
+  )
+    .trim()
+    .toLowerCase();
+
+  if (
+    statusText.includes("tied") ||
+    statusText.includes("match tie") ||
+    statusText === "tie"
+  ) {
+    return {
+      type: "TIE",
+      source: "status-text",
+    };
+  }
+
+  /*
+   * Check the longer team name first. This prevents a partial
+   * name from incorrectly matching another team.
+   */
+  const teamsByLongestName = [
+    {
+      teamId: teamAId,
+      teamName: teamAName,
+    },
+    {
+      teamId: teamBId,
+      teamName: teamBName,
+    },
+  ].sort(
+    (a, b) =>
+      b.teamName.length - a.teamName.length
+  );
+
+  for (const team of teamsByLongestName) {
+    if (
+      team.teamName &&
+      statusText.includes(team.teamName)
+    ) {
+      return {
+        type: "WIN",
+        winnerTeamId: team.teamId,
+        source: "status-text",
+      };
+    }
+  }
+
+  /*
+   * Final fallback: calculate the result from the two
+   * regulation innings.
+   */
+  const scoreResult =
+    resolveWinnerFromInningsScores(match);
+
+  if (scoreResult) {
+    return scoreResult;
+  }
+
+  return {
+    type: "UNRESOLVED",
+  };
+}
+
+function resolveWinnerFromInningsScores(match) {
+  const teamAId = Number(match.teamAId);
+  const teamBId = Number(match.teamBId);
+
+  const battingFirstTeamId = Number(
+    match.battingFirstTeamId ||
+    match.battingFirstTeam?.id ||
+    0
+  );
+
+  if (
+    battingFirstTeamId !== teamAId &&
+    battingFirstTeamId !== teamBId
+  ) {
+    return null;
+  }
+
+  const inningsTotals = new Map();
+
+  for (const ball of match.balls || []) {
+    const inningsNo = Number(
+      ball.inningsNo || 1
+    );
+
+    /*
+     * Use regulation innings only.
+     * Super-over outcomes should preferably be resolved through
+     * winnerTeamId or statusText.
+     */
+    if (![1, 2].includes(inningsNo)) {
+      continue;
+    }
+
+    inningsTotals.set(
+      inningsNo,
+      Number(inningsTotals.get(inningsNo) || 0) +
+        Number(ball.totalRuns || 0)
+    );
+  }
+
+  /*
+   * Do not infer a result unless both innings exist.
+   */
+  if (
+    !inningsTotals.has(1) ||
+    !inningsTotals.has(2)
+  ) {
+    return null;
+  }
+
+  const inningsOneRuns = Number(
+    inningsTotals.get(1) || 0
+  );
+
+  const inningsTwoRuns = Number(
+    inningsTotals.get(2) || 0
+  );
+
+  if (inningsOneRuns === inningsTwoRuns) {
+    return {
+      type: "TIE",
+      source: "innings-score",
+    };
+  }
+
+  const battingSecondTeamId =
+    battingFirstTeamId === teamAId
+      ? teamBId
+      : teamAId;
+
+  return {
+    type: "WIN",
+    winnerTeamId:
+      inningsOneRuns > inningsTwoRuns
+        ? battingFirstTeamId
+        : battingSecondTeamId,
+    source: "innings-score",
+  };
+}
+
+function normalizePlayerName(name) {
+  return String(name || "")
+    .trim()
+    .toLowerCase()
+    .replace(/\s+/g, " ");
+}
+
+function isSurpriseLeague(league) {
+  const name = String(league?.name || "")
+    .trim()
+    .toLowerCase();
+
+  const slug = String(league?.slug || "")
+    .trim()
+    .toLowerCase();
+
+  return (
+    name === "surprise cricket league" ||
+    slug === "surprise-cricket-league"
+  );
+}
+
+function calculateFastestFifties(
+  matches = [],
+  league = null
+) {
+  const performances = [];
+
+  for (const match of matches || []) {
+    const inningsNumbers = [
+      ...new Set(
+        (match.balls || []).map((ball) =>
+          Number(ball.inningsNo || 1)
+        )
+      ),
+    ];
+
+    for (const inningsNo of inningsNumbers) {
+      const inningsBalls = (match.balls || [])
+        .filter(
+          (ball) =>
+            Number(ball.inningsNo || 1) ===
+            Number(inningsNo)
+        )
+        .sort(
+          (a, b) =>
+            Number(a.sequence || 0) -
+              Number(b.sequence || 0) ||
+            Number(a.id || 0) -
+              Number(b.id || 0)
+        );
+
+      const batterProgress = new Map();
+
+      for (const ball of inningsBalls) {
+        const strikerId = Number(
+          ball.strikerId ||
+          ball.striker?.id ||
+          0
+        );
+
+        if (!strikerId) continue;
+
+        /*
+         * Use the striker relation carried by each ball.
+         * This is the same reliable data source already used
+         * by buildPublicStats().
+         */
+        const strikerName =
+          ball.striker?.name ||
+          `Player ${strikerId}`;
+
+        const strikerTeamName =
+          ball.striker?.team?.name ||
+          (
+            Number(ball.striker?.teamId) ===
+            Number(match.teamAId)
+              ? match.teamA?.name
+              : Number(ball.striker?.teamId) ===
+                  Number(match.teamBId)
+                ? match.teamB?.name
+                : ""
+          );
+
+        const strikerTeamId = Number(
+          ball.striker?.teamId || 0
+        );
+
+        if (!batterProgress.has(strikerId)) {
+          batterProgress.set(strikerId, {
+            playerId: strikerId,
+            playerName: strikerName,
+            teamId: strikerTeamId,
+            teamName: strikerTeamName,
+
+            inningsNo,
+            runs: 0,
+            balls: 0,
+            fiftyRecorded: false,
+          });
+        }
+
+        const progress =
+          batterProgress.get(strikerId);
+
+        /*
+         * Only runs credited to the batter count toward 50.
+         */
+        progress.runs += Number(
+          ball.runsOffBat || 0
+        );
+
+        const extraType = String(
+          ball.extraType || "NONE"
+        ).toUpperCase();
+
+        const wicketType = String(
+          ball.wicketType || "NONE"
+        ).toUpperCase();
+
+        /*
+         * Cricket batting convention:
+         * - Wide: not a ball faced
+         * - No-ball: counts as a ball faced
+         * - Retired-hurt event: not a ball faced
+         */
+        const countsAsBallFaced =
+          extraType !== "WIDE" &&
+          wicketType !== "RETIRED_HURT";
+
+        if (countsAsBallFaced) {
+          progress.balls += 1;
+        }
+
+        /*
+         * Capture the first delivery on which the batter
+         * reaches or passes 50.
+         */
+        if (
+          !progress.fiftyRecorded &&
+          progress.runs >= 50
+        ) {
+          progress.fiftyRecorded = true;
+
+          performances.push({
+            playerId: progress.playerId,
+            playerName: progress.playerName,
+            teamId: progress.teamId,
+            teamName: progress.teamName,
+
+            matchId: match.id,
+            matchTitle:
+              `${match.teamA?.name || "Team A"} vs ` +
+              `${match.teamB?.name || "Team B"}`,
+
+            shareCode: match.shareCode || null,
+            inningsNo,
+
+            ballsToFifty: progress.balls,
+            runsAtFifty: progress.runs,
+
+            reachedAt:
+              `${Number(ball.overNo || 0)}.` +
+              `${Number(ball.ballInOver || 0)}`,
+          });
+        }
+      }
+    }
+  }
+
+  /*
+   * Normal leagues retain separate player IDs.
+   */
+  if (!isSurpriseLeague(league)) {
+    return performances.sort(
+      (a, b) =>
+        Number(a.ballsToFifty || 0) -
+          Number(b.ballsToFifty || 0) ||
+        Number(a.runsAtFifty || 0) -
+          Number(b.runsAtFifty || 0)
+    );
+  }
+
+  /*
+   * Surprise Cricket League:
+   * combine Surprise 1 and Surprise 2 by normalized name,
+   * retaining each player's quickest fifty.
+   */
+  const combined = new Map();
+
+  for (const performance of performances) {
+    const key = normalizePlayerName(
+      performance.playerName
+    );
+
+    if (!key) continue;
+
+    const current = combined.get(key);
+
+    const isFaster =
+      !current ||
+      Number(performance.ballsToFifty) <
+        Number(current.ballsToFifty) ||
+      (
+        Number(performance.ballsToFifty) ===
+          Number(current.ballsToFifty) &&
+        Number(performance.runsAtFifty) <
+          Number(current.runsAtFifty)
+      );
+
+    if (isFaster) {
+      combined.set(key, {
+        ...performance,
+        playerKey: key,
+        teamName: "Surprise 1 + Surprise 2",
+        isCombinedPlayer: true,
+      });
+    }
+  }
+
+  return [...combined.values()].sort(
+    (a, b) =>
+      Number(a.ballsToFifty || 0) -
+        Number(b.ballsToFifty || 0) ||
+      Number(a.runsAtFifty || 0) -
+        Number(b.runsAtFifty || 0)
+  );
+}
+
+function buildPublicStats(matches, league) {
   const batting = new Map();
   const bowling = new Map();
 
@@ -155,7 +630,7 @@ function buildPublicStats(matches) {
     }
   }
 
-  const battingRows = [...batting.values()]
+  const rawBattingRows = [...batting.values()]
     .map((row) => ({
       ...row,
       matches: row.matches.size,
@@ -163,7 +638,7 @@ function buildPublicStats(matches) {
     }))
     .sort((a, b) => b.runs - a.runs);
 
-  const bowlingRows = [...bowling.values()]
+  const rawBowlingRows = [...bowling.values()]
     .map((row) => ({
       ...row,
       matches: row.matches.size,
@@ -172,6 +647,28 @@ function buildPublicStats(matches) {
     }))
     .sort((a, b) => b.wickets - a.wickets || Number(a.economy) - Number(b.economy));
 
+  const battingRows = combineSurpriseBattingRows(
+  rawBattingRows,
+  league
+).sort(
+  (a, b) =>
+    Number(b.runs || 0) -
+      Number(a.runs || 0) ||
+    Number(b.strikeRate || 0) -
+      Number(a.strikeRate || 0)
+);
+
+const bowlingRows = combineSurpriseBowlingRows(
+  rawBowlingRows,
+  league
+).sort(
+  (a, b) =>
+    Number(b.wickets || 0) -
+      Number(a.wickets || 0) ||
+    Number(a.economy || 0) -
+      Number(b.economy || 0)
+);
+  
   return { battingRows, bowlingRows };
 }
 
@@ -182,7 +679,7 @@ export default function PublicLeagueViewClient({ league }) {
   const [matchStatusFilter, setMatchStatusFilter] = useState("all");
   const [publicSearch, setPublicSearch] = useState("");
   const [publicStatsTab, setPublicStatsTab] = useState("batting");
-  const [publicLeadersTab, setPublicLeadersTab] = useState("batting");
+  const [publicLeadersTab, setPublicLeadersTab] = useState("fastest-fifty");
   const [isFollowing, setIsFollowing] = useState(Boolean(league.isFollowing));
   const [followBusy, setFollowBusy] = useState(false);
 async function toggleFollowLeague() {
@@ -218,12 +715,18 @@ async function toggleFollowLeague() {
 
   function openTab(tabName) {
     setActiveTab(tabName);
+    if (tabName === "leaders") {
+    setPublicLeadersTab("fastest-fifty");
+  }
     window.scrollTo({ top: 0, behavior: "smooth" });
   }
 
   function openTabAndClear(tabName) {
     setActiveTab(tabName);
     setPublicSearch("");
+      if (tabName === "leaders") {
+    setPublicLeadersTab("fastest-fifty");
+  }
     window.scrollTo({ top: 0, behavior: "smooth" });
   }
 
@@ -311,13 +814,29 @@ async function toggleFollowLeague() {
     [filteredMatches, league.teams]
   );
 
-  const { battingRows, bowlingRows } = useMemo(
-    () => buildPublicStats(filteredMatches),
-    [filteredMatches]
-  );
+const {
+  battingRows = [],
+  bowlingRows = [],
+} = useMemo(
+  () => buildPublicStats(filteredMatches, league),
+  [filteredMatches, league]
+);
+
+const fastestFifties = useMemo(
+  () =>
+    calculateFastestFifties(
+      league.matches || [],
+      league
+    ),
+  [league.matches, league]
+);
 
   const topRunScorer = battingRows[0];
   const topWicketTaker = bowlingRows[0];
+  const fastestFiftyLeader =
+  fastestFifties?.length
+    ? fastestFifties[0]
+    : null;
   const topSixHitter = [...battingRows].sort((a, b) => b.sixes - a.sixes)[0];
   const bestStrikeRate = [...battingRows]
     .filter((p) => p.balls >= 5)
@@ -484,6 +1003,7 @@ return (
               pointsTable={pointsTable}
               topRunScorer={topRunScorer}
               topWicketTaker={topWicketTaker}
+              fastestFiftyLeader={fastestFiftyLeader}
               leagueSlug={league.slug}
               openTab={openTab}
             />
@@ -576,68 +1096,177 @@ return (
             </section>
           )}
 
-          {activeTab === "leaders" && (
-            <section className="slp-section">
-              <SectionHeader
-                eyebrow="Top performers"
-                title="League leaders"
-                description="The competition's standout players"
-              />
+{activeTab === "leaders" && (
+  <section className="slp-section">
+    <SectionHeader
+      eyebrow="Top performers"
+      title="League leaders"
+      description="The competition's standout players"
+    />
 
-              <SegmentedControl
-                value={publicLeadersTab}
-                onChange={setPublicLeadersTab}
-                items={[
-                  ["batting", "Batting", null],
-                  ["bowling", "Bowling", null],
-                ]}
-              />
+    <SegmentedControl
+      value={publicLeadersTab}
+      onChange={setPublicLeadersTab}
+      items={[
+        [
+          "fastest-fifty",
+          "⚡ Fastest Fifty",
+          fastestFifties.length,
+        ],
+        ["batting", "Batting", null],
+        ["bowling", "Bowling", null],
+      ]}
+    />
 
-              {!topRunScorer && !topWicketTaker ? (
-                <EmptyState
-                  title="No leaders yet"
-                  message="Leaders will appear after scoring begins."
-                />
-              ) : publicLeadersTab === "batting" ? (
-                <div className="slp-leaders">
-                  <LeaderRow
-                    rank="01"
-                    label="Most runs"
-                    row={topRunScorer}
-                    value={`${topRunScorer?.runs || 0} runs`}
-                  />
-                  <LeaderRow
-                    rank="02"
-                    label="Most sixes"
-                    row={topSixHitter}
-                    value={`${topSixHitter?.sixes || 0} sixes`}
-                  />
-                  <LeaderRow
-                    rank="03"
-                    label="Best strike rate"
-                    row={bestStrikeRate}
-                    value={`${bestStrikeRate?.strikeRate || "0.00"} SR`}
-                  />
-                </div>
-              ) : (
-                <div className="slp-leaders">
-                  <LeaderRow
-                    rank="01"
-                    label="Most wickets"
-                    row={topWicketTaker}
-                    value={`${topWicketTaker?.wickets || 0} wickets`}
-                  />
-                  <LeaderRow
-                    rank="02"
-                    label="Best economy"
-                    row={bestEconomy}
-                    value={`${bestEconomy?.economy || "0.00"} economy`}
-                  />
-                </div>
-              )}
-            </section>
-          )}
+    {publicLeadersTab === "fastest-fifty" ? (
+      <div className="slp-fastest-fifty-section">
+        <div className="slp-block-heading">
+          <div>
+            <p>Batting milestone</p>
+            <h2>⚡ Fastest Fifty</h2>
+          </div>
 
+          <span>
+            Fewest balls required to reach 50 runs
+          </span>
+        </div>
+
+        {fastestFifties.length > 0 ? (
+          <div className="slp-fastest-fifty-list">
+            {fastestFifties
+              .slice(0, 10)
+              .map((row, index) => (
+                <article
+                  key={
+                    row.playerKey ||
+                    `${row.playerId}-${row.matchId}-${row.inningsNo}`
+                  }
+                  className="slp-fastest-fifty-row"
+                >
+                  <span className="slp-fastest-fifty-rank">
+                    {index + 1}
+                  </span>
+
+                  <div className="slp-fastest-fifty-player">
+                    <strong>
+                      {row.playerName}
+                    </strong>
+
+                    <small>
+                      {row.teamName ||
+                        "League player"}
+                    </small>
+
+                    <em>
+                      {row.matchTitle}
+                      {" • "}
+                      Innings {row.inningsNo}
+                    </em>
+                  </div>
+
+                  <div className="slp-fastest-fifty-value">
+                    <strong>
+                      {row.ballsToFifty}
+                    </strong>
+
+                    <span>balls</span>
+                  </div>
+
+                  <div className="slp-fastest-fifty-detail">
+                    <strong>
+                      {row.runsAtFifty}
+                    </strong>
+
+                    <span>
+                      runs at milestone
+                    </span>
+                  </div>
+
+                  {row.shareCode ? (
+                    <a
+                      href={`/live/${row.shareCode}`}
+                      className="slp-fastest-fifty-link"
+                    >
+                      Scorecard →
+                    </a>
+                  ) : (
+                    <span className="slp-fastest-fifty-link is-disabled">
+                      No scorecard
+                    </span>
+                  )}
+                </article>
+              ))}
+          </div>
+        ) : (
+          <EmptyState
+            title="No fifties recorded yet"
+            message="The fastest fifty leaderboard will appear when a batter reaches 50 runs."
+          />
+        )}
+      </div>
+    ) : publicLeadersTab === "batting" ? (
+      topRunScorer ? (
+        <div className="slp-fastest-fifty-list">
+          <PremiumLeaderCard
+            rank="1"
+            title="Most Runs"
+            row={topRunScorer}
+            primary={`${topRunScorer?.runs || 0} Runs`}
+            secondary={`${topRunScorer?.strikeRate || 0} SR`}
+          />
+
+          <PremiumLeaderCard
+            rank="2"
+            title="Most Sixes"
+            row={topSixHitter}
+            primary={`${topSixHitter?.sixes || 0} Sixes`}
+            secondary={`${topSixHitter?.runs || 0} Runs`}
+          />
+
+          <PremiumLeaderCard
+            rank="3"
+            title="Best Strike Rate"
+            row={bestStrikeRate}
+            primary={`${bestStrikeRate?.strikeRate || 0}`}
+            secondary={`${bestStrikeRate?.runs || 0} Runs`}
+          />
+        </div>
+      ) : (
+        <EmptyState
+          title="No batting leaders yet"
+          message="Batting leaders will appear after runs are scored."
+        />
+      )
+    ) : publicLeadersTab === "bowling" ? (
+      topWicketTaker ? (
+        <div className="slp-fastest-fifty-list">
+
+        <PremiumLeaderCard
+          rank="1"
+          title="Most Wickets"
+          row={topWicketTaker}
+          primary={`${topWicketTaker?.wickets || 0} Wkts`}
+          secondary={`${topWicketTaker?.economy || 0} Eco`}
+        />
+
+        <PremiumLeaderCard
+          rank="2"
+          title="Best Economy"
+          row={bestEconomy}
+          primary={`${bestEconomy?.economy || 0}`}
+          secondary={`${bestEconomy?.wickets || 0} Wkts`}
+        />
+
+        </div>
+      ) : (
+        <EmptyState
+          title="No bowling leaders yet"
+          message="Bowling leaders will appear after wickets are recorded."
+        />
+      )
+    ) : null}
+  </section>
+)}
           {activeTab === "teams" && (
             <section className="slp-section">
               <SectionHeader
@@ -695,6 +1324,7 @@ function OverviewSection({
   pointsTable,
   topRunScorer,
   topWicketTaker,
+  fastestFiftyLeader,
   leagueSlug,
   openTab,
 }) {
@@ -759,13 +1389,45 @@ function OverviewSection({
             </button>
           </div>
 
-          {!topRunScorer && !topWicketTaker ? (
+          {!topRunScorer && !topWicketTaker && !fastestFiftyLeader ? (
             <EmptyState
               title="No performers yet"
               message="Player leaders will appear after scoring starts."
             />
           ) : (
             <div className="slp-performers">
+              {fastestFiftyLeader && (
+  <button
+    type="button"
+    className="slp-fastest-fifty-performer"
+    onClick={() => openTab("leaders")}
+  >
+    <span className="slp-avatar">
+      {getInitials(
+        fastestFiftyLeader.playerName
+      )}
+    </span>
+
+    <span>
+      <small>⚡ Fastest fifty</small>
+
+      <strong>
+        {fastestFiftyLeader.playerName}
+      </strong>
+
+      <em>
+        {fastestFiftyLeader.teamName ||
+          "League player"}
+      </em>
+    </span>
+
+    <b>
+      {fastestFiftyLeader.ballsToFifty}
+    </b>
+
+    <i>balls</i>
+  </button>
+)}
               {topRunScorer && (
                 <button type="button" onClick={() => openTab("leaders")}>
                   <span className="slp-avatar">
@@ -1207,24 +1869,38 @@ function PointsTable({ rows }) {
             <th>W</th>
             <th>L</th>
             <th>T</th>
+            <th>NR</th>
             <th>Pts</th>
           </tr>
         </thead>
         <tbody>
           {rows.map((row, index) => (
             <tr key={row.teamId}>
-              <td><span className="slp-rank">{index + 1}</span></td>
+              <td>
+                <span className="slp-rank">
+                  {index + 1}
+                </span>
+              </td>
+
               <td>
                 <span className="slp-table-team">
-                  <span className="slp-avatar">{getInitials(row.teamName)}</span>
+                  <span className="slp-avatar">
+                    {getInitials(row.teamName)}
+                  </span>
+
                   <strong>{row.teamName}</strong>
                 </span>
               </td>
+
               <td>{row.played}</td>
               <td>{row.won}</td>
               <td>{row.lost}</td>
               <td>{row.tied}</td>
-              <td><strong>{row.points}</strong></td>
+              <td>{row.noResult}</td>
+
+              <td>
+                <strong>{row.points}</strong>
+              </td>
             </tr>
           ))}
         </tbody>
@@ -1271,7 +1947,15 @@ function StatsTable({ type, rows }) {
                   <strong>{row.playerName}</strong>
                 </span>
               </td>
-              <td>{row.teamName || "—"}</td>
+              <td>
+                {row.isCombinedPlayer ? (
+                  <span className="combined-team-label">
+                    Surprise 1 & 2
+                  </span>
+                ) : (
+                  row.teamName || "—"
+                )}
+              </td>
               {type === "batting" ? (
                 <>
                   <td><strong>{row.runs}</strong></td>
@@ -1293,6 +1977,42 @@ function StatsTable({ type, rows }) {
         </tbody>
       </table>
     </div>
+  );
+}
+
+function PremiumLeaderCard({
+  rank,
+  title,
+  row,
+  primary,
+  secondary,
+}) {
+  if (!row) return null;
+
+  return (
+    <article className="slp-premium-leader">
+      <span className="slp-premium-rank">
+        {rank}
+      </span>
+
+      <div className="slp-premium-player">
+        <strong>{row.playerName}</strong>
+
+        <small>
+          {row.teamName || "League player"}
+        </small>
+
+        <em>{title}</em>
+      </div>
+
+      <div className="slp-premium-main">
+        <strong>{primary}</strong>
+      </div>
+
+      <div className="slp-premium-side">
+        <span>{secondary}</span>
+      </div>
+    </article>
   );
 }
 
