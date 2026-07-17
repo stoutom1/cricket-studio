@@ -508,7 +508,7 @@
 
 .live-score-final .live-momentum-strip > span {
   color: #a7cdf1;
-  font-size: 13px;
+  font-size: 10px;
   font-weight: 900;
   letter-spacing: 0.08em;
   text-transform: uppercase;
@@ -527,7 +527,7 @@
   border-radius: 7px;
   color: #eaf3fc;
   background: rgba(4, 18, 33, 0.55);
-  font-size: 13px;
+  font-size: 10px;
 }
 
 /* =========================================================
@@ -1991,12 +1991,12 @@
   }
 
   .live-score-final .live-momentum-strip > span {
-    font-size: 13px !important;
+    font-size: 10px !important;
   }
 
   .live-score-final .live-momentum-strip b {
     padding: 5px 8px !important;
-    font-size: 13px !important;
+    font-size: 10px !important;
   }
 
   /* Completed match: larger innings information. */
@@ -2391,5 +2391,102 @@
 
   .live-score-final .mobile-stat-value.is-primary strong {
     font-size: 20px;
+  }
+}
+
+
+/* =========================================================
+   FINAL V4 — DESKTOP TYPOGRAPHY + SMART MOBILE COLLAPSE
+========================================================= */
+
+/* Laptop/desktop scorecard typography is deliberately larger. */
+@media (min-width: 701px) {
+  .live-score-final .live-section-title {
+    min-height: 48px;
+    margin-top: 25px;
+    font-size: 16px;
+  }
+
+  .live-score-final .live-pro-table th {
+    height: 48px;
+    padding: 12px 14px;
+    font-size: 12px;
+  }
+
+  .live-score-final .live-pro-table td {
+    height: 54px;
+    padding: 13px 14px;
+    font-size: 14px;
+    line-height: 1.4;
+  }
+
+  .live-score-final .live-pro-table .name-cell {
+    font-size: 15px;
+  }
+
+  .live-score-final .score-badge {
+    min-height: 27px;
+    padding: 5px 9px;
+    font-size: 11px;
+  }
+}
+
+/* The expand controls are mobile-only. */
+.live-score-final .mobile-scorecard-group,
+.live-score-final .mobile-scorecard-expand {
+  display: none;
+}
+
+@media (max-width: 700px) {
+  .live-score-final .mobile-scorecard-group {
+    display: block !important;
+  }
+
+  .live-score-final .mobile-scorecard-list {
+    display: grid !important;
+    gap: 12px !important;
+  }
+
+  .live-score-final .mobile-scorecard-expand {
+    width: 100%;
+    min-height: 48px;
+    display: flex !important;
+    align-items: center;
+    justify-content: center;
+    gap: 9px;
+    margin-top: 10px;
+    padding: 10px 14px;
+    border: 1px solid #3b6996;
+    border-radius: 11px;
+    color: #ddebfa;
+    background:
+      linear-gradient(
+        145deg,
+        rgba(19, 56, 94, 0.96),
+        rgba(8, 28, 49, 0.98)
+      );
+    box-shadow: 0 8px 18px rgba(0, 0, 0, 0.18);
+    cursor: pointer;
+    font-size: 13px;
+    font-weight: 900;
+  }
+
+  .live-score-final .mobile-scorecard-expand b {
+    color: #8dcbff;
+    font-size: 16px;
+    line-height: 1;
+  }
+
+  .live-score-final .mobile-scorecard-expand:active {
+    transform: translateY(1px);
+  }
+
+  /* Reduce empty space between mobile scorecard disciplines. */
+  .live-score-final .live-section-title {
+    margin-top: 16px !important;
+  }
+
+  .live-score-final .mobile-scorecard-group + .live-section-title {
+    margin-top: 13px !important;
   }
 }

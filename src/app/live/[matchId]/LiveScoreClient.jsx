@@ -109,12 +109,57 @@ function MobileStatValue({
   );
 }
 
+function MobileExpandableList({
+  rows = [],
+  previewCount,
+  itemLabel,
+  renderItem,
+  className = "",
+}) {
+  const [expanded, setExpanded] = useState(false);
+  const hasMore = rows.length > previewCount;
+  const visibleRows = expanded
+    ? rows
+    : rows.slice(0, previewCount);
+
+  return (
+    <div className={`mobile-scorecard-group ${className}`}>
+      <div className="mobile-scorecard-list">
+        {visibleRows.map(renderItem)}
+      </div>
+
+      {hasMore ? (
+        <button
+          type="button"
+          className="mobile-scorecard-expand"
+          onClick={() => setExpanded((current) => !current)}
+          aria-expanded={expanded}
+        >
+          <span>
+            {expanded
+              ? "Show less"
+              : `Show all ${rows.length} ${itemLabel}`}
+          </span>
+
+          <b aria-hidden="true">
+            {expanded ? "↑" : "↓"}
+          </b>
+        </button>
+      ) : null}
+    </div>
+  );
+}
+
 function MobileBattingCards({ rows = [] }) {
   const topRuns = getTopRuns(rows);
 
   return (
-    <div className="mobile-scorecard-list mobile-batting-list">
-      {rows.map((batter) => {
+    <MobileExpandableList
+      rows={rows}
+      previewCount={2}
+      itemLabel={rows.length === 1 ? "batter" : "batters"}
+      className="mobile-batting-list"
+      renderItem={(batter) => {
         const isTopScorer =
           Number(batter.runs || 0) === topRuns &&
           Number(batter.runs || 0) > 0;
@@ -171,8 +216,8 @@ function MobileBattingCards({ rows = [] }) {
             </footer>
           </article>
         );
-      })}
-    </div>
+      }}
+    />
   );
 }
 
@@ -180,8 +225,12 @@ function MobileBowlingCards({ rows = [] }) {
   const bestWickets = getBestWickets(rows);
 
   return (
-    <div className="mobile-scorecard-list mobile-bowling-list">
-      {rows.map((bowler) => {
+    <MobileExpandableList
+      rows={rows}
+      previewCount={2}
+      itemLabel={rows.length === 1 ? "bowler" : "bowlers"}
+      className="mobile-bowling-list"
+      renderItem={(bowler) => {
         const isBestBowler =
           Number(bowler.wickets || 0) === bestWickets &&
           Number(bowler.wickets || 0) > 0;
@@ -223,15 +272,23 @@ function MobileBowlingCards({ rows = [] }) {
             </div>
           </article>
         );
-      })}
-    </div>
+      }}
+    />
   );
 }
 
 function MobilePartnershipCards({ rows = [] }) {
   return (
-    <div className="mobile-scorecard-list mobile-partnership-list">
-      {rows.map((partnership, index) => (
+    <MobileExpandableList
+      rows={rows}
+      previewCount={1}
+      itemLabel={
+        rows.length === 1
+          ? "partnership"
+          : "partnerships"
+      }
+      className="mobile-partnership-list"
+      renderItem={(partnership, index) => (
         <article
           key={`mobile-partnership-${partnership.batter1}-${partnership.batter2}-${index}`}
           className="mobile-scorecard-card"
@@ -263,15 +320,19 @@ function MobilePartnershipCards({ rows = [] }) {
             />
           </div>
         </article>
-      ))}
-    </div>
+      )}
+    />
   );
 }
 
 function MobileWicketCards({ rows = [] }) {
   return (
-    <div className="mobile-scorecard-list mobile-wicket-list">
-      {rows.map((wicket, index) => (
+    <MobileExpandableList
+      rows={rows}
+      previewCount={1}
+      itemLabel={rows.length === 1 ? "wicket" : "wickets"}
+      className="mobile-wicket-list"
+      renderItem={(wicket, index) => (
         <article
           key={`mobile-wicket-${wicket.wicketNumber}-${index}`}
           className="mobile-scorecard-card"
@@ -297,8 +358,8 @@ function MobileWicketCards({ rows = [] }) {
             />
           </div>
         </article>
-      ))}
-    </div>
+      )}
+    />
   );
 }
 
