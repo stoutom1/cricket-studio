@@ -56773,3 +56773,36 @@ body.cric4all-scorer-open {
   .league-desktop-experience { display: block; }
   .mobile-league-command-center { display: none !important; }
 }
+/* =========================================================
+   CRIC4ALL DESKTOP-ONLY PROPORTIONAL ZOOM
+   Mobile and tablet remain unchanged
+========================================================= */
+
+@media (min-width: 1024px) {
+  .cric4all-desktop-zoom {
+    /*
+      1.12 = 112% visual size.
+      Start here rather than using an aggressive zoom.
+    */
+    zoom: 1.12;
+
+    /*
+      Compensate for the additional visual width so the
+      enlarged page remains inside the browser viewport.
+    */
+    width: calc(100% / 1.12);
+    max-width: calc(100% / 1.12);
+
+    margin-inline: auto;
+    box-sizing: border-box;
+  }
+}
+/*
+@media (min-width: 1024px) {
+  .cric4all-desktop-zoom {
+    transform: scale(1.12);
+    transform-origin: top center;
+    width: calc(100% / 1.12);
+    margin-inline: auto;
+  }
+}*/

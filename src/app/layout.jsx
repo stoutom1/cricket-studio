@@ -16,7 +16,7 @@ export default function RootLayout({ children }) {
     <html lang="en">
       <body>
         <Providers>
-          <div className="app-shell">
+          <div className="app-shell cric4all-desktop-zoom">
             <header className="topbar">
               <div className="topbar-inner mobile-header-layout">
                 <div>
@@ -42,7 +42,7 @@ export default function RootLayout({ children }) {
               </div>
             </header>
 
-            <main className="page-container">{children}</main>
+            <main className="page-container cric4all-page-shell">{children}</main>
           </div>
         </Providers>
         <Analytics />
