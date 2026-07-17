@@ -96,6 +96,212 @@ function PlayerCard({
   );
 }
 
+function MobileStatValue({
+  label,
+  value,
+  className = "",
+}) {
+  return (
+    <div className={`mobile-stat-value ${className}`}>
+      <span>{label}</span>
+      <strong>{value ?? "—"}</strong>
+    </div>
+  );
+}
+
+function MobileBattingCards({ rows = [] }) {
+  const topRuns = getTopRuns(rows);
+
+  return (
+    <div className="mobile-scorecard-list mobile-batting-list">
+      {rows.map((batter) => {
+        const isTopScorer =
+          Number(batter.runs || 0) === topRuns &&
+          Number(batter.runs || 0) > 0;
+
+        const isNotOut =
+          !batter.dismissal &&
+          !batter.isRetiredHurt;
+
+        const dismissal = batter.isRetiredHurt
+          ? "Retired hurt"
+          : isNotOut
+            ? "Not out"
+            : batter.dismissal || "—";
+
+        return (
+          <article
+            key={`mobile-batter-${batter.playerId}`}
+            className={`mobile-scorecard-card ${
+              isTopScorer ? "is-highlighted" : ""
+            }`}
+          >
+            <header>
+              <span>Batting</span>
+              <strong>{batter.playerName}</strong>
+            </header>
+
+            <div className="mobile-stat-grid batting-stat-grid">
+              <MobileStatValue
+                label="Runs"
+                value={batter.runs}
+                className="is-primary"
+              />
+              <MobileStatValue
+                label="Balls"
+                value={batter.balls}
+              />
+              <MobileStatValue
+                label="4s"
+                value={batter.fours}
+              />
+              <MobileStatValue
+                label="6s"
+                value={batter.sixes}
+              />
+              <MobileStatValue
+                label="Strike rate"
+                value={batter.strikeRate}
+              />
+            </div>
+
+            <footer>
+              <span>Dismissal</span>
+              <strong>{dismissal}</strong>
+            </footer>
+          </article>
+        );
+      })}
+    </div>
+  );
+}
+
+function MobileBowlingCards({ rows = [] }) {
+  const bestWickets = getBestWickets(rows);
+
+  return (
+    <div className="mobile-scorecard-list mobile-bowling-list">
+      {rows.map((bowler) => {
+        const isBestBowler =
+          Number(bowler.wickets || 0) === bestWickets &&
+          Number(bowler.wickets || 0) > 0;
+
+        return (
+          <article
+            key={`mobile-bowler-${bowler.playerId}`}
+            className={`mobile-scorecard-card ${
+              isBestBowler ? "is-highlighted" : ""
+            }`}
+          >
+            <header>
+              <span>Bowling</span>
+              <strong>{bowler.playerName}</strong>
+            </header>
+
+            <div className="mobile-stat-grid bowling-stat-grid">
+              <MobileStatValue
+                label="Overs"
+                value={bowler.overs}
+              />
+              <MobileStatValue
+                label="Runs"
+                value={bowler.runs}
+              />
+              <MobileStatValue
+                label="Wickets"
+                value={bowler.wickets}
+                className="is-primary"
+              />
+              <MobileStatValue
+                label="Dots"
+                value={bowler.dots}
+              />
+              <MobileStatValue
+                label="Economy"
+                value={bowler.economy}
+              />
+            </div>
+          </article>
+        );
+      })}
+    </div>
+  );
+}
+
+function MobilePartnershipCards({ rows = [] }) {
+  return (
+    <div className="mobile-scorecard-list mobile-partnership-list">
+      {rows.map((partnership, index) => (
+        <article
+          key={`mobile-partnership-${partnership.batter1}-${partnership.batter2}-${index}`}
+          className="mobile-scorecard-card"
+        >
+          <header>
+            <span>Partnership</span>
+            <strong>
+              {partnership.batter1} &amp; {partnership.batter2}
+            </strong>
+          </header>
+
+          <div className="mobile-stat-grid partnership-stat-grid">
+            <MobileStatValue
+              label="Runs"
+              value={partnership.runs}
+              className="is-primary"
+            />
+            <MobileStatValue
+              label="Balls"
+              value={partnership.balls}
+            />
+            <MobileStatValue
+              label="Status"
+              value={
+                partnership.ongoing
+                  ? "Current"
+                  : `W${partnership.wicketNumber}`
+              }
+            />
+          </div>
+        </article>
+      ))}
+    </div>
+  );
+}
+
+function MobileWicketCards({ rows = [] }) {
+  return (
+    <div className="mobile-scorecard-list mobile-wicket-list">
+      {rows.map((wicket, index) => (
+        <article
+          key={`mobile-wicket-${wicket.wicketNumber}-${index}`}
+          className="mobile-scorecard-card"
+        >
+          <header>
+            <span>Fall of wicket</span>
+            <strong>{wicket.playerOut}</strong>
+          </header>
+
+          <div className="mobile-stat-grid wicket-stat-grid">
+            <MobileStatValue
+              label="Wicket"
+              value={wicket.wicketNumber}
+            />
+            <MobileStatValue
+              label="Score"
+              value={wicket.score}
+              className="is-primary"
+            />
+            <MobileStatValue
+              label="Over"
+              value={wicket.over}
+            />
+          </div>
+        </article>
+      ))}
+    </div>
+  );
+}
+
 function ProTable({
   children,
   type = "default",
@@ -1508,6 +1714,10 @@ const finalResultText =
                           🏏 Batting
                         </h3>
 
+                        <MobileBattingCards
+                          rows={innings?.battingStats || []}
+                        />
+
                         <ProTable type="batting">
                           <thead>
                             <tr>
@@ -1620,6 +1830,10 @@ const finalResultText =
                           🎯 Bowling
                         </h3>
 
+                        <MobileBowlingCards
+                          rows={innings?.bowlingStats || []}
+                        />
+
                         <ProTable type="bowling">
                           <thead>
                             <tr>
@@ -1729,6 +1943,10 @@ const finalResultText =
                           🤝 Partnerships
                         </h3>
 
+                        <MobilePartnershipCards
+                          rows={innings?.partnerships || []}
+                        />
+
                         <ProTable type="partnerships">
                           <thead>
                             <tr>
@@ -1792,6 +2010,10 @@ const finalResultText =
                         <h3 className="live-section-title">
                           ☝️ Fall of wickets
                         </h3>
+
+                        <MobileWicketCards
+                          rows={innings?.fallOfWickets || []}
+                        />
 
                         <ProTable type="wickets">
                           <thead>

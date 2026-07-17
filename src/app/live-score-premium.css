@@ -508,7 +508,7 @@
 
 .live-score-final .live-momentum-strip > span {
   color: #a7cdf1;
-  font-size: 10px;
+  font-size: 13px;
   font-weight: 900;
   letter-spacing: 0.08em;
   text-transform: uppercase;
@@ -527,7 +527,7 @@
   border-radius: 7px;
   color: #eaf3fc;
   background: rgba(4, 18, 33, 0.55);
-  font-size: 10px;
+  font-size: 13px;
 }
 
 /* =========================================================
@@ -1991,12 +1991,12 @@
   }
 
   .live-score-final .live-momentum-strip > span {
-    font-size: 10px !important;
+    font-size: 13px !important;
   }
 
   .live-score-final .live-momentum-strip b {
     padding: 5px 8px !important;
-    font-size: 10px !important;
+    font-size: 13px !important;
   }
 
   /* Completed match: larger innings information. */
@@ -2211,5 +2211,185 @@
 
   .live-score-final .live-pro-table td:first-child {
     font-size: 17px !important;
+  }
+}
+
+
+/* =========================================================
+   FINAL V3 — NATIVE MOBILE SCORECARD CARDS
+   iPhone Safari no longer converts table elements into grids.
+========================================================= */
+
+.live-score-final .mobile-scorecard-list {
+  display: none;
+}
+
+@media (max-width: 700px) {
+  /* Hide desktop tables completely on mobile. */
+  .live-score-final .live-table-shell {
+    display: none !important;
+  }
+
+  .live-score-final .mobile-scorecard-list {
+    display: grid !important;
+    gap: 12px !important;
+  }
+
+  .live-score-final .mobile-scorecard-card {
+    position: relative;
+    overflow: hidden;
+    border: 1px solid #315371;
+    border-radius: 14px;
+    background:
+      linear-gradient(
+        145deg,
+        rgba(17, 43, 71, 0.99),
+        rgba(7, 22, 39, 0.99)
+      );
+    box-shadow:
+      0 11px 24px rgba(0, 0, 0, 0.2),
+      inset 0 1px 0 rgba(255, 255, 255, 0.025);
+  }
+
+  .live-score-final .mobile-scorecard-card.is-highlighted {
+    border-color: rgba(67, 194, 220, 0.72);
+    box-shadow:
+      0 11px 25px rgba(19, 111, 139, 0.16),
+      inset 4px 0 0 var(--lf-cyan);
+  }
+
+  .live-score-final .mobile-scorecard-card > header {
+    padding: 13px 14px 12px;
+    border-bottom: 1px solid #294864;
+    background: rgba(51, 143, 243, 0.085);
+  }
+
+  .live-score-final .mobile-scorecard-card > header span,
+  .live-score-final .mobile-scorecard-card > header strong {
+    display: block;
+  }
+
+  .live-score-final .mobile-scorecard-card > header span {
+    color: #81baf0;
+    font-size: 10px;
+    font-weight: 900;
+    letter-spacing: 0.08em;
+    text-transform: uppercase;
+  }
+
+  .live-score-final .mobile-scorecard-card > header strong {
+    margin-top: 5px;
+    color: #fff;
+    font-size: 19px;
+    line-height: 1.2;
+    overflow-wrap: anywhere;
+  }
+
+  .live-score-final .mobile-stat-grid {
+    display: grid;
+    grid-template-columns: repeat(3, minmax(0, 1fr));
+    gap: 1px;
+    background: #294864;
+  }
+
+  .live-score-final .mobile-stat-value {
+    min-width: 0;
+    min-height: 74px;
+    display: flex;
+    flex-direction: column;
+    justify-content: center;
+    padding: 11px 12px;
+    background: #0b1b2e;
+  }
+
+  .live-score-final .mobile-stat-value span,
+  .live-score-final .mobile-stat-value strong {
+    display: block;
+  }
+
+  .live-score-final .mobile-stat-value span {
+    color: #8095ad;
+    font-size: 10px;
+    font-weight: 900;
+    letter-spacing: 0.06em;
+    text-transform: uppercase;
+  }
+
+  .live-score-final .mobile-stat-value strong {
+    margin-top: 6px;
+    color: #eaf2fa;
+    font-size: 18px;
+    line-height: 1.1;
+    font-variant-numeric: tabular-nums;
+    overflow-wrap: anywhere;
+  }
+
+  .live-score-final .mobile-stat-value.is-primary {
+    background: #102b48;
+  }
+
+  .live-score-final .mobile-stat-value.is-primary strong {
+    color: #8fcfff;
+    font-size: 21px;
+  }
+
+  .live-score-final .mobile-scorecard-card > footer {
+    padding: 12px 14px 13px;
+    border-top: 1px solid #294864;
+    background: rgba(5, 17, 30, 0.62);
+  }
+
+  .live-score-final .mobile-scorecard-card > footer span,
+  .live-score-final .mobile-scorecard-card > footer strong {
+    display: block;
+  }
+
+  .live-score-final .mobile-scorecard-card > footer span {
+    color: #8095ad;
+    font-size: 10px;
+    font-weight: 900;
+    letter-spacing: 0.06em;
+    text-transform: uppercase;
+  }
+
+  .live-score-final .mobile-scorecard-card > footer strong {
+    margin-top: 5px;
+    color: #dce6f0;
+    font-size: 14px;
+    line-height: 1.4;
+    overflow-wrap: anywhere;
+  }
+
+  .live-score-final .batting-stat-grid,
+  .live-score-final .bowling-stat-grid {
+    grid-template-columns: repeat(3, minmax(0, 1fr));
+  }
+
+  .live-score-final .partnership-stat-grid,
+  .live-score-final .wicket-stat-grid {
+    grid-template-columns: repeat(3, minmax(0, 1fr));
+  }
+}
+
+@media (max-width: 390px) {
+  .live-score-final .mobile-scorecard-card > header strong {
+    font-size: 18px;
+  }
+
+  .live-score-final .mobile-stat-value {
+    min-height: 70px;
+    padding: 10px;
+  }
+
+  .live-score-final .mobile-stat-value span {
+    font-size: 9px;
+  }
+
+  .live-score-final .mobile-stat-value strong {
+    font-size: 17px;
+  }
+
+  .live-score-final .mobile-stat-value.is-primary strong {
+    font-size: 20px;
   }
 }
