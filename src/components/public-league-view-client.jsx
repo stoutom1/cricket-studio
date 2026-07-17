@@ -908,7 +908,7 @@ return (
         </header>
 
         <div className="slp-utility-bar">
-          <div className="slp-filters">
+          <div className="slp-filter-group">
             <label>
               <span>Season</span>
               <select
