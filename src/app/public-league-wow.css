@@ -8997,4 +8997,1744 @@
     animation-duration: 0.001ms !important;
   }
 }
+/*
+  Cric4All Public Pages — Final Typography & Mobile UX
+  Import LAST, after each page-specific spectator stylesheet.
 
+  Covered class systems:
+  - Public League: .slp-*
+  - Public Match: .smp-*
+  - Public Team: .stp-*
+  - Public Player: .spp-*
+  - Explore: .sep-*
+
+  Presentation only. No React logic or functionality is changed.
+*/
+
+/* =========================================================
+   SHARED PUBLIC-PAGE TYPOGRAPHY — LAPTOP / DESKTOP
+========================================================= */
+
+.slp-page,
+.smp-page,
+.stp-page,
+.spp-page,
+.sep-page {
+  font-size: 16px;
+}
+
+/* Breadcrumbs and public status labels */
+.slp-breadcrumb,
+.smp-breadcrumb,
+.stp-breadcrumb,
+.spp-breadcrumb,
+.sep-breadcrumb {
+  font-size: 13px !important;
+  line-height: 1.5 !important;
+}
+
+.slp-public-label,
+.smp-status-label,
+.stp-public-label,
+.spp-public-label,
+.sep-public-label {
+  min-height: 34px !important;
+  padding: 7px 11px !important;
+  font-size: 11px !important;
+  line-height: 1.2 !important;
+}
+
+/* Hero eyebrow / kicker text */
+.slp-kicker,
+.stp-kicker,
+.spp-kicker,
+.sep-kicker,
+.smp-kicker {
+  font-size: 12px !important;
+  line-height: 1.4 !important;
+}
+
+/* Main titles */
+.slp-league-copy h1,
+.smp-team h1,
+.stp-team-identity h1,
+.spp-player-identity h1,
+.sep-copy h1 {
+  line-height: 1.04 !important;
+}
+
+/* Hero descriptions */
+.slp-league-copy > p:not(.slp-kicker),
+.stp-subtitle,
+.spp-subtitle,
+.sep-copy > p:not(.sep-kicker),
+.smp-result-line p {
+  font-size: 16px !important;
+  line-height: 1.65 !important;
+}
+
+/* Hero fact strips */
+.slp-league-facts span,
+.stp-record-line span,
+.spp-career-line span,
+.sep-summary span {
+  font-size: 11px !important;
+  line-height: 1.35 !important;
+}
+
+.slp-league-facts b,
+.stp-record-line b,
+.spp-career-line b,
+.sep-summary b {
+  font-size: 22px !important;
+  line-height: 1.1 !important;
+}
+
+/* Primary actions */
+.slp-actions > *,
+.smp-actions > *,
+.stp-actions > *,
+.spp-actions > * {
+  min-height: 46px !important;
+  padding: 10px 15px !important;
+  font-size: 13px !important;
+  font-weight: 850 !important;
+}
+
+/* Filter and search controls */
+.slp-filters label,
+.slp-search,
+.sep-search {
+  min-height: 48px !important;
+}
+
+.slp-filters label > span,
+.slp-search > span,
+.sep-search > span {
+  font-size: 10px !important;
+}
+
+.slp-filters select,
+.slp-search input,
+.sep-search input {
+  font-size: 15px !important;
+}
+
+/* Tabs */
+.slp-tabs button {
+  min-height: 44px !important;
+  padding: 10px 17px !important;
+  font-size: 13px !important;
+  font-weight: 850 !important;
+}
+
+/* Main section headings */
+.slp-section-heading h1,
+.slp-section-heading h2,
+.slp-block-heading h2,
+.slp-live-rail-head h2,
+.smp-section-heading h2,
+.stp-section-heading h2,
+.spp-section-heading h2,
+.sep-section-heading h2 {
+  font-size: clamp(24px, 3vw, 32px) !important;
+  line-height: 1.15 !important;
+}
+
+/* Section eyebrow labels */
+.slp-section-heading p,
+.slp-block-heading p,
+.smp-section-heading p,
+.stp-section-heading p,
+.spp-section-heading p,
+.sep-section-heading p {
+  font-size: 11px !important;
+  line-height: 1.4 !important;
+}
+
+/* Section descriptions and result counts */
+.slp-section-heading > span,
+.smp-section-heading > span,
+.stp-section-heading > span,
+.spp-section-heading > span,
+.sep-section-heading > span,
+.sep-result-count {
+  font-size: 14px !important;
+  line-height: 1.55 !important;
+}
+
+/* =========================================================
+   PUBLIC LEAGUE
+========================================================= */
+
+/* Live match cards */
+.slp-live-card-copy h3 {
+  font-size: 21px !important;
+  line-height: 1.25 !important;
+}
+
+.slp-live-card-copy p {
+  font-size: 13px !important;
+  line-height: 1.5 !important;
+}
+
+.slp-live-card-copy span,
+.slp-live-card-copy small {
+  font-size: 11px !important;
+  line-height: 1.45 !important;
+}
+
+.slp-live-card > a,
+.slp-live-card > button,
+.slp-view-all-live {
+  min-height: 42px !important;
+  padding: 9px 13px !important;
+  font-size: 12px !important;
+  font-weight: 850 !important;
+}
+
+/* League overview numbers */
+.slp-numbers span {
+  font-size: 11px !important;
+}
+
+.slp-numbers strong {
+  font-size: 27px !important;
+}
+
+.slp-numbers small {
+  font-size: 13px !important;
+  line-height: 1.45 !important;
+}
+
+/* Performer rows */
+.slp-performers strong,
+.slp-leader-row strong {
+  font-size: 16px !important;
+}
+
+.slp-performers small,
+.slp-performers em,
+.slp-leader-row span,
+.slp-leader-row small {
+  font-size: 12px !important;
+  line-height: 1.45 !important;
+}
+
+/* Matches */
+.slp-match-copy strong {
+  font-size: 16px !important;
+  line-height: 1.35 !important;
+}
+
+.slp-match-copy span,
+.slp-match-copy small {
+  font-size: 12px !important;
+  line-height: 1.5 !important;
+}
+
+.slp-match-score strong {
+  font-size: 18px !important;
+}
+
+.slp-match-score span,
+.slp-match-score small {
+  font-size: 11px !important;
+}
+
+/* Teams and series */
+.slp-team-row strong,
+.slp-series-row strong {
+  font-size: 16px !important;
+}
+
+.slp-team-row span,
+.slp-team-row small,
+.slp-series-row span,
+.slp-series-row small {
+  font-size: 12px !important;
+  line-height: 1.45 !important;
+}
+
+/* Points/stat tables */
+.slp-table th {
+  height: 48px !important;
+  padding: 12px 14px !important;
+  font-size: 12px !important;
+}
+
+.slp-table td {
+  height: 54px !important;
+  padding: 13px 14px !important;
+  font-size: 14px !important;
+}
+
+.slp-table td:first-child {
+  font-size: 15px !important;
+  font-weight: 850 !important;
+}
+
+/* =========================================================
+   PUBLIC MATCH
+========================================================= */
+
+.smp-result-line p {
+  font-size: 16px !important;
+}
+
+.smp-score-band span {
+  font-size: 11px !important;
+}
+
+.smp-score-band strong {
+  font-size: 27px !important;
+}
+
+.smp-overview-list span,
+.smp-info-list span {
+  font-size: 11px !important;
+}
+
+.smp-overview-list strong,
+.smp-info-list strong {
+  font-size: 15px !important;
+  line-height: 1.4 !important;
+}
+
+.smp-overview-list small,
+.smp-story > span,
+.smp-story p,
+.smp-scorecard-panel p {
+  font-size: 13px !important;
+  line-height: 1.6 !important;
+}
+
+.smp-story h2,
+.smp-scorecard-panel h2 {
+  font-size: 24px !important;
+  line-height: 1.2 !important;
+}
+
+.smp-scorecard-panel > a {
+  min-height: 46px !important;
+  padding: 10px 15px !important;
+  font-size: 13px !important;
+  font-weight: 850 !important;
+}
+
+.smp-empty strong {
+  font-size: 15px !important;
+}
+
+.smp-empty p {
+  font-size: 12px !important;
+}
+
+/* =========================================================
+   PUBLIC TEAM
+========================================================= */
+
+.stp-team-mark {
+  font-size: 17px !important;
+}
+
+.stp-summary-list span {
+  font-size: 11px !important;
+}
+
+.stp-summary-list strong {
+  font-size: 27px !important;
+}
+
+.stp-summary-list small {
+  font-size: 13px !important;
+  line-height: 1.45 !important;
+}
+
+.stp-player-copy small {
+  font-size: 10px !important;
+}
+
+.stp-player-copy strong {
+  font-size: 16px !important;
+  line-height: 1.3 !important;
+}
+
+.stp-player-copy em,
+.stp-player-action {
+  font-size: 12px !important;
+}
+
+.stp-player-number,
+.stp-player-avatar {
+  font-size: 12px !important;
+}
+
+/* =========================================================
+   PUBLIC PLAYER
+========================================================= */
+
+.spp-player-mark {
+  font-size: 16px !important;
+}
+
+.spp-player-summary h2 {
+  font-size: 24px !important;
+}
+
+.spp-player-summary p,
+.spp-player-summary small {
+  font-size: 13px !important;
+  line-height: 1.55 !important;
+}
+
+.spp-discipline-heading h3 {
+  font-size: 22px !important;
+}
+
+.spp-discipline-heading p {
+  font-size: 12px !important;
+}
+
+.spp-stat-list span {
+  font-size: 11px !important;
+}
+
+.spp-stat-list strong {
+  font-size: 22px !important;
+}
+
+.spp-stat-list small {
+  font-size: 13px !important;
+  line-height: 1.45 !important;
+}
+
+.spp-match-title-line strong {
+  font-size: 16px !important;
+  line-height: 1.35 !important;
+}
+
+.spp-performance-line,
+.spp-match-copy span,
+.spp-match-copy small {
+  font-size: 12px !important;
+  line-height: 1.5 !important;
+}
+
+/* =========================================================
+   EXPLORE
+========================================================= */
+
+.sep-league-main strong {
+  font-size: 18px !important;
+  line-height: 1.3 !important;
+}
+
+.sep-league-main em {
+  font-size: 13px !important;
+  line-height: 1.55 !important;
+}
+
+.sep-league-stat span {
+  font-size: 10px !important;
+}
+
+.sep-league-stat strong {
+  font-size: 19px !important;
+}
+
+.sep-follow-state {
+  font-size: 12px !important;
+}
+
+.sep-open-action {
+  min-height: 42px !important;
+  padding: 9px 13px !important;
+  font-size: 12px !important;
+  font-weight: 850 !important;
+}
+
+/* =========================================================
+   MOBILE — READABLE WITHOUT EXCESSIVE BULK
+========================================================= */
+
+@media (max-width: 700px) {
+  .slp-page,
+  .smp-page,
+  .stp-page,
+  .spp-page,
+  .sep-page {
+    padding-right: 13px !important;
+    padding-left: 13px !important;
+  }
+
+  /* Top labels and breadcrumb */
+  .slp-breadcrumb,
+  .smp-breadcrumb,
+  .stp-breadcrumb,
+  .spp-breadcrumb,
+  .sep-breadcrumb {
+    font-size: 11px !important;
+  }
+
+  .slp-public-label,
+  .smp-status-label,
+  .stp-public-label,
+  .spp-public-label,
+  .sep-public-label {
+    min-height: 31px !important;
+    padding: 6px 9px !important;
+    font-size: 9px !important;
+  }
+
+  /* Hero titles */
+  .slp-league-copy h1,
+  .stp-team-identity h1,
+  .spp-player-identity h1,
+  .sep-copy h1 {
+    font-size: clamp(32px, 10vw, 43px) !important;
+  }
+
+  .smp-team h1 {
+    font-size: clamp(23px, 7.5vw, 34px) !important;
+  }
+
+  .slp-league-copy > p:not(.slp-kicker),
+  .stp-subtitle,
+  .spp-subtitle,
+  .sep-copy > p:not(.sep-kicker),
+  .smp-result-line p {
+    font-size: 15px !important;
+    line-height: 1.55 !important;
+  }
+
+  /* Facts remain compact but legible */
+  .slp-league-facts span,
+  .stp-record-line span,
+  .spp-career-line span,
+  .sep-summary span {
+    font-size: 9px !important;
+  }
+
+  .slp-league-facts b,
+  .stp-record-line b,
+  .spp-career-line b,
+  .sep-summary b {
+    font-size: 19px !important;
+  }
+
+  /* Touch targets */
+  .slp-actions > *,
+  .smp-actions > *,
+  .stp-actions > *,
+  .spp-actions > * {
+    min-height: 47px !important;
+    font-size: 12px !important;
+  }
+
+  .slp-tabs button {
+    min-height: 42px !important;
+    padding: 10px 15px !important;
+    font-size: 12px !important;
+  }
+
+  /* Section headings */
+  .slp-section-heading h1,
+  .slp-section-heading h2,
+  .slp-block-heading h2,
+  .slp-live-rail-head h2,
+  .smp-section-heading h2,
+  .stp-section-heading h2,
+  .spp-section-heading h2,
+  .sep-section-heading h2 {
+    font-size: 24px !important;
+  }
+
+  .slp-section-heading > span,
+  .smp-section-heading > span,
+  .stp-section-heading > span,
+  .spp-section-heading > span,
+  .sep-section-heading > span {
+    font-size: 12px !important;
+  }
+
+  /* Public League mobile */
+  .slp-live-card-copy h3 {
+    font-size: 20px !important;
+  }
+
+  .slp-live-card-copy p {
+    font-size: 12px !important;
+  }
+
+  .slp-numbers strong {
+    font-size: 24px !important;
+  }
+
+  .slp-numbers small {
+    font-size: 12px !important;
+  }
+
+  .slp-performers strong,
+  .slp-leader-row strong {
+    font-size: 15px !important;
+  }
+
+  .slp-performers small,
+  .slp-performers em,
+  .slp-leader-row span,
+  .slp-leader-row small {
+    font-size: 11px !important;
+  }
+
+  .slp-match-copy strong,
+  .slp-team-row strong,
+  .slp-series-row strong {
+    font-size: 15px !important;
+  }
+
+  .slp-match-copy span,
+  .slp-match-copy small,
+  .slp-team-row span,
+  .slp-team-row small,
+  .slp-series-row span,
+  .slp-series-row small {
+    font-size: 11px !important;
+  }
+
+  /* Match mobile */
+  .smp-score-band span {
+    font-size: 9px !important;
+  }
+
+  .smp-score-band strong {
+    font-size: 24px !important;
+  }
+
+  .smp-overview-list span,
+  .smp-info-list span {
+    font-size: 9px !important;
+  }
+
+  .smp-overview-list strong,
+  .smp-info-list strong {
+    font-size: 14px !important;
+  }
+
+  .smp-overview-list small,
+  .smp-story > span,
+  .smp-story p,
+  .smp-scorecard-panel p {
+    font-size: 12px !important;
+  }
+
+  /* Team mobile */
+  .stp-summary-list span {
+    font-size: 10px !important;
+  }
+
+  .stp-summary-list strong {
+    font-size: 30px !important;
+  }
+
+  .stp-summary-list small {
+    font-size: 12px !important;
+  }
+
+  .stp-player-copy strong {
+    font-size: 15px !important;
+  }
+
+  .stp-player-copy em,
+  .stp-player-action {
+    font-size: 11px !important;
+  }
+
+  /* Player mobile */
+  .spp-player-summary h2 {
+    font-size: 22px !important;
+  }
+
+  .spp-player-summary p,
+  .spp-player-summary small {
+    font-size: 12px !important;
+  }
+
+  .spp-discipline-heading h3 {
+    font-size: 21px !important;
+  }
+
+  .spp-stat-list strong {
+    font-size: 21px !important;
+  }
+
+  .spp-stat-list small {
+    font-size: 12px !important;
+  }
+
+  .spp-match-title-line strong {
+    font-size: 15px !important;
+  }
+
+  .spp-performance-line,
+  .spp-match-copy span,
+  .spp-match-copy small {
+    font-size: 11px !important;
+  }
+
+  /* Explore mobile */
+  .sep-league-main strong {
+    font-size: 17px !important;
+  }
+
+  .sep-league-main em {
+    font-size: 12px !important;
+  }
+
+  .sep-follow-state,
+  .sep-open-action {
+    font-size: 11px !important;
+  }
+
+  /* Tables can scroll, but remain readable. */
+  .slp-table-wrap {
+    overflow-x: auto !important;
+    -webkit-overflow-scrolling: touch;
+  }
+
+  .slp-table {
+    min-width: 680px;
+  }
+
+  .slp-table th {
+    font-size: 11px !important;
+  }
+
+  .slp-table td {
+    font-size: 13px !important;
+  }
+}
+
+/* Very small phones */
+@media (max-width: 390px) {
+  .slp-page,
+  .smp-page,
+  .stp-page,
+  .spp-page,
+  .sep-page {
+    padding-right: 10px !important;
+    padding-left: 10px !important;
+  }
+
+  .slp-league-facts,
+  .sep-summary {
+    grid-template-columns: repeat(2, minmax(0, 1fr)) !important;
+  }
+
+  .stp-record-line,
+  .spp-career-line {
+    grid-template-columns: repeat(3, minmax(0, 1fr)) !important;
+  }
+}
+/*
+  Cric4All Public Spectator Design System V2
+  ==========================================
+  REPLACES: public-pages-final-typography.css
+
+  Import this file LAST in src/app/layout.jsx.
+
+  Pages:
+  - League  .slp-*
+  - Match   .smp-*
+  - Team    .stp-*
+  - Player  .spp-*
+  - Explore .sep-*
+
+  Presentation only. No React behavior is changed.
+*/
+
+/* =========================================================
+   1. SHARED TOKENS + FONT SYSTEM
+========================================================= */
+
+:is(.slp-page, .smp-page, .stp-page, .spp-page, .sep-page) {
+  --public-font:
+    Inter, ui-sans-serif, system-ui, -apple-system, BlinkMacSystemFont,
+    "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
+  --public-text-xs: 12px;
+  --public-text-sm: 14px;
+  --public-text-md: 16px;
+  --public-text-lg: 18px;
+  --public-text-xl: 22px;
+  --public-heading-sm: 26px;
+  --public-heading-lg: 38px;
+  --public-touch: 46px;
+  --public-radius-sm: 10px;
+  --public-radius-md: 14px;
+  --public-content-width: 1160px;
+
+  font-family: var(--public-font) !important;
+  font-size: var(--public-text-md) !important;
+  line-height: 1.5 !important;
+  text-rendering: optimizeLegibility;
+  -webkit-font-smoothing: antialiased;
+}
+
+:is(.slp-page, .smp-page, .stp-page, .spp-page, .sep-page) *,
+:is(.slp-page, .smp-page, .stp-page, .spp-page, .sep-page) *::before,
+:is(.slp-page, .smp-page, .stp-page, .spp-page, .sep-page) *::after {
+  box-sizing: border-box;
+}
+
+:is(.slp-page, .smp-page, .stp-page, .spp-page, .sep-page)
+:is(button, input, select, textarea) {
+  font-family: var(--public-font) !important;
+}
+
+:is(.slp-shell, .smp-shell, .stp-shell, .spp-shell, .sep-shell) {
+  width: min(var(--public-content-width), 100%) !important;
+  margin-inline: auto !important;
+}
+
+/* =========================================================
+   2. CONSISTENT TOP BAR / BREADCRUMBS
+========================================================= */
+
+:is(.slp-topline, .smp-topline, .stp-topline, .spp-topline, .sep-topline) {
+  min-height: 38px !important;
+  display: flex !important;
+  align-items: center !important;
+  justify-content: space-between !important;
+  gap: 16px !important;
+}
+
+:is(.slp-breadcrumb, .smp-breadcrumb, .stp-breadcrumb, .spp-breadcrumb, .sep-breadcrumb) {
+  min-width: 0 !important;
+  display: flex !important;
+  align-items: center !important;
+  gap: 8px !important;
+  font-size: var(--public-text-sm) !important;
+  line-height: 1.35 !important;
+}
+
+:is(.slp-breadcrumb, .smp-breadcrumb, .stp-breadcrumb, .spp-breadcrumb, .sep-breadcrumb)
+strong {
+  overflow: hidden !important;
+  text-overflow: ellipsis !important;
+  white-space: nowrap !important;
+}
+
+:is(.slp-public-label, .smp-status-label, .stp-public-label, .spp-public-label, .sep-public-label) {
+  flex: 0 0 auto !important;
+  min-height: 34px !important;
+  display: inline-flex !important;
+  align-items: center !important;
+  justify-content: center !important;
+  gap: 7px !important;
+  padding: 7px 11px !important;
+  border-radius: 999px !important;
+  font-size: 11px !important;
+  font-weight: 850 !important;
+  line-height: 1 !important;
+  letter-spacing: 0.07em !important;
+  white-space: nowrap !important;
+}
+
+/* =========================================================
+   3. HERO ALIGNMENT + TYPOGRAPHY
+========================================================= */
+
+:is(.slp-hero-main, .smp-match-stage, .stp-hero-main, .spp-hero-main, .sep-hero-main) {
+  min-width: 0 !important;
+}
+
+:is(.slp-kicker, .smp-kicker, .stp-kicker, .spp-kicker, .sep-kicker) {
+  margin-bottom: 10px !important;
+  font-size: var(--public-text-xs) !important;
+  font-weight: 850 !important;
+  line-height: 1.3 !important;
+  letter-spacing: 0.11em !important;
+}
+
+:is(.slp-league-copy h1, .stp-team-identity h1, .spp-player-identity h1, .sep-copy h1) {
+  margin: 0 !important;
+  font-size: clamp(44px, 6vw, 72px) !important;
+  font-weight: 850 !important;
+  line-height: 0.98 !important;
+  letter-spacing: -0.055em !important;
+}
+
+.smp-team h1 {
+  margin: 0 !important;
+  font-size: clamp(32px, 4vw, 54px) !important;
+  font-weight: 850 !important;
+  line-height: 1 !important;
+  letter-spacing: -0.045em !important;
+}
+
+:is(
+  .slp-league-copy > p:not(.slp-kicker),
+  .stp-subtitle,
+  .spp-subtitle,
+  .sep-copy > p:not(.sep-kicker),
+  .smp-result-line p
+) {
+  max-width: 760px !important;
+  margin-top: 14px !important;
+  font-size: var(--public-text-md) !important;
+  line-height: 1.65 !important;
+}
+
+/* Hero actions */
+:is(.slp-actions, .smp-actions, .stp-actions, .spp-actions) {
+  display: flex !important;
+  align-items: center !important;
+  justify-content: flex-end !important;
+  flex-wrap: wrap !important;
+  gap: 10px !important;
+}
+
+:is(.slp-actions, .smp-actions, .stp-actions, .spp-actions) > * {
+  min-height: var(--public-touch) !important;
+  display: inline-flex !important;
+  align-items: center !important;
+  justify-content: center !important;
+  gap: 8px !important;
+  padding: 10px 16px !important;
+  border-radius: var(--public-radius-sm) !important;
+  font-size: var(--public-text-sm) !important;
+  font-weight: 850 !important;
+  line-height: 1.1 !important;
+}
+
+/* =========================================================
+   4. SUMMARY STRIPS — SAME ALIGNMENT ON EVERY PAGE
+========================================================= */
+
+:is(.slp-league-facts, .stp-record-line, .spp-career-line, .sep-summary) {
+  display: grid !important;
+  grid-auto-flow: column !important;
+  grid-auto-columns: minmax(90px, 1fr) !important;
+  align-items: stretch !important;
+  gap: 0 !important;
+}
+
+:is(.slp-league-facts, .stp-record-line, .spp-career-line, .sep-summary) > span {
+  min-height: 68px !important;
+  display: flex !important;
+  flex-direction: column !important;
+  align-items: center !important;
+  justify-content: center !important;
+  padding: 10px 12px !important;
+  font-size: 11px !important;
+  line-height: 1.25 !important;
+  text-align: center !important;
+}
+
+:is(.slp-league-facts, .stp-record-line, .spp-career-line, .sep-summary) b {
+  display: block !important;
+  margin: 0 0 5px !important;
+  font-size: 23px !important;
+  font-weight: 850 !important;
+  line-height: 1 !important;
+  font-variant-numeric: tabular-nums;
+}
+
+/* Match score strip */
+.smp-score-band {
+  display: grid !important;
+  grid-template-columns: repeat(4, minmax(0, 1fr)) !important;
+  align-items: stretch !important;
+}
+
+.smp-score-band > div {
+  min-height: 88px !important;
+  display: flex !important;
+  flex-direction: column !important;
+  align-items: center !important;
+  justify-content: center !important;
+  padding: 14px !important;
+  text-align: center !important;
+}
+
+.smp-score-band span {
+  font-size: 11px !important;
+  line-height: 1.25 !important;
+}
+
+.smp-score-band strong {
+  margin-top: 6px !important;
+  font-size: 28px !important;
+  line-height: 1 !important;
+  font-variant-numeric: tabular-nums;
+}
+
+/* =========================================================
+   5. SEARCH / FILTERS / TABS
+========================================================= */
+
+.slp-utility-bar,
+.sep-toolbar {
+  align-items: center !important;
+  gap: 12px !important;
+}
+
+.slp-filters {
+  display: flex !important;
+  align-items: stretch !important;
+  gap: 10px !important;
+}
+
+.slp-filters label {
+  min-height: 50px !important;
+  display: flex !important;
+  flex-direction: column !important;
+  justify-content: center !important;
+  padding: 7px 12px !important;
+  border-radius: var(--public-radius-sm) !important;
+}
+
+.slp-filters label > span {
+  margin-bottom: 3px !important;
+  font-size: 10px !important;
+  line-height: 1 !important;
+}
+
+.slp-filters select {
+  font-size: var(--public-text-sm) !important;
+  line-height: 1.2 !important;
+}
+
+:is(.slp-search, .sep-search) {
+  min-height: 50px !important;
+  display: flex !important;
+  align-items: center !important;
+  gap: 9px !important;
+  padding: 8px 13px !important;
+  border-radius: var(--public-radius-sm) !important;
+}
+
+:is(.slp-search, .sep-search) input {
+  min-width: 0 !important;
+  font-size: var(--public-text-md) !important;
+}
+
+.slp-tabs {
+  display: flex !important;
+  align-items: center !important;
+  gap: 8px !important;
+}
+
+.slp-tabs button {
+  min-height: 44px !important;
+  display: inline-flex !important;
+  align-items: center !important;
+  justify-content: center !important;
+  padding: 10px 17px !important;
+  border-radius: 999px !important;
+  font-size: var(--public-text-sm) !important;
+  font-weight: 850 !important;
+  line-height: 1 !important;
+}
+
+/* =========================================================
+   6. SECTION HEADERS — ONE STANDARD
+========================================================= */
+
+:is(
+  .slp-section-heading,
+  .slp-block-heading,
+  .slp-live-rail-head,
+  .smp-section-heading,
+  .stp-section-heading,
+  .spp-section-heading,
+  .sep-section-heading
+) {
+  min-width: 0 !important;
+  display: flex !important;
+  align-items: flex-end !important;
+  justify-content: space-between !important;
+  gap: 18px !important;
+}
+
+:is(
+  .slp-section-heading h1,
+  .slp-section-heading h2,
+  .slp-block-heading h2,
+  .slp-live-rail-head h2,
+  .smp-section-heading h2,
+  .stp-section-heading h2,
+  .spp-section-heading h2,
+  .sep-section-heading h2
+) {
+  margin: 0 !important;
+  font-size: var(--public-heading-sm) !important;
+  font-weight: 850 !important;
+  line-height: 1.15 !important;
+  letter-spacing: -0.025em !important;
+}
+
+:is(
+  .slp-section-heading p,
+  .slp-block-heading p,
+  .smp-section-heading p,
+  .stp-section-heading p,
+  .spp-section-heading p,
+  .sep-section-heading p
+) {
+  margin: 0 0 6px !important;
+  font-size: 11px !important;
+  font-weight: 850 !important;
+  line-height: 1.3 !important;
+  letter-spacing: 0.09em !important;
+}
+
+:is(
+  .slp-section-heading > span,
+  .smp-section-heading > span,
+  .stp-section-heading > span,
+  .spp-section-heading > span,
+  .sep-section-heading > span
+) {
+  max-width: 430px !important;
+  font-size: var(--public-text-sm) !important;
+  line-height: 1.55 !important;
+  text-align: right !important;
+}
+
+/* =========================================================
+   7. ROW / CARD ALIGNMENT
+========================================================= */
+
+/* League numeric rows */
+.slp-numbers button {
+  min-height: 78px !important;
+  align-items: center !important;
+  gap: 14px !important;
+  padding: 14px 4px !important;
+}
+
+.slp-numbers span {
+  font-size: 11px !important;
+}
+
+.slp-numbers strong {
+  font-size: 28px !important;
+  line-height: 1 !important;
+}
+
+.slp-numbers small {
+  font-size: 13px !important;
+  line-height: 1.4 !important;
+}
+
+/* League performers */
+.slp-performers button,
+.slp-leader-row {
+  min-height: 74px !important;
+  align-items: center !important;
+  gap: 13px !important;
+  padding-block: 13px !important;
+}
+
+.slp-performers strong,
+.slp-leader-row strong {
+  font-size: var(--public-text-md) !important;
+  line-height: 1.3 !important;
+}
+
+.slp-performers small,
+.slp-performers em,
+.slp-leader-row span,
+.slp-leader-row small {
+  font-size: var(--public-text-xs) !important;
+  line-height: 1.45 !important;
+}
+
+/* Match rows */
+.slp-match-row {
+  min-height: 82px !important;
+  align-items: center !important;
+}
+
+.slp-match-copy strong {
+  font-size: var(--public-text-md) !important;
+  line-height: 1.35 !important;
+}
+
+.slp-match-copy span,
+.slp-match-copy small {
+  font-size: var(--public-text-xs) !important;
+  line-height: 1.45 !important;
+}
+
+.slp-match-score strong {
+  font-size: var(--public-text-lg) !important;
+}
+
+/* Team / series rows */
+.slp-team-row,
+.slp-series-row,
+.stp-player-row,
+.spp-match-row {
+  min-height: 72px !important;
+  align-items: center !important;
+}
+
+.slp-team-row strong,
+.slp-series-row strong,
+.stp-player-copy strong,
+.spp-match-title-line strong {
+  font-size: var(--public-text-md) !important;
+  line-height: 1.3 !important;
+}
+
+.slp-team-row span,
+.slp-team-row small,
+.slp-series-row span,
+.slp-series-row small,
+.stp-player-copy em,
+.stp-player-action,
+.spp-performance-line,
+.spp-match-copy span,
+.spp-match-copy small {
+  font-size: var(--public-text-xs) !important;
+  line-height: 1.45 !important;
+}
+
+/* Team summary cards */
+.stp-summary-list > div {
+  min-height: 94px !important;
+  display: grid !important;
+  grid-template-columns: minmax(110px, 0.55fr) auto minmax(160px, 1fr) !important;
+  align-items: center !important;
+  gap: 16px !important;
+}
+
+.stp-summary-list span {
+  font-size: 11px !important;
+}
+
+.stp-summary-list strong {
+  font-size: 29px !important;
+  line-height: 1 !important;
+}
+
+.stp-summary-list small {
+  font-size: 13px !important;
+  line-height: 1.45 !important;
+}
+
+/* Player stat rows */
+.spp-stat-list > div {
+  min-height: 76px !important;
+  align-items: center !important;
+  gap: 16px !important;
+}
+
+.spp-stat-list span {
+  font-size: 11px !important;
+}
+
+.spp-stat-list strong {
+  font-size: 23px !important;
+  line-height: 1 !important;
+}
+
+.spp-stat-list small {
+  font-size: 13px !important;
+  line-height: 1.45 !important;
+}
+
+/* Match info rows */
+.smp-overview-list > div,
+.smp-info-list > div {
+  min-height: 68px !important;
+  display: grid !important;
+  grid-template-columns: minmax(120px, 0.55fr) minmax(0, 1fr) !important;
+  align-items: center !important;
+  gap: 18px !important;
+}
+
+.smp-overview-list span,
+.smp-info-list span {
+  font-size: 11px !important;
+}
+
+.smp-overview-list strong,
+.smp-info-list strong {
+  font-size: 15px !important;
+  line-height: 1.4 !important;
+  text-align: right !important;
+}
+
+.smp-overview-list small {
+  grid-column: 1 / -1 !important;
+  font-size: 13px !important;
+  line-height: 1.45 !important;
+}
+
+/* Explore list */
+.sep-league-row {
+  min-height: 88px !important;
+  align-items: center !important;
+  gap: 15px !important;
+  padding-block: 17px !important;
+}
+
+.sep-league-main small {
+  font-size: 10px !important;
+}
+
+.sep-league-main strong {
+  margin-top: 4px !important;
+  font-size: var(--public-text-lg) !important;
+  line-height: 1.3 !important;
+}
+
+.sep-league-main em {
+  margin-top: 5px !important;
+  font-size: 13px !important;
+  line-height: 1.45 !important;
+}
+
+.sep-league-stat small {
+  font-size: 10px !important;
+}
+
+.sep-league-stat strong {
+  margin-top: 5px !important;
+  font-size: 19px !important;
+}
+
+.sep-follow-state,
+.sep-open-action {
+  font-size: var(--public-text-xs) !important;
+}
+
+.sep-open-action {
+  min-height: 42px !important;
+  padding: 9px 13px !important;
+}
+
+/* =========================================================
+   8. TABLE ALIGNMENT
+========================================================= */
+
+.slp-table {
+  width: 100% !important;
+  border-collapse: collapse !important;
+}
+
+.slp-table th {
+  height: 50px !important;
+  padding: 12px 14px !important;
+  font-size: 12px !important;
+  line-height: 1.2 !important;
+  text-align: center !important;
+  vertical-align: middle !important;
+}
+
+.slp-table td {
+  height: 56px !important;
+  padding: 13px 14px !important;
+  font-size: 14px !important;
+  line-height: 1.35 !important;
+  text-align: center !important;
+  vertical-align: middle !important;
+}
+
+.slp-table th:first-child,
+.slp-table td:first-child {
+  min-width: 180px !important;
+  text-align: left !important;
+}
+
+.slp-table td:first-child {
+  font-size: 15px !important;
+  font-weight: 850 !important;
+}
+
+/* =========================================================
+   9. MOBILE — CONSISTENT, READABLE, ALIGNED
+========================================================= */
+
+@media (max-width: 700px) {
+  :is(.slp-page, .smp-page, .stp-page, .spp-page, .sep-page) {
+    --public-text-xs: 12px;
+    --public-text-sm: 14px;
+    --public-text-md: 16px;
+    --public-text-lg: 18px;
+    --public-heading-sm: 24px;
+
+    padding: 14px 13px 50px !important;
+    overflow-x: clip !important;
+    font-size: 16px !important;
+  }
+
+  /* Top bar stays on one aligned line */
+  :is(.slp-topline, .smp-topline, .stp-topline, .spp-topline, .sep-topline) {
+    min-height: 34px !important;
+    flex-direction: row !important;
+    align-items: center !important;
+    gap: 10px !important;
+  }
+
+  :is(.slp-breadcrumb, .smp-breadcrumb, .stp-breadcrumb, .spp-breadcrumb, .sep-breadcrumb) {
+    max-width: 68% !important;
+    font-size: 11px !important;
+  }
+
+  :is(.slp-public-label, .smp-status-label, .stp-public-label, .spp-public-label, .sep-public-label) {
+    order: initial !important;
+    min-height: 30px !important;
+    padding: 6px 9px !important;
+    font-size: 9px !important;
+  }
+
+  /* Hero */
+  :is(.slp-hero-main, .stp-hero-main, .spp-hero-main, .sep-hero-main) {
+    align-items: stretch !important;
+    flex-direction: column !important;
+    gap: 20px !important;
+    padding-top: 28px !important;
+  }
+
+  :is(.slp-league-copy h1, .stp-team-identity h1, .spp-player-identity h1, .sep-copy h1) {
+    font-size: clamp(34px, 10vw, 46px) !important;
+  }
+
+  .smp-match-stage {
+    padding-top: 28px !important;
+  }
+
+  .smp-team h1 {
+    font-size: clamp(24px, 7.5vw, 34px) !important;
+  }
+
+  :is(
+    .slp-league-copy > p:not(.slp-kicker),
+    .stp-subtitle,
+    .spp-subtitle,
+    .sep-copy > p:not(.sep-kicker),
+    .smp-result-line p
+  ) {
+    font-size: 15px !important;
+    line-height: 1.55 !important;
+  }
+
+  /* Actions align in a clean 2-column grid */
+  :is(.slp-actions, .smp-actions, .stp-actions, .spp-actions) {
+    width: 100% !important;
+    display: grid !important;
+    grid-template-columns: repeat(2, minmax(0, 1fr)) !important;
+    gap: 9px !important;
+  }
+
+  :is(.slp-actions, .smp-actions, .stp-actions, .spp-actions) > * {
+    width: 100% !important;
+    min-height: 47px !important;
+    padding: 9px 10px !important;
+    font-size: 12px !important;
+    text-align: center !important;
+  }
+
+  .slp-actions .slp-follow,
+  .smp-actions .smp-primary-action,
+  .spp-actions .spp-primary-action {
+    grid-column: 1 / -1 !important;
+  }
+
+  /* Summary strips */
+  :is(.slp-league-facts, .stp-record-line, .spp-career-line, .sep-summary) {
+    grid-auto-flow: row !important;
+    grid-template-columns: repeat(4, minmax(0, 1fr)) !important;
+  }
+
+  :is(.slp-league-facts, .stp-record-line, .spp-career-line, .sep-summary) > span {
+    min-height: 62px !important;
+    padding: 8px 5px !important;
+    font-size: 9px !important;
+  }
+
+  :is(.slp-league-facts, .stp-record-line, .spp-career-line, .sep-summary) b {
+    font-size: 19px !important;
+  }
+
+  /* Filters */
+  .slp-utility-bar,
+  .sep-toolbar {
+    align-items: stretch !important;
+    flex-direction: column !important;
+    gap: 10px !important;
+  }
+
+  .slp-filters {
+    width: 100% !important;
+    display: grid !important;
+    grid-template-columns: repeat(2, minmax(0, 1fr)) !important;
+    gap: 9px !important;
+  }
+
+  .slp-filters label {
+    width: 100% !important;
+    min-width: 0 !important;
+  }
+
+  :is(.slp-search, .sep-search) {
+    width: 100% !important;
+  }
+
+  /* Tabs */
+  .slp-tabs {
+    position: sticky !important;
+    top: 0 !important;
+    z-index: 30 !important;
+    margin-inline: -13px !important;
+    padding: 10px 13px !important;
+    overflow-x: auto !important;
+    flex-wrap: nowrap !important;
+    scrollbar-width: none;
+  }
+
+  .slp-tabs::-webkit-scrollbar {
+    display: none;
+  }
+
+  .slp-tabs button {
+    flex: 0 0 auto !important;
+    min-width: auto !important;
+    min-height: 42px !important;
+    padding: 10px 15px !important;
+    font-size: 12px !important;
+    white-space: nowrap !important;
+  }
+
+  /* Section headings stack consistently */
+  :is(
+    .slp-section-heading,
+    .slp-block-heading,
+    .slp-live-rail-head,
+    .smp-section-heading,
+    .stp-section-heading,
+    .spp-section-heading,
+    .sep-section-heading
+  ) {
+    align-items: flex-start !important;
+    flex-direction: column !important;
+    gap: 7px !important;
+  }
+
+  :is(
+    .slp-section-heading h1,
+    .slp-section-heading h2,
+    .slp-block-heading h2,
+    .slp-live-rail-head h2,
+    .smp-section-heading h2,
+    .stp-section-heading h2,
+    .spp-section-heading h2,
+    .sep-section-heading h2
+  ) {
+    font-size: 24px !important;
+  }
+
+  :is(
+    .slp-section-heading > span,
+    .smp-section-heading > span,
+    .stp-section-heading > span,
+    .spp-section-heading > span,
+    .sep-section-heading > span
+  ) {
+    max-width: 100% !important;
+    font-size: 12px !important;
+    text-align: left !important;
+  }
+
+  /* League live cards become swipe rail */
+  .slp-live-rail {
+    grid-auto-columns: min(88%, 390px) !important;
+    gap: 10px !important;
+  }
+
+  .slp-live-card {
+    min-height: 176px !important;
+    padding: 17px !important;
+  }
+
+  .slp-live-card-copy h3 {
+    font-size: 20px !important;
+  }
+
+  .slp-live-card-copy p {
+    font-size: 12px !important;
+  }
+
+  /* Row alignment */
+  .slp-numbers button {
+    min-height: 72px !important;
+  }
+
+  .slp-numbers strong {
+    font-size: 24px !important;
+  }
+
+  .slp-performers button,
+  .slp-leader-row,
+  .slp-match-row,
+  .slp-team-row,
+  .slp-series-row,
+  .stp-player-row,
+  .spp-match-row,
+  .sep-league-row {
+    min-height: 72px !important;
+  }
+
+  /* Team summary: horizontal rail, same card dimensions */
+  .stp-summary-list {
+    display: grid !important;
+    grid-auto-flow: column !important;
+    grid-auto-columns: 78% !important;
+    gap: 10px !important;
+    overflow-x: auto !important;
+    scroll-snap-type: x mandatory !important;
+    scrollbar-width: none;
+  }
+
+  .stp-summary-list::-webkit-scrollbar {
+    display: none;
+  }
+
+  .stp-summary-list > div {
+    min-height: 142px !important;
+    display: block !important;
+    padding: 18px !important;
+    border-radius: var(--public-radius-md) !important;
+    scroll-snap-align: start !important;
+  }
+
+  .stp-summary-list strong {
+    display: block !important;
+    margin-top: 10px !important;
+    font-size: 32px !important;
+  }
+
+  .stp-summary-list small {
+    display: block !important;
+    margin-top: 10px !important;
+    font-size: 12px !important;
+  }
+
+  /* Match info */
+  .smp-score-band {
+    grid-template-columns: repeat(2, minmax(0, 1fr)) !important;
+  }
+
+  .smp-score-band > div {
+    min-height: 78px !important;
+  }
+
+  .smp-score-band strong {
+    font-size: 24px !important;
+  }
+
+  .smp-overview-list > div,
+  .smp-info-list > div {
+    min-height: 66px !important;
+    grid-template-columns: minmax(95px, 0.48fr) minmax(0, 1fr) !important;
+    gap: 12px !important;
+  }
+
+  .smp-overview-list strong,
+  .smp-info-list strong {
+    font-size: 14px !important;
+  }
+
+  /* Explore: clean two-column row */
+  .sep-league-row {
+    grid-template-columns: auto minmax(0, 1fr) !important;
+    gap: 12px !important;
+    padding: 16px 0 !important;
+  }
+
+  .sep-index,
+  .sep-league-stat {
+    display: none !important;
+  }
+
+  .sep-league-mark {
+    width: 48px !important;
+    height: 48px !important;
+    font-size: 12px !important;
+  }
+
+  .sep-league-main strong {
+    white-space: normal !important;
+    font-size: 17px !important;
+  }
+
+  .sep-league-main em {
+    white-space: normal !important;
+    font-size: 12px !important;
+  }
+
+  .sep-follow-state,
+  .sep-open-action {
+    grid-column: 2 !important;
+    justify-self: stretch !important;
+  }
+
+  .sep-open-action {
+    justify-content: center !important;
+  }
+
+  /* Tables */
+  .slp-table-wrap {
+    overflow-x: auto !important;
+    -webkit-overflow-scrolling: touch;
+  }
+
+  .slp-table {
+    min-width: 700px !important;
+  }
+
+  .slp-table th {
+    font-size: 11px !important;
+  }
+
+  .slp-table td {
+    font-size: 13px !important;
+  }
+}
+
+/* =========================================================
+   10. SMALL PHONES
+========================================================= */
+
+@media (max-width: 390px) {
+  :is(.slp-page, .smp-page, .stp-page, .spp-page, .sep-page) {
+    padding-inline: 10px !important;
+  }
+
+  :is(.slp-actions, .smp-actions, .stp-actions, .spp-actions) {
+    grid-template-columns: 1fr !important;
+  }
+
+  .slp-actions .slp-follow,
+  .smp-actions .smp-primary-action,
+  .spp-actions .spp-primary-action {
+    grid-column: auto !important;
+  }
+
+  :is(.slp-league-facts, .sep-summary) {
+    grid-template-columns: repeat(2, minmax(0, 1fr)) !important;
+  }
+
+  :is(.stp-record-line, .spp-career-line) {
+    grid-template-columns: repeat(3, minmax(0, 1fr)) !important;
+  }
+
+  .slp-tabs {
+    margin-inline: -10px !important;
+    padding-inline: 10px !important;
+  }
+}
