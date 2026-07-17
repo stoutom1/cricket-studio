@@ -4,7 +4,6 @@ import {useEffect,useMemo,useRef,useState,} from "react";
 import { buildMatchInsights } from "@/lib/match-insights";
 import "@/app/live-score-premium.css";
 
-
 const FINAL_MATCH_STATUSES = new Set([
   "ABANDONED",
   "COMPLETED",
@@ -508,7 +507,7 @@ if (loadedMatchIsFinal && intervalId) {
 
   if (error && !scoreboard) {
     return (
-      <main className="live-page-shell">
+      <main className="live-page-shell live-score-final">
         <div className="live-error-card">
           <h2>
             Unable to load scorecard
@@ -531,7 +530,7 @@ if (loadedMatchIsFinal && intervalId) {
 
   if (!scoreboard) {
     return (
-      <main className="live-page-shell">
+      <main className="live-page-shell live-score-final">
         <div className="live-loading-card">
           <div className="live-loading-dot" />
 
@@ -725,6 +724,19 @@ const finalResultText =
     }
   }
 
+  function openFullScorecard() {
+    setShowScorecard(true);
+
+    window.requestAnimationFrame(() => {
+      document
+        .getElementById("full-scorecard-panel")
+        ?.scrollIntoView({
+          behavior: "smooth",
+          block: "start",
+        });
+    });
+  }
+
   async function refreshNow() {
     try {
       setIsRefreshing(true);
@@ -759,7 +771,7 @@ const finalResultText =
 
   return (
     <main
-      className={`live-page-shell ${
+      className={`live-page-shell live-score-final ${
         tvMode ? "live-tv-mode" : ""
       }`}
     >
@@ -1137,6 +1149,69 @@ const finalResultText =
             </span>
           </button>
         </nav>
+      ) : null}
+
+      {!tvMode && (topBatter || bestBowler) ? (
+        <section
+          className="live-quick-scorecard"
+          aria-label="Quick batting and bowling summary"
+        >
+          <div className="live-quick-scorecard-head">
+            <div>
+              <span>Match snapshot</span>
+              <strong>Batting &amp; bowling leaders</strong>
+            </div>
+
+            <button
+              type="button"
+              onClick={openFullScorecard}
+            >
+              Full scorecard →
+            </button>
+          </div>
+
+          <div className="live-quick-scorecard-grid">
+            <article className="live-quick-stat live-quick-batting">
+              <span>Top batter</span>
+
+              <strong>
+                {topBatter?.playerName || "—"}
+              </strong>
+
+              <b>
+                {topBatter
+                  ? `${topBatter.runs} runs`
+                  : "No runs yet"}
+              </b>
+
+              <small>
+                {topBatter
+                  ? `${topBatter.balls} balls faced`
+                  : "Batting figures will appear here"}
+              </small>
+            </article>
+
+            <article className="live-quick-stat live-quick-bowling">
+              <span>Best bowler</span>
+
+              <strong>
+                {bestBowler?.playerName || "—"}
+              </strong>
+
+              <b>
+                {bestBowler
+                  ? `${bestBowler.wickets}/${bestBowler.runs}`
+                  : "No wickets yet"}
+              </b>
+
+              <small>
+                {bestBowler
+                  ? `${bestBowler.overs} overs`
+                  : "Bowling figures will appear here"}
+              </small>
+            </article>
+          </div>
+        </section>
       ) : null}
 
       {!tvMode &&
