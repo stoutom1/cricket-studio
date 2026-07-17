@@ -117,36 +117,35 @@ function MobileExpandableList({
   className = "",
 }) {
   const [expanded, setExpanded] = useState(false);
-  const hasMore = rows.length > previewCount;
-  const visibleRows = expanded
-    ? rows
-    : rows.slice(0, previewCount);
 
   return (
-    <div className={`mobile-scorecard-group ${className}`}>
-      <div className="mobile-scorecard-list">
-        {visibleRows.map(renderItem)}
-      </div>
+    <section
+      className={`mobile-scorecard-group ${className} ${
+        expanded ? "is-expanded" : ""
+      }`}
+    >
+      <button
+        type="button"
+        className="mobile-scorecard-section-toggle"
+        onClick={() => setExpanded((current) => !current)}
+        aria-expanded={expanded}
+      >
+        <span>
+          <small>{rows.length}</small>
+          <strong>{itemLabel}</strong>
+        </span>
 
-      {hasMore ? (
-        <button
-          type="button"
-          className="mobile-scorecard-expand"
-          onClick={() => setExpanded((current) => !current)}
-          aria-expanded={expanded}
-        >
-          <span>
-            {expanded
-              ? "Show less"
-              : `Show all ${rows.length} ${itemLabel}`}
-          </span>
+        <b aria-hidden="true">
+          {expanded ? "−" : "+"}
+        </b>
+      </button>
 
-          <b aria-hidden="true">
-            {expanded ? "↑" : "↓"}
-          </b>
-        </button>
+      {expanded ? (
+        <div className="mobile-scorecard-list">
+          {rows.map(renderItem)}
+        </div>
       ) : null}
-    </div>
+    </section>
   );
 }
 
@@ -157,7 +156,7 @@ function MobileBattingCards({ rows = [] }) {
     <MobileExpandableList
       rows={rows}
       previewCount={2}
-      itemLabel={rows.length === 1 ? "batter" : "batters"}
+      itemLabel="Batting"
       className="mobile-batting-list"
       renderItem={(batter) => {
         const isTopScorer =
@@ -228,7 +227,7 @@ function MobileBowlingCards({ rows = [] }) {
     <MobileExpandableList
       rows={rows}
       previewCount={2}
-      itemLabel={rows.length === 1 ? "bowler" : "bowlers"}
+      itemLabel="Bowling"
       className="mobile-bowling-list"
       renderItem={(bowler) => {
         const isBestBowler =
@@ -282,11 +281,7 @@ function MobilePartnershipCards({ rows = [] }) {
     <MobileExpandableList
       rows={rows}
       previewCount={1}
-      itemLabel={
-        rows.length === 1
-          ? "partnership"
-          : "partnerships"
-      }
+      itemLabel="Partnerships"
       className="mobile-partnership-list"
       renderItem={(partnership, index) => (
         <article
@@ -330,7 +325,7 @@ function MobileWicketCards({ rows = [] }) {
     <MobileExpandableList
       rows={rows}
       previewCount={1}
-      itemLabel={rows.length === 1 ? "wicket" : "wickets"}
+      itemLabel="Fall of wickets"
       className="mobile-wicket-list"
       renderItem={(wicket, index) => (
         <article

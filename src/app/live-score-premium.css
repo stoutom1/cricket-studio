@@ -2490,3 +2490,177 @@
     margin-top: 13px !important;
   }
 }
+
+
+/* =========================================================
+   FINAL V5 — LARGER LAPTOP TABLES + COLLAPSED MOBILE SECTIONS
+========================================================= */
+
+/* Larger, clearer scorecard typography on laptop and desktop. */
+@media (min-width: 701px) {
+  .live-score-final .live-section-title {
+    min-height: 52px !important;
+    margin-top: 28px !important;
+    font-size: 18px !important;
+  }
+
+  .live-score-final .live-pro-table th {
+    height: 52px !important;
+    padding: 14px 16px !important;
+    font-size: 13px !important;
+    letter-spacing: 0.045em !important;
+  }
+
+  .live-score-final .live-pro-table td {
+    height: 60px !important;
+    padding: 15px 16px !important;
+    font-size: 16px !important;
+    line-height: 1.45 !important;
+  }
+
+  .live-score-final .live-pro-table .name-cell {
+    font-size: 17px !important;
+    font-weight: 900 !important;
+  }
+
+  .live-score-final .table-type-batting td:nth-child(7),
+  .live-score-final .table-type-wickets td:nth-child(3) {
+    font-size: 15px !important;
+  }
+
+  .live-score-final .score-badge {
+    min-height: 30px !important;
+    padding: 6px 10px !important;
+    font-size: 12px !important;
+  }
+
+  .live-score-final .live-table-shell {
+    border-radius: 12px !important;
+  }
+}
+
+/* Mobile section controls replace preview rows completely. */
+.live-score-final .mobile-scorecard-section-toggle {
+  display: none;
+}
+
+@media (max-width: 700px) {
+  .live-score-final .mobile-scorecard-group {
+    display: block !important;
+  }
+
+  .live-score-final .mobile-scorecard-section-toggle {
+    width: 100%;
+    min-height: 62px;
+    display: flex !important;
+    align-items: center;
+    justify-content: space-between;
+    gap: 14px;
+    padding: 12px 14px;
+    border: 1px solid #355d83;
+    border-radius: 12px;
+    color: #f2f7fc;
+    background:
+      linear-gradient(
+        145deg,
+        rgba(18, 50, 83, 0.98),
+        rgba(8, 27, 47, 0.99)
+      );
+    box-shadow:
+      0 10px 22px rgba(0, 0, 0, 0.20),
+      inset 0 1px 0 rgba(255, 255, 255, 0.03);
+    cursor: pointer;
+    text-align: left;
+  }
+
+  .live-score-final .mobile-scorecard-section-toggle > span {
+    min-width: 0;
+    display: flex;
+    align-items: center;
+    gap: 11px;
+  }
+
+  .live-score-final .mobile-scorecard-section-toggle small {
+    min-width: 34px;
+    height: 34px;
+    display: inline-grid;
+    place-items: center;
+    border: 1px solid #4778a7;
+    border-radius: 9px;
+    color: #9fd3ff;
+    background: #102d4b;
+    font-size: 12px;
+    font-weight: 900;
+    font-variant-numeric: tabular-nums;
+  }
+
+  .live-score-final .mobile-scorecard-section-toggle strong {
+    overflow: hidden;
+    color: #fff;
+    font-size: 17px;
+    font-weight: 900;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+  }
+
+  .live-score-final .mobile-scorecard-section-toggle b {
+    flex: 0 0 36px;
+    width: 36px;
+    height: 36px;
+    display: grid;
+    place-items: center;
+    border: 1px solid #4e87bd;
+    border-radius: 10px;
+    color: #fff;
+    background: linear-gradient(145deg, #2779c8, #174c80);
+    font-size: 22px;
+    line-height: 1;
+  }
+
+  .live-score-final .mobile-scorecard-group.is-expanded
+    .mobile-scorecard-section-toggle {
+    border-color: rgba(67, 194, 220, 0.70);
+    border-radius: 12px 12px 0 0;
+    background:
+      linear-gradient(
+        145deg,
+        rgba(18, 65, 93, 0.98),
+        rgba(8, 31, 49, 0.99)
+      );
+  }
+
+  .live-score-final .mobile-scorecard-group.is-expanded
+    .mobile-scorecard-list {
+    gap: 12px !important;
+    padding: 12px;
+    border: 1px solid #315371;
+    border-top: 0;
+    border-radius: 0 0 12px 12px;
+    background: rgba(5, 18, 32, 0.52);
+  }
+
+  /* Hide the old Show all / Show less button from V4. */
+  .live-score-final .mobile-scorecard-expand {
+    display: none !important;
+  }
+
+  /* Compact spacing between collapsed disciplines. */
+  .live-score-final .mobile-scorecard-group {
+    margin-top: 8px;
+  }
+
+  .live-score-final .live-section-title {
+    display: none !important;
+  }
+}
+
+@media (max-width: 390px) {
+  .live-score-final .mobile-scorecard-section-toggle {
+    min-height: 58px;
+    padding: 10px 12px;
+  }
+
+  .live-score-final .mobile-scorecard-section-toggle strong {
+    font-size: 16px;
+  }
+}
