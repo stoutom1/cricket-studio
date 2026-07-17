@@ -168,103 +168,79 @@ export default async function PublicTeamPage({ params }) {
         </header>
 
         <div className="stp-content">
-          <section className="stp-summary">
-            <div className="stp-section-heading">
-              <div>
-                <p>Team record</p>
-                <h2>Season overview</h2>
-              </div>
+<section className="stp-section stp-squad-section">
+  <div className="stp-section-heading stp-squad-heading">
+    <div>
+      <p>Team directory</p>
+      <h2>Squad</h2>
+    </div>
 
-              <span>
-                {completedMatches.length
-                  ? `${wins} wins from ${completedMatches.length} completed matches`
-                  : "No completed matches yet"}
-              </span>
-            </div>
+    <div className="stp-squad-heading-meta">
+      <span className="stp-squad-count">
+        {playerCount}
+        {" "}
+        {playerCount === 1 ? "player" : "players"}
+      </span>
 
-            <div className="stp-summary-list">
-              <div>
-                <span>Squad size</span>
-                <strong>{playerCount}</strong>
-                <small>Registered players</small>
-              </div>
+      <small>
+        Select a player to view their public profile
+      </small>
+    </div>
+  </div>
 
-              <div>
-                <span>Total fixtures</span>
-                <strong>{teamMatches.length}</strong>
-                <small>League matches involving this team</small>
-              </div>
+  {playerCount ? (
+    <div className="stp-player-grid">
+      {team.players.map((player, index) => (
+        <Link
+          key={player.id}
+          href={`/leagues/${league.slug}/players/${player.id}`}
+          className="stp-player-row"
+        >
+          <span
+            className="stp-player-number"
+            aria-hidden="true"
+          >
+            {String(index + 1).padStart(2, "0")}
+          </span>
 
-              <div>
-                <span>Wins</span>
-                <strong>{wins}</strong>
-                <small>Completed matches won</small>
-              </div>
+          <span
+            className="stp-player-avatar"
+            aria-hidden="true"
+          >
+            {getInitials(player.name)}
+          </span>
 
-              <div>
-                <span>Losses</span>
-                <strong>{losses}</strong>
-                <small>Completed matches lost</small>
-              </div>
+          <span className="stp-player-copy">
+            <small>Player</small>
+            <strong>{player.name}</strong>
+          </span>
 
-              <div>
-                <span>Win rate</span>
-                <strong>{completedMatches.length ? `${winRate}%` : "—"}</strong>
-                <small>Based on completed matches</small>
-              </div>
-            </div>
-          </section>
+          <span className="stp-player-action">
+            View profile
+            <span aria-hidden="true">→</span>
+          </span>
+        </Link>
+      ))}
+    </div>
+  ) : (
+    <div className="stp-empty-state">
+      <span
+        className="stp-empty-icon"
+        aria-hidden="true"
+      >
+        ◌
+      </span>
 
-          <section className="stp-roster">
-            <div className="stp-section-heading">
-              <div>
-                <p>Team directory</p>
-                <h2>Squad</h2>
-              </div>
-
-              <span>
-                {playerCount} {playerCount === 1 ? "player" : "players"}
-              </span>
-            </div>
-
-            {playerCount ? (
-              <div className="stp-player-list">
-                {team.players.map((player, index) => (
-                  <Link
-                    key={player.id}
-                    href={`/leagues/${league.slug}/players/${player.id}`}
-                    className="stp-player-row"
-                  >
-                    <span className="stp-player-number" aria-hidden="true">
-                      {String(index + 1).padStart(2, "0")}
-                    </span>
-
-                    <span className="stp-player-avatar" aria-hidden="true">
-                      {getInitials(player.name)}
-                    </span>
-
-                    <span className="stp-player-copy">
-                      <small>Player</small>
-                      <strong>{player.name}</strong>
-                    </span>
-
-                    <span className="stp-player-action">
-                      View profile
-                      <b aria-hidden="true">→</b>
-                    </span>
-                  </Link>
-                ))}
-              </div>
-            ) : (
-              <div className="stp-empty">
-                <span aria-hidden="true">—</span>
-                <div>
-                  <strong>No players yet</strong>
-                  <p>Players will appear here once they are added.</p>
-                </div>
-              </div>
-            )}
-          </section>
+      <div>
+        <strong>No players yet</strong>
+        <p>
+          Players will appear here after they are added to
+          the team roster.
+        </p>
+      </div>
+    </div>
+  )}
+</section>
 
           <footer className="stp-footer-note">
             This public team profile updates automatically from the league roster
