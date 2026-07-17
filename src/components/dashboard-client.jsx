@@ -11235,331 +11235,129 @@ const playerRoleBadge = (row) => {
       <div className="mgmt-clean-shell">
 
 {/* LEAGUE */}
+{/* =========================================================
+    MOBILE-ONLY LEAGUE COMMAND CENTER
+    Replace the complete League section with this block.
+========================================================= */}
+
 <section className="mgmt-clean-card league-mobile-wow-card">
-  <div className="mgmt-clean-head">
-    <div>
-      <h3>🏆 League</h3>
-      <p>Select your active league and share invite/public links.</p>
+  {/* Existing desktop experience remains unchanged */}
+  <div className="league-desktop-experience">
+    <div className="mgmt-clean-head">
+      <div>
+        <h3>🏆 League</h3>
+        <p>Select your active league and share invite/public links.</p>
+      </div>
     </div>
-  </div>
 
-  <label className="compact-league-picker mobile-landing-league-picker">
-    <span className="league-label">🏆 Active League</span>
+    <label className="compact-league-picker">
+      <span className="league-label">🏆 Active League</span>
 
-    <div className="league-select-wrapper compact mobile-league-select-wow">
-      <div className="league-current-info">
-        <div className="league-current-name">
-          {activeLeague?.name || "Select League"}
+      <div className="league-select-wrapper compact">
+        <div className="league-current-info">
+          <div className="league-current-name">
+            {activeLeague?.name || "Select League"}
+          </div>
+
+          <span
+            className={`league-visibility ${
+              activeLeague?.visibility?.toLowerCase() || "private"
+            }`}
+          >
+            {activeLeague?.visibility === "PUBLIC"
+              ? "🌍 Public"
+              : activeLeague?.visibility === "UNLISTED"
+                ? "🔗 Unlisted"
+                : "🔒 Private"}
+          </span>
         </div>
 
-        <span className={`league-visibility ${activeLeague?.visibility?.toLowerCase()}`}>
-          {activeLeague?.visibility === "PUBLIC"
-            ? "🌍 Public"
-            : activeLeague?.visibility === "UNLISTED"
-            ? "🔗 Unlisted"
-            : "🔒 Private"}
+        <select
+          value={activeLeagueId || ""}
+          onChange={(event) => {
+            setActiveLeagueId(event.target.value);
+            setSelectedTeamId("");
+            setSelectedSeriesId("");
+          }}
+        >
+          <option value="">Select League</option>
+
+          {(leagues || []).map((league) => (
+            <option key={league.id} value={league.id}>
+              {league.name} • {league.visibility || "PRIVATE"}
+            </option>
+          ))}
+        </select>
+
+        <div className="league-dropdown-icon" aria-hidden="true">
+          ⌄
+        </div>
+      </div>
+    </label>
+
+    <div className="mobile-league-next-step">
+      <div>
+        <strong>
+          {leagueReadyForMatches
+            ? "🏏 Ready to play!"
+            : "⚙️ Complete Setup"}
+        </strong>
+
+        <span>
+          {leagueReadyForMatches
+            ? "Your league is ready. Create or manage matches."
+            : !minimumTeamsReady
+              ? "Create at least 2 teams."
+              : "Each team needs at least 2 players."}
         </span>
-
-        <small className="mobile-league-guidance">
-          Choose a league first. Then go to Matches to create or score a match.
-        </small>
       </div>
 
-      <div className="combo-visual-cue" aria-hidden="true">
-        <span className="combo-ripple" />
-      </div>
-
-      <select
-        value={activeLeagueId || ""}
-        onChange={(e) => {
-          setActiveLeagueId(e.target.value);
-          setSelectedTeamId("");
-          setSelectedSeriesId("");
-        }}
-      >
-        <option value="">Select League</option>
-
-        {leagues.map((league) => (
-          <option key={league.id} value={league.id}>
-            {league.name} • {league.visibility || "PRIVATE"}
-          </option>
-        ))}
-      </select>
-
-      <div className="league-dropdown-icon">⌄</div>
-    </div>
-  </label>
-
-<div className="mobile-league-next-step">
-  <div>
-    <strong>
-      {leagueReadyForMatches
-        ? "🏏 Ready to play!"
-        : "⚙️ Complete Setup"}
-    </strong>
-
-    <span>
-      {leagueReadyForMatches
-        ? "Your league is ready. Create or manage matches."
-        : !minimumTeamsReady
-        ? "Create at least 2 teams."
-        : "Each team needs at least 2 players."}
-    </span>
-  </div>
-
-  <button
-    type="button"
-    disabled={!leagueReadyForMatches}
-    onClick={() => {
-      setActiveTab("matches");
-      setMatchesSubTab("CREATE MATCH");
-    }}
-  >
-    {leagueReadyForMatches
-      ? "Go to Matches →"
-      : "Complete Setup"}
-  </button>
-</div>
-
-  <div className="mgmt-clean-actions league-actions-desktop">
-    <button
-      type="button"
-      className="mgmt-clean-btn"
-      onClick={() => setShowLeagueModal(true)}
-    >
-      ➕ Create League
-    </button>
-
-    {selectedLeague && permissions?.canDeleteLeague && (
       <button
         type="button"
-        className="mgmt-clean-danger"
-        title={`Delete ${selectedLeague.name}`}
-        onClick={() =>
-          handleDeleteLeague(selectedLeague.id, selectedLeague.name)
-        }
+        disabled={!leagueReadyForMatches}
+        onClick={() => {
+          setActiveTab("matches");
+          setMatchesSubTab("CREATE MATCH");
+        }}
       >
-        🗑️
+        {leagueReadyForMatches
+          ? "Go to Matches →"
+          : "Complete Setup"}
       </button>
-    )}
+    </div>
 
-    {activeLeague && (
+    <div className="mgmt-clean-actions league-actions-desktop">
       <button
         type="button"
         className="mgmt-clean-btn"
-        onClick={() => generateInviteLink(activeLeague.id)}
-      >
-        🔗 Copy Invite Link
-      </button>
-    )}
-
-    {activeLeague &&
-      activeLeague.visibility !== "PRIVATE" &&
-      activeLeague.slug && (
-        <button
-          type="button"
-          className="mgmt-clean-btn"
-          onClick={() => {
-            const url = `${window.location.origin}/leagues/${activeLeague.slug}`;
-            navigator.clipboard.writeText(url);
-            setMessage("Public league link copied.");
-            showToast("success", "✅ Public league link copied.");
-          }}
-        >
-          🌐 Copy Public View Link
-        </button>
-      )}
-
-    <button
-      type="button"
-      className="mgmt-clean-btn"
-      onClick={() => setShowFollowedLeaguesDrawer(true)}
-    >
-      ⭐ Followed Leagues
-    </button>
-
-    <button
-      type="button"
-      className="mgmt-clean-btn public-discover-btn"
-      onClick={() => setShowPublicLeagueDrawer(true)}
-    >
-      🌐 Discover Public Leagues
-    </button>
-  </div>
-
-<section className="mobile-league-launchpad">
-  {!activeLeague ? (
-    <div className="mobile-first-league-card">
-      <div className="mobile-first-league-icon" aria-hidden="true">
-        🏆
-      </div>
-
-      <div className="mobile-first-league-copy">
-        <span className="mobile-first-league-eyebrow">
-          Start here
-        </span>
-
-        <h3>Create your first cricket league</h3>
-
-        <p>
-          Create a league to add teams and players, organize series,
-          schedule matches, score games, and share live scorecards.
-        </p>
-      </div>
-
-      <button
-        type="button"
-        className="mobile-create-league-primary"
         onClick={() => setShowLeagueModal(true)}
       >
-        <span className="mobile-create-league-plus" aria-hidden="true">
-          +
-        </span>
-
-        <span>
-          <strong>Create Your First League</strong>
-          <small>It only takes a minute</small>
-        </span>
-
-        <span className="mobile-create-league-arrow" aria-hidden="true">
-          →
-        </span>
+        ➕ Create League
       </button>
 
-      <div className="mobile-first-league-steps">
-        <span>
-          <b>1</b>
-          Create league
-        </span>
-
-        <span>
-          <b>2</b>
-          Add teams
-        </span>
-
-        <span>
-          <b>3</b>
-          Start scoring
-        </span>
-      </div>
-    </div>
-  ) : (
-    <div className="mobile-active-league-actions">
-      <div className="mobile-active-league-heading">
-        <div>
-          <span>League workspace</span>
-          <strong>{activeLeague.name}</strong>
-        </div>
-
+      {selectedLeague && permissions?.canDeleteLeague && (
         <button
           type="button"
-          className="mobile-create-another-league"
-          onClick={() => setShowLeagueModal(true)}
+          className="mgmt-clean-danger"
+          title={`Delete ${selectedLeague.name}`}
+          onClick={() =>
+            handleDeleteLeague(
+              selectedLeague.id,
+              selectedLeague.name
+            )
+          }
         >
-          <span aria-hidden="true">＋</span>
-          New League
+          🗑️
         </button>
-      </div>
-
-      <div className="mobile-league-quick-actions">
-        <button
-          type="button"
-          onClick={() => generateInviteLink(activeLeague.id)}
-        >
-          <span className="mobile-action-icon" aria-hidden="true">
-            🔗
-          </span>
-
-          <span>
-            <strong>Invite</strong>
-            <small>Add members</small>
-          </span>
-        </button>
-
-        {activeLeague.visibility !== "PRIVATE" &&
-          activeLeague.slug && (
-            <button
-              type="button"
-              onClick={() => {
-                const url =
-                  `${window.location.origin}/leagues/${activeLeague.slug}`;
-
-                navigator.clipboard.writeText(url);
-                setMessage("Public league link copied.");
-                showToast(
-                  "success",
-                  "✅ Public league link copied."
-                );
-              }}
-            >
-              <span className="mobile-action-icon" aria-hidden="true">
-                🌐
-              </span>
-
-              <span>
-                <strong>Public Link</strong>
-                <small>Copy spectator page</small>
-              </span>
-            </button>
-          )}
-      </div>
-    </div>
-  )}
-
-  <details className="mobile-league-more-actions">
-    <summary>
-      <span className="mobile-more-actions-summary-copy">
-        <span className="mobile-more-actions-icon" aria-hidden="true">
-          ⋯
-        </span>
-
-        <span>
-          <strong>More league actions</strong>
-          <small>Followed leagues, discovery and management</small>
-        </span>
-      </span>
-
-      <span className="mobile-more-actions-chevron" aria-hidden="true">
-        +
-      </span>
-    </summary>
-
-    <div className="mobile-league-actions-grid">
-      <button
-        type="button"
-        onClick={() => setShowFollowedLeaguesDrawer(true)}
-      >
-        <span aria-hidden="true">⭐</span>
-
-        <span>
-          <strong>Followed</strong>
-          <small>View leagues you follow</small>
-        </span>
-      </button>
-
-      <button
-        type="button"
-        onClick={() => setShowPublicLeagueDrawer(true)}
-      >
-        <span aria-hidden="true">🧭</span>
-
-        <span>
-          <strong>Discover</strong>
-          <small>Find public leagues</small>
-        </span>
-      </button>
+      )}
 
       {activeLeague && (
         <button
           type="button"
+          className="mgmt-clean-btn"
           onClick={() => generateInviteLink(activeLeague.id)}
         >
-          <span aria-hidden="true">🔗</span>
-
-          <span>
-            <strong>Invite Members</strong>
-            <small>Create an invitation link</small>
-          </span>
+          🔗 Copy Invite Link
         </button>
       )}
 
@@ -11568,6 +11366,7 @@ const playerRoleBadge = (row) => {
         activeLeague.slug && (
           <button
             type="button"
+            className="mgmt-clean-btn"
             onClick={() => {
               const url =
                 `${window.location.origin}/leagues/${activeLeague.slug}`;
@@ -11580,41 +11379,385 @@ const playerRoleBadge = (row) => {
               );
             }}
           >
-            <span aria-hidden="true">🌐</span>
-
-            <span>
-              <strong>Public League Link</strong>
-              <small>Copy spectator link</small>
-            </span>
+            🌐 Copy Public View Link
           </button>
         )}
-    </div>
 
-    {selectedLeague && permissions?.canDeleteLeague && (
-      <div className="mobile-league-danger-zone">
-        <div>
-          <strong>Danger zone</strong>
-          <small>
-            Permanently remove this league and its related data.
-          </small>
+      <button
+        type="button"
+        className="mgmt-clean-btn"
+        onClick={() => setShowFollowedLeaguesDrawer(true)}
+      >
+        ⭐ Followed Leagues
+      </button>
+
+      <button
+        type="button"
+        className="mgmt-clean-btn public-discover-btn"
+        onClick={() => setShowPublicLeagueDrawer(true)}
+      >
+        🌐 Discover Public Leagues
+      </button>
+    </div>
+  </div>
+
+  {/* Mobile-only state-aware experience */}
+  <section
+    className="mobile-league-command-center"
+    aria-label="League command center"
+  >
+    {!(leagues || []).length ? (
+      <div className="mlcc-first-league">
+        <div className="mlcc-first-top">
+          <span className="mlcc-trophy" aria-hidden="true">
+            🏆
+          </span>
+
+          <span className="mlcc-start-badge">
+            Start here
+          </span>
+        </div>
+
+        <div className="mlcc-first-copy">
+          <h3>Create your first cricket league</h3>
+
+          <p>
+            Your league becomes the home for teams, players,
+            matches, standings, scoring, and spectator links.
+          </p>
         </div>
 
         <button
           type="button"
-          className="danger"
-          onClick={() =>
-            handleDeleteLeague(
-              selectedLeague.id,
-              selectedLeague.name
-            )
-          }
+          className="mlcc-primary-create"
+          onClick={() => setShowLeagueModal(true)}
         >
-          🗑️ Delete League
+          <span className="mlcc-primary-icon" aria-hidden="true">
+            +
+          </span>
+
+          <span className="mlcc-primary-copy">
+            <strong>Create Your First League</strong>
+            <small>Set it up in about a minute</small>
+          </span>
+
+          <span className="mlcc-primary-arrow" aria-hidden="true">
+            →
+          </span>
+        </button>
+
+        <div className="mlcc-journey">
+          <div><b>1</b><span>Create league</span></div>
+          <i aria-hidden="true">→</i>
+          <div><b>2</b><span>Add teams</span></div>
+          <i aria-hidden="true">→</i>
+          <div><b>3</b><span>Start scoring</span></div>
+        </div>
+
+        <button
+          type="button"
+          className="mlcc-discover-link"
+          onClick={() => setShowPublicLeagueDrawer(true)}
+        >
+          🧭 Not ready to create? Discover public leagues
         </button>
       </div>
+    ) : !activeLeague ? (
+      <div className="mlcc-select-state">
+        <div className="mlcc-state-heading">
+          <span className="mlcc-state-icon" aria-hidden="true">
+            🏆
+          </span>
+
+          <div>
+            <span>League workspace</span>
+            <h3>Choose a league to continue</h3>
+            <p>
+              Select the league you want to manage, or create
+              another one.
+            </p>
+          </div>
+        </div>
+
+        <label className="mlcc-league-picker">
+          <span>Active league</span>
+
+          <div>
+            <select
+              value={activeLeagueId || ""}
+              onChange={(event) => {
+                setActiveLeagueId(event.target.value);
+                setSelectedTeamId("");
+                setSelectedSeriesId("");
+              }}
+            >
+              <option value="">Choose a league...</option>
+
+              {(leagues || []).map((league) => (
+                <option key={league.id} value={league.id}>
+                  {league.name} • {league.visibility || "PRIVATE"}
+                </option>
+              ))}
+            </select>
+
+            <span aria-hidden="true">⌄</span>
+          </div>
+        </label>
+
+        <button
+          type="button"
+          className="mlcc-secondary-create"
+          onClick={() => setShowLeagueModal(true)}
+        >
+          <span aria-hidden="true">＋</span>
+          Create Another League
+        </button>
+      </div>
+    ) : (
+      <div className="mlcc-workspace">
+        <div className="mlcc-workspace-top">
+          <div className="mlcc-active-identity">
+            <span className="mlcc-active-mark" aria-hidden="true">
+              🏆
+            </span>
+
+            <div>
+              <span>Active league</span>
+              <strong>{activeLeague.name}</strong>
+            </div>
+          </div>
+
+          <button
+            type="button"
+            className="mlcc-new-league"
+            onClick={() => setShowLeagueModal(true)}
+          >
+            <span aria-hidden="true">＋</span>
+            New
+          </button>
+        </div>
+
+        <label className="mlcc-switcher">
+          <span>Switch league</span>
+
+          <div>
+            <select
+              value={activeLeagueId || ""}
+              onChange={(event) => {
+                setActiveLeagueId(event.target.value);
+                setSelectedTeamId("");
+                setSelectedSeriesId("");
+              }}
+            >
+              {(leagues || []).map((league) => (
+                <option key={league.id} value={league.id}>
+                  {league.name} • {league.visibility || "PRIVATE"}
+                </option>
+              ))}
+            </select>
+
+            <span aria-hidden="true">⌄</span>
+          </div>
+        </label>
+
+        <div
+          className={`mlcc-readiness ${
+            leagueReadyForMatches ? "is-ready" : "needs-setup"
+          }`}
+        >
+          <div className="mlcc-readiness-head">
+            <div>
+              <span>
+                {leagueReadyForMatches
+                  ? "Match ready"
+                  : "Setup progress"}
+              </span>
+
+              <strong>
+                {leagueReadyForMatches
+                  ? "Your league is ready to play"
+                  : !minimumTeamsReady
+                    ? "Add at least two teams"
+                    : "Add at least two players per team"}
+              </strong>
+            </div>
+
+            <span
+              className="mlcc-readiness-status"
+              aria-hidden="true"
+            >
+              {leagueReadyForMatches ? "✓" : "!"}
+            </span>
+          </div>
+
+          <div className="mlcc-setup-steps">
+            <div className="is-complete">
+              <span>1</span>
+              <small>League</small>
+            </div>
+
+            <i aria-hidden="true" />
+
+            <div className={minimumTeamsReady ? "is-complete" : ""}>
+              <span>2</span>
+              <small>Teams</small>
+            </div>
+
+            <i
+              className={minimumTeamsReady ? "is-complete" : ""}
+              aria-hidden="true"
+            />
+
+            <div className={leagueReadyForMatches ? "is-complete" : ""}>
+              <span>3</span>
+              <small>Players</small>
+            </div>
+          </div>
+
+          {leagueReadyForMatches ? (
+            <button
+              type="button"
+              className="mlcc-go-matches"
+              onClick={() => {
+                setActiveTab("matches");
+                setMatchesSubTab("CREATE MATCH");
+              }}
+            >
+              <span>
+                <strong>Go to Matches</strong>
+                <small>Create or manage a match</small>
+              </span>
+
+              <b aria-hidden="true">→</b>
+            </button>
+          ) : (
+            <div className="mlcc-setup-guidance">
+              <span aria-hidden="true">💡</span>
+
+              <p>
+                {!minimumTeamsReady
+                  ? "Use Team Management below to create your first two teams."
+                  : "Open each team and add at least two players before creating a match."}
+              </p>
+            </div>
+          )}
+        </div>
+
+        <div className="mlcc-quick-actions">
+          <button
+            type="button"
+            onClick={() => generateInviteLink(activeLeague.id)}
+          >
+            <span className="mlcc-action-icon" aria-hidden="true">
+              🔗
+            </span>
+
+            <span>
+              <strong>Invite</strong>
+              <small>Add league members</small>
+            </span>
+          </button>
+
+          {activeLeague.visibility !== "PRIVATE" &&
+            activeLeague.slug && (
+              <button
+                type="button"
+                onClick={() => {
+                  const url =
+                    `${window.location.origin}/leagues/${activeLeague.slug}`;
+
+                  navigator.clipboard.writeText(url);
+                  setMessage("Public league link copied.");
+                  showToast(
+                    "success",
+                    "✅ Public league link copied."
+                  );
+                }}
+              >
+                <span className="mlcc-action-icon" aria-hidden="true">
+                  🌐
+                </span>
+
+                <span>
+                  <strong>Public Link</strong>
+                  <small>Copy spectator page</small>
+                </span>
+              </button>
+            )}
+        </div>
+      </div>
     )}
-  </details>
-</section>
+
+    <details className="mlcc-more-actions">
+      <summary>
+        <span className="mlcc-more-copy">
+          <span className="mlcc-more-icon" aria-hidden="true">
+            ⋯
+          </span>
+
+          <span>
+            <strong>Explore &amp; manage</strong>
+            <small>
+              Followed leagues, discovery, and league settings
+            </small>
+          </span>
+        </span>
+
+        <span className="mlcc-more-toggle" aria-hidden="true">
+          +
+        </span>
+      </summary>
+
+      <div className="mlcc-more-grid">
+        <button
+          type="button"
+          onClick={() => setShowFollowedLeaguesDrawer(true)}
+        >
+          <span aria-hidden="true">⭐</span>
+
+          <span>
+            <strong>Followed Leagues</strong>
+            <small>Open leagues you follow</small>
+          </span>
+        </button>
+
+        <button
+          type="button"
+          onClick={() => setShowPublicLeagueDrawer(true)}
+        >
+          <span aria-hidden="true">🧭</span>
+
+          <span>
+            <strong>Discover Leagues</strong>
+            <small>Browse public cricket leagues</small>
+          </span>
+        </button>
+      </div>
+
+      {selectedLeague && permissions?.canDeleteLeague && (
+        <div className="mlcc-danger-zone">
+          <div>
+            <strong>Danger zone</strong>
+            <small>
+              Permanently delete {selectedLeague.name}.
+            </small>
+          </div>
+
+          <button
+            type="button"
+            onClick={() =>
+              handleDeleteLeague(
+                selectedLeague.id,
+                selectedLeague.name
+              )
+            }
+          >
+            🗑️ Delete League
+          </button>
+        </div>
+      )}
+    </details>
+  </section>
 </section>
 
         {/* SERIES */}
