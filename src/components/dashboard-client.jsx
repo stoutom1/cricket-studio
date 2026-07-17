@@ -11387,17 +11387,179 @@ const playerRoleBadge = (row) => {
     </button>
   </div>
 
+<section className="mobile-league-launchpad">
+  {!activeLeague ? (
+    <div className="mobile-first-league-card">
+      <div className="mobile-first-league-icon" aria-hidden="true">
+        🏆
+      </div>
+
+      <div className="mobile-first-league-copy">
+        <span className="mobile-first-league-eyebrow">
+          Start here
+        </span>
+
+        <h3>Create your first cricket league</h3>
+
+        <p>
+          Create a league to add teams and players, organize series,
+          schedule matches, score games, and share live scorecards.
+        </p>
+      </div>
+
+      <button
+        type="button"
+        className="mobile-create-league-primary"
+        onClick={() => setShowLeagueModal(true)}
+      >
+        <span className="mobile-create-league-plus" aria-hidden="true">
+          +
+        </span>
+
+        <span>
+          <strong>Create Your First League</strong>
+          <small>It only takes a minute</small>
+        </span>
+
+        <span className="mobile-create-league-arrow" aria-hidden="true">
+          →
+        </span>
+      </button>
+
+      <div className="mobile-first-league-steps">
+        <span>
+          <b>1</b>
+          Create league
+        </span>
+
+        <span>
+          <b>2</b>
+          Add teams
+        </span>
+
+        <span>
+          <b>3</b>
+          Start scoring
+        </span>
+      </div>
+    </div>
+  ) : (
+    <div className="mobile-active-league-actions">
+      <div className="mobile-active-league-heading">
+        <div>
+          <span>League workspace</span>
+          <strong>{activeLeague.name}</strong>
+        </div>
+
+        <button
+          type="button"
+          className="mobile-create-another-league"
+          onClick={() => setShowLeagueModal(true)}
+        >
+          <span aria-hidden="true">＋</span>
+          New League
+        </button>
+      </div>
+
+      <div className="mobile-league-quick-actions">
+        <button
+          type="button"
+          onClick={() => generateInviteLink(activeLeague.id)}
+        >
+          <span className="mobile-action-icon" aria-hidden="true">
+            🔗
+          </span>
+
+          <span>
+            <strong>Invite</strong>
+            <small>Add members</small>
+          </span>
+        </button>
+
+        {activeLeague.visibility !== "PRIVATE" &&
+          activeLeague.slug && (
+            <button
+              type="button"
+              onClick={() => {
+                const url =
+                  `${window.location.origin}/leagues/${activeLeague.slug}`;
+
+                navigator.clipboard.writeText(url);
+                setMessage("Public league link copied.");
+                showToast(
+                  "success",
+                  "✅ Public league link copied."
+                );
+              }}
+            >
+              <span className="mobile-action-icon" aria-hidden="true">
+                🌐
+              </span>
+
+              <span>
+                <strong>Public Link</strong>
+                <small>Copy spectator page</small>
+              </span>
+            </button>
+          )}
+      </div>
+    </div>
+  )}
+
   <details className="mobile-league-more-actions">
-    <summary>More league actions</summary>
+    <summary>
+      <span className="mobile-more-actions-summary-copy">
+        <span className="mobile-more-actions-icon" aria-hidden="true">
+          ⋯
+        </span>
+
+        <span>
+          <strong>More league actions</strong>
+          <small>Followed leagues, discovery and management</small>
+        </span>
+      </span>
+
+      <span className="mobile-more-actions-chevron" aria-hidden="true">
+        +
+      </span>
+    </summary>
 
     <div className="mobile-league-actions-grid">
-      <button type="button" onClick={() => setShowLeagueModal(true)}>
-        ➕ Create
+      <button
+        type="button"
+        onClick={() => setShowFollowedLeaguesDrawer(true)}
+      >
+        <span aria-hidden="true">⭐</span>
+
+        <span>
+          <strong>Followed</strong>
+          <small>View leagues you follow</small>
+        </span>
+      </button>
+
+      <button
+        type="button"
+        onClick={() => setShowPublicLeagueDrawer(true)}
+      >
+        <span aria-hidden="true">🧭</span>
+
+        <span>
+          <strong>Discover</strong>
+          <small>Find public leagues</small>
+        </span>
       </button>
 
       {activeLeague && (
-        <button type="button" onClick={() => generateInviteLink(activeLeague.id)}>
-          🔗 Invite
+        <button
+          type="button"
+          onClick={() => generateInviteLink(activeLeague.id)}
+        >
+          <span aria-hidden="true">🔗</span>
+
+          <span>
+            <strong>Invite Members</strong>
+            <small>Create an invitation link</small>
+          </span>
         </button>
       )}
 
@@ -11407,37 +11569,52 @@ const playerRoleBadge = (row) => {
           <button
             type="button"
             onClick={() => {
-              const url = `${window.location.origin}/leagues/${activeLeague.slug}`;
+              const url =
+                `${window.location.origin}/leagues/${activeLeague.slug}`;
+
               navigator.clipboard.writeText(url);
               setMessage("Public league link copied.");
-              showToast("success", "✅ Public league link copied.");
+              showToast(
+                "success",
+                "✅ Public league link copied."
+              );
             }}
           >
-            🌐 Public Link
+            <span aria-hidden="true">🌐</span>
+
+            <span>
+              <strong>Public League Link</strong>
+              <small>Copy spectator link</small>
+            </span>
           </button>
         )}
+    </div>
 
-      <button type="button" onClick={() => setShowFollowedLeaguesDrawer(true)}>
-        ⭐ Followed
-      </button>
+    {selectedLeague && permissions?.canDeleteLeague && (
+      <div className="mobile-league-danger-zone">
+        <div>
+          <strong>Danger zone</strong>
+          <small>
+            Permanently remove this league and its related data.
+          </small>
+        </div>
 
-      <button type="button" onClick={() => setShowPublicLeagueDrawer(true)}>
-        🌐 Discover
-      </button>
-
-      {selectedLeague && permissions?.canDeleteLeague && (
         <button
           type="button"
           className="danger"
           onClick={() =>
-            handleDeleteLeague(selectedLeague.id, selectedLeague.name)
+            handleDeleteLeague(
+              selectedLeague.id,
+              selectedLeague.name
+            )
           }
         >
-          🗑️ Delete
+          🗑️ Delete League
         </button>
-      )}
-    </div>
+      </div>
+    )}
   </details>
+</section>
 </section>
 
         {/* SERIES */}
