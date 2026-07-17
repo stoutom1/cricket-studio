@@ -2,6 +2,7 @@
 
 import { useEffect, useMemo, useRef, useState } from "react";
 import "@/app/public-league-wow.css";
+import "@/app/featured-match-spotlight.css";
 import {
   combineSurpriseBattingRows,
   combineSurpriseBowlingRows,
@@ -1613,6 +1614,104 @@ function FeaturedMatchSpotlight({
 );
 }
 
+function CompactLiveMatchCard({
+  match,
+  leagueSlug,
+  active = false,
+}) {
+  const status = normalizeStatus(match?.status);
+
+  const isLive = [
+    "LIVE",
+    "IN_PROGRESS",
+    "INPROGRESS",
+    "STARTED",
+  ].includes(status);
+
+  const timeline = getMatchTimeline(match);
+
+  const stateLabel = isLive
+    ? "Live now"
+    : status === "SCHEDULED"
+      ? "Upcoming"
+      : status === "ABANDONED"
+        ? "Abandoned"
+        : "Result";
+
+  return (
+    <article
+      className={`slp-multi-match-card ${
+        isLive ? "is-live" : ""
+      } ${active ? "is-active" : ""}`}
+    >
+      <span
+        className="slp-multi-match-accent"
+        aria-hidden="true"
+      />
+
+      <div className="slp-multi-match-top">
+        <span
+          className={`slp-multi-match-state ${
+            isLive ? "is-live" : ""
+          }`}
+        >
+          {isLive && <i aria-hidden="true" />}
+          {stateLabel}
+        </span>
+
+        {timeline ? (
+          <time
+            className={`slp-multi-match-time is-${timeline.type}`}
+            dateTime={timeline.rawDate?.toISOString()}
+          >
+            <span>{timeline.date}</span>
+
+            {timeline.time ? (
+              <strong>{timeline.time}</strong>
+            ) : null}
+          </time>
+        ) : null}
+      </div>
+
+      <div className="slp-multi-match-copy">
+        <small>
+          {match.series?.name || "League match"}
+        </small>
+
+        <h3>{formatMatchTitle(match)}</h3>
+
+        <p>
+          {match.statusText ||
+            formatStatusLabel(match.status)}
+        </p>
+      </div>
+
+      <div className="slp-multi-match-footer">
+        <span>
+          {isLive
+            ? "Follow live score"
+            : status === "SCHEDULED"
+              ? "Fixture details"
+              : "View scorecard"}
+        </span>
+
+        {match.shareCode ? (
+          <a
+            href={`/leagues/${leagueSlug}/matches/${match.id}`}
+          >
+            Match center
+            <Icon name="arrowRight" />
+          </a>
+        ) : (
+          <span className="slp-multi-match-unavailable">
+            Scorecard unavailable
+          </span>
+        )}
+      </div>
+    </article>
+  );
+}
+
 function LiveMatchRail({
   liveMatches,
   fallbackMatch,
@@ -1746,56 +1845,6 @@ function LiveMatchRail({
     </section>
   );
 }
-
-if (matches.length === 1) {
-  const match = matches[0];
-
-  return (
-    <section
-      className="slp-wow-feature-section"
-      aria-label={
-        isShowingLiveMatches
-          ? "Live match"
-          : "Featured match"
-      }
-    >
-      <div className="slp-wow-feature-heading">
-        <div>
-          <p>
-            {isShowingLiveMatches
-              ? "Live cricket"
-              : normalizeStatus(
-                    match.status
-                  ) === "SCHEDULED"
-                ? "Next fixture"
-                : "Latest result"}
-          </p>
-
-          <h2>
-            {isShowingLiveMatches
-              ? "Live match"
-              : "Featured match"}
-          </h2>
-        </div>
-
-        <button
-          type="button"
-          onClick={() =>
-            openTab("matches")
-          }
-        >
-          View all
-        </button>
-      </div>
-
-      <FeaturedMatchSpotlight
-        match={match}
-        leagueSlug={leagueSlug}
-        openTab={openTab}
-      />
-    </section>
-  );
-}
   return (
     <section
       className="slp-live-rail-section"
@@ -1869,74 +1918,14 @@ if (matches.length === 1) {
   }`}
   onScroll={handleRailScroll}
 >
-        {matches.map((match, index) => {
-  const normalizedMatchStatus =
-    normalizeStatus(match.status);
-
-  const isLive = [
-    "LIVE",
-    "IN_PROGRESS",
-    "INPROGRESS",
-    "STARTED",
-  ].includes(normalizedMatchStatus);
-
-  const matchTimeline =
-    getMatchTimeline(match);
-
-  return (
-<article
-  key={match.id}
-  className={`slp-live-card ${
-    isLive ? "is-live" : ""
-  }`}
-  aria-current={
-    activeIndex === index ? "true" : undefined
-  }
->
-  <div className="slp-live-card-status">
-    {isLive && <span aria-hidden="true" />}
-
-    {isLive
-      ? "Live now"
-      : normalizedMatchStatus === "SCHEDULED"
-        ? "Upcoming"
-        : normalizedMatchStatus === "ABANDONED"
-          ? "Abandoned"
-          : "Latest result"}
-  </div>
-
-  <div className="slp-live-card-copy">
-    <small>
-      {match.series?.name || "League match"}
-    </small>
-
-    <h3>{formatMatchTitle(match)}</h3>
-
-    <p>
-      {match.statusText ||
-        formatStatusLabel(match.status)}
-    </p>
-  </div>
-
-  {match.shareCode ? (
-    <a
-      href={`/leagues/${leagueSlug}/matches/${match.id}`}
-    >
-      Match center
-      <Icon name="arrowRight" />
-    </a>
-  ) : (
-    <button
-      type="button"
-      onClick={() => openTab("matches")}
-    >
-      View fixture
-      <Icon name="arrowRight" />
-    </button>
-  )}
-</article>
-          );
-        })}
+{matches.map((match, index) => (
+  <CompactLiveMatchCard
+    key={match.id}
+    match={match}
+    leagueSlug={leagueSlug}
+    active={activeIndex === index}
+  />
+))}
       </div>
 
       {hasMultipleLiveMatches && (

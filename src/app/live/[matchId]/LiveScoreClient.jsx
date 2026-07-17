@@ -1452,69 +1452,6 @@ const finalResultText =
   </section>
 )}
 
-      {!tvMode && (topBatter || bestBowler) ? (
-        <section
-          className="live-quick-scorecard"
-          aria-label="Quick batting and bowling summary"
-        >
-          <div className="live-quick-scorecard-head">
-            <div>
-              <span>Match snapshot</span>
-              <strong>Batting &amp; bowling leaders</strong>
-            </div>
-
-            <button
-              type="button"
-              onClick={openFullScorecard}
-            >
-              Full scorecard →
-            </button>
-          </div>
-
-          <div className="live-quick-scorecard-grid">
-            <article className="live-quick-stat live-quick-batting">
-              <span>Top batter</span>
-
-              <strong>
-                {topBatter?.playerName || "—"}
-              </strong>
-
-              <b>
-                {topBatter
-                  ? `${topBatter.runs} runs`
-                  : "No runs yet"}
-              </b>
-
-              <small>
-                {topBatter
-                  ? `${topBatter.balls} balls faced`
-                  : "Batting figures will appear here"}
-              </small>
-            </article>
-
-            <article className="live-quick-stat live-quick-bowling">
-              <span>Best bowler</span>
-
-              <strong>
-                {bestBowler?.playerName || "—"}
-              </strong>
-
-              <b>
-                {bestBowler
-                  ? `${bestBowler.wickets}/${bestBowler.runs}`
-                  : "No wickets yet"}
-              </b>
-
-              <small>
-                {bestBowler
-                  ? `${bestBowler.overs} overs`
-                  : "Bowling figures will appear here"}
-              </small>
-            </article>
-          </div>
-        </section>
-      ) : null}
-
       {!tvMode &&
       (matchInsights ||
         topBatter ||
