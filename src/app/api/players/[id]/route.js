@@ -62,7 +62,10 @@ export async function PATCH(request, { params }) {
 
   const player = await prisma.player.update({
     where: { id: playerId },
-    data,
+    data: {
+    whatsappNumber: whatsappNumber || null,
+    whatsappOptIn,
+  },
     include: {
       team: {
         include: {

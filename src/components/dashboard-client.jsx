@@ -647,6 +647,8 @@ const bowlingTeamForCorrection =
       ? matchDetail?.teamA
       : matchDetail?.teamB;
 
+
+
 async function loadUserActivity() {
   try {
     setUserActivityLoading(true);
@@ -6419,6 +6421,9 @@ const extrasModalCurrentOver = useMemo(() => {
   };
 }, [recentBalls, bowlerChangeScore?.overs]);
 
+const canManageBirthdays =
+    session?.user?.email === "surprisecricket11@gmail.com"
+
 function MobileMatchSetup({ match, includeTimeline = false }) {
   return (
     <details className="mobile-match-setup">
@@ -11399,6 +11404,11 @@ const playerRoleBadge = (row) => {
         🌐 Discover Public Leagues
       </button>
     </div>
+{canManageBirthdays && activeLeagueId &&(
+  <Link href={`/leagues/${Number(activeLeagueId)}/birthdays`}>
+    🎂 Birthday Management
+  </Link>
+)}     
   </div>
 
   {/* Mobile-only state-aware experience */}

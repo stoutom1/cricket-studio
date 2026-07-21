@@ -7,22 +7,28 @@ datasource db {
 }
 
 model User {
-  id                  String               @id @default(uuid())
-  email               String               @unique
-  name                String?
-  password            String
-  ownedLeagues        League[]
-  leagueMemberships   LeagueMember[]
-  leagueRegistrations LeagueRegistration[]
-  activeLeagueId      Int?
-  activeMatchId       Int?
-  resetToken          String?
-  resetTokenExpiry    DateTime?
-  createdAt           DateTime             @default(now())
-  leagueFollowers     LeagueFollower[]
-  lastLoginAt         DateTime?
-  lastSeenAt          DateTime?
-  loginHistory        LoginHistory[]
+  id                         String                           @id @default(uuid())
+  email                      String                           @unique
+  name                       String?
+  password                   String
+  ownedLeagues               League[]
+  leagueMemberships          LeagueMember[]
+  leagueRegistrations        LeagueRegistration[]
+  activeLeagueId             Int?
+  activeMatchId              Int?
+  resetToken                 String?
+  resetTokenExpiry           DateTime?
+  createdAt                  DateTime                         @default(now())
+  leagueFollowers            LeagueFollower[]
+  lastLoginAt                DateTime?
+  lastSeenAt                 DateTime?
+  loginHistory               LoginHistory[]
+  birthdaysCreated           LeagueBirthday[]                 @relation("BirthdayCreatedBy")
+  birthdaysUpdated           LeagueBirthday[]                 @relation("BirthdayUpdatedBy")
+  pushDevices                PushDevice[]
+  birthdayPreferences        BirthdayNotificationPreference[]
+  birthdayReminderRecipients BirthdayReminderLog[]            @relation("BirthdayReminderRecipient")
+  birthdayRemindersShared    BirthdayReminderLog[]            @relation("BirthdayReminderSharedBy")
 }
 
 model Team {
@@ -40,16 +46,19 @@ model Team {
 }
 
 model Player {
-  id              Int      @id @default(autoincrement())
+  id              Int              @id @default(autoincrement())
   name            String
   teamId          Int
-  createdAt       DateTime @default(now())
-  bowlerBalls     Ball[]   @relation("Bowler")
-  dismissedBalls  Ball[]   @relation("DismissedPlayer")
-  newBatterBalls  Ball[]   @relation("NewBatter")
-  nonStrikerBalls Ball[]   @relation("NonStriker")
-  strikerBalls    Ball[]   @relation("Striker")
-  team            Team     @relation(fields: [teamId], references: [id], onDelete: Cascade)
+  createdAt       DateTime         @default(now())
+  bowlerBalls     Ball[]           @relation("Bowler")
+  dismissedBalls  Ball[]           @relation("DismissedPlayer")
+  newBatterBalls  Ball[]           @relation("NewBatter")
+  nonStrikerBalls Ball[]           @relation("NonStriker")
+  strikerBalls    Ball[]           @relation("Striker")
+  team            Team             @relation(fields: [teamId], references: [id], onDelete: Cascade)
+  leagueBirthdays LeagueBirthday[]
+  whatsappNumber  String?
+  whatsappOptIn   Boolean          @default(false)
 
   @@unique([teamId, name])
   @@index([teamId])
@@ -138,20 +147,23 @@ model MatchState {
 }
 
 model League {
-  id              Int                  @id @default(autoincrement())
-  name            String               @unique
-  createdAt       DateTime             @default(now())
-  ownerId         String?
-  owner           User?                @relation(fields: [ownerId], references: [id])
-  teams           Team[]
-  registrations   LeagueRegistration[]
-  members         LeagueMember[]
-  invites         LeagueInvite[]
-  matches         Match[]
-  visibility      String               @default("PRIVATE")
-  slug            String?              @unique
-  series          Series[]
-  leagueFollowers LeagueFollower[]
+  id                   Int                              @id @default(autoincrement())
+  name                 String                           @unique
+  createdAt            DateTime                         @default(now())
+  ownerId              String?
+  owner                User?                            @relation(fields: [ownerId], references: [id])
+  teams                Team[]
+  registrations        LeagueRegistration[]
+  members              LeagueMember[]
+  invites              LeagueInvite[]
+  matches              Match[]
+  visibility           String                           @default("PRIVATE")
+  slug                 String?                          @unique
+  series               Series[]
+  leagueFollowers      LeagueFollower[]
+  birthdays            LeagueBirthday[]
+  birthdayPreferences  BirthdayNotificationPreference[]
+  birthdayReminderLogs BirthdayReminderLog[]
 }
 
 model LeagueRegistration {
@@ -463,4 +475,115 @@ model MatchCorrection {
   @@index([leagueId])
   @@index([correctionType])
   @@index([createdAt])
+}
+
+enum BirthdayReminderType {
+  DAY_BEFORE
+  BIRTHDAY_TODAY
+}
+
+enum BirthdayReminderStatus {
+  PENDING
+  SENT
+  FAILED
+  SHARED
+}
+
+model LeagueBirthday {
+  id         Int     @id @default(autoincrement())
+  leagueId   Int
+  playerId   Int
+  name       String
+  birthMonth Int
+  birthDay   Int
+  notes      String?
+  isActive   Boolean @default(true)
+
+  createdById String
+  updatedById String?
+
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  league    League @relation(fields: [leagueId], references: [id], onDelete: Cascade)
+  createdBy User   @relation("BirthdayCreatedBy", fields: [createdById], references: [id], onDelete: Restrict)
+  updatedBy User?  @relation("BirthdayUpdatedBy", fields: [updatedById], references: [id], onDelete: SetNull)
+
+  reminders BirthdayReminderLog[]
+  player    Player                @relation(fields: [playerId], references: [id], onDelete: Cascade)
+
+  @@unique([leagueId, playerId])
+  @@index([leagueId])
+  @@index([leagueId, birthMonth, birthDay])
+  @@index([leagueId, isActive])
+  @@index([playerId])
+}
+
+model BirthdayNotificationPreference {
+  id       Int    @id @default(autoincrement())
+  userId   String
+  leagueId Int
+
+  enabled          Boolean @default(true)
+  notifyDayBefore  Boolean @default(true)
+  notifyOnBirthday Boolean @default(true)
+  reminderHour     Int     @default(8)
+  timeZone         String  @default("America/Los_Angeles")
+
+  emailFallbackEnabled Boolean @default(true)
+
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  user   User   @relation(fields: [userId], references: [id], onDelete: Cascade)
+  league League @relation(fields: [leagueId], references: [id], onDelete: Cascade)
+
+  @@unique([userId, leagueId])
+  @@index([leagueId, enabled])
+}
+
+model PushDevice {
+  id         Int      @id @default(autoincrement())
+  userId     String
+  token      String   @unique
+  platform   String
+  deviceName String?
+  enabled    Boolean  @default(true)
+  lastSeenAt DateTime @default(now())
+  createdAt  DateTime @default(now())
+  updatedAt  DateTime @updatedAt
+
+  user User @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@index([userId, enabled])
+}
+
+model BirthdayReminderLog {
+  id              Int                    @id @default(autoincrement())
+  birthdayId      Int
+  leagueId        Int
+  recipientUserId String
+  birthdayYear    Int
+  reminderType    BirthdayReminderType
+  status          BirthdayReminderStatus @default(PENDING)
+
+  notificationTitle String?
+  notificationBody  String?
+  errorMessage      String?
+
+  sentAt     DateTime?
+  sharedAt   DateTime?
+  sharedById String?
+
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  birthday  LeagueBirthday @relation(fields: [birthdayId], references: [id], onDelete: Cascade)
+  league    League         @relation(fields: [leagueId], references: [id], onDelete: Cascade)
+  recipient User           @relation("BirthdayReminderRecipient", fields: [recipientUserId], references: [id], onDelete: Cascade)
+  sharedBy  User?          @relation("BirthdayReminderSharedBy", fields: [sharedById], references: [id], onDelete: SetNull)
+
+  @@unique([birthdayId, recipientUserId, birthdayYear, reminderType])
+  @@index([leagueId, birthdayYear])
+  @@index([recipientUserId, status])
 }

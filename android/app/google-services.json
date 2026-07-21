@@ -1,0 +1,29 @@
+{
+  "project_info": {
+    "project_number": "306453811862",
+    "project_id": "cric4all-ff06e",
+    "storage_bucket": "cric4all-ff06e.firebasestorage.app"
+  },
+  "client": [
+    {
+      "client_info": {
+        "mobilesdk_app_id": "1:306453811862:android:f53524d4902bc8899328b7",
+        "android_client_info": {
+          "package_name": "com.cric4all.app"
+        }
+      },
+      "oauth_client": [],
+      "api_key": [
+        {
+          "current_key": "AIzaSyDFI_q2T5-ZRkySdh5jIP_D8yu4zDiY8EQ"
+        }
+      ],
+      "services": {
+        "appinvite_service": {
+          "other_platform_oauth_client": []
+        }
+      }
+    }
+  ],
+  "configuration_version": "1"
+}
