@@ -99,6 +99,7 @@ export async function POST(request, { params }) {
     const { id } = await params;
     const leagueId = Number(id);
 
+    console.log("params:", await params);
     console.log("Birthday POST route params:", {
       id,
       leagueId,
@@ -130,6 +131,28 @@ export async function POST(request, { params }) {
       typeof body.notes === "string"
         ? body.notes.trim()
         : "";
+
+    const whatsappNumber =
+  typeof body.whatsappNumber === "string"
+    ? body.whatsappNumber.replace(/\D/g, "")
+    : "";
+
+const whatsappOptIn =
+  body.whatsappOptIn === true;
+  
+  if (
+  whatsappOptIn &&
+  (whatsappNumber.length < 10 ||
+    whatsappNumber.length > 15)
+) {
+  return NextResponse.json(
+    {
+      error:
+        "Enter a valid WhatsApp number with country code when WhatsApp consent is enabled.",
+    },
+    { status: 400 }
+  );
+}
 
     if (!Number.isInteger(playerId) || playerId <= 0) {
       return NextResponse.json(
@@ -286,33 +309,39 @@ if (!currentUser) {
   );
 }
 
-const birthday = await prisma.leagueBirthday.create({
-  data: {
-    league: {
-      connect: {
-        id: leagueId,
+const birthday =
+  await prisma.leagueBirthday.create({
+    data: {
+      league: {
+        connect: {
+          id: leagueId,
+        },
       },
-    },
 
-    createdBy: {
-      connect: {
-        id: currentUser.id,
+      createdBy: {
+        connect: {
+          id: currentUser.id,
+        },
       },
-    },
 
-    player: {
-      connect: {
-        id: player.id,
+      player: {
+        connect: {
+          id: player.id,
+        },
       },
-    },
 
-    name: player.name,
-    birthMonth,
-    birthDay,
-    notes: notes || null,
-    isActive: true,
-  },
-});
+      name: player.name,
+      birthMonth,
+      birthDay,
+      notes: notes || null,
+      isActive: true,
+
+      whatsappNumber:
+        whatsappNumber || null,
+
+      whatsappOptIn,
+    },
+  });
 
     return NextResponse.json(
       {

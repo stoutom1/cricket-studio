@@ -81,6 +81,8 @@ export async function PATCH(request, { params }) {
           birthDay: true,
           notes: true,
           isActive: true,
+          whatsappNumber:true,
+          whatsappOptIn:true,
         },
       });
 
@@ -282,6 +284,8 @@ const whatsappOptIn =
           birthMonth,
           birthDay,
           notes: notes || null,
+          whatsappNumber: whatsappNumber || null,
+          whatsappOptIn,
         },
       });
 

@@ -90,54 +90,50 @@ export async function GET(request) {
     const birthdays =
       await prisma.leagueBirthday.findMany({
         where: {
-          isActive: true,
-          birthMonth: today.month,
-          birthDay: today.day,
+  isActive: true,
+  birthMonth: today.month,
+  birthDay: today.day,
+  whatsappOptIn: true,
+  whatsappNumber: {
+    not: null,
+  },
+},
 
-          player: {
-            whatsappOptIn: true,
+ select: {
+  id: true,
+  name: true,
+  birthMonth: true,
+  birthDay: true,
+  whatsappNumber: true,
+  whatsappOptIn: true,
 
-            whatsappNumber: {
-              not: null,
-            },
-          },
-        },
+  league: {
+    select: {
+      id: true,
+      name: true,
+    },
+  },
 
-        select: {
-          id: true,
-          name: true,
-          birthMonth: true,
-          birthDay: true,
-
-          league: {
-            select: {
-              id: true,
-              name: true,
-            },
-          },
-
-          player: {
-            select: {
-              id: true,
-              name: true,
-              whatsappNumber: true,
-              whatsappOptIn: true,
-            },
-          },
-        },
+  player: {
+    select: {
+      id: true,
+      name: true,
+    },
+  },
+},
       });
-console.log("birthdays",birthdays);
+console.log("birthdays in cron api:",birthdays);
     const results = [];
 
     for (const birthday of birthdays) {
-      const playerName =
-        birthday.player?.name ||
-        birthday.name;
+const playerName =
+  birthday.player?.name ||
+  birthday.name;
 
-      const recipientPhone =
-        cleanPhoneNumber(
-          birthday.player?.whatsappNumber
-        );
+const recipientPhone =
+  cleanPhoneNumber(
+    birthday.whatsappNumber
+  );
 
       if (!isValidPhoneNumber(recipientPhone)) {
         results.push({

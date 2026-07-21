@@ -722,7 +722,7 @@ function shareBirthdayToWhatsApp(birthday) {
   <input
     type="tel"
     value={form.whatsappNumber}
-    placeholder="Example: 16104252773"
+    placeholder="Example: 12223334444"
     onChange={(event) =>
       setForm((current) => ({
         ...current,
@@ -733,16 +733,17 @@ function shareBirthdayToWhatsApp(birthday) {
 </label>
 
 <label className="checkbox-label">
-  <input
-    type="checkbox"
-    checked={form.whatsappOptIn}
-    onChange={(event) =>
-      setForm((current) => ({
-        ...current,
-        whatsappOptIn: event.target.checked,
-      }))
-    }
-  />
+<input
+  type="checkbox"
+  checked={Boolean(form.whatsappOptIn)}
+  onChange={(event) =>
+    setForm((current) => ({
+      ...current,
+      whatsappOptIn:
+        event.target.checked,
+    }))
+  }
+/>
 
   Player consented to receive WhatsApp messages
 </label>
