@@ -502,8 +502,10 @@ model LeagueBirthday {
   createdById String
   updatedById String?
 
-  createdAt DateTime @default(now())
-  updatedAt DateTime @updatedAt
+  createdAt      DateTime @default(now())
+  updatedAt      DateTime @updatedAt
+  whatsappNumber String?
+  whatsappOptIn  Boolean  @default(false)
 
   league    League @relation(fields: [leagueId], references: [id], onDelete: Cascade)
   createdBy User   @relation("BirthdayCreatedBy", fields: [createdById], references: [id], onDelete: Restrict)

@@ -126,7 +126,7 @@ export async function GET(request) {
           },
         },
       });
-
+console.log("birthdays",birthdays);
     const results = [];
 
     for (const birthday of birthdays) {
