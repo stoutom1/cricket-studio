@@ -59,37 +59,20 @@ export async function sendWhatsAppBirthdayMessage({
         "Content-Type": "application/json",
       },
 
-      body: JSON.stringify({
-        messaging_product: "whatsapp",
-        recipient_type: "individual",
-        to: cleanPhone,
-        type: "template",
+ body: JSON.stringify({
+  messaging_product: "whatsapp",
+  recipient_type: "individual",
+  to: cleanPhone,
+  type: "template",
 
-        template: {
-          name: "birthday_wish",
+  template: {
+    name: "hello_world",
 
-          language: {
-            code: "en_US",
-          },
-
-          components: [
-            {
-              type: "body",
-
-              parameters: [
-                {
-                  type: "text",
-                  text: cleanPlayerName,
-                },
-                {
-                  type: "text",
-                  text: cleanLeagueName,
-                },
-              ],
-            },
-          ],
-        },
-      }),
+    language: {
+      code: "en_US",
+    },
+  },
+}),
     }
   );
 

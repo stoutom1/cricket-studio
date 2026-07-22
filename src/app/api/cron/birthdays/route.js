@@ -9,7 +9,7 @@ export const runtime = "nodejs";
 export const dynamic = "force-dynamic";
 
 function cleanPhoneNumber(value) {
-  return String(value || "").replace(/\D/g, "");
+  return String(value ?? "").replace(/\D/g, "");
 }
 
 function isValidPhoneNumber(value) {
@@ -17,15 +17,12 @@ function isValidPhoneNumber(value) {
 }
 
 function getDatePartsInTimeZone(date, timeZone) {
-  const formatter = new Intl.DateTimeFormat(
-    "en-US",
-    {
-      timeZone,
-      year: "numeric",
-      month: "numeric",
-      day: "numeric",
-    }
-  );
+  const formatter = new Intl.DateTimeFormat("en-US", {
+    timeZone,
+    year: "numeric",
+    month: "numeric",
+    day: "numeric",
+  });
 
   const parts = formatter.formatToParts(date);
 
@@ -51,8 +48,17 @@ function formatDateKey({ year, month, day }) {
   ].join("-");
 }
 
+function getErrorMessage(error) {
+  return error instanceof Error
+    ? error.message
+    : "Unknown error.";
+}
+
 export async function GET(request) {
   try {
+    /*
+     * Protect the cron API.
+     */
     const authorization =
       request.headers.get("authorization");
 
@@ -64,8 +70,13 @@ export async function GET(request) {
       authorization !== `Bearer ${cronSecret}`
     ) {
       return NextResponse.json(
-        { error: "Unauthorized." },
-        { status: 401 }
+        {
+          success: false,
+          error: "Unauthorized.",
+        },
+        {
+          status: 401,
+        }
       );
     }
 
@@ -80,183 +91,209 @@ export async function GET(request) {
 
     const sentDate = formatDateKey(today);
 
-    console.log("Running birthday scheduler:", {
+    console.log("Birthday scheduler started:", {
       timeZone,
       sentDate,
       month: today.month,
       day: today.day,
     });
 
+    /*
+     * Important:
+     * Do not filter by WhatsApp consent or number here.
+     *
+     * First load every active birthday for today.
+     * We validate WhatsApp details in the loop so that
+     * skipped records and reasons are visible.
+     */
     const birthdays =
       await prisma.leagueBirthday.findMany({
         where: {
-  isActive: true,
-  birthMonth: today.month,
-  birthDay: today.day,
-  whatsappOptIn: true,
-  whatsappNumber: {
-    not: null,
-  },
-},
+          isActive: true,
+          birthMonth: today.month,
+          birthDay: today.day,
+        },
 
- select: {
-  id: true,
-  name: true,
-  birthMonth: true,
-  birthDay: true,
-  whatsappNumber: true,
-  whatsappOptIn: true,
+        select: {
+          id: true,
+          name: true,
+          birthMonth: true,
+          birthDay: true,
+          isActive: true,
+          whatsappNumber: true,
+          whatsappOptIn: true,
 
-  league: {
-    select: {
-      id: true,
-      name: true,
-    },
-  },
+          league: {
+            select: {
+              id: true,
+              name: true,
+            },
+          },
 
-  player: {
-    select: {
-      id: true,
-      name: true,
-    },
-  },
-},
+          player: {
+            select: {
+              id: true,
+              name: true,
+            },
+          },
+        },
+
+        orderBy: {
+          name: "asc",
+        },
       });
-console.log("birthdays in cron api:",birthdays);
+
+    console.log(
+      "Today's birthday records:",
+      birthdays.map((birthday) => ({
+        id: birthday.id,
+        name:
+          birthday.player?.name ||
+          birthday.name,
+        birthMonth: birthday.birthMonth,
+        birthDay: birthday.birthDay,
+        isActive: birthday.isActive,
+        whatsappOptIn:
+          birthday.whatsappOptIn,
+        hasWhatsAppNumber: Boolean(
+          String(
+            birthday.whatsappNumber ?? ""
+          ).trim()
+        ),
+      }))
+    );
+
     const results = [];
 
-    for (const birthday of birthdays) {
-const playerName =
-  birthday.player?.name ||
-  birthday.name;
+ for (const birthday of birthdays) {
+  const playerName =
+    birthday.player?.name?.trim() ||
+    birthday.name?.trim() ||
+    "Player";
 
-const recipientPhone =
-  cleanPhoneNumber(
-    birthday.whatsappNumber
-  );
+  const leagueName =
+    birthday.league?.name?.trim() ||
+    "Cric4All League";
 
-      if (!isValidPhoneNumber(recipientPhone)) {
-        results.push({
-          birthdayId: birthday.id,
-          playerName,
-          status: "SKIPPED",
-          reason:
-            "Missing or invalid WhatsApp number.",
-        });
+  const recipientPhone =
+    cleanPhoneNumber(
+      birthday.whatsappNumber
+    );
 
-        continue;
+  if (birthday.whatsappOptIn !== true) {
+    results.push({
+      birthdayId: birthday.id,
+      playerName,
+      status: "SKIPPED",
+      reason:
+        "WhatsApp consent is not enabled.",
+    });
+
+    continue;
+  }
+
+  if (!isValidPhoneNumber(recipientPhone)) {
+    results.push({
+      birthdayId: birthday.id,
+      playerName,
+      status: "SKIPPED",
+      reason:
+        "WhatsApp number is missing or invalid. Include the country code.",
+    });
+
+    continue;
+  }
+
+  try {
+    console.log(
+      "Sending birthday WhatsApp message:",
+      {
+        birthdayId: birthday.id,
+        playerName,
+        leagueName,
+        recipientPhone,
       }
+    );
 
-      const existingLog =
-        await prisma.birthdayReminderLog.findUnique({
-          where: {
-            birthdayId_recipientPhone_sentDate: {
-              birthdayId: birthday.id,
-              recipientPhone,
-              sentDate,
-            },
-          },
-        });
+    const sendResult =
+      await sendWhatsAppBirthdayMessage({
+        recipientPhone,
+        playerName,
+        leagueName,
+      });
 
-      if (existingLog) {
-        results.push({
-          birthdayId: birthday.id,
-          playerName,
-          status: "SKIPPED",
-          reason:
-            "Birthday message already processed today.",
-        });
-
-        continue;
+    console.log(
+      "Birthday WhatsApp message sent:",
+      {
+        birthdayId: birthday.id,
+        playerName,
+        recipientPhone,
+        messageId:
+          sendResult?.messageId || null,
       }
+    );
 
-      try {
-        const sendResult =
-          await sendWhatsAppBirthdayMessage({
-            recipientPhone,
-            playerName,
-            leagueName:
-              birthday.league.name,
-          });
+    results.push({
+      birthdayId: birthday.id,
+      playerName,
+      recipientPhone,
+      status: "SENT",
+      messageId:
+        sendResult?.messageId || null,
+    });
+  } catch (sendError) {
+    const errorMessage =
+      getErrorMessage(sendError);
 
-        await prisma.birthdayReminderLog.create({
-          data: {
-            birthday: {
-              connect: {
-                id: birthday.id,
-              },
-            },
-
-            recipientPhone,
-            sentDate,
-            messageId:
-              sendResult.messageId,
-            status: "SENT",
-          },
-        });
-
-        results.push({
-          birthdayId: birthday.id,
-          playerName,
-          status: "SENT",
-          messageId:
-            sendResult.messageId,
-        });
-      } catch (sendError) {
-        const errorMessage =
-          sendError instanceof Error
-            ? sendError.message
-            : "Unknown WhatsApp error.";
-
-        /*
-         * Save the failure, but do not allow a logging
-         * failure to terminate the whole scheduler.
-         */
-        try {
-          await prisma.birthdayReminderLog.create({
-            data: {
-              birthday: {
-                connect: {
-                  id: birthday.id,
-                },
-              },
-
-              recipientPhone,
-              sentDate,
-              status: "FAILED",
-              errorMessage,
-            },
-          });
-        } catch (logError) {
-          console.error(
-            "Unable to save birthday failure log:",
-            logError
-          );
-        }
-
-        results.push({
-          birthdayId: birthday.id,
-          playerName,
-          status: "FAILED",
-          error: errorMessage,
-        });
+    console.error(
+      "WhatsApp birthday sending failed:",
+      {
+        birthdayId: birthday.id,
+        playerName,
+        recipientPhone,
+        error: errorMessage,
       }
-    }
+    );
+
+    results.push({
+      birthdayId: birthday.id,
+      playerName,
+      recipientPhone,
+      status: "FAILED",
+      error: errorMessage,
+    });
+  }
+}
+
+    const sentCount = results.filter(
+      (result) => result.status === "SENT"
+    ).length;
+
+    const skippedCount = results.filter(
+      (result) => result.status === "SKIPPED"
+    ).length;
+
+    const failedCount = results.filter(
+      (result) => result.status === "FAILED"
+    ).length;
 
     return NextResponse.json({
       success: true,
       timeZone,
       date: sentDate,
+      month: today.month,
+      day: today.day,
+
       birthdaysFound: birthdays.length,
-      sentCount: results.filter(
-        (result) => result.status === "SENT"
-      ).length,
-      skippedCount: results.filter(
-        (result) => result.status === "SKIPPED"
-      ).length,
-      failedCount: results.filter(
-        (result) => result.status === "FAILED"
-      ).length,
+      sentCount,
+      skippedCount,
+      failedCount,
+
+      message:
+        birthdays.length === 0
+          ? `No active birthdays were found for ${today.month}/${today.day}.`
+          : "Birthday scheduler completed.",
+
       results,
     });
   } catch (error) {
@@ -267,12 +304,12 @@ const recipientPhone =
 
     return NextResponse.json(
       {
-        error:
-          error instanceof Error
-            ? error.message
-            : "Birthday scheduler failed.",
+        success: false,
+        error: getErrorMessage(error),
       },
-      { status: 500 }
+      {
+        status: 500,
+      }
     );
   }
 }

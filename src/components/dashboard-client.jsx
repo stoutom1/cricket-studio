@@ -11742,6 +11742,11 @@ const playerRoleBadge = (row) => {
             <small>Browse public cricket leagues</small>
           </span>
         </button>
+        {canManageBirthdays && activeLeagueId &&(
+  <Link href={`/leagues/${Number(activeLeagueId)}/birthdays`}>
+    🎂 Birthday Management
+  </Link>
+)}  
       </div>
 
       {selectedLeague && permissions?.canDeleteLeague && (
