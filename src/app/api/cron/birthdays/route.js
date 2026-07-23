@@ -1,9 +1,7 @@
 import { NextResponse } from "next/server";
 
 import prisma from "@/lib/prisma";
-import {
-  sendWhatsAppBirthdayMessage,
-} from "@/lib/whatsapp";
+import { sendBirthdayOwnerSms } from "@/lib/sms";
 
 export const runtime = "nodejs";
 export const dynamic = "force-dynamic";
@@ -12,8 +10,14 @@ function cleanPhoneNumber(value) {
   return String(value ?? "").replace(/\D/g, "");
 }
 
-function isValidPhoneNumber(value) {
-  return value.length >= 10 && value.length <= 15;
+function formatPhoneNumberForSms(value) {
+  const digits = cleanPhoneNumber(value);
+
+  if (digits.length < 10 || digits.length > 15) {
+    return null;
+  }
+
+  return `+${digits}`;
 }
 
 function getDatePartsInTimeZone(date, timeZone) {
@@ -27,10 +31,9 @@ function getDatePartsInTimeZone(date, timeZone) {
   const parts = formatter.formatToParts(date);
 
   const values = Object.fromEntries(
-    parts.map((part) => [
-      part.type,
-      part.value,
-    ])
+    parts
+      .filter((part) => part.type !== "literal")
+      .map((part) => [part.type, part.value])
   );
 
   return {
@@ -80,6 +83,9 @@ export async function GET(request) {
       );
     }
 
+    /*
+     * Birthday timezone.
+     */
     const timeZone =
       process.env.BIRTHDAY_TIME_ZONE ||
       "America/Los_Angeles";
@@ -99,12 +105,14 @@ export async function GET(request) {
     });
 
     /*
-     * Important:
-     * Do not filter by WhatsApp consent or number here.
+     * Get every active birthday for today.
      *
-     * First load every active birthday for today.
-     * We validate WhatsApp details in the loop so that
-     * skipped records and reasons are visible.
+     * We no longer need:
+     * - whatsappNumber
+     * - whatsappOptIn
+     *
+     * This cron is notifying the Cric4All owner,
+     * not sending directly to the birthday player.
      */
     const birthdays =
       await prisma.leagueBirthday.findMany({
@@ -120,8 +128,6 @@ export async function GET(request) {
           birthMonth: true,
           birthDay: true,
           isActive: true,
-          whatsappNumber: true,
-          whatsappOptIn: true,
 
           league: {
             select: {
@@ -138,165 +144,215 @@ export async function GET(request) {
           },
         },
 
-        orderBy: {
-          name: "asc",
-        },
+        orderBy: [
+          {
+            league: {
+              name: "asc",
+            },
+          },
+          {
+            name: "asc",
+          },
+        ],
       });
 
     console.log(
       "Today's birthday records:",
       birthdays.map((birthday) => ({
-        id: birthday.id,
-        name:
-          birthday.player?.name ||
-          birthday.name,
+        birthdayId: birthday.id,
+
+        playerName:
+          birthday.player?.name?.trim() ||
+          birthday.name?.trim() ||
+          "Player",
+
+        leagueId:
+          birthday.league?.id || null,
+
+        leagueName:
+          birthday.league?.name?.trim() ||
+          "Cric4All League",
+
         birthMonth: birthday.birthMonth,
         birthDay: birthday.birthDay,
-        isActive: birthday.isActive,
-        whatsappOptIn:
-          birthday.whatsappOptIn,
-        hasWhatsAppNumber: Boolean(
-          String(
-            birthday.whatsappNumber ?? ""
-          ).trim()
-        ),
       }))
     );
 
-    const results = [];
-
- for (const birthday of birthdays) {
-  const playerName =
-    birthday.player?.name?.trim() ||
-    birthday.name?.trim() ||
-    "Player";
-
-  const leagueName =
-    birthday.league?.name?.trim() ||
-    "Cric4All League";
-
-  const recipientPhone =
-    cleanPhoneNumber(
-      birthday.whatsappNumber
-    );
-
-  if (birthday.whatsappOptIn !== true) {
-    results.push({
-      birthdayId: birthday.id,
-      playerName,
-      status: "SKIPPED",
-      reason:
-        "WhatsApp consent is not enabled.",
-    });
-
-    continue;
-  }
-
-  if (!isValidPhoneNumber(recipientPhone)) {
-    results.push({
-      birthdayId: birthday.id,
-      playerName,
-      status: "SKIPPED",
-      reason:
-        "WhatsApp number is missing or invalid. Include the country code.",
-    });
-
-    continue;
-  }
-
-  try {
-    console.log(
-      "Sending birthday WhatsApp message:",
-      {
-        birthdayId: birthday.id,
-        playerName,
-        leagueName,
-        recipientPhone,
-      }
-    );
-
-    const sendResult =
-      await sendWhatsAppBirthdayMessage({
-        recipientPhone,
-        playerName,
-        leagueName,
+    /*
+     * Nothing to send when there are no birthdays.
+     */
+    if (birthdays.length === 0) {
+      return NextResponse.json({
+        success: true,
+        timeZone,
+        date: sentDate,
+        month: today.month,
+        day: today.day,
+        birthdaysFound: 0,
+        smsSent: false,
+        message:
+          `No active birthdays were found for ` +
+          `${today.month}/${today.day}.`,
+        birthdays: [],
       });
+    }
 
-    console.log(
-      "Birthday WhatsApp message sent:",
-      {
+    /*
+     * This is your phone number, or the phone number
+     * that should receive the daily birthday alert.
+     *
+     * Example:
+     * BIRTHDAY_OWNER_PHONE=+16105551234
+     */
+    const ownerPhone =
+      formatPhoneNumberForSms(
+        process.env.BIRTHDAY_OWNER_PHONE
+      );
+
+    if (!ownerPhone) {
+      console.error(
+        "Birthday owner SMS skipped because " +
+          "BIRTHDAY_OWNER_PHONE is missing or invalid."
+      );
+
+      return NextResponse.json(
+        {
+          success: false,
+          timeZone,
+          date: sentDate,
+          month: today.month,
+          day: today.day,
+          birthdaysFound: birthdays.length,
+          smsSent: false,
+          error:
+            "BIRTHDAY_OWNER_PHONE is missing or invalid. " +
+            "Include the country code.",
+        },
+        {
+          status: 500,
+        }
+      );
+    }
+
+    /*
+     * Convert database records into the smaller structure
+     * needed by the SMS function.
+     */
+    const birthdaySummary = birthdays.map(
+      (birthday) => ({
         birthdayId: birthday.id,
-        playerName,
-        recipientPhone,
+
+        playerId:
+          birthday.player?.id || null,
+
+        playerName:
+          birthday.player?.name?.trim() ||
+          birthday.name?.trim() ||
+          "Player",
+
+        leagueId:
+          birthday.league?.id || null,
+
+        leagueName:
+          birthday.league?.name?.trim() ||
+          "Cric4All League",
+      })
+    );
+
+    try {
+      console.log(
+        "Sending birthday owner SMS:",
+        {
+          ownerPhone,
+          birthdayCount:
+            birthdaySummary.length,
+          date: sentDate,
+        }
+      );
+
+      /*
+       * Send one SMS containing all birthdays.
+       */
+      const smsResult =
+        await sendBirthdayOwnerSms({
+          ownerPhone,
+          birthdays: birthdaySummary,
+          date: sentDate,
+        });
+
+      console.log(
+        "Birthday owner SMS sent:",
+        {
+          ownerPhone,
+          birthdayCount:
+            birthdaySummary.length,
+          messageId:
+            smsResult?.messageId || null,
+        }
+      );
+
+      return NextResponse.json({
+        success: true,
+        timeZone,
+        date: sentDate,
+        month: today.month,
+        day: today.day,
+
+        birthdaysFound:
+          birthdaySummary.length,
+
+        smsSent: true,
+
+        ownerPhone,
+
         messageId:
-          sendResult?.messageId || null,
-      }
-    );
+          smsResult?.messageId || null,
 
-    results.push({
-      birthdayId: birthday.id,
-      playerName,
-      recipientPhone,
-      status: "SENT",
-      messageId:
-        sendResult?.messageId || null,
-    });
-  } catch (sendError) {
-    const errorMessage =
-      getErrorMessage(sendError);
+        message:
+          "Birthday owner notification sent successfully.",
 
-    console.error(
-      "WhatsApp birthday sending failed:",
-      {
-        birthdayId: birthday.id,
-        playerName,
-        recipientPhone,
-        error: errorMessage,
-      }
-    );
+        birthdays: birthdaySummary,
+      });
+    } catch (smsError) {
+      const errorMessage =
+        getErrorMessage(smsError);
 
-    results.push({
-      birthdayId: birthday.id,
-      playerName,
-      recipientPhone,
-      status: "FAILED",
-      error: errorMessage,
-    });
-  }
-}
+      console.error(
+        "Birthday owner SMS failed:",
+        {
+          ownerPhone,
+          birthdayCount:
+            birthdaySummary.length,
+          error: errorMessage,
+        }
+      );
 
-    const sentCount = results.filter(
-      (result) => result.status === "SENT"
-    ).length;
+      return NextResponse.json(
+        {
+          success: false,
+          timeZone,
+          date: sentDate,
+          month: today.month,
+          day: today.day,
 
-    const skippedCount = results.filter(
-      (result) => result.status === "SKIPPED"
-    ).length;
+          birthdaysFound:
+            birthdaySummary.length,
 
-    const failedCount = results.filter(
-      (result) => result.status === "FAILED"
-    ).length;
+          smsSent: false,
 
-    return NextResponse.json({
-      success: true,
-      timeZone,
-      date: sentDate,
-      month: today.month,
-      day: today.day,
+          error: errorMessage,
 
-      birthdaysFound: birthdays.length,
-      sentCount,
-      skippedCount,
-      failedCount,
-
-      message:
-        birthdays.length === 0
-          ? `No active birthdays were found for ${today.month}/${today.day}.`
-          : "Birthday scheduler completed.",
-
-      results,
-    });
+          birthdays: birthdaySummary,
+        },
+        {
+          status: 500,
+        }
+      );
+    }
   } catch (error) {
+    const errorMessage =
+      getErrorMessage(error);
+
     console.error(
       "Birthday scheduler error:",
       error
@@ -305,7 +361,7 @@ export async function GET(request) {
     return NextResponse.json(
       {
         success: false,
-        error: getErrorMessage(error),
+        error: errorMessage,
       },
       {
         status: 500,

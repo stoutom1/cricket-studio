@@ -29,6 +29,7 @@ model User {
   birthdayPreferences        BirthdayNotificationPreference[]
   birthdayReminderRecipients BirthdayReminderLog[]            @relation("BirthdayReminderRecipient")
   birthdayRemindersShared    BirthdayReminderLog[]            @relation("BirthdayReminderSharedBy")
+  webPushSubscriptions       WebPushSubscription[]
 }
 
 model Team {
@@ -588,4 +589,29 @@ model BirthdayReminderLog {
   @@unique([birthdayId, recipientUserId, birthdayYear, reminderType])
   @@index([leagueId, birthdayYear])
   @@index([recipientUserId, status])
+}
+
+model WebPushSubscription {
+  id Int @id @default(autoincrement())
+
+  userId String
+  user   User   @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  endpoint String @unique
+  p256dh   String
+  auth     String
+
+  expirationTime BigInt?
+
+  userAgent  String?
+  deviceName String?
+
+  isActive Boolean @default(true)
+
+  lastUsedAt DateTime?
+  createdAt  DateTime  @default(now())
+  updatedAt  DateTime  @updatedAt
+
+  @@index([userId])
+  @@index([userId, isActive])
 }

@@ -7,6 +7,7 @@ import { useRouter } from "next/navigation";
 import {formatMatchDateTime,getMatchTimelineText,} from "@/lib/date";
 import { buildMatchInsights } from "@/lib/match-insights";
 import { createPortal } from "react-dom";
+import BirthdayPushSettings from "@/components/BirthdayPushSettings";
 import Link from "next/link";
 
 function Card({
@@ -14306,7 +14307,7 @@ onClick={() => {
 
 <div className="admin-activity-card">
   <h3>🕒 Recent Logins</h3>
-
+<BirthdayPushSettings />
   {!groupedRecentLogins.length ? (
     <p className="muted">No logins in the last 24 hours.</p>
   ) : (
