@@ -53,8 +53,11 @@ function isStandaloneMode() {
 export default function BirthdayPushSettings({
   leagueId,
 }) {
-  const [supported, setSupported] =
-    useState(true);
+const [supported, setSupported] =
+  useState(null);
+
+const [notificationStateLoaded, setNotificationStateLoaded] =
+  useState(false);
 
   const [isSubscribed, setIsSubscribed] =
     useState(false);
@@ -68,63 +71,91 @@ export default function BirthdayPushSettings({
   const [showIosInstallHelp, setShowIosInstallHelp] =
     useState(false);
 
-  useEffect(() => {
-    async function loadCurrentState() {
-      const browserSupportsPush =
-        "serviceWorker" in navigator &&
-        "PushManager" in window &&
-        "Notification" in window;
+useEffect(() => {
+  let isMounted = true;
 
-      setSupported(browserSupportsPush);
+  async function loadCurrentState() {
+    const browserSupportsPush =
+      "serviceWorker" in navigator &&
+      "PushManager" in window &&
+      "Notification" in window;
 
-      if (!browserSupportsPush) {
-        return;
-      }
-
-      /*
-       * On iPhone, push must be enabled from the
-       * Home Screen-installed Cric4All web app.
-       */
-      if (
-        isIosDevice() &&
-        !isStandaloneMode()
-      ) {
-        setShowIosInstallHelp(true);
-        return;
-      }
-
-      try {
-        const registration =
-          await navigator.serviceWorker.register(
-            "/sw.js",
-            {
-              scope: "/",
-            }
-          );
-
-        await navigator.serviceWorker.ready;
-
-        const subscription =
-          await registration.pushManager
-            .getSubscription();
-
-        setIsSubscribed(
-          Boolean(subscription)
-        );
-      } catch (error) {
-        console.error(
-          "Service worker initialization failed:",
-          error
-        );
-
-        setMessage(
-          "Cric4All could not initialize browser notifications."
-        );
-      }
+    if (!isMounted) {
+      return;
     }
 
-    loadCurrentState();
-  }, []);
+    setSupported(browserSupportsPush);
+
+    if (!browserSupportsPush) {
+      setIsSubscribed(false);
+      setNotificationStateLoaded(true);
+      return;
+    }
+
+    /*
+     * On iPhone, browser push works only when
+     * Cric4All is opened from the Home Screen app.
+     *
+     * Birthday Management must still remain visible.
+     */
+    if (
+      isIosDevice() &&
+      !isStandaloneMode()
+    ) {
+      setShowIosInstallHelp(true);
+      setIsSubscribed(false);
+      setNotificationStateLoaded(true);
+      return;
+    }
+
+    try {
+      const registration =
+        await navigator.serviceWorker.register(
+          "/sw.js",
+          {
+            scope: "/",
+          }
+        );
+
+      await navigator.serviceWorker.ready;
+
+      const subscription =
+        await registration.pushManager
+          .getSubscription();
+
+      if (!isMounted) {
+        return;
+      }
+
+      setIsSubscribed(Boolean(subscription));
+    } catch (error) {
+      console.error(
+        "Service worker initialization failed:",
+        error
+      );
+
+      if (!isMounted) {
+        return;
+      }
+
+      setIsSubscribed(false);
+
+      setMessage(
+        "Cric4All could not initialize browser notifications."
+      );
+    } finally {
+      if (isMounted) {
+        setNotificationStateLoaded(true);
+      }
+    }
+  }
+
+  loadCurrentState();
+
+  return () => {
+    isMounted = false;
+  };
+}, []);
 
   async function enableNotifications() {
     setIsBusy(true);
@@ -322,18 +353,6 @@ export default function BirthdayPushSettings({
     }
   }
 
-  if (!supported) {
-    return (
-      <section className="birthday-push-card">
-        <h2>Birthday Notifications</h2>
-
-        <p>
-          This browser does not support Web Push
-          notifications.
-        </p>
-      </section>
-    );
-  }
 async function sendTestNotification() {
   setIsBusy(true);
   setMessage("");
@@ -413,7 +432,15 @@ if (!response.ok || !result.success) {
   }
 }
   return (
-    <section className="birthday-push-card">
+    <section
+  className="birthday-push-card"
+  data-birthday-push-settings="true"
+  style={{
+    display: "block",
+    visibility: "visible",
+    opacity: 1,
+  }}
+>
   <div className="birthday-push-heading">
     <div className="birthday-push-title-row">
       <span
@@ -426,148 +453,204 @@ if (!response.ok || !result.success) {
       <div className="birthday-push-title-copy">
         <h2>Birthday Management and Notifications</h2>
 
-        <p>
-          Receive a phone alert when a player in one of
-          your leagues has a birthday.
-        </p>
+<p>
+  {supported === false
+    ? "This browser does not support birthday push notifications. Birthday Management is still available."
+    : showIosInstallHelp
+      ? "Add Cric4All to your iPhone Home Screen to receive alerts. Birthday Management is still available."
+      : "Receive a phone alert when a player in one of your leagues has a birthday."}
+</p>
       </div>
     </div>
 
-    <span
-      className={
-        isSubscribed
-          ? "push-status push-status-on"
-          : "push-status push-status-off"
-      }
-    >
-      <span
-        className="push-status-dot"
-        aria-hidden="true"
-      />
+<span
+  className={
+    supported === true && isSubscribed
+      ? "push-status push-status-on"
+      : "push-status push-status-off"
+  }
+>
+  <span
+    className="push-status-dot"
+    aria-hidden="true"
+  />
 
-      {isSubscribed ? "Enabled" : "Not enabled"}
-    </span>
+  {!notificationStateLoaded
+    ? "Checking..."
+    : supported === false
+      ? "Not supported"
+      : showIosInstallHelp
+        ? "Setup required"
+        : isSubscribed
+          ? "Enabled"
+          : "Not enabled"}
+</span>
   </div>
 
   <div className="birthday-push-actions">
-    {!isSubscribed ? (
-      <button
-        type="button"
-        onClick={enableNotifications}
-        disabled={isBusy}
-        className="birthday-push-action birthday-push-enable"
+  {!notificationStateLoaded ? (
+    <button
+      type="button"
+      disabled
+      className="birthday-push-action birthday-push-enable"
+    >
+      <span
+        className="birthday-push-action-icon"
+        aria-hidden="true"
       >
-        <span
-          className="birthday-push-action-icon"
-          aria-hidden="true"
-        >
-          🔔
-        </span>
+        🔔
+      </span>
 
-        <span className="birthday-push-action-copy">
-          <strong>
-            {isBusy
-              ? "Enabling..."
-              : "Enable Notifications"}
-          </strong>
+      <span className="birthday-push-action-copy">
+        <strong>Checking Notifications...</strong>
 
-          <small>
-            Receive birthday alerts on this device
-          </small>
-        </span>
+        <small>
+          Checking this device
+        </small>
+      </span>
 
-        <span
-          className="birthday-push-action-arrow"
-          aria-hidden="true"
-        >
-          ›
-        </span>
-      </button>
-    ) : (
-      <>
-      {/*
-        <button
-          type="button"
-          onClick={sendTestNotification}
-          disabled={isBusy}
-          className="birthday-push-action birthday-push-test"
-        >
-          <span
-            className="birthday-push-action-icon"
-            aria-hidden="true"
-          >
-            📨
-          </span>
-          <span className="birthday-push-action-copy">
-            <strong>
-              {isBusy
-                ? "Sending..."
-                : "Send Test Notification"}
-            </strong>
-            <small>
-              Confirm alerts work on this device
-            </small>
-          </span>
-          <span
-            className="birthday-push-action-arrow"
-            aria-hidden="true"
-          >
-            ›
-          </span>
-        </button>
-*/}
-<Link
-  href={`/leagues/${Number(leagueId)}/birthdays`}
-  className="birthday-management-btn"
->
-  <span className="birthday-icon">🎂</span>
+      <span
+        className="birthday-push-action-arrow"
+        aria-hidden="true"
+      >
+        ›
+      </span>
+    </button>
+  ) : supported === false ? (
+    <div
+      className="birthday-push-action birthday-push-unavailable"
+      role="status"
+    >
+      <span
+        className="birthday-push-action-icon"
+        aria-hidden="true"
+      >
+        🔕
+      </span>
 
-  <div className="birthday-text">
-    <span className="birthday-title">
-      Birthday Management
+      <span className="birthday-push-action-copy">
+        <strong>
+          Notifications Not Supported
+        </strong>
+
+        <small>
+          This browser cannot receive push alerts
+        </small>
+      </span>
+    </div>
+  ) : showIosInstallHelp ? (
+    <div
+      className="birthday-push-action birthday-push-unavailable"
+      role="status"
+    >
+      <span
+        className="birthday-push-action-icon"
+        aria-hidden="true"
+      >
+        📱
+      </span>
+
+      <span className="birthday-push-action-copy">
+        <strong>
+          Add Cric4All to Home Screen
+        </strong>
+
+        <small>
+          Open the installed app to enable alerts
+        </small>
+      </span>
+    </div>
+  ) : isSubscribed ? (
+    <button
+      type="button"
+      onClick={disableNotifications}
+      disabled={isBusy}
+      className="birthday-push-action birthday-push-disable"
+    >
+      <span
+        className="birthday-push-action-icon"
+        aria-hidden="true"
+      >
+        🔕
+      </span>
+
+      <span className="birthday-push-action-copy">
+        <strong>
+          {isBusy
+            ? "Disabling..."
+            : "Disable on This Device"}
+        </strong>
+
+        <small>
+          Stop birthday alerts on this device
+        </small>
+      </span>
+
+      <span
+        className="birthday-push-action-arrow"
+        aria-hidden="true"
+      >
+        ›
+      </span>
+    </button>
+  ) : (
+    <button
+      type="button"
+      onClick={enableNotifications}
+      disabled={isBusy}
+      className="birthday-push-action birthday-push-enable"
+    >
+      <span
+        className="birthday-push-action-icon"
+        aria-hidden="true"
+      >
+        🔔
+      </span>
+
+      <span className="birthday-push-action-copy">
+        <strong>
+          {isBusy
+            ? "Enabling..."
+            : "Enable Notifications"}
+        </strong>
+
+        <small>
+          Receive birthday alerts on this device
+        </small>
+      </span>
+
+      <span
+        className="birthday-push-action-arrow"
+        aria-hidden="true"
+      >
+        ›
+      </span>
+    </button>
+  )}
+
+  <Link
+    href={`/leagues/${Number(leagueId)}/birthdays`}
+    className="birthday-management-btn"
+  >
+    <span className="birthday-icon">
+      🎂
     </span>
-    <span className="birthday-subtitle">
-      Add • Edit • Import Birthdays
+
+    <div className="birthday-text">
+      <span className="birthday-title">
+        Birthday Management
+      </span>
+
+      <span className="birthday-subtitle">
+        Add • Edit • Import Birthdays
+      </span>
+    </div>
+
+    <span className="birthday-arrow">
+      ➜
     </span>
-  </div>
-
-  <span className="birthday-arrow">➜</span>
-</Link>
-        <button
-          type="button"
-          onClick={disableNotifications}
-          disabled={isBusy}
-          className="birthday-push-action birthday-push-disable"
-        >
-          <span
-            className="birthday-push-action-icon"
-            aria-hidden="true"
-          >
-            🔕
-          </span>
-
-          <span className="birthday-push-action-copy">
-            <strong>
-              {isBusy
-                ? "Disabling..."
-                : "Disable on This Device"}
-            </strong>
-
-            <small>
-              Stop birthday alerts on this device
-            </small>
-          </span>
-
-          <span
-            className="birthday-push-action-arrow"
-            aria-hidden="true"
-          >
-            ›
-          </span>
-        </button>
-      </>
-    )}
-  </div>
+  </Link>
+</div>
 
   {message && (
     <p className="birthday-push-message">

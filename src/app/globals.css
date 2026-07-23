@@ -60520,3 +60520,302 @@ body {
     width: 84vw;
   }
 }
+.birthday-push-unavailable {
+  cursor: default;
+}
+
+.birthday-push-unavailable:hover {
+  transform: none;
+}
+
+.birthday-management-btn {
+  display: flex;
+  opacity: 1;
+  visibility: visible;
+  pointer-events: auto;
+}
+/* =========================================================
+   BIRTHDAY PUSH ACTIONS — CONSISTENT DESKTOP + MOBILE LAYOUT
+========================================================= */
+
+.birthday-push-actions {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  align-items: stretch;
+  gap: 12px;
+  width: 100%;
+}
+
+/*
+ * Make both the notification control and Birthday Management
+ * use exactly the same grid width and height behavior.
+ */
+.birthday-push-actions > .birthday-push-action,
+.birthday-push-actions > .birthday-management-btn {
+  width: 100%;
+  max-width: none;
+  min-width: 0;
+  min-height: 74px;
+  margin: 0;
+}
+
+/* Notification button/card */
+.birthday-push-action {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+}
+
+/* Birthday Management link */
+.birthday-management-btn {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+
+  box-sizing: border-box;
+  text-decoration: none;
+}
+
+/* Both text areas must expand equally */
+.birthday-push-action-copy,
+.birthday-text {
+  flex: 1;
+  min-width: 0;
+}
+
+/* Keep arrows aligned on the far right */
+.birthday-push-action-arrow,
+.birthday-arrow {
+  flex-shrink: 0;
+  margin-left: auto;
+}
+
+/* Prevent title wrapping unnecessarily */
+.birthday-push-action-copy strong,
+.birthday-title {
+  display: block;
+  white-space: nowrap;
+}
+
+/* Message always appears below both buttons */
+.birthday-push-message {
+  grid-column: 1 / -1;
+  width: 100%;
+}
+
+/* =========================================================
+   TABLET / SMALL LAPTOP
+========================================================= */
+
+@media (max-width: 900px) {
+  .birthday-push-actions {
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+  }
+
+  .birthday-push-actions > .birthday-push-action,
+  .birthday-push-actions > .birthday-management-btn {
+    min-height: 72px;
+  }
+
+  .birthday-push-action-copy strong,
+  .birthday-title {
+    white-space: normal;
+  }
+}
+
+/* =========================================================
+   MOBILE
+========================================================= */
+
+@media (max-width: 640px) {
+  .birthday-push-actions {
+    grid-template-columns: 1fr;
+    gap: 10px;
+  }
+
+  .birthday-push-actions > .birthday-push-action,
+  .birthday-push-actions > .birthday-management-btn {
+    width: 100%;
+    min-height: 68px;
+  }
+
+  .birthday-push-action,
+  .birthday-management-btn {
+    padding: 12px;
+  }
+
+  .birthday-push-action-copy strong,
+  .birthday-title {
+    white-space: normal;
+  }
+
+  .birthday-push-action-copy small,
+  .birthday-subtitle {
+    display: block;
+    line-height: 1.3;
+  }
+}
+/* =========================================================
+   FINAL BIRTHDAY ACTION ALIGNMENT OVERRIDE
+   Keep this at the absolute bottom of the stylesheet
+========================================================= */
+
+.birthday-push-actions {
+  display: grid !important;
+  grid-template-columns: repeat(2, minmax(0, 1fr)) !important;
+  align-items: stretch !important;
+  gap: 10px !important;
+  width: 100% !important;
+}
+
+/* Force both controls into equal grid columns */
+.birthday-push-actions > .birthday-push-action,
+.birthday-push-actions > .birthday-management-btn {
+  width: 100% !important;
+  max-width: none !important;
+  min-width: 0 !important;
+  min-height: 62px !important;
+
+  margin: 0 !important;
+  padding: 10px 12px !important;
+
+  box-sizing: border-box !important;
+  border-radius: 11px !important;
+}
+
+/* Make Birthday Management compact like notification button */
+.birthday-management-btn {
+  display: flex !important;
+  align-items: center !important;
+  gap: 10px !important;
+
+  color: #ffffff !important;
+  text-decoration: none !important;
+
+  background: linear-gradient(
+    145deg,
+    #243d70,
+    #172d57
+  ) !important;
+
+  border: 1px solid rgba(128, 156, 220, 0.42) !important;
+
+  box-shadow:
+    0 4px 10px rgba(0, 0, 0, 0.18) !important;
+}
+
+/* Replace bulky circle with compact square icon */
+.birthday-management-btn .birthday-icon {
+  display: inline-flex !important;
+  align-items: center !important;
+  justify-content: center !important;
+
+  width: 34px !important;
+  height: 34px !important;
+  min-width: 34px !important;
+
+  padding: 0 !important;
+  margin: 0 !important;
+
+  font-size: 17px !important;
+
+  background: rgba(20, 184, 166, 0.16) !important;
+  border: 1px solid rgba(45, 212, 191, 0.32) !important;
+  border-radius: 9px !important;
+
+  box-shadow: none !important;
+}
+
+/* Keep both text areas structurally identical */
+.birthday-push-action-copy,
+.birthday-management-btn .birthday-text {
+  display: flex !important;
+  flex: 1 !important;
+  flex-direction: column !important;
+  justify-content: center !important;
+
+  min-width: 0 !important;
+}
+
+/* Match title sizing */
+.birthday-push-action-copy strong,
+.birthday-management-btn .birthday-title {
+  display: block !important;
+
+  margin: 0 !important;
+
+  color: #ffffff !important;
+  font-size: 14px !important;
+  font-weight: 700 !important;
+  line-height: 1.2 !important;
+  white-space: nowrap !important;
+}
+
+/* Match subtitle sizing */
+.birthday-push-action-copy small,
+.birthday-management-btn .birthday-subtitle {
+  display: block !important;
+
+  margin-top: 3px !important;
+
+  color: #b9c7e5 !important;
+  font-size: 12px !important;
+  line-height: 1.2 !important;
+  white-space: nowrap !important;
+}
+
+/* Match arrow styling */
+.birthday-push-action-arrow,
+.birthday-management-btn .birthday-arrow {
+  flex-shrink: 0 !important;
+
+  margin-left: auto !important;
+
+  color: #dbe7ff !important;
+  font-size: 18px !important;
+  line-height: 1 !important;
+}
+
+/* Remove old orange/yellow emphasis */
+.birthday-management-btn .birthday-arrow {
+  color: #dbe7ff !important;
+}
+
+/* Equal hover treatment */
+.birthday-push-action:hover,
+.birthday-management-btn:hover {
+  transform: translateY(-1px) !important;
+
+  background: linear-gradient(
+    145deg,
+    #294779,
+    #1c345f
+  ) !important;
+}
+
+/* =========================================================
+   MOBILE
+========================================================= */
+
+@media (max-width: 640px) {
+  .birthday-push-actions {
+    grid-template-columns: 1fr !important;
+    gap: 9px !important;
+  }
+
+  .birthday-push-actions > .birthday-push-action,
+  .birthday-push-actions > .birthday-management-btn {
+    min-height: 60px !important;
+    padding: 10px 11px !important;
+  }
+
+  .birthday-push-action-copy strong,
+  .birthday-management-btn .birthday-title {
+    white-space: normal !important;
+  }
+
+  .birthday-push-action-copy small,
+  .birthday-management-btn .birthday-subtitle {
+    white-space: normal !important;
+  }
+}

@@ -11739,7 +11739,7 @@ const playerRoleBadge = (row) => {
             <small>Browse public cricket leagues</small>
           </span>
         </button>
-{isSuperAdmin &&( <BirthdayPushSettings leagueId={activeLeagueId}/> )}   
+{isSuperAdmin && permissions?.canManagePermissions && ( <BirthdayPushSettings leagueId={activeLeagueId}/> )}   
       </div>
 
       {selectedLeague && permissions?.canDeleteLeague && (
