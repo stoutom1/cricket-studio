@@ -11409,7 +11409,8 @@ const playerRoleBadge = (row) => {
   <Link href={`/leagues/${Number(activeLeagueId)}/birthdays`}>
     🎂 Birthday Management
   </Link>
-)}     
+)}
+{isSuperAdmin &&( <BirthdayPushSettings /> )}     
   </div>
 
   {/* Mobile-only state-aware experience */}
@@ -14307,7 +14308,6 @@ onClick={() => {
 
 <div className="admin-activity-card">
   <h3>🕒 Recent Logins</h3>
-<BirthdayPushSettings />
   {!groupedRecentLogins.length ? (
     <p className="muted">No logins in the last 24 hours.</p>
   ) : (
