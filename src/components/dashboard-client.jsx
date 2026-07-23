@@ -11749,6 +11749,7 @@ const playerRoleBadge = (row) => {
     🎂 Birthday Management
   </Link>
 )}  
+{isSuperAdmin &&( <BirthdayPushSettings /> )}   
       </div>
 
       {selectedLeague && permissions?.canDeleteLeague && (
