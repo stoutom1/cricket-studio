@@ -168,7 +168,7 @@ export default function BirthdayTodayClient({
         league?.name ?? "your cricket league"
       } and the Cric4All family. 🏏`,
       "",
-      "https://cric4all.app",
+      //"https://cric4all.app",
     ].join("\n");
   }
 
