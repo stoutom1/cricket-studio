@@ -414,40 +414,39 @@ if (!response.ok || !result.success) {
   return (
     <section className="birthday-push-card">
       <div className="birthday-push-heading">
-        <div>
-          <h2>
-            🔔 Birthday Notifications
-          </h2>
+  <div className="birthday-push-title-row">
+    <span
+      className="birthday-push-title-icon"
+      aria-hidden="true"
+    >
+      🔔
+    </span>
 
-          <p>
-            Receive a phone alert when a player
-            in one of your leagues has a
-            birthday.
-          </p>
-        </div>
+    <div>
+      <h2>Birthday Notifications</h2>
 
-        <span
-          className={
-            isSubscribed
-              ? "push-status push-status-on"
-              : "push-status push-status-off"
-          }
-        >
-          {isSubscribed
-            ? "Enabled"
-            : "Not enabled"}
-        </span>
-        {isSubscribed && (
-  <button
-    type="button"
-    onClick={sendTestNotification}
-    disabled={isBusy}
-    className="birthday-push-test"
+      <p>
+        Receive a phone alert when a player in one of
+        your leagues has a birthday.
+      </p>
+    </div>
+  </div>
+
+  <span
+    className={
+      isSubscribed
+        ? "push-status push-status-on"
+        : "push-status push-status-off"
+    }
   >
-    Send Test Notification
-  </button>
-)}
-      </div>
+    <span
+      className="push-status-dot"
+      aria-hidden="true"
+    />
+
+    {isSubscribed ? "Enabled" : "Not enabled"}
+  </span>
+</div>
 
       {showIosInstallHelp && (
         <div className="ios-install-help">
@@ -482,34 +481,109 @@ if (!response.ok || !result.success) {
       )}
 
       <div className="birthday-push-actions">
-        {!isSubscribed ? (
-          <button
-            type="button"
-            onClick={
-              enableNotifications
-            }
-            disabled={isBusy}
-            className="birthday-push-enable"
-          >
+  {!isSubscribed ? (
+    <button
+      type="button"
+      onClick={enableNotifications}
+      disabled={isBusy}
+      className="birthday-push-action birthday-push-enable"
+    >
+      <span
+        className="birthday-push-action-icon"
+        aria-hidden="true"
+      >
+        🔔
+      </span>
+
+      <span className="birthday-push-action-copy">
+        <strong>
+          {isBusy
+            ? "Enabling..."
+            : "Enable Notifications"}
+        </strong>
+
+        <small>
+          Receive birthday alerts on this device
+        </small>
+      </span>
+
+      <span
+        className="birthday-push-action-arrow"
+        aria-hidden="true"
+      >
+        ›
+      </span>
+    </button>
+  ) : (
+    <>
+      <button
+        type="button"
+        onClick={sendTestNotification}
+        disabled={isBusy}
+        className="birthday-push-action birthday-push-test"
+      >
+        <span
+          className="birthday-push-action-icon"
+          aria-hidden="true"
+        >
+          📨
+        </span>
+
+        <span className="birthday-push-action-copy">
+          <strong>
             {isBusy
-              ? "Enabling..."
-              : "Enable Birthday Notifications"}
-          </button>
-        ) : (
-          <button
-            type="button"
-            onClick={
-              disableNotifications
-            }
-            disabled={isBusy}
-            className="birthday-push-disable"
-          >
+              ? "Sending..."
+              : "Send Test Notification"}
+          </strong>
+
+          <small>
+            Confirm alerts work on this device
+          </small>
+        </span>
+
+        <span
+          className="birthday-push-action-arrow"
+          aria-hidden="true"
+        >
+          ›
+        </span>
+      </button>
+
+      <button
+        type="button"
+        onClick={disableNotifications}
+        disabled={isBusy}
+        className="birthday-push-action birthday-push-disable"
+      >
+        <span
+          className="birthday-push-action-icon"
+          aria-hidden="true"
+        >
+          🔕
+        </span>
+
+        <span className="birthday-push-action-copy">
+          <strong>
             {isBusy
               ? "Disabling..."
               : "Disable on This Device"}
-          </button>
-        )}
-      </div>
+          </strong>
+
+          <small>
+            Stop birthday alerts on this device
+          </small>
+        </span>
+
+        <span
+          className="birthday-push-action-arrow"
+          aria-hidden="true"
+        >
+          ›
+        </span>
+      </button>
+    </>
+  )}
+</div>
 
       {message && (
         <p className="birthday-push-message">
