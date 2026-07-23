@@ -49,7 +49,9 @@ function isStandaloneMode() {
   );
 }
 
-export default function BirthdayPushSettings() {
+export default function BirthdayPushSettings({
+  leagueId,
+}) {
   const [supported, setSupported] =
     useState(true);
 
@@ -336,15 +338,53 @@ async function sendTestNotification() {
   setMessage("");
 
   try {
+    const numericLeagueId = Number(leagueId);
+
+    if (
+      !Number.isInteger(numericLeagueId) ||
+      numericLeagueId <= 0
+    ) {
+      throw new Error(
+        "A valid league ID is required to send the test notification."
+      );
+    }
+
     const response = await fetch(
       "/api/push/test",
       {
         method: "POST",
+
+        headers: {
+          "Content-Type": "application/json",
+        },
+
+        body: JSON.stringify({
+          leagueId: numericLeagueId,
+        }),
       }
     );
 
-    const result =
-      await response.json();
+    const responseText =
+  await response.text();
+
+let result = {};
+
+if (responseText) {
+  try {
+    result = JSON.parse(responseText);
+  } catch {
+    throw new Error(
+      `The server returned an invalid response with status ${response.status}.`
+    );
+  }
+}
+
+if (!response.ok || !result.success) {
+  throw new Error(
+    result?.error ||
+      `Test notification failed with status ${response.status}.`
+  );
+}
 
     if (!response.ok || !result.success) {
       throw new Error(
@@ -357,6 +397,11 @@ async function sendTestNotification() {
       "Test notification sent. Check this device."
     );
   } catch (error) {
+    console.error(
+      "Test notification failed:",
+      error
+    );
+
     setMessage(
       error instanceof Error
         ? error.message

@@ -1,20 +1,17 @@
 import { NextResponse } from "next/server";
 import { getServerSession } from "next-auth";
 
-import prisma from "@/lib/prisma";
 import { authOptions } from "@/lib/auth";
-
-import {
-  sendWebPushNotification,
-} from "@/lib/web-push";
+import prisma from "@/lib/prisma";
+import { sendWebPushNotification } from "@/lib/web-push";
 
 export const runtime = "nodejs";
-export const dynamic = "force-dynamic";
 
-export async function POST() {
+export async function POST(request) {
   try {
-    const session =
-      await getServerSession(authOptions);
+    const session = await getServerSession(
+      authOptions
+    );
 
     if (!session?.user?.email) {
       return NextResponse.json(
@@ -28,40 +25,15 @@ export async function POST() {
       );
     }
 
-    const user =
-      await prisma.user.findUnique({
-        where: {
-          email: session.user.email,
-        },
+    let body;
 
-        select: {
-          id: true,
-
-          webPushSubscriptions: {
-            where: {
-              isActive: true,
-            },
-
-            select: {
-              id: true,
-              endpoint: true,
-              p256dh: true,
-              auth: true,
-              expirationTime: true,
-            },
-          },
-        },
-      });
-
-    if (
-      !user ||
-      user.webPushSubscriptions.length === 0
-    ) {
+    try {
+      body = await request.json();
+    } catch {
       return NextResponse.json(
         {
           success: false,
-          error:
-            "No active notification subscription was found.",
+          error: "Invalid request body.",
         },
         {
           status: 400,
@@ -69,50 +41,174 @@ export async function POST() {
       );
     }
 
+    const leagueId = Number(body?.leagueId);
+
+    if (
+      !Number.isInteger(leagueId) ||
+      leagueId <= 0
+    ) {
+      return NextResponse.json(
+        {
+          success: false,
+          error:
+            "A valid leagueId is required.",
+        },
+        {
+          status: 400,
+        }
+      );
+    }
+
+    const user = await prisma.user.findUnique({
+      where: {
+        email: session.user.email,
+      },
+
+      select: {
+        id: true,
+      },
+    });
+
+    if (!user) {
+      return NextResponse.json(
+        {
+          success: false,
+          error: "User account was not found.",
+        },
+        {
+          status: 404,
+        }
+      );
+    }
+
+    /*
+     * Optional but recommended:
+     * confirm that this user has access to the league.
+     *
+     * Adjust this query to match your actual Prisma
+     * league-membership model.
+     */
+    const league = await prisma.league.findUnique({
+      where: {
+        id: leagueId,
+      },
+
+      select: {
+        id: true,
+        name: true,
+      },
+    });
+
+    if (!league) {
+      return NextResponse.json(
+        {
+          success: false,
+          error: "League was not found.",
+        },
+        {
+          status: 404,
+        }
+      );
+    }
+
+const subscriptions =
+  await prisma.webPushSubscription.findMany({
+    where: {
+      userId: user.id,
+      isActive: true,
+    },
+
+    select: {
+      id: true,
+      endpoint: true,
+      p256dh: true,
+      auth: true,
+    },
+  });
+
+    if (subscriptions.length === 0) {
+      return NextResponse.json(
+        {
+          success: false,
+          error:
+            "No active notification subscriptions were found.",
+          attemptedCount: 0,
+          sentCount: 0,
+          failedCount: 0,
+          results: [],
+        },
+        {
+          status: 404,
+        }
+      );
+    }
+
+    const payload = {
+      title: "Cric4All Birthday Alert",
+
+      body:
+        `Test notification for ${league.name}. Tap to view today's birthdays.`,
+
+      url:
+        `/leagues/${leagueId}/birthdays/today`,
+
+      type: "BIRTHDAY_ALERT",
+      leagueId,
+    };
+
     const results = [];
 
-    for (
-      const subscription
-      of user.webPushSubscriptions
-    ) {
-      const sendResult =
-        await sendWebPushNotification({
-          subscription,
+    for (const subscription of subscriptions) {
+      try {
+        const sendResult =
+  await sendWebPushNotification({
+    subscription,
+    payload,
+  });
 
-          payload: {
-            title:
-              "🏏 Cric4All Test Notification",
-
-            body:
-              "Web Push is working. Tap to open today’s birthdays.",
-
-            type: "TEST",
-
-            url:
-              "/birthdays/today?source=push-test",
-
-            icon:
-              "/icons/icon-192.png",
-
-            badge:
-              "/icons/icon-192.png",
-
-            tag:
-              "cric4all-push-test",
-          },
+        results.push({
+          subscriptionId: subscription.id,
+          success: true,
+          statusCode:
+            sendResult?.statusCode ?? 201,
         });
 
-      /*
-       * 404 and 410 normally indicate that the
-       * browser subscription is no longer valid.
-       */
-      if (
-        sendResult.statusCode === 404 ||
-        sendResult.statusCode === 410
-      ) {
-        await prisma
-          .webPushSubscription
-          .update({
+        await prisma.webPushSubscription.update({
+          where: {
+            id: subscription.id,
+          },
+
+          data: {
+            lastUsedAt: new Date(),
+          },
+        });
+      } catch (error) {
+        console.error(
+          `Push failed for subscription ${subscription.id}:`,
+          error
+        );
+
+        const statusCode =
+          error?.statusCode ?? null;
+
+        results.push({
+          subscriptionId: subscription.id,
+          success: false,
+          statusCode,
+          error:
+            error instanceof Error
+              ? error.message
+              : "Push delivery failed.",
+        });
+
+        /*
+         * Remove expired subscriptions.
+         */
+        if (
+          statusCode === 404 ||
+          statusCode === 410
+        ) {
+          await prisma.webPushSubscription.update({
             where: {
               id: subscription.id,
             },
@@ -121,33 +217,32 @@ export async function POST() {
               isActive: false,
             },
           });
+        }
       }
-
-      results.push({
-        subscriptionId:
-          subscription.id,
-
-        ...sendResult,
-      });
     }
 
-    const sentCount =
-      results.filter(
-        (result) => result.success
-      ).length;
+    const sentCount = results.filter(
+      (result) => result.success
+    ).length;
 
-    return NextResponse.json({
-      success: sentCount > 0,
-      attemptedCount:
-        results.length,
-      sentCount,
-      failedCount:
-        results.length - sentCount,
-      results,
-    });
+    const failedCount =
+      results.length - sentCount;
+
+    return NextResponse.json(
+      {
+        success: sentCount > 0,
+        attemptedCount: results.length,
+        sentCount,
+        failedCount,
+        results,
+      },
+      {
+        status: sentCount > 0 ? 200 : 500,
+      }
+    );
   } catch (error) {
     console.error(
-      "Test push failed:",
+      "Test push route failed:",
       error
     );
 
@@ -157,7 +252,7 @@ export async function POST() {
         error:
           error instanceof Error
             ? error.message
-            : "Test push failed.",
+            : "Unable to send the test notification.",
       },
       {
         status: 500,

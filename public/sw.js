@@ -1,4 +1,4 @@
-const DEFAULT_DESTINATION = "/birthdays/today";
+const DEFAULT_DESTINATION = "/dashboard";
 
 /*
  * Install immediately so a newly deployed service worker
