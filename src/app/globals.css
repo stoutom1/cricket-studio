@@ -58858,3 +58858,887 @@ body.cric4all-scorer-open {
 .header-action-btn.primary:hover {
   border-color: #f5d76e;
 }
+/* =========================================================
+   BIRTHDAY MANAGEMENT — MOBILE FIX
+   Add this at the END of the stylesheet
+========================================================= */
+
+/* Prevent the entire page from scrolling sideways */
+html,
+body {
+  max-width: 100%;
+  overflow-x: hidden;
+}
+
+.birthday-page,
+.birthday-management-page,
+.birthday-container {
+  width: 100%;
+  max-width: 100%;
+  overflow-x: hidden;
+  box-sizing: border-box;
+}
+
+/* Every element should respect its parent width */
+.birthday-page *,
+.birthday-management-page *,
+.birthday-container * {
+  box-sizing: border-box;
+}
+
+/* White birthday cards */
+.birthday-card,
+.birthday-form-card,
+.birthday-list-card,
+.birthday-import-card,
+.birthday-header-card {
+  width: 100%;
+  max-width: 100%;
+  color: #172033;
+  background: #ffffff;
+}
+
+/* Fix washed-out text inside white cards */
+.birthday-card h1,
+.birthday-card h2,
+.birthday-card h3,
+.birthday-card h4,
+.birthday-card p,
+.birthday-card label,
+.birthday-form-card h1,
+.birthday-form-card h2,
+.birthday-form-card h3,
+.birthday-form-card p,
+.birthday-form-card label,
+.birthday-list-card h1,
+.birthday-list-card h2,
+.birthday-list-card h3,
+.birthday-list-card p,
+.birthday-list-card label,
+.birthday-import-card h1,
+.birthday-import-card h2,
+.birthday-import-card h3,
+.birthday-import-card p,
+.birthday-import-card label {
+  color: #172033;
+}
+
+/* Descriptions and helper text */
+.birthday-description,
+.birthday-helper-text,
+.birthday-subtitle,
+.birthday-import-description {
+  color: #5f6b7a !important;
+}
+
+/* Labels */
+.birthday-form-card label,
+.birthday-import-card label,
+.birthday-field-label {
+  color: #344054 !important;
+  font-weight: 700;
+}
+
+/* All form controls */
+.birthday-form-card input,
+.birthday-form-card select,
+.birthday-form-card textarea,
+.birthday-import-card input,
+.birthday-import-card select,
+.birthday-import-card textarea {
+  display: block;
+  width: 100%;
+  max-width: 100%;
+  min-width: 0;
+}
+
+/* Dark inputs can remain dark, but text must be readable */
+.birthday-form-card input:not([type="checkbox"]),
+.birthday-form-card select,
+.birthday-import-card input:not([type="checkbox"]),
+.birthday-import-card select {
+  color: #ffffff;
+  background: #0d1838;
+  border: 1px solid #8fa1c6;
+}
+
+.birthday-form-card input::placeholder,
+.birthday-import-card input::placeholder {
+  color: #b7c1d5;
+  opacity: 1;
+}
+
+/* Textarea is white, so use dark text */
+.birthday-form-card textarea,
+.birthday-import-card textarea {
+  color: #172033;
+  background: #ffffff;
+  border: 1px solid #aebbd1;
+}
+
+.birthday-form-card textarea::placeholder,
+.birthday-import-card textarea::placeholder {
+  color: #6b7280;
+  opacity: 1;
+}
+
+/* Checkbox must not inherit full input width */
+.birthday-form-card input[type="checkbox"],
+.birthday-import-card input[type="checkbox"] {
+  width: 24px;
+  height: 24px;
+  min-width: 24px;
+  flex: 0 0 24px;
+}
+
+/* Consent row */
+.birthday-consent-row,
+.whatsapp-consent-row {
+  display: flex;
+  align-items: flex-start;
+  gap: 12px;
+  width: 100%;
+}
+
+.birthday-consent-row label,
+.whatsapp-consent-row label {
+  flex: 1;
+  min-width: 0;
+  line-height: 1.4;
+}
+
+/* Header navigation buttons */
+.birthday-header-actions {
+  display: flex;
+  align-items: stretch;
+  gap: 12px;
+  flex-wrap: wrap;
+  width: 100%;
+}
+
+.birthday-header-actions .header-action-btn,
+.birthday-header-actions a {
+  flex: 1 1 180px;
+  min-width: 0;
+  max-width: 100%;
+  white-space: nowrap;
+}
+
+/* File input */
+.birthday-import-card input[type="file"] {
+  width: 100%;
+  max-width: 100%;
+  overflow: hidden;
+  padding: 10px;
+}
+
+/* Import example box */
+.birthday-import-example,
+.bulk-import-example {
+  width: 100%;
+  max-width: 100%;
+  overflow-wrap: anywhere;
+  word-break: break-word;
+}
+
+/* =========================================================
+   MOBILE ONLY
+========================================================= */
+
+@media (max-width: 768px) {
+  .birthday-page,
+  .birthday-management-page,
+  .birthday-container {
+    padding: 18px 14px;
+  }
+
+  .birthday-card,
+  .birthday-form-card,
+  .birthday-list-card,
+  .birthday-import-card,
+  .birthday-header-card {
+    width: 100%;
+    max-width: 100%;
+    margin-left: 0;
+    margin-right: 0;
+    padding: 18px 14px;
+    border-radius: 16px;
+  }
+
+  /* Header card */
+  .birthday-header-card h1,
+  .birthday-header-card h2 {
+    font-size: 20px;
+    line-height: 1.25;
+  }
+
+  .birthday-header-actions {
+    display: grid;
+    grid-template-columns: 1fr;
+    gap: 10px;
+  }
+
+  .birthday-header-actions .header-action-btn,
+  .birthday-header-actions a {
+    width: 100%;
+    min-width: 0;
+    min-height: 44px;
+    justify-content: center;
+  }
+
+  /* Form spacing */
+  .birthday-form-card {
+    display: block;
+  }
+
+  .birthday-form-group,
+  .birthday-field {
+    width: 100%;
+    margin-bottom: 16px;
+  }
+
+  .birthday-form-card input:not([type="checkbox"]),
+  .birthday-form-card select,
+  .birthday-form-card textarea,
+  .birthday-import-card input:not([type="checkbox"]),
+  .birthday-import-card select,
+  .birthday-import-card textarea {
+    width: 100%;
+    max-width: 100%;
+    min-height: 48px;
+    font-size: 16px;
+  }
+
+  .birthday-form-card textarea,
+  .birthday-import-card textarea {
+    min-height: 110px;
+  }
+
+  .birthday-submit-btn,
+  .birthday-import-btn {
+    width: 100%;
+    min-height: 46px;
+    font-size: 16px;
+  }
+
+  /* =====================================================
+     TABLE → MOBILE CARDS
+  ===================================================== */
+
+  .birthday-table-wrapper {
+    width: 100%;
+    overflow: visible;
+  }
+
+  .birthday-table {
+    display: block;
+    width: 100%;
+    min-width: 0;
+    border: 0;
+  }
+
+  .birthday-table thead {
+    display: none;
+  }
+
+  .birthday-table tbody {
+    display: grid;
+    gap: 14px;
+    width: 100%;
+  }
+
+  .birthday-table tr {
+    display: block;
+    width: 100%;
+    padding: 16px;
+    border: 1px solid #d7deea;
+    border-radius: 14px;
+    background: #ffffff;
+    box-shadow: 0 3px 10px rgba(15, 23, 42, 0.08);
+  }
+
+  .birthday-table td {
+    display: grid;
+    grid-template-columns: minmax(92px, 38%) minmax(0, 1fr);
+    align-items: start;
+    gap: 10px;
+    width: 100%;
+    padding: 8px 0;
+    border: 0;
+    color: #172033;
+    text-align: left;
+    overflow-wrap: anywhere;
+  }
+
+  /* Uses data-label placed on each td */
+  .birthday-table td::before {
+    content: attr(data-label);
+    color: #667085;
+    font-weight: 700;
+  }
+
+  .birthday-table td:last-child {
+    display: block;
+    padding-top: 14px;
+    border-top: 1px solid #e1e6ef;
+  }
+
+  .birthday-table td:last-child::before {
+    display: block;
+    margin-bottom: 10px;
+  }
+
+  /* Action buttons */
+  .birthday-row-actions,
+  .birthday-actions,
+  .birthday-table-actions {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 9px;
+    width: 100%;
+  }
+
+  .birthday-row-actions button,
+  .birthday-row-actions a,
+  .birthday-actions button,
+  .birthday-actions a,
+  .birthday-table-actions button,
+  .birthday-table-actions a {
+    width: 100%;
+    min-width: 0;
+    min-height: 42px;
+    margin: 0;
+    padding: 9px 8px;
+    white-space: normal;
+    overflow-wrap: anywhere;
+    font-size: 14px;
+    line-height: 1.2;
+  }
+
+  /* Share button can occupy full row */
+  .birthday-share-btn,
+  .whatsapp-share-btn {
+    grid-column: 1 / -1;
+  }
+
+  /* Delete stays visible */
+  .birthday-delete-btn {
+    color: #9f1c1c !important;
+    background: #fee2e2 !important;
+    border-color: #fecaca !important;
+  }
+
+  /* Entry count */
+  .birthday-entry-count,
+  .birthday-count {
+    display: block;
+    width: 100%;
+    margin-bottom: 14px;
+    color: #344054 !important;
+    text-align: right;
+  }
+
+  /* Import card */
+  .birthday-import-card {
+    overflow: hidden;
+  }
+
+  .birthday-import-card h2,
+  .birthday-import-card h3 {
+    color: #172033 !important;
+    font-size: 20px;
+  }
+
+  .birthday-import-example,
+  .bulk-import-example {
+    padding: 14px;
+    font-size: 14px;
+    line-height: 1.6;
+  }
+}
+
+/* Extra-small phones */
+@media (max-width: 420px) {
+  .birthday-page,
+  .birthday-management-page,
+  .birthday-container {
+    padding-left: 10px;
+    padding-right: 10px;
+  }
+
+  .birthday-card,
+  .birthday-form-card,
+  .birthday-list-card,
+  .birthday-import-card,
+  .birthday-header-card {
+    padding: 16px 12px;
+  }
+
+  .birthday-row-actions,
+  .birthday-actions,
+  .birthday-table-actions {
+    grid-template-columns: 1fr;
+  }
+
+  .birthday-table td {
+    grid-template-columns: 86px minmax(0, 1fr);
+  }
+}
+/* ======================================================
+   BIRTHDAY MANAGEMENT RESPONSIVE FIX
+   Add at the very bottom of the CSS file
+====================================================== */
+
+.birthday-page,
+.birthday-page * {
+  box-sizing: border-box;
+}
+
+.birthday-page {
+  width: 100%;
+  max-width: 100%;
+  overflow-x: hidden;
+}
+
+.birthday-header,
+.birthday-card {
+  width: 100%;
+  max-width: 100%;
+}
+
+/* Make white card content readable */
+.birthday-card {
+  color: #182033;
+}
+
+.birthday-card h1,
+.birthday-card h2,
+.birthday-card h3,
+.birthday-card h4 {
+  color: #182033;
+}
+
+.birthday-card p {
+  color: #5f6b7a;
+}
+
+.birthday-card label {
+  color: #344054;
+}
+
+/* Keep form elements inside their cards */
+.birthday-form,
+.birthday-form label,
+.birthday-form input,
+.birthday-form select,
+.birthday-form textarea {
+  max-width: 100%;
+}
+
+.birthday-form input:not([type="checkbox"]),
+.birthday-form select,
+.birthday-form textarea {
+  width: 100%;
+}
+
+.birthday-form textarea {
+  color: #182033;
+  background: #ffffff;
+}
+
+.birthday-form textarea::placeholder {
+  color: #667085;
+  opacity: 1;
+}
+
+/* Checkbox should not become full width */
+.birthday-form input[type="checkbox"] {
+  width: 22px;
+  height: 22px;
+  min-width: 22px;
+  flex: 0 0 22px;
+}
+
+.checkbox-label {
+  display: flex;
+  align-items: flex-start;
+  gap: 10px;
+  width: 100%;
+}
+
+/* File input must remain inside the card */
+.birthday-form input[type="file"] {
+  width: 100%;
+  max-width: 100%;
+  overflow: hidden;
+}
+
+/* Import example */
+.birthday-import-example {
+  width: 100%;
+  max-width: 100%;
+  overflow: hidden;
+}
+
+.birthday-import-example pre {
+  max-width: 100%;
+  margin: 10px 0 0;
+  white-space: pre-wrap;
+  overflow-wrap: anywhere;
+  word-break: break-word;
+}
+
+/* Prevent long import results from overflowing */
+.birthday-import-result,
+.birthday-import-summary,
+.birthday-import-errors,
+.birthday-import-success-list {
+  width: 100%;
+  max-width: 100%;
+  overflow-wrap: anywhere;
+}
+
+.birthday-import-summary {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 10px;
+}
+
+.birthday-import-summary span {
+  display: inline-flex;
+  gap: 4px;
+}
+
+/* ======================================================
+   MOBILE LAYOUT
+====================================================== */
+
+@media (max-width: 768px) {
+  .birthday-page {
+    padding: 18px 12px;
+  }
+
+  .birthday-header,
+  .birthday-card {
+    width: 100%;
+    max-width: 100%;
+    margin-left: 0;
+    margin-right: 0;
+    padding: 18px 14px;
+    border-radius: 15px;
+  }
+
+  /* Header text */
+  .birthday-header h1 {
+    font-size: 21px;
+    line-height: 1.25;
+  }
+
+  .birthday-header p {
+    overflow-wrap: anywhere;
+  }
+
+  /* Header navigation buttons */
+  .birthday-header-actions {
+    display: grid;
+    grid-template-columns: 1fr;
+    gap: 10px;
+    width: 100%;
+    margin-top: 16px;
+  }
+
+  .birthday-header-actions .header-action-btn {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+
+    width: 100%;
+    min-width: 0;
+    min-height: 44px;
+    margin: 0;
+    padding: 10px 12px;
+
+    white-space: nowrap;
+    text-align: center;
+  }
+
+  /* Birthday form */
+  .birthday-form {
+    display: block;
+    width: 100%;
+  }
+
+  .birthday-form > label {
+    display: block;
+    width: 100%;
+    margin-bottom: 15px;
+  }
+
+  /* Month/day/WhatsApp area */
+  .birthday-date-row {
+    display: grid;
+    grid-template-columns: 1fr;
+    gap: 14px;
+    width: 100%;
+  }
+
+  .birthday-date-row > label {
+    display: block;
+    width: 100%;
+    min-width: 0;
+  }
+
+  .birthday-form input:not([type="checkbox"]),
+  .birthday-form select,
+  .birthday-form textarea {
+    width: 100%;
+    max-width: 100%;
+    min-width: 0;
+    font-size: 16px;
+  }
+
+  .birthday-form input:not([type="checkbox"]),
+  .birthday-form select {
+    min-height: 48px;
+  }
+
+  .birthday-form textarea {
+    min-height: 110px;
+  }
+
+  /* Fix consent checkbox layout */
+  .checkbox-label {
+    display: grid;
+    grid-template-columns: 24px minmax(0, 1fr);
+    align-items: start;
+    gap: 10px;
+
+    width: 100%;
+    margin-top: 2px;
+    line-height: 1.4;
+  }
+
+  .checkbox-label input[type="checkbox"] {
+    width: 22px;
+    height: 22px;
+    min-width: 22px;
+    margin: 2px 0 0;
+  }
+
+  /* Add/import buttons */
+  .birthday-actions {
+    display: flex;
+    width: 100%;
+    gap: 10px;
+    flex-wrap: wrap;
+  }
+
+  .birthday-actions button {
+    flex: 1 1 160px;
+    min-width: 0;
+    min-height: 44px;
+  }
+
+  /* List heading */
+  .birthday-list-heading {
+    display: flex;
+    align-items: flex-start;
+    justify-content: space-between;
+    gap: 12px;
+    flex-wrap: wrap;
+  }
+
+  .birthday-list-heading h2 {
+    margin: 0;
+    font-size: 20px;
+  }
+
+  .birthday-list-heading > span {
+    color: #475467;
+    white-space: nowrap;
+  }
+
+  /* ===============================================
+     CONVERT TABLE INTO MOBILE CARDS
+  =============================================== */
+
+  .birthday-table-wrapper {
+    width: 100%;
+    max-width: 100%;
+    overflow: visible;
+  }
+
+  .birthday-table {
+    display: block;
+    width: 100%;
+    min-width: 0;
+    border: 0;
+  }
+
+  .birthday-table thead {
+    display: none;
+  }
+
+  .birthday-table tbody {
+    display: grid;
+    width: 100%;
+    gap: 14px;
+  }
+
+  .birthday-table tr {
+    display: block;
+    width: 100%;
+    max-width: 100%;
+
+    padding: 14px;
+    margin: 0;
+
+    background: #ffffff;
+    border: 1px solid #d8dee9;
+    border-radius: 13px;
+
+    box-shadow:
+      0 3px 10px rgba(15, 23, 42, 0.08);
+  }
+
+  .birthday-table td {
+    display: grid;
+    grid-template-columns:
+      minmax(82px, 34%)
+      minmax(0, 1fr);
+
+    align-items: start;
+    gap: 10px;
+
+    width: 100%;
+    max-width: 100%;
+
+    padding: 8px 0;
+    border: 0;
+
+    color: #182033;
+    text-align: left;
+    overflow-wrap: anywhere;
+  }
+
+  .birthday-table td::before {
+    content: attr(data-label);
+    color: #667085;
+    font-weight: 700;
+  }
+
+  .birthday-table td + td {
+    border-top: 1px solid #edf0f5;
+  }
+
+  /* Actions area */
+  .birthday-table .birthday-actions-cell {
+    display: block;
+    margin-top: 4px;
+    padding-top: 13px;
+  }
+
+  .birthday-table
+    .birthday-actions-cell::before {
+    display: block;
+    margin-bottom: 10px;
+  }
+
+  .table-actions {
+    display: grid;
+    grid-template-columns:
+      repeat(2, minmax(0, 1fr));
+
+    gap: 9px;
+    width: 100%;
+  }
+
+  .table-actions button {
+    width: 100%;
+    min-width: 0;
+    min-height: 42px;
+
+    margin: 0;
+    padding: 9px 8px;
+
+    font-size: 14px;
+    line-height: 1.25;
+
+    white-space: normal;
+    overflow-wrap: anywhere;
+  }
+
+  .table-actions
+    .whatsapp-share-button {
+    grid-column: 1 / -1;
+  }
+
+  .table-actions .danger {
+    color: #a61b1b;
+    background: #fee2e2;
+    border-color: #fecaca;
+  }
+
+  /* Import section */
+  .birthday-import-example {
+    padding: 12px;
+  }
+
+  .birthday-import-example pre {
+    font-size: 14px;
+    line-height: 1.6;
+  }
+
+  .birthday-import-summary {
+    display: grid;
+    grid-template-columns:
+      repeat(2, minmax(0, 1fr));
+    gap: 8px;
+  }
+
+  .birthday-import-summary span {
+    display: block;
+    padding: 8px;
+    border: 1px solid #dde3ec;
+    border-radius: 8px;
+  }
+}
+
+/* Very small phones */
+@media (max-width: 420px) {
+  .birthday-page {
+    padding: 14px 9px;
+  }
+
+  .birthday-header,
+  .birthday-card {
+    padding: 16px 12px;
+  }
+
+  .birthday-table td {
+    grid-template-columns:
+      78px minmax(0, 1fr);
+  }
+
+  .table-actions {
+    grid-template-columns: 1fr;
+  }
+
+  .table-actions
+    .whatsapp-share-button {
+    grid-column: auto;
+  }
+
+  .birthday-actions {
+    display: grid;
+    grid-template-columns: 1fr;
+  }
+
+  .birthday-actions button {
+    width: 100%;
+  }
+
+  .birthday-import-summary {
+    grid-template-columns: 1fr;
+  }
+}

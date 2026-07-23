@@ -1614,104 +1614,96 @@ Rohit S - Feb 26`}</pre>
               </thead>
 
               <tbody>
-                {birthdays.map((birthday) => {
-                  const isWorking =
-                    workingId === birthday.id;
+  {birthdays.map((birthday) => {
+    const isWorking =
+      workingId === birthday.id;
 
-                  return (
-                    <tr key={birthday.id}>
-                      <td>{birthday.name}</td>
+    return (
+      <tr key={birthday.id}>
+        <td data-label="Name">
+          {birthday.name}
+        </td>
 
-                      <td>
-                        {formatMMDD(
-                          birthday.birthMonth,
-                          birthday.birthDay
-                        )}
-                      </td>
+        <td data-label="Birthday">
+          {formatMMDD(
+            birthday.birthMonth,
+            birthday.birthDay
+          )}
+        </td>
 
-                      <td>
-                        <span
-                          className={
-                            birthday.isActive
-                              ? "status-active"
-                              : "status-inactive"
-                          }
-                        >
-                          {birthday.isActive
-                            ? "Active"
-                            : "Disabled"}
-                        </span>
-                      </td>
+        <td data-label="Status">
+          <span
+            className={
+              birthday.isActive
+                ? "status-active"
+                : "status-inactive"
+            }
+          >
+            {birthday.isActive
+              ? "Active"
+              : "Disabled"}
+          </span>
+        </td>
 
-                      <td>
-                        <div className="table-actions">
-                          <button
-                            type="button"
-                            disabled={isWorking || saving}
-                            onClick={() =>
-                              startEditing(birthday)
-                            }
-                          >
-                            Edit
-                          </button>
-{/*
-<button
-  type="button"
-  disabled={
-    testingBirthdayId === birthday.id ||
-    !birthday.isActive
-  }
-  onClick={() =>
-    testWhatsAppBirthday(birthday)
-  }
->
-  {testingBirthdayId === birthday.id
-    ? "Sending..."
-    : "Test WhatsApp"}
-</button>
-*/}
+        <td
+          data-label="Actions"
+          className="birthday-actions-cell"
+        >
+          <div className="table-actions">
+            <button
+              type="button"
+              disabled={isWorking || saving}
+              onClick={() =>
+                startEditing(birthday)
+              }
+            >
+              Edit
+            </button>
 
-<button
-  type="button"
-  onClick={() =>
-    shareBirthdayToWhatsApp(birthday)
-  }
->
-  Share to WhatsApp Group
-</button>
+            <button
+              type="button"
+              className="whatsapp-share-button"
+              onClick={() =>
+                shareBirthdayToWhatsApp(
+                  birthday
+                )
+              }
+            >
+              Share to WhatsApp Group
+            </button>
 
-                          <button
-                            type="button"
-                            disabled={isWorking || saving}
-                            onClick={() =>
-                              toggleBirthday(birthday)
-                            }
-                          >
-                            {isWorking
-                              ? "Updating..."
-                              : birthday.isActive
-                                ? "Disable"
-                                : "Enable"}
-                          </button>
+            <button
+              type="button"
+              disabled={isWorking || saving}
+              onClick={() =>
+                toggleBirthday(birthday)
+              }
+            >
+              {isWorking
+                ? "Updating..."
+                : birthday.isActive
+                  ? "Disable"
+                  : "Enable"}
+            </button>
 
-                          <button
-                            type="button"
-                            className="danger"
-                            disabled={isWorking || saving}
-                            onClick={() =>
-                              deleteBirthday(birthday)
-                            }
-                          >
-                            {isWorking
-                              ? "Working..."
-                              : "Delete"}
-                          </button>
-                        </div>
-                      </td>
-                    </tr>
-                  );
-                })}
-              </tbody>
+            <button
+              type="button"
+              className="danger"
+              disabled={isWorking || saving}
+              onClick={() =>
+                deleteBirthday(birthday)
+              }
+            >
+              {isWorking
+                ? "Working..."
+                : "Delete"}
+            </button>
+          </div>
+        </td>
+      </tr>
+    );
+  })}
+</tbody>
             </table>
           </div>
         )}
