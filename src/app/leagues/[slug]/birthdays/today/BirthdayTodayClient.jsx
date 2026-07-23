@@ -33,6 +33,21 @@ export default function BirthdayTodayClient({
             cache: "no-store",
           }
         );
+            /*
+                const session =
+                  await getServerSession(authOptions);
+
+                if (!session?.user) {
+                  const callbackUrl =
+                    `/leagues/${leagueId}/birthdays/today`;
+
+                  redirect(
+                    `/login?callbackUrl=${encodeURIComponent(
+                      callbackUrl
+                    )}`
+                  );
+                }
+             */     
 
         const responseText = await response.text();
 

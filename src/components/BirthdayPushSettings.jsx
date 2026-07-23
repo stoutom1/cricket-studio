@@ -1,6 +1,7 @@
 "use client";
 
 import { useEffect, useState } from "react";
+import Link from "next/link";
 
 function urlBase64ToUint8Array(
   base64String
@@ -423,7 +424,7 @@ if (!response.ok || !result.success) {
       </span>
 
       <div className="birthday-push-title-copy">
-        <h2>Birthday Notifications</h2>
+        <h2>Birthday Management and Notifications</h2>
 
         <p>
           Receive a phone alert when a player in one of
@@ -484,6 +485,7 @@ if (!response.ok || !result.success) {
       </button>
     ) : (
       <>
+      {/*
         <button
           type="button"
           onClick={sendTestNotification}
@@ -496,19 +498,16 @@ if (!response.ok || !result.success) {
           >
             📨
           </span>
-
           <span className="birthday-push-action-copy">
             <strong>
               {isBusy
                 ? "Sending..."
                 : "Send Test Notification"}
             </strong>
-
             <small>
               Confirm alerts work on this device
             </small>
           </span>
-
           <span
             className="birthday-push-action-arrow"
             aria-hidden="true"
@@ -516,7 +515,24 @@ if (!response.ok || !result.success) {
             ›
           </span>
         </button>
+*/}
+<Link
+  href={`/leagues/${Number(leagueId)}/birthdays`}
+  className="birthday-management-btn"
+>
+  <span className="birthday-icon">🎂</span>
 
+  <div className="birthday-text">
+    <span className="birthday-title">
+      Birthday Management
+    </span>
+    <span className="birthday-subtitle">
+      Add • Edit • Import Birthdays
+    </span>
+  </div>
+
+  <span className="birthday-arrow">➜</span>
+</Link>
         <button
           type="button"
           onClick={disableNotifications}

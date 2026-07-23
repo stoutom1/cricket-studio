@@ -1153,21 +1153,21 @@ async function handleBulkBirthdayImport(event) {
           </p>
         </div>
 
-        <div className="birthday-header-actions">
-          <Link
-            href="/dashboard"
-            className="secondary"
-          >
-            ← Back to Dashboard
-          </Link>
+<div className="birthday-header-actions">
+  <Link
+    href="/dashboard"
+    className="header-action-btn"
+  >
+    ⬅️ Back to Dashboard
+  </Link>
 
-          <Link
-            href={`/leagues/${numericLeagueId}/birthdays/today`}
-            className="secondary"
-          >
-            Today&apos;s Birthdays
-          </Link>
-        </div>
+  <Link
+    href={`/leagues/${numericLeagueId}/birthdays/today`}
+    className="header-action-btn primary"
+  >
+    🎂 Today's Birthdays
+  </Link>
+</div>
       </section>
 
       <section className="birthday-card">
@@ -1654,7 +1654,8 @@ Rohit S - Feb 26`}</pre>
                           >
                             Edit
                           </button>
-                          <button
+{/*
+<button
   type="button"
   disabled={
     testingBirthdayId === birthday.id ||
@@ -1668,6 +1669,8 @@ Rohit S - Feb 26`}</pre>
     ? "Sending..."
     : "Test WhatsApp"}
 </button>
+*/}
+
 <button
   type="button"
   onClick={() =>

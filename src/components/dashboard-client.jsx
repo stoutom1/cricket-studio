@@ -11405,12 +11405,7 @@ const playerRoleBadge = (row) => {
         🌐 Discover Public Leagues
       </button>
     </div>
-{canManageBirthdays && activeLeagueId &&(
-  <Link href={`/leagues/${Number(activeLeagueId)}/birthdays`}>
-    🎂 Birthday Management
-  </Link>
-)}
-{isSuperAdmin &&( <BirthdayPushSettings leagueId={activeLeagueId}/> )}   
+{isSuperAdmin && permissions?.canManagePermissions && ( <BirthdayPushSettings leagueId={activeLeagueId}/> )}   
   </div>
 
   {/* Mobile-only state-aware experience */}
