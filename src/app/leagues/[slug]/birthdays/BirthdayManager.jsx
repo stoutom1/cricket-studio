@@ -1344,17 +1344,28 @@ async function handleBulkBirthdayImport(event) {
           </p>
         )}
       </section>
-<section className="birthday-card">
-  <div className="birthday-list-heading">
-    <div>
-      <h2>Bulk Birthday Import</h2>
+<details className="birthday-card birthday-mobile-collapsible">
+  <summary className="birthday-mobile-summary">
+    <span className="birthday-summary-icon">📥</span>
 
-      <p>
-        Upload a text file containing one
-        player per line.
-      </p>
+    <span className="birthday-summary-text">
+      <strong>Bulk Birthday Import</strong>
+      <small>Upload birthdays from a text file</small>
+    </span>
+
+    <span className="birthday-summary-arrow">⌄</span>
+  </summary>
+
+  <div className="birthday-collapsible-content">
+    <div className="birthday-list-heading">
+      <div>
+        <h2>Bulk Birthday Import</h2>
+
+        <p>
+          Upload a text file containing one player per line.
+        </p>
+      </div>
     </div>
-  </div>
 
   <form
     onSubmit={handleBulkBirthdayImport}
@@ -1584,7 +1595,8 @@ Rohit S - Feb 26`}</pre>
     )}
   </div>
 )}
-</section>
+  </div>
+</details>
       <section className="birthday-card">
         <div className="birthday-list-heading">
           <h2>League birthday list</h2>
@@ -1602,110 +1614,102 @@ Rohit S - Feb 26`}</pre>
             No birthdays have been added to this league.
           </p>
         ) : (
-          <div className="birthday-table-wrapper">
-            <table className="birthday-table">
-              <thead>
-                <tr>
-                  <th>Name</th>
-                  <th>Birthday</th>
-                  <th>Status</th>
-                  <th aria-label="Actions">Actions</th>
-                </tr>
-              </thead>
+          <><div className="birthday-swipe-hint">
+                <span>🎂 Swipe to browse birthdays</span>
+                <span aria-hidden="true">→</span>
+              </div><div className="birthday-table-wrapper">
+                  <table className="birthday-table">
+                    <thead>
+                      <tr>
+                        <th>Name</th>
+                        <th>Birthday</th>
+                        <th>Status</th>
+                        <th aria-label="Actions">Actions</th>
+                      </tr>
+                    </thead>
 
-              <tbody>
-  {birthdays.map((birthday) => {
-    const isWorking =
-      workingId === birthday.id;
+                    <tbody>
+                      {birthdays.map((birthday) => {
+                        const isWorking = workingId === birthday.id;
 
-    return (
-      <tr key={birthday.id}>
-        <td data-label="Name">
-          {birthday.name}
-        </td>
+                        return (
+                          <tr key={birthday.id}>
+                            <td data-label="Name">
+                              {birthday.name}
+                            </td>
 
-        <td data-label="Birthday">
-          {formatMMDD(
-            birthday.birthMonth,
-            birthday.birthDay
-          )}
-        </td>
+                            <td data-label="Birthday">
+                              {formatMMDD(
+                                birthday.birthMonth,
+                                birthday.birthDay
+                              )}
+                            </td>
 
-        <td data-label="Status">
-          <span
-            className={
-              birthday.isActive
-                ? "status-active"
-                : "status-inactive"
-            }
-          >
-            {birthday.isActive
-              ? "Active"
-              : "Disabled"}
-          </span>
-        </td>
+                            <td data-label="Status">
+                              <span
+                                className={birthday.isActive
+                                  ? "status-active"
+                                  : "status-inactive"}
+                              >
+                                {birthday.isActive
+                                  ? "Active"
+                                  : "Disabled"}
+                              </span>
+                            </td>
 
-        <td
-          data-label="Actions"
-          className="birthday-actions-cell"
-        >
-          <div className="table-actions">
-            <button
-              type="button"
-              disabled={isWorking || saving}
-              onClick={() =>
-                startEditing(birthday)
-              }
-            >
-              Edit
-            </button>
+                            <td
+                              data-label="Actions"
+                              className="birthday-actions-cell"
+                            >
+                              <div className="table-actions">
+                                <button
+                                  type="button"
+                                  disabled={isWorking || saving}
+                                  onClick={() => startEditing(birthday)}
+                                >
+                                  Edit
+                                </button>
 
-            <button
-              type="button"
-              className="whatsapp-share-button"
-              onClick={() =>
-                shareBirthdayToWhatsApp(
-                  birthday
-                )
-              }
-            >
-              Share to WhatsApp Group
-            </button>
+                                <button
+                                  type="button"
+                                  className="whatsapp-share-button"
+                                  onClick={() => shareBirthdayToWhatsApp(
+                                    birthday
+                                  )}
+                                >
+                                  Share to WhatsApp Group
+                                </button>
 
-            <button
-              type="button"
-              disabled={isWorking || saving}
-              onClick={() =>
-                toggleBirthday(birthday)
-              }
-            >
-              {isWorking
-                ? "Updating..."
-                : birthday.isActive
-                  ? "Disable"
-                  : "Enable"}
-            </button>
+                                <button
+                                  type="button"
+                                  disabled={isWorking || saving}
+                                  onClick={() => toggleBirthday(birthday)}
+                                >
+                                  {isWorking
+                                    ? "Updating..."
+                                    : birthday.isActive
+                                      ? "Disable"
+                                      : "Enable"}
+                                </button>
 
-            <button
-              type="button"
-              className="danger"
-              disabled={isWorking || saving}
-              onClick={() =>
-                deleteBirthday(birthday)
-              }
-            >
-              {isWorking
-                ? "Working..."
-                : "Delete"}
-            </button>
-          </div>
-        </td>
-      </tr>
-    );
-  })}
-</tbody>
-            </table>
-          </div>
+                                <button
+                                  type="button"
+                                  className="danger"
+                                  disabled={isWorking || saving}
+                                  onClick={() => deleteBirthday(birthday)}
+                                >
+                                  {isWorking
+                                    ? "Working..."
+                                    : "Delete"}
+                                </button>
+                              </div>
+                            </td>
+                          </tr>
+                        );
+                      })}
+                    </tbody>
+                  </table>
+                </div></>
         )}
       </section>
     </main>

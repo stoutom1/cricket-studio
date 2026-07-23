@@ -59742,3 +59742,781 @@ body {
     grid-template-columns: 1fr;
   }
 }
+/* ==========================================================
+   BIRTHDAY CENTER — PREMIUM MOBILE DESIGN
+   Desktop remains unchanged
+========================================================== */
+
+.birthday-swipe-hint,
+.birthday-mobile-summary {
+  display: none;
+}
+
+@media (max-width: 768px) {
+  /* --------------------------------------------------------
+     PAGE
+  -------------------------------------------------------- */
+
+  .birthday-page {
+    width: 100%;
+    max-width: 100%;
+    padding: 18px 14px 40px;
+
+    overflow-x: hidden;
+
+    background:
+      radial-gradient(
+        circle at top right,
+        rgba(77, 66, 255, 0.18),
+        transparent 320px
+      ),
+      linear-gradient(
+        180deg,
+        #071126 0%,
+        #08152d 50%,
+        #050d1e 100%
+      );
+  }
+
+  .birthday-page,
+  .birthday-page * {
+    box-sizing: border-box;
+  }
+
+  /* --------------------------------------------------------
+     ALL CARDS — REMOVE WHITE BACKGROUND
+  -------------------------------------------------------- */
+
+  .birthday-header,
+  .birthday-card {
+    width: 100%;
+    max-width: 100%;
+
+    margin: 0 0 18px;
+    padding: 18px;
+
+    color: #f8fafc;
+
+    background:
+      linear-gradient(
+        145deg,
+        rgba(19, 36, 72, 0.98),
+        rgba(11, 24, 51, 0.98)
+      );
+
+    border:
+      1px solid rgba(121, 145, 205, 0.24);
+
+    border-radius: 18px;
+
+    box-shadow:
+      0 15px 35px rgba(0, 0, 0, 0.28),
+      inset 0 1px 0 rgba(255, 255, 255, 0.04);
+
+    overflow: hidden;
+  }
+
+  .birthday-header {
+    background:
+      radial-gradient(
+        circle at top right,
+        rgba(139, 92, 246, 0.24),
+        transparent 180px
+      ),
+      linear-gradient(
+        145deg,
+        #152953,
+        #0c1b3b
+      );
+  }
+
+  /* --------------------------------------------------------
+     TEXT COLORS
+  -------------------------------------------------------- */
+
+  .birthday-header h1,
+  .birthday-header h2,
+  .birthday-header h3,
+  .birthday-card h1,
+  .birthday-card h2,
+  .birthday-card h3,
+  .birthday-card h4 {
+    color: #ffffff;
+  }
+
+  .birthday-header p,
+  .birthday-card p {
+    color: #b9c7e5;
+  }
+
+  .birthday-eyebrow {
+    color: #bba8ff !important;
+    font-weight: 800;
+    letter-spacing: 0.12em;
+  }
+
+  .birthday-card label {
+    color: #dce6fb;
+    font-weight: 700;
+  }
+
+  .selected-player-name {
+    color: #a9c3ff !important;
+  }
+
+  /* --------------------------------------------------------
+     HEADER BUTTONS
+  -------------------------------------------------------- */
+
+  .birthday-header-actions {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+
+    gap: 10px;
+    width: 100%;
+    margin-top: 16px;
+  }
+
+  .birthday-header-actions .header-action-btn {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+
+    width: 100%;
+    min-width: 0;
+    min-height: 44px;
+
+    padding: 10px 8px;
+
+    color: #ffffff;
+    font-size: 13px;
+    font-weight: 750;
+    text-align: center;
+    text-decoration: none;
+    white-space: nowrap;
+
+    background:
+      linear-gradient(
+        145deg,
+        #243d70,
+        #172d57
+      );
+
+    border:
+      1px solid rgba(128, 156, 220, 0.42);
+
+    border-radius: 11px;
+
+    box-shadow:
+      0 5px 12px rgba(0, 0, 0, 0.22);
+  }
+
+  .birthday-header-actions
+    .header-action-btn.primary {
+    border-color: rgba(248, 194, 61, 0.72);
+
+    box-shadow:
+      0 5px 14px rgba(0, 0, 0, 0.24),
+      0 0 0 1px rgba(248, 194, 61, 0.08);
+  }
+
+  .birthday-header-actions
+    .header-action-btn:active {
+    transform: scale(0.98);
+  }
+
+  /* --------------------------------------------------------
+     FORM
+  -------------------------------------------------------- */
+
+  .birthday-form {
+    display: block;
+    width: 100%;
+  }
+
+  .birthday-form > label {
+    display: block;
+    width: 100%;
+    margin-bottom: 14px;
+  }
+
+  .birthday-date-row {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 12px;
+
+    width: 100%;
+  }
+
+  .birthday-date-row > label {
+    width: 100%;
+    min-width: 0;
+  }
+
+  /*
+   * WhatsApp number and consent should use
+   * the complete row.
+   */
+  .birthday-date-row > label:nth-child(3),
+  .birthday-date-row > .checkbox-label {
+    grid-column: 1 / -1;
+  }
+
+  .birthday-form input:not([type="checkbox"]),
+  .birthday-form select,
+  .birthday-form textarea {
+    width: 100%;
+    max-width: 100%;
+    min-width: 0;
+
+    color: #ffffff;
+    font-size: 16px;
+
+    background: #07142f;
+
+    border:
+      1px solid rgba(128, 153, 211, 0.48);
+
+    border-radius: 11px;
+
+    box-shadow:
+      inset 0 2px 6px rgba(0, 0, 0, 0.22);
+  }
+
+  .birthday-form input:not([type="checkbox"]),
+  .birthday-form select {
+    min-height: 48px;
+  }
+
+  .birthday-form textarea {
+    min-height: 100px;
+    resize: vertical;
+  }
+
+  .birthday-form input::placeholder,
+  .birthday-form textarea::placeholder {
+    color: #8495ba;
+    opacity: 1;
+  }
+
+  .birthday-form select:focus,
+  .birthday-form input:focus,
+  .birthday-form textarea:focus {
+    outline: none;
+
+    border-color: #7c9dff;
+
+    box-shadow:
+      0 0 0 3px rgba(92, 124, 250, 0.17);
+  }
+
+  /* Checkbox */
+
+  .checkbox-label {
+    display: grid;
+    grid-template-columns: 24px minmax(0, 1fr);
+
+    align-items: start;
+    gap: 11px;
+
+    width: 100%;
+    line-height: 1.35;
+  }
+
+  .checkbox-label input[type="checkbox"] {
+    width: 23px;
+    height: 23px;
+    min-width: 23px;
+    margin: 2px 0 0;
+
+    accent-color: #14b8a6;
+  }
+
+  /* Main form buttons */
+
+  .birthday-actions {
+    display: grid;
+    grid-template-columns: 1fr;
+    gap: 10px;
+
+    width: 100%;
+  }
+
+  .birthday-actions button {
+    width: 100%;
+    min-height: 46px;
+
+    color: #ffffff;
+    font-weight: 750;
+
+    background:
+      linear-gradient(
+        135deg,
+        #0d9488,
+        #08766d
+      );
+
+    border:
+      1px solid rgba(63, 222, 204, 0.4);
+
+    border-radius: 11px;
+
+    box-shadow:
+      0 7px 18px rgba(4, 120, 111, 0.22);
+  }
+
+  /* --------------------------------------------------------
+     COLLAPSIBLE BULK IMPORT
+  -------------------------------------------------------- */
+
+  .birthday-mobile-collapsible {
+    padding: 0;
+  }
+
+  .birthday-mobile-summary {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+
+    width: 100%;
+    padding: 16px;
+
+    color: #ffffff;
+
+    cursor: pointer;
+    list-style: none;
+    user-select: none;
+  }
+
+  .birthday-mobile-summary::-webkit-details-marker {
+    display: none;
+  }
+
+  .birthday-summary-icon {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+
+    width: 42px;
+    height: 42px;
+
+    font-size: 21px;
+
+    background:
+      linear-gradient(
+        145deg,
+        rgba(79, 70, 229, 0.35),
+        rgba(59, 130, 246, 0.18)
+      );
+
+    border:
+      1px solid rgba(129, 140, 248, 0.38);
+
+    border-radius: 12px;
+  }
+
+  .birthday-summary-text {
+    display: flex;
+    flex: 1;
+    flex-direction: column;
+
+    min-width: 0;
+  }
+
+  .birthday-summary-text strong {
+    color: #ffffff;
+    font-size: 15px;
+  }
+
+  .birthday-summary-text small {
+    margin-top: 3px;
+    color: #9eb0d3;
+    font-size: 12px;
+  }
+
+  .birthday-summary-arrow {
+    color: #b9c8e8;
+    font-size: 22px;
+    transition: transform 0.2s ease;
+  }
+
+  .birthday-mobile-collapsible[open]
+    .birthday-summary-arrow {
+    transform: rotate(180deg);
+  }
+
+  .birthday-collapsible-content {
+    padding: 0 16px 18px;
+    border-top:
+      1px solid rgba(125, 145, 190, 0.18);
+  }
+
+  .birthday-collapsible-content
+    .birthday-list-heading {
+    margin-top: 16px;
+  }
+
+  /* --------------------------------------------------------
+     SWIPEABLE BIRTHDAY CAROUSEL
+  -------------------------------------------------------- */
+
+  .birthday-swipe-hint {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+
+    margin: 4px 0 12px;
+    padding: 9px 12px;
+
+    color: #aebfe0;
+    font-size: 12px;
+    font-weight: 700;
+
+    background:
+      rgba(70, 96, 153, 0.14);
+
+    border:
+      1px solid rgba(119, 145, 201, 0.2);
+
+    border-radius: 10px;
+  }
+
+  .birthday-table-wrapper {
+    width: calc(100% + 18px);
+    margin-right: -18px;
+
+    overflow-x: auto;
+    overflow-y: hidden;
+
+    scrollbar-width: none;
+    scroll-snap-type: x mandatory;
+    overscroll-behavior-inline: contain;
+
+    -webkit-overflow-scrolling: touch;
+  }
+
+  .birthday-table-wrapper::-webkit-scrollbar {
+    display: none;
+  }
+
+  .birthday-table {
+    display: block;
+    width: 100%;
+    min-width: 0;
+
+    border: 0;
+  }
+
+  .birthday-table thead {
+    display: none;
+  }
+
+  .birthday-table tbody {
+    display: flex;
+    align-items: stretch;
+
+    width: max-content;
+    gap: 13px;
+
+    padding: 2px 18px 10px 0;
+  }
+
+  .birthday-table tr {
+    position: relative;
+
+    display: flex;
+    flex: 0 0 min(82vw, 330px);
+    flex-direction: column;
+
+    width: min(82vw, 330px);
+    min-height: 265px;
+
+    padding: 16px;
+
+    color: #ffffff;
+
+    background:
+      radial-gradient(
+        circle at top right,
+        rgba(124, 92, 255, 0.22),
+        transparent 150px
+      ),
+      linear-gradient(
+        145deg,
+        #1b315f,
+        #102447
+      );
+
+    border:
+      1px solid rgba(130, 157, 220, 0.32);
+
+    border-radius: 17px;
+
+    box-shadow:
+      0 12px 24px rgba(0, 0, 0, 0.26);
+
+    scroll-snap-align: start;
+    overflow: hidden;
+  }
+
+  .birthday-table tr::after {
+    content: "🎉";
+
+    position: absolute;
+    top: 12px;
+    right: 14px;
+
+    font-size: 24px;
+    opacity: 0.38;
+  }
+
+  .birthday-table td {
+    display: grid;
+    grid-template-columns: 82px minmax(0, 1fr);
+
+    align-items: center;
+    gap: 9px;
+
+    width: 100%;
+    padding: 8px 0;
+
+    color: #f8fbff;
+
+    border: 0;
+    border-bottom:
+      1px solid rgba(143, 166, 215, 0.14);
+
+    overflow-wrap: anywhere;
+  }
+
+  .birthday-table td::before {
+    content: attr(data-label);
+
+    color: #8fa5d1;
+    font-size: 12px;
+    font-weight: 800;
+    text-transform: uppercase;
+    letter-spacing: 0.04em;
+  }
+
+  .birthday-table .status-active {
+    display: inline-flex;
+    align-items: center;
+    gap: 6px;
+
+    width: fit-content;
+    padding: 5px 10px;
+
+    color: #7ff0b5;
+
+    background:
+      rgba(18, 149, 91, 0.16);
+
+    border:
+      1px solid rgba(55, 212, 137, 0.28);
+
+    border-radius: 999px;
+  }
+
+  .birthday-table .status-active::before {
+    content: "";
+    width: 7px;
+    height: 7px;
+
+    background: #42df95;
+    border-radius: 50%;
+
+    box-shadow:
+      0 0 8px rgba(66, 223, 149, 0.8);
+  }
+
+  .birthday-table .status-inactive {
+    display: inline-flex;
+    width: fit-content;
+    padding: 5px 10px;
+
+    color: #ffb7b7;
+
+    background:
+      rgba(201, 58, 58, 0.16);
+
+    border:
+      1px solid rgba(255, 113, 113, 0.25);
+
+    border-radius: 999px;
+  }
+
+  /* --------------------------------------------------------
+     COMPACT ACTION GRID
+  -------------------------------------------------------- */
+
+  .birthday-table
+    .birthday-actions-cell {
+    display: block;
+    margin-top: auto;
+    padding-top: 13px;
+    border-bottom: 0;
+  }
+
+  .birthday-table
+    .birthday-actions-cell::before {
+    display: none;
+  }
+
+  .table-actions {
+    display: grid;
+    grid-template-columns:
+      repeat(2, minmax(0, 1fr));
+
+    gap: 8px;
+    width: 100%;
+  }
+
+  .table-actions button {
+    width: 100%;
+    min-width: 0;
+    min-height: 40px;
+
+    margin: 0;
+    padding: 8px 7px;
+
+    color: #eaf0ff;
+    font-size: 12px;
+    font-weight: 750;
+    line-height: 1.15;
+
+    white-space: normal;
+
+    background:
+      rgba(73, 99, 157, 0.26);
+
+    border:
+      1px solid rgba(130, 155, 211, 0.28);
+
+    border-radius: 9px;
+  }
+
+  .table-actions button:active {
+    transform: scale(0.97);
+  }
+
+  .table-actions
+    .whatsapp-share-button {
+    color: #8ff1bf;
+
+    background:
+      rgba(13, 148, 101, 0.18);
+
+    border-color:
+      rgba(52, 211, 153, 0.3);
+  }
+
+  .table-actions .danger {
+    color: #ffb1b1;
+
+    background:
+      rgba(200, 50, 60, 0.17);
+
+    border-color:
+      rgba(255, 107, 114, 0.25);
+  }
+
+  /* --------------------------------------------------------
+     LIST HEADING
+  -------------------------------------------------------- */
+
+  .birthday-list-heading {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+
+    gap: 10px;
+    width: 100%;
+    margin-bottom: 12px;
+  }
+
+  .birthday-list-heading h2 {
+    margin: 0;
+    font-size: 19px;
+  }
+
+  .birthday-list-heading > span {
+    flex-shrink: 0;
+
+    padding: 5px 9px;
+
+    color: #aebfe0;
+    font-size: 12px;
+    font-weight: 700;
+
+    background:
+      rgba(73, 99, 157, 0.2);
+
+    border:
+      1px solid rgba(130, 155, 211, 0.2);
+
+    border-radius: 999px;
+  }
+
+  /* --------------------------------------------------------
+     IMPORT BOXES
+  -------------------------------------------------------- */
+
+  .birthday-import-example {
+    width: 100%;
+    padding: 13px;
+
+    color: #d9e4fb;
+
+    background:
+      rgba(5, 15, 36, 0.72);
+
+    border:
+      1px solid rgba(116, 141, 198, 0.25);
+
+    border-radius: 11px;
+  }
+
+  .birthday-import-example pre {
+    max-width: 100%;
+    margin: 9px 0 0;
+
+    color: #aebfe0;
+    white-space: pre-wrap;
+    overflow-wrap: anywhere;
+  }
+
+  .birthday-import-notice {
+    color: #9fb0d1 !important;
+  }
+}
+
+/* Extra-small phone adjustments */
+@media (max-width: 390px) {
+  .birthday-page {
+    padding-left: 10px;
+    padding-right: 10px;
+  }
+
+  .birthday-header,
+  .birthday-card {
+    padding: 15px;
+  }
+
+  .birthday-header-actions {
+    grid-template-columns: 1fr;
+  }
+
+  .birthday-date-row {
+    grid-template-columns: 1fr;
+  }
+
+  .birthday-date-row > label {
+    grid-column: auto;
+  }
+
+  .birthday-table tr {
+    flex-basis: 84vw;
+    width: 84vw;
+  }
+}
