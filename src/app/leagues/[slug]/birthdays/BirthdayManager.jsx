@@ -64,6 +64,179 @@ async function readJsonResponse(response) {
   return response.json();
 }
 
+function normalizePlayerName(value) {
+  return String(value ?? "")
+    .trim()
+    .toLocaleLowerCase("en-US")
+    .replace(/\s+/g, " ");
+}
+
+function getUniqueSurprisePlayers(players) {
+  const uniquePlayers = new Map();
+
+  for (const player of players) {
+    if (!player?.id || !player?.name?.trim()) {
+      continue;
+    }
+
+    const normalizedName = normalizePlayerName(
+      player.name
+    );
+
+    const existingPlayer =
+      uniquePlayers.get(normalizedName);
+
+    /*
+     * Keep only one record for players with the same name.
+     *
+     * Prefer the record containing WhatsApp information.
+     * Otherwise retain the first record returned by the API.
+     */
+    if (!existingPlayer) {
+      uniquePlayers.set(normalizedName, player);
+      continue;
+    }
+
+    const existingHasWhatsApp =
+      Boolean(
+        existingPlayer.whatsappNumber?.trim()
+      );
+
+    const currentHasWhatsApp =
+      Boolean(player.whatsappNumber?.trim());
+
+    if (
+      !existingHasWhatsApp &&
+      currentHasWhatsApp
+    ) {
+      uniquePlayers.set(normalizedName, player);
+    }
+  }
+
+  return [...uniquePlayers.values()];
+}
+
+const MONTH_NAME_TO_NUMBER = {
+  jan: 1,
+  january: 1,
+  feb: 2,
+  february: 2,
+  mar: 3,
+  march: 3,
+  apr: 4,
+  april: 4,
+  may: 5,
+  jun: 6,
+  june: 6,
+  jul: 7,
+  july: 7,
+  aug: 8,
+  august: 8,
+  sep: 9,
+  sept: 9,
+  september: 9,
+  oct: 10,
+  october: 10,
+  nov: 11,
+  november: 11,
+  dec: 12,
+  december: 12,
+};
+
+function normalizeBulkPlayerName(value) {
+  return String(value ?? "")
+    .trim()
+    .toLocaleLowerCase("en-US")
+    .replace(/\s+/g, " ");
+}
+
+function parseBirthdayImportLine(line, lineNumber) {
+  const cleanedLine = String(line ?? "").trim();
+
+  if (!cleanedLine) {
+    return null;
+  }
+
+  /*
+   * Expected examples:
+   *
+   * Shiva Love - Jan 01
+   * Kasa Dove - Dec 24
+   * Sai Jove - February 26
+   */
+  const match = cleanedLine.match(
+    /^(.+?)\s*-\s*([A-Za-z]+)\s+(\d{1,2})\s*$/
+  );
+
+  if (!match) {
+    return {
+      valid: false,
+      lineNumber,
+      originalLine: cleanedLine,
+      error:
+        "Invalid format. Use: Player Name - Jan 01",
+    };
+  }
+
+  const playerName = match[1].trim();
+  const monthText = match[2]
+    .trim()
+    .toLocaleLowerCase("en-US");
+  const birthDay = Number(match[3]);
+  const birthMonth =
+    MONTH_NAME_TO_NUMBER[monthText];
+
+  if (!birthMonth) {
+    return {
+      valid: false,
+      lineNumber,
+      originalLine: cleanedLine,
+      playerName,
+      error: `Invalid month: ${match[2]}`,
+    };
+  }
+
+  const maximumDay =
+    DAYS_BY_MONTH[birthMonth];
+
+  if (
+    !Number.isInteger(birthDay) ||
+    birthDay < 1 ||
+    birthDay > maximumDay
+  ) {
+    return {
+      valid: false,
+      lineNumber,
+      originalLine: cleanedLine,
+      playerName,
+      error: `Invalid day for ${match[2]}: ${match[3]}`,
+    };
+  }
+
+  return {
+    valid: true,
+    lineNumber,
+    originalLine: cleanedLine,
+    playerName,
+    normalizedPlayerName:
+      normalizeBulkPlayerName(playerName),
+    birthMonth,
+    birthDay,
+  };
+}
+
+function parseBirthdayImportText(text) {
+  return String(text ?? "")
+    .split(/\r?\n/)
+    .map((line, index) =>
+      parseBirthdayImportLine(
+        line,
+        index + 1
+      )
+    )
+    .filter(Boolean);
+}
+
 export default function BirthdayManager({ leagueId }) {
   const numericLeagueId = Number(leagueId);
 
@@ -85,6 +258,17 @@ export default function BirthdayManager({ leagueId }) {
   const [players, setPlayers] = useState([]);
   const [playersLoading, setPlayersLoading] = useState(true);
   const [testingBirthdayId, setTestingBirthdayId] = useState(null);
+  const [bulkFile, setBulkFile] =
+  useState(null);
+
+const [bulkOwnerPhone, setBulkOwnerPhone] =
+  useState("");
+
+const [bulkImporting, setBulkImporting] =
+  useState(false);
+
+const [bulkImportResult, setBulkImportResult] =
+  useState(null);
 
   const availableDays = useMemo(() => {
     const month = Number(form.birthMonth);
@@ -143,6 +327,7 @@ export default function BirthdayManager({ leagueId }) {
   }
 
   setPlayersLoading(true);
+  setError("");
 
   try {
     const response = await fetch(
@@ -156,25 +341,63 @@ export default function BirthdayManager({ leagueId }) {
       }
     );
 
-    const data = await readJsonResponse(response);
+    const data =
+      await readJsonResponse(response);
 
     if (!response.ok) {
-      throw new Error(data?.error || "Unable to load players.");
+      throw new Error(
+        data?.error ||
+          "Unable to load players."
+      );
     }
 
-    const loadedPlayers = Array.isArray(data)
-      ? data
-      : data?.players ?? [];
+    const loadedPlayers =
+      Array.isArray(data)
+        ? data
+        : data?.players ?? [];
 
-    setPlayers(
-      loadedPlayers
-        .filter((player) => player?.id && player?.name)
-        .sort((first, second) =>
-          first.name.localeCompare(second.name)
+    const validPlayers =
+      loadedPlayers.filter(
+        (player) =>
+          player?.id &&
+          player?.name?.trim()
+      );
+
+    /*
+     * Surprise Cricket League special case.
+     *
+     * League 2 contains players from both
+     * Surprise 1 and Surprise 2. The same person
+     * can therefore have two different player IDs.
+     *
+     * Show each normalized player name only once.
+     */
+    const playersForSelector =
+      numericLeagueId === 2
+        ? getUniqueSurprisePlayers(
+            validPlayers
+          )
+        : validPlayers;
+
+    playersForSelector.sort(
+      (first, second) =>
+        first.name.localeCompare(
+          second.name,
+          undefined,
+          {
+            sensitivity: "base",
+          }
         )
     );
+
+    setPlayers(playersForSelector);
   } catch (playerError) {
-    console.error("Player loading error:", playerError);
+    console.error(
+      "Player loading error:",
+      playerError
+    );
+
+    setPlayers([]);
 
     setError(
       playerError instanceof Error
@@ -594,6 +817,321 @@ function shareBirthdayToWhatsApp(birthday) {
     "noopener,noreferrer"
   );
 }
+async function handleBulkBirthdayImport(event) {
+  event.preventDefault();
+
+  if (!apiBaseUrl) {
+    setError("Invalid league ID.");
+    return;
+  }
+
+  if (!bulkFile) {
+    setError(
+      "Please select a birthday text file."
+    );
+    return;
+  }
+
+  const cleanedOwnerPhone =
+    String(bulkOwnerPhone ?? "").replace(
+      /\D/g,
+      ""
+    );
+
+  if (
+    cleanedOwnerPhone.length < 10 ||
+    cleanedOwnerPhone.length > 15
+  ) {
+    setError(
+      "Please enter the owner's WhatsApp number with country code."
+    );
+    return;
+  }
+
+  setBulkImporting(true);
+  setBulkImportResult(null);
+  setMessage("");
+  setError("");
+
+  try {
+    const fileText =
+      await bulkFile.text();
+
+    const parsedRows =
+      parseBirthdayImportText(fileText);
+
+    if (parsedRows.length === 0) {
+      throw new Error(
+        "The selected file does not contain any birthday entries."
+      );
+    }
+
+    const invalidRows =
+      parsedRows.filter(
+        (row) => !row.valid
+      );
+
+    const validRows =
+      parsedRows.filter(
+        (row) => row.valid
+      );
+
+    /*
+     * Create a player lookup by normalized name.
+     *
+     * The players array is already deduplicated
+     * for Surprise Cricket League by the earlier
+     * special-case fix.
+     */
+    const playerLookup = new Map();
+
+    for (const player of players) {
+      const normalizedName =
+        normalizeBulkPlayerName(
+          player.name
+        );
+
+      if (
+        normalizedName &&
+        !playerLookup.has(normalizedName)
+      ) {
+        playerLookup.set(
+          normalizedName,
+          player
+        );
+      }
+    }
+
+    /*
+     * Existing birthday lookup.
+     *
+     * Prefer matching by playerId. The name lookup
+     * is included as a fallback for older records
+     * that may not contain playerId.
+     */
+    const birthdayByPlayerId =
+      new Map();
+
+    const birthdayByName =
+      new Map();
+
+    for (const birthday of birthdays) {
+      if (birthday.playerId) {
+        birthdayByPlayerId.set(
+          Number(birthday.playerId),
+          birthday
+        );
+      }
+
+      const normalizedName =
+        normalizeBulkPlayerName(
+          birthday.player?.name ||
+            birthday.name
+        );
+
+      if (
+        normalizedName &&
+        !birthdayByName.has(
+          normalizedName
+        )
+      ) {
+        birthdayByName.set(
+          normalizedName,
+          birthday
+        );
+      }
+    }
+
+    const imported = [];
+    const updated = [];
+    const unmatched = [];
+    const failed = [];
+
+    /*
+     * Process sequentially.
+     *
+     * Fifty entries are small enough for sequential
+     * processing, and this avoids sending fifty
+     * simultaneous database requests.
+     */
+    for (const row of validRows) {
+      const matchedPlayer =
+        playerLookup.get(
+          row.normalizedPlayerName
+        );
+
+      if (!matchedPlayer) {
+        unmatched.push({
+          lineNumber: row.lineNumber,
+          playerName: row.playerName,
+          reason:
+            "No matching player was found in this league.",
+        });
+
+        continue;
+      }
+
+      const existingBirthday =
+        birthdayByPlayerId.get(
+          Number(matchedPlayer.id)
+        ) ||
+        birthdayByName.get(
+          row.normalizedPlayerName
+        );
+
+      const endpoint =
+        existingBirthday?.id
+          ? `${apiBaseUrl}/${existingBirthday.id}`
+          : apiBaseUrl;
+
+      const method =
+        existingBirthday?.id
+          ? "PATCH"
+          : "POST";
+
+      try {
+        const response = await fetch(
+          endpoint,
+          {
+            method,
+            headers: {
+              "Content-Type":
+                "application/json",
+              Accept:
+                "application/json",
+            },
+
+            body: JSON.stringify({
+              playerId: Number(
+                matchedPlayer.id
+              ),
+
+              birthMonth:
+                row.birthMonth,
+
+              birthDay:
+                row.birthDay,
+
+              /*
+               * Preserve an existing private note
+               * when updating.
+               */
+              notes:
+                existingBirthday?.notes ??
+                "",
+
+              whatsappNumber:
+                cleanedOwnerPhone,
+
+              /*
+               * Consent is enabled by default
+               * for this bulk-owner workflow.
+               */
+              whatsappOptIn: true,
+
+              /*
+               * Ensure an existing disabled birthday
+               * becomes active again.
+               */
+              isActive: true,
+            }),
+          }
+        );
+
+        const data =
+          await readJsonResponse(
+            response
+          );
+
+        if (!response.ok) {
+          throw new Error(
+            data?.error ||
+              `Unable to ${
+                existingBirthday
+                  ? "update"
+                  : "create"
+              } birthday.`
+          );
+        }
+
+        const resultEntry = {
+          playerId:
+            matchedPlayer.id,
+          playerName:
+            matchedPlayer.name,
+          birthMonth:
+            row.birthMonth,
+          birthDay:
+            row.birthDay,
+        };
+
+        if (existingBirthday) {
+          updated.push(resultEntry);
+        } else {
+          imported.push(resultEntry);
+        }
+      } catch (rowError) {
+        failed.push({
+          lineNumber:
+            row.lineNumber,
+          playerName:
+            row.playerName,
+          reason:
+            rowError instanceof Error
+              ? rowError.message
+              : "Unknown import error.",
+        });
+      }
+    }
+
+    const result = {
+  totalLines: parsedRows.length,
+  validLines: validRows.length,
+
+  createdCount: imported.length,
+  updatedCount: updated.length,
+  unmatchedCount: unmatched.length,
+  invalidCount: invalidRows.length,
+  failedCount: failed.length,
+
+  importedRows: imported,
+  updatedRows: updated,
+  unmatchedRows: unmatched,
+  invalidRows,
+  failedRows: failed,
+};
+
+    setBulkImportResult(result);
+
+    setMessage(
+  `Bulk import completed: ` +
+    `${result.createdCount} created, ` +
+    `${result.updatedCount} updated, ` +
+    `${result.unmatchedCount} unmatched, ` +
+    `${result.invalidCount} invalid, ` +
+    `${result.failedCount} failed.`
+);
+
+    /*
+     * Reload the birthday list so the table reflects
+     * all imported and updated records.
+     */
+    await loadBirthdays();
+  } catch (importError) {
+    console.error(
+      "Bulk birthday import error:",
+      importError
+    );
+
+    setError(
+      importError instanceof Error
+        ? importError.message
+        : "Unable to import birthdays."
+    );
+  } finally {
+    setBulkImporting(false);
+  }
+}
 
   return (
     <main className="birthday-page">
@@ -806,7 +1344,247 @@ function shareBirthdayToWhatsApp(birthday) {
           </p>
         )}
       </section>
+<section className="birthday-card">
+  <div className="birthday-list-heading">
+    <div>
+      <h2>Bulk Birthday Import</h2>
 
+      <p>
+        Upload a text file containing one
+        player per line.
+      </p>
+    </div>
+  </div>
+
+  <form
+    onSubmit={handleBulkBirthdayImport}
+    className="birthday-form"
+  >
+    <label>
+      Birthday text file
+
+      <input
+        type="file"
+        accept=".txt,text/plain"
+        required
+        disabled={bulkImporting}
+        onChange={(event) => {
+          const selectedFile =
+            event.target.files?.[0] ??
+            null;
+
+          setBulkFile(selectedFile);
+          setBulkImportResult(null);
+          setMessage("");
+          setError("");
+        }}
+      />
+    </label>
+
+    <div className="birthday-import-example">
+      <strong>Required format:</strong>
+
+      <pre>{`Virat K - Jan 01
+Dhoni - Dec 24
+Rohit S - Feb 26`}</pre>
+    </div>
+
+    <label>
+      Owner&apos;s WhatsApp number
+
+      <input
+        type="tel"
+        required
+        value={bulkOwnerPhone}
+        placeholder="Example: 16105551234"
+        disabled={bulkImporting}
+        onChange={(event) =>
+          setBulkOwnerPhone(
+            event.target.value.replace(
+              /\D/g,
+              ""
+            )
+          )
+        }
+      />
+    </label>
+
+    <p className="birthday-import-notice">
+      This number will be saved for every
+      imported birthday, and WhatsApp consent
+      will be enabled automatically.
+    </p>
+
+    <div className="birthday-actions">
+      <button
+        type="submit"
+        disabled={
+          bulkImporting ||
+          !bulkFile ||
+          !bulkOwnerPhone
+        }
+      >
+        {bulkImporting
+          ? "Importing Birthdays..."
+          : "Import All Birthdays"}
+      </button>
+    </div>
+  </form>
+
+  {bulkImportResult && (
+  <div className="birthday-import-result">
+    <h3>Import results</h3>
+
+    <div className="birthday-import-summary">
+      <span>
+        Created:{" "}
+        <strong>
+          {bulkImportResult.createdCount}
+        </strong>
+      </span>
+
+      <span>
+        Updated:{" "}
+        <strong>
+          {bulkImportResult.updatedCount}
+        </strong>
+      </span>
+
+      <span>
+        Unmatched:{" "}
+        <strong>
+          {bulkImportResult.unmatchedCount}
+        </strong>
+      </span>
+
+      <span>
+        Invalid:{" "}
+        <strong>
+          {bulkImportResult.invalidCount}
+        </strong>
+      </span>
+
+      <span>
+        Failed:{" "}
+        <strong>
+          {bulkImportResult.failedCount}
+        </strong>
+      </span>
+    </div>
+
+    {bulkImportResult.unmatchedRows.length > 0 && (
+      <div className="birthday-import-errors">
+        <h4>Players not found</h4>
+
+        <ul>
+          {bulkImportResult.unmatchedRows.map(
+            (item) => (
+              <li
+                key={`unmatched-${item.lineNumber}-${item.playerName}`}
+              >
+                Line {item.lineNumber}:{" "}
+                <strong>
+                  {item.playerName}
+                </strong>
+                {" — "}
+                {item.reason}
+              </li>
+            )
+          )}
+        </ul>
+      </div>
+    )}
+
+    {bulkImportResult.invalidRows.length > 0 && (
+      <div className="birthday-import-errors">
+        <h4>Invalid lines</h4>
+
+        <ul>
+          {bulkImportResult.invalidRows.map(
+            (item) => (
+              <li
+                key={`invalid-${item.lineNumber}`}
+              >
+                Line {item.lineNumber}:{" "}
+                {item.originalLine}
+                {" — "}
+                {item.error}
+              </li>
+            )
+          )}
+        </ul>
+      </div>
+    )}
+
+    {bulkImportResult.failedRows.length > 0 && (
+      <div className="birthday-import-errors">
+        <h4>Failed imports</h4>
+
+        <ul>
+          {bulkImportResult.failedRows.map(
+            (item) => (
+              <li
+                key={`failed-${item.lineNumber}-${item.playerName}`}
+              >
+                Line {item.lineNumber}:{" "}
+                <strong>
+                  {item.playerName}
+                </strong>
+                {" — "}
+                {item.reason}
+              </li>
+            )
+          )}
+        </ul>
+      </div>
+    )}
+
+    {bulkImportResult.createdCount > 0 && (
+      <div className="birthday-import-success-list">
+        <h4>Created birthdays</h4>
+
+        <ul>
+          {bulkImportResult.importedRows.map(
+            (item) => (
+              <li
+                key={`created-${item.playerId}`}
+              >
+                {item.playerName} —{" "}
+                {formatMMDD(
+                  item.birthMonth,
+                  item.birthDay
+                )}
+              </li>
+            )
+          )}
+        </ul>
+      </div>
+    )}
+
+    {bulkImportResult.updatedCount > 0 && (
+      <div className="birthday-import-success-list">
+        <h4>Updated birthdays</h4>
+
+        <ul>
+          {bulkImportResult.updatedRows.map(
+            (item) => (
+              <li
+                key={`updated-${item.playerId}`}
+              >
+                {item.playerName} —{" "}
+                {formatMMDD(
+                  item.birthMonth,
+                  item.birthDay
+                )}
+              </li>
+            )
+          )}
+        </ul>
+      </div>
+    )}
+  </div>
+)}
+</section>
       <section className="birthday-card">
         <div className="birthday-list-heading">
           <h2>League birthday list</h2>

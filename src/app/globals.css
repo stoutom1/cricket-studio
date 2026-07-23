@@ -58678,3 +58678,61 @@ body.cric4all-scorer-open {
     font-size: 1.05rem;
   }
 }
+.birthday-import-example {
+  padding: 14px;
+  border: 1px solid var(--border-color, #d7dce2);
+  border-radius: 10px;
+  background: rgba(0, 0, 0, 0.025);
+}
+
+.birthday-import-example pre {
+  margin: 10px 0 0;
+  white-space: pre-wrap;
+  font-family: inherit;
+  line-height: 1.6;
+}
+
+.birthday-import-notice {
+  margin: 0;
+  font-size: 0.92rem;
+  opacity: 0.8;
+}
+
+.birthday-import-result {
+  margin-top: 20px;
+  padding-top: 18px;
+  border-top: 1px solid var(--border-color, #d7dce2);
+}
+
+.birthday-import-summary {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 10px;
+  margin: 12px 0;
+}
+
+.birthday-import-summary span {
+  padding: 8px 12px;
+  border-radius: 999px;
+  background: rgba(0, 0, 0, 0.05);
+}
+
+.birthday-import-errors {
+  margin-top: 16px;
+  padding: 12px 16px;
+  border-radius: 10px;
+  background: rgba(190, 30, 45, 0.08);
+}
+
+.birthday-import-errors h4 {
+  margin: 0 0 8px;
+}
+
+.birthday-import-errors ul {
+  margin: 0;
+  padding-left: 20px;
+}
+
+.birthday-import-errors li {
+  margin: 6px 0;
+}
