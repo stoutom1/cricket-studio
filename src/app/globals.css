@@ -61155,3 +61155,148 @@ body {
     min-width: 250px;
   }
 }
+/* =========================================================
+   MOBILE BIRTHDAY BUTTON CORRECTIONS
+   Keep desktop appearance unchanged
+   ========================================================= */
+
+@media (max-width: 700px) {
+  .birthday-actions {
+    width: 100%;
+    display: grid;
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+    gap: 8px;
+  }
+
+  .birthday-action-btn {
+    width: 100%;
+    min-width: 0;
+    min-height: 42px;
+    padding: 10px 8px;
+    border-radius: 10px;
+    font-size: 12px;
+    font-weight: 700;
+    line-height: 1.1;
+
+    /* Prevent sticky mobile hover effects */
+    transform: none;
+    -webkit-tap-highlight-color: transparent;
+    touch-action: manipulation;
+  }
+
+  /* Remove the moving shine layer on mobile.
+     This is what is covering the Delete button. */
+  .birthday-action-btn::before,
+  .birthday-action-btn::after {
+    content: none !important;
+    display: none !important;
+  }
+
+  .birthday-action-btn:hover,
+  .birthday-action-btn:focus,
+  .birthday-action-btn:active {
+    transform: none;
+    filter: none;
+  }
+
+  /* WhatsApp occupies the complete first row */
+  .birthday-whatsapp-btn {
+    grid-column: 1 / -1;
+    grid-row: 1;
+
+    color: #ffffff !important;
+    background: linear-gradient(
+      135deg,
+      #18b783 0%,
+      #07966f 100%
+    ) !important;
+
+    border: 1px solid rgba(77, 255, 198, 0.3) !important;
+
+    box-shadow:
+      0 6px 15px rgba(7, 150, 111, 0.25),
+      inset 0 1px 0 rgba(255, 255, 255, 0.18) !important;
+  }
+
+  /* Edit occupies the left side */
+  .birthday-edit-btn {
+    grid-column: 1;
+    grid-row: 2;
+
+    color: #ffffff !important;
+    background: linear-gradient(
+      135deg,
+      #19aa9c 0%,
+      #087d78 100%
+    ) !important;
+
+    border: 1px solid rgba(93, 255, 236, 0.25) !important;
+  }
+
+  /* Disable occupies the right side */
+  .birthday-disable-btn {
+    grid-column: 2;
+    grid-row: 2;
+
+    color: #ffffff !important;
+    background: linear-gradient(
+      135deg,
+      #20b5a7 0%,
+      #087d78 100%
+    ) !important;
+
+    border: 1px solid rgba(93, 255, 236, 0.25) !important;
+  }
+
+  .birthday-enable-btn {
+    grid-column: 2;
+    grid-row: 2;
+
+    color: #ffffff !important;
+    background: linear-gradient(
+      135deg,
+      #2acb78 0%,
+      #07874b 100%
+    ) !important;
+  }
+
+  /* Delete occupies the complete bottom row */
+  .birthday-delete-btn {
+    grid-column: 1 / -1;
+    grid-row: 3;
+
+    color: #ffffff !important;
+    background: linear-gradient(
+      135deg,
+      #ef5368 0%,
+      #c72542 100%
+    ) !important;
+
+    border: 1px solid rgba(255, 132, 150, 0.4) !important;
+
+    box-shadow:
+      0 6px 15px rgba(199, 37, 66, 0.25),
+      inset 0 1px 0 rgba(255, 255, 255, 0.16) !important;
+
+    opacity: 1 !important;
+  }
+
+  .birthday-delete-btn svg,
+  .birthday-delete-btn span {
+    color: #ffffff !important;
+    opacity: 1 !important;
+  }
+
+  .birthday-action-btn:disabled {
+    opacity: 0.6 !important;
+    cursor: wait;
+  }
+
+  .birthday-whatsapp-long-text {
+    display: none;
+  }
+
+  .birthday-whatsapp-short-text {
+    display: inline;
+  }
+}
