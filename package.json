@@ -30,7 +30,7 @@
     "bcryptjs": "^2.4.3",
     "firebase-admin": "^14.2.0",
     "geist": "^1.7.1",
-    "lucide-react": "^1.18.0",
+    "lucide-react": "^1.26.0",
     "luxon": "^3.7.2",
     "next": "^16.2.6",
     "next-auth": "^4.24.14",

@@ -60819,3 +60819,339 @@ body {
     white-space: normal !important;
   }
 }
+/* =========================================================
+   BIRTHDAY ACTION BUTTONS
+   ========================================================= */
+
+.birthday-actions-cell {
+  min-width: 470px;
+  padding-top: 10px;
+  padding-bottom: 10px;
+  vertical-align: middle;
+}
+
+.birthday-actions {
+  display: flex;
+  align-items: center;
+  flex-wrap: wrap;
+  gap: 9px;
+}
+
+.birthday-action-btn {
+  position: relative;
+  isolation: isolate;
+
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 7px;
+
+  min-height: 39px;
+  padding: 9px 13px;
+
+  border: 1px solid transparent;
+  border-radius: 12px;
+
+  color: #ffffff;
+  font-size: 13px;
+  font-weight: 700;
+  line-height: 1;
+  white-space: nowrap;
+
+  cursor: pointer;
+  user-select: none;
+  overflow: hidden;
+
+  transition:
+    transform 180ms ease,
+    box-shadow 180ms ease,
+    border-color 180ms ease,
+    filter 180ms ease,
+    opacity 180ms ease;
+}
+
+.birthday-action-btn::before {
+  content: "";
+  position: absolute;
+  inset: 0;
+  z-index: -1;
+
+  background: linear-gradient(
+    110deg,
+    transparent 15%,
+    rgba(255, 255, 255, 0.2) 45%,
+    transparent 75%
+  );
+
+  transform: translateX(-130%);
+  transition: transform 500ms ease;
+}
+
+.birthday-action-btn:hover::before {
+  transform: translateX(130%);
+}
+
+.birthday-action-btn:hover {
+  transform: translateY(-2px);
+  filter: brightness(1.08);
+}
+
+.birthday-action-btn:active {
+  transform: translateY(0) scale(0.97);
+  transition-duration: 80ms;
+}
+
+.birthday-action-btn:focus-visible {
+  outline: 3px solid rgba(255, 255, 255, 0.3);
+  outline-offset: 3px;
+}
+
+.birthday-action-btn:disabled {
+  cursor: wait;
+  opacity: 0.68;
+  transform: none;
+  filter: none;
+}
+
+/* Edit */
+
+.birthday-edit-btn {
+  background:
+    linear-gradient(135deg, #2684ff 0%, #005bd8 100%);
+
+  border-color: rgba(92, 171, 255, 0.48);
+
+  box-shadow:
+    0 7px 17px rgba(0, 91, 216, 0.26),
+    inset 0 1px 0 rgba(255, 255, 255, 0.2);
+}
+
+.birthday-edit-btn:hover {
+  box-shadow:
+    0 11px 23px rgba(0, 91, 216, 0.38),
+    inset 0 1px 0 rgba(255, 255, 255, 0.25);
+}
+
+/* WhatsApp */
+
+.birthday-whatsapp-btn {
+  background:
+    linear-gradient(135deg, #2ed573 0%, #10a957 52%, #087d43 100%);
+
+  border-color: rgba(92, 255, 162, 0.4);
+
+  box-shadow:
+    0 8px 20px rgba(18, 140, 126, 0.3),
+    inset 0 1px 0 rgba(255, 255, 255, 0.25);
+}
+
+.birthday-whatsapp-btn:hover {
+  box-shadow:
+    0 12px 27px rgba(37, 211, 102, 0.38),
+    inset 0 1px 0 rgba(255, 255, 255, 0.3);
+}
+
+/* Disable */
+
+.birthday-disable-btn {
+  background:
+    linear-gradient(135deg, #ffb547 0%, #e77918 55%, #bf4f00 100%);
+
+  border-color: rgba(255, 188, 92, 0.42);
+
+  box-shadow:
+    0 7px 18px rgba(231, 121, 24, 0.28),
+    inset 0 1px 0 rgba(255, 255, 255, 0.22);
+}
+
+.birthday-disable-btn:hover {
+  box-shadow:
+    0 11px 25px rgba(231, 121, 24, 0.38),
+    inset 0 1px 0 rgba(255, 255, 255, 0.26);
+}
+
+/* Enable */
+
+.birthday-enable-btn {
+  background:
+    linear-gradient(135deg, #34d399 0%, #059669 55%, #047857 100%);
+
+  border-color: rgba(110, 255, 205, 0.42);
+
+  box-shadow:
+    0 7px 18px rgba(5, 150, 105, 0.28),
+    inset 0 1px 0 rgba(255, 255, 255, 0.22);
+}
+
+.birthday-enable-btn:hover {
+  box-shadow:
+    0 11px 25px rgba(5, 150, 105, 0.38),
+    inset 0 1px 0 rgba(255, 255, 255, 0.26);
+}
+
+/* Delete */
+
+.birthday-delete-btn {
+  background:
+    linear-gradient(135deg, #ff647c 0%, #df334d 52%, #a9162c 100%);
+
+  border-color: rgba(255, 112, 135, 0.42);
+
+  box-shadow:
+    0 7px 18px rgba(223, 51, 77, 0.28),
+    inset 0 1px 0 rgba(255, 255, 255, 0.2);
+}
+
+.birthday-delete-btn:hover {
+  box-shadow:
+    0 11px 25px rgba(223, 51, 77, 0.4),
+    inset 0 1px 0 rgba(255, 255, 255, 0.26);
+}
+
+/* Loading spinner */
+
+.birthday-btn-spinner {
+  animation: birthday-button-spin 750ms linear infinite;
+}
+
+@keyframes birthday-button-spin {
+  to {
+    transform: rotate(360deg);
+  }
+}
+
+/* Hide the short WhatsApp label on larger screens */
+
+.birthday-whatsapp-short-text {
+  display: none;
+}
+@media (max-width: 1100px) {
+  .birthday-actions-cell {
+    min-width: 390px;
+  }
+
+  .birthday-actions {
+    display: grid;
+    grid-template-columns: repeat(2, minmax(120px, 1fr));
+    gap: 8px;
+  }
+
+  .birthday-action-btn {
+    width: 100%;
+  }
+
+  .birthday-whatsapp-btn {
+    grid-column: span 2;
+    grid-row: 1;
+  }
+
+  .birthday-edit-btn {
+    grid-column: 1;
+    grid-row: 2;
+  }
+
+  .birthday-disable-btn,
+  .birthday-enable-btn {
+    grid-column: 2;
+    grid-row: 2;
+  }
+
+  .birthday-delete-btn {
+    grid-column: span 2;
+    grid-row: 3;
+  }
+}
+@media (max-width: 700px) {
+  .birthday-actions-cell {
+    min-width: 250px;
+    padding: 12px 8px;
+  }
+
+  .birthday-actions {
+    display: grid;
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+    gap: 8px;
+    width: 100%;
+  }
+
+  .birthday-action-btn {
+    min-height: 42px;
+    width: 100%;
+    padding: 10px 8px;
+    border-radius: 11px;
+    font-size: 12px;
+  }
+
+  .birthday-whatsapp-btn {
+    grid-column: 1 / -1;
+    grid-row: 1;
+    min-height: 45px;
+    font-size: 13px;
+  }
+
+  .birthday-edit-btn {
+    grid-column: 1;
+    grid-row: 2;
+  }
+
+  .birthday-disable-btn,
+  .birthday-enable-btn {
+    grid-column: 2;
+    grid-row: 2;
+  }
+
+  .birthday-delete-btn {
+    grid-column: 1 / -1;
+    grid-row: 3;
+  }
+
+  .birthday-whatsapp-long-text {
+    display: none;
+  }
+
+  .birthday-whatsapp-short-text {
+    display: inline;
+  }
+}
+.birthday-table-wrapper {
+  width: 100%;
+  overflow-x: auto;
+  overflow-y: visible;
+  border-radius: 14px;
+  scrollbar-width: thin;
+  scrollbar-color: rgba(255, 255, 255, 0.25) transparent;
+  -webkit-overflow-scrolling: touch;
+}
+
+.birthday-table-wrapper::-webkit-scrollbar {
+  height: 8px;
+}
+
+.birthday-table-wrapper::-webkit-scrollbar-track {
+  background: transparent;
+}
+
+.birthday-table-wrapper::-webkit-scrollbar-thumb {
+  background: rgba(255, 255, 255, 0.23);
+  border-radius: 999px;
+}
+
+.birthday-table-wrapper::-webkit-scrollbar-thumb:hover {
+  background: rgba(255, 255, 255, 0.35);
+}
+.birthday-actions-heading {
+  min-width: 470px;
+  text-align: left;
+}
+
+@media (max-width: 1100px) {
+  .birthday-actions-heading {
+    min-width: 390px;
+  }
+}
+
+@media (max-width: 700px) {
+  .birthday-actions-heading {
+    min-width: 250px;
+  }
+}

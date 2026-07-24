@@ -2,6 +2,14 @@
 
 import Link from "next/link";
 import { useCallback, useEffect, useMemo, useState } from "react";
+import {
+  Pencil,
+  MessageCircle,
+  PauseCircle,
+  PlayCircle,
+  Trash2,
+  LoaderCircle,
+} from "lucide-react";
 
 const MONTHS = [
   { value: 1, label: "January" },
@@ -269,6 +277,11 @@ const [bulkImporting, setBulkImporting] =
 
 const [bulkImportResult, setBulkImportResult] =
   useState(null);
+
+const [actionLoading, setActionLoading] = useState({
+  id: null,
+  action: null,
+});
 
   const availableDays = useMemo(() => {
     const month = Number(form.birthMonth);
@@ -1133,6 +1146,24 @@ async function handleBulkBirthdayImport(event) {
   }
 }
 
+async function runBirthdayAction(birthdayId, actionName, callback) {
+  try {
+    setActionLoading({
+      id: birthdayId,
+      action: actionName,
+    });
+
+    await callback();
+  } catch (error) {
+    console.error(`Birthday ${actionName} failed:`, error);
+  } finally {
+    setActionLoading({
+      id: null,
+      action: null,
+    });
+  }
+}
+
   return (
     <main className="birthday-page">
       <section className="birthday-header">
@@ -1624,7 +1655,7 @@ Rohit S - Feb 26`}</pre>
                         <th>Name</th>
                         <th>Birthday</th>
                         <th>Status</th>
-                        <th aria-label="Actions">Actions</th>
+                        <th className="birthday-actions-heading">Actions</th>
                       </tr>
                     </thead>
 
@@ -1656,54 +1687,147 @@ Rohit S - Feb 26`}</pre>
                                   : "Disabled"}
                               </span>
                             </td>
+<td className="birthday-actions-cell">
+  <div className="birthday-actions">
+    <button
+      type="button"
+      className="birthday-action-btn birthday-edit-btn"
+      onClick={() =>
+        runBirthdayAction(birthday.id, "edit", () =>
+          startEditing(birthday)
+        )
+      }
+      disabled={
+        actionLoading.id === birthday.id &&
+        actionLoading.action === "edit"
+      }
+      title={`Edit ${birthday.name}`}
+      aria-label={`Edit birthday details for ${birthday.name}`}
+    >
+      {actionLoading.id === birthday.id &&
+      actionLoading.action === "edit" ? (
+        <LoaderCircle
+          size={17}
+          strokeWidth={2.2}
+          className="birthday-btn-spinner"
+        />
+      ) : (
+        <Pencil size={17} strokeWidth={2.2} />
+      )}
 
-                            <td
-                              data-label="Actions"
-                              className="birthday-actions-cell"
-                            >
-                              <div className="table-actions">
-                                <button
-                                  type="button"
-                                  disabled={isWorking || saving}
-                                  onClick={() => startEditing(birthday)}
-                                >
-                                  Edit
-                                </button>
+      <span>Edit</span>
+    </button>
 
-                                <button
-                                  type="button"
-                                  className="whatsapp-share-button"
-                                  onClick={() => shareBirthdayToWhatsApp(
-                                    birthday
-                                  )}
-                                >
-                                  Share to WhatsApp Group
-                                </button>
+    <button
+      type="button"
+      className="birthday-action-btn birthday-whatsapp-btn"
+      onClick={() =>
+        runBirthdayAction(birthday.id, "whatsapp", () =>
+          shareBirthdayToWhatsApp(birthday)
+        )
+      }
+      disabled={
+        actionLoading.id === birthday.id &&
+        actionLoading.action === "whatsapp"
+      }
+      title={`Share ${birthday.name}'s birthday to WhatsApp`}
+      aria-label={`Share ${birthday.name}'s birthday to WhatsApp group`}
+    >
+      {actionLoading.id === birthday.id &&
+      actionLoading.action === "whatsapp" ? (
+        <LoaderCircle
+          size={18}
+          strokeWidth={2.2}
+          className="birthday-btn-spinner"
+        />
+      ) : (
+        <MessageCircle size={18} strokeWidth={2.2} />
+      )}
 
-                                <button
-                                  type="button"
-                                  disabled={isWorking || saving}
-                                  onClick={() => toggleBirthday(birthday)}
-                                >
-                                  {isWorking
-                                    ? "Updating..."
-                                    : birthday.isActive
-                                      ? "Disable"
-                                      : "Enable"}
-                                </button>
+      <span className="birthday-whatsapp-long-text">
+        Share to WhatsApp Group
+      </span>
 
-                                <button
-                                  type="button"
-                                  className="danger"
-                                  disabled={isWorking || saving}
-                                  onClick={() => deleteBirthday(birthday)}
-                                >
-                                  {isWorking
-                                    ? "Working..."
-                                    : "Delete"}
-                                </button>
-                              </div>
-                            </td>
+      <span className="birthday-whatsapp-short-text">
+        WhatsApp
+      </span>
+    </button>
+
+    <button
+      type="button"
+      className={`birthday-action-btn ${
+        birthday.isActive
+          ? "birthday-disable-btn"
+          : "birthday-enable-btn"
+      }`}
+      onClick={() =>
+        runBirthdayAction(
+          birthday.id,
+          birthday.isActive ? "disable" : "enable",
+          () => toggleBirthday(birthday)
+        )
+      }
+      disabled={
+        actionLoading.id === birthday.id &&
+        ["disable", "enable"].includes(actionLoading.action)
+      }
+      title={
+        birthday.isActive
+          ? `Disable birthday reminders for ${birthday.name}`
+          : `Enable birthday reminders for ${birthday.name}`
+      }
+      aria-label={
+        birthday.isActive
+          ? `Disable birthday reminders for ${birthday.name}`
+          : `Enable birthday reminders for ${birthday.name}`
+      }
+    >
+      {actionLoading.id === birthday.id &&
+      ["disable", "enable"].includes(actionLoading.action) ? (
+        <LoaderCircle
+          size={17}
+          strokeWidth={2.2}
+          className="birthday-btn-spinner"
+        />
+      ) : birthday.isActive ? (
+        <PauseCircle size={17} strokeWidth={2.2} />
+      ) : (
+        <PlayCircle size={17} strokeWidth={2.2} />
+      )}
+
+      <span>{birthday.isActive ? "Disable" : "Enable"}</span>
+    </button>
+
+    <button
+      type="button"
+      className="birthday-action-btn birthday-delete-btn"
+      onClick={() =>
+        runBirthdayAction(birthday.id, "delete", () =>
+          deleteBirthday(birthday)
+        )
+      }
+      disabled={
+        actionLoading.id === birthday.id &&
+        actionLoading.action === "delete"
+      }
+      title={`Delete ${birthday.name}`}
+      aria-label={`Delete birthday entry for ${birthday.name}`}
+    >
+      {actionLoading.id === birthday.id &&
+      actionLoading.action === "delete" ? (
+        <LoaderCircle
+          size={17}
+          strokeWidth={2.2}
+          className="birthday-btn-spinner"
+        />
+      ) : (
+        <Trash2 size={17} strokeWidth={2.2} />
+      )}
+
+      <span>Delete</span>
+    </button>
+  </div>
+</td>
                           </tr>
                         );
                       })}
