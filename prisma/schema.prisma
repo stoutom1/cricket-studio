@@ -148,23 +148,25 @@ model MatchState {
 }
 
 model League {
-  id                   Int                              @id @default(autoincrement())
-  name                 String                           @unique
-  createdAt            DateTime                         @default(now())
-  ownerId              String?
-  owner                User?                            @relation(fields: [ownerId], references: [id])
-  teams                Team[]
-  registrations        LeagueRegistration[]
-  members              LeagueMember[]
-  invites              LeagueInvite[]
-  matches              Match[]
-  visibility           String                           @default("PRIVATE")
-  slug                 String?                          @unique
-  series               Series[]
-  leagueFollowers      LeagueFollower[]
-  birthdays            LeagueBirthday[]
-  birthdayPreferences  BirthdayNotificationPreference[]
-  birthdayReminderLogs BirthdayReminderLog[]
+  id                           Int                              @id @default(autoincrement())
+  name                         String                           @unique
+  createdAt                    DateTime                         @default(now())
+  ownerId                      String?
+  owner                        User?                            @relation(fields: [ownerId], references: [id])
+  teams                        Team[]
+  registrations                LeagueRegistration[]
+  members                      LeagueMember[]
+  invites                      LeagueInvite[]
+  matches                      Match[]
+  visibility                   String                           @default("PRIVATE")
+  slug                         String?                          @unique
+  series                       Series[]
+  leagueFollowers              LeagueFollower[]
+  birthdays                    LeagueBirthday[]
+  birthdayPreferences          BirthdayNotificationPreference[]
+  birthdayReminderLogs         BirthdayReminderLog[]
+  whatsappNotificationsEnabled Boolean                          @default(false)
+  ownerWhatsAppNumber          String?
 }
 
 model LeagueRegistration {
@@ -481,6 +483,8 @@ model MatchCorrection {
 enum BirthdayReminderType {
   DAY_BEFORE
   BIRTHDAY_TODAY
+  WEB_PUSH
+  WHATSAPP
 }
 
 enum BirthdayReminderStatus {
@@ -573,6 +577,10 @@ model BirthdayReminderLog {
   notificationTitle String?
   notificationBody  String?
   errorMessage      String?
+
+  recipientPhone    String?
+  providerMessageId String?
+  providerStatus    String?
 
   sentAt     DateTime?
   sharedAt   DateTime?

@@ -61300,3 +61300,39 @@ body {
     display: inline;
   }
 }
+.league-whatsapp-settings-card {
+  position: relative;
+  overflow: hidden;
+}
+
+.league-whatsapp-settings-card::before {
+  content: "";
+  position: absolute;
+  inset: 0 0 auto;
+  height: 3px;
+  background: linear-gradient(
+    90deg,
+    #25d366,
+    #14b8a6,
+    #25d366
+  );
+}
+
+.birthday-notification-channel-note {
+  padding: 14px 16px;
+  border: 1px solid
+    rgba(56, 189, 248, 0.25);
+  border-radius: 12px;
+  background:
+    rgba(14, 165, 233, 0.08);
+}
+
+.birthday-notification-channel-note strong {
+  display: block;
+  margin-bottom: 5px;
+}
+
+.birthday-notification-channel-note p {
+  margin: 0;
+  opacity: 0.85;
+}

@@ -245,7 +245,28 @@ function parseBirthdayImportText(text) {
     .filter(Boolean);
 }
 
-export default function BirthdayManager({ leagueId }) {
+function normalizeOwnerWhatsAppNumber(
+  value
+) {
+  const rawValue =
+    String(value || "").trim();
+
+  if (!rawValue) {
+    return "";
+  }
+
+  const digits =
+    rawValue.replace(/\D/g, "");
+
+  return `+${digits}`;
+}
+
+export default function BirthdayManager({
+  leagueId,
+  leagueName,
+  initialOwnerWhatsAppNumber = "",
+  initialWhatsAppNotificationsEnabled = false,
+}) {
   const numericLeagueId = Number(leagueId);
 
   const isValidLeagueId =
@@ -282,6 +303,36 @@ const [actionLoading, setActionLoading] = useState({
   id: null,
   action: null,
 });
+const [
+  ownerWhatsAppNumber,
+  setOwnerWhatsAppNumber,
+] = useState(
+  initialOwnerWhatsAppNumber
+);
+
+const [
+  whatsappNotificationsEnabled,
+  setWhatsappNotificationsEnabled,
+] = useState(
+  Boolean(
+    initialWhatsAppNotificationsEnabled
+  )
+);
+
+const [
+  savingWhatsAppSettings,
+  setSavingWhatsAppSettings,
+] = useState(false);
+
+const [
+  whatsappSettingsMessage,
+  setWhatsAppSettingsMessage,
+] = useState("");
+
+const [
+  whatsappSettingsError,
+  setWhatsAppSettingsError,
+] = useState("");
 
   const availableDays = useMemo(() => {
     const month = Number(form.birthMonth);
@@ -1146,6 +1197,118 @@ async function handleBulkBirthdayImport(event) {
   }
 }
 
+async function saveWhatsAppSettings(
+  event
+) {
+  event.preventDefault();
+
+  if (!isValidLeagueId) {
+    setWhatsAppSettingsError(
+      "Invalid league ID."
+    );
+    return;
+  }
+
+  setSavingWhatsAppSettings(true);
+  setWhatsAppSettingsMessage("");
+  setWhatsAppSettingsError("");
+
+  try {
+    const normalizedNumber =
+      normalizeOwnerWhatsAppNumber(
+        ownerWhatsAppNumber
+      );
+
+    if (
+      whatsappNotificationsEnabled &&
+      !normalizedNumber
+    ) {
+      throw new Error(
+        "Enter the owner's WhatsApp number before enabling automatic WhatsApp reminders."
+      );
+    }
+
+    if (
+      normalizedNumber &&
+      !/^\+[1-9]\d{7,14}$/.test(
+        normalizedNumber
+      )
+    ) {
+      throw new Error(
+        "Enter a valid WhatsApp number with country code, for example +16025551234."
+      );
+    }
+
+    const response = await fetch(
+      `/api/leagues/${numericLeagueId}/whatsapp-settings`,
+      {
+        method: "PATCH",
+
+        headers: {
+          "Content-Type":
+            "application/json",
+          Accept:
+            "application/json",
+        },
+
+        body: JSON.stringify({
+          ownerWhatsAppNumber:
+            normalizedNumber ||
+            null,
+
+          whatsappNotificationsEnabled:
+            Boolean(
+              whatsappNotificationsEnabled
+            ),
+        }),
+      }
+    );
+
+    const data =
+      await readJsonResponse(
+        response
+      );
+
+    if (!response.ok) {
+      throw new Error(
+        data?.error ||
+          "Unable to save WhatsApp settings."
+      );
+    }
+
+    setOwnerWhatsAppNumber(
+      data?.league
+        ?.ownerWhatsAppNumber ||
+        normalizedNumber
+    );
+
+    setWhatsappNotificationsEnabled(
+      Boolean(
+        data?.league
+          ?.whatsappNotificationsEnabled
+      )
+    );
+
+    setWhatsAppSettingsMessage(
+      data?.message ||
+        "WhatsApp birthday settings saved successfully."
+    );
+  } catch (saveError) {
+    console.error(
+      "WhatsApp settings save error:",
+      saveError
+    );
+
+    setWhatsAppSettingsError(
+      saveError instanceof Error
+        ? saveError.message
+        : "Unable to save WhatsApp settings."
+    );
+  } finally {
+    setSavingWhatsAppSettings(false);
+  }
+}
+
 async function runBirthdayAction(birthdayId, actionName, callback) {
   try {
     setActionLoading({
@@ -1200,7 +1363,148 @@ async function runBirthdayAction(birthdayId, actionName, callback) {
   </Link>
 </div>
       </section>
+<section className="birthday-card league-whatsapp-settings-card">
+  <div className="birthday-list-heading">
+    <div>
+      <h2>
+        💬 Owner WhatsApp Notifications
+      </h2>
 
+      <p>
+        Send automatic birthday wishes to
+        the league owner through WhatsApp.
+        Existing device notifications remain
+        active and operate independently.
+      </p>
+    </div>
+
+    <span
+      className={
+        whatsappNotificationsEnabled
+          ? "status-active"
+          : "status-inactive"
+      }
+    >
+      {whatsappNotificationsEnabled
+        ? "Enabled"
+        : "Disabled"}
+    </span>
+  </div>
+
+  <form
+    onSubmit={saveWhatsAppSettings}
+    className="birthday-form"
+  >
+    <label>
+      League
+
+      <input
+        type="text"
+        value={
+          leagueName ||
+          `League ${numericLeagueId}`
+        }
+        disabled
+      />
+    </label>
+
+    <label>
+      Owner&apos;s WhatsApp number
+
+      <input
+        type="tel"
+        value={
+          ownerWhatsAppNumber
+        }
+        placeholder="+16025551234"
+        autoComplete="tel"
+        disabled={
+          savingWhatsAppSettings
+        }
+        onChange={(event) => {
+          setOwnerWhatsAppNumber(
+            event.target.value
+          );
+
+          setWhatsAppSettingsMessage("");
+          setWhatsAppSettingsError("");
+        }}
+      />
+
+      <small>
+        Include the country code. Examples:
+        +1 for the United States or +91
+        for India.
+      </small>
+    </label>
+
+    <label className="checkbox-label">
+      <input
+        type="checkbox"
+        checked={
+          whatsappNotificationsEnabled
+        }
+        disabled={
+          savingWhatsAppSettings
+        }
+        onChange={(event) => {
+          setWhatsappNotificationsEnabled(
+            event.target.checked
+          );
+
+          setWhatsAppSettingsMessage("");
+          setWhatsAppSettingsError("");
+        }}
+      />
+
+      Send automatic birthday wishes to
+      this WhatsApp number
+    </label>
+
+    <div className="birthday-notification-channel-note">
+      <strong>
+        🔔 Device notifications remain active
+      </strong>
+
+      <p>
+        Turning this WhatsApp option on or
+        off does not enable, disable, or modify
+        browser and device notifications.
+      </p>
+    </div>
+
+    <div className="birthday-actions">
+      <button
+        type="submit"
+        disabled={
+          savingWhatsAppSettings
+        }
+      >
+        {savingWhatsAppSettings
+          ? "Saving..."
+          : "Save WhatsApp Settings"}
+      </button>
+    </div>
+  </form>
+
+  {whatsappSettingsMessage && (
+    <p
+      className="birthday-success"
+      role="status"
+    >
+      {whatsappSettingsMessage}
+    </p>
+  )}
+
+  {whatsappSettingsError && (
+    <p
+      className="birthday-error"
+      role="alert"
+    >
+      {whatsappSettingsError}
+    </p>
+  )}
+</section>
       <section className="birthday-card">
         <h2>
           {editingId ? "Edit birthday" : "Add birthday"}
