@@ -61336,3 +61336,648 @@ body {
   margin: 0;
   opacity: 0.85;
 }
+.birthday-bulk-import-card {
+  display: block;
+  width: 100%;
+}
+
+.birthday-bulk-import-card form {
+  margin-top: 1rem;
+}
+/* =========================================================
+   CRIC4ALL BIRTHDAY CENTER — CLEAN PREMIUM COLLAPSIBLES
+   ========================================================= */
+
+.birthday-collapsible {
+  position: relative;
+  width: 100%;
+  margin: 0 0 1rem;
+  overflow: hidden;
+
+  border: 1px solid rgba(15, 23, 42, 0.12);
+  border-radius: 18px;
+
+  background:
+    linear-gradient(
+      180deg,
+      rgba(255, 255, 255, 0.99),
+      rgba(248, 250, 252, 0.98)
+    );
+
+  box-shadow:
+    0 12px 30px rgba(15, 23, 42, 0.07),
+    0 2px 6px rgba(15, 23, 42, 0.04);
+
+  transition:
+    border-color 180ms ease,
+    box-shadow 180ms ease,
+    transform 180ms ease;
+}
+
+.birthday-collapsible::before {
+  content: "";
+  position: absolute;
+  inset: 0 auto 0 0;
+  width: 4px;
+
+  background: linear-gradient(
+    180deg,
+    #0f172a,
+    #16a34a
+  );
+
+  opacity: 0.9;
+  z-index: 2;
+}
+
+.birthday-collapsible:hover {
+  transform: translateY(-1px);
+  border-color: rgba(15, 23, 42, 0.2);
+
+  box-shadow:
+    0 16px 36px rgba(15, 23, 42, 0.09),
+    0 3px 8px rgba(15, 23, 42, 0.05);
+}
+
+.birthday-collapsible[open] {
+  border-color: rgba(22, 163, 74, 0.34);
+
+  box-shadow:
+    0 18px 42px rgba(15, 23, 42, 0.1),
+    0 4px 12px rgba(22, 163, 74, 0.06);
+}
+
+/* Remove browser marker */
+
+.birthday-collapsible-summary {
+  list-style: none;
+}
+
+.birthday-collapsible-summary::-webkit-details-marker {
+  display: none;
+}
+
+.birthday-collapsible-summary::marker {
+  content: "";
+}
+
+/* Header */
+
+.birthday-collapsible-summary {
+  position: relative;
+  z-index: 3;
+
+  display: grid;
+  grid-template-columns:
+    auto minmax(0, 1fr) auto auto;
+  align-items: center;
+  gap: 0.85rem;
+
+  min-height: 80px;
+  padding: 0.95rem 1rem 0.95rem 1.25rem;
+
+  cursor: pointer;
+  user-select: none;
+
+  background: rgba(255, 255, 255, 0.75);
+
+  transition:
+    background 180ms ease,
+    border-color 180ms ease;
+}
+
+.birthday-collapsible-summary:hover {
+  background: rgba(248, 250, 252, 0.95);
+}
+
+.birthday-collapsible-summary:focus-visible {
+  outline: 3px solid rgba(22, 163, 74, 0.24);
+  outline-offset: -3px;
+}
+
+.birthday-collapsible[open]
+  > .birthday-collapsible-summary {
+  background:
+    linear-gradient(
+      90deg,
+      rgba(15, 23, 42, 0.03),
+      rgba(22, 163, 74, 0.045)
+    );
+
+  border-bottom: 1px solid rgba(15, 23, 42, 0.09);
+}
+
+/* Icon */
+
+.birthday-collapsible-icon {
+  display: grid;
+  place-items: center;
+
+  width: 46px;
+  height: 46px;
+
+  border: 1px solid rgba(15, 23, 42, 0.1);
+  border-radius: 14px;
+
+  background:
+    linear-gradient(
+      145deg,
+      #f8fafc,
+      #eef2f7
+    );
+
+  box-shadow:
+    inset 0 1px 0 rgba(255, 255, 255, 0.9),
+    0 6px 16px rgba(15, 23, 42, 0.07);
+
+  font-size: 1.35rem;
+  line-height: 1;
+
+  transition:
+    transform 180ms ease,
+    border-color 180ms ease;
+}
+
+.birthday-collapsible:hover
+  .birthday-collapsible-icon {
+  transform: translateY(-1px);
+  border-color: rgba(22, 163, 74, 0.25);
+}
+
+.birthday-collapsible[open]
+  .birthday-collapsible-icon {
+  border-color: rgba(22, 163, 74, 0.35);
+}
+
+/* Heading */
+
+.birthday-collapsible-heading {
+  display: flex;
+  flex-direction: column;
+  min-width: 0;
+  gap: 0.2rem;
+}
+
+.birthday-collapsible-heading strong {
+  overflow: hidden;
+
+  color: #0f172a;
+  font-size: clamp(1rem, 1.5vw, 1.16rem);
+  font-weight: 750;
+  line-height: 1.25;
+  letter-spacing: -0.018em;
+
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.birthday-collapsible-heading small {
+  display: -webkit-box;
+  overflow: hidden;
+
+  color: #64748b;
+  font-size: 0.82rem;
+  font-weight: 500;
+  line-height: 1.4;
+
+  -webkit-line-clamp: 2;
+  -webkit-box-orient: vertical;
+}
+
+/* Badge */
+
+.birthday-collapsible-badge {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+
+  min-height: 28px;
+  max-width: 170px;
+  padding: 0.32rem 0.62rem;
+
+  overflow: hidden;
+
+  border: 1px solid rgba(15, 23, 42, 0.1);
+  border-radius: 999px;
+
+  background: #f8fafc;
+
+  color: #334155;
+  font-size: 0.72rem;
+  font-weight: 700;
+  line-height: 1;
+
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.birthday-collapsible-badge
+  .status-active {
+  color: #166534;
+}
+
+.birthday-collapsible-badge
+  .status-inactive {
+  color: #64748b;
+}
+
+/* Chevron */
+
+.birthday-collapsible-chevron {
+  display: grid;
+  place-items: center;
+
+  width: 36px;
+  height: 36px;
+
+  border: 1px solid rgba(15, 23, 42, 0.1);
+  border-radius: 11px;
+
+  background: #ffffff;
+  color: #334155;
+
+  box-shadow:
+    0 3px 9px rgba(15, 23, 42, 0.05);
+
+  transition:
+    transform 240ms ease,
+    background 180ms ease,
+    color 180ms ease,
+    border-color 180ms ease;
+}
+
+.birthday-collapsible[open]
+  .birthday-collapsible-chevron {
+  transform: rotate(180deg);
+
+  background: #f0fdf4;
+  color: #15803d;
+  border-color: rgba(22, 163, 74, 0.25);
+}
+
+/* Content */
+
+.birthday-collapsible-body {
+  overflow: hidden;
+}
+
+.birthday-collapsible[open]
+  .birthday-collapsible-body {
+  animation:
+    birthdaySectionReveal
+    240ms ease-out;
+}
+
+.birthday-collapsible-body-inner {
+  position: relative;
+  padding: 1.2rem;
+}
+
+@keyframes birthdaySectionReveal {
+  from {
+    opacity: 0;
+    transform: translateY(-5px);
+  }
+
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+/* Intro block */
+
+.birthday-section-intro {
+  margin-bottom: 1rem;
+  padding: 0.85rem 0.95rem;
+
+  border: 1px solid rgba(15, 23, 42, 0.09);
+  border-left: 3px solid #16a34a;
+  border-radius: 12px;
+
+  background: #f8fafc;
+}
+
+.birthday-section-intro p {
+  margin: 0;
+  color: #475569;
+  line-height: 1.55;
+}
+
+.birthday-section-intro p + p {
+  margin-top: 0.3rem;
+}
+
+/* Remove previous theme colors */
+
+.birthday-collapsible-whatsapp,
+.birthday-collapsible-birthday,
+.birthday-collapsible-bulk,
+.birthday-collapsible-list {
+  --section-accent: initial;
+  --section-accent-secondary: initial;
+}
+
+/* Desktop form arrangement */
+
+@media (min-width: 840px) {
+  .birthday-collapsible-body-inner
+    > .birthday-form {
+    display: grid;
+    grid-template-columns:
+      repeat(2, minmax(0, 1fr));
+    column-gap: 1rem;
+    align-items: start;
+  }
+
+  .birthday-collapsible-body-inner
+    > .birthday-form
+    > .birthday-date-row,
+  .birthday-collapsible-body-inner
+    > .birthday-form
+    > .checkbox-label,
+  .birthday-collapsible-body-inner
+    > .birthday-form
+    > .birthday-notification-channel-note,
+  .birthday-collapsible-body-inner
+    > .birthday-form
+    > .birthday-import-example,
+  .birthday-collapsible-body-inner
+    > .birthday-form
+    > .birthday-import-notice,
+  .birthday-collapsible-body-inner
+    > .birthday-form
+    > .birthday-actions {
+    grid-column: 1 / -1;
+  }
+}
+
+/* Mobile */
+
+@media (max-width: 700px) {
+  .birthday-page {
+    padding-inline: 0.65rem;
+  }
+
+  .birthday-collapsible {
+    margin-bottom: 0.78rem;
+    border-radius: 15px;
+  }
+
+  .birthday-collapsible:hover {
+    transform: none;
+  }
+
+  .birthday-collapsible-summary {
+    grid-template-columns:
+      auto minmax(0, 1fr) auto;
+
+    gap: 0.65rem;
+
+    min-height: 70px;
+    padding:
+      0.78rem
+      0.72rem
+      0.78rem
+      0.92rem;
+  }
+
+  .birthday-collapsible-icon {
+    width: 40px;
+    height: 40px;
+    border-radius: 12px;
+    font-size: 1.18rem;
+  }
+
+  .birthday-collapsible-heading strong {
+    font-size: 0.95rem;
+    white-space: normal;
+  }
+
+  .birthday-collapsible-heading small {
+    font-size: 0.75rem;
+    line-height: 1.35;
+  }
+
+  .birthday-collapsible-badge {
+    display: none;
+  }
+
+  .birthday-collapsible-chevron {
+    width: 32px;
+    height: 32px;
+    border-radius: 10px;
+  }
+
+  .birthday-collapsible-body-inner {
+    padding: 0.95rem 0.8rem 1rem;
+  }
+
+  .birthday-collapsible-body-inner
+    .birthday-form {
+    display: block;
+  }
+
+  .birthday-collapsible-body-inner
+    .birthday-date-row {
+    display: grid;
+    grid-template-columns: 1fr;
+    gap: 0.75rem;
+  }
+
+  .birthday-collapsible-body-inner
+    .birthday-actions {
+    display: grid;
+    grid-template-columns: 1fr;
+    gap: 0.6rem;
+  }
+
+  .birthday-collapsible-body-inner
+    .birthday-actions
+    button {
+    width: 100%;
+    min-height: 44px;
+  }
+
+  .birthday-collapsible-body-inner
+    input,
+  .birthday-collapsible-body-inner
+    select,
+  .birthday-collapsible-body-inner
+    textarea {
+    width: 100%;
+    min-height: 44px;
+    font-size: 16px;
+  }
+
+  .birthday-collapsible-body-inner
+    input[type="checkbox"] {
+    width: auto;
+    min-height: auto;
+  }
+
+  .birthday-import-example pre {
+    max-width: 100%;
+    overflow-x: auto;
+  }
+
+  .birthday-table-wrapper {
+    width: 100%;
+    overflow-x: auto;
+    -webkit-overflow-scrolling: touch;
+  }
+}
+
+/* Reduced motion */
+
+@media (prefers-reduced-motion: reduce) {
+  .birthday-collapsible,
+  .birthday-collapsible-icon,
+  .birthday-collapsible-chevron {
+    transition: none;
+  }
+
+  .birthday-collapsible[open]
+    .birthday-collapsible-body {
+    animation: none;
+  }
+}
+/* =========================================================
+   TODAY'S BIRTHDAYS — BACK NAVIGATION
+   ========================================================= */
+
+.birthday-page-navigation {
+  display: flex;
+  align-items: center;
+  justify-content: flex-start;
+
+  width: 100%;
+  max-width: 1180px;
+  margin: 0 auto 0.85rem;
+}
+
+.birthday-back-button {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.7rem;
+
+  min-height: 46px;
+  padding: 0.48rem 0.9rem 0.48rem 0.55rem;
+
+  border: 1px solid rgba(15, 23, 42, 0.12);
+  border-radius: 14px;
+
+  background:
+    linear-gradient(
+      180deg,
+      rgba(255, 255, 255, 0.98),
+      rgba(248, 250, 252, 0.98)
+    );
+
+  color: #0f172a;
+  cursor: pointer;
+
+  box-shadow:
+    0 7px 18px rgba(15, 23, 42, 0.07),
+    0 1px 3px rgba(15, 23, 42, 0.05);
+
+  transition:
+    transform 180ms ease,
+    border-color 180ms ease,
+    box-shadow 180ms ease,
+    background 180ms ease;
+}
+
+.birthday-back-button:hover {
+  transform: translateX(-2px);
+
+  border-color: rgba(22, 163, 74, 0.3);
+
+  background:
+    linear-gradient(
+      180deg,
+      #ffffff,
+      #f0fdf4
+    );
+
+  box-shadow:
+    0 9px 22px rgba(15, 23, 42, 0.09),
+    0 2px 5px rgba(22, 163, 74, 0.08);
+}
+
+.birthday-back-button:active {
+  transform: translateX(-1px) scale(0.98);
+}
+
+.birthday-back-button:focus-visible {
+  outline: 3px solid rgba(22, 163, 74, 0.25);
+  outline-offset: 2px;
+}
+
+.birthday-back-icon {
+  display: grid;
+  place-items: center;
+
+  width: 34px;
+  height: 34px;
+
+  border: 1px solid rgba(15, 23, 42, 0.09);
+  border-radius: 10px;
+
+  background: #f8fafc;
+  color: #166534;
+
+  font-size: 1.25rem;
+  font-weight: 800;
+  line-height: 1;
+}
+
+.birthday-back-content {
+  display: flex;
+  flex-direction: column;
+  align-items: flex-start;
+  gap: 0.05rem;
+}
+
+.birthday-back-content strong {
+  color: #0f172a;
+  font-size: 0.88rem;
+  font-weight: 800;
+  line-height: 1.1;
+}
+
+.birthday-back-content small {
+  color: #64748b;
+  font-size: 0.7rem;
+  font-weight: 600;
+  line-height: 1.1;
+}
+
+/* Mobile */
+
+@media (max-width: 700px) {
+  .birthday-page-navigation {
+    margin-bottom: 0.65rem;
+  }
+
+  .birthday-back-button {
+    min-height: 42px;
+    padding: 0.4rem 0.72rem 0.4rem 0.45rem;
+    border-radius: 12px;
+  }
+
+  .birthday-back-icon {
+    width: 31px;
+    height: 31px;
+    border-radius: 9px;
+    font-size: 1.1rem;
+  }
+
+  .birthday-back-content strong {
+    font-size: 0.82rem;
+  }
+
+  .birthday-back-content small {
+    font-size: 0.66rem;
+  }
+}

@@ -260,7 +260,80 @@ function normalizeOwnerWhatsAppNumber(
 
   return `+${digits}`;
 }
+function BirthdayCollapsibleSection({
+  icon,
+  title,
+  description,
+  badge = null,
+  accent = "default",
+  children,
+  className = "",
+  defaultOpen = false,
+  onToggle,
+}) {
+  return (
+<details
+  className={[
+    "birthday-collapsible",
+    `birthday-collapsible-${accent}`,
+    className,
+  ]
+    .filter(Boolean)
+    .join(" ")}
+  open={defaultOpen}
+  onToggle={onToggle}
+>
+      <summary className="birthday-collapsible-summary">
+        <span
+          className="birthday-collapsible-icon"
+          aria-hidden="true"
+        >
+          {icon}
+        </span>
 
+        <span className="birthday-collapsible-heading">
+          <strong>{title}</strong>
+
+          {description && (
+            <small>{description}</small>
+          )}
+        </span>
+
+        {badge && (
+          <span className="birthday-collapsible-badge">
+            {badge}
+          </span>
+        )}
+
+        <span
+          className="birthday-collapsible-chevron"
+          aria-hidden="true"
+        >
+          <svg
+            viewBox="0 0 24 24"
+            width="22"
+            height="22"
+            fill="none"
+          >
+            <path
+              d="M6 9l6 6 6-6"
+              stroke="currentColor"
+              strokeWidth="2.25"
+              strokeLinecap="round"
+              strokeLinejoin="round"
+            />
+          </svg>
+        </span>
+      </summary>
+
+      <div className="birthday-collapsible-body">
+        <div className="birthday-collapsible-body-inner">
+          {children}
+        </div>
+      </div>
+    </details>
+  );
+}
 export default function BirthdayManager({
   leagueId,
   leagueName,
@@ -277,7 +350,8 @@ export default function BirthdayManager({
     : null;
 
   const [birthdays, setBirthdays] = useState([]);
-  const [form, setForm] = useState({name: "", whatsappNumber: "", whatsappOptIn: false,});
+  const [form, setForm] = useState(EMPTY_FORM);
+  //const [form, setForm] = useState({name: "", whatsappNumber: "", whatsappOptIn: false,});
   const [editingId, setEditingId] = useState(null);
   const [loading, setLoading] = useState(true);
   const [saving, setSaving] = useState(false);
@@ -333,6 +407,11 @@ const [
   whatsappSettingsError,
   setWhatsAppSettingsError,
 ] = useState("");
+
+const [
+  birthdayFormSectionKey,
+  setBirthdayFormSectionKey,
+] = useState(0);
 
   const availableDays = useMemo(() => {
     const month = Number(form.birthMonth);
@@ -499,6 +578,9 @@ useEffect(() => {
 
  function startEditing(birthday) {
   setEditingId(birthday.id);
+  setBirthdayFormSectionKey(
+  (current) => current + 1
+);
 
   setForm({
     playerId: birthday.playerId
@@ -1363,21 +1445,13 @@ async function runBirthdayAction(birthdayId, actionName, callback) {
   </Link>
 </div>
       </section>
-<section className="birthday-card league-whatsapp-settings-card">
-  <div className="birthday-list-heading">
-    <div>
-      <h2>
-        💬 Owner WhatsApp Notifications
-      </h2>
-
-      <p>
-        Send automatic birthday wishes to
-        the league owner through WhatsApp.
-        Existing device notifications remain
-        active and operate independently.
-      </p>
-    </div>
-
+<BirthdayCollapsibleSection
+  icon="💬"
+  title="Owner WhatsApp Notifications"
+  description="Configure automatic Twilio birthday wishes for the league owner"
+  accent="whatsapp"
+  className="league-whatsapp-settings-card"
+  badge={
     <span
       className={
         whatsappNotificationsEnabled
@@ -1389,6 +1463,18 @@ async function runBirthdayAction(birthdayId, actionName, callback) {
         ? "Enabled"
         : "Disabled"}
     </span>
+  }
+>
+  <div className="birthday-section-intro">
+    <p>
+      Send automatic birthday wishes to the league
+      owner through WhatsApp.
+    </p>
+
+    <p>
+      Existing browser and device notifications remain
+      active and operate independently.
+    </p>
   </div>
 
   <form
@@ -1413,14 +1499,10 @@ async function runBirthdayAction(birthdayId, actionName, callback) {
 
       <input
         type="tel"
-        value={
-          ownerWhatsAppNumber
-        }
+        value={ownerWhatsAppNumber}
         placeholder="+16025551234"
         autoComplete="tel"
-        disabled={
-          savingWhatsAppSettings
-        }
+        disabled={savingWhatsAppSettings}
         onChange={(event) => {
           setOwnerWhatsAppNumber(
             event.target.value
@@ -1432,9 +1514,8 @@ async function runBirthdayAction(birthdayId, actionName, callback) {
       />
 
       <small>
-        Include the country code. Examples:
-        +1 for the United States or +91
-        for India.
+        Include the country code. Examples: +1 for
+        the United States or +91 for India.
       </small>
     </label>
 
@@ -1457,8 +1538,8 @@ async function runBirthdayAction(birthdayId, actionName, callback) {
         }}
       />
 
-      Send automatic birthday wishes to
-      this WhatsApp number
+      Send automatic birthday wishes to this
+      WhatsApp number
     </label>
 
     <div className="birthday-notification-channel-note">
@@ -1467,9 +1548,9 @@ async function runBirthdayAction(birthdayId, actionName, callback) {
       </strong>
 
       <p>
-        Turning this WhatsApp option on or
-        off does not enable, disable, or modify
-        browser and device notifications.
+        Turning this WhatsApp option on or off does
+        not enable, disable, or modify browser and
+        device notifications.
       </p>
     </div>
 
@@ -1504,11 +1585,29 @@ async function runBirthdayAction(birthdayId, actionName, callback) {
       {whatsappSettingsError}
     </p>
   )}
-</section>
-      <section className="birthday-card">
-        <h2>
-          {editingId ? "Edit birthday" : "Add birthday"}
-        </h2>
+</BirthdayCollapsibleSection>
+
+<BirthdayCollapsibleSection
+  key={birthdayFormSectionKey}
+  defaultOpen={Boolean(editingId)}
+  icon={editingId ? "✏️" : "🎁"}
+  title={
+    editingId
+      ? "Edit Birthday"
+      : "Add Birthday"
+  }
+  description={
+    editingId
+      ? `Update ${form.name || "the selected player's"} birthday details`
+      : "Add an individual player birthday and WhatsApp preferences"
+  }
+  accent="birthday"
+  badge={
+    editingId
+      ? "Editing"
+      : `${players.length} players`
+  }
+>
 
         <form
           onSubmit={handleSubmit}
@@ -1678,29 +1777,19 @@ async function runBirthdayAction(birthdayId, actionName, callback) {
             {error}
           </p>
         )}
-      </section>
-<details className="birthday-card birthday-mobile-collapsible">
-  <summary className="birthday-mobile-summary">
-    <span className="birthday-summary-icon">📥</span>
-
-    <span className="birthday-summary-text">
-      <strong>Bulk Birthday Import</strong>
-      <small>Upload birthdays from a text file</small>
-    </span>
-
-    <span className="birthday-summary-arrow">⌄</span>
-  </summary>
-
-  <div className="birthday-collapsible-content">
-    <div className="birthday-list-heading">
-      <div>
-        <h2>Bulk Birthday Import</h2>
-
-        <p>
-          Upload a text file containing one player per line.
-        </p>
-      </div>
-    </div>
+      </BirthdayCollapsibleSection>
+<BirthdayCollapsibleSection
+  icon="📥"
+  title="Bulk Birthday Import"
+  description="Upload multiple player birthdays from one text file"
+  accent="bulk"
+  className="birthday-bulk-import-card"
+  badge={
+    bulkFile
+      ? "File selected"
+      : "TXT upload"
+  }
+>
 
   <form
     onSubmit={handleBulkBirthdayImport}
@@ -1930,17 +2019,22 @@ Rohit S - Feb 26`}</pre>
     )}
   </div>
 )}
-  </div>
-</details>
-      <section className="birthday-card">
-        <div className="birthday-list-heading">
-          <h2>League birthday list</h2>
-
-          <span>
-            {birthdays.length}{" "}
-            {birthdays.length === 1 ? "entry" : "entries"}
-          </span>
-        </div>
+</BirthdayCollapsibleSection> 
+<BirthdayCollapsibleSection
+  icon="📅"
+  title="League Birthday List"
+  description="View, edit, share, enable, disable, or delete birthday records"
+  accent="list"
+  badge={
+    loading
+      ? "Loading..."
+      : `${birthdays.length} ${
+          birthdays.length === 1
+            ? "entry"
+            : "entries"
+        }`
+  }
+>
 
         {loading ? (
           <p>Loading birthdays...</p>
@@ -2139,7 +2233,7 @@ Rohit S - Feb 26`}</pre>
                   </table>
                 </div></>
         )}
-      </section>
+      </BirthdayCollapsibleSection>
     </main>
   );
 }

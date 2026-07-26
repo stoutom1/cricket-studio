@@ -1,6 +1,7 @@
 "use client";
 
 import { useEffect, useMemo, useState } from "react";
+import { useRouter } from "next/navigation";
 import { Capacitor } from "@capacitor/core";
 import { Share } from "@capacitor/share";
 
@@ -8,6 +9,7 @@ export default function BirthdayTodayClient({
   leagueId,
   initialBirthdayId,
 }) {
+  const router = useRouter();
   const [league, setLeague] = useState(null);
   const [birthdays, setBirthdays] = useState([]);
   const [selectedId, setSelectedId] = useState(
@@ -18,7 +20,31 @@ export default function BirthdayTodayClient({
   const [loading, setLoading] = useState(true);
   const [sharing, setSharing] = useState(false);
   const [error, setError] = useState("");
+function goBackToBirthdayCenter() {
+  /*
+   * Use browser history when the user arrived
+   * from another Cric4All page.
+   *
+   * When this page was opened directly from a
+   * notification or copied URL, go to the league's
+   * Birthday Center instead.
+   */
+  const hasPreviousPage =
+    typeof window !== "undefined" &&
+    window.history.length > 1 &&
+    document.referrer &&
+    new URL(document.referrer).origin ===
+      window.location.origin;
 
+  if (hasPreviousPage) {
+    router.back();
+    return;
+  }
+
+  router.push(
+    `/leagues/${leagueId}/birthdays`
+  );
+}
   useEffect(() => {
     let cancelled = false;
 
@@ -273,26 +299,76 @@ export default function BirthdayTodayClient({
     );
   }
 
-  if (error) {
-    return (
-      <main className="birthday-page">
-        <section className="birthday-error-card">
-          <div className="birthday-error-icon">
-            !
-          </div>
-
-          <div>
-            <h2>Unable to load birthdays</h2>
-            <p>{error}</p>
-          </div>
-        </section>
-      </main>
-    );
-  }
-
+ if (error) {
   return (
     <main className="birthday-page">
-      <section className="birthday-hero">
+      <nav
+        className="birthday-page-navigation"
+        aria-label="Birthday page navigation"
+      >
+        <button
+          type="button"
+          className="birthday-back-button"
+          onClick={goBackToBirthdayCenter}
+        >
+          <span
+            className="birthday-back-icon"
+            aria-hidden="true"
+          >
+            ←
+          </span>
+
+          <span className="birthday-back-content">
+            <strong>Back</strong>
+            <small>Birthday Center</small>
+          </span>
+        </button>
+      </nav>
+
+      <section className="birthday-error-card">
+        <div className="birthday-error-icon">
+          !
+        </div>
+
+        <div>
+          <h2>Unable to load birthdays</h2>
+          <p>{error}</p>
+        </div>
+      </section>
+    </main>
+  );
+}
+
+return (
+  <main className="birthday-page">
+    <nav
+      className="birthday-page-navigation"
+      aria-label="Birthday page navigation"
+    >
+      <button
+        type="button"
+        className="birthday-back-button"
+        onClick={goBackToBirthdayCenter}
+        aria-label="Return to the previous birthday page"
+      >
+        <span
+          className="birthday-back-icon"
+          aria-hidden="true"
+        >
+          ←
+        </span>
+
+        <span className="birthday-back-content">
+          <strong>Back</strong>
+
+          <small>
+            Birthday Center
+          </small>
+        </span>
+      </button>
+    </nav>
+
+    <section className="birthday-hero">
         <div className="birthday-confetti birthday-confetti-one" />
         <div className="birthday-confetti birthday-confetti-two" />
         <div className="birthday-confetti birthday-confetti-three" />
