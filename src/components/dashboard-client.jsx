@@ -316,7 +316,7 @@ export default function DashboardClient() {
   const [matchDetail, setMatchDetail] = useState(null);
   const [scoreboard, setScoreboard] = useState(null);
   const [stats, setStats] = useState({ batting: [], bowling: [] });
-  const [runOutRuns, setRunOutRuns] = useState(0);
+  const [runOutRuns, setRunOutRuns] = useState(null);
   const [message, setMessage] = useState("");
   const [error, setError] = useState("");
   const [showAdvancedSheet, setShowAdvancedSheet] = useState(false);
@@ -3280,7 +3280,7 @@ if (
   }
 }
 async function quickWicket(type = "BOWLED") {
-  setRunOutRuns(type === "RUN_OUT" ? 0 : null);
+  setRunOutRuns(null);
   setEndInningsAfterWicket(false);
   setBallForm((prev) => ({
     ...prev,
@@ -3349,6 +3349,15 @@ if (!selectedNewBatterIsValid) {
     ...prev,
     newBatterId: "",
   }));
+  return;
+}
+if (
+  isRunOut &&
+  runOutRuns === null
+) {
+  setError(
+    "Please select the runs completed before the run out."
+  );
   return;
 }
     const runsOffBat = isRunOut
@@ -3462,7 +3471,7 @@ if (shouldOpenSecondInningsSetup) {
 await loadMatches(activeLeagueId);
 
     setShowWicketModal(false);
-    setRunOutRuns(0);
+    setRunOutRuns(null);
 setBallForm((prev) => ({
   ...prev,
   isWicket: false,
@@ -8946,7 +8955,7 @@ const playerRoleBadge = (row) => {
  onChange={(e) => {
   const nextType = e.target.value;
 
-  setRunOutRuns(nextType === "RUN_OUT" ? 0 : null);
+  setRunOutRuns(null);
 
   setBallForm((prev) => ({
     ...prev,
@@ -15725,7 +15734,7 @@ onClick={() => {
   className="wicket-modal-close"
   onClick={() => {
     setShowWicketModal(false);
-    setRunOutRuns(0);
+    setRunOutRuns(null);
 
     setBallForm((prev) => ({
       ...prev,
@@ -15901,18 +15910,22 @@ onClick={() => {
             <span>Runs Completed Before Run Out</span>
 
             <div className="quick-run-grid">
-              {[0, 1, 2, 3, 4, 5, 6].map((runs) => (
- <button
-  key={runs}
-  type="button"
-  className={`runout-btn ${
-    Number(runOutRuns) === runs ? "selected" : ""
-  }`}
-  onClick={() => setRunOutRuns(runs)}
->
-  RO + {runs}
-</button>
-              ))}
+{[0, 1, 2, 3, 4, 5, 6].map((runs) => (
+  <button
+    key={runs}
+    type="button"
+    className={`runout-btn ${
+      runOutRuns === runs
+        ? "selected"
+        : ""
+    }`}
+    onClick={() => {
+      setRunOutRuns(runs);
+    }}
+  >
+    RO + {runs}
+  </button>
+))}
             </div>
           </label>
 
@@ -16075,7 +16088,7 @@ onClick={() => {
           className="btn btn-outline"
           onClick={() => {
             setShowWicketModal(false);
-            setRunOutRuns(0);
+            setRunOutRuns(null);
 
             setBallForm((prev) => ({
               ...prev,
@@ -17968,11 +17981,7 @@ onChange={(e) => {
         onChange={(event) => {
           const wicketType = event.target.value;
 
-          setRunOutRuns(
-            wicketType === "RUN_OUT"
-              ? 0
-              : null
-          );
+          setRunOutRuns(null);
 
           setBallForm((previous) => ({
             ...previous,
@@ -18051,20 +18060,19 @@ onChange={(e) => {
             value={runOutRuns ?? 0}
             onChange={(event) => {
               const nextRuns =
-                event.target.value === ""
-                  ? 0
-                  : Number(event.target.value);
+  event.target.value === ""
+    ? null
+    : Number(event.target.value);
 
-              setRunOutRuns(nextRuns);
+setRunOutRuns(nextRuns);
 
-              /*
-                Your API currently receives runs through
-                runsOffBat. Keep it synchronized for a run-out.
-              */
-              setBallForm((previous) => ({
-                ...previous,
-                runsOffBat: String(nextRuns),
-              }));
+setBallForm((previous) => ({
+  ...previous,
+  runsOffBat:
+    nextRuns === null
+      ? "0"
+      : String(nextRuns),
+}));
             }}
           />
         </label>
