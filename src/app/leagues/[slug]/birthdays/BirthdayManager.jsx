@@ -1504,7 +1504,7 @@ async function runBirthdayAction(birthdayId, actionName, callback) {
 <BirthdayCollapsibleSection
   icon="💬"
   title="Owner WhatsApp Notifications"
-  description="Configure automatic Twilio birthday wishes for the league owner"
+  description="Set up automatic birthday wishes for the league owner"
   accent="whatsapp"
   className="league-whatsapp-settings-card"
   badge={
@@ -1521,17 +1521,17 @@ async function runBirthdayAction(birthdayId, actionName, callback) {
     </span>
   }
 >
-  <div className="birthday-section-intro">
-    <p>
-      Send automatic birthday wishes to the league
-      owner through WhatsApp.
-    </p>
+<div className="birthday-section-intro">
+  <p>
+    Send automatic birthday wishes to the league
+    owner through WhatsApp.
+  </p>
 
-    <p>
-      Existing browser and device notifications remain
-      active and operate independently.
-    </p>
-  </div>
+  <p>
+    Browser and device notifications will continue
+    to work separately.
+  </p>
+</div>
 
   <form
     onSubmit={saveWhatsAppSettings}
@@ -1850,7 +1850,7 @@ async function runBirthdayAction(birthdayId, actionName, callback) {
             {editingId && (
               <button
                 type="button"
-                className="secondary"
+                className="birthday-actions"
                 onClick={cancelEditing}
                 disabled={saving}
               >
@@ -1916,13 +1916,23 @@ async function runBirthdayAction(birthdayId, actionName, callback) {
       />
     </label>
 
-    <div className="birthday-import-example">
-      <strong>Required format:</strong>
+<div
+  className="birthday-import-example"
+  aria-label="Birthday file format example"
+>
+  <strong>
+    Required text-file format
+  </strong>
 
-      <pre>{`Virat K - Jan 01
+  <p className="birthday-import-help">
+    Enter one player per line using:
+    Player Name - Month Day
+  </p>
+
+  <pre aria-hidden="true">{`Virat K - Jan 01
 Dhoni - Dec 24
 Rohit S - Feb 26`}</pre>
-    </div>
+</div>
 
     <label>
       Owner&apos;s WhatsApp number

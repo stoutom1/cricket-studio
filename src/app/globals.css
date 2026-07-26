@@ -62385,3 +62385,1095 @@ transform:translateX(28px);
 .birthday-collapsible-summary:active {
   background-color: #171c1d !important;
 }
+/* =========================================================
+   MOBILE BIRTHDAY CENTER FIXES
+   ========================================================= */
+
+.birthday-section-intro {
+  color: #dbe4f0;
+  background: #151a1f;
+  border: 1px solid rgba(34, 197, 94, 0.2);
+  border-left: 4px solid #22c55e;
+}
+
+.birthday-section-intro p {
+  color: #cbd5e1;
+}
+
+.birthday-section-intro p + p {
+  margin-top: 0.45rem;
+}
+@media (max-width: 700px) {
+  .birthday-collapsible-summary {
+    grid-template-columns:
+      auto minmax(0, 1fr) auto;
+
+    gap: 0.75rem;
+
+    min-height: 86px;
+    padding:
+      0.95rem
+      0.8rem
+      0.95rem
+      0.95rem;
+  }
+
+  .birthday-collapsible-icon {
+    width: 46px;
+    height: 46px;
+    border-radius: 13px;
+    font-size: 1.35rem;
+  }
+
+  .birthday-collapsible-heading {
+    gap: 0.3rem;
+  }
+
+  .birthday-collapsible-heading strong {
+    color: #f8fafc;
+    font-size: 1rem;
+    font-weight: 800;
+    line-height: 1.25;
+    white-space: normal;
+  }
+
+  .birthday-collapsible-heading small {
+    display: block;
+
+    color: #a9b6c8;
+    font-size: 0.82rem;
+    font-weight: 600;
+    line-height: 1.35;
+
+    -webkit-line-clamp: unset;
+  }
+
+  .birthday-collapsible-chevron {
+    width: 36px;
+    height: 36px;
+    border-radius: 11px;
+  }
+}
+@media (max-width: 700px) {
+  .birthday-collapsible-body-inner {
+    padding: 1rem;
+  }
+
+  .birthday-section-intro {
+    margin-bottom: 1rem;
+    padding: 0.9rem;
+    border-radius: 12px;
+  }
+
+  .birthday-section-intro p {
+    font-size: 0.9rem;
+    line-height: 1.5;
+  }
+
+  .birthday-form label {
+    color: #e2e8f0;
+    font-size: 0.9rem;
+    font-weight: 700;
+  }
+
+  .birthday-form label small {
+    color: #b3bfd0;
+    font-size: 0.78rem;
+    line-height: 1.4;
+  }
+}
+.birthday-collapsible,
+.birthday-collapsible-summary,
+.birthday-collapsible-body,
+.birthday-collapsible-body-inner,
+.birthday-section-intro {
+  color-scheme: dark;
+}
+
+.birthday-section-intro,
+.birthday-section-intro:hover,
+.birthday-section-intro:focus,
+.birthday-section-intro:active {
+  background: #151a1f !important;
+  color: #dbe4f0 !important;
+}
+
+.birthday-section-intro p {
+  color: #cbd5e1 !important;
+}
+/* =========================================================
+   CRIC4ALL BIRTHDAY CENTER
+   PREMIUM DARK COLLAPSIBLE SECTIONS
+   MOBILE + LAPTOP
+   ========================================================= */
+
+.birthday-collapsible {
+  position: relative;
+  width: 100%;
+  margin: 0 0 1rem;
+  overflow: hidden;
+
+  border: 1px solid rgba(148, 163, 184, 0.16);
+  border-radius: 20px;
+
+  background:
+    linear-gradient(
+      145deg,
+      rgba(18, 23, 29, 0.99),
+      rgba(12, 17, 22, 0.99)
+    );
+
+  box-shadow:
+    0 14px 32px rgba(0, 0, 0, 0.24),
+    inset 0 1px 0 rgba(255, 255, 255, 0.025);
+
+  color: #f8fafc;
+
+  transition:
+    border-color 180ms ease,
+    box-shadow 180ms ease,
+    background 180ms ease;
+}
+
+/* Elegant Cric4All identity line */
+
+.birthday-collapsible::before {
+  content: "";
+  position: absolute;
+  inset: 0 auto 0 0;
+  width: 4px;
+
+  background:
+    linear-gradient(
+      180deg,
+      #22c55e 0%,
+      #0f766e 100%
+    );
+
+  opacity: 0.85;
+  z-index: 2;
+}
+
+/* Subtle premium glow */
+
+.birthday-collapsible::after {
+  content: "";
+  position: absolute;
+  top: -60px;
+  right: -60px;
+
+  width: 150px;
+  height: 150px;
+
+  border-radius: 50%;
+
+  background:
+    radial-gradient(
+      circle,
+      rgba(34, 197, 94, 0.08),
+      transparent 68%
+    );
+
+  pointer-events: none;
+}
+
+.birthday-collapsible:hover {
+  border-color: rgba(34, 197, 94, 0.28);
+
+  box-shadow:
+    0 18px 38px rgba(0, 0, 0, 0.3),
+    0 0 0 1px rgba(34, 197, 94, 0.04);
+}
+
+.birthday-collapsible[open] {
+  border-color: rgba(34, 197, 94, 0.38);
+
+  box-shadow:
+    0 20px 44px rgba(0, 0, 0, 0.33),
+    0 0 24px rgba(34, 197, 94, 0.05);
+}
+
+/* Remove browser's native details marker */
+
+.birthday-collapsible-summary {
+  list-style: none;
+}
+
+.birthday-collapsible-summary::-webkit-details-marker {
+  display: none;
+}
+
+.birthday-collapsible-summary::marker {
+  content: "";
+}
+
+/* =========================================================
+   COLLAPSIBLE HEADER
+   ========================================================= */
+
+.birthday-collapsible-summary {
+  position: relative;
+  z-index: 3;
+
+  display: grid;
+  grid-template-columns:
+    auto minmax(0, 1fr) auto auto;
+  align-items: center;
+  gap: 1rem;
+
+  min-height: 96px;
+  padding: 1.1rem 1.1rem 1.1rem 1.3rem;
+
+  cursor: pointer;
+  user-select: none;
+
+  background:
+    linear-gradient(
+      90deg,
+      rgba(255, 255, 255, 0.015),
+      rgba(34, 197, 94, 0.025)
+    );
+
+  color: #f8fafc;
+
+  transition:
+    background 180ms ease,
+    border-color 180ms ease;
+}
+
+.birthday-collapsible-summary:hover {
+  background:
+    linear-gradient(
+      90deg,
+      rgba(255, 255, 255, 0.03),
+      rgba(34, 197, 94, 0.055)
+    );
+}
+
+.birthday-collapsible-summary:focus-visible {
+  outline: 3px solid rgba(34, 197, 94, 0.3);
+  outline-offset: -3px;
+}
+
+.birthday-collapsible[open]
+  > .birthday-collapsible-summary {
+  background:
+    linear-gradient(
+      90deg,
+      rgba(34, 197, 94, 0.065),
+      rgba(13, 18, 23, 0.98)
+    );
+
+  border-bottom: 1px solid rgba(148, 163, 184, 0.12);
+}
+
+/* =========================================================
+   ICON
+   ========================================================= */
+
+.birthday-collapsible-icon {
+  display: grid;
+  place-items: center;
+
+  width: 54px;
+  height: 54px;
+  flex: 0 0 54px;
+
+  border: 1px solid rgba(148, 163, 184, 0.2);
+  border-radius: 16px;
+
+  background:
+    linear-gradient(
+      145deg,
+      #222830,
+      #171c22
+    );
+
+  color: #ffffff;
+
+  box-shadow:
+    inset 0 1px 0 rgba(255, 255, 255, 0.055),
+    0 8px 20px rgba(0, 0, 0, 0.24);
+
+  font-size: 1.55rem;
+  line-height: 1;
+
+  transition:
+    border-color 180ms ease,
+    box-shadow 180ms ease,
+    transform 180ms ease;
+}
+
+.birthday-collapsible:hover
+  .birthday-collapsible-icon {
+  border-color: rgba(34, 197, 94, 0.38);
+
+  box-shadow:
+    inset 0 1px 0 rgba(255, 255, 255, 0.065),
+    0 10px 24px rgba(0, 0, 0, 0.3);
+}
+
+.birthday-collapsible[open]
+  .birthday-collapsible-icon {
+  border-color: rgba(34, 197, 94, 0.48);
+  background:
+    linear-gradient(
+      145deg,
+      #173126,
+      #111f19
+    );
+}
+
+/* =========================================================
+   TITLE AND DESCRIPTION
+   ========================================================= */
+
+.birthday-collapsible-heading {
+  display: flex;
+  flex-direction: column;
+  gap: 0.32rem;
+  min-width: 0;
+}
+
+.birthday-collapsible-heading strong {
+  display: block;
+
+  color: #ffffff !important;
+
+  font-size: clamp(1.12rem, 1.5vw, 1.38rem);
+  font-weight: 850;
+  line-height: 1.22;
+  letter-spacing: -0.02em;
+
+  text-shadow:
+    0 1px 1px rgba(0, 0, 0, 0.35);
+}
+
+.birthday-collapsible-heading small {
+  display: block;
+
+  color: #aebed2 !important;
+
+  font-size: clamp(0.86rem, 1vw, 0.98rem);
+  font-weight: 560;
+  line-height: 1.45;
+}
+
+/* =========================================================
+   BADGE
+   ========================================================= */
+
+.birthday-collapsible-badge {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+
+  min-height: 34px;
+  max-width: 185px;
+  padding: 0.4rem 0.78rem;
+
+  border: 1px solid rgba(148, 163, 184, 0.17);
+  border-radius: 999px;
+
+  background: rgba(255, 255, 255, 0.055);
+
+  color: #dce6f4 !important;
+
+  font-size: 0.78rem;
+  font-weight: 800;
+  line-height: 1;
+
+  white-space: nowrap;
+}
+
+.birthday-collapsible-badge
+  .status-active {
+  color: #4ade80 !important;
+}
+
+.birthday-collapsible-badge
+  .status-inactive {
+  color: #cbd5e1 !important;
+}
+
+/* Prevent white badge backgrounds from old styles */
+
+.birthday-collapsible-badge .status-active,
+.birthday-collapsible-badge .status-inactive {
+  display: inline-flex;
+  align-items: center;
+
+  padding: 0;
+  border: 0;
+  background: transparent !important;
+  box-shadow: none;
+}
+
+/* =========================================================
+   CHEVRON
+   ========================================================= */
+
+.birthday-collapsible-chevron {
+  display: grid;
+  place-items: center;
+
+  width: 42px;
+  height: 42px;
+
+  border: 1px solid rgba(148, 163, 184, 0.15);
+  border-radius: 13px;
+
+  background: rgba(255, 255, 255, 0.025);
+  color: #cbd5e1;
+
+  box-shadow:
+    inset 0 1px 0 rgba(255, 255, 255, 0.025),
+    0 5px 13px rgba(0, 0, 0, 0.18);
+
+  transition:
+    transform 240ms ease,
+    color 180ms ease,
+    background 180ms ease,
+    border-color 180ms ease;
+}
+
+.birthday-collapsible[open]
+  .birthday-collapsible-chevron {
+  transform: rotate(180deg);
+
+  color: #4ade80;
+  background: rgba(34, 197, 94, 0.09);
+  border-color: rgba(34, 197, 94, 0.3);
+}
+
+/* =========================================================
+   OPEN CONTENT
+   ========================================================= */
+
+.birthday-collapsible-body {
+  position: relative;
+  z-index: 2;
+  overflow: hidden;
+  color: #e2e8f0;
+}
+
+.birthday-collapsible-body-inner {
+  padding: 1.35rem;
+}
+
+.birthday-collapsible[open]
+  .birthday-collapsible-body {
+  animation:
+    birthdaySectionOpen
+    240ms ease-out;
+}
+
+@keyframes birthdaySectionOpen {
+  from {
+    opacity: 0;
+    transform: translateY(-5px);
+  }
+
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+/* =========================================================
+   INTRO MESSAGE
+   ========================================================= */
+
+.birthday-section-intro {
+  margin-bottom: 1.15rem;
+  padding: 1rem 1.05rem;
+
+  border: 1px solid rgba(34, 197, 94, 0.2);
+  border-left: 4px solid #22c55e;
+  border-radius: 14px;
+
+  background:
+    linear-gradient(
+      90deg,
+      rgba(34, 197, 94, 0.07),
+      rgba(20, 25, 30, 0.9)
+    ) !important;
+
+  color: #dbe6f2 !important;
+}
+
+.birthday-section-intro p {
+  margin: 0;
+
+  color: #cbd5e1 !important;
+
+  font-size: 0.94rem;
+  line-height: 1.55;
+}
+
+.birthday-section-intro p + p {
+  margin-top: 0.4rem;
+}
+
+/* =========================================================
+   LAPTOP / DESKTOP
+   ========================================================= */
+
+@media (min-width: 901px) {
+  .birthday-collapsible-summary {
+    min-height: 100px;
+    padding-inline: 1.3rem;
+  }
+
+  .birthday-collapsible-heading strong {
+    font-size: 1.28rem;
+  }
+
+  .birthday-collapsible-heading small {
+    font-size: 0.95rem;
+  }
+
+  .birthday-collapsible-badge {
+    font-size: 0.82rem;
+  }
+}
+
+/* =========================================================
+   TABLET
+   ========================================================= */
+
+@media (min-width: 701px) and (max-width: 900px) {
+  .birthday-collapsible-summary {
+    min-height: 92px;
+  }
+
+  .birthday-collapsible-heading strong {
+    font-size: 1.15rem;
+  }
+
+  .birthday-collapsible-heading small {
+    font-size: 0.88rem;
+  }
+}
+
+/* =========================================================
+   MOBILE
+   ========================================================= */
+
+@media (max-width: 700px) {
+  .birthday-collapsible {
+    margin-bottom: 0.85rem;
+    border-radius: 16px;
+  }
+
+  .birthday-collapsible-summary {
+    grid-template-columns:
+      auto minmax(0, 1fr) auto;
+
+    gap: 0.72rem;
+
+    min-height: 92px;
+
+    padding:
+      0.95rem
+      0.75rem
+      0.95rem
+      0.9rem;
+  }
+
+  .birthday-collapsible-icon {
+    width: 46px;
+    height: 46px;
+    flex-basis: 46px;
+
+    border-radius: 13px;
+
+    font-size: 1.28rem;
+  }
+
+  .birthday-collapsible-heading {
+    gap: 0.25rem;
+  }
+
+  .birthday-collapsible-heading strong {
+    color: #ffffff !important;
+
+    font-size: 1.04rem;
+    font-weight: 850;
+    line-height: 1.25;
+
+    white-space: normal;
+  }
+
+  .birthday-collapsible-heading small {
+    display: block;
+
+    color: #b3c0d2 !important;
+
+    font-size: 0.82rem;
+    font-weight: 560;
+    line-height: 1.38;
+
+    white-space: normal;
+  }
+
+  .birthday-collapsible-badge {
+    display: none;
+  }
+
+  .birthday-collapsible-chevron {
+    width: 36px;
+    height: 36px;
+
+    border-radius: 11px;
+  }
+
+  .birthday-collapsible-body-inner {
+    padding: 1rem 0.85rem 1.1rem;
+  }
+
+  .birthday-section-intro {
+    padding: 0.9rem;
+    border-radius: 12px;
+  }
+
+  .birthday-section-intro p {
+    font-size: 0.88rem;
+    line-height: 1.52;
+  }
+
+  .birthday-form label {
+    color: #e2e8f0 !important;
+
+    font-size: 0.91rem;
+    font-weight: 750;
+  }
+
+  .birthday-form label small {
+    color: #aebbd0 !important;
+
+    font-size: 0.78rem;
+    line-height: 1.4;
+  }
+
+  .birthday-collapsible-body-inner input,
+  .birthday-collapsible-body-inner select,
+  .birthday-collapsible-body-inner textarea {
+    width: 100%;
+
+    min-height: 46px;
+
+    font-size: 16px;
+  }
+
+  .birthday-collapsible-body-inner
+    input[type="checkbox"] {
+    width: auto;
+    min-height: auto;
+  }
+}
+
+/* =========================================================
+   VERY SMALL PHONES
+   ========================================================= */
+
+@media (max-width: 390px) {
+  .birthday-collapsible-summary {
+    gap: 0.58rem;
+    padding-inline: 0.72rem;
+  }
+
+  .birthday-collapsible-icon {
+    width: 42px;
+    height: 42px;
+    flex-basis: 42px;
+
+    font-size: 1.15rem;
+  }
+
+  .birthday-collapsible-heading strong {
+    font-size: 0.97rem;
+  }
+
+  .birthday-collapsible-heading small {
+    font-size: 0.76rem;
+  }
+
+  .birthday-collapsible-chevron {
+    width: 33px;
+    height: 33px;
+  }
+}
+
+/* =========================================================
+   FINAL CONFLICT OVERRIDES
+   ========================================================= */
+
+.birthday-collapsible,
+.birthday-collapsible:hover,
+.birthday-collapsible[open],
+.birthday-collapsible-summary,
+.birthday-collapsible-summary:hover,
+.birthday-collapsible[open]
+  > .birthday-collapsible-summary {
+  color-scheme: dark;
+}
+
+.birthday-collapsible-heading strong {
+  color: #ffffff !important;
+}
+
+.birthday-collapsible-heading small {
+  color: #aebed2 !important;
+}
+
+.birthday-collapsible-summary:hover {
+  color: #ffffff !important;
+}
+
+/* Remove old color-theme variables */
+
+.birthday-collapsible-whatsapp,
+.birthday-collapsible-birthday,
+.birthday-collapsible-bulk,
+.birthday-collapsible-list {
+  --section-accent: unset;
+  --section-accent-secondary: unset;
+}
+
+/* Accessibility */
+
+@media (prefers-reduced-motion: reduce) {
+  .birthday-collapsible,
+  .birthday-collapsible-icon,
+  .birthday-collapsible-chevron {
+    transition: none;
+  }
+
+  .birthday-collapsible[open]
+    .birthday-collapsible-body {
+    animation: none;
+  }
+}
+/* =========================================================
+   BIRTHDAY FORMS — DARK THEME FIELD FIXES
+   ========================================================= */
+
+/* Standardize all fields inside collapsible birthday cards */
+
+.birthday-collapsible-body-inner input:not([type="checkbox"]),
+.birthday-collapsible-body-inner select,
+.birthday-collapsible-body-inner textarea {
+  width: 100%;
+  min-height: 48px;
+
+  padding: 0.8rem 0.9rem;
+
+  border: 1px solid rgba(148, 163, 184, 0.42);
+  border-radius: 12px;
+
+  background: #0c1833 !important;
+  color: #f8fafc !important;
+
+  font-family: inherit;
+  font-size: 1rem;
+  font-weight: 600;
+  line-height: 1.4;
+
+  caret-color: #4ade80;
+
+  box-shadow: none;
+
+  transition:
+    border-color 160ms ease,
+    box-shadow 160ms ease,
+    background-color 160ms ease;
+}
+
+.birthday-collapsible-body-inner input:not([type="checkbox"]):focus,
+.birthday-collapsible-body-inner select:focus,
+.birthday-collapsible-body-inner textarea:focus {
+  outline: none;
+
+  border-color: rgba(34, 197, 94, 0.8);
+
+  background: #0d1b38 !important;
+
+  box-shadow:
+    0 0 0 3px rgba(34, 197, 94, 0.14);
+}
+
+/* Placeholder text */
+
+.birthday-collapsible-body-inner input::placeholder,
+.birthday-collapsible-body-inner textarea::placeholder {
+  color: #8996ac !important;
+  opacity: 1;
+}
+
+/* Disabled selects and inputs */
+
+.birthday-collapsible-body-inner input:disabled,
+.birthday-collapsible-body-inner select:disabled,
+.birthday-collapsible-body-inner textarea:disabled {
+  cursor: not-allowed;
+  opacity: 0.62;
+
+  background: #0a1429 !important;
+  color: #94a3b8 !important;
+}
+
+/* =========================================================
+   PRIVATE ADMIN NOTE
+   ========================================================= */
+
+.birthday-collapsible-body-inner textarea {
+  min-height: 110px;
+  resize: vertical;
+
+  background: #111315 !important;
+  color: #f8fafc !important;
+}
+
+.birthday-collapsible-body-inner textarea::placeholder {
+  color: #98a6bb !important;
+}
+
+/* Prevent browser autofill from turning fields white */
+
+.birthday-collapsible-body-inner input:-webkit-autofill,
+.birthday-collapsible-body-inner input:-webkit-autofill:hover,
+.birthday-collapsible-body-inner input:-webkit-autofill:focus,
+.birthday-collapsible-body-inner textarea:-webkit-autofill,
+.birthday-collapsible-body-inner select:-webkit-autofill {
+  -webkit-text-fill-color: #f8fafc !important;
+
+  box-shadow:
+    0 0 0 1000px #0c1833 inset !important;
+
+  transition:
+    background-color 9999s ease-out;
+}
+
+/* =========================================================
+   BULK IMPORT FORMAT EXAMPLE
+   ========================================================= */
+
+.birthday-import-example {
+  padding: 1rem;
+
+  border: 1px solid rgba(148, 163, 184, 0.28);
+  border-radius: 14px;
+
+  background: #11161b !important;
+  color: #e2e8f0;
+}
+
+.birthday-import-example strong {
+  display: block;
+  margin-bottom: 0.7rem;
+
+  color: #f8fafc !important;
+  font-size: 0.96rem;
+  font-weight: 800;
+}
+
+/*
+ * This is only an example, not an editable field.
+ * Remove the white box and accidental blue text selection.
+ */
+.birthday-import-example pre {
+  display: block;
+  width: 100%;
+  margin: 0;
+  padding: 0.85rem 0.95rem;
+
+  overflow-x: auto;
+
+  border: 1px dashed rgba(34, 197, 94, 0.32);
+  border-radius: 10px;
+
+  background: #0b1320 !important;
+  color: #cfe8d7 !important;
+
+  font-family:
+    ui-monospace,
+    SFMono-Regular,
+    Menlo,
+    Monaco,
+    Consolas,
+    monospace;
+
+  font-size: 0.9rem;
+  font-weight: 600;
+  line-height: 1.75;
+
+  white-space: pre-wrap;
+  overflow-wrap: anywhere;
+
+  cursor: default;
+  user-select: none;
+  -webkit-user-select: none;
+}
+
+/* Remove browser text-selection highlighting from the example */
+
+.birthday-import-example pre::selection,
+.birthday-import-example pre *::selection {
+  background: transparent;
+  color: inherit;
+}
+
+/* =========================================================
+   FILE INPUT
+   ========================================================= */
+
+.birthday-collapsible-body-inner input[type="file"] {
+  min-height: 50px;
+  padding: 0.45rem;
+
+  cursor: pointer;
+
+  background: #0c1833 !important;
+  color: #e2e8f0 !important;
+}
+
+.birthday-collapsible-body-inner
+  input[type="file"]::file-selector-button {
+  min-height: 38px;
+  margin-right: 0.8rem;
+  padding: 0.55rem 0.85rem;
+
+  border: 1px solid rgba(34, 197, 94, 0.38);
+  border-radius: 9px;
+
+  background: #123326;
+  color: #dcfce7;
+
+  font-family: inherit;
+  font-size: 0.88rem;
+  font-weight: 750;
+
+  cursor: pointer;
+
+  transition:
+    background-color 160ms ease,
+    border-color 160ms ease;
+}
+
+.birthday-collapsible-body-inner
+  input[type="file"]::file-selector-button:hover {
+  border-color: #22c55e;
+  background: #17452f;
+}
+
+/* Safari file-upload button */
+
+.birthday-collapsible-body-inner
+  input[type="file"]::-webkit-file-upload-button {
+  min-height: 38px;
+  margin-right: 0.8rem;
+  padding: 0.55rem 0.85rem;
+
+  border: 1px solid rgba(34, 197, 94, 0.38);
+  border-radius: 9px;
+
+  background: #123326;
+  color: #dcfce7;
+
+  font-family: inherit;
+  font-weight: 750;
+}
+
+/* =========================================================
+   ADD BIRTHDAY FIELD HEIGHTS
+   ========================================================= */
+
+/*
+ * Prevent the WhatsApp number input from becoming as tall
+ * as the consent card beside it.
+ */
+.birthday-date-row label,
+.birthday-form > label {
+  align-self: start;
+}
+
+.birthday-date-row input[type="tel"] {
+  min-height: 48px !important;
+  height: 48px !important;
+}
+
+/*
+ * The desktop grid must align items to the top rather than
+ * stretching every field to match the tallest adjacent card.
+ */
+.birthday-form,
+.birthday-date-row {
+  align-items: start !important;
+}
+
+.birthday-form label {
+  height: auto !important;
+}
+
+/* =========================================================
+   OWNER PHONE NOTICE
+   ========================================================= */
+
+.birthday-import-notice {
+  margin: 0;
+  padding: 0.85rem 0.95rem;
+
+  border-left: 3px solid #22c55e;
+  border-radius: 9px;
+
+  background: rgba(34, 197, 94, 0.06);
+
+  color: #cbd5e1 !important;
+  font-size: 0.88rem;
+  line-height: 1.5;
+}
+
+/* =========================================================
+   MOBILE
+   ========================================================= */
+
+@media (max-width: 700px) {
+  .birthday-collapsible-body-inner input:not([type="checkbox"]),
+  .birthday-collapsible-body-inner select,
+  .birthday-collapsible-body-inner textarea {
+    min-height: 48px;
+    padding: 0.78rem 0.82rem;
+
+    font-size: 16px;
+  }
+
+  .birthday-collapsible-body-inner textarea {
+    min-height: 105px;
+  }
+
+  .birthday-import-example {
+    padding: 0.8rem;
+  }
+
+  .birthday-import-example pre {
+    padding: 0.75rem;
+    font-size: 0.8rem;
+    line-height: 1.65;
+  }
+
+  .birthday-collapsible-body-inner input[type="file"] {
+    min-height: 54px;
+  }
+
+  .birthday-import-notice {
+    font-size: 0.81rem;
+  }
+}
+.birthday-import-help {
+  margin: 0 0 0.7rem;
+
+  color: #aebed2 !important;
+  font-size: 0.84rem;
+  line-height: 1.45;
+}
