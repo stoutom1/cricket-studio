@@ -61981,3 +61981,407 @@ body {
     font-size: 0.66rem;
   }
 }
+.whatsapp-consent-card{
+
+display:flex;
+justify-content:space-between;
+align-items:center;
+
+padding:18px;
+
+border-radius:16px;
+
+background:#101827;
+
+border:1px solid #233045;
+
+margin-top:12px;
+margin-bottom:18px;
+
+transition:.25s;
+}
+
+.whatsapp-consent-card:hover{
+
+border-color:#22c55e;
+
+box-shadow:0 0 20px rgba(34,197,94,.18);
+
+}
+
+.consent-text{
+
+display:flex;
+flex-direction:column;
+gap:6px;
+
+}
+
+.consent-text strong{
+
+font-size:17px;
+font-weight:700;
+
+}
+
+.consent-text small{
+
+color:#9ca3af;
+line-height:1.5;
+
+}
+
+/* Toggle */
+
+.switch{
+
+position:relative;
+
+width:62px;
+height:34px;
+
+}
+
+.switch input{
+
+display:none;
+
+}
+
+.slider{
+
+position:absolute;
+cursor:pointer;
+
+top:0;
+left:0;
+right:0;
+bottom:0;
+
+background:#475569;
+
+border-radius:40px;
+
+transition:.25s;
+
+}
+
+.slider:before{
+
+content:"";
+
+position:absolute;
+
+width:28px;
+height:28px;
+
+left:3px;
+top:3px;
+
+background:white;
+
+border-radius:50%;
+
+transition:.25s;
+
+}
+
+.switch input:checked + .slider{
+
+background:#22c55e;
+
+}
+
+.switch input:checked + .slider:before{
+
+transform:translateX(28px);
+
+}
+/* =========================================================
+   OWNER WHATSAPP — LARGE ACCESSIBLE TOGGLE CARD
+   ========================================================= */
+
+.whatsapp-toggle-card {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 1.25rem;
+
+  width: 100%;
+  padding: 1rem 1.05rem;
+
+  border: 1px solid rgba(148, 163, 184, 0.22);
+  border-radius: 15px;
+
+  background: rgba(15, 23, 42, 0.35);
+  cursor: pointer;
+
+  transition:
+    border-color 180ms ease,
+    background 180ms ease,
+    box-shadow 180ms ease,
+    transform 180ms ease;
+}
+
+.whatsapp-toggle-card:hover {
+  transform: translateY(-1px);
+
+  border-color: rgba(34, 197, 94, 0.45);
+
+  box-shadow:
+    0 10px 24px rgba(0, 0, 0, 0.14),
+    0 0 0 1px rgba(34, 197, 94, 0.06);
+}
+
+.whatsapp-toggle-card.is-enabled {
+  border-color: rgba(34, 197, 94, 0.42);
+
+  background:
+    linear-gradient(
+      90deg,
+      rgba(34, 197, 94, 0.09),
+      rgba(15, 23, 42, 0.34)
+    );
+}
+
+.whatsapp-toggle-copy {
+  display: flex;
+  flex-direction: column;
+  gap: 0.35rem;
+  min-width: 0;
+}
+
+.whatsapp-toggle-copy strong {
+  color: #f8fafc;
+  font-size: 1rem;
+  font-weight: 800;
+  line-height: 1.3;
+}
+
+.whatsapp-toggle-copy small {
+  max-width: 650px;
+
+  color: #94a3b8;
+  font-size: 0.82rem;
+  font-weight: 500;
+  line-height: 1.45;
+}
+
+.whatsapp-toggle-control {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.65rem;
+  flex-shrink: 0;
+}
+
+.whatsapp-toggle-control input {
+  position: absolute;
+  width: 1px;
+  height: 1px;
+
+  overflow: hidden;
+  clip: rect(0 0 0 0);
+  clip-path: inset(50%);
+
+  white-space: nowrap;
+}
+
+.whatsapp-toggle-track {
+  position: relative;
+
+  width: 58px;
+  height: 32px;
+
+  border: 1px solid rgba(148, 163, 184, 0.35);
+  border-radius: 999px;
+
+  background: #475569;
+
+  box-shadow:
+    inset 0 2px 5px rgba(0, 0, 0, 0.18);
+
+  transition:
+    background 200ms ease,
+    border-color 200ms ease,
+    box-shadow 200ms ease;
+}
+
+.whatsapp-toggle-thumb {
+  position: absolute;
+  top: 3px;
+  left: 3px;
+
+  width: 24px;
+  height: 24px;
+
+  border-radius: 50%;
+  background: #ffffff;
+
+  box-shadow:
+    0 3px 8px rgba(0, 0, 0, 0.28);
+
+  transition:
+    transform 220ms
+      cubic-bezier(0.22, 1, 0.36, 1);
+}
+
+.whatsapp-toggle-control
+  input:checked
+  + .whatsapp-toggle-track {
+  border-color: #22c55e;
+  background: #16a34a;
+
+  box-shadow:
+    inset 0 2px 5px rgba(0, 0, 0, 0.13),
+    0 0 0 4px rgba(34, 197, 94, 0.11);
+}
+
+.whatsapp-toggle-control
+  input:checked
+  + .whatsapp-toggle-track
+  .whatsapp-toggle-thumb {
+  transform: translateX(26px);
+}
+
+.whatsapp-toggle-control
+  input:focus-visible
+  + .whatsapp-toggle-track {
+  outline: 3px solid rgba(34, 197, 94, 0.3);
+  outline-offset: 3px;
+}
+
+.whatsapp-toggle-control
+  input:disabled
+  + .whatsapp-toggle-track {
+  cursor: not-allowed;
+  opacity: 0.55;
+}
+
+.whatsapp-toggle-status {
+  min-width: 34px;
+
+  color: #94a3b8;
+  font-size: 0.72rem;
+  font-weight: 900;
+  letter-spacing: 0.05em;
+  text-align: center;
+}
+
+.whatsapp-toggle-card.is-enabled
+  .whatsapp-toggle-status {
+  color: #4ade80;
+}
+
+/* Mobile */
+
+@media (max-width: 700px) {
+  .whatsapp-toggle-card {
+    align-items: flex-start;
+    flex-direction: column;
+    gap: 0.9rem;
+
+    padding: 0.95rem;
+  }
+
+  .whatsapp-toggle-control {
+    width: 100%;
+    justify-content: space-between;
+
+    padding-top: 0.15rem;
+  }
+
+  .whatsapp-toggle-copy strong {
+    font-size: 0.95rem;
+  }
+
+  .whatsapp-toggle-copy small {
+    font-size: 0.77rem;
+  }
+}
+.birthday-collapsible-summary {
+  background: #111315;
+
+  transition:
+    background-color 160ms ease,
+    border-color 160ms ease;
+}
+
+.birthday-collapsible-summary:hover {
+  background: #15191b;
+}
+
+.birthday-collapsible[open]
+  > .birthday-collapsible-summary {
+  background: #121817;
+
+  border-bottom:
+    1px solid rgba(34, 197, 94, 0.12);
+}
+.birthday-collapsible:hover {
+  transform: none;
+
+  border-color:
+    rgba(34, 197, 94, 0.22);
+
+  box-shadow:
+    0 10px 26px rgba(0, 0, 0, 0.22);
+}
+.birthday-collapsible-icon {
+  background:
+    linear-gradient(
+      145deg,
+      #202428,
+      #181b1e
+    );
+
+  border-color:
+    rgba(148, 163, 184, 0.16);
+
+  color: #f8fafc;
+}
+.birthday-collapsible:hover
+  .birthday-collapsible-icon {
+  transform: none;
+
+  border-color:
+    rgba(34, 197, 94, 0.28);
+}
+.birthday-collapsible-chevron {
+  background: #121416;
+  color: #cbd5e1;
+
+  border-color:
+    rgba(148, 163, 184, 0.13);
+}
+.birthday-collapsible[open]
+  .birthday-collapsible-chevron {
+  transform: rotate(180deg);
+
+  background: #102018;
+  color: #4ade80;
+
+  border-color:
+    rgba(34, 197, 94, 0.28);
+}
+/* Prevent bright hover flashing on dark Birthday Center */
+
+.birthday-collapsible,
+.birthday-collapsible:hover,
+.birthday-collapsible[open] {
+  background: #111315;
+}
+
+.birthday-collapsible-summary,
+.birthday-collapsible-summary:hover,
+.birthday-collapsible[open]
+  > .birthday-collapsible-summary {
+  color: #f8fafc;
+}
+
+.birthday-collapsible-summary:hover {
+  background-color: #15191b !important;
+}
+
+.birthday-collapsible-summary:active {
+  background-color: #171c1d !important;
+}

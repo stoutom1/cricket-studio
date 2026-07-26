@@ -61,22 +61,49 @@ export async function GET(request, { params }) {
       );
     }
 
-    const birthdays = await prisma.leagueBirthday.findMany({
-      where: {
-        leagueId,
+const birthdays =
+  await prisma.leagueBirthday.findMany({
+    where: {
+      leagueId,
+    },
+
+    select: {
+      id: true,
+      leagueId: true,
+      playerId: true,
+
+      name: true,
+      birthMonth: true,
+      birthDay: true,
+      notes: true,
+      isActive: true,
+
+      whatsappNumber: true,
+      whatsappOptIn: true,
+
+      createdAt: true,
+      updatedAt: true,
+
+      player: {
+        select: {
+          id: true,
+          name: true,
+        },
       },
-      orderBy: [
-        {
-          birthMonth: "asc",
-        },
-        {
-          birthDay: "asc",
-        },
-        {
-          name: "asc",
-        },
-      ],
-    });
+    },
+
+    orderBy: [
+      {
+        birthMonth: "asc",
+      },
+      {
+        birthDay: "asc",
+      },
+      {
+        name: "asc",
+      },
+    ],
+  });
 
     return NextResponse.json({
       league,

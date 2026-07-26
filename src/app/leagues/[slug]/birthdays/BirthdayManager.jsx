@@ -732,11 +732,19 @@ body: JSON.stringify({
     }
   }
 
- function selectPlayer(playerIdValue) {
+function selectPlayer(playerIdValue) {
+  const numericPlayerId =
+    Number(playerIdValue);
+
   const selectedPlayer = players.find(
     (player) =>
-      Number(player.id) ===
-      Number(playerIdValue)
+      Number(player.id) === numericPlayerId
+  );
+
+  const existingBirthday = birthdays.find(
+    (birthday) =>
+      Number(birthday.playerId) ===
+      numericPlayerId
   );
 
   setForm((current) => ({
@@ -745,18 +753,66 @@ body: JSON.stringify({
     playerId: playerIdValue,
 
     name:
-      selectedPlayer?.name ?? "",
+      existingBirthday?.name ||
+      selectedPlayer?.name ||
+      "",
 
+    birthMonth:
+      existingBirthday?.birthMonth
+        ? String(
+            existingBirthday.birthMonth
+          )
+        : "",
+
+    birthDay:
+      existingBirthday?.birthDay
+        ? String(
+            existingBirthday.birthDay
+          )
+        : "",
+
+    notes:
+      existingBirthday?.notes || "",
+
+    /*
+     * These fields belong directly to
+     * LeagueBirthday in your current design.
+     */
     whatsappNumber:
-      selectedPlayer?.whatsappNumber ?? "",
+      existingBirthday?.whatsappNumber ||
+      selectedPlayer?.whatsappNumber ||
+      "",
 
     whatsappOptIn:
-      Boolean(
-        selectedPlayer?.whatsappOptIn
-      ),
+      existingBirthday
+        ? Boolean(
+            existingBirthday.whatsappOptIn
+          )
+        : Boolean(
+            selectedPlayer?.whatsappOptIn
+          ),
   }));
 
-  setMessage("");
+  /*
+   * Existing record means the form must use
+   * PATCH instead of POST.
+   */
+  setEditingId(
+    existingBirthday?.id || null
+  );
+
+  if (existingBirthday) {
+    setMessage(
+      `Existing birthday details loaded for ${
+        existingBirthday.name ||
+        selectedPlayer?.name ||
+        "the selected player"
+      }.`
+    );
+  } else {
+    setMessage("");
+  }
+
   setError("");
 }
 
@@ -1519,28 +1575,59 @@ async function runBirthdayAction(birthdayId, actionName, callback) {
       </small>
     </label>
 
-    <label className="checkbox-label">
-      <input
-        type="checkbox"
-        checked={
-          whatsappNotificationsEnabled
-        }
-        disabled={
-          savingWhatsAppSettings
-        }
-        onChange={(event) => {
-          setWhatsappNotificationsEnabled(
-            event.target.checked
-          );
+<label
+  className={`whatsapp-toggle-card ${
+    whatsappNotificationsEnabled
+      ? "is-enabled"
+      : "is-disabled"
+  }`}
+>
+  <span className="whatsapp-toggle-copy">
+    <strong>
+      💬 Automatic WhatsApp Wishes
+    </strong>
 
-          setWhatsAppSettingsMessage("");
-          setWhatsAppSettingsError("");
-        }}
-      />
+    <small>
+      {whatsappNotificationsEnabled
+        ? "Birthday wishes will be sent automatically to the owner's WhatsApp number."
+        : "Automatic WhatsApp birthday wishes are currently turned off."}
+    </small>
+  </span>
 
-      Send automatic birthday wishes to this
-      WhatsApp number
-    </label>
+  <span className="whatsapp-toggle-control">
+    <input
+      type="checkbox"
+      checked={
+        whatsappNotificationsEnabled
+      }
+      disabled={
+        savingWhatsAppSettings
+      }
+      onChange={(event) => {
+        setWhatsappNotificationsEnabled(
+          event.target.checked
+        );
+
+        setWhatsAppSettingsMessage("");
+        setWhatsAppSettingsError("");
+      }}
+      aria-label="Enable automatic WhatsApp birthday wishes"
+    />
+
+    <span
+      className="whatsapp-toggle-track"
+      aria-hidden="true"
+    >
+      <span className="whatsapp-toggle-thumb" />
+    </span>
+
+    <span className="whatsapp-toggle-status">
+      {whatsappNotificationsEnabled
+        ? "ON"
+        : "OFF"}
+    </span>
+  </span>
+</label>
 
     <div className="birthday-notification-channel-note">
       <strong>
@@ -1632,9 +1719,10 @@ async function runBirthdayAction(birthdayId, actionName, callback) {
   ))}
 </select>
 </label>
-{form.name && (
+{form.name && editingId && (
   <p className="selected-player-name">
-    Selected player: <strong>{form.name}</strong>
+    Existing birthday details loaded for{" "}
+    <strong>{form.name}</strong>.
   </p>
 )}
 
@@ -1704,20 +1792,32 @@ async function runBirthdayAction(birthdayId, actionName, callback) {
   />
 </label>
 
-<label className="checkbox-label">
-<input
-  type="checkbox"
-  checked={Boolean(form.whatsappOptIn)}
-  onChange={(event) =>
-    setForm((current) => ({
-      ...current,
-      whatsappOptIn:
-        event.target.checked,
-    }))
-  }
-/>
+<label className="whatsapp-consent-card">
+    <div className="consent-text">
+        <strong>
+            📱 WhatsApp Consent
+        </strong>
 
-  Player consented to receive WhatsApp messages
+        <small>
+            Player has agreed to receive birthday wishes
+            through WhatsApp.
+        </small>
+    </div>
+
+    <label className="switch">
+        <input
+            type="checkbox"
+            checked={form.whatsappOptIn}
+            onChange={(e) =>
+                setForm((current) => ({
+                    ...current,
+                    whatsappOptIn: e.target.checked,
+                }))
+            }
+        />
+
+        <span className="slider"></span>
+    </label>
 </label>
           </div>
 
