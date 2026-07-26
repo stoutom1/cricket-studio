@@ -1792,32 +1792,48 @@ async function runBirthdayAction(birthdayId, actionName, callback) {
   />
 </label>
 
-<label className="whatsapp-consent-card">
-    <div className="consent-text">
-        <strong>
-            📱 WhatsApp Consent
-        </strong>
+<label
+  className={`whatsapp-consent-card ${
+    form.whatsappOptIn ? "is-consented" : "is-not-consented"
+  }`}
+>
+  <span className="consent-text">
+    <strong>📱 WhatsApp Consent</strong>
 
-        <small>
-            Player has agreed to receive birthday wishes
-            through WhatsApp.
-        </small>
-    </div>
+    <small>
+      {form.whatsappOptIn
+        ? "Consent received. This player can receive WhatsApp birthday wishes."
+        : "Consent not received. Turn this on only after the player agrees."}
+    </small>
+  </span>
 
-    <label className="switch">
-        <input
-            type="checkbox"
-            checked={form.whatsappOptIn}
-            onChange={(e) =>
-                setForm((current) => ({
-                    ...current,
-                    whatsappOptIn: e.target.checked,
-                }))
-            }
-        />
+  <span className="consent-toggle-row">
+    <span
+      className={`consent-status-label ${
+        form.whatsappOptIn ? "is-on" : "is-off"
+      }`}
+    >
+      {form.whatsappOptIn ? "CONSENT ON" : "CONSENT OFF"}
+    </span>
 
-        <span className="slider"></span>
-    </label>
+    <span className="consent-switch">
+      <input
+        type="checkbox"
+        checked={Boolean(form.whatsappOptIn)}
+        onChange={(event) =>
+          setForm((current) => ({
+            ...current,
+            whatsappOptIn: event.target.checked,
+          }))
+        }
+        aria-label="Player WhatsApp consent"
+      />
+
+      <span className="consent-switch-track">
+        <span className="consent-switch-thumb" />
+      </span>
+    </span>
+  </span>
 </label>
           </div>
 

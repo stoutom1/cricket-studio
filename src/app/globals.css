@@ -63477,3 +63477,177 @@ transform:translateX(28px);
   font-size: 0.84rem;
   line-height: 1.45;
 }
+.whatsapp-consent-card {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 1rem;
+
+  width: 100%;
+  padding: 1rem;
+
+  border: 1px solid rgba(148, 163, 184, 0.25);
+  border-radius: 16px;
+
+  background: #101827;
+  cursor: pointer;
+
+  transition:
+    border-color 180ms ease,
+    background 180ms ease,
+    box-shadow 180ms ease;
+}
+
+.whatsapp-consent-card.is-consented {
+  border-color: rgba(34, 197, 94, 0.72);
+
+  background:
+    linear-gradient(
+      90deg,
+      rgba(34, 197, 94, 0.13),
+      #101827
+    );
+
+  box-shadow:
+    0 0 0 1px rgba(34, 197, 94, 0.08),
+    0 10px 24px rgba(0, 0, 0, 0.18);
+}
+
+.whatsapp-consent-card.is-not-consented {
+  border-color: rgba(148, 163, 184, 0.28);
+}
+
+.consent-text {
+  display: flex;
+  flex-direction: column;
+  gap: 0.35rem;
+  min-width: 0;
+}
+
+.consent-text strong {
+  color: #f8fafc;
+  font-size: 1rem;
+  font-weight: 800;
+}
+
+.consent-text small {
+  color: #aebed2;
+  font-size: 0.82rem;
+  line-height: 1.45;
+}
+
+.consent-toggle-row {
+  display: flex;
+  align-items: center;
+  gap: 0.7rem;
+  flex-shrink: 0;
+}
+
+.consent-status-label {
+  min-width: 92px;
+  padding: 0.38rem 0.58rem;
+
+  border-radius: 999px;
+
+  font-size: 0.72rem;
+  font-weight: 900;
+  letter-spacing: 0.04em;
+  text-align: center;
+}
+
+.consent-status-label.is-on {
+  background: rgba(34, 197, 94, 0.16);
+  color: #4ade80;
+}
+
+.consent-status-label.is-off {
+  background: rgba(148, 163, 184, 0.12);
+  color: #cbd5e1;
+}
+
+.consent-switch {
+  position: relative;
+  display: inline-flex;
+}
+
+.consent-switch input {
+  position: absolute;
+  width: 1px;
+  height: 1px;
+  opacity: 0;
+}
+
+.consent-switch-track {
+  position: relative;
+
+  width: 60px;
+  height: 34px;
+
+  border: 1px solid rgba(148, 163, 184, 0.35);
+  border-radius: 999px;
+
+  background: #475569;
+
+  transition:
+    background 200ms ease,
+    border-color 200ms ease,
+    box-shadow 200ms ease;
+}
+
+.consent-switch-thumb {
+  position: absolute;
+  top: 3px;
+  left: 3px;
+
+  width: 26px;
+  height: 26px;
+
+  border-radius: 50%;
+  background: #ffffff;
+
+  box-shadow:
+    0 3px 8px rgba(0, 0, 0, 0.28);
+
+  transition:
+    transform 220ms ease;
+}
+
+.consent-switch
+  input:checked
+  + .consent-switch-track {
+  background: #16a34a;
+  border-color: #22c55e;
+
+  box-shadow:
+    0 0 0 4px rgba(34, 197, 94, 0.12);
+}
+
+.consent-switch
+  input:checked
+  + .consent-switch-track
+  .consent-switch-thumb {
+  transform: translateX(26px);
+}
+
+.consent-switch
+  input:focus-visible
+  + .consent-switch-track {
+  outline: 3px solid rgba(34, 197, 94, 0.3);
+  outline-offset: 3px;
+}
+
+@media (max-width: 700px) {
+  .whatsapp-consent-card {
+    align-items: flex-start;
+    flex-direction: column;
+  }
+
+  .consent-toggle-row {
+    width: 100%;
+    justify-content: space-between;
+  }
+
+  .consent-status-label {
+    min-width: 105px;
+  }
+}
