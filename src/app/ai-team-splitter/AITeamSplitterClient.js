@@ -78,6 +78,30 @@ function playerIdentity(player) {
   return String(player?.playerKey ?? player?.id ?? normalizeName(player?.playerName));
 }
 
+function matchDisplayName(match) {
+  const teamA = match?.teamAName || match?.teamA?.name || "Team A";
+  const teamB = match?.teamBName || match?.teamB?.name || "Team B";
+  return `${teamA} vs ${teamB}`;
+}
+
+function sameMinute(first, second) {
+  if (!first || !second) return false;
+  const a = new Date(first);
+  const b = new Date(second);
+  if (Number.isNaN(a.getTime()) || Number.isNaN(b.getTime())) return false;
+  return Math.abs(a.getTime() - b.getTime()) < 60 * 1000;
+}
+
+function pollMatchesScheduledMatch(item, match) {
+  if (!item || !match) return false;
+  const titleMatches =
+    normalizeName(item.title) === normalizeName(matchDisplayName(match));
+  const dateMatches = (item.options || []).some((option) =>
+    sameMinute(option.startTime, match.scheduledAt)
+  );
+  return titleMatches || dateMatches;
+}
+
 export default function AITeamSplitterClient() {
   const searchParams = useSearchParams();
   const requestedLeagueId = Number(searchParams.get("leagueId"));
@@ -146,6 +170,15 @@ export default function AITeamSplitterClient() {
   const selectedMatch = useMemo(
     () => matches.find((match) => String(match.id) === String(selectedMatchId)) || null,
     [matches, selectedMatchId]
+  );
+
+  const scheduledMatchesWithoutPoll = useMemo(
+    () =>
+      matches.filter(
+        (match) =>
+          !allPolls.some((item) => pollMatchesScheduledMatch(item, match))
+      ),
+    [matches, allPolls]
   );
 
   const pollGroups = useMemo(() => {
@@ -275,7 +308,7 @@ export default function AITeamSplitterClient() {
     setSelectedTeamIds(ids);
     setTeamAName(match.teamAName || match.teamA?.name || "Team A");
     setTeamBName(match.teamBName || match.teamB?.name || "Team B");
-    setPollTitle(`${match.teamAName || match.teamA?.name} vs ${match.teamBName || match.teamB?.name}`);
+    setPollTitle(matchDisplayName(match));
     setPollText("Please confirm your availability for the scheduled match.");
     setPollOptions([{ label: "Scheduled Match", startTime: match.scheduledAt || "" }]);
     setAvailabilitySetupCollapsed(false);
@@ -338,6 +371,32 @@ export default function AITeamSplitterClient() {
     setShowAdHocPollForm(true);
     setAvailabilitySetupCollapsed(false);
     setActiveStep("AVAILABILITY");
+  }
+
+  function createPollForScheduledMatch(match) {
+    if (!match) return;
+    const ids = [Number(match.teamAId), Number(match.teamBId)].filter(Boolean);
+    setSourceMode("MATCH");
+    setSelectedMatchId(String(match.id));
+    setSelectedTeamIds(ids);
+    setTeamAName(match.teamAName || match.teamA?.name || "Team A");
+    setTeamBName(match.teamBName || match.teamB?.name || "Team B");
+    setPollTitle(matchDisplayName(match));
+    setPollText("Please confirm your availability for the scheduled match.");
+    setPollOptions([
+      { label: "Scheduled Match", startTime: match.scheduledAt || "" },
+    ]);
+    setShowAdHocPollForm(false);
+    setAvailabilitySetupCollapsed(false);
+    setPollCenterOpen(true);
+    setActiveStep("AVAILABILITY");
+    loadPlayersForTeams(ids);
+  }
+
+  function goToPreviousWorkspaceStep() {
+    const currentIndex = STEPS.findIndex((item) => item.id === activeStep);
+    const previous = STEPS[Math.max(0, currentIndex - 1)];
+    setActiveStep(previous.id);
   }
 
   function buildPollWhatsAppUrl(pollToShare) {
@@ -582,17 +641,6 @@ export default function AITeamSplitterClient() {
             <strong>{selectedPlayers.length}</strong><span>players ready</span>
           </div>
         </div>
-        <nav className="c4tb-stepper" aria-label="Team Builder progress">
-          {STEPS.map((step, index) => {
-            const currentIndex = STEPS.findIndex((item) => item.id === activeStep);
-            const state = index === currentIndex ? "active" : index < currentIndex ? "complete" : "";
-            return (
-              <button key={step.id} type="button" className={state} onClick={() => index <= currentIndex && setActiveStep(step.id)}>
-                <span>{state === "complete" ? "✓" : step.icon}</span><b>{step.label}</b>
-              </button>
-            );
-          })}
-        </nav>
       </header>
 
       {message && <div className="c4tb-notice" role="status"><span>{message}</span><button onClick={() => setMessage("")}>×</button></div>}
@@ -609,9 +657,6 @@ export default function AITeamSplitterClient() {
             <span>✨</span>
             <div><small>Status</small><strong>{activeStep === "RESULTS" ? "Teams ready" : activeStep === "BUILD" ? "Ready to balance" : activeStep === "AVAILABILITY" ? "Collecting availability" : "Choose a source"}</strong></div>
           </div>
-          {activeStep !== "SOURCE" && (
-            <button type="button" className="c4tb-summary-back" onClick={() => setActiveStep(STEPS[Math.max(0, STEPS.findIndex((item) => item.id === activeStep) - 1)].id)}>← Previous Step</button>
-          )}
         </div>
 
         <div className="c4tb-kpi-grid">
@@ -748,6 +793,56 @@ export default function AITeamSplitterClient() {
         )}
         </div>
       </section>
+
+      <div className="c4tb-workspace-navigation">
+        <div>
+          <span>Workspace</span>
+          <strong>{STEPS.find((step) => step.id === activeStep)?.label}</strong>
+        </div>
+
+        <nav className="c4tb-workspace-stepper" aria-label="Team Builder workspace">
+          {STEPS.map((step, index) => {
+            const currentIndex = STEPS.findIndex((item) => item.id === activeStep);
+            const state =
+              index === currentIndex
+                ? "active"
+                : index < currentIndex
+                  ? "complete"
+                  : "";
+
+            return (
+              <button
+                key={step.id}
+                type="button"
+                className={state}
+                onClick={() => index <= currentIndex && setActiveStep(step.id)}
+                disabled={index > currentIndex}
+              >
+                <span>{state === "complete" ? "✓" : step.icon}</span>
+                <b>{step.label}</b>
+              </button>
+            );
+          })}
+        </nav>
+
+        {activeStep !== "SOURCE" && (
+          <button
+            type="button"
+            className="c4tb-workspace-back"
+            onClick={goToPreviousWorkspaceStep}
+          >
+            ← Back to{" "}
+            {
+              STEPS[
+                Math.max(
+                  0,
+                  STEPS.findIndex((item) => item.id === activeStep) - 1
+                )
+              ]?.label
+            }
+          </button>
+        )}
+      </div>
 
       <div className="c4tb-layout">
         <section className="c4tb-main-card">
@@ -886,60 +981,216 @@ export default function AITeamSplitterClient() {
               {sourceMode === "POLL" && (
                 <div className="c4tb-availability-workspace">
                   {!showAdHocPollForm ? (
-                    <div className="c4tb-panel c4tb-existing-poll-chooser">
-                      <div className="c4tb-panel-title">
-                        <div>
-                          <h3>Choose an availability poll</h3>
-                          <p>Open a poll below, review its live responses in the Availability Center, and use its YES players when ready.</p>
+                    <div className="c4tb-poll-browser">
+                      <section className="c4tb-panel c4tb-existing-poll-chooser">
+                        <div className="c4tb-panel-title">
+                          <div>
+                            <h3>Existing availability polls</h3>
+                            <p>
+                              Open a poll, monitor its live responses above, and
+                              use its confirmed players when ready.
+                            </p>
+                          </div>
+                          <span>{allPolls.length}</span>
                         </div>
-                        <span>{allPolls.length}</span>
-                      </div>
 
-                      {allPolls.length ? (
-                        <div className="c4tb-poll-choice-grid">
-                          {allPolls.map((item) => {
-                            const summary = pollSummary(item);
-                            const isActive = poll?.token === item.token;
-                            return (
-                              <button key={item.token} type="button" className={isActive ? "selected" : ""} onClick={() => openPoll(item)}>
-                                <div><strong>{item.title}</strong><small>{new Date(item.createdAt).toLocaleString()}</small></div>
-                                <span>{summary.yes} YES · {summary.maybe} MAYBE · {summary.no} NO</span>
-                                <b>{isActive ? "Selected" : "Open"}</b>
-                              </button>
-                            );
-                          })}
-                        </div>
-                      ) : (
-                        <div className="c4tb-empty">No availability polls exist yet.</div>
-                      )}
+                        {allPolls.length ? (
+                          <div className="c4tb-poll-choice-grid">
+                            {allPolls.map((item) => {
+                              const summary = pollSummary(item);
+                              const isActive = poll?.token === item.token;
 
-                      <div className="c4tb-poll-source-actions">
-                        {poll && bestPollGroup && (
-                          <button type="button" className="primary" disabled={bestPollGroup.yes.length < 4} onClick={() => usePollPlayers(bestPollGroup)}>
-                            Use {bestPollGroup.yes.length} YES Players →
-                          </button>
+                              return (
+                                <button
+                                  key={item.token}
+                                  type="button"
+                                  className={isActive ? "selected" : ""}
+                                  onClick={() => openPoll(item)}
+                                >
+                                  <div>
+                                    <strong>{item.title}</strong>
+                                    <small>
+                                      {new Date(item.createdAt).toLocaleString()}
+                                    </small>
+                                  </div>
+                                  <span>
+                                    {summary.yes} YES · {summary.maybe} MAYBE ·{" "}
+                                    {summary.no} NO
+                                  </span>
+                                  <b>{isActive ? "Selected" : "Open"}</b>
+                                </button>
+                              );
+                            })}
+                          </div>
+                        ) : (
+                          <div className="c4tb-empty">
+                            No availability polls exist yet.
+                          </div>
                         )}
-                        <button type="button" className="secondary" onClick={prepareNewPoll}>+ Create an ad-hoc poll</button>
-                      </div>
+
+                        <div className="c4tb-poll-source-actions">
+                          {poll && bestPollGroup && (
+                            <button
+                              type="button"
+                              className="primary"
+                              disabled={bestPollGroup.yes.length < 4}
+                              onClick={() => usePollPlayers(bestPollGroup)}
+                            >
+                              Use {bestPollGroup.yes.length} YES Players →
+                            </button>
+                          )}
+                          <button
+                            type="button"
+                            className="secondary"
+                            onClick={prepareNewPoll}
+                          >
+                            + Create an ad-hoc poll
+                          </button>
+                        </div>
+                      </section>
+
+                      <section className="c4tb-panel c4tb-unpolled-matches">
+                        <div className="c4tb-panel-title">
+                          <div>
+                            <h3>Scheduled matches without a poll</h3>
+                            <p>
+                              Choose any upcoming match to preload its teams and
+                              scheduled time into a new availability poll.
+                            </p>
+                          </div>
+                          <span>{scheduledMatchesWithoutPoll.length}</span>
+                        </div>
+
+                        {scheduledMatchesWithoutPoll.length ? (
+                          <div className="c4tb-unpolled-match-list">
+                            {scheduledMatchesWithoutPoll.map((match) => (
+                              <article key={match.id}>
+                                <div>
+                                  <strong>{matchDisplayName(match)}</strong>
+                                  <small>{formatDate(match.scheduledAt)}</small>
+                                </div>
+                                <button
+                                  type="button"
+                                  onClick={() => createPollForScheduledMatch(match)}
+                                >
+                                  Create Poll →
+                                </button>
+                              </article>
+                            ))}
+                          </div>
+                        ) : (
+                          <div className="c4tb-empty">
+                            Every scheduled match already has an availability poll.
+                          </div>
+                        )}
+                      </section>
                     </div>
                   ) : (
                     <div className="c4tb-panel c4tb-full-poll-form">
-                      <div className="c4tb-panel-title"><div><h3>Create an ad-hoc poll</h3><p>Use this only when the poll is not tied to an existing scheduled match.</p></div></div>
-                      <label className="c4tb-field"><span>Poll title</span><input value={pollTitle} onChange={(event) => setPollTitle(event.target.value)} /></label>
-                      <label className="c4tb-field"><span>WhatsApp message</span><textarea rows="3" value={pollText} onChange={(event) => setPollText(event.target.value)} /></label>
+                      <div className="c4tb-panel-title">
+                        <div>
+                          <h3>Create an ad-hoc poll</h3>
+                          <p>
+                            Use this only when the poll is not tied to an existing
+                            scheduled match.
+                          </p>
+                        </div>
+                      </div>
+
+                      <label className="c4tb-field">
+                        <span>Poll title</span>
+                        <input
+                          value={pollTitle}
+                          onChange={(event) => setPollTitle(event.target.value)}
+                        />
+                      </label>
+
+                      <label className="c4tb-field">
+                        <span>WhatsApp message</span>
+                        <textarea
+                          rows="3"
+                          value={pollText}
+                          onChange={(event) => setPollText(event.target.value)}
+                        />
+                      </label>
+
                       <div className="c4tb-options">
                         {pollOptions.map((option, index) => (
                           <div key={index} className="c4tb-option-row">
-                            <input value={option.label} onChange={(event) => setPollOptions((current) => current.map((item, itemIndex) => itemIndex === index ? { ...item, label: event.target.value } : item))} placeholder="Option name" />
-                            <input type="datetime-local" value={option.startTime ? String(option.startTime).slice(0, 16) : ""} onChange={(event) => setPollOptions((current) => current.map((item, itemIndex) => itemIndex === index ? { ...item, startTime: event.target.value } : item))} />
-                            <button type="button" onClick={() => setPollOptions((current) => current.filter((_, itemIndex) => itemIndex !== index))}>×</button>
+                            <input
+                              value={option.label}
+                              onChange={(event) =>
+                                setPollOptions((current) =>
+                                  current.map((item, itemIndex) =>
+                                    itemIndex === index
+                                      ? { ...item, label: event.target.value }
+                                      : item
+                                  )
+                                )
+                              }
+                              placeholder="Option name"
+                            />
+                            <input
+                              type="datetime-local"
+                              value={
+                                option.startTime
+                                  ? String(option.startTime).slice(0, 16)
+                                  : ""
+                              }
+                              onChange={(event) =>
+                                setPollOptions((current) =>
+                                  current.map((item, itemIndex) =>
+                                    itemIndex === index
+                                      ? { ...item, startTime: event.target.value }
+                                      : item
+                                  )
+                                )
+                              }
+                            />
+                            <button
+                              type="button"
+                              onClick={() =>
+                                setPollOptions((current) =>
+                                  current.filter((_, itemIndex) => itemIndex !== index)
+                                )
+                              }
+                            >
+                              ×
+                            </button>
                           </div>
                         ))}
                       </div>
+
                       <div className="c4tb-inline-actions c4tb-ad-hoc-actions">
-                        <button type="button" className="secondary" onClick={() => setShowAdHocPollForm(false)}>Cancel</button>
-                        <button type="button" className="secondary" onClick={() => setPollOptions((current) => [...current, { label: `Option ${current.length + 1}`, startTime: "" }])}>+ Add date</button>
-                        <button type="button" onClick={() => createPoll({ shareAfterCreate: false })} disabled={working}>{working ? "Creating..." : "Create Poll"}</button>
+                        <button
+                          type="button"
+                          className="secondary"
+                          onClick={() => setShowAdHocPollForm(false)}
+                        >
+                          Cancel
+                        </button>
+                        <button
+                          type="button"
+                          className="secondary"
+                          onClick={() =>
+                            setPollOptions((current) => [
+                              ...current,
+                              {
+                                label: `Option ${current.length + 1}`,
+                                startTime: "",
+                              },
+                            ])
+                          }
+                        >
+                          + Add date
+                        </button>
+                        <button
+                          type="button"
+                          onClick={() => createPoll({ shareAfterCreate: false })}
+                          disabled={working}
+                        >
+                          {working ? "Creating..." : "Create Poll"}
+                        </button>
                       </div>
                     </div>
                   )}

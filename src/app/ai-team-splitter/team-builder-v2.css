@@ -1256,3 +1256,205 @@
     min-width: 0;
   }
 }
+
+/* =========================================================
+   V3.3 — DASHBOARD + WORKSPACE NAVIGATION
+   ========================================================= */
+
+.c4tb-workspace-navigation {
+  width: min(1180px, calc(100% - 28px));
+  margin: 26px auto 14px;
+  padding: 14px;
+  display: grid;
+  grid-template-columns: minmax(130px, 0.65fr) minmax(420px, 2fr) auto;
+  gap: 14px;
+  align-items: center;
+  border: 1px solid rgba(100, 190, 255, 0.16);
+  border-radius: 20px;
+  background: rgba(7, 24, 43, 0.94);
+  box-shadow: 0 16px 42px rgba(0, 0, 0, 0.18);
+}
+
+.c4tb-workspace-navigation > div:first-child {
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+  padding-left: 4px;
+}
+
+.c4tb-workspace-navigation > div:first-child span {
+  color: #6fc9ff;
+  font-size: 0.7rem;
+  font-weight: 900;
+  letter-spacing: 0.11em;
+  text-transform: uppercase;
+}
+
+.c4tb-workspace-navigation > div:first-child strong {
+  color: #ffffff;
+  font-size: 1rem;
+}
+
+.c4tb-workspace-stepper {
+  display: grid;
+  grid-template-columns: repeat(4, minmax(0, 1fr));
+  gap: 8px;
+}
+
+.c4tb-workspace-stepper button {
+  min-height: 46px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 8px;
+  border: 1px solid rgba(107, 181, 239, 0.12);
+  border-radius: 13px;
+  color: #86add0;
+  background: rgba(4, 17, 34, 0.72);
+  font-weight: 850;
+  cursor: pointer;
+}
+
+.c4tb-workspace-stepper button span {
+  width: 22px;
+  height: 22px;
+  display: inline-grid;
+  place-items: center;
+  border-radius: 999px;
+  color: #dceeff;
+  background: rgba(83, 155, 219, 0.15);
+  font-size: 0.72rem;
+}
+
+.c4tb-workspace-stepper button.active {
+  color: #ffffff;
+  border-color: rgba(39, 183, 246, 0.58);
+  background: linear-gradient(135deg, rgba(15, 91, 139, 0.5), rgba(54, 80, 190, 0.36));
+  box-shadow: inset 0 0 0 1px rgba(82, 204, 255, 0.08);
+}
+
+.c4tb-workspace-stepper button.complete {
+  color: #bce8ff;
+}
+
+.c4tb-workspace-stepper button:disabled {
+  cursor: default;
+  opacity: 0.5;
+}
+
+.c4tb-workspace-back {
+  min-height: 42px;
+  padding: 0 16px;
+  border: 1px solid rgba(100, 190, 255, 0.2);
+  border-radius: 12px;
+  color: #cbeaff;
+  background: rgba(10, 34, 57, 0.78);
+  font-weight: 850;
+  white-space: nowrap;
+}
+
+.c4tb-poll-browser {
+  display: grid;
+  gap: 18px;
+}
+
+.c4tb-unpolled-matches {
+  border-color: rgba(120, 177, 244, 0.16);
+}
+
+.c4tb-unpolled-match-list {
+  display: grid;
+  gap: 10px;
+  margin-top: 16px;
+}
+
+.c4tb-unpolled-match-list article {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 18px;
+  padding: 15px 16px;
+  border: 1px solid rgba(105, 177, 235, 0.16);
+  border-radius: 14px;
+  background: rgba(7, 24, 43, 0.72);
+}
+
+.c4tb-unpolled-match-list article > div {
+  min-width: 0;
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+}
+
+.c4tb-unpolled-match-list strong {
+  color: #ffffff;
+  font-size: 0.96rem;
+}
+
+.c4tb-unpolled-match-list small {
+  color: #85afd0;
+  font-size: 0.78rem;
+}
+
+.c4tb-unpolled-match-list button {
+  flex: 0 0 auto;
+  min-height: 38px;
+  padding: 0 15px;
+  border: 1px solid rgba(47, 195, 255, 0.34);
+  border-radius: 11px;
+  color: #ffffff;
+  background: linear-gradient(135deg, #139bd9, #5968f4);
+  font-weight: 900;
+}
+
+/* The old top-level stepper and summary-back control are intentionally retired. */
+.c4tb-header .c4tb-stepper,
+.c4tb-summary-back {
+  display: none !important;
+}
+
+@media (max-width: 900px) {
+  .c4tb-workspace-navigation {
+    grid-template-columns: 1fr;
+  }
+
+  .c4tb-workspace-navigation > div:first-child {
+    display: none;
+  }
+
+  .c4tb-workspace-back {
+    justify-self: start;
+  }
+}
+
+@media (max-width: 620px) {
+  .c4tb-workspace-navigation {
+    width: min(100% - 18px, 1180px);
+    margin-top: 18px;
+    padding: 10px;
+    border-radius: 16px;
+  }
+
+  .c4tb-workspace-stepper {
+    gap: 5px;
+  }
+
+  .c4tb-workspace-stepper button {
+    min-height: 42px;
+    padding: 0 5px;
+    font-size: 0.74rem;
+  }
+
+  .c4tb-workspace-stepper button span {
+    display: none;
+  }
+
+  .c4tb-unpolled-match-list article {
+    align-items: stretch;
+    flex-direction: column;
+  }
+
+  .c4tb-unpolled-match-list button {
+    width: 100%;
+  }
+}
