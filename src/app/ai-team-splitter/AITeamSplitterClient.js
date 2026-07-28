@@ -106,6 +106,7 @@ export default function AITeamSplitterClient() {
   const searchParams = useSearchParams();
   const requestedLeagueId = Number(searchParams.get("leagueId"));
   const uploadRef = useRef(null);
+  const pollComboRef = useRef(null);
 
   const [activeStep, setActiveStep] = useState("SOURCE");
   const [sourceMode, setSourceMode] = useState("MATCH");
@@ -133,6 +134,7 @@ export default function AITeamSplitterClient() {
   const [result, setResult] = useState(null);
   const [captains, setCaptains] = useState(null);
   const [importSummary, setImportSummary] = useState(null);
+  const [screenshotImport, setScreenshotImport] = useState(null);
   const [showAllPolls, setShowAllPolls] = useState(false);
   const [pollCenterOpen, setPollCenterOpen] = useState(false);
   const [availabilitySetupCollapsed, setAvailabilitySetupCollapsed] = useState(false);
@@ -216,6 +218,7 @@ export default function AITeamSplitterClient() {
   }
 
   function openPoll(item, goToAvailability = false) {
+    if (pollComboRef.current) pollComboRef.current.open = false;
     setPoll(item);
     setPollResponses(item?.responses || []);
     setSourceMode("POLL");
@@ -334,15 +337,7 @@ export default function AITeamSplitterClient() {
   }
 
   function continueFromSource() {
-    if (sourceMode === "POLL" || (sourceMode === "MATCH" && selectedMatch)) {
-      setPollCenterOpen(true);
-      setActiveStep("AVAILABILITY");
-      return;
-    }
-    if (selectedPlayers.length < 4) {
-      setMessage("Select at least four players before continuing.");
-      return;
-    }
+    setMessage("");
     setActiveStep("BUILD");
   }
 
@@ -504,18 +499,116 @@ export default function AITeamSplitterClient() {
     setMessage("Poll link copied.");
   }
 
-  function usePollPlayers(group = bestPollGroup) {
+  async function usePollPlayers(group = bestPollGroup) {
     if (!group?.yes?.length) {
       setMessage("No YES responses are available yet.");
       return;
     }
-    const keys = new Set(group.yes.map((response) => String(response.playerKey)));
-    const ids = players
-      .filter((player) => keys.has(playerIdentity(player)))
-      .map((player) => player.id);
-    setSelectedIds(ids);
-    setActiveStep("BUILD");
-    setMessage(`${ids.length} YES players selected from ${group.option.label}.`);
+
+    setWorking(true);
+
+    try {
+      // The Players tab may currently contain a different team pool. Reload the
+      // poll's source teams (or the whole league as a safe fallback) before
+      // resolving YES responses so confirmed players are never silently lost.
+      const pollTeamIds = [
+        ...(Array.isArray(poll?.sourceTeamIds) ? poll.sourceTeamIds : []),
+        ...(Array.isArray(poll?.teamIds) ? poll.teamIds : []),
+        ...(Array.isArray(poll?.sourceTeams)
+          ? poll.sourceTeams.map((team) => team?.teamId ?? team?.id)
+          : []),
+      ]
+        .map(Number)
+        .filter((id) => Number.isInteger(id) && id > 0);
+
+      const uniqueTeamIds = [...new Set(pollTeamIds)];
+      const teamQuery = uniqueTeamIds.length
+        ? `&teamIds=${uniqueTeamIds.join(",")}`
+        : "";
+
+      const [playerRes, statsRes] = await Promise.all([
+        fetch(`/api/ai-team-splitter/players?leagueId=${leagueId}${teamQuery}`),
+        fetch(`/api/leagues/${leagueId}/stats`),
+      ]);
+
+      const [playerData, statsData] = await Promise.all([
+        playerRes.json(),
+        statsRes.json(),
+      ]);
+
+      if (!playerRes.ok) {
+        throw new Error(playerData.error || "Failed to load poll players.");
+      }
+      if (!statsRes.ok) {
+        throw new Error(statsData.error || "Failed to load player statistics.");
+      }
+
+      const pollPlayers = mergeStatsIntoPlayers(playerData.players || [], statsData);
+
+      const confirmedKeys = new Set();
+      const confirmedNames = new Set();
+
+      for (const response of group.yes) {
+        const keyCandidates = [
+          response?.playerKey,
+          response?.playerId,
+          response?.id,
+        ];
+
+        for (const key of keyCandidates) {
+          if (key !== undefined && key !== null && String(key).trim()) {
+            confirmedKeys.add(String(key));
+          }
+        }
+
+        const responseName = normalizeName(
+          response?.playerName || response?.name || response?.displayName
+        );
+        if (responseName) confirmedNames.add(responseName);
+      }
+
+      const confirmedPlayers = pollPlayers.filter((player) => {
+        const playerKeys = [
+          player?.playerKey,
+          player?.id,
+          player?.playerId,
+        ]
+          .filter((value) => value !== undefined && value !== null)
+          .map(String);
+
+        const keyMatches = playerKeys.some((key) => confirmedKeys.has(key));
+        const nameMatches = confirmedNames.has(normalizeName(player?.playerName || player?.name));
+        return keyMatches || nameMatches;
+      });
+
+      const confirmedIds = [...new Set(confirmedPlayers.map((player) => player.id))];
+      const unmatchedCount = Math.max(0, group.yes.length - confirmedIds.length);
+
+      setPlayers(pollPlayers);
+      if (uniqueTeamIds.length) setSelectedTeamIds(uniqueTeamIds);
+      setSelectedIds(confirmedIds);
+      setResult(null);
+      setCaptains(null);
+      setSourceMode("POLL");
+      setActiveStep("BUILD");
+
+      if (!confirmedIds.length) {
+        setMessage(
+          "The YES responses could not be matched to current league players. Check whether those players were deleted or renamed."
+        );
+        return;
+      }
+
+      setMessage(
+        unmatchedCount
+          ? `${confirmedIds.length} confirmed players selected. ${unmatchedCount} YES response${unmatchedCount === 1 ? " was" : "s were"} not matched to a current league player.`
+          : `${confirmedIds.length} YES players selected from ${group.option.label}. The Players and Build workspaces now use only these confirmed players.`
+      );
+    } catch (error) {
+      setMessage(error.message || "Failed to select confirmed players.");
+    } finally {
+      setWorking(false);
+    }
   }
 
   async function deletePoll(token) {
@@ -535,26 +628,96 @@ export default function AITeamSplitterClient() {
 
   async function importPlayers(file) {
     if (!file) return;
+
+    const isImage = file.type.startsWith("image/") || /\.(png|jpe?g|webp)$/i.test(file.name);
     setWorking(true);
+    setScreenshotImport(null);
+    setImportSummary(null);
+
     try {
+      let fileForMatching = file;
+      let detectedScreenshot = null;
+
+      if (isImage) {
+        const screenshotForm = new FormData();
+        screenshotForm.append("file", file);
+
+        const screenshotResponse = await fetch(
+          "/api/ai-team-splitter/import-screenshot",
+          { method: "POST", body: screenshotForm }
+        );
+        const screenshotData = await screenshotResponse.json();
+
+        if (!screenshotResponse.ok) {
+          throw new Error(
+            screenshotData.error || "Failed to read the uploaded screenshot."
+          );
+        }
+
+        const extractedNames = [
+          ...(screenshotData.teams || []).flatMap((team) => team.players || []),
+          ...(screenshotData.unassignedPlayers || []),
+        ]
+          .map((name) => String(name || "").trim())
+          .filter(Boolean);
+
+        const uniqueNames = [...new Map(
+          extractedNames.map((name) => [normalizeName(name), name])
+        ).values()];
+
+        if (!uniqueNames.length) {
+          throw new Error(
+            "No player names were detected. Try a clearer screenshot with visible team headings and player names."
+          );
+        }
+
+        fileForMatching = new File(
+          [uniqueNames.join("\n")],
+          `${file.name.replace(/\.[^.]+$/, "")}-players.txt`,
+          { type: "text/plain" }
+        );
+
+        detectedScreenshot = {
+          fileName: file.name,
+          teams: screenshotData.teams || [],
+          unassignedPlayers: screenshotData.unassignedPlayers || [],
+          warnings: screenshotData.warnings || [],
+          detectedCount: uniqueNames.length,
+        };
+      }
+
       const formData = new FormData();
-      formData.append("file", file);
+      formData.append("file", fileForMatching);
       formData.append("leagueId", String(leagueId));
       formData.append("teamIds", selectedTeamIds.join(","));
-      const response = await fetch("/api/ai-team-splitter/import", { method: "POST", body: formData });
+
+      const response = await fetch("/api/ai-team-splitter/import", {
+        method: "POST",
+        body: formData,
+      });
       const data = await response.json();
       if (!response.ok) throw new Error(data.error || "Failed to import players.");
+
       const currentByKey = new Map(
         players.map((player) => [normalizeName(player.playerName), player])
       );
       const merged = (data.matchedPlayers || []).map((player) =>
         currentByKey.get(normalizeName(player.playerName)) || player
       );
+
       setPlayers(merged);
       setSelectedIds(merged.map((player) => player.id));
       setImportSummary(data.summary || null);
+      setScreenshotImport(detectedScreenshot);
+      setResult(null);
+      setCaptains(null);
+      setSearch("");
       setSourceMode("UPLOAD");
-      setMessage(`${merged.length} players matched from ${file.name}.`);
+      setMessage(
+        isImage
+          ? `${merged.length} league players matched from ${detectedScreenshot.detectedCount} names detected in ${file.name}.`
+          : `${merged.length} players matched from ${file.name}.`
+      );
     } catch (error) {
       setMessage(error.message || "Failed to import players.");
     } finally {
@@ -614,6 +777,36 @@ export default function AITeamSplitterClient() {
     ].join("\n");
     await navigator.clipboard.writeText(text);
     setMessage("Team list copied.");
+  }
+
+  function renderBalanceAction({ showReview = false, label = "Generate Balanced Teams" } = {}) {
+    const canBalance = selectedPlayers.length >= 4 && !working;
+    const teamOneSize = Math.ceil(selectedPlayers.length / 2);
+    const teamTwoSize = Math.floor(selectedPlayers.length / 2);
+
+    return (
+      <div className="c4tb-balance-action" role="region" aria-label="Generate balanced teams">
+        <div className="c4tb-balance-action-copy">
+          <span>{canBalance ? "Ready to balance" : "Player selection required"}</span>
+          <strong>{selectedPlayers.length} selected player{selectedPlayers.length === 1 ? "" : "s"}</strong>
+          <small>
+            {selectedPlayers.length >= 4
+              ? `Teams will be split ${teamOneSize} and ${teamTwoSize}. Availability polls are optional.`
+              : `Select ${4 - selectedPlayers.length} more player${4 - selectedPlayers.length === 1 ? "" : "s"} to enable balancing.`}
+          </small>
+        </div>
+        <div className="c4tb-balance-action-buttons">
+          {showReview && (
+            <button type="button" className="secondary" onClick={continueFromSource} disabled={working}>
+              Review Players
+            </button>
+          )}
+          <button type="button" className="primary" onClick={generateTeams} disabled={!canBalance}>
+            {working ? "Balancing..." : `⚖️ ${label}`}
+          </button>
+        </div>
+      </div>
+    );
   }
 
   if (loading) {
@@ -699,46 +892,101 @@ export default function AITeamSplitterClient() {
             </div>
           </button>
           <div className="c4tb-poll-dock-actions">
-            {pollCenterOpen && allPolls.length > 0 && (
-              <button type="button" onClick={() => setShowAllPolls((value) => !value)}>
-                {showAllPolls ? "Show less" : `View all (${allPolls.length})`}
-              </button>
-            )}
+            <button
+              type="button"
+              className="primary c4tb-on-demand-poll-button"
+              onClick={prepareNewPoll}
+              disabled={working}
+            >
+              ＋ Create Poll on Demand
+            </button>
+
           </div>
         </div>
 
         <div id="c4tb-poll-center-content" className="c4tb-poll-dock-content" hidden={!pollCenterOpen}>
         {allPolls.length ? (
-          <div className={`c4tb-poll-strip ${showAllPolls ? "expanded" : ""}`}>
-            {(showAllPolls ? allPolls : allPolls.slice(0, 4)).map((item) => {
-              const summary = pollSummary(item);
-              const isActive = poll?.token === item.token;
-              return (
-                <article key={item.token} className={isActive ? "active" : ""}>
-                  <button type="button" className="c4tb-poll-open" onClick={() => openPoll(item)}>
+          allPolls.length === 1 ? (
+            <div className="c4tb-poll-strip c4tb-single-poll-strip">
+              {allPolls.map((item) => {
+                const summary = pollSummary(item);
+                const isActive = poll?.token === item.token;
+                return (
+                  <article key={item.token} className={isActive ? "active" : ""}>
+                    <button type="button" className="c4tb-poll-open" onClick={() => openPoll(item)}>
+                      <div className="c4tb-poll-row-title">
+                        <span className="c4tb-poll-dot" />
+                        <div>
+                          <strong>{item.title}</strong>
+                          <small>{new Date(item.createdAt).toLocaleDateString()} • {summary.total} recorded replies</small>
+                        </div>
+                      </div>
+                      <div className="c4tb-poll-mini-stats">
+                        <span className="yes">{summary.yes} YES</span>
+                        <span className="maybe">{summary.maybe} MAYBE</span>
+                        <span className="no">{summary.no} NO</span>
+                      </div>
+                      <b>{isActive ? "Open" : "View"} →</b>
+                    </button>
+                  </article>
+                );
+              })}
+            </div>
+          ) : (
+            <details className="c4tb-poll-combo" ref={pollComboRef}>
+              {(() => {
+                const selectedPoll = poll || allPolls[0];
+                const selectedSummary = pollSummary(selectedPoll);
+                return (
+                  <summary className="c4tb-poll-combo-trigger">
                     <div className="c4tb-poll-row-title">
                       <span className="c4tb-poll-dot" />
                       <div>
-                        <strong>{item.title}</strong>
-                        <small>{new Date(item.createdAt).toLocaleDateString()} • {summary.total} recorded replies</small>
+                        <strong>{selectedPoll.title}</strong>
+                        <small>{new Date(selectedPoll.createdAt).toLocaleDateString()} • {selectedSummary.total} recorded replies</small>
                       </div>
                     </div>
                     <div className="c4tb-poll-mini-stats">
-                      <span className="yes">{summary.yes} YES</span>
-                      <span className="maybe">{summary.maybe} MAYBE</span>
-                      <span className="no">{summary.no} NO</span>
+                      <span className="yes">{selectedSummary.yes} YES</span>
+                      <span className="maybe">{selectedSummary.maybe} MAYBE</span>
+                      <span className="no">{selectedSummary.no} NO</span>
                     </div>
-                    <b>{isActive ? "Open" : "View"} →</b>
-                  </button>
-                </article>
-              );
-            })}
-          </div>
+                    <b>{allPolls.length} polls ▾</b>
+                  </summary>
+                );
+              })()}
+              <div className="c4tb-poll-combo-menu">
+                {allPolls.map((item) => {
+                  const summary = pollSummary(item);
+                  const isActive = poll?.token === item.token;
+                  return (
+                    <article key={item.token} className={isActive ? "active" : ""}>
+                      <button type="button" className="c4tb-poll-open" onClick={() => openPoll(item)}>
+                        <div className="c4tb-poll-row-title">
+                          <span className="c4tb-poll-dot" />
+                          <div>
+                            <strong>{item.title}</strong>
+                            <small>{new Date(item.createdAt).toLocaleDateString()} • {summary.total} recorded replies</small>
+                          </div>
+                        </div>
+                        <div className="c4tb-poll-mini-stats">
+                          <span className="yes">{summary.yes} YES</span>
+                          <span className="maybe">{summary.maybe} MAYBE</span>
+                          <span className="no">{summary.no} NO</span>
+                        </div>
+                        <b>{isActive ? "Selected" : "Open"} →</b>
+                      </button>
+                    </article>
+                  );
+                })}
+              </div>
+            </details>
+          )
         ) : (
           <div className="c4tb-poll-dock-empty">
             {selectedMatch
               ? `No poll exists yet for ${selectedMatch.teamAName || selectedMatch.teamA?.name} vs ${selectedMatch.teamBName || selectedMatch.teamB?.name}. Complete Step 2 below to create and share one.`
-              : "No availability polls yet. Choose WhatsApp availability in Step 1 to create or open one."}
+              : "No availability polls yet. Use Create Poll on Demand above, or choose a scheduled match below."}
           </div>
         )}
 
@@ -782,12 +1030,15 @@ export default function AITeamSplitterClient() {
             </div>
 
             <div className="c4tb-assistant-strip">
-              <span>🤖</span>
-              <div>
+              <span className="c4tb-assistant-icon" aria-hidden="true">🤖</span>
+              <div className="c4tb-assistant-copy">
                 <strong>Match Assistant</strong>
-                <small>{bestPollGroup?.yes?.length >= 4 ? `${bestPollGroup.yes.length} confirmed players are ready for balanced teams.` : "Keep sharing the poll until at least four players confirm YES."}</small>
+                <small>
+                  {bestPollGroup?.yes?.length >= 4
+                    ? `${bestPollGroup.yes.length} confirmed players are ready. Use the YES Players button above to load only those players into Build.`
+                    : "Keep sharing the poll until at least four players confirm YES."}
+                </small>
               </div>
-              {bestPollGroup?.yes?.length >= 4 && <button type="button" onClick={() => usePollPlayers(bestPollGroup)}>Build from confirmed players</button>}
             </div>
           </div>
         )}
@@ -848,12 +1099,12 @@ export default function AITeamSplitterClient() {
         <section className="c4tb-main-card">
           {activeStep === "SOURCE" && (
             <>
-              <div className="c4tb-section-head"><div><span>Step 1</span><h2>Choose how players enter the builder</h2><p>Start from a scheduled match, create a poll, upload a list, or select league pools manually.</p></div></div>
+              <div className="c4tb-section-head"><div><span>Step 1</span><h2>Choose how players enter the builder</h2><p>Choose any player source. Availability polls are optional, and balancing becomes available as soon as 4 players are selected.</p></div></div>
               <div className="c4tb-source-grid">
                 {[
-                  ["MATCH", "📅", "Scheduled match", "Use both teams and the saved match date."],
-                  ["POLL", "📲", "WhatsApp availability", "Create or reopen a poll and use YES voters."],
-                  ["UPLOAD", "📄", "Upload player file", "Import CSV, TXT, or Excel names and rematch by stats."],
+                  ["MATCH", "📅", "Scheduled match", "Load both match teams and balance immediately; a poll is optional."],
+                  ["POLL", "📲", "WhatsApp availability", "Use an existing poll, YES voters, or the currently selected players."],
+                  ["UPLOAD", "📸", "Upload file or screenshot", "Import CSV, TXT, Excel, PNG, JPG, or WebP team lists and rematch by stats."],
                   ["MANUAL", "👥", "Manual selection", "Choose league pools and individual players."],
                 ].map(([id, icon, title, copy]) => (
                   <button key={id} type="button" className={sourceMode === id ? "selected" : ""} onClick={() => changeSourceMode(id)}>
@@ -888,22 +1139,129 @@ export default function AITeamSplitterClient() {
                 </div>
               )}
 
-              {sourceMode === "UPLOAD" && (
-                <div className="c4tb-upload-zone" onClick={() => uploadRef.current?.click()}>
-                  <input ref={uploadRef} hidden type="file" accept=".csv,.txt,.xlsx,.xls" onChange={(event) => importPlayers(event.target.files?.[0])} />
-                  <span>⬆</span><h3>Upload a team list</h3><p>CSV, TXT, XLSX, or XLS. Existing split columns are merged and rebalanced using Cric4All statistics.</p><button type="button" disabled={working}>{working ? "Importing..." : "Choose File"}</button>
-                  {importSummary && <small>{importSummary.matched} matched • {importSummary.unmatched} unmatched</small>}
+              {sourceMode === "MATCH" && selectedMatch && (
+                <div className="c4tb-source-poll-cta">
+                  <div>
+                    <span>Optional availability poll</span>
+                    <strong>Create and share a WhatsApp poll for this scheduled match</strong>
+                    <small>Balancing is still available immediately from the currently selected match players.</small>
+                  </div>
+                  <button type="button" onClick={prepareScheduledMatchPoll} disabled={working}>
+                    📤 Create &amp; Share Poll
+                  </button>
                 </div>
               )}
 
-              <div className="c4tb-footer-action">
-                <div><span>Ready to continue</span><strong>{selectedPlayers.length} players</strong></div>
-                <button type="button" onClick={continueFromSource} disabled={working || (sourceMode !== "POLL" && selectedPlayers.length < 4)}>
-                  {sourceMode === "POLL" || (sourceMode === "MATCH" && selectedMatch)
-                    ? "Continue to Availability"
-                    : "Review Players"} →
-                </button>
-              </div>
+              {sourceMode === "POLL" && (
+                <div className="c4tb-source-poll-cta">
+                  <div>
+                    <span>WhatsApp availability</span>
+                    <strong>Create a new poll or continue with an existing poll above</strong>
+                    <small>The poll is optional. You can also review the current player selection and balance teams now.</small>
+                  </div>
+                  <button
+                    type="button"
+                    onClick={prepareNewPoll}
+                    disabled={working || selectedTeamIds.length === 0}
+                    title={selectedTeamIds.length === 0 ? "Select at least one team first" : "Create and share an availability poll"}
+                  >
+                    📤 Create &amp; Share Poll
+                  </button>
+                </div>
+              )}
+
+              {sourceMode === "UPLOAD" && (
+                <>
+                  <div
+                    className={`c4tb-upload-zone ${working ? "working" : ""}`}
+                    onClick={() => !working && uploadRef.current?.click()}
+                  >
+                    <input
+                      ref={uploadRef}
+                      hidden
+                      type="file"
+                      accept=".csv,.txt,.xlsx,.xls,.png,.jpg,.jpeg,.webp,image/png,image/jpeg,image/webp"
+                      onChange={(event) => importPlayers(event.target.files?.[0])}
+                    />
+                    <span>{working ? "⏳" : "📸"}</span>
+                    <h3>Upload a player list or team screenshot</h3>
+                    <p>
+                      Use CSV, TXT, Excel, PNG, JPG, or WebP. Screenshots can contain
+                      team headings, numbered players, captain markers, emojis, or
+                      multi-column team lists.
+                    </p>
+                    <button type="button" disabled={working}>
+                      {working ? "Reading and matching..." : "Choose File or Screenshot"}
+                    </button>
+                    <small className="c4tb-upload-privacy">
+                      Screenshots are analyzed securely on the server. Always review the detected names before balancing.
+                    </small>
+                    {importSummary && (
+                      <small className="c4tb-upload-result">
+                        {importSummary.matched} matched • {importSummary.unmatched} unmatched
+                      </small>
+                    )}
+                  </div>
+
+                  {screenshotImport && (
+                    <section className="c4tb-screenshot-review" aria-label="Screenshot import review">
+                      <div className="c4tb-screenshot-review-head">
+                        <div>
+                          <span>Screenshot review</span>
+                          <h3>{screenshotImport.detectedCount} names detected</h3>
+                          <p>{screenshotImport.fileName}</p>
+                        </div>
+                        <b>{importSummary?.matched || 0} league matches</b>
+                      </div>
+
+                      <div className="c4tb-detected-team-grid">
+                        {screenshotImport.teams.map((team, teamIndex) => (
+                          <article key={`${team.teamName}-${teamIndex}`}>
+                            <header>
+                              <strong>{team.teamName || `Detected Team ${teamIndex + 1}`}</strong>
+                              <span>{team.players?.length || 0}</span>
+                            </header>
+                            <div>
+                              {(team.players || []).map((name, playerIndex) => (
+                                <span key={`${name}-${playerIndex}`}>{name}</span>
+                              ))}
+                            </div>
+                          </article>
+                        ))}
+
+                        {!!screenshotImport.unassignedPlayers.length && (
+                          <article>
+                            <header>
+                              <strong>Players without a team heading</strong>
+                              <span>{screenshotImport.unassignedPlayers.length}</span>
+                            </header>
+                            <div>
+                              {screenshotImport.unassignedPlayers.map((name, playerIndex) => (
+                                <span key={`${name}-${playerIndex}`}>{name}</span>
+                              ))}
+                            </div>
+                          </article>
+                        )}
+                      </div>
+
+                      {!!screenshotImport.warnings.length && (
+                        <div className="c4tb-screenshot-warnings">
+                          <strong>Review notes</strong>
+                          {screenshotImport.warnings.map((warning, index) => (
+                            <p key={`${warning}-${index}`}>• {warning}</p>
+                          ))}
+                        </div>
+                      )}
+
+                      <p className="c4tb-screenshot-review-note">
+                        The detected team grouping is shown for verification. Only names matched to current league players are selected for balancing.
+                      </p>
+                    </section>
+                  )}
+                </>
+              )}
+
+              {renderBalanceAction({ showReview: true })}
             </>
           )}
 
@@ -915,8 +1273,8 @@ export default function AITeamSplitterClient() {
                   <h2>Collect availability</h2>
                   <p>
                     {sourceMode === "MATCH"
-                      ? "Review the scheduled match details, create its poll, and send it directly to your WhatsApp group."
-                      : "Choose an existing availability poll, or create a separate ad-hoc poll when no scheduled match applies."}
+                      ? "Optionally create and share a poll, or generate teams immediately from the selected match players."
+                      : "Poll tools are optional. You can use YES voters, manually adjust players, or generate from the current selection."}
                   </p>
                 </div>
               </div>
@@ -1097,6 +1455,36 @@ export default function AITeamSplitterClient() {
                         </div>
                       </div>
 
+                      <div className="c4tb-ad-hoc-team-selection">
+                        <div className="c4tb-panel-title">
+                          <div>
+                            <h3>Select at least one team</h3>
+                            <p>Only players from the selected team pools will be included in this availability poll.</p>
+                          </div>
+                          <span>{selectedTeamIds.length}/{teams.length}</span>
+                        </div>
+                        <div className="c4tb-pool-grid">
+                          {teams.map((team) => (
+                            <button
+                              key={team.id}
+                              type="button"
+                              className={selectedTeamIds.includes(Number(team.id)) ? "selected" : ""}
+                              onClick={() => togglePool(team.id)}
+                              disabled={working}
+                            >
+                              <span>{selectedTeamIds.includes(Number(team.id)) ? "✓" : "+"}</span>
+                              <div>
+                                <strong>{team.name}</strong>
+                                <small>{team.playerCount || 0} players</small>
+                              </div>
+                            </button>
+                          ))}
+                        </div>
+                        {selectedTeamIds.length === 0 && (
+                          <p className="c4tb-team-required-note">Select at least one team to enable Create &amp; Share Poll.</p>
+                        )}
+                      </div>
+
                       <label className="c4tb-field">
                         <span>Poll title</span>
                         <input
@@ -1186,16 +1574,19 @@ export default function AITeamSplitterClient() {
                         </button>
                         <button
                           type="button"
-                          onClick={() => createPoll({ shareAfterCreate: false })}
-                          disabled={working}
+                          onClick={() => createPoll({ shareAfterCreate: true })}
+                          disabled={working || selectedTeamIds.length === 0}
+                          title={selectedTeamIds.length === 0 ? "Select at least one team first" : "Create the poll and open WhatsApp"}
                         >
-                          {working ? "Creating..." : "Create Poll"}
+                          {working ? "Creating..." : "📤 Create & Share Poll"}
                         </button>
                       </div>
                     </div>
                   )}
                 </div>
               )}
+
+              {renderBalanceAction({ showReview: true })}
             </>
           )}
 
@@ -1222,7 +1613,7 @@ export default function AITeamSplitterClient() {
                 <div className="c4tb-versus"><strong>{Math.ceil(selectedPlayers.length / 2)}</strong><span>vs</span><strong>{Math.floor(selectedPlayers.length / 2)}</strong></div>
                 <label><span>Team 2 name</span><input value={teamBName} onChange={(event) => setTeamBName(event.target.value)} /></label>
               </div>
-              <div className="c4tb-footer-action"><div><span>Ready to balance</span><strong>{selectedPlayers.length} selected</strong></div><button type="button" onClick={generateTeams} disabled={working || selectedPlayers.length < 4}>{working ? "Balancing..." : "✨ Generate Balanced Teams"}</button></div>
+              {renderBalanceAction()}
             </>
           )}
 

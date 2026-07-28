@@ -1458,3 +1458,548 @@
     width: 100%;
   }
 }
+
+
+/* =========================================================
+   CRIC4ALL TEAM BUILDER V4 — PERSISTENT BALANCE ACTION
+   Balancing is available from every source with 4+ players.
+========================================================= */
+.c4tb-balance-action {
+  position: sticky;
+  bottom: 10px;
+  z-index: 30;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 18px;
+  margin-top: 18px;
+  padding: 14px 16px;
+  border: 1px solid rgba(56, 189, 248, .34);
+  border-radius: 18px;
+  background: linear-gradient(135deg, rgba(7, 20, 38, .97), rgba(14, 35, 57, .97));
+  box-shadow: 0 18px 45px rgba(0, 0, 0, .38), 0 0 0 1px rgba(56, 189, 248, .06) inset;
+  backdrop-filter: blur(18px);
+}
+.c4tb-balance-action-copy { min-width: 0; }
+.c4tb-balance-action-copy > span {
+  display: block;
+  color: #7dd3fc;
+  font-size: 10px;
+  font-weight: 950;
+  letter-spacing: .1em;
+  text-transform: uppercase;
+}
+.c4tb-balance-action-copy > strong {
+  display: block;
+  margin-top: 3px;
+  color: #fff;
+  font-size: 18px;
+}
+.c4tb-balance-action-copy > small {
+  display: block;
+  margin-top: 4px;
+  color: #9fb0c6;
+  font-size: 12px;
+  line-height: 1.4;
+}
+.c4tb-balance-action-buttons {
+  display: flex;
+  flex: 0 0 auto;
+  align-items: center;
+  gap: 9px;
+}
+.c4tb-balance-action-buttons button {
+  min-height: 44px;
+  padding: 0 16px;
+  border-radius: 13px;
+  font-weight: 950;
+  white-space: nowrap;
+}
+.c4tb-balance-action-buttons .primary {
+  border: 0;
+  color: #fff;
+  background: linear-gradient(135deg, #0ea5e9, #6366f1);
+  box-shadow: 0 12px 30px rgba(14, 165, 233, .2);
+}
+.c4tb-balance-action-buttons .secondary {
+  border: 1px solid rgba(148, 163, 184, .24);
+  color: #dbeafe;
+  background: rgba(2, 6, 23, .34);
+}
+.c4tb-balance-action-buttons button:disabled {
+  opacity: .45;
+  cursor: not-allowed;
+  box-shadow: none;
+}
+@media (max-width: 700px) {
+  .c4tb-balance-action {
+    bottom: 6px;
+    align-items: stretch;
+    flex-direction: column;
+    gap: 10px;
+    padding: 12px;
+  }
+  .c4tb-balance-action-buttons {
+    display: grid;
+    grid-template-columns: 1fr 1.4fr;
+  }
+  .c4tb-balance-action-buttons button:only-child { grid-column: 1 / -1; }
+}
+@media (max-width: 470px) {
+  .c4tb-balance-action-buttons { grid-template-columns: 1fr; }
+}
+
+/* V4.1 — confirmed-player selection status */
+.c4tb-assistant-ready {
+  margin-left: auto;
+  padding: 8px 11px;
+  border: 1px solid rgba(52, 211, 153, .28);
+  border-radius: 11px;
+  background: rgba(16, 185, 129, .08);
+  color: #bbf7d0;
+  font-size: 11px;
+  font-weight: 800;
+  line-height: 1.35;
+  text-align: right;
+}
+
+@media (max-width: 700px) {
+  .c4tb-assistant-ready {
+    width: 100%;
+    margin-left: 0;
+    text-align: left;
+  }
+}
+
+/* =========================================================
+   CRIC4ALL TEAM BUILDER V4.4 — SOURCE POLL ACTION
+   Keeps Create & Share Poll visible from Scheduled Match and
+   WhatsApp Availability without blocking team generation.
+========================================================= */
+.c4tb-source-poll-cta {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr) auto;
+  align-items: center;
+  gap: 16px;
+  margin-top: 14px;
+  padding: 15px 16px;
+  border: 1px solid rgba(56, 189, 248, .3);
+  border-radius: 17px;
+  background:
+    radial-gradient(circle at 0 50%, rgba(14, 165, 233, .12), transparent 38%),
+    rgba(7, 24, 42, .84);
+  box-shadow: 0 14px 34px rgba(0, 0, 0, .16);
+}
+
+.c4tb-source-poll-cta > div {
+  min-width: 0;
+}
+
+.c4tb-source-poll-cta span,
+.c4tb-source-poll-cta strong,
+.c4tb-source-poll-cta small {
+  display: block;
+}
+
+.c4tb-source-poll-cta span {
+  color: #7dd3fc;
+  font-size: 10px;
+  font-weight: 950;
+  letter-spacing: .08em;
+  text-transform: uppercase;
+}
+
+.c4tb-source-poll-cta strong {
+  margin-top: 4px;
+  color: #f8fafc;
+  font-size: 15px;
+  line-height: 1.35;
+}
+
+.c4tb-source-poll-cta small {
+  margin-top: 4px;
+  color: #9fb0c6;
+  font-size: 12px;
+  line-height: 1.45;
+}
+
+.c4tb-source-poll-cta > button {
+  min-height: 44px;
+  padding: 0 17px;
+  border: 0;
+  border-radius: 13px;
+  color: #fff;
+  background: linear-gradient(135deg, #0ea5e9, #6366f1);
+  box-shadow: 0 12px 26px rgba(14, 165, 233, .2);
+  font-weight: 950;
+  white-space: nowrap;
+}
+
+.c4tb-source-poll-cta > button:hover:not(:disabled) {
+  transform: translateY(-1px);
+  box-shadow: 0 15px 30px rgba(14, 165, 233, .27);
+}
+
+.c4tb-source-poll-cta > button:disabled {
+  opacity: .48;
+  cursor: not-allowed;
+}
+
+@media (max-width: 700px) {
+  .c4tb-source-poll-cta {
+    grid-template-columns: 1fr;
+    align-items: stretch;
+  }
+
+  .c4tb-source-poll-cta > button {
+    width: 100%;
+  }
+}
+
+
+/* =========================================================
+   CRIC4ALL TEAM BUILDER V4.5 — MATCH ASSISTANT LAYOUT FIX
+   Keeps the assistant as one compact row at every workspace
+   width, including after opening Create & Share Poll.
+========================================================= */
+.c4tb-assistant-strip {
+  display: grid !important;
+  grid-template-columns: 32px minmax(0, 1fr) !important;
+  align-items: center !important;
+  gap: 10px !important;
+}
+
+.c4tb-assistant-icon {
+  width: 32px;
+  height: 32px;
+  display: grid;
+  place-items: center;
+  font-size: 20px !important;
+}
+
+.c4tb-assistant-copy {
+  min-width: 0;
+}
+
+.c4tb-assistant-copy strong,
+.c4tb-assistant-copy small {
+  display: block;
+}
+
+.c4tb-assistant-copy small {
+  margin-top: 2px;
+  color: #9fb0c8;
+  font-size: 11px;
+  line-height: 1.45;
+  overflow-wrap: anywhere;
+}
+
+/* The old third-column status element is no longer rendered. */
+.c4tb-assistant-ready {
+  display: none !important;
+}
+
+@media (max-width: 700px) {
+  .c4tb-assistant-strip {
+    grid-template-columns: 28px minmax(0, 1fr) !important;
+    padding: 10px !important;
+  }
+
+  .c4tb-assistant-icon {
+    width: 28px;
+    height: 28px;
+    font-size: 18px !important;
+  }
+}
+
+
+/* =========================================================
+   V4.6 — ON-DEMAND AVAILABILITY POLL
+   Keeps poll creation available even without a scheduled match.
+========================================================= */
+.c4tb-poll-dock-actions .c4tb-on-demand-poll-button {
+  min-width: 196px;
+  border: 1px solid rgba(56, 189, 248, .42);
+  background: linear-gradient(135deg, #0ea5e9, #6366f1);
+  color: #fff;
+  box-shadow: 0 10px 26px rgba(14, 165, 233, .18);
+}
+
+.c4tb-poll-dock-actions .c4tb-on-demand-poll-button:hover:not(:disabled) {
+  transform: translateY(-1px);
+  box-shadow: 0 14px 30px rgba(14, 165, 233, .24);
+}
+
+.c4tb-poll-dock-actions .c4tb-on-demand-poll-button:disabled {
+  opacity: .55;
+  cursor: not-allowed;
+}
+
+@media (max-width: 700px) {
+  .c4tb-poll-dock-actions .c4tb-on-demand-poll-button {
+    width: 100%;
+    min-width: 0;
+  }
+}
+
+
+/* =========================================================
+   V4.7 — POLL TEAM GUARD + SCALABLE POLL COMBO
+========================================================= */
+.c4tb-source-poll-cta button:disabled,
+.c4tb-ad-hoc-actions button:disabled {
+  cursor: not-allowed;
+  opacity: .42;
+  filter: grayscale(.2);
+  box-shadow: none;
+}
+
+.c4tb-ad-hoc-team-selection {
+  margin-top: 14px;
+  padding: 14px;
+  border: 1px solid rgba(56, 189, 248, .18);
+  border-radius: 16px;
+  background: rgba(2, 6, 23, .24);
+}
+.c4tb-ad-hoc-team-selection .c4tb-panel-title { margin-bottom: 0; }
+.c4tb-team-required-note {
+  margin: 10px 0 0;
+  padding: 9px 11px;
+  border: 1px solid rgba(251, 191, 36, .22);
+  border-radius: 11px;
+  color: #fde68a;
+  background: rgba(251, 191, 36, .07);
+  font-size: 12px;
+  font-weight: 750;
+}
+
+.c4tb-single-poll-strip { grid-template-columns: minmax(0, 1fr); }
+.c4tb-poll-combo {
+  position: relative;
+  z-index: 15;
+  margin-top: 13px;
+}
+.c4tb-poll-combo > summary { list-style: none; }
+.c4tb-poll-combo > summary::-webkit-details-marker { display: none; }
+.c4tb-poll-combo-trigger {
+  width: 100%;
+  min-width: 0;
+  display: grid;
+  grid-template-columns: minmax(0, 1fr) auto auto;
+  align-items: center;
+  gap: 10px;
+  padding: 11px 12px;
+  border: 1px solid rgba(56, 189, 248, .55);
+  border-radius: 14px;
+  color: #fff;
+  background: linear-gradient(135deg, rgba(14,165,233,.12), rgba(99,102,241,.08));
+  box-shadow: inset 0 0 0 1px rgba(56,189,248,.06);
+  cursor: pointer;
+}
+.c4tb-poll-combo-trigger > b {
+  color: #7dd3fc;
+  font-size: 11px;
+  white-space: nowrap;
+}
+.c4tb-poll-combo[open] .c4tb-poll-combo-trigger {
+  border-bottom-left-radius: 10px;
+  border-bottom-right-radius: 10px;
+}
+.c4tb-poll-combo-menu {
+  position: absolute;
+  left: 0;
+  right: 0;
+  top: calc(100% + 7px);
+  max-height: 390px;
+  overflow-y: auto;
+  display: grid;
+  gap: 7px;
+  padding: 8px;
+  border: 1px solid rgba(56,189,248,.34);
+  border-radius: 14px;
+  background: #071426;
+  box-shadow: 0 24px 55px rgba(0,0,0,.48);
+}
+.c4tb-poll-combo-menu article {
+  min-width: 0;
+  border: 1px solid rgba(148,163,184,.15);
+  border-radius: 12px;
+  background: rgba(15,23,42,.72);
+}
+.c4tb-poll-combo-menu article.active {
+  border-color: rgba(56,189,248,.62);
+  background: linear-gradient(135deg,rgba(14,165,233,.12),rgba(99,102,241,.08));
+}
+
+@media (max-width: 700px) {
+  .c4tb-poll-combo-trigger {
+    grid-template-columns: minmax(0,1fr) auto;
+  }
+  .c4tb-poll-combo-trigger .c4tb-poll-mini-stats {
+    grid-column: 1 / -1;
+    display: grid;
+    grid-template-columns: repeat(3,1fr);
+  }
+  .c4tb-poll-combo-trigger > b {
+    grid-column: 2;
+    grid-row: 1;
+  }
+  .c4tb-poll-combo-menu {
+    position: static;
+    margin-top: 7px;
+    max-height: 330px;
+  }
+}
+
+/* =========================================================
+   V4.8 — SCREENSHOT PLAYER IMPORT
+========================================================= */
+.c4tb-upload-zone.working {
+  cursor: wait;
+  opacity: .82;
+}
+.c4tb-upload-zone .c4tb-upload-privacy,
+.c4tb-upload-zone .c4tb-upload-result {
+  display: block;
+  max-width: 720px;
+  margin: 10px auto 0;
+}
+.c4tb-upload-zone .c4tb-upload-privacy {
+  color: #9fb0c6;
+  line-height: 1.45;
+}
+.c4tb-upload-zone .c4tb-upload-result {
+  color: #bbf7d0;
+  font-weight: 900;
+}
+.c4tb-screenshot-review {
+  margin-top: 14px;
+  padding: 16px;
+  border: 1px solid rgba(56,189,248,.24);
+  border-radius: 18px;
+  background:
+    radial-gradient(circle at 100% 0, rgba(139,92,246,.08), transparent 35%),
+    rgba(2,6,23,.30);
+}
+.c4tb-screenshot-review-head {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 14px;
+}
+.c4tb-screenshot-review-head > div { min-width: 0; }
+.c4tb-screenshot-review-head span {
+  display: block;
+  color: #7dd3fc;
+  font-size: 10px;
+  font-weight: 950;
+  letter-spacing: .09em;
+  text-transform: uppercase;
+}
+.c4tb-screenshot-review-head h3 {
+  margin: 4px 0 2px;
+}
+.c4tb-screenshot-review-head p {
+  overflow: hidden;
+  margin: 0;
+  color: #9fb0c6;
+  font-size: 12px;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+.c4tb-screenshot-review-head > b {
+  flex: 0 0 auto;
+  padding: 7px 10px;
+  border-radius: 999px;
+  color: #bbf7d0;
+  background: rgba(52,211,153,.10);
+  font-size: 12px;
+}
+.c4tb-detected-team-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(220px, 1fr));
+  gap: 10px;
+  margin-top: 14px;
+}
+.c4tb-detected-team-grid article {
+  min-width: 0;
+  overflow: hidden;
+  border: 1px solid rgba(148,163,184,.16);
+  border-radius: 15px;
+  background: rgba(15,23,42,.58);
+}
+.c4tb-detected-team-grid article header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 10px;
+  padding: 11px 12px;
+  border-bottom: 1px solid rgba(148,163,184,.12);
+}
+.c4tb-detected-team-grid article header strong {
+  min-width: 0;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+.c4tb-detected-team-grid article header span {
+  width: 27px;
+  height: 27px;
+  flex: 0 0 27px;
+  display: grid;
+  place-items: center;
+  border-radius: 50%;
+  color: #bae6fd;
+  background: rgba(56,189,248,.10);
+  font-size: 11px;
+  font-weight: 900;
+}
+.c4tb-detected-team-grid article > div {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 6px;
+  padding: 11px 12px 13px;
+}
+.c4tb-detected-team-grid article > div span {
+  max-width: 100%;
+  overflow: hidden;
+  padding: 5px 8px;
+  border-radius: 999px;
+  color: #dbeafe;
+  background: rgba(148,163,184,.10);
+  font-size: 11px;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+.c4tb-screenshot-warnings {
+  margin-top: 12px;
+  padding: 11px 12px;
+  border: 1px solid rgba(251,191,36,.22);
+  border-radius: 13px;
+  color: #fde68a;
+  background: rgba(251,191,36,.06);
+}
+.c4tb-screenshot-warnings strong {
+  display: block;
+  margin-bottom: 5px;
+}
+.c4tb-screenshot-warnings p {
+  margin: 3px 0 0;
+  font-size: 12px;
+  line-height: 1.45;
+}
+.c4tb-screenshot-review-note {
+  margin: 12px 0 0;
+  color: #9fb0c6;
+  font-size: 12px;
+  line-height: 1.5;
+}
+@media (max-width: 600px) {
+  .c4tb-screenshot-review-head {
+    align-items: flex-start;
+    flex-direction: column;
+  }
+  .c4tb-detected-team-grid {
+    grid-template-columns: 1fr;
+  }
+}
