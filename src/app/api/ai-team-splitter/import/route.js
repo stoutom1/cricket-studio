@@ -120,9 +120,12 @@ export async function POST(request) {
       select: {
         id: true,
         name: true,
-        players: {
-          select: { id: true, name: true, globalPlayerId: true },
-        },
+players: {
+  select: {
+    id: true,
+    name: true,
+  }
+}
       },
     });
 

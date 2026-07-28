@@ -60,20 +60,17 @@ export async function PATCH(request, { params }) {
     return Response.json(beforePlayer);
   }
 
-  const player = await prisma.player.update({
-    where: { id: playerId },
-    data: {
-    whatsappNumber: whatsappNumber || null,
-    whatsappOptIn,
-  },
-    include: {
-      team: {
-        include: {
-          league: true,
-        },
+const player = await prisma.player.update({
+  where: { id: playerId },
+  data,
+  include: {
+    team: {
+      include: {
+        league: true,
       },
     },
-  });
+  },
+});
 
   const action =
     isNameChanged && isTeamChanged

@@ -112,6 +112,7 @@ export default function AITeamSplitterClient() {
   const [sourceMode, setSourceMode] = useState("MATCH");
   const [leagueId, setLeagueId] = useState(null);
   const [players, setPlayers] = useState([]);
+  const [allLeaguePlayers, setAllLeaguePlayers] = useState([]);
   const [selectedIds, setSelectedIds] = useState([]);
   const [teams, setTeams] = useState([]);
   const [selectedTeamIds, setSelectedTeamIds] = useState([]);
@@ -135,6 +136,9 @@ export default function AITeamSplitterClient() {
   const [captains, setCaptains] = useState(null);
   const [importSummary, setImportSummary] = useState(null);
   const [screenshotImport, setScreenshotImport] = useState(null);
+  const [screenshotMappings, setScreenshotMappings] = useState({});
+  const [ignoredScreenshotNames, setIgnoredScreenshotNames] = useState([]);
+  const [uploadError, setUploadError] = useState("");
   const [showAllPolls, setShowAllPolls] = useState(false);
   const [pollCenterOpen, setPollCenterOpen] = useState(false);
   const [availabilitySetupCollapsed, setAvailabilitySetupCollapsed] = useState(false);
@@ -262,6 +266,7 @@ export default function AITeamSplitterClient() {
 
       const merged = mergeStatsIntoPlayers(playerData.players || [], statsData);
       setPlayers(merged);
+      setAllLeaguePlayers(merged);
       setSelectedIds(merged.map((player) => player.id));
       setTeams(playerData.teams || []);
       setSelectedTeamIds((playerData.teams || []).map((team) => Number(team.id)));
@@ -632,7 +637,10 @@ export default function AITeamSplitterClient() {
     const isImage = file.type.startsWith("image/") || /\.(png|jpe?g|webp)$/i.test(file.name);
     setWorking(true);
     setScreenshotImport(null);
+    setScreenshotMappings({});
+    setIgnoredScreenshotNames([]);
     setImportSummary(null);
+    setUploadError("");
 
     try {
       let fileForMatching = file;
@@ -654,7 +662,13 @@ export default function AITeamSplitterClient() {
           );
         }
 
+        // `detectedNames` is the server's authoritative lossless list. The
+        // grouped arrays remain presentation metadata only. Falling back keeps
+        // compatibility with older route responses.
         const extractedNames = [
+          ...(Array.isArray(screenshotData.detectedNames)
+            ? screenshotData.detectedNames
+            : []),
           ...(screenshotData.teams || []).flatMap((team) => team.players || []),
           ...(screenshotData.unassignedPlayers || []),
         ]
@@ -683,6 +697,7 @@ export default function AITeamSplitterClient() {
           unassignedPlayers: screenshotData.unassignedPlayers || [],
           warnings: screenshotData.warnings || [],
           detectedCount: uniqueNames.length,
+          detectedNames: uniqueNames,
         };
       }
 
@@ -708,6 +723,29 @@ export default function AITeamSplitterClient() {
       setPlayers(merged);
       setSelectedIds(merged.map((player) => player.id));
       setImportSummary(data.summary || null);
+
+      if (detectedScreenshot) {
+        const exactMatchedNames = new Set(
+          merged.map((player) => normalizeName(player.playerName || player.name))
+        );
+        const apiUnmatched = Array.isArray(data.unmatchedNames)
+          ? data.unmatchedNames.map((name) => String(name || "").trim()).filter(Boolean)
+          : [];
+        const unmatchedNames = apiUnmatched.length
+          ? apiUnmatched
+          : detectedScreenshot.detectedNames.filter(
+              (name) => !exactMatchedNames.has(normalizeName(name))
+            );
+
+        detectedScreenshot = {
+          ...detectedScreenshot,
+          unmatchedNames: [...new Map(
+            unmatchedNames.map((name) => [normalizeName(name), name])
+          ).values()],
+          autoMatchedPlayers: merged,
+        };
+      }
+
       setScreenshotImport(detectedScreenshot);
       setResult(null);
       setCaptains(null);
@@ -719,11 +757,101 @@ export default function AITeamSplitterClient() {
           : `${merged.length} players matched from ${file.name}.`
       );
     } catch (error) {
-      setMessage(error.message || "Failed to import players.");
+      const errorMessage = error.message || "Failed to import players.";
+      setUploadError(errorMessage);
+      setMessage(errorMessage);
     } finally {
       setWorking(false);
       if (uploadRef.current) uploadRef.current.value = "";
     }
+  }
+
+  function mapScreenshotName(detectedName, playerId) {
+    const key = normalizeName(detectedName);
+    const numericId = Number(playerId);
+    const leaguePlayer = allLeaguePlayers.find(
+      (player) => Number(player.id) === numericId
+    );
+
+    setScreenshotMappings((current) => ({
+      ...current,
+      [key]: numericId || "",
+    }));
+    setIgnoredScreenshotNames((current) =>
+      current.filter((name) => normalizeName(name) !== key)
+    );
+
+    if (!leaguePlayer) return;
+
+    setPlayers((current) => {
+      const exists = current.some((player) => Number(player.id) === numericId);
+      return exists ? current : [...current, leaguePlayer];
+    });
+    setSelectedIds((current) =>
+      current.some((id) => Number(id) === numericId)
+        ? current
+        : [...current, leaguePlayer.id]
+    );
+    setResult(null);
+    setCaptains(null);
+  }
+
+  function ignoreScreenshotName(detectedName) {
+    const key = normalizeName(detectedName);
+    const mappedId = Number(screenshotMappings[key]);
+
+    setIgnoredScreenshotNames((current) =>
+      current.some((name) => normalizeName(name) === key)
+        ? current
+        : [...current, detectedName]
+    );
+    setScreenshotMappings((current) => {
+      const next = { ...current };
+      delete next[key];
+      return next;
+    });
+
+    if (mappedId) {
+      const usedElsewhere = Object.entries(screenshotMappings).some(
+        ([mappingKey, value]) => mappingKey !== key && Number(value) === mappedId
+      );
+      const autoMatched = screenshotImport?.autoMatchedPlayers?.some(
+        (player) => Number(player.id) === mappedId
+      );
+      if (!usedElsewhere && !autoMatched) {
+        setSelectedIds((current) =>
+          current.filter((id) => Number(id) !== mappedId)
+        );
+      }
+    }
+  }
+
+  function selectAllScreenshotMatched() {
+    const matched = screenshotImport?.autoMatchedPlayers || [];
+    setPlayers((current) => {
+      const byId = new Map(current.map((player) => [String(player.id), player]));
+      for (const player of matched) byId.set(String(player.id), player);
+      return [...byId.values()];
+    });
+    setSelectedIds((current) => [
+      ...new Set([...current, ...matched.map((player) => player.id)]),
+    ]);
+    setResult(null);
+    setCaptains(null);
+  }
+
+  function clearScreenshotSelection() {
+    const screenshotIds = new Set([
+      ...(screenshotImport?.autoMatchedPlayers || []).map((player) => String(player.id)),
+      ...Object.values(screenshotMappings).filter(Boolean).map(String),
+    ]);
+    setSelectedIds((current) =>
+      current.filter((id) => !screenshotIds.has(String(id)))
+    );
+    setScreenshotMappings({});
+    setIgnoredScreenshotNames([]);
+    setResult(null);
+    setCaptains(null);
   }
 
   async function generateTeams() {
@@ -1190,9 +1318,26 @@ export default function AITeamSplitterClient() {
                       team headings, numbered players, captain markers, emojis, or
                       multi-column team lists.
                     </p>
-                    <button type="button" disabled={working}>
+                    <button
+                      type="button"
+                      disabled={working}
+                      onClick={(event) => {
+                        event.stopPropagation();
+                        uploadRef.current?.click();
+                      }}
+                    >
                       {working ? "Reading and matching..." : "Choose File or Screenshot"}
                     </button>
+                    {working && (
+                      <small className="c4tb-upload-progress" role="status">
+                        Reading the screenshot, detecting teams, and matching league players…
+                      </small>
+                    )}
+                    {uploadError && (
+                      <small className="c4tb-upload-error" role="alert">
+                        {uploadError}
+                      </small>
+                    )}
                     <small className="c4tb-upload-privacy">
                       Screenshots are analyzed securely on the server. Always review the detected names before balancing.
                     </small>
@@ -1253,8 +1398,74 @@ export default function AITeamSplitterClient() {
                         </div>
                       )}
 
+                      <div className="c4tb-screenshot-review-summary">
+                        <div><span>Detected</span><strong>{screenshotImport.detectedCount}</strong></div>
+                        <div><span>Auto matched</span><strong>{screenshotImport.autoMatchedPlayers?.length || 0}</strong></div>
+                        <div><span>Need review</span><strong>{screenshotImport.unmatchedNames?.length || 0}</strong></div>
+                        <div><span>Selected now</span><strong>{selectedPlayers.length}</strong></div>
+                      </div>
+
+                      <div className="c4tb-screenshot-review-actions">
+                        <button type="button" onClick={selectAllScreenshotMatched}>Select all matched</button>
+                        <button type="button" className="secondary" onClick={clearScreenshotSelection}>Clear screenshot selection</button>
+                      </div>
+
+                      {!!screenshotImport.unmatchedNames?.length && (
+                        <div className="c4tb-missing-player-review">
+                          <div className="c4tb-missing-player-review-head">
+                            <div>
+                              <span>Missing-player review</span>
+                              <h4>{screenshotImport.unmatchedNames.length} detected name{screenshotImport.unmatchedNames.length === 1 ? "" : "s"} need attention</h4>
+                              <p>Map each name to an existing league player or ignore it for this build.</p>
+                            </div>
+                          </div>
+
+                          <div className="c4tb-missing-player-list">
+                            {screenshotImport.unmatchedNames.map((detectedName) => {
+                              const mappingKey = normalizeName(detectedName);
+                              const mappedId = screenshotMappings[mappingKey] || "";
+                              const ignored = ignoredScreenshotNames.some(
+                                (name) => normalizeName(name) === mappingKey
+                              );
+
+                              return (
+                                <div className={`c4tb-missing-player-row ${mappedId ? "resolved" : ignored ? "ignored" : ""}`} key={mappingKey}>
+                                  <div className="c4tb-missing-player-name">
+                                    <small>Detected name</small>
+                                    <strong>{detectedName}</strong>
+                                  </div>
+                                  <label>
+                                    <span>Match to league player</span>
+                                    <select
+                                      value={mappedId}
+                                      onChange={(event) => mapScreenshotName(detectedName, event.target.value)}
+                                    >
+                                      <option value="">Select a player…</option>
+                                      {[...allLeaguePlayers]
+                                        .sort((a, b) => String(a.playerName || a.name).localeCompare(String(b.playerName || b.name)))
+                                        .map((player) => (
+                                          <option key={player.id} value={player.id}>
+                                            {player.playerName || player.name}{(player.sourceTeams || []).length ? ` — ${(player.sourceTeams || []).join(", ")}` : ""}
+                                          </option>
+                                        ))}
+                                    </select>
+                                  </label>
+                                  <button
+                                    type="button"
+                                    className="c4tb-ignore-missing"
+                                    onClick={() => ignoreScreenshotName(detectedName)}
+                                  >
+                                    {ignored ? "Ignored" : "Ignore"}
+                                  </button>
+                                </div>
+                              );
+                            })}
+                          </div>
+                        </div>
+                      )}
+
                       <p className="c4tb-screenshot-review-note">
-                        The detected team grouping is shown for verification. Only names matched to current league players are selected for balancing.
+                        Automatically matched players are selected immediately. Manually mapped players are added as soon as you choose them. Ignored names are excluded only from this build.
                       </p>
                     </section>
                   )}

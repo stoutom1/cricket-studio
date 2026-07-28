@@ -9,6 +9,10 @@ const extractionSchema = {
   type: "object",
   additionalProperties: false,
   properties: {
+    detectedNames: {
+      type: "array",
+      items: { type: "string" },
+    },
     teams: {
       type: "array",
       items: {
@@ -33,7 +37,7 @@ const extractionSchema = {
       items: { type: "string" },
     },
   },
-  required: ["teams", "unassignedPlayers", "warnings"],
+  required: ["detectedNames", "teams", "unassignedPlayers", "warnings"],
 };
 
 function cleanPlayerName(value) {
@@ -72,15 +76,38 @@ function dedupeNames(names) {
   return cleaned;
 }
 
+function isExplicitTeamHeading(value) {
+  const text = String(value || "").trim();
+  if (!text) return false;
+
+  return /\b(team|squad|playing\s*xi|xi|group|side|roster|lineup|line-up)\b/i.test(text) ||
+    /^(team\s*)?[a-z0-9]+\s+(team|xi|squad)$/i.test(text);
+}
+
 function sanitizeExtraction(value) {
+  const rawDetectedNames = dedupeNames(value?.detectedNames);
   const teamNames = new Set();
   const teams = [];
+  const recoveredHeadingPlayers = [];
 
   for (const [index, rawTeam] of (value?.teams || []).entries()) {
-    const teamName = String(rawTeam?.teamName || "").trim() || `Detected Team ${index + 1}`;
-    const players = dedupeNames(rawTeam?.players);
+    const rawTeamName = String(rawTeam?.teamName || "").trim();
+    const explicitHeading = isExplicitTeamHeading(rawTeamName);
+    const players = dedupeNames([
+      ...(!explicitHeading && isPlausiblePlayerName(cleanPlayerName(rawTeamName))
+        ? [rawTeamName]
+        : []),
+      ...(rawTeam?.players || []),
+    ]);
+
+    if (!explicitHeading && rawTeamName) {
+      const recovered = cleanPlayerName(rawTeamName);
+      if (isPlausiblePlayerName(recovered)) recoveredHeadingPlayers.push(recovered);
+    }
+
     if (!players.length) continue;
 
+    const teamName = explicitHeading ? rawTeamName : `Detected column ${index + 1}`;
     let uniqueTeamName = teamName;
     let suffix = 2;
     while (teamNames.has(uniqueTeamName.toLocaleLowerCase())) {
@@ -98,13 +125,29 @@ function sanitizeExtraction(value) {
     (name) => !namesAlreadyInTeams.has(name.toLocaleLowerCase())
   );
 
+  // `detectedNames` is the authoritative lossless list. Also merge names from
+  // groups and recover any top-row value that the vision model mistakenly
+  // classified as a team heading (for example "Sai" and "Sudheer").
+  const detectedNames = dedupeNames([
+    ...rawDetectedNames,
+    ...recoveredHeadingPlayers,
+    ...teams.flatMap((team) => team.players),
+    ...unassignedPlayers,
+  ]);
+
   const warnings = [...new Set(
     (value?.warnings || [])
       .map((warning) => String(warning || "").trim())
       .filter(Boolean)
   )].slice(0, 10);
 
-  return { teams, unassignedPlayers, warnings };
+  if (recoveredHeadingPlayers.length) {
+    warnings.unshift(
+      `Recovered ${recoveredHeadingPlayers.length} top-row name${recoveredHeadingPlayers.length === 1 ? "" : "s"} that looked like column headings: ${recoveredHeadingPlayers.join(", ")}.`
+    );
+  }
+
+  return { detectedNames, teams, unassignedPlayers, warnings: warnings.slice(0, 10) };
 }
 
 export async function POST(request) {
@@ -155,9 +198,12 @@ export async function POST(request) {
               {
                 type: "input_text",
                 text: [
-                  "Extract cricket team headings and player names from this screenshot.",
-                  "Return only people who appear to be players.",
-                  "Preserve the visible team grouping and reading order.",
+                  "Extract every cricket player name from every non-empty name-like cell inside the visible roster or bordered table.",
+                  "The detectedNames array is mandatory and must contain every player exactly once in reading order, independent of grouping.",
+                  "Do not assume the first row, bold text, centered text, larger text, or the top cell of a column is a team heading.",
+                  "Treat a cell as a team heading only when it explicitly contains words such as Team, Squad, Playing XI, XI, Group, Side, Roster, or Lineup.",
+                  "Therefore names such as Sai and Sudheer in the first row must be returned as players, not headings.",
+                  "Return only people who appear to be players and preserve visible column grouping when possible.",
                   "Remove numbering, bullets, emojis, jersey numbers, and role markers such as (C), (VC), or (WK) from player names.",
                   "Do not treat dates, times, phone numbers, scores, buttons, app labels, or status text as player names.",
                   "Put names without a reliable team heading in unassignedPlayers.",
@@ -228,9 +274,7 @@ export async function POST(request) {
     }
 
     const result = sanitizeExtraction(extracted);
-    const totalPlayers =
-      result.teams.reduce((sum, team) => sum + team.players.length, 0) +
-      result.unassignedPlayers.length;
+    const totalPlayers = result.detectedNames.length;
 
     if (!totalPlayers) {
       return NextResponse.json(

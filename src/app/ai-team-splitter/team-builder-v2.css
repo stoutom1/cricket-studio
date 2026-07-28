@@ -2003,3 +2003,170 @@
     grid-template-columns: 1fr;
   }
 }
+
+
+/* V4.9 screenshot-import feedback */
+.c4tb-upload-progress,
+.c4tb-upload-error {
+  display: block;
+  width: min(680px, 100%);
+  margin: 10px auto 0;
+  padding: 10px 12px;
+  border-radius: 12px;
+  line-height: 1.45;
+  text-align: left;
+}
+.c4tb-upload-progress {
+  border: 1px solid rgba(56, 189, 248, .28);
+  background: rgba(14, 165, 233, .10);
+  color: #bae6fd;
+}
+.c4tb-upload-error {
+  border: 1px solid rgba(248, 113, 113, .38);
+  background: rgba(127, 29, 29, .22);
+  color: #fecaca;
+}
+
+/* =========================================================
+   V5.0 SCREENSHOT MISSING-PLAYER REVIEW
+   ========================================================= */
+.c4tb-screenshot-review-summary {
+  display: grid;
+  grid-template-columns: repeat(4, minmax(110px, 1fr));
+  gap: 8px;
+  margin-top: 14px;
+}
+.c4tb-screenshot-review-summary > div {
+  padding: 11px 12px;
+  border: 1px solid rgba(148,163,184,.16);
+  border-radius: 13px;
+  background: rgba(2,6,23,.28);
+}
+.c4tb-screenshot-review-summary span,
+.c4tb-screenshot-review-summary strong { display: block; }
+.c4tb-screenshot-review-summary span {
+  color: #91a4bc;
+  font-size: 10px;
+  font-weight: 900;
+  letter-spacing: .06em;
+  text-transform: uppercase;
+}
+.c4tb-screenshot-review-summary strong {
+  margin-top: 4px;
+  color: #fff;
+  font-size: 20px;
+}
+.c4tb-screenshot-review-actions {
+  display: flex;
+  justify-content: flex-end;
+  flex-wrap: wrap;
+  gap: 8px;
+  margin-top: 12px;
+}
+.c4tb-screenshot-review-actions button {
+  min-height: 40px;
+  padding: 0 13px;
+  border: 0;
+  border-radius: 11px;
+  color: #fff;
+  background: linear-gradient(135deg,#0ea5e9,#6366f1);
+  font-weight: 900;
+}
+.c4tb-screenshot-review-actions button.secondary {
+  border: 1px solid rgba(148,163,184,.20);
+  background: rgba(15,23,42,.60);
+}
+.c4tb-missing-player-review {
+  margin-top: 14px;
+  overflow: hidden;
+  border: 1px solid rgba(251,191,36,.26);
+  border-radius: 16px;
+  background: rgba(120,53,15,.06);
+}
+.c4tb-missing-player-review-head {
+  padding: 14px 15px;
+  border-bottom: 1px solid rgba(251,191,36,.16);
+  background: rgba(251,191,36,.05);
+}
+.c4tb-missing-player-review-head span {
+  color: #fde68a;
+  font-size: 10px;
+  font-weight: 950;
+  letter-spacing: .08em;
+  text-transform: uppercase;
+}
+.c4tb-missing-player-review-head h4 {
+  margin: 4px 0 3px;
+  color: #fff;
+  font-size: 16px;
+}
+.c4tb-missing-player-review-head p {
+  margin: 0;
+  color: #cbd5e1;
+  font-size: 12px;
+}
+.c4tb-missing-player-list {
+  display: grid;
+  gap: 8px;
+  padding: 12px;
+}
+.c4tb-missing-player-row {
+  display: grid;
+  grid-template-columns: minmax(150px,.8fr) minmax(260px,1.7fr) auto;
+  gap: 10px;
+  align-items: end;
+  padding: 11px;
+  border: 1px solid rgba(148,163,184,.15);
+  border-radius: 13px;
+  background: rgba(2,6,23,.30);
+}
+.c4tb-missing-player-row.resolved {
+  border-color: rgba(52,211,153,.35);
+  background: rgba(16,185,129,.06);
+}
+.c4tb-missing-player-row.ignored { opacity: .68; }
+.c4tb-missing-player-name small,
+.c4tb-missing-player-name strong { display: block; }
+.c4tb-missing-player-name small,
+.c4tb-missing-player-row label span {
+  color: #9fb0c6;
+  font-size: 10px;
+  font-weight: 850;
+  letter-spacing: .04em;
+  text-transform: uppercase;
+}
+.c4tb-missing-player-name strong {
+  margin-top: 4px;
+  color: #fff;
+}
+.c4tb-missing-player-row label {
+  display: grid;
+  gap: 5px;
+}
+.c4tb-missing-player-row select {
+  width: 100%;
+  min-height: 42px;
+  padding: 0 11px;
+  border: 1px solid rgba(148,163,184,.20);
+  border-radius: 11px;
+  color: #fff;
+  background: #081526;
+}
+.c4tb-ignore-missing {
+  min-height: 42px;
+  padding: 0 13px;
+  border: 1px solid rgba(248,113,113,.28);
+  border-radius: 11px;
+  color: #fecaca;
+  background: rgba(127,29,29,.16);
+  font-weight: 850;
+}
+@media (max-width: 760px) {
+  .c4tb-screenshot-review-summary { grid-template-columns: repeat(2,1fr); }
+  .c4tb-missing-player-row { grid-template-columns: 1fr; align-items: stretch; }
+  .c4tb-ignore-missing { width: 100%; }
+}
+@media (max-width: 440px) {
+  .c4tb-screenshot-review-summary { grid-template-columns: 1fr 1fr; }
+  .c4tb-screenshot-review-actions { display: grid; grid-template-columns: 1fr; }
+}
