@@ -7,59 +7,66 @@ datasource db {
 }
 
 model User {
-  id                         String                           @id @default(uuid())
-  email                      String                           @unique
-  name                       String?
-  password                   String
-  ownedLeagues               League[]
-  leagueMemberships          LeagueMember[]
-  leagueRegistrations        LeagueRegistration[]
-  activeLeagueId             Int?
-  activeMatchId              Int?
-  resetToken                 String?
-  resetTokenExpiry           DateTime?
-  createdAt                  DateTime                         @default(now())
-  leagueFollowers            LeagueFollower[]
-  lastLoginAt                DateTime?
-  lastSeenAt                 DateTime?
-  loginHistory               LoginHistory[]
-  birthdaysCreated           LeagueBirthday[]                 @relation("BirthdayCreatedBy")
-  birthdaysUpdated           LeagueBirthday[]                 @relation("BirthdayUpdatedBy")
-  pushDevices                PushDevice[]
-  birthdayPreferences        BirthdayNotificationPreference[]
-  birthdayReminderRecipients BirthdayReminderLog[]            @relation("BirthdayReminderRecipient")
-  birthdayRemindersShared    BirthdayReminderLog[]            @relation("BirthdayReminderSharedBy")
-  webPushSubscriptions       WebPushSubscription[]
+  id                           String                           @id @default(uuid())
+  email                        String                           @unique
+  name                         String?
+  password                     String
+  ownedLeagues                 League[]
+  leagueMemberships            LeagueMember[]
+  leagueRegistrations          LeagueRegistration[]
+  activeLeagueId               Int?
+  activeMatchId                Int?
+  resetToken                   String?
+  resetTokenExpiry             DateTime?
+  createdAt                    DateTime                         @default(now())
+  leagueFollowers              LeagueFollower[]
+  lastLoginAt                  DateTime?
+  lastSeenAt                   DateTime?
+  loginHistory                 LoginHistory[]
+  birthdaysCreated             LeagueBirthday[]                 @relation("BirthdayCreatedBy")
+  birthdaysUpdated             LeagueBirthday[]                 @relation("BirthdayUpdatedBy")
+  pushDevices                  PushDevice[]
+  birthdayPreferences          BirthdayNotificationPreference[]
+  birthdayReminderRecipients   BirthdayReminderLog[]            @relation("BirthdayReminderRecipient")
+  birthdayRemindersShared      BirthdayReminderLog[]            @relation("BirthdayReminderSharedBy")
+  webPushSubscriptions         WebPushSubscription[]
+  assignedKitResponsibilities  KitAssignment[]                  @relation("KitAssignmentAssignedBy")
+  pickupRecordedKitAssignments KitAssignment[]                  @relation("KitAssignmentPickupRecordedBy")
 }
 
 model Team {
-  id                  Int      @id @default(autoincrement())
+  id                  Int                 @id @default(autoincrement())
   name                String
-  createdAt           DateTime @default(now())
-  battingFirstMatches Match[]  @relation("BattingFirstTeam")
-  matchesA            Match[]  @relation("TeamA")
-  matchesB            Match[]  @relation("TeamB")
+  createdAt           DateTime            @default(now())
+  battingFirstMatches Match[]             @relation("BattingFirstTeam")
+  matchesA            Match[]             @relation("TeamA")
+  matchesB            Match[]             @relation("TeamB")
   players             Player[]
   leagueId            Int
-  league              League   @relation(fields: [leagueId], references: [id])
+  league              League              @relation(fields: [leagueId], references: [id])
+  matchKitPlayers     MatchKitPlayer[]
+  kitRotationMembers  KitRotationMember[]
+  kitAssignments      KitAssignment[]
 
   @@unique([leagueId, name])
 }
 
 model Player {
-  id              Int              @id @default(autoincrement())
-  name            String
-  teamId          Int
-  createdAt       DateTime         @default(now())
-  bowlerBalls     Ball[]           @relation("Bowler")
-  dismissedBalls  Ball[]           @relation("DismissedPlayer")
-  newBatterBalls  Ball[]           @relation("NewBatter")
-  nonStrikerBalls Ball[]           @relation("NonStriker")
-  strikerBalls    Ball[]           @relation("Striker")
-  team            Team             @relation(fields: [teamId], references: [id], onDelete: Cascade)
-  leagueBirthdays LeagueBirthday[]
-  whatsappNumber  String?
-  whatsappOptIn   Boolean          @default(false)
+  id                 Int                 @id @default(autoincrement())
+  name               String
+  teamId             Int
+  createdAt          DateTime            @default(now())
+  bowlerBalls        Ball[]              @relation("Bowler")
+  dismissedBalls     Ball[]              @relation("DismissedPlayer")
+  newBatterBalls     Ball[]              @relation("NewBatter")
+  nonStrikerBalls    Ball[]              @relation("NonStriker")
+  strikerBalls       Ball[]              @relation("Striker")
+  team               Team                @relation(fields: [teamId], references: [id], onDelete: Cascade)
+  leagueBirthdays    LeagueBirthday[]
+  whatsappNumber     String?
+  whatsappOptIn      Boolean             @default(false)
+  matchKitPlayers    MatchKitPlayer[]
+  kitRotationMembers KitRotationMember[]
 
   @@unique([teamId, name])
   @@index([teamId])
@@ -100,6 +107,8 @@ model Match {
   startedAt             DateTime?
   endedAt               DateTime?
   lockedAt              DateTime?
+  matchKitPlayers       MatchKitPlayer[]
+  kitAssignments        KitAssignment[]
 }
 
 model Ball {
@@ -167,6 +176,10 @@ model League {
   birthdayReminderLogs         BirthdayReminderLog[]
   whatsappNotificationsEnabled Boolean                          @default(false)
   ownerWhatsAppNumber          String?
+  matchKitPlayers              MatchKitPlayer[]
+  kitRotationMembers           KitRotationMember[]
+  kitAssignments               KitAssignment[]
+  kitRotationMode              KitRotationMode                  @default(TEAM)
 }
 
 model LeagueRegistration {
@@ -622,4 +635,246 @@ model WebPushSubscription {
 
   @@index([userId])
   @@index([userId, isActive])
+}
+
+enum KitAssignmentStatus {
+  SUGGESTED
+  ASSIGNED
+  CONFIRMED
+  DECLINED
+  COMPLETED
+  MISSED
+  CANCELLED
+}
+
+enum KitReminderRecipientType {
+  PLAYER
+  LEAGUE_OWNER
+}
+
+enum KitReminderStatus {
+  PENDING
+  SENT
+  FAILED
+}
+
+enum KitRotationMode {
+  TEAM
+  LEAGUE_PLAYER
+}
+
+enum KitPickupStatus {
+  PENDING
+  TOOK_KIT
+  DID_NOT_TAKE_KIT
+}
+
+model MatchKitPlayer {
+  id Int @id @default(autoincrement())
+
+  matchId  Int
+  leagueId Int
+  teamId   Int
+
+  playerId Int?
+
+  displayName    String
+  normalizedName String
+
+  whatsappNumber String?
+  whatsappOptIn  Boolean @default(false)
+
+  source      String  @default("SCREENSHOT")
+  isConfirmed Boolean @default(false)
+  isEligible  Boolean @default(true)
+  sortOrder   Int     @default(0)
+
+  match Match @relation(fields: [matchId], references: [id], onDelete: Cascade)
+
+  league League @relation(fields: [leagueId], references: [id], onDelete: Cascade)
+
+  team Team @relation(fields: [teamId], references: [id], onDelete: Cascade)
+
+  player Player? @relation(fields: [playerId], references: [id], onDelete: SetNull)
+
+  /**
+   * Assignments where this player was
+   * originally selected as the kit carrier.
+   */
+  assignments KitAssignment[] @relation("AssignedKitMatchPlayer")
+
+  /**
+   * Assignments where this player was later
+   * recorded as the person who actually
+   * took the kit.
+   */
+  actualKitAssignments KitAssignment[] @relation("ActualKitCarrierPlayer")
+
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  @@unique([matchId, teamId, normalizedName])
+  @@index([matchId, teamId])
+  @@index([leagueId, normalizedName])
+}
+
+model KitRotationMember {
+  id Int @id @default(autoincrement())
+
+  leagueId Int
+
+  // TEAM:<teamId> for ordinary leagues
+  // LEAGUE:<leagueId> for Surprise Cricket League
+  rotationKey String
+
+  // Present for TEAM mode; null for LEAGUE_PLAYER mode
+  teamId Int?
+
+  playerId Int?
+
+  displayName    String
+  normalizedName String
+
+  whatsappNumber String?
+  whatsappOptIn  Boolean @default(false)
+
+  completedCount  Int       @default(0)
+  lastCompletedAt DateTime?
+  lastAssignedAt  DateTime?
+
+  isActive Boolean @default(true)
+
+  league League @relation(fields: [leagueId], references: [id], onDelete: Cascade)
+
+  team Team? @relation(fields: [teamId], references: [id], onDelete: SetNull)
+
+  player Player? @relation(fields: [playerId], references: [id], onDelete: SetNull)
+
+  assignments KitAssignment[] @relation("AssignedKitRotationMember")
+
+  actualKitAssignments KitAssignment[] @relation("ActualKitCarrier")
+
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  @@unique([rotationKey, normalizedName])
+  @@index([leagueId, rotationKey])
+  @@index([rotationKey, completedCount, lastCompletedAt])
+}
+
+model KitAssignment {
+  id Int @id @default(autoincrement())
+
+  leagueId Int
+  matchId  Int
+  teamId   Int
+
+  rotationKey String
+
+  /**
+   * Originally assigned kit carrier.
+   */
+  rotationMemberId Int
+  matchKitPlayerId Int?
+
+  status       KitAssignmentStatus @default(SUGGESTED)
+  pickupStatus KitPickupStatus     @default(PENDING)
+
+  /**
+   * Person who actually took the kit.
+   * These can differ from the originally
+   * assigned player.
+   */
+  actualRotationMemberId Int?
+  actualMatchKitPlayerId Int?
+  actualDisplayName      String?
+
+  pickupRecordedAt   DateTime?
+  pickupRecordedById String?
+
+  assignedAt  DateTime  @default(now())
+  confirmedAt DateTime?
+  declinedAt  DateTime?
+  completedAt DateTime?
+  missedAt    DateTime?
+  cancelledAt DateTime?
+
+  assignedById String?
+
+  assignmentReason String?
+  responseNote     String?
+  ownerNote        String?
+
+  league League @relation(fields: [leagueId], references: [id], onDelete: Cascade)
+
+  match Match @relation(fields: [matchId], references: [id], onDelete: Cascade)
+
+  team Team @relation(fields: [teamId], references: [id], onDelete: Cascade)
+
+  /**
+   * Originally assigned rotation member.
+   * rotationMember KitRotationMember @relation(fields: [rotationMemberId], references: [id], onDelete: Restrict)
+   */
+
+  rotationMember KitRotationMember @relation("AssignedKitRotationMember", fields: [rotationMemberId], references: [id], onDelete: Restrict)
+
+  /**
+   * Rotation member who actually took
+   * the kit.
+   */
+  actualRotationMember KitRotationMember? @relation("ActualKitCarrier", fields: [actualRotationMemberId], references: [id], onDelete: SetNull)
+
+  /**
+   * Originally assigned match player.
+   */
+  matchKitPlayer MatchKitPlayer? @relation("AssignedKitMatchPlayer", fields: [matchKitPlayerId], references: [id], onDelete: SetNull)
+
+  /**
+   * Match player who actually took
+   * the kit.
+   */
+  actualMatchKitPlayer MatchKitPlayer? @relation("ActualKitCarrierPlayer", fields: [actualMatchKitPlayerId], references: [id], onDelete: SetNull)
+
+  assignedBy User? @relation("KitAssignmentAssignedBy", fields: [assignedById], references: [id], onDelete: SetNull)
+
+  pickupRecordedBy User? @relation("KitAssignmentPickupRecordedBy", fields: [pickupRecordedById], references: [id], onDelete: SetNull)
+
+  reminders KitReminderLog[]
+
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  @@unique([matchId, teamId])
+  @@index([leagueId, teamId, status])
+  @@index([rotationMemberId, status])
+  @@index([actualRotationMemberId, pickupStatus])
+  @@index([matchKitPlayerId])
+  @@index([actualMatchKitPlayerId])
+}
+
+model KitReminderLog {
+  id Int @id @default(autoincrement())
+
+  assignmentId Int
+
+  recipientType  KitReminderRecipientType
+  recipientName  String?
+  recipientPhone String?
+
+  status KitReminderStatus @default(PENDING)
+
+  providerMessageId String?
+  providerStatus    String?
+  errorMessage      String?
+
+  scheduledFor DateTime
+  sentAt       DateTime?
+
+  assignment KitAssignment @relation(fields: [assignmentId], references: [id], onDelete: Cascade)
+
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  @@unique([assignmentId, recipientType])
+  @@index([status, scheduledFor])
 }

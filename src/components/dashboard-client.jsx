@@ -8,6 +8,7 @@ import {formatMatchDateTime,getMatchTimelineText,} from "@/lib/date";
 import { buildMatchInsights } from "@/lib/match-insights";
 import { createPortal } from "react-dom";
 import BirthdayPushSettings from "@/components/BirthdayPushSettings";
+import KitResponsibilitySetup from "@/components/kit/KitResponsibilitySetup";
 import Link from "next/link";
 
 function Card({
@@ -9905,7 +9906,21 @@ const playerRoleBadge = (row) => {
                           : "🏏 Open Scoring"}
                       </button>
                     )}
-
+{permissions?.canScoreMatch && (                    
+<button
+  type="button"
+  className="mini-action-btn kit-mini-btn"
+  title={`Manage kit responsibility for ${match.teamAName} vs ${match.teamBName}`}
+  aria-label={`Manage kit responsibility for ${match.teamAName} versus ${match.teamBName}`}
+  onClick={() => {
+    setSelectedMatchId(String(match.id));
+    setMatchesSubTab("KIT");
+  }}
+>
+  <span aria-hidden="true">🧳</span>
+  <span>Kit</span>
+</button>
+)}
                     {permissions?.canDeleteMatch && (
                       <button
                         type="button"
@@ -10137,7 +10152,21 @@ const playerRoleBadge = (row) => {
                 : "🏏 Open Scoring"}
             </button>
           )}
-
+{permissions?.canScoreMatch && (
+<button
+  type="button"
+  className="mini-action-btn kit-mini-btn"
+  title={`Manage kit responsibility for ${match.teamAName} vs ${match.teamBName}`}
+  aria-label={`Manage kit responsibility for ${match.teamAName} versus ${match.teamBName}`}
+  onClick={() => {
+    setSelectedMatchId(String(match.id));
+    setMatchesSubTab("KIT");
+  }}
+>
+  <span aria-hidden="true">🧳</span>
+  <span>Kit</span>
+</button>
+)}
           {permissions?.canDeleteMatch && (
             <button
               type="button"
@@ -10245,7 +10274,49 @@ const playerRoleBadge = (row) => {
     )}
   </Card>
 )}
+{activeLeagueId &&
+  matchesSubTab === "KIT" &&
+  !permissions?.canScoreMatch && (
+    <Card title="🧳 Kit Responsibility">
+      <div className="kit-error-message">
+        You do not have permission to manage kit responsibility.
+      </div>
+    </Card>
+  )}
+{activeLeagueId &&
+  matchesSubTab === "KIT" &&
+  permissions?.canScoreMatch && (
+    <KitResponsibilitySetup
+      matches={matches.map((match) =>
+        String(match.id) ===
+          String(selectedMatchId) &&
+        matchDetail
+          ? {
+              ...match,
+              ...matchDetail,
+            }
+          : match
+      )}
+      teams={filteredTeams}
+      selectedMatchId={selectedMatchId}
+      onSelectedMatchIdChange={(matchId) => {
+        setSelectedMatchId(matchId);
 
+        if (!matchId) {
+          setMatchDetail(null);
+          setScoreboard(null);
+          return;
+        }
+
+        loadSelectedMatch(matchId);
+      }}
+      activeLeague={activeLeague}
+      rotationMode={
+        activeLeague?.kitRotationMode ||
+        "TEAM"
+      }
+    />
+  )}
  {activeLeagueId && matchesSubTab === "SCHEDULED" && (
   <Card title="📅 Scheduled Matches">
     {scheduledMatches.length === 0 ? (
@@ -10331,7 +10402,21 @@ const playerRoleBadge = (row) => {
                           ✏️ Edit
                         </button>
                       )}
-
+{permissions?.canScoreMatch && (
+<button
+  type="button"
+  className="mini-action-btn kit-mini-btn"
+  title={`Manage kit responsibility for ${match.teamAName} vs ${match.teamBName}`}
+  aria-label={`Manage kit responsibility for ${match.teamAName} versus ${match.teamBName}`}
+  onClick={() => {
+    setSelectedMatchId(String(match.id));
+    setMatchesSubTab("KIT");
+  }}
+>
+  <span aria-hidden="true">🧳</span>
+  <span>Kit</span>
+</button>
+)}
                       {permissions?.canDeleteMatch && (
                         <button
                           type="button"
@@ -10524,7 +10609,21 @@ const playerRoleBadge = (row) => {
               ✏️ Edit
             </button>
           )}
-
+{permissions?.canScoreMatch && (
+<button
+  type="button"
+  className="mini-action-btn kit-mini-btn"
+  title={`Manage kit responsibility for ${match.teamAName} vs ${match.teamBName}`}
+  aria-label={`Manage kit responsibility for ${match.teamAName} versus ${match.teamBName}`}
+  onClick={() => {
+    setSelectedMatchId(String(match.id));
+    setMatchesSubTab("KIT");
+  }}
+>
+  <span aria-hidden="true">🧳</span>
+  <span>Kit</span>
+</button>
+)}
           {permissions?.canDeleteMatch && (
             <button
               type="button"
@@ -10761,7 +10860,21 @@ const playerRoleBadge = (row) => {
                   </b>
                 </button>
               )}
-
+{permissions?.canScoreMatch && (
+<button
+  type="button"
+  className="mini-action-btn kit-mini-btn"
+  title={`Manage kit responsibility for ${match.teamAName} vs ${match.teamBName}`}
+  aria-label={`Manage kit responsibility for ${match.teamAName} versus ${match.teamBName}`}
+  onClick={() => {
+    setSelectedMatchId(String(match.id));
+    setMatchesSubTab("KIT");
+  }}
+>
+  <span aria-hidden="true">🧳</span>
+  <span>Kit</span>
+</button>
+)}
               {permissions?.canScoreMatch && (
                 <button
                   type="button"
@@ -11094,7 +11207,21 @@ const playerRoleBadge = (row) => {
                       </button>
                     )}
                   </div>
-
+{permissions?.canScoreMatch && (                  
+<button
+  type="button"
+  className="mini-action-btn kit-mini-btn"
+  title={`Manage kit responsibility for ${match.teamAName} vs ${match.teamBName}`}
+  aria-label={`Manage kit responsibility for ${match.teamAName} versus ${match.teamBName}`}
+  onClick={() => {
+    setSelectedMatchId(String(match.id));
+    setMatchesSubTab("KIT");
+  }}
+>
+  <span aria-hidden="true">🧳</span>
+  <span>Kit</span>
+</button>
+)}
                   {(permissions?.canScoreMatch ||
                     permissions?.canDeleteMatch) && (
                     <div className="mobile-completed-secondary-actions">

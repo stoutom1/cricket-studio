@@ -287,10 +287,21 @@ const teamBCaptainName = findPlayerName(
       leagueId: m.leagueId,
       leagueName: m.league?.name,
 
-      teamAId: m.teamAId,
-      teamBId: m.teamBId,
-      teamAName: m.teamA.name,
-      teamBName: m.teamB.name,
+teamAId: m.teamAId,
+teamBId: m.teamBId,
+
+teamAName: m.teamA.name,
+teamBName: m.teamB.name,
+
+teamA: {
+  ...m.teamA,
+  players: m.teamA?.players || [],
+},
+
+teamB: {
+  ...m.teamB,
+  players: m.teamB?.players || [],
+},
       teamAWicketKeeperId: m.teamAWicketKeeperId,
       teamBWicketKeeperId: m.teamBWicketKeeperId,
       teamACaptainId: m.teamACaptainId,
