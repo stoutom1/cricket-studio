@@ -998,3 +998,261 @@
   .c4tb-poll-dock-actions { width: 100%; }
   .c4tb-poll-dock.collapsed .c4tb-poll-dock-actions { display: none; }
 }
+
+/* =========================================================
+   V3.2.3 — Scheduled match poll workflow
+   ========================================================= */
+.c4tb-poll-dock-actions .scheduled-poll-action,
+.c4tb-inline-actions .scheduled-create-share {
+  white-space: nowrap;
+  min-width: 190px;
+  box-shadow: 0 12px 28px rgba(67, 139, 255, 0.24);
+}
+
+.c4tb-scheduled-poll-context {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  margin: 2px 0 16px;
+  padding: 13px 14px;
+  border: 1px solid rgba(66, 173, 255, 0.24);
+  border-radius: 14px;
+  background: linear-gradient(135deg, rgba(25, 133, 205, 0.13), rgba(99, 82, 225, 0.09));
+}
+
+.c4tb-scheduled-poll-context > span {
+  display: grid;
+  place-items: center;
+  width: 38px;
+  height: 38px;
+  flex: 0 0 38px;
+  border-radius: 12px;
+  background: rgba(31, 164, 232, 0.12);
+  font-size: 18px;
+}
+
+.c4tb-scheduled-poll-context > div {
+  display: grid;
+  gap: 2px;
+  min-width: 0;
+}
+
+.c4tb-scheduled-poll-context small {
+  color: #8fbfe9;
+  font-size: 10px;
+  font-weight: 800;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+}
+
+.c4tb-scheduled-poll-context strong {
+  color: #ffffff;
+  font-size: 14px;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.c4tb-scheduled-poll-context em {
+  color: #9fb9d4;
+  font-size: 12px;
+  font-style: normal;
+}
+
+@media (max-width: 640px) {
+  .c4tb-poll-dock-actions .scheduled-poll-action,
+  .c4tb-inline-actions .scheduled-create-share {
+    width: 100%;
+    min-width: 0;
+  }
+
+  .c4tb-scheduled-poll-context strong {
+    white-space: normal;
+  }
+}
+
+/* =========================================================
+   V3.2.4 — single poll workflow
+   Poll creation lives only in Step 2. The Availability Center
+   is informational and operational after a poll exists.
+========================================================= */
+.c4tb-availability-workspace {
+  margin-top: 14px;
+}
+
+.c4tb-full-poll-form {
+  width: 100%;
+  margin-top: 0;
+  padding: 20px;
+}
+
+.c4tb-single-primary-action {
+  justify-content: flex-end;
+  padding-top: 4px;
+}
+
+.c4tb-single-primary-action .scheduled-create-share {
+  min-width: 230px;
+}
+
+.c4tb-poll-created-card {
+  display: grid;
+  grid-template-columns: auto minmax(0, 1fr) auto;
+  align-items: center;
+  gap: 16px;
+  padding: 20px;
+  border: 1px solid rgba(52, 211, 153, .34);
+  border-radius: 18px;
+  background: linear-gradient(135deg, rgba(16,185,129,.12), rgba(14,165,233,.07));
+}
+
+.c4tb-poll-created-icon {
+  width: 46px;
+  height: 46px;
+  display: grid;
+  place-items: center;
+  border-radius: 50%;
+  background: rgba(52,211,153,.18);
+  color: #86efac;
+  font-size: 24px;
+  font-weight: 900;
+}
+
+.c4tb-poll-created-card small {
+  display: block;
+  color: #86efac;
+  font-size: 11px;
+  font-weight: 900;
+  letter-spacing: .08em;
+  text-transform: uppercase;
+}
+
+.c4tb-poll-created-card h3 {
+  margin: 4px 0;
+}
+
+.c4tb-poll-created-card p {
+  margin: 0;
+  color: var(--muted);
+  font-size: 13px;
+}
+
+.c4tb-poll-created-actions,
+.c4tb-poll-source-actions,
+.c4tb-ad-hoc-actions {
+  display: flex;
+  align-items: center;
+  justify-content: flex-end;
+  gap: 8px;
+  flex-wrap: wrap;
+}
+
+.c4tb-poll-created-actions button,
+.c4tb-poll-source-actions button,
+.c4tb-ad-hoc-actions button {
+  border-radius: 11px;
+}
+
+.c4tb-poll-created-actions button.secondary,
+.c4tb-poll-source-actions button.secondary,
+.c4tb-ad-hoc-actions button.secondary {
+  background: transparent;
+  border: 1px solid var(--line);
+}
+
+.c4tb-existing-poll-chooser {
+  margin-top: 0;
+  padding: 20px;
+}
+
+.c4tb-poll-choice-grid {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: 10px;
+  margin-top: 14px;
+}
+
+.c4tb-poll-choice-grid > button {
+  display: grid;
+  grid-template-columns: minmax(0,1fr) auto;
+  gap: 8px 12px;
+  padding: 14px;
+  border: 1px solid var(--line);
+  border-radius: 14px;
+  background: rgba(15,23,42,.55);
+  color: #fff;
+  text-align: left;
+}
+
+.c4tb-poll-choice-grid > button:hover,
+.c4tb-poll-choice-grid > button.selected {
+  border-color: rgba(56,189,248,.55);
+  background: rgba(14,165,233,.08);
+}
+
+.c4tb-poll-choice-grid strong,
+.c4tb-poll-choice-grid small {
+  display: block;
+}
+
+.c4tb-poll-choice-grid small {
+  margin-top: 4px;
+  color: var(--muted);
+}
+
+.c4tb-poll-choice-grid > button > span {
+  grid-column: 1;
+  color: #cbd5e1;
+  font-size: 12px;
+}
+
+.c4tb-poll-choice-grid > button > b {
+  grid-column: 2;
+  grid-row: 1 / span 2;
+  align-self: center;
+  color: #7dd3fc;
+  font-size: 12px;
+}
+
+.c4tb-poll-source-actions {
+  margin-top: 16px;
+  padding-top: 14px;
+  border-top: 1px solid var(--line);
+}
+
+/* The top dock no longer contains a competing primary creation action. */
+.c4tb-poll-dock-actions button.primary,
+.c4tb-poll-dock-actions .scheduled-poll-action {
+  display: none !important;
+}
+
+@media (max-width: 760px) {
+  .c4tb-poll-created-card {
+    grid-template-columns: auto minmax(0,1fr);
+  }
+
+  .c4tb-poll-created-actions {
+    grid-column: 1 / -1;
+    display: grid;
+    grid-template-columns: 1fr;
+    width: 100%;
+  }
+
+  .c4tb-poll-choice-grid {
+    grid-template-columns: 1fr;
+  }
+
+  .c4tb-poll-source-actions,
+  .c4tb-ad-hoc-actions,
+  .c4tb-single-primary-action {
+    display: grid;
+    grid-template-columns: 1fr;
+  }
+
+  .c4tb-poll-source-actions button,
+  .c4tb-ad-hoc-actions button,
+  .c4tb-single-primary-action button {
+    width: 100%;
+    min-width: 0;
+  }
+}

@@ -111,6 +111,8 @@ export default function AITeamSplitterClient() {
   const [importSummary, setImportSummary] = useState(null);
   const [showAllPolls, setShowAllPolls] = useState(false);
   const [pollCenterOpen, setPollCenterOpen] = useState(false);
+  const [availabilitySetupCollapsed, setAvailabilitySetupCollapsed] = useState(false);
+  const [showAdHocPollForm, setShowAdHocPollForm] = useState(false);
 
   useEffect(() => {
     if (!Number.isInteger(requestedLeagueId) || requestedLeagueId <= 0) {
@@ -184,7 +186,25 @@ export default function AITeamSplitterClient() {
     setPoll(item);
     setPollResponses(item?.responses || []);
     setSourceMode("POLL");
+    setSelectedMatchId("");
+    setAvailabilitySetupCollapsed(true);
+    setShowAdHocPollForm(false);
     if (goToAvailability) setActiveStep("AVAILABILITY");
+  }
+
+  function changeSourceMode(nextMode) {
+    setSourceMode(nextMode);
+    setMessage("");
+    setAvailabilitySetupCollapsed(false);
+    setShowAdHocPollForm(false);
+
+    if (nextMode !== "MATCH") {
+      setSelectedMatchId("");
+    }
+
+    if (nextMode === "POLL") {
+      setPollCenterOpen(true);
+    }
   }
 
   async function loadInitial(targetLeagueId) {
@@ -258,6 +278,8 @@ export default function AITeamSplitterClient() {
     setPollTitle(`${match.teamAName || match.teamA?.name} vs ${match.teamBName || match.teamB?.name}`);
     setPollText("Please confirm your availability for the scheduled match.");
     setPollOptions([{ label: "Scheduled Match", startTime: match.scheduledAt || "" }]);
+    setAvailabilitySetupCollapsed(false);
+    setShowAdHocPollForm(false);
     loadPlayersForTeams(ids);
   }
 
@@ -279,7 +301,8 @@ export default function AITeamSplitterClient() {
   }
 
   function continueFromSource() {
-    if (sourceMode === "POLL") {
+    if (sourceMode === "POLL" || (sourceMode === "MATCH" && selectedMatch)) {
+      setPollCenterOpen(true);
       setActiveStep("AVAILABILITY");
       return;
     }
@@ -290,12 +313,51 @@ export default function AITeamSplitterClient() {
     setActiveStep("BUILD");
   }
 
-  async function createPoll() {
+  function prepareScheduledMatchPoll() {
+    if (!selectedMatch) {
+      setMessage("Select a scheduled match first.");
+      setSourceMode("MATCH");
+      setActiveStep("SOURCE");
+      return;
+    }
+
+    // chooseMatch already pre-fills the poll title, message, teams, and date.
+    // This action simply takes the captain to the final review/create screen.
+    setPollCenterOpen(true);
+    setAvailabilitySetupCollapsed(false);
+    setActiveStep("AVAILABILITY");
+  }
+
+  function prepareNewPoll() {
+    setSourceMode("POLL");
+    setSelectedMatchId("");
+    setPollTitle("Match Availability");
+    setPollText("Please confirm your availability for this match.");
+    setPollOptions([{ label: "Match Date", startTime: "" }]);
+    setPollCenterOpen(true);
+    setShowAdHocPollForm(true);
+    setAvailabilitySetupCollapsed(false);
+    setActiveStep("AVAILABILITY");
+  }
+
+  function buildPollWhatsAppUrl(pollToShare) {
+    const url = `${window.location.origin}/team-poll/${pollToShare.token}`;
+    const text = `🏏 ${pollToShare.title}\n\n${pollToShare.matchText || "Please confirm your availability."}\n\nVote here:\n${url}`;
+    return `https://wa.me/?text=${encodeURIComponent(text)}`;
+  }
+
+  async function createPoll({ shareAfterCreate = false } = {}) {
     const cleanOptions = pollOptions.filter((option) => option.label.trim() || option.startTime);
     if (!cleanOptions.length || !selectedTeamIds.length) {
       setMessage("Choose player pools and add at least one match option.");
       return;
     }
+    // Open the WhatsApp tab during the user's click so browsers do not block it
+    // after the asynchronous API request finishes.
+    const whatsappWindow = shareAfterCreate
+      ? window.open("about:blank", "_blank")
+      : null;
+
     setWorking(true);
     try {
       const response = await fetch("/api/team-availability-poll/create", {
@@ -314,8 +376,23 @@ export default function AITeamSplitterClient() {
       setPoll(data.poll);
       setPollResponses(data.poll?.responses || []);
       setAllPolls((current) => [data.poll, ...current.filter((item) => item.token !== data.poll.token)]);
-      setMessage("Poll created. Share it to your WhatsApp group.");
+      setPollCenterOpen(true);
+      setAvailabilitySetupCollapsed(true);
+      setShowAdHocPollForm(false);
+
+      if (shareAfterCreate) {
+        const whatsappUrl = buildPollWhatsAppUrl(data.poll);
+        if (whatsappWindow) {
+          whatsappWindow.location.href = whatsappUrl;
+        } else {
+          window.open(whatsappUrl, "_blank", "noopener,noreferrer");
+        }
+        setMessage("Poll created. WhatsApp is ready for you to choose the group and send it.");
+      } else {
+        setMessage("Poll created. Share it to your WhatsApp group.");
+      }
     } catch (error) {
+      if (whatsappWindow) whatsappWindow.close();
       setMessage(error.message || "Failed to create poll.");
     } finally {
       setWorking(false);
@@ -358,9 +435,7 @@ export default function AITeamSplitterClient() {
 
   function sharePoll() {
     if (!poll?.token) return;
-    const url = `${window.location.origin}/team-poll/${poll.token}`;
-    const text = `🏏 ${poll.title}\n\n${poll.matchText || "Please confirm your availability."}\n\nVote here:\n${url}`;
-    window.open(`https://wa.me/?text=${encodeURIComponent(text)}`, "_blank", "noopener,noreferrer");
+    window.open(buildPollWhatsAppUrl(poll), "_blank", "noopener,noreferrer");
   }
 
   async function copyPollLink() {
@@ -579,12 +654,11 @@ export default function AITeamSplitterClient() {
             </div>
           </button>
           <div className="c4tb-poll-dock-actions">
-            {pollCenterOpen && (
+            {pollCenterOpen && allPolls.length > 0 && (
               <button type="button" onClick={() => setShowAllPolls((value) => !value)}>
                 {showAllPolls ? "Show less" : `View all (${allPolls.length})`}
               </button>
             )}
-            <button type="button" className="primary" onClick={() => { setPollCenterOpen(true); setSourceMode("POLL"); setActiveStep("AVAILABILITY"); }}>+ New Poll</button>
           </div>
         </div>
 
@@ -616,7 +690,11 @@ export default function AITeamSplitterClient() {
             })}
           </div>
         ) : (
-          <div className="c4tb-poll-dock-empty">No availability polls yet. Create one and share it to your WhatsApp group.</div>
+          <div className="c4tb-poll-dock-empty">
+            {selectedMatch
+              ? `No poll exists yet for ${selectedMatch.teamAName || selectedMatch.teamA?.name} vs ${selectedMatch.teamBName || selectedMatch.teamB?.name}. Complete Step 2 below to create and share one.`
+              : "No availability polls yet. Choose WhatsApp availability in Step 1 to create or open one."}
+          </div>
         )}
 
         {poll && (
@@ -683,7 +761,7 @@ export default function AITeamSplitterClient() {
                   ["UPLOAD", "📄", "Upload player file", "Import CSV, TXT, or Excel names and rematch by stats."],
                   ["MANUAL", "👥", "Manual selection", "Choose league pools and individual players."],
                 ].map(([id, icon, title, copy]) => (
-                  <button key={id} type="button" className={sourceMode === id ? "selected" : ""} onClick={() => setSourceMode(id)}>
+                  <button key={id} type="button" className={sourceMode === id ? "selected" : ""} onClick={() => changeSourceMode(id)}>
                     <i>{icon}</i><strong>{title}</strong><small>{copy}</small><em>{sourceMode === id ? "Selected" : "Choose"}</em>
                   </button>
                 ))}
@@ -725,54 +803,146 @@ export default function AITeamSplitterClient() {
 
               <div className="c4tb-footer-action">
                 <div><span>Ready to continue</span><strong>{selectedPlayers.length} players</strong></div>
-                <button type="button" onClick={continueFromSource} disabled={working || (sourceMode !== "POLL" && selectedPlayers.length < 4)}>{sourceMode === "POLL" ? "Continue to Availability" : "Review Players"} →</button>
+                <button type="button" onClick={continueFromSource} disabled={working || (sourceMode !== "POLL" && selectedPlayers.length < 4)}>
+                  {sourceMode === "POLL" || (sourceMode === "MATCH" && selectedMatch)
+                    ? "Continue to Availability"
+                    : "Review Players"} →
+                </button>
               </div>
             </>
           )}
 
           {activeStep === "AVAILABILITY" && (
             <>
-              <div className="c4tb-section-head"><div><span>Step 2</span><h2>Collect availability</h2><p>Create a WhatsApp poll or open an existing one, then continue with players who vote YES.</p></div></div>
-              <div className="c4tb-two-col">
-                <div className="c4tb-panel">
-                  <div className="c4tb-panel-title"><div><h3>Create poll</h3><p>Scheduled matches may use one option. Unscheduled games can offer several dates.</p></div></div>
-                  <label className="c4tb-field"><span>Poll title</span><input value={pollTitle} onChange={(event) => setPollTitle(event.target.value)} /></label>
-                  <label className="c4tb-field"><span>WhatsApp message</span><textarea rows="3" value={pollText} onChange={(event) => setPollText(event.target.value)} /></label>
-                  <div className="c4tb-options">
-                    {pollOptions.map((option, index) => (
-                      <div key={index} className="c4tb-option-row">
-                        <input value={option.label} onChange={(event) => setPollOptions((current) => current.map((item, itemIndex) => itemIndex === index ? { ...item, label: event.target.value } : item))} placeholder="Option name" />
-                        <input type="datetime-local" value={option.startTime ? String(option.startTime).slice(0, 16) : ""} onChange={(event) => setPollOptions((current) => current.map((item, itemIndex) => itemIndex === index ? { ...item, startTime: event.target.value } : item))} />
-                        <button type="button" onClick={() => setPollOptions((current) => current.filter((_, itemIndex) => itemIndex !== index))}>×</button>
-                      </div>
-                    ))}
-                  </div>
-                  <div className="c4tb-inline-actions"><button type="button" className="secondary" onClick={() => setPollOptions((current) => [...current, { label: `Option ${current.length + 1}`, startTime: "" }])}>+ Add date</button><button type="button" onClick={createPoll} disabled={working}>{working ? "Creating..." : "Create Poll"}</button></div>
-                </div>
-
-                <div className="c4tb-panel c4tb-poll-guide">
-                  <div className="c4tb-panel-title"><div><h3>Poll management</h3><p>Your existing polls and live responses now stay visible in the Availability Center above.</p></div><span>{allPolls.length}</span></div>
-                  <div className="c4tb-poll-guide-body">
-                    <span>📊</span>
-                    <div><strong>{poll ? poll.title : "No poll selected"}</strong><small>{poll ? `${pollResponses.length} recorded response rows` : "Choose a poll above or create a new one here."}</small></div>
-                    {poll && <button type="button" onClick={() => window.scrollTo({ top: 0, behavior: "smooth" })}>View responses ↑</button>}
-                  </div>
+              <div className="c4tb-section-head">
+                <div>
+                  <span>Step 2</span>
+                  <h2>Collect availability</h2>
+                  <p>
+                    {sourceMode === "MATCH"
+                      ? "Review the scheduled match details, create its poll, and send it directly to your WhatsApp group."
+                      : "Choose an existing availability poll, or create a separate ad-hoc poll when no scheduled match applies."}
+                  </p>
                 </div>
               </div>
 
-              {poll && (
-                <div className="c4tb-live-poll">
-                  <div className="c4tb-live-head"><div><span>Live poll</span><h3>{poll.title}</h3><p>{pollResponses.length} recorded responses</p></div><div><button onClick={sharePoll}>📲 WhatsApp</button><button onClick={copyPollLink}>Copy Link</button><button onClick={refreshPoll}>Refresh</button></div></div>
-                  <div className="c4tb-poll-grid">
-                    {pollGroups.map((group) => (
-                      <article key={group.option.id} className={bestPollGroup?.option?.id === group.option.id ? "best" : ""}>
-                        <div className="c4tb-date-title"><div><strong>{group.option.label}</strong><small>{formatDate(group.option.startTime)}</small></div>{bestPollGroup?.option?.id === group.option.id && <b>Best date</b>}</div>
-                        <div className="c4tb-response-stats"><span className="yes">Yes <b>{group.yes.length}</b></span><span className="maybe">Maybe <b>{group.maybe.length}</b></span><span className="no">No <b>{group.no.length}</b></span></div>
-                        <div className="c4tb-name-cloud">{group.yes.slice(0, 8).map((response) => <span key={response.playerKey}>{response.playerName}</span>)}{group.yes.length > 8 && <span>+{group.yes.length - 8}</span>}</div>
-                        <button type="button" disabled={group.yes.length < 4} onClick={() => usePollPlayers(group)}>Use {group.yes.length} YES Players</button>
-                      </article>
-                    ))}
-                  </div>
+              {sourceMode === "MATCH" && selectedMatch && (
+                <div className="c4tb-availability-workspace">
+                  {availabilitySetupCollapsed && poll ? (
+                    <div className="c4tb-poll-created-card">
+                      <span className="c4tb-poll-created-icon">✓</span>
+                      <div>
+                        <small>Poll created</small>
+                        <h3>{poll.title}</h3>
+                        <p>The active poll and all incoming responses are now shown in the Availability Center above.</p>
+                      </div>
+                      <div className="c4tb-poll-created-actions">
+                        <button type="button" onClick={sharePoll}>📲 Share again</button>
+                        <button type="button" className="secondary" onClick={() => setAvailabilitySetupCollapsed(false)}>Edit poll details</button>
+                        <button type="button" className="secondary" onClick={() => window.scrollTo({ top: 0, behavior: "smooth" })}>View live poll ↑</button>
+                      </div>
+                    </div>
+                  ) : (
+                    <div className="c4tb-panel c4tb-full-poll-form">
+                      <div className="c4tb-panel-title">
+                        <div>
+                          <h3>Create poll for this scheduled match</h3>
+                          <p>The teams, title, and scheduled time are already filled in. Review them, then create and share.</p>
+                        </div>
+                      </div>
+
+                      <div className="c4tb-scheduled-poll-context">
+                        <span>🏏</span>
+                        <div>
+                          <small>Creating poll for</small>
+                          <strong>{selectedMatch.teamAName || selectedMatch.teamA?.name} vs {selectedMatch.teamBName || selectedMatch.teamB?.name}</strong>
+                          <em>{formatDate(selectedMatch.scheduledAt)}</em>
+                        </div>
+                      </div>
+
+                      <label className="c4tb-field"><span>Poll title</span><input value={pollTitle} onChange={(event) => setPollTitle(event.target.value)} /></label>
+                      <label className="c4tb-field"><span>WhatsApp message</span><textarea rows="3" value={pollText} onChange={(event) => setPollText(event.target.value)} /></label>
+
+                      <div className="c4tb-options">
+                        {pollOptions.map((option, index) => (
+                          <div key={index} className="c4tb-option-row">
+                            <input value={option.label} onChange={(event) => setPollOptions((current) => current.map((item, itemIndex) => itemIndex === index ? { ...item, label: event.target.value } : item))} placeholder="Option name" />
+                            <input type="datetime-local" value={option.startTime ? String(option.startTime).slice(0, 16) : ""} onChange={(event) => setPollOptions((current) => current.map((item, itemIndex) => itemIndex === index ? { ...item, startTime: event.target.value } : item))} />
+                            <button type="button" onClick={() => setPollOptions((current) => current.filter((_, itemIndex) => itemIndex !== index))}>×</button>
+                          </div>
+                        ))}
+                      </div>
+
+                      <div className="c4tb-inline-actions c4tb-single-primary-action">
+                        <button type="button" className="scheduled-create-share" onClick={() => createPoll({ shareAfterCreate: true })} disabled={working}>
+                          {working ? "Creating..." : "📤 Create & Share Poll"}
+                        </button>
+                      </div>
+                    </div>
+                  )}
+                </div>
+              )}
+
+              {sourceMode === "POLL" && (
+                <div className="c4tb-availability-workspace">
+                  {!showAdHocPollForm ? (
+                    <div className="c4tb-panel c4tb-existing-poll-chooser">
+                      <div className="c4tb-panel-title">
+                        <div>
+                          <h3>Choose an availability poll</h3>
+                          <p>Open a poll below, review its live responses in the Availability Center, and use its YES players when ready.</p>
+                        </div>
+                        <span>{allPolls.length}</span>
+                      </div>
+
+                      {allPolls.length ? (
+                        <div className="c4tb-poll-choice-grid">
+                          {allPolls.map((item) => {
+                            const summary = pollSummary(item);
+                            const isActive = poll?.token === item.token;
+                            return (
+                              <button key={item.token} type="button" className={isActive ? "selected" : ""} onClick={() => openPoll(item)}>
+                                <div><strong>{item.title}</strong><small>{new Date(item.createdAt).toLocaleString()}</small></div>
+                                <span>{summary.yes} YES · {summary.maybe} MAYBE · {summary.no} NO</span>
+                                <b>{isActive ? "Selected" : "Open"}</b>
+                              </button>
+                            );
+                          })}
+                        </div>
+                      ) : (
+                        <div className="c4tb-empty">No availability polls exist yet.</div>
+                      )}
+
+                      <div className="c4tb-poll-source-actions">
+                        {poll && bestPollGroup && (
+                          <button type="button" className="primary" disabled={bestPollGroup.yes.length < 4} onClick={() => usePollPlayers(bestPollGroup)}>
+                            Use {bestPollGroup.yes.length} YES Players →
+                          </button>
+                        )}
+                        <button type="button" className="secondary" onClick={prepareNewPoll}>+ Create an ad-hoc poll</button>
+                      </div>
+                    </div>
+                  ) : (
+                    <div className="c4tb-panel c4tb-full-poll-form">
+                      <div className="c4tb-panel-title"><div><h3>Create an ad-hoc poll</h3><p>Use this only when the poll is not tied to an existing scheduled match.</p></div></div>
+                      <label className="c4tb-field"><span>Poll title</span><input value={pollTitle} onChange={(event) => setPollTitle(event.target.value)} /></label>
+                      <label className="c4tb-field"><span>WhatsApp message</span><textarea rows="3" value={pollText} onChange={(event) => setPollText(event.target.value)} /></label>
+                      <div className="c4tb-options">
+                        {pollOptions.map((option, index) => (
+                          <div key={index} className="c4tb-option-row">
+                            <input value={option.label} onChange={(event) => setPollOptions((current) => current.map((item, itemIndex) => itemIndex === index ? { ...item, label: event.target.value } : item))} placeholder="Option name" />
+                            <input type="datetime-local" value={option.startTime ? String(option.startTime).slice(0, 16) : ""} onChange={(event) => setPollOptions((current) => current.map((item, itemIndex) => itemIndex === index ? { ...item, startTime: event.target.value } : item))} />
+                            <button type="button" onClick={() => setPollOptions((current) => current.filter((_, itemIndex) => itemIndex !== index))}>×</button>
+                          </div>
+                        ))}
+                      </div>
+                      <div className="c4tb-inline-actions c4tb-ad-hoc-actions">
+                        <button type="button" className="secondary" onClick={() => setShowAdHocPollForm(false)}>Cancel</button>
+                        <button type="button" className="secondary" onClick={() => setPollOptions((current) => [...current, { label: `Option ${current.length + 1}`, startTime: "" }])}>+ Add date</button>
+                        <button type="button" onClick={() => createPoll({ shareAfterCreate: false })} disabled={working}>{working ? "Creating..." : "Create Poll"}</button>
+                      </div>
+                    </div>
+                  )}
                 </div>
               )}
             </>
