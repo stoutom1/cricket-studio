@@ -79,25 +79,21 @@ function getAssignedPlayer(assignment) {
   const rotationMember = assignment.rotationMember;
   const matchKitPlayer = assignment.matchKitPlayer;
 
+  const player =
+    rotationMember?.player ||
+    matchKitPlayer?.player ||
+    null;
+
   const name =
+    player?.name ||
     rotationMember?.displayName ||
     matchKitPlayer?.displayName ||
     "Player";
 
-  const phone =
-    rotationMember?.whatsappNumber ||
-    matchKitPlayer?.whatsappNumber ||
-    null;
-
-  const optedIn = Boolean(
-    rotationMember?.whatsappOptIn ||
-      matchKitPlayer?.whatsappOptIn
-  );
-
   return {
     name,
-    phone,
-    optedIn,
+    phone: player?.whatsappNumber || null,
+    optedIn: player?.whatsappOptIn === true,
   };
 }
 
@@ -411,25 +407,41 @@ export async function processDayBeforeKitReminders({
             },
           },
 
-          rotationMember: {
-            select: {
-              id: true,
-              displayName: true,
-              normalizedName: true,
-              whatsappNumber: true,
-              whatsappOptIn: true,
-            },
-          },
+            rotationMember: {
+              select: {
+                id: true,
+                displayName: true,
+                normalizedName: true,
+                playerId: true,
 
-          matchKitPlayer: {
-            select: {
-              id: true,
-              displayName: true,
-              normalizedName: true,
-              whatsappNumber: true,
-              whatsappOptIn: true,
+                player: {
+                  select: {
+                    id: true,
+                    name: true,
+                    whatsappNumber: true,
+                    whatsappOptIn: true,
+                  },
+                },
+              },
             },
-          },
+
+            matchKitPlayer: {
+              select: {
+                id: true,
+                displayName: true,
+                normalizedName: true,
+                playerId: true,
+
+                player: {
+                  select: {
+                    id: true,
+                    name: true,
+                    whatsappNumber: true,
+                    whatsappOptIn: true,
+                  },
+                },
+              },
+            },
         },
       },
     },
