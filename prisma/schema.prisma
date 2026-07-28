@@ -47,6 +47,7 @@ model Team {
   matchKitPlayers     MatchKitPlayer[]
   kitRotationMembers  KitRotationMember[]
   kitAssignments      KitAssignment[]
+  kitReminderLogs     KitReminderLog[]
 
   @@unique([leagueId, name])
 }
@@ -109,6 +110,7 @@ model Match {
   lockedAt              DateTime?
   matchKitPlayers       MatchKitPlayer[]
   kitAssignments        KitAssignment[]
+  kitReminderLogs       KitReminderLog[]
 }
 
 model Ball {
@@ -180,6 +182,8 @@ model League {
   kitRotationMembers           KitRotationMember[]
   kitAssignments               KitAssignment[]
   kitRotationMode              KitRotationMode                  @default(TEAM)
+  timeZone                     String                           @default("America/Los_Angeles")
+  kitReminderLogs              KitReminderLog[]
 }
 
 model LeagueRegistration {
@@ -649,13 +653,10 @@ enum KitAssignmentStatus {
 
 enum KitReminderRecipientType {
   PLAYER
+  CAPTAIN
+  TEAM_MANAGER
+  SCORER
   LEAGUE_OWNER
-}
-
-enum KitReminderStatus {
-  PENDING
-  SENT
-  FAILED
 }
 
 enum KitRotationMode {
@@ -667,6 +668,25 @@ enum KitPickupStatus {
   PENDING
   TOOK_KIT
   DID_NOT_TAKE_KIT
+}
+
+enum KitReminderType {
+  DAY_BEFORE
+  TWO_HOURS_BEFORE
+  ASSIGNMENT_CHANGED
+}
+
+enum KitReminderChannel {
+  WHATSAPP
+  PUSH
+}
+
+enum KitReminderStatus {
+  PENDING
+  PROCESSING
+  SENT
+  SKIPPED
+  FAILED
 }
 
 model MatchKitPlayer {
@@ -839,7 +859,7 @@ model KitAssignment {
 
   pickupRecordedBy User? @relation("KitAssignmentPickupRecordedBy", fields: [pickupRecordedById], references: [id], onDelete: SetNull)
 
-  reminders KitReminderLog[]
+  reminderLogs KitReminderLog[]
 
   createdAt DateTime @default(now())
   updatedAt DateTime @updatedAt
@@ -856,25 +876,39 @@ model KitReminderLog {
   id Int @id @default(autoincrement())
 
   assignmentId Int
+  leagueId     Int?
+  matchId      Int?
+  teamId       Int?
 
   recipientType  KitReminderRecipientType
   recipientName  String?
   recipientPhone String?
 
-  status KitReminderStatus @default(PENDING)
+  reminderType KitReminderType
+  channel      KitReminderChannel @default(WHATSAPP)
+  status       KitReminderStatus  @default(PENDING)
 
   providerMessageId String?
   providerStatus    String?
   errorMessage      String?
+  providerResponse  Json?
 
-  scheduledFor DateTime
-  sentAt       DateTime?
+  scheduledFor        DateTime
+  processingStartedAt DateTime?
+  sentAt              DateTime?
+  failedAt            DateTime?
+
+  attemptCount Int @default(0)
 
   assignment KitAssignment @relation(fields: [assignmentId], references: [id], onDelete: Cascade)
+
+  league League? @relation(fields: [leagueId], references: [id], onDelete: Cascade)
+  match  Match?  @relation(fields: [matchId], references: [id], onDelete: Cascade)
+  team   Team?   @relation(fields: [teamId], references: [id], onDelete: Cascade)
 
   createdAt DateTime @default(now())
   updatedAt DateTime @updatedAt
 
-  @@unique([assignmentId, recipientType])
+  @@unique([assignmentId, reminderType, channel, recipientType])
   @@index([status, scheduledFor])
 }
