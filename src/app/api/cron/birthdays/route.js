@@ -347,7 +347,7 @@ async function sendOwnerBirthdaySummary({
         birthdayYear,
 
         reminderType:
-          "OWNER_SMS",
+          "WHATSAPP",
       },
   };
 
@@ -393,7 +393,7 @@ async function sendOwnerBirthdaySummary({
           birthdayYear,
 
           reminderType:
-            "OWNER_SMS",
+            "WHATSAPP",
 
           status:
             "PENDING",

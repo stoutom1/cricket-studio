@@ -502,6 +502,8 @@ enum BirthdayReminderType {
   BIRTHDAY_TODAY
   WEB_PUSH
   WHATSAPP
+  OWNER_SMS
+  PLAYER_WHATSAPP
 }
 
 enum BirthdayReminderStatus {

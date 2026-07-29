@@ -549,7 +549,7 @@ if (todayBirthdays.length > 0) {
       birthdayId: firstBirthday.id,
       recipientUserId: ownerUserId,
       birthdayYear: check.today.year,
-      reminderType: "OWNER_SMS",
+      reminderType: "WHATSAPP",
     },
   };
 
@@ -588,7 +588,7 @@ if (todayBirthdays.length > 0) {
           leagueId: preference.leagueId,
           recipientUserId: ownerUserId,
           birthdayYear: check.today.year,
-          reminderType: "OWNER_SMS",
+          reminderType: "WHATSAPP",
           status: "PENDING",
           recipientPhone: ownerPhone,
           notificationTitle:
