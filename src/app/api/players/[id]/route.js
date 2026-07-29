@@ -10,6 +10,13 @@ export async function PATCH(request, { params }) {
   const { id } = await params;
   const playerId = Number(id);
   const body = await request.json();
+  const whatsappNumber =
+  typeof body.whatsappNumber === "string"
+    ? body.whatsappNumber.trim()
+    : "";
+
+const whatsappOptIn =
+  body.whatsappOptIn === true;
 
   const session = await getServerSession(authOptions);
 
@@ -56,13 +63,34 @@ export async function PATCH(request, { params }) {
     data.teamId &&
     Number(data.teamId) !== Number(beforePlayer.teamId);
 
-  if (!isNameChanged && !isTeamChanged) {
-    return Response.json(beforePlayer);
-  }
+  const normalizedWhatsappNumber = whatsappNumber || null;
+
+  const isWhatsappNumberChanged =
+    normalizedWhatsappNumber !==
+    (beforePlayer.whatsappNumber || null);
+
+  const isWhatsappOptInChanged =
+    whatsappOptIn !== Boolean(beforePlayer.whatsappOptIn);
+    if (!isNameChanged && !isTeamChanged) {
+      return Response.json(beforePlayer);
+    }
+
+if (
+  !isNameChanged &&
+  !isTeamChanged &&
+  !isWhatsappNumberChanged &&
+  !isWhatsappOptInChanged
+) {
+  return Response.json(beforePlayer);
+}
 
 const player = await prisma.player.update({
   where: { id: playerId },
-  data,
+  data: {
+    ...data,
+    whatsappNumber: normalizedWhatsappNumber,
+    whatsappOptIn,
+  },
   include: {
     team: {
       include: {
@@ -72,19 +100,35 @@ const player = await prisma.player.update({
   },
 });
 
-  const action =
-    isNameChanged && isTeamChanged
-      ? "PLAYER_UPDATED_AND_TRANSFERRED"
-      : isTeamChanged
-      ? "PLAYER_TRANSFERRED"
-      : "PLAYER_UPDATED";
+let action = "PLAYER_UPDATED";
+let description = `Player "${player.name}" was updated in team "${player.team?.name || "Unknown Team"}".`;
 
-  const description =
-    action === "PLAYER_TRANSFERRED"
-      ? `Player "${player.name}" was transferred from "${beforePlayer.team?.name || "Unknown Team"}" to "${player.team?.name || "Unknown Team"}".`
-      : action === "PLAYER_UPDATED_AND_TRANSFERRED"
-      ? `Player "${beforePlayer.name}" was renamed to "${player.name}" and transferred from "${beforePlayer.team?.name || "Unknown Team"}" to "${player.team?.name || "Unknown Team"}".`
-      : `Player "${beforePlayer.name}" was renamed to "${player.name}" in team "${player.team?.name || "Unknown Team"}".`;
+if (isNameChanged && isTeamChanged) {
+  action = "PLAYER_UPDATED_AND_TRANSFERRED";
+
+  description =
+    `Player "${beforePlayer.name}" was renamed to "${player.name}" ` +
+    `and transferred from "${beforePlayer.team?.name || "Unknown Team"}" ` +
+    `to "${player.team?.name || "Unknown Team"}".`;
+} else if (isTeamChanged) {
+  action = "PLAYER_TRANSFERRED";
+
+  description =
+    `Player "${player.name}" was transferred from ` +
+    `"${beforePlayer.team?.name || "Unknown Team"}" ` +
+    `to "${player.team?.name || "Unknown Team"}".`;
+} else if (isNameChanged) {
+  description =
+    `Player "${beforePlayer.name}" was renamed to "${player.name}" ` +
+    `in team "${player.team?.name || "Unknown Team"}".`;
+} else if (
+  isWhatsappNumberChanged ||
+  isWhatsappOptInChanged
+) {
+  description =
+    `WhatsApp preferences were updated for player "${player.name}" ` +
+    `in team "${player.team?.name || "Unknown Team"}".`;
+}
 
   await logAudit({
     action,
@@ -105,6 +149,8 @@ const player = await prisma.player.update({
       teamName: beforePlayer.team?.name || null,
       leagueId: beforePlayer.team?.leagueId || null,
       leagueName: beforePlayer.team?.league?.name || null,
+      whatsappNumber: beforePlayer.whatsappNumber,
+      whatsappOptIn: beforePlayer.whatsappOptIn,
     },
 
     afterData: {
@@ -114,6 +160,8 @@ const player = await prisma.player.update({
       teamName: player.team?.name || null,
       leagueId: player.team?.leagueId || null,
       leagueName: player.team?.league?.name || null,
+      whatsappNumber: player.whatsappNumber,
+      whatsappOptIn: player.whatsappOptIn,
     },
 
     request,

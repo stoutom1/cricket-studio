@@ -434,6 +434,8 @@ const [editingTeam, setEditingTeam] = useState(null);
 const [showEditPlayerModal, setShowEditPlayerModal] = useState(false);
 const [editingPlayer, setEditingPlayer] = useState(null);
 const [editPlayerName, setEditPlayerName] = useState("");
+const [editPlayerWhatsappNumber, setEditPlayerWhatsappNumber] = useState("");
+const [editPlayerWhatsappOptIn, setEditPlayerWhatsappOptIn] = useState(false);
 const [teamEditName, setTeamEditName] = useState("");
 const [showTransferPlayerModal, setShowTransferPlayerModal] = useState(false);
 const [transferPlayer, setTransferPlayer] = useState(null);
@@ -1279,11 +1281,15 @@ async function savePlayerName() {
 
     method:"PATCH",
 
-    body:JSON.stringify({
+body: JSON.stringify({
+    name: editPlayerName.trim(),
 
-      name:editPlayerName.trim()
+    whatsappNumber:
+      editPlayerWhatsappNumber.trim(),
 
-    })
+    whatsappOptIn:
+      editPlayerWhatsappOptIn,
+})
 
   });
 await refreshPlayerLists();
@@ -1291,6 +1297,8 @@ await refreshPlayerLists();
 setShowEditPlayerModal(false);
 setEditingPlayer(null);
 setEditPlayerName("");
+setEditPlayerWhatsappNumber("");
+setEditPlayerWhatsappOptIn(false);
 showToast("success", "✅ Player updated.");
   await loadTeams();
 
@@ -1303,7 +1311,17 @@ showToast("success", "✅ Player updated.");
 }  
 function openEditPlayer(player) {
   setEditingPlayer(player);
-  setEditPlayerName(player.name);
+
+  setEditPlayerName(player.name || "");
+
+  setEditPlayerWhatsappNumber(
+    player.whatsappNumber || ""
+  );
+
+  setEditPlayerWhatsappOptIn(
+    Boolean(player.whatsappOptIn)
+  );
+
   setShowEditPlayerModal(true);
 }
 function buildLiveMatchCenter(scoreboard) {
@@ -17700,6 +17718,40 @@ placeholder="Enter player name"
 onChange={(e)=>setEditPlayerName(e.target.value)}
 />
 
+</label>
+<label>
+  <span>📱 WhatsApp Number</span>
+
+  <input
+    type="tel"
+    value={editPlayerWhatsappNumber}
+    placeholder="+1 555 123 4567"
+    onChange={(e) =>
+      setEditPlayerWhatsappNumber(e.target.value)
+    }
+  />
+</label>
+
+<label
+  style={{
+    display: "flex",
+    alignItems: "center",
+    gap: 10,
+    marginTop: 12,
+  }}
+>
+  <input
+    type="checkbox"
+    checked={editPlayerWhatsappOptIn}
+    disabled={!editPlayerWhatsappNumber.trim()}
+    onChange={(e) =>
+      setEditPlayerWhatsappOptIn(
+        e.target.checked
+      )
+    }
+  />
+
+  Receive WhatsApp notifications
 </label>
 
 <div className="rename-note">
