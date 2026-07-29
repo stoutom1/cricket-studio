@@ -5639,3 +5639,755 @@
     font-size: 10px;
   }
 }
+/* =========================================================
+   CRIC4ALL AI TEAM BUILDER
+   MOBILE NAVIGATION + TYPOGRAPHY + ACTION REDESIGN — V5.3
+
+   MOBILE ONLY.
+   Keep this block at the absolute bottom of the CSS file.
+========================================================= */
+
+@media (max-width: 700px) {
+  /* =======================================================
+     1. GLOBAL READABILITY
+  ======================================================= */
+
+  .c4tb-page {
+    font-size: 15px;
+    line-height: 1.45;
+
+    /*
+      The action bar is no longer fixed, so we do not need
+      an excessively large bottom padding.
+    */
+    padding-bottom: calc(30px + env(safe-area-inset-bottom));
+  }
+
+  .c4tb-page button,
+  .c4tb-page input,
+  .c4tb-page textarea,
+  .c4tb-page select {
+    font-size: 14px;
+  }
+
+  /* =======================================================
+     2. REDESIGNED MOBILE WORKFLOW NAVIGATION
+
+     Players
+     Availability
+     Build
+     Results
+  ======================================================= */
+
+  .c4tb-workspace-navigation {
+    position: sticky;
+    top: max(5px, env(safe-area-inset-top));
+    z-index: 50;
+
+    width: 100%;
+    margin: 10px auto 11px;
+    padding: 7px;
+
+    border: 1px solid rgba(56, 189, 248, 0.26);
+    border-radius: 18px;
+
+    background:
+      radial-gradient(
+        circle at 0 50%,
+        rgba(14, 165, 233, 0.1),
+        transparent 38%
+      ),
+      radial-gradient(
+        circle at 100% 0,
+        rgba(139, 92, 246, 0.1),
+        transparent 40%
+      ),
+      rgba(4, 18, 34, 0.97);
+
+    box-shadow:
+      0 13px 34px rgba(0, 0, 0, 0.36),
+      inset 0 1px 0 rgba(255, 255, 255, 0.035);
+
+    backdrop-filter: blur(18px);
+    -webkit-backdrop-filter: blur(18px);
+  }
+
+  .c4tb-workspace-navigation > div:first-child {
+    display: none;
+  }
+
+  .c4tb-workspace-stepper {
+    display: grid;
+    grid-template-columns: repeat(4, minmax(0, 1fr));
+    gap: 6px;
+  }
+
+  .c4tb-workspace-stepper button {
+    position: relative;
+
+    min-width: 0;
+    min-height: 60px;
+    padding: 7px 3px;
+
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    gap: 5px;
+
+    border: 1px solid rgba(125, 211, 252, 0.11);
+    border-radius: 14px;
+
+    color: #8da6c0;
+    background:
+      linear-gradient(
+        145deg,
+        rgba(9, 28, 49, 0.9),
+        rgba(5, 20, 38, 0.92)
+      );
+
+    box-shadow: inset 0 1px 0 rgba(255, 255, 255, 0.018);
+
+    font-size: 11px;
+    font-weight: 900;
+    line-height: 1.1;
+
+    overflow: hidden;
+  }
+
+  .c4tb-workspace-stepper button span {
+    display: grid !important;
+    place-items: center;
+
+    flex: 0 0 25px;
+    width: 25px;
+    height: 25px;
+
+    border: 1px solid rgba(125, 211, 252, 0.13);
+    border-radius: 9px;
+
+    color: #b9d8f3;
+    background: rgba(56, 189, 248, 0.08);
+
+    font-size: 10px;
+    font-weight: 950;
+  }
+
+  .c4tb-workspace-stepper button b {
+    display: block;
+
+    max-width: 100%;
+    overflow: hidden;
+
+    font-size: 10px;
+    font-weight: 950;
+    line-height: 1.1;
+
+    text-overflow: ellipsis;
+    white-space: nowrap;
+  }
+
+  .c4tb-workspace-stepper button.active {
+    color: #ffffff;
+    border-color: rgba(56, 189, 248, 0.72);
+
+    background:
+      radial-gradient(
+        circle at 100% 0,
+        rgba(125, 211, 252, 0.18),
+        transparent 50%
+      ),
+      linear-gradient(
+        145deg,
+        rgba(12, 91, 139, 0.67),
+        rgba(43, 72, 174, 0.56)
+      );
+
+    box-shadow:
+      0 9px 22px rgba(14, 165, 233, 0.2),
+      inset 0 1px 0 rgba(255, 255, 255, 0.09);
+  }
+
+  .c4tb-workspace-stepper button.active span {
+    color: #062235;
+    border-color: #7dd3fc;
+    background: #7dd3fc;
+
+    box-shadow: 0 5px 14px rgba(56, 189, 248, 0.26);
+  }
+
+  .c4tb-workspace-stepper button.complete {
+    color: #d1fae5;
+    border-color: rgba(52, 211, 153, 0.28);
+    background:
+      linear-gradient(
+        145deg,
+        rgba(8, 54, 52, 0.54),
+        rgba(5, 31, 39, 0.84)
+      );
+  }
+
+  .c4tb-workspace-stepper button.complete span {
+    color: #052e16;
+    border-color: #34d399;
+    background: #34d399;
+  }
+
+  .c4tb-workspace-stepper button:disabled {
+    opacity: 0.62;
+  }
+
+  /* Back button becomes a clear full-width navigation row. */
+
+  .c4tb-workspace-back {
+    width: 100%;
+    min-height: 42px;
+    margin-top: 7px;
+    padding: 8px 12px;
+
+    border-radius: 12px;
+
+    color: #d9edff;
+    background:
+      linear-gradient(
+        145deg,
+        rgba(10, 38, 64, 0.9),
+        rgba(7, 26, 47, 0.92)
+      );
+
+    font-size: 12px;
+    font-weight: 900;
+  }
+
+  /* =======================================================
+     3. STEP 3 BUILD SCREEN TYPOGRAPHY
+  ======================================================= */
+
+  .c4tb-section-head span {
+    font-size: 10px;
+    letter-spacing: 0.13em;
+  }
+
+  .c4tb-section-head h2 {
+    margin-top: 4px;
+    font-size: 21px;
+    line-height: 1.14;
+    letter-spacing: -0.025em;
+  }
+
+  .c4tb-section-head p {
+    margin-top: 5px;
+    font-size: 12px;
+    line-height: 1.48;
+  }
+
+  .c4tb-build-toolbar input {
+    min-height: 46px;
+    padding: 10px 12px;
+    font-size: 14px;
+  }
+
+  .c4tb-build-toolbar button {
+    min-height: 46px;
+    padding-inline: 12px;
+    font-size: 11px;
+    font-weight: 950;
+  }
+
+  /* Build player cards */
+
+  .c4tb-player-grid > button {
+    min-height: 78px;
+    padding: 11px;
+  }
+
+  .c4tb-player-grid strong {
+    font-size: 14px;
+    line-height: 1.25;
+  }
+
+  .c4tb-player-grid small {
+    margin-top: 4px;
+    font-size: 11px;
+    line-height: 1.25;
+  }
+
+  .c4tb-player-grid em {
+    margin-top: 6px;
+    font-size: 10px;
+    line-height: 1.25;
+  }
+
+  .c4tb-check {
+    flex-basis: 29px;
+    width: 29px;
+    height: 29px;
+    font-size: 12px;
+  }
+
+  /* =======================================================
+     4. GENERATED TEAM CARDS
+  ======================================================= */
+
+  .c4tb-results-grid {
+    gap: 14px;
+  }
+
+  .c4tb-team-card {
+    border-radius: 20px;
+    background:
+      radial-gradient(
+        circle at 100% 0,
+        rgba(139, 92, 246, 0.08),
+        transparent 32%
+      ),
+      linear-gradient(
+        155deg,
+        rgba(10, 27, 49, 0.98),
+        rgba(6, 19, 37, 0.99)
+      );
+
+    box-shadow:
+      0 18px 43px rgba(0, 0, 0, 0.25),
+      inset 0 1px 0 rgba(255, 255, 255, 0.025);
+  }
+
+  .c4tb-team-card header {
+    min-height: 94px;
+    padding: 17px 16px;
+  }
+
+  .c4tb-team-card header span {
+    font-size: 12px;
+    letter-spacing: 0.12em;
+  }
+
+  .c4tb-team-card header h2 {
+    margin-top: 7px;
+    font-size: 25px;
+    line-height: 1.12;
+  }
+
+  .c4tb-team-card header > b {
+    font-size: 28px;
+    line-height: 1;
+  }
+
+  /* =======================================================
+     5. CAPTAIN AND BACKUP CAPTAIN
+  ======================================================= */
+
+  .c4tb-leaders {
+    grid-template-columns: 1fr;
+    gap: 10px;
+    padding: 13px;
+  }
+
+  .c4tb-leaders > div {
+    min-height: 118px;
+    padding: 15px;
+
+    border-radius: 16px;
+    background:
+      radial-gradient(
+        circle at 0 0,
+        rgba(251, 191, 36, 0.08),
+        transparent 45%
+      ),
+      rgba(2, 6, 23, 0.3);
+  }
+
+  .c4tb-leaders span {
+    font-size: 13px;
+    letter-spacing: 0.045em;
+  }
+
+  .c4tb-leaders strong {
+    margin-top: 9px;
+    font-size: 21px;
+    line-height: 1.18;
+  }
+
+  .c4tb-leaders small {
+    margin-top: 9px;
+    color: #aebed0;
+    font-size: 14px;
+    line-height: 1.42;
+  }
+
+  /* =======================================================
+     6. GENERATED PLAYER ROSTER
+
+     This fixes the highlighted player names and Skill values.
+  ======================================================= */
+
+  .c4tb-roster {
+    gap: 8px;
+    padding: 0 13px 15px;
+  }
+
+  .c4tb-roster > div {
+    min-height: 76px;
+    padding: 11px 12px;
+
+    display: grid;
+    grid-template-columns: 38px minmax(0, 1fr);
+    grid-template-rows: auto auto;
+    column-gap: 12px;
+    row-gap: 4px;
+    align-items: center;
+
+    border: 1px solid rgba(148, 163, 184, 0.11);
+    border-radius: 15px;
+
+    background:
+      linear-gradient(
+        145deg,
+        rgba(5, 19, 37, 0.72),
+        rgba(3, 15, 31, 0.81)
+      );
+  }
+
+  .c4tb-roster > div > span {
+    grid-column: 1;
+    grid-row: 1 / 3;
+
+    width: 38px;
+    height: 38px;
+
+    border: 1px solid rgba(125, 211, 252, 0.13);
+    border-radius: 12px;
+
+    color: #d9edff;
+    background:
+      linear-gradient(
+        145deg,
+        rgba(42, 61, 94, 0.82),
+        rgba(22, 37, 65, 0.86)
+      );
+
+    font-size: 14px;
+    font-weight: 900;
+  }
+
+  .c4tb-roster > div > strong {
+    grid-column: 2;
+    grid-row: 1;
+
+    min-width: 0;
+
+    color: #ffffff;
+    font-size: 16px;
+    font-weight: 950;
+    line-height: 1.2;
+
+    overflow-wrap: anywhere;
+  }
+
+  .c4tb-roster > div > small {
+    grid-column: 2;
+    grid-row: 2;
+
+    color: #9fb4ca;
+    font-size: 13px;
+    font-weight: 750;
+    line-height: 1.2;
+  }
+
+  /* Highlight stronger players subtly without harming legibility. */
+
+  .c4tb-roster > div:nth-child(-n + 3) {
+    border-color: rgba(56, 189, 248, 0.18);
+    background:
+      radial-gradient(
+        circle at 100% 0,
+        rgba(56, 189, 248, 0.06),
+        transparent 40%
+      ),
+      linear-gradient(
+        145deg,
+        rgba(6, 25, 45, 0.82),
+        rgba(3, 16, 32, 0.88)
+      );
+  }
+
+  /* =======================================================
+     7. REDESIGN GENERATE TEAMS ACTION
+
+     It is no longer fixed over the page.
+     It remains sticky only while near its section.
+  ======================================================= */
+
+  .c4tb-balance-action {
+    position: sticky !important;
+    right: auto !important;
+    bottom: calc(8px + env(safe-area-inset-bottom)) !important;
+    left: auto !important;
+
+    z-index: 35;
+
+    width: 100%;
+    min-height: auto;
+    margin: 15px 0 4px;
+    padding: 12px;
+
+    display: grid !important;
+    grid-template-columns: 1fr;
+    gap: 10px !important;
+
+    border: 1px solid rgba(56, 189, 248, 0.42);
+    border-radius: 18px;
+
+    background:
+      radial-gradient(
+        circle at 100% 0,
+        rgba(99, 102, 241, 0.22),
+        transparent 42%
+      ),
+      linear-gradient(
+        145deg,
+        rgba(5, 26, 48, 0.98),
+        rgba(5, 18, 36, 0.985)
+      );
+
+    box-shadow:
+      0 15px 38px rgba(0, 0, 0, 0.44),
+      0 0 24px rgba(14, 165, 233, 0.1),
+      inset 0 1px 0 rgba(255, 255, 255, 0.04);
+
+    backdrop-filter: blur(16px);
+    -webkit-backdrop-filter: blur(16px);
+  }
+
+  .c4tb-balance-action-copy {
+    display: grid;
+    grid-template-columns: minmax(0, 1fr) auto;
+    align-items: end;
+    gap: 5px 10px;
+  }
+
+  .c4tb-balance-action-copy > span {
+    grid-column: 1;
+
+    font-size: 10px;
+    letter-spacing: 0.11em;
+  }
+
+  .c4tb-balance-action-copy > strong {
+    grid-column: 1;
+
+    margin-top: 0;
+    font-size: 17px;
+    line-height: 1.15;
+  }
+
+  .c4tb-balance-action-copy > small {
+    display: block;
+    grid-column: 2;
+    grid-row: 1 / 3;
+
+    max-width: 132px;
+    margin: 0;
+
+    color: #a8bdd2;
+    font-size: 10px;
+    line-height: 1.3;
+    text-align: right;
+  }
+
+  .c4tb-balance-action-buttons {
+    display: grid !important;
+    grid-template-columns: 0.85fr 1.4fr !important;
+    gap: 8px;
+
+    width: 100%;
+  }
+
+  .c4tb-balance-action-buttons button {
+    width: 100%;
+    min-width: 0;
+    min-height: 52px;
+    padding: 8px 10px;
+
+    border-radius: 14px;
+
+    font-size: 12px;
+    font-weight: 950;
+    line-height: 1.2;
+
+    white-space: normal;
+  }
+
+  .c4tb-balance-action-buttons .primary {
+    background:
+      linear-gradient(
+        135deg,
+        #0ea5e9 0%,
+        #2563eb 50%,
+        #6366f1 100%
+      );
+
+    box-shadow:
+      0 12px 27px rgba(37, 99, 235, 0.34),
+      inset 0 1px 0 rgba(255, 255, 255, 0.14);
+  }
+
+  .c4tb-balance-action-buttons .secondary {
+    background: rgba(2, 6, 23, 0.38);
+  }
+
+  /* =======================================================
+     8. RESULTS ACTION
+
+     "Teams are ready / Regenerate Teams" should not cover
+     the generated roster.
+  ======================================================= */
+
+  .c4tb-footer-action {
+    position: static !important;
+    right: auto !important;
+    bottom: auto !important;
+    left: auto !important;
+
+    width: 100%;
+    min-height: auto;
+    margin: 14px 0 6px;
+    padding: 13px;
+
+    display: grid;
+    grid-template-columns: minmax(0, 1fr) auto;
+    align-items: center;
+    gap: 12px;
+
+    border-radius: 18px;
+
+    background:
+      radial-gradient(
+        circle at 100% 0,
+        rgba(56, 189, 248, 0.16),
+        transparent 45%
+      ),
+      linear-gradient(
+        145deg,
+        rgba(6, 31, 56, 0.98),
+        rgba(5, 21, 41, 0.98)
+      );
+
+    box-shadow:
+      0 14px 34px rgba(0, 0, 0, 0.28),
+      inset 0 1px 0 rgba(255, 255, 255, 0.035);
+  }
+
+  .c4tb-footer-action span {
+    font-size: 10px;
+    font-weight: 950;
+    letter-spacing: 0.11em;
+  }
+
+  .c4tb-footer-action strong {
+    margin-top: 4px;
+    font-size: 20px;
+    line-height: 1.1;
+  }
+
+  .c4tb-footer-action button {
+    min-height: 50px;
+    padding: 8px 15px;
+
+    border-radius: 14px;
+
+    font-size: 13px;
+    font-weight: 950;
+
+    white-space: nowrap;
+  }
+
+  /* =======================================================
+     9. CHATBOT POSITION
+
+     The chatbot no longer needs to sit above a permanently
+     fixed action bar.
+  ======================================================= */
+
+  .c4tb-page .chatbot-toggle,
+  .c4tb-page .chatbot-button,
+  .c4tb-page [class*="floating-chat"],
+  .c4tb-page [class*="assistant-float"] {
+    position: fixed !important;
+
+    right: 10px !important;
+    bottom: calc(76px + env(safe-area-inset-bottom)) !important;
+
+    width: 50px !important;
+    height: 50px !important;
+
+    z-index: 80 !important;
+  }
+}
+
+/* =========================================================
+   NARROW MOBILE PHONES
+========================================================= */
+
+@media (max-width: 390px) {
+  .c4tb-workspace-navigation {
+    padding: 6px;
+  }
+
+  .c4tb-workspace-stepper {
+    gap: 4px;
+  }
+
+  .c4tb-workspace-stepper button {
+    min-height: 57px;
+    padding-inline: 2px;
+  }
+
+  .c4tb-workspace-stepper button span {
+    width: 23px;
+    height: 23px;
+    flex-basis: 23px;
+  }
+
+  .c4tb-workspace-stepper button b {
+    font-size: 9px;
+  }
+
+  .c4tb-section-head h2 {
+    font-size: 19px;
+  }
+
+  .c4tb-roster > div > strong {
+    font-size: 15px;
+  }
+
+  .c4tb-roster > div > small {
+    font-size: 12px;
+  }
+
+  .c4tb-balance-action-copy > small {
+    display: none;
+  }
+
+  .c4tb-balance-action-copy {
+    grid-template-columns: 1fr;
+  }
+
+  .c4tb-balance-action-buttons {
+    grid-template-columns: 0.8fr 1.35fr !important;
+  }
+
+  .c4tb-balance-action-buttons button {
+    min-height: 50px;
+    padding-inline: 7px;
+    font-size: 11px;
+  }
+
+  .c4tb-footer-action {
+    grid-template-columns: 1fr;
+  }
+
+  .c4tb-footer-action button {
+    width: 100%;
+  }
+}
