@@ -13348,7 +13348,8 @@ onClick={() => {
             monitor user activity, generate AI-powered match insights, create
             balanced teams with AI Team Builder, run player availability polls,
             import player lists from screenshots or files, generate AI Match
-            Strategy recommendations, and share AI strategies through WhatsApp.
+            Strategy recommendations, share AI strategies through WhatsApp, set up
+            player birthdays, receive birthday notifications, and manage kit reminders.
           </p>
         </div>
       </div>
@@ -13513,6 +13514,58 @@ onClick={() => {
         </div>
       </div>
 
+      <h3 className="help-section-title">🎂 Player Birthdays & Kit Reminders</h3>
+
+      <div className="help-grid">
+        <div className="help-card">
+          <h3>🎂 Birthday Setup</h3>
+          <p>
+            Add or update player birthday information from the available player
+            management workflow so Cric4All can recognize upcoming birthdays.
+          </p>
+        </div>
+
+        <div className="help-card">
+          <h3>🎉 Birthday Notifications</h3>
+          <p>
+            Birthday notifications help organizers, captains, and teammates remember
+            and celebrate player birthdays when reminder information is available.
+          </p>
+        </div>
+
+        <div className="help-card">
+          <h3>👕 Kit Reminder Setup</h3>
+          <p>
+            Use the available kit reminder controls to record player-related kit
+            follow-ups without changing match, team, or scoring information.
+          </p>
+        </div>
+
+        <div className="help-card">
+          <h3>⏰ Kit Notifications</h3>
+          <p>
+            Kit reminders help players and organizers stay aware of outstanding or
+            upcoming kit-related actions that require attention.
+          </p>
+        </div>
+
+        <div className="help-card">
+          <h3>👤 Player Information</h3>
+          <p>
+            Keep birthday and kit reminder information associated with the correct
+            player so notifications remain useful and easy to understand.
+          </p>
+        </div>
+
+        <div className="help-card">
+          <h3>🔔 Reminder Awareness</h3>
+          <p>
+            Review birthday and kit reminders regularly so important community and
+            equipment follow-ups are not missed.
+          </p>
+        </div>
+      </div>
+
       <h3 className="help-section-title">🧭 Main Tabs</h3>
 
       <div className="help-grid">
@@ -13582,8 +13635,8 @@ onClick={() => {
           <h3>👤 Account</h3>
           <p>
             Use the account icon near Sign Out to view your Cric4All account,
-            quick actions, dashboard shortcut, Explore shortcut, and sign-out
-            option.
+            quick actions, dashboard shortcut, Explore shortcut, birthday and kit
+            reminder information where available, and the sign-out option.
           </p>
         </div>
 
@@ -14012,6 +14065,10 @@ onClick={() => {
           <li>Generate an AI Match Strategy after selecting one team and at least 11 players.</li>
           <li>Review the recommended batting order and bowling plan before starting play.</li>
           <li>Share the AI Match Strategy to your WhatsApp team group before the toss.</li>
+          <li>Keep player birthday information current so birthday reminders remain accurate.</li>
+          <li>Review birthday notifications so your cricket community can celebrate players.</li>
+          <li>Set up kit reminders for players who need a kit-related follow-up.</li>
+          <li>Review kit notifications regularly so outstanding actions are not missed.</li>
         </ul>
       </div>
 
@@ -14216,6 +14273,43 @@ onClick={() => {
             and does not rename, delete, or permanently modify your existing
             league teams or player records.
           </div>
+
+          <div>
+            <strong>How do I set up a player&apos;s birthday?</strong>
+            <br />
+            Add or update the birthday through the available player management
+            workflow. Keep the information accurate so reminders appear for the
+            correct player.
+          </div>
+
+          <div>
+            <strong>How do birthday notifications work?</strong>
+            <br />
+            When birthday information and the related notification feature are
+            available, Cric4All surfaces reminders to help the league recognize
+            upcoming player birthdays.
+          </div>
+
+          <div>
+            <strong>What are kit reminders used for?</strong>
+            <br />
+            Kit reminders are used for player-related kit actions that organizers
+            or players need to remember and follow up on.
+          </div>
+
+          <div>
+            <strong>Can Cric4All notify me about kit-related follow-ups?</strong>
+            <br />
+            Yes. Use the available kit reminder setup so relevant kit notifications
+            can help surface actions that still need attention.
+          </div>
+
+          <div>
+            <strong>Do birthday or kit reminders affect player statistics?</strong>
+            <br />
+            No. Birthday and kit reminder information is separate from live scoring,
+            match records, team balancing, and player performance statistics.
+          </div>
         </div>
       </div>
     </div>
@@ -14232,9 +14326,10 @@ onClick={() => {
 
           <p>
             A modern cricket scoring, league management, live spectator sharing,
-            AI team building, AI match strategy, AI match review, statistics,
-            admin activity, and audit tracking platform built for clubs, leagues,
-            academies, tournaments, and community cricket.
+            AI team building, AI match strategy, AI match review, player birthday
+            notifications, kit reminders, statistics, admin activity, and audit
+            tracking platform built for clubs, leagues, academies, tournaments,
+            and community cricket.
           </p>
 
           <div className="release-badge-row">
@@ -14243,6 +14338,8 @@ onClick={() => {
             <span className="release-badge">AI Insights</span>
             <span className="release-badge">AI Team Builder</span>
             <span className="release-badge">AI Match Strategy</span>
+            <span className="release-badge">Birthday Notifications</span>
+            <span className="release-badge">Kit Reminders</span>
             <span className="release-badge">Android App</span>
             <span className="release-badge">Admin Center</span>
           </div>
@@ -14256,8 +14353,8 @@ onClick={() => {
           share. It brings leagues, teams, players, matches, series, scorecards,
           commentary, points tables, rankings, permissions, public league pages,
           live spectator links, AI team balancing, availability polls, player
-          imports, AI match strategy, audit logs, and user activity into one simple
-          platform.
+          imports, AI match strategy, birthday setup and notifications, kit
+          reminders, audit logs, and user activity into one simple platform.
         </p>
         <p>
           Whether you are running a weekend tournament, a yearly league, an
@@ -14286,6 +14383,10 @@ onClick={() => {
         <div className="about-feature">⚖️ Balanced Team Generation</div>
         <div className="about-feature">🎯 Single Team Match Strategy</div>
         <div className="about-feature">📲 WhatsApp Strategy Sharing</div>
+        <div className="about-feature">🎂 Player Birthday Setup</div>
+        <div className="about-feature">🎉 Birthday Notifications</div>
+        <div className="about-feature">👕 Kit Reminder Management</div>
+        <div className="about-feature">⏰ Player Kit Reminders</div>
         <div className="about-feature">📈 Points Table</div>
         <div className="about-feature">🏆 Rankings Hub</div>
         <div className="about-feature">🔎 Smart Filters / Context Lens</div>
@@ -14308,6 +14409,7 @@ onClick={() => {
           <span className="release-badge">Public Pages Ready</span>
           <span className="release-badge">AI Team Builder Ready</span>
           <span className="release-badge">AI Strategy Ready</span>
+          <span className="release-badge">Player Reminders Ready</span>
           <span className="release-badge">Android Production Ready</span>
         </div>
 
@@ -14366,6 +14468,10 @@ onClick={() => {
           <span>✅ Player role and match-scenario recommendations</span>
           <span>✅ Surprise Cricket League combined player history</span>
           <span>✅ WhatsApp AI Strategy sharing</span>
+          <span>✅ Player birthday setup</span>
+          <span>✅ Birthday notifications</span>
+          <span>✅ Kit reminder setup</span>
+          <span>✅ Player kit reminder notifications</span>
           <span>✅ Voice scoring foundation</span>
           <span>✅ Account details page</span>
           <span>✅ Admin activity center</span>
@@ -14488,6 +14594,39 @@ onClick={() => {
       </div>
 
       <div className="about-card">
+        <h3>🎂 Player Birthdays & Kit Reminders</h3>
+
+        <p>
+          Cric4All supports the off-field responsibilities that help cricket
+          communities stay organized and connected. League organizers can maintain
+          player birthday information and use reminders for birthdays and cricket
+          kit-related follow-ups.
+        </p>
+
+        <div className="about-workflow-grid">
+          <div>
+            <strong>Birthday Setup</strong>
+            <p>Record player birthday information as part of player management.</p>
+          </div>
+
+          <div>
+            <strong>Birthday Notifications</strong>
+            <p>Surface birthday reminders so league members can celebrate players.</p>
+          </div>
+
+          <div>
+            <strong>Kit Reminder Setup</strong>
+            <p>Maintain kit-related reminder information for players who need follow-up.</p>
+          </div>
+
+          <div>
+            <strong>Kit Notifications</strong>
+            <p>Use reminders to help players and organizers stay aware of kit actions.</p>
+          </div>
+        </div>
+      </div>
+
+      <div className="about-card">
         <h3>🌐 Public Cricket Experience</h3>
 
         <p>
@@ -14527,7 +14666,8 @@ onClick={() => {
             <strong>For Organizers</strong>
             <p>
               Create leagues, series, teams, matches, invite links, visibility
-              settings, roles, permissions, and review important activity.
+              settings, roles, permissions, birthday notifications, kit reminders,
+              and review important activity.
             </p>
           </div>
 
@@ -14544,8 +14684,8 @@ onClick={() => {
             <strong>For Players</strong>
             <p>
               Track batting, bowling, fielding records, rankings, leaders,
-              captaincy, wicketkeeping, performance history, availability, and
-              AI-recommended match roles.
+              captaincy, wicketkeeping, performance history, availability,
+              birthday reminders, kit reminders, and AI-recommended match roles.
             </p>
           </div>
 
@@ -14598,7 +14738,7 @@ onClick={() => {
           live scoring state, chase requirements, partnerships, fall of wickets,
           over summaries, mobile-friendly score tables, public score sharing,
           AI team balancing, pre-match strategy, WhatsApp strategy sharing,
-          and post-match intelligence.
+          player birthday notifications, kit reminders, and post-match intelligence.
         </p>
 
         <div className="about-highlight-row">
@@ -14607,6 +14747,8 @@ onClick={() => {
           <span>⚖️ Balanced Teams</span>
           <span>🎯 Match Strategy</span>
           <span>📲 WhatsApp Sharing</span>
+          <span>🎂 Birthday Notifications</span>
+          <span>👕 Kit Reminders</span>
           <span>📊 Stats</span>
           <span>📝 Commentary</span>
           <span>🏆 Rankings</span>
@@ -14656,7 +14798,7 @@ onClick={() => {
 
       <div className="about-footer">
         <h3>🏏 Cric4All</h3>
-        <p>Manage Leagues. Build Teams. Plan Strategy. Score and Share Live Cricket.</p>
+        <p>Manage Leagues. Build Teams. Plan Strategy. Celebrate Players. Score and Share Live Cricket.</p>
         <p className="about-copy">© 2026 Cric4All</p>
       </div>
     </div>
