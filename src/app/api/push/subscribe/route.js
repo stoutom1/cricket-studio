@@ -8,8 +8,9 @@ export const runtime = "nodejs";
 export const dynamic = "force-dynamic";
 
 function getDeviceName(userAgent) {
-  const value =
-    String(userAgent || "").toLowerCase();
+  const value = String(
+    userAgent || ""
+  ).toLowerCase();
 
   if (
     value.includes("iphone") ||
@@ -33,10 +34,78 @@ function getDeviceName(userAgent) {
   return "Web browser";
 }
 
+function getValidExpirationTime(
+  expirationTime
+) {
+  if (
+    expirationTime === null ||
+    expirationTime === undefined ||
+    expirationTime === ""
+  ) {
+    return null;
+  }
+
+  const numericExpirationTime =
+    Number(expirationTime);
+
+  if (
+    !Number.isFinite(
+      numericExpirationTime
+    ) ||
+    numericExpirationTime < 0
+  ) {
+    return null;
+  }
+
+  return BigInt(
+    Math.trunc(
+      numericExpirationTime
+    )
+  );
+}
+
+function getValidReminderHour(value) {
+  const reminderHour =
+    Number(value);
+
+  if (
+    Number.isInteger(reminderHour) &&
+    reminderHour >= 0 &&
+    reminderHour <= 23
+  ) {
+    return reminderHour;
+  }
+
+  return 8;
+}
+
+function getValidTimeZone(value) {
+  const timeZone =
+    String(
+      value ||
+        "America/Los_Angeles"
+    ).trim();
+
+  try {
+    new Intl.DateTimeFormat(
+      "en-US",
+      {
+        timeZone,
+      }
+    ).format();
+
+    return timeZone;
+  } catch {
+    return "America/Los_Angeles";
+  }
+}
+
 export async function POST(request) {
   try {
     const session =
-      await getServerSession(authOptions);
+      await getServerSession(
+        authOptions
+      );
 
     if (!session?.user?.email) {
       return NextResponse.json(
@@ -50,27 +119,42 @@ export async function POST(request) {
       );
     }
 
-    const body = await request.json();
+    const body =
+      await request.json();
 
     const endpoint =
       String(
-        body?.subscription?.endpoint || ""
+        body?.subscription
+          ?.endpoint || ""
       ).trim();
 
     const p256dh =
       String(
-        body?.subscription?.keys?.p256dh ||
-          ""
+        body?.subscription
+          ?.keys?.p256dh || ""
       ).trim();
 
     const auth =
       String(
-        body?.subscription?.keys?.auth ||
-          ""
+        body?.subscription
+          ?.keys?.auth || ""
       ).trim();
 
     const expirationTime =
-      body?.subscription?.expirationTime;
+      getValidExpirationTime(
+        body?.subscription
+          ?.expirationTime
+      );
+
+    const leagueId =
+      Number(body?.leagueId);
+
+    const birthdayPreference =
+      body?.birthdayPreference &&
+      typeof body.birthdayPreference ===
+        "object"
+        ? body.birthdayPreference
+        : {};
 
     if (!endpoint || !p256dh || !auth) {
       return NextResponse.json(
@@ -85,10 +169,27 @@ export async function POST(request) {
       );
     }
 
+    if (
+      !Number.isInteger(leagueId) ||
+      leagueId <= 0
+    ) {
+      return NextResponse.json(
+        {
+          success: false,
+          error:
+            "A valid league ID is required.",
+        },
+        {
+          status: 400,
+        }
+      );
+    }
+
     const user =
       await prisma.user.findUnique({
         where: {
-          email: session.user.email,
+          email:
+            session.user.email,
         },
 
         select: {
@@ -100,7 +201,8 @@ export async function POST(request) {
       return NextResponse.json(
         {
           success: false,
-          error: "User was not found.",
+          error:
+            "User was not found.",
         },
         {
           status: 404,
@@ -108,74 +210,252 @@ export async function POST(request) {
       );
     }
 
-    const userAgent =
-      request.headers.get("user-agent") ||
-      null;
-
-    const savedSubscription =
-      await prisma.webPushSubscription.upsert({
+    const league =
+      await prisma.league.findUnique({
         where: {
-          endpoint,
-        },
-
-        update: {
-          userId: user.id,
-          p256dh,
-          auth,
-
-          expirationTime:
-            expirationTime === null ||
-            expirationTime === undefined
-              ? null
-              : BigInt(
-                  Math.trunc(
-                    Number(expirationTime)
-                  )
-                ),
-
-          userAgent,
-          deviceName:
-            getDeviceName(userAgent),
-
-          isActive: true,
-          lastUsedAt: new Date(),
-        },
-
-        create: {
-          userId: user.id,
-          endpoint,
-          p256dh,
-          auth,
-
-          expirationTime:
-            expirationTime === null ||
-            expirationTime === undefined
-              ? null
-              : BigInt(
-                  Math.trunc(
-                    Number(expirationTime)
-                  )
-                ),
-
-          userAgent,
-          deviceName:
-            getDeviceName(userAgent),
-
-          isActive: true,
-          lastUsedAt: new Date(),
+          id: leagueId,
         },
 
         select: {
           id: true,
-          deviceName: true,
-          isActive: true,
+          ownerId: true,
+
+          members: {
+            where: {
+              userId: user.id,
+            },
+
+            select: {
+              id: true,
+            },
+
+            take: 1,
+          },
         },
       });
 
+    if (!league) {
+      return NextResponse.json(
+        {
+          success: false,
+          error:
+            "League was not found.",
+        },
+        {
+          status: 404,
+        }
+      );
+    }
+
+    const isLeagueOwner =
+      league.ownerId === user.id;
+
+    const isLeagueMember =
+      Array.isArray(
+        league.members
+      ) &&
+      league.members.length > 0;
+
+    if (
+      !isLeagueOwner &&
+      !isLeagueMember
+    ) {
+      return NextResponse.json(
+        {
+          success: false,
+          error:
+            "You do not have access to this league.",
+        },
+        {
+          status: 403,
+        }
+      );
+    }
+
+    const reminderHour =
+      getValidReminderHour(
+        birthdayPreference
+          ?.reminderHour
+      );
+
+    const timeZone =
+      getValidTimeZone(
+        birthdayPreference
+          ?.timeZone
+      );
+
+    const enabled =
+      birthdayPreference
+        ?.enabled !== false;
+
+    const notifyOnBirthday =
+      birthdayPreference
+        ?.notifyOnBirthday !==
+      false;
+
+    const notifyDayBefore =
+      birthdayPreference
+        ?.notifyDayBefore !==
+      false;
+
+    const emailFallbackEnabled =
+      birthdayPreference
+        ?.emailFallbackEnabled !==
+      false;
+
+    const userAgent =
+      request.headers.get(
+        "user-agent"
+      ) || null;
+
+    const result =
+      await prisma.$transaction(
+        async (transaction) => {
+          const savedSubscription =
+            await transaction
+              .webPushSubscription
+              .upsert({
+                where: {
+                  endpoint,
+                },
+
+                update: {
+                  userId:
+                    user.id,
+
+                  p256dh,
+                  auth,
+                  expirationTime,
+
+                  userAgent,
+
+                  deviceName:
+                    getDeviceName(
+                      userAgent
+                    ),
+
+                  isActive: true,
+
+                  lastUsedAt:
+                    new Date(),
+                },
+
+                create: {
+                  userId:
+                    user.id,
+
+                  endpoint,
+                  p256dh,
+                  auth,
+                  expirationTime,
+
+                  userAgent,
+
+                  deviceName:
+                    getDeviceName(
+                      userAgent
+                    ),
+
+                  isActive: true,
+
+                  lastUsedAt:
+                    new Date(),
+                },
+
+                select: {
+                  id: true,
+                  deviceName: true,
+                  isActive: true,
+                },
+              });
+
+          const savedPreference =
+            await transaction
+              .birthdayNotificationPreference
+              .upsert({
+                where: {
+                  userId_leagueId: {
+                    userId:
+                      user.id,
+
+                    leagueId,
+                  },
+                },
+
+                create: {
+                  userId:
+                    user.id,
+
+                  leagueId,
+
+                  enabled,
+
+                  notifyDayBefore,
+
+                  notifyOnBirthday,
+
+                  reminderHour,
+
+                  timeZone,
+
+                  emailFallbackEnabled,
+                },
+
+                update: {
+                  enabled,
+
+                  notifyDayBefore,
+
+                  notifyOnBirthday,
+
+                  reminderHour,
+
+                  timeZone,
+
+                  emailFallbackEnabled,
+                },
+
+                select: {
+                  id: true,
+                  userId: true,
+                  leagueId: true,
+                  enabled: true,
+
+                  notifyDayBefore:
+                    true,
+
+                  notifyOnBirthday:
+                    true,
+
+                  reminderHour:
+                    true,
+
+                  timeZone:
+                    true,
+
+                  emailFallbackEnabled:
+                    true,
+                },
+              });
+
+          return {
+            savedSubscription,
+            savedPreference,
+          };
+        }
+      );
+
     return NextResponse.json({
       success: true,
+
+      message:
+        "Birthday notifications were enabled successfully.",
+
       subscription:
-        savedSubscription,
+        result.savedSubscription,
+
+      birthdayPreference:
+        result.savedPreference,
     });
   } catch (error) {
     console.error(
@@ -186,6 +466,7 @@ export async function POST(request) {
     return NextResponse.json(
       {
         success: false,
+
         error:
           error instanceof Error
             ? error.message

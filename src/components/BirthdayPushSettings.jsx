@@ -241,10 +241,23 @@ useEffect(() => {
               "application/json",
           },
 
-          body: JSON.stringify({
-            subscription:
-              subscriptionJson,
-          }),
+body: JSON.stringify({
+  subscription: subscriptionJson,
+
+  leagueId: Number(leagueId),
+
+  birthdayPreference: {
+    enabled: true,
+    notifyOnBirthday: true,
+    notifyDayBefore: true,
+    reminderHour: 9,
+    timeZone:
+      Intl.DateTimeFormat()
+        .resolvedOptions()
+        .timeZone ||
+      "America/Los_Angeles",
+  },
+}),
         }
       );
 
