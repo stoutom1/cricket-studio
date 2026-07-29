@@ -2831,3 +2831,1212 @@
     width: 100%;
   }
 }
+/* =========================================================
+   CRIC4ALL AI TEAM BUILDER
+   MOBILE COMPACT APP EXPERIENCE — V5
+   Desktop is intentionally unchanged.
+   Keep this entire block at the VERY BOTTOM of this file.
+========================================================= */
+
+@media (max-width: 700px) {
+  /* -------------------------------------------------------
+     1. PAGE SHELL
+  ------------------------------------------------------- */
+
+  .c4tb-page {
+    min-height: 100dvh;
+    padding:
+      max(6px, env(safe-area-inset-top))
+      6px
+      calc(96px + env(safe-area-inset-bottom));
+    overflow-x: hidden;
+    background:
+      radial-gradient(
+        circle at 15% -5%,
+        rgba(56, 189, 248, 0.13),
+        transparent 25%
+      ),
+      radial-gradient(
+        circle at 95% 5%,
+        rgba(139, 92, 246, 0.1),
+        transparent 24%
+      ),
+      linear-gradient(180deg, #03101f 0%, #061425 48%, #07182a 100%);
+  }
+
+  .c4tb-page button {
+    -webkit-tap-highlight-color: transparent;
+  }
+
+  .c4tb-page button:active {
+    transform: scale(0.985);
+  }
+
+  /* -------------------------------------------------------
+     2. COMPACT HEADER
+  ------------------------------------------------------- */
+
+  .c4tb-header {
+    width: 100%;
+    padding: 9px 10px 10px;
+    border-radius: 14px;
+    box-shadow: none;
+    background:
+      radial-gradient(
+        circle at 100% 0,
+        rgba(139, 92, 246, 0.1),
+        transparent 36%
+      ),
+      linear-gradient(
+        145deg,
+        rgba(10, 29, 50, 0.97),
+        rgba(7, 23, 42, 0.97)
+      );
+  }
+
+  .c4tb-header-top {
+    min-height: 22px;
+    gap: 7px;
+  }
+
+  .c4tb-back {
+    display: inline-flex;
+    align-items: center;
+    min-height: 26px;
+    padding: 0 2px;
+    font-size: 10px;
+    line-height: 1;
+    text-decoration: none;
+  }
+
+  .c4tb-live-pill {
+    max-width: 62%;
+    min-height: 24px;
+    padding: 4px 7px;
+    overflow: hidden;
+    font-size: 7px;
+    letter-spacing: 0.09em;
+    line-height: 1;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+  }
+
+  .c4tb-title-row {
+    margin-top: 5px;
+    align-items: center;
+  }
+
+  .c4tb-title-row > div:first-child {
+    min-width: 0;
+  }
+
+  .c4tb-eyebrow {
+    display: none;
+  }
+
+  .c4tb-title-row h1 {
+    margin: 0;
+    font-size: 19px;
+    line-height: 1.15;
+    letter-spacing: -0.025em;
+  }
+
+  .c4tb-title-row h1::before {
+    content: "🏏 ";
+    font-size: 16px;
+  }
+
+  .c4tb-title-row > div:first-child > p:last-child {
+    display: none;
+  }
+
+  .c4tb-header-score {
+    display: flex;
+    align-items: center;
+    gap: 5px;
+    min-width: auto;
+    padding: 5px 8px;
+    border-radius: 10px;
+  }
+
+  .c4tb-header-score strong {
+    display: inline;
+    font-size: 16px;
+    line-height: 1;
+  }
+
+  .c4tb-header-score span {
+    font-size: 8px;
+    white-space: nowrap;
+  }
+
+  /* -------------------------------------------------------
+     3. ERROR / STATUS MESSAGE
+  ------------------------------------------------------- */
+
+  .c4tb-notice {
+    width: 100%;
+    min-height: 36px;
+    margin-top: 6px;
+    padding: 7px 9px;
+    align-items: center;
+    border-radius: 10px;
+    font-size: 11px;
+    line-height: 1.25;
+  }
+
+  .c4tb-notice span {
+    min-width: 0;
+    overflow-wrap: anywhere;
+  }
+
+  .c4tb-notice button {
+    flex: 0 0 28px;
+    width: 28px;
+    height: 28px;
+    padding: 0;
+    font-size: 17px;
+  }
+
+  /* -------------------------------------------------------
+     4. MODE SWITCH
+  ------------------------------------------------------- */
+
+  .c4tb-mode-switch {
+    width: 100%;
+    margin: 6px auto 0;
+    padding: 3px;
+    gap: 3px;
+    border-radius: 11px;
+  }
+
+  .c4tb-mode-switch button {
+    min-height: 34px;
+    padding: 5px 7px;
+    border-radius: 9px;
+    font-size: 9px;
+    line-height: 1.15;
+  }
+
+  /* -------------------------------------------------------
+     5. PREMIUM SUMMARY
+     Convert the large workspace dashboard into a tiny strip.
+  ------------------------------------------------------- */
+
+  .c4tb-premium-summary {
+    width: 100%;
+    margin-top: 6px;
+    gap: 5px;
+  }
+
+  .c4tb-match-banner {
+    min-height: 48px;
+    padding: 7px 8px;
+    grid-template-columns: 30px minmax(0, 1fr) auto;
+    gap: 7px;
+    border-radius: 12px;
+    box-shadow: none;
+  }
+
+  .c4tb-match-banner-icon {
+    width: 30px;
+    height: 30px;
+    border-radius: 9px;
+    font-size: 15px;
+  }
+
+  .c4tb-match-banner-copy {
+    min-width: 0;
+  }
+
+  .c4tb-match-banner-copy > span {
+    display: none;
+  }
+
+  .c4tb-match-banner-copy > strong {
+    margin: 0;
+    overflow: hidden;
+    font-size: 11px;
+    line-height: 1.15;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+  }
+
+  .c4tb-match-banner-copy > small {
+    display: block;
+    margin-top: 2px;
+    overflow: hidden;
+    color: #8fa6bf;
+    font-size: 8px;
+    line-height: 1.15;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+  }
+
+  .c4tb-status-chip {
+    grid-column: auto;
+    min-width: 0;
+    padding: 4px 7px;
+    gap: 3px;
+    border-radius: 9px;
+  }
+
+  .c4tb-status-chip > span {
+    display: none;
+  }
+
+  .c4tb-status-chip div {
+    min-width: 0;
+  }
+
+  .c4tb-status-chip small {
+    display: none;
+  }
+
+  .c4tb-status-chip strong {
+    display: block;
+    max-width: 76px;
+    overflow: hidden;
+    font-size: 8px;
+    line-height: 1.1;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+  }
+
+  /* KPI cards become a single narrow statistics rail. */
+
+  .c4tb-kpi-grid {
+    display: grid;
+    grid-template-columns: repeat(4, minmax(0, 1fr));
+    gap: 4px;
+  }
+
+  .c4tb-kpi-grid article {
+    min-width: 0;
+    min-height: 40px;
+    padding: 5px 4px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 4px;
+    border-radius: 10px;
+    box-shadow: none;
+  }
+
+  .c4tb-kpi-icon {
+    flex: 0 0 19px;
+    width: 19px;
+    height: 19px;
+    border-radius: 6px;
+    font-size: 10px;
+  }
+
+  .c4tb-kpi-grid article > div {
+    min-width: 0;
+  }
+
+  .c4tb-kpi-grid small {
+    display: none;
+  }
+
+  .c4tb-kpi-grid strong {
+    display: block;
+    font-size: 14px;
+    line-height: 1;
+  }
+
+  .c4tb-kpi-grid em {
+    display: none;
+  }
+
+  /* -------------------------------------------------------
+     6. AVAILABILITY CENTER
+  ------------------------------------------------------- */
+
+  .c4tb-poll-dock {
+    width: 100%;
+    margin: 5px 0 6px;
+    padding: 7px 8px;
+    border-radius: 12px;
+    box-shadow: none;
+  }
+
+  .c4tb-poll-dock.collapsed {
+    min-height: 42px;
+    margin: 5px 0 6px;
+    padding: 6px 7px;
+  }
+
+  .c4tb-poll-dock-head {
+    grid-template-columns: minmax(0, 1fr) auto;
+    gap: 5px;
+    align-items: center;
+  }
+
+  .c4tb-poll-dock-toggle {
+    min-height: 32px;
+    padding: 0;
+    gap: 6px;
+  }
+
+  .c4tb-poll-dock-chevron {
+    flex: 0 0 27px;
+    width: 27px;
+    height: 27px;
+    border-radius: 8px;
+    font-size: 14px;
+  }
+
+  .c4tb-poll-dock-toggle > div {
+    min-width: 0;
+  }
+
+  .c4tb-poll-dock-toggle > div > span {
+    display: none;
+  }
+
+  .c4tb-poll-dock-head h2 {
+    margin: 0;
+    overflow: hidden;
+    font-size: 11px;
+    line-height: 1.15;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+  }
+
+  .c4tb-poll-dock-head p {
+    margin-top: 2px;
+    overflow: hidden;
+    font-size: 8px;
+    line-height: 1.15;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+  }
+
+  .c4tb-poll-dock.collapsed .c4tb-poll-dock-actions {
+    display: none;
+  }
+
+  .c4tb-poll-dock.open {
+    padding: 9px;
+  }
+
+  .c4tb-poll-dock.open .c4tb-poll-dock-head {
+    grid-template-columns: 1fr;
+  }
+
+  .c4tb-poll-dock.open .c4tb-poll-dock-actions {
+    display: grid;
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+    width: 100%;
+    gap: 5px;
+  }
+
+  .c4tb-poll-dock.open .c4tb-poll-dock-actions button {
+    min-height: 34px;
+    padding: 5px 7px;
+    font-size: 9px;
+  }
+
+  .c4tb-poll-drawer {
+    margin-top: 7px;
+    padding: 8px;
+    border-radius: 10px;
+  }
+
+  .c4tb-poll-drawer-grid {
+    gap: 7px;
+  }
+
+  .c4tb-poll-open {
+    padding: 8px;
+    border-radius: 10px;
+  }
+
+  /* -------------------------------------------------------
+     7. STICKY WORKFLOW NAVIGATION
+  ------------------------------------------------------- */
+
+  .c4tb-workspace-navigation {
+    position: sticky;
+    top: max(4px, env(safe-area-inset-top));
+    z-index: 40;
+    width: 100%;
+    margin: 5px auto 6px;
+    padding: 4px;
+    display: block;
+    border-radius: 12px;
+    border-color: rgba(56, 189, 248, 0.18);
+    background: rgba(4, 18, 34, 0.96);
+    box-shadow:
+      0 8px 22px rgba(0, 0, 0, 0.28),
+      0 0 0 1px rgba(255, 255, 255, 0.015);
+    backdrop-filter: blur(16px);
+    -webkit-backdrop-filter: blur(16px);
+  }
+
+  .c4tb-workspace-navigation > div:first-child {
+    display: none;
+  }
+
+  .c4tb-workspace-stepper {
+    grid-template-columns: repeat(4, minmax(0, 1fr));
+    gap: 3px;
+  }
+
+  .c4tb-workspace-stepper button {
+    min-width: 0;
+    min-height: 35px;
+    padding: 3px 2px;
+    display: flex;
+    flex-direction: row;
+    gap: 3px;
+    border-radius: 9px;
+    font-size: 8px;
+    line-height: 1;
+  }
+
+  .c4tb-workspace-stepper button span {
+    display: grid;
+    flex: 0 0 17px;
+    width: 17px;
+    height: 17px;
+    place-items: center;
+    border-radius: 50%;
+    font-size: 8px;
+  }
+
+  .c4tb-workspace-stepper button b {
+    min-width: 0;
+    overflow: hidden;
+    font-size: 8px;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+  }
+
+  .c4tb-workspace-back {
+    width: 100%;
+    min-height: 30px;
+    margin-top: 4px;
+    padding: 3px 8px;
+    border-radius: 8px;
+    font-size: 9px;
+  }
+
+  /* -------------------------------------------------------
+     8. MAIN CONTENT CARD
+  ------------------------------------------------------- */
+
+  .c4tb-layout {
+    width: 100%;
+    margin-top: 0;
+    display: block;
+  }
+
+  .c4tb-main-card {
+    width: 100%;
+    padding: 9px;
+    border-radius: 14px;
+    box-shadow: none;
+  }
+
+  .c4tb-sidebar {
+    display: none;
+  }
+
+  /* -------------------------------------------------------
+     9. SECTION HEADERS
+  ------------------------------------------------------- */
+
+  .c4tb-section-head {
+    margin-bottom: 7px;
+  }
+
+  .c4tb-section-head > div {
+    min-width: 0;
+  }
+
+  .c4tb-section-head span {
+    font-size: 7px;
+    letter-spacing: 0.1em;
+  }
+
+  .c4tb-section-head h2 {
+    margin: 2px 0 2px;
+    font-size: 15px;
+    line-height: 1.18;
+  }
+
+  .c4tb-section-head p {
+    max-width: 100%;
+    margin: 0;
+    font-size: 9px;
+    line-height: 1.3;
+  }
+
+  /* -------------------------------------------------------
+     10. COMPACT SOURCE CHOICES
+  ------------------------------------------------------- */
+
+  .c4tb-source-grid {
+    display: grid;
+    grid-template-columns: 1fr;
+    gap: 5px;
+  }
+
+  .c4tb-source-grid > button {
+    width: 100%;
+    min-height: 54px;
+    padding: 7px 8px;
+    display: grid;
+    grid-template-columns: 29px minmax(0, 1fr) auto;
+    grid-template-rows: auto auto;
+    align-items: center;
+    column-gap: 7px;
+    row-gap: 1px;
+    border-radius: 11px;
+    transform: none;
+    box-shadow: none;
+  }
+
+  .c4tb-source-grid > button:hover,
+  .c4tb-source-grid > button.selected {
+    transform: none;
+  }
+
+  .c4tb-source-grid > button.selected {
+    background:
+      linear-gradient(
+        135deg,
+        rgba(14, 165, 233, 0.12),
+        rgba(99, 102, 241, 0.08)
+      ),
+      rgba(9, 27, 47, 0.92);
+    box-shadow:
+      inset 3px 0 0 #38bdf8,
+      0 0 0 1px rgba(56, 189, 248, 0.08);
+  }
+
+  .c4tb-source-grid > button i {
+    grid-column: 1;
+    grid-row: 1 / 3;
+    width: 29px;
+    height: 29px;
+    display: grid;
+    place-items: center;
+    border-radius: 8px;
+    background: rgba(56, 189, 248, 0.08);
+    font-size: 14px;
+  }
+
+  .c4tb-source-grid > button strong {
+    grid-column: 2;
+    grid-row: 1;
+    min-width: 0;
+    font-size: 10px;
+    line-height: 1.15;
+  }
+
+  .c4tb-source-grid > button small {
+    grid-column: 2;
+    grid-row: 2;
+    display: block;
+    min-width: 0;
+    margin: 0;
+    overflow: hidden;
+    font-size: 7.5px;
+    line-height: 1.2;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+  }
+
+  .c4tb-source-grid > button em {
+    grid-column: 3;
+    grid-row: 1 / 3;
+    margin: 0;
+    padding: 4px 6px;
+    border-radius: 999px;
+    background: rgba(56, 189, 248, 0.08);
+    font-size: 7px;
+    white-space: nowrap;
+  }
+
+  .c4tb-source-grid > button.selected em {
+    color: #bbf7d0;
+    background: rgba(16, 185, 129, 0.1);
+  }
+
+  /* -------------------------------------------------------
+     11. SCHEDULED MATCH / SOURCE DETAIL PANEL
+  ------------------------------------------------------- */
+
+  .c4tb-panel,
+  .c4tb-live-poll {
+    margin-top: 7px;
+    padding: 9px;
+    border-radius: 12px;
+  }
+
+  .c4tb-panel-title {
+    gap: 6px;
+  }
+
+  .c4tb-panel-title h3,
+  .c4tb-live-head h3 {
+    margin: 0;
+    font-size: 12px;
+  }
+
+  .c4tb-panel-title p,
+  .c4tb-live-head p {
+    display: none;
+  }
+
+  .c4tb-panel-title > span {
+    padding: 4px 6px;
+    font-size: 7px;
+  }
+
+  .c4tb-match-list {
+    gap: 5px;
+    margin-top: 7px;
+  }
+
+  .c4tb-match-list > button {
+    min-height: 44px;
+    padding: 7px 8px;
+    gap: 5px;
+    border-radius: 10px;
+  }
+
+  .c4tb-match-list > button strong {
+    display: block;
+    font-size: 9px;
+    line-height: 1.2;
+  }
+
+  .c4tb-match-list > button small {
+    margin-top: 2px;
+    font-size: 7.5px;
+  }
+
+  .c4tb-match-list > button b {
+    font-size: 11px;
+  }
+
+  .c4tb-empty {
+    min-height: 58px;
+    padding: 14px 8px;
+    font-size: 9px;
+    line-height: 1.3;
+  }
+
+  /* -------------------------------------------------------
+     12. POOL / MANUAL SELECTION
+  ------------------------------------------------------- */
+
+  .c4tb-pool-grid {
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+    gap: 5px;
+    margin-top: 7px;
+  }
+
+  .c4tb-pool-grid button {
+    min-height: 43px;
+    padding: 6px;
+    gap: 6px;
+    border-radius: 10px;
+  }
+
+  .c4tb-pool-grid button > span {
+    flex: 0 0 22px;
+    width: 22px;
+    height: 22px;
+    font-size: 9px;
+  }
+
+  .c4tb-pool-grid button strong {
+    font-size: 9px;
+  }
+
+  .c4tb-pool-grid button small {
+    font-size: 7px;
+  }
+
+  /* -------------------------------------------------------
+     13. UPLOAD
+  ------------------------------------------------------- */
+
+  .c4tb-upload-zone {
+    margin-top: 7px;
+    padding: 13px 9px;
+    border-radius: 12px;
+  }
+
+  .c4tb-upload-zone > span {
+    font-size: 22px;
+  }
+
+  .c4tb-upload-zone h3 {
+    margin: 4px 0;
+    font-size: 12px;
+  }
+
+  .c4tb-upload-zone p {
+    margin-bottom: 8px;
+    font-size: 8px;
+    line-height: 1.3;
+  }
+
+  .c4tb-upload-zone button {
+    min-height: 34px;
+    padding: 0 11px;
+    font-size: 9px;
+  }
+
+  .c4tb-upload-zone small {
+    margin-top: 6px;
+    font-size: 7.5px;
+  }
+
+  /* -------------------------------------------------------
+     14. PLAYER SEARCH AND SELECTION
+  ------------------------------------------------------- */
+
+  .c4tb-build-toolbar {
+    grid-template-columns: minmax(0, 1fr) auto;
+    gap: 6px;
+  }
+
+  .c4tb-build-toolbar label {
+    gap: 3px;
+  }
+
+  .c4tb-build-toolbar label span {
+    display: none;
+  }
+
+  .c4tb-build-toolbar input {
+    min-height: 36px;
+    padding: 7px 9px;
+    border-radius: 9px;
+    font-size: 10px;
+  }
+
+  .c4tb-build-toolbar > div {
+    display: flex;
+    gap: 4px;
+  }
+
+  .c4tb-build-toolbar button {
+    min-height: 36px;
+    padding: 0 8px;
+    border-radius: 9px;
+    font-size: 8px;
+  }
+
+  .c4tb-player-grid {
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+    gap: 5px;
+    max-height: none;
+    margin-top: 7px;
+    padding: 0;
+  }
+
+  .c4tb-player-grid > button {
+    min-height: 52px;
+    padding: 7px;
+    gap: 6px;
+    border-radius: 10px;
+  }
+
+  .c4tb-check {
+    flex: 0 0 21px;
+    width: 21px;
+    height: 21px;
+    font-size: 9px;
+  }
+
+  .c4tb-player-grid strong {
+    font-size: 9px;
+    line-height: 1.15;
+  }
+
+  .c4tb-player-grid small {
+    margin-top: 2px;
+    font-size: 7px;
+    line-height: 1.15;
+  }
+
+  .c4tb-player-grid em {
+    margin-top: 3px;
+    font-size: 6.5px;
+    line-height: 1.1;
+  }
+
+  /* -------------------------------------------------------
+     15. TEAM NAME CONTROLS
+  ------------------------------------------------------- */
+
+  .c4tb-team-controls {
+    grid-template-columns: 1fr 1fr;
+    gap: 6px;
+    margin-top: 8px;
+  }
+
+  .c4tb-team-controls label {
+    gap: 3px;
+  }
+
+  .c4tb-team-controls label span {
+    font-size: 8px;
+  }
+
+  .c4tb-team-controls input {
+    min-height: 36px;
+    padding: 7px 8px;
+    font-size: 10px;
+  }
+
+  .c4tb-versus {
+    display: none;
+  }
+
+  /* -------------------------------------------------------
+     16. INLINE ACTIONS
+  ------------------------------------------------------- */
+
+  .c4tb-inline-actions {
+    gap: 5px;
+    margin-top: 7px;
+  }
+
+  .c4tb-inline-actions button {
+    min-height: 35px;
+    padding: 5px 9px;
+    border-radius: 9px;
+    font-size: 8px;
+  }
+
+  /* -------------------------------------------------------
+     17. POLL CONTENT
+  ------------------------------------------------------- */
+
+  .c4tb-two-col {
+    gap: 7px;
+  }
+
+  .c4tb-options {
+    gap: 5px;
+    margin-top: 7px;
+  }
+
+  .c4tb-option-row {
+    gap: 5px;
+  }
+
+  .c4tb-field {
+    gap: 3px;
+    margin-top: 7px;
+  }
+
+  .c4tb-field span {
+    font-size: 8px;
+  }
+
+  .c4tb-page input,
+  .c4tb-page textarea {
+    padding: 8px 9px;
+    border-radius: 9px;
+    font-size: 10px;
+  }
+
+  .c4tb-poll-grid {
+    grid-template-columns: 1fr;
+    gap: 6px;
+    margin-top: 7px;
+  }
+
+  .c4tb-poll-grid article {
+    padding: 8px;
+    border-radius: 11px;
+  }
+
+  .c4tb-response-stats {
+    gap: 4px;
+    margin: 7px 0;
+  }
+
+  .c4tb-response-stats span {
+    padding: 5px;
+    font-size: 8px;
+  }
+
+  .c4tb-name-cloud {
+    gap: 3px;
+  }
+
+  .c4tb-name-cloud span {
+    padding: 3px 5px;
+    font-size: 7px;
+  }
+
+  /* -------------------------------------------------------
+     18. RESULTS
+  ------------------------------------------------------- */
+
+  .c4tb-result-hero {
+    padding: 10px;
+    gap: 8px;
+    border-radius: 13px;
+  }
+
+  .c4tb-result-hero > div:first-child > strong {
+    font-size: 29px;
+  }
+
+  .c4tb-result-hero p {
+    font-size: 9px;
+  }
+
+  .c4tb-result-hero > div:last-child {
+    grid-template-columns: 1fr 1fr;
+    gap: 5px;
+  }
+
+  .c4tb-result-hero button {
+    min-height: 34px;
+    padding: 4px 7px;
+    font-size: 8px;
+  }
+
+  .c4tb-results-grid {
+    gap: 7px;
+    margin-top: 7px;
+  }
+
+  .c4tb-team-card {
+    border-radius: 13px;
+  }
+
+  .c4tb-team-card header {
+    padding: 9px;
+  }
+
+  .c4tb-team-card header h2 {
+    font-size: 15px;
+  }
+
+  .c4tb-team-card header > b {
+    font-size: 17px;
+  }
+
+  .c4tb-leaders {
+    gap: 5px;
+    padding: 7px;
+  }
+
+  .c4tb-leaders > div {
+    padding: 7px;
+    border-radius: 9px;
+  }
+
+  .c4tb-roster {
+    gap: 4px;
+    padding: 0 7px 7px;
+  }
+
+  .c4tb-roster > div {
+    min-height: 35px;
+    padding: 5px;
+    border-radius: 8px;
+    font-size: 9px;
+  }
+
+  /* -------------------------------------------------------
+     19. STICKY PRIMARY ACTION
+  ------------------------------------------------------- */
+
+  .c4tb-footer-action,
+  .c4tb-balance-action {
+    position: fixed;
+    right: 7px;
+    bottom: calc(5px + env(safe-area-inset-bottom));
+    left: 7px;
+    z-index: 80;
+    width: auto;
+    min-height: 58px;
+    margin: 0;
+    padding: 7px 8px;
+    display: grid;
+    grid-template-columns: minmax(0, 1fr) auto;
+    align-items: center;
+    gap: 7px;
+    border: 1px solid rgba(56, 189, 248, 0.32);
+    border-radius: 14px;
+    background:
+      radial-gradient(
+        circle at 100% 0,
+        rgba(99, 102, 241, 0.17),
+        transparent 44%
+      ),
+      rgba(5, 20, 38, 0.97);
+    box-shadow:
+      0 12px 35px rgba(0, 0, 0, 0.55),
+      0 0 22px rgba(14, 165, 233, 0.08);
+    backdrop-filter: blur(18px);
+    -webkit-backdrop-filter: blur(18px);
+  }
+
+  .c4tb-footer-action > div,
+  .c4tb-balance-action > div:first-child {
+    min-width: 0;
+  }
+
+  .c4tb-footer-action span,
+  .c4tb-balance-action small {
+    font-size: 7px;
+  }
+
+  .c4tb-footer-action strong,
+  .c4tb-balance-action strong {
+    display: block;
+    overflow: hidden;
+    font-size: 11px;
+    line-height: 1.15;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+  }
+
+  .c4tb-footer-action button,
+  .c4tb-balance-action button {
+    min-height: 40px;
+    padding: 5px 11px;
+    border-radius: 10px;
+    font-size: 9px;
+    white-space: nowrap;
+  }
+
+  .c4tb-balance-action-buttons {
+    display: flex;
+    width: auto;
+    gap: 5px;
+  }
+
+  .c4tb-balance-action-buttons button {
+    width: auto;
+  }
+
+  /* -------------------------------------------------------
+     20. MATCH ASSISTANT
+  ------------------------------------------------------- */
+
+  .c4tb-assistant-strip {
+    grid-template-columns: 28px minmax(0, 1fr);
+    gap: 7px;
+    margin-top: 7px;
+    padding: 7px;
+    border-radius: 10px;
+  }
+
+  .c4tb-assistant-icon {
+    width: 28px;
+    height: 28px;
+    font-size: 13px;
+  }
+
+  .c4tb-assistant-copy strong {
+    font-size: 9px;
+  }
+
+  .c4tb-assistant-copy small {
+    display: block;
+    margin-top: 2px;
+    font-size: 7px;
+    line-height: 1.2;
+  }
+
+  /* -------------------------------------------------------
+     21. SCROLLBAR
+  ------------------------------------------------------- */
+
+  .c4tb-page * {
+    scrollbar-width: thin;
+    scrollbar-color: rgba(56, 189, 248, 0.25) transparent;
+  }
+
+  .c4tb-page *::-webkit-scrollbar {
+    width: 4px;
+    height: 4px;
+  }
+
+  .c4tb-page *::-webkit-scrollbar-thumb {
+    border-radius: 999px;
+    background: rgba(56, 189, 248, 0.25);
+  }
+}
+
+/* =========================================================
+   VERY SMALL PHONES
+========================================================= */
+
+@media (max-width: 390px) {
+  .c4tb-page {
+    padding-right: 4px;
+    padding-left: 4px;
+  }
+
+  .c4tb-header {
+    padding-right: 8px;
+    padding-left: 8px;
+  }
+
+  .c4tb-live-pill {
+    max-width: 58%;
+    font-size: 6.5px;
+  }
+
+  .c4tb-title-row h1 {
+    font-size: 18px;
+  }
+
+  .c4tb-kpi-grid article {
+    min-height: 37px;
+    padding: 4px 2px;
+  }
+
+  .c4tb-kpi-icon {
+    display: none;
+  }
+
+  .c4tb-kpi-grid strong {
+    font-size: 13px;
+    text-align: center;
+  }
+
+  .c4tb-workspace-stepper button {
+    min-height: 33px;
+  }
+
+  .c4tb-workspace-stepper button span {
+    display: none;
+  }
+
+  .c4tb-workspace-stepper button b {
+    font-size: 7.5px;
+  }
+
+  .c4tb-source-grid > button {
+    min-height: 51px;
+  }
+
+  .c4tb-player-grid {
+    grid-template-columns: 1fr 1fr;
+  }
+
+  .c4tb-footer-action,
+  .c4tb-balance-action {
+    right: 4px;
+    left: 4px;
+  }
+}
