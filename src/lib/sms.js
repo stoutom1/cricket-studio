@@ -232,3 +232,121 @@ export async function sendBirthdayOwnerSms({
     birthdayPageUrl,
   };
 }
+
+const existingFallback =
+  await prisma.birthdayReminderLog
+    .findFirst({
+      where: {
+        birthdayId,
+        twilioMessageSid:
+          messageSid,
+        channel: "SMS",
+        reminderType:
+          "PLAYER_BIRTHDAY_FALLBACK",
+      },
+    });
+
+if (existingFallback) {
+  return NextResponse.json({
+    received: true,
+    fallbackSent: false,
+    duplicate: true,
+  });
+}
+
+export async function sendBirthdayPlayerSms({
+  playerPhone,
+  playerName,
+  leagueName,
+}) {
+  if (!playerPhone) {
+    throw new Error(
+      "Player phone number is required."
+    );
+  }
+
+  const cleanPlayerName =
+    String(playerName || "").trim();
+
+  const cleanLeagueName =
+    String(leagueName || "").trim();
+
+  if (!cleanPlayerName) {
+    throw new Error(
+      "Player name is required."
+    );
+  }
+
+  if (!cleanLeagueName) {
+    throw new Error(
+      "League name is required."
+    );
+  }
+
+  const fromPhone =
+    process.env.TWILIO_PHONE_NUMBER;
+
+  if (!fromPhone) {
+    throw new Error(
+      "TWILIO_PHONE_NUMBER is missing."
+    );
+  }
+
+  const normalizedPhone =
+    normalizeSmsNumber(playerPhone);
+
+  const body = [
+    `Happy Birthday, ${cleanPlayerName}!`,
+    "",
+    "Wishing you happiness, good health, runs, wickets and victories.",
+    "",
+    `Best wishes from ${cleanLeagueName} and the Cric4All family.`,
+  ].join("\n");
+
+  const message =
+    await getTwilioClient()
+      .messages.create({
+        from: fromPhone,
+        to: normalizedPhone,
+        body,
+      });
+
+  return {
+    success: true,
+    messageId: message.sid,
+    status: message.status,
+    to: message.to,
+    from: message.from,
+  };
+}
+
+await prisma.birthdayReminderLog
+  .create({
+    data: {
+      birthdayId,
+      leagueId,
+      reminderType:
+        "PLAYER_BIRTHDAY_FALLBACK",
+      channel: "SMS",
+      status: "SENT",
+      twilioMessageSid:
+        messageSid,
+    },
+  });
+
+function normalizeSmsNumber(value) {
+  const digits =
+    String(value || "")
+      .replace(/\D/g, "");
+
+  if (
+    digits.length < 10 ||
+    digits.length > 15
+  ) {
+    throw new Error(
+      "Phone number must include a valid country code."
+    );
+  }
+
+  return `+${digits}`;
+}

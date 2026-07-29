@@ -221,14 +221,13 @@ if (
       );
     }
 
-    const result =
-      await sendTwilioWhatsAppBirthdayMessage({
-        recipientPhone,
-        playerName:
-          birthday.name,
-        leagueName:
-          birthday.league.name,
-      });
+await sendTwilioWhatsAppBirthdayMessage({
+  recipientPhone,
+  playerName: birthday.name,
+  leagueName: birthday.league.name,
+  birthdayId: birthday.id,
+  leagueId: birthday.league.id,
+});
 
     return NextResponse.json({
       success: true,

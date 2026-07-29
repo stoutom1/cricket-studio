@@ -1,274 +1,442 @@
 import { NextResponse } from "next/server";
+import { DateTime } from "luxon";
 
 import prisma from "@/lib/prisma";
+
 import {
-  sendWebPushNotification,
-} from "@/lib/web-push";
+  birthdayWhereForDate,
+  getLocalBirthdayCheck,
+} from "@/lib/birthdayDates";
+
+import {
+  sendBirthdayPush,
+} from "@/lib/sendBirthdayPush";
+
+import {
+  sendBirthdayOwnerSms,
+} from "@/lib/sendBirthdayOwnerSms";
+
 import {
   sendTwilioWhatsAppBirthdayMessage,
 } from "@/lib/sendTwilioWhatsAppBirthdayMessage";
 
 export const runtime = "nodejs";
 export const dynamic = "force-dynamic";
+export const maxDuration = 60;
 
-function getDatePartsInTimeZone(
-  date,
-  timeZone
-) {
-  const formatter =
-    new Intl.DateTimeFormat("en-US", {
-      timeZone,
-      year: "numeric",
-      month: "numeric",
-      day: "numeric",
-    });
+function authorizeCron(request) {
+  const secret =
+    process.env.CRON_SECRET;
 
-  const parts =
-    formatter.formatToParts(date);
+  if (!secret) {
+    return false;
+  }
 
-  const values =
-    Object.fromEntries(
-      parts
-        .filter(
-          (part) =>
-            part.type !== "literal"
-        )
-        .map((part) => [
-          part.type,
-          part.value,
-        ])
+  const authorization =
+    request.headers.get(
+      "authorization"
     );
 
-  return {
-    year: Number(values.year),
-    month: Number(values.month),
-    day: Number(values.day),
-  };
-}
-
-function formatDateKey({
-  year,
-  month,
-  day,
-}) {
-  return [
-    String(year).padStart(4, "0"),
-    String(month).padStart(2, "0"),
-    String(day).padStart(2, "0"),
-  ].join("-");
+  return (
+    authorization ===
+    `Bearer ${secret}`
+  );
 }
 
 function getErrorMessage(error) {
-  return error instanceof Error
-    ? error.message
-    : "Unknown error.";
+  return String(
+    error instanceof Error
+      ? error.message
+      : error
+  ).slice(0, 1000);
 }
 
-function groupBirthdaysByLeague(
-  birthdays
+function getBirthdayPlayerName(
+  birthday
 ) {
-  const grouped = new Map();
+  return (
+    birthday?.player?.name?.trim() ||
+    birthday?.name?.trim() ||
+    "Player"
+  );
+}
 
-  for (const birthday of birthdays) {
-    const leagueId =
-      birthday.league?.id;
+function shouldSkipExistingLog(log) {
+  return (
+    log?.status === "SENT" ||
+    log?.status === "SHARED" ||
+    log?.status === "PENDING"
+  );
+}
 
-    if (!leagueId) {
-      continue;
-    }
-
-    if (!grouped.has(leagueId)) {
-      grouped.set(leagueId, {
-        leagueId,
-
-        leagueName:
-          birthday.league?.name?.trim() ||
-          "Cric4All League",
-
-        ownerId:
-          birthday.league?.ownerId ??
-          null,
-
-        ownerWhatsAppNumber:
-          birthday.league
-            ?.ownerWhatsAppNumber ??
-          null,
-
-        whatsappNotificationsEnabled:
-          Boolean(
-            birthday.league
-              ?.whatsappNotificationsEnabled
-          ),
-
-        birthdays: [],
-      });
-    }
-
-    grouped
-      .get(leagueId)
-      .birthdays
-      .push({
+/*
+ * Sends a push notification to the user who owns
+ * the birthday notification preference.
+ */
+async function createAndSendPushReminder({
+  birthday,
+  preference,
+  reminderType,
+  birthdayYear,
+}) {
+  const uniqueWhere = {
+    birthdayId_recipientUserId_birthdayYear_reminderType:
+      {
         birthdayId:
           birthday.id,
 
-        playerId:
-          birthday.player?.id ??
-          null,
+        recipientUserId:
+          preference.userId,
 
-        playerName:
-          birthday.player?.name?.trim() ||
-          birthday.name?.trim() ||
-          "Player",
+        birthdayYear,
+
+        reminderType,
+      },
+  };
+
+  const existing =
+    await prisma.birthdayReminderLog
+      .findUnique({
+        where: uniqueWhere,
+
+        select: {
+          id: true,
+          status: true,
+        },
       });
+
+  if (shouldSkipExistingLog(existing)) {
+    return {
+      skipped: true,
+      reason:
+        "Push reminder already processed.",
+    };
   }
 
-  return [...grouped.values()];
-}
+  const isToday =
+    reminderType ===
+    "BIRTHDAY_TODAY";
 
-function createNotificationBody(
-  birthdays
-) {
-  const names = birthdays
-    .map(
-      (birthday) =>
-        birthday.playerName
-    )
-    .filter(Boolean);
+  const playerName =
+    getBirthdayPlayerName(
+      birthday
+    );
 
-  if (names.length === 1) {
-    return `${names[0]} is celebrating a birthday today. Tap to prepare and share a birthday wish.`;
-  }
+  const title = isToday
+    ? "🎂 Birthday Today"
+    : "🎂 Birthday Tomorrow";
 
-  if (names.length === 2) {
-    return `${names[0]} and ${names[1]} are celebrating birthdays today.`;
-  }
+  const body = isToday
+    ? `Today is ${playerName}'s birthday. Tap to prepare and share the league wish.`
+    : `${playerName}'s birthday is tomorrow. Tap to prepare the birthday wish.`;
 
-  const firstNames =
-    names.slice(0, 2).join(", ");
+  const url =
+    `/leagues/${birthday.leagueId}/birthdays/today` +
+    `?birthdayId=${birthday.id}`;
 
-  return `${firstNames} and ${
-    names.length - 2
-  } more players are celebrating birthdays today.`;
-}
+  const log =
+    await prisma.birthdayReminderLog
+      .upsert({
+        where: uniqueWhere,
 
-export async function GET(request) {
-  const startedAt = new Date();
+        create: {
+          birthdayId:
+            birthday.id,
+
+          leagueId:
+            birthday.leagueId,
+
+          recipientUserId:
+            preference.userId,
+
+          birthdayYear,
+
+          reminderType,
+
+          status:
+            "PENDING",
+
+          notificationTitle:
+            title,
+
+          notificationBody:
+            body,
+        },
+
+        update: {
+          status:
+            "PENDING",
+
+          errorMessage:
+            null,
+
+          notificationTitle:
+            title,
+
+          notificationBody:
+            body,
+
+          sentAt:
+            null,
+        },
+      });
 
   try {
-    /*
-     * 1. Protect the cron route.
-     */
-    const authorization =
-      request.headers.get(
-        "authorization"
-      );
+    const result =
+      await sendBirthdayPush({
+        recipientUserId:
+          preference.userId,
 
-    const cronSecret =
-      process.env.CRON_SECRET;
+        title,
+        body,
+        url,
+      });
 
-    if (
-      !cronSecret ||
-      authorization !==
-        `Bearer ${cronSecret}`
-    ) {
-      return NextResponse.json(
-        {
-          success: false,
-          error: "Unauthorized.",
-        },
-        {
-          status: 401,
-        }
+    if (result.noDevices) {
+      await prisma
+        .birthdayReminderLog
+        .update({
+          where: {
+            id: log.id,
+          },
+
+          data: {
+            status:
+              "FAILED",
+
+            errorMessage:
+              "No enabled push device is registered.",
+          },
+        });
+
+      return {
+        sent: false,
+        reason: "NO_DEVICE",
+      };
+    }
+
+    if (result.sentCount === 0) {
+      throw new Error(
+        "All push-delivery attempts failed."
       );
     }
 
-    /*
-     * 2. Determine today's date.
-     */
-    const timeZone =
-      process.env
-        .BIRTHDAY_TIME_ZONE ||
-      "America/Los_Angeles";
+    await prisma
+      .birthdayReminderLog
+      .update({
+        where: {
+          id: log.id,
+        },
 
-    const today =
-      getDatePartsInTimeZone(
-        new Date(),
-        timeZone
-      );
+        data: {
+          status:
+            "SENT",
 
-    const sentDate =
-      formatDateKey(today);
+          sentAt:
+            new Date(),
 
-    console.log(
-      "[BIRTHDAY_CRON_START]",
+          errorMessage:
+            result.failedCount > 0
+              ? `${result.failedCount} device delivery attempts failed.`
+              : null,
+        },
+      });
+
+    return {
+      sent: true,
+      sentCount:
+        result.sentCount,
+    };
+  } catch (error) {
+    const errorMessage =
+      getErrorMessage(error);
+
+    await prisma
+      .birthdayReminderLog
+      .update({
+        where: {
+          id: log.id,
+        },
+
+        data: {
+          status:
+            "FAILED",
+
+          errorMessage,
+        },
+      });
+
+    console.error(
+      "[BIRTHDAY_PUSH_FAILED]",
       {
-        startedAt:
-          startedAt.toISOString(),
-        timeZone,
-        sentDate,
-        month: today.month,
-        day: today.day,
+        birthdayId:
+          birthday.id,
+
+        recipientUserId:
+          preference.userId,
+
+        reminderType,
+
+        error:
+          errorMessage,
       }
     );
 
-    /*
-     * 3. Find today's active birthdays.
-     */
-    const birthdays =
-      await prisma
-        .leagueBirthday
-        .findMany({
-          where: {
-            isActive: true,
-            birthMonth:
-              today.month,
-            birthDay:
-              today.day,
-          },
+    return {
+      sent: false,
+      reason:
+        "SEND_FAILED",
+    };
+  }
+}
 
-          select: {
-            id: true,
-            name: true,
+/*
+ * Sends one SMS summary to the league owner,
+ * regardless of how many birthdays exist today.
+ */
+async function sendOwnerBirthdaySummary({
+  birthdays,
+  preference,
+  birthdayYear,
+  birthdayDate,
+}) {
+  if (
+    !Array.isArray(birthdays) ||
+    birthdays.length === 0
+  ) {
+    return {
+      skipped: true,
+      reason:
+        "NO_BIRTHDAYS",
+    };
+  }
 
-            league: {
-              select: {
-                id: true,
-                name: true,
-                ownerId: true,
+  const league =
+    birthdays[0]?.league;
 
-                ownerWhatsAppNumber:
-                  true,
+  const ownerPhone =
+    String(
+      league?.ownerWhatsAppNumber ||
+      ""
+    ).trim();
 
-                whatsappNotificationsEnabled:
-                  true,
-              },
-            },
+  const ownerUserId =
+    league?.ownerId ||
+    preference.userId;
 
-            player: {
-              select: {
-                id: true,
-                name: true,
-              },
-            },
-          },
+  if (!ownerPhone) {
+    return {
+      skipped: true,
+      reason:
+        "OWNER_PHONE_MISSING",
+    };
+  }
 
-          orderBy: [
-            {
-              league: {
-                name: "asc",
-              },
-            },
-            {
-              name: "asc",
-            },
-          ],
-        });
+  const firstBirthday =
+    birthdays[0];
 
-    console.log(
-      "[BIRTHDAY_CRON_BIRTHDAYS]",
+  const uniqueWhere = {
+    birthdayId_recipientUserId_birthdayYear_reminderType:
       {
-        count:
-          birthdays.length,
+        birthdayId:
+          firstBirthday.id,
+
+        recipientUserId:
+          ownerUserId,
+
+        birthdayYear,
+
+        reminderType:
+          "OWNER_SMS",
+      },
+  };
+
+  const existing =
+    await prisma.birthdayReminderLog
+      .findUnique({
+        where: uniqueWhere,
+
+        select: {
+          id: true,
+          status: true,
+        },
+      });
+
+  if (shouldSkipExistingLog(existing)) {
+    return {
+      skipped: true,
+      reason:
+        "OWNER_SMS_ALREADY_PROCESSED",
+    };
+  }
+
+  const notificationBody =
+    birthdays.length === 1
+      ? `One birthday is scheduled today in ${league?.name || "this league"}.`
+      : `${birthdays.length} birthdays are scheduled today in ${league?.name || "this league"}.`;
+
+  const log =
+    await prisma.birthdayReminderLog
+      .upsert({
+        where: uniqueWhere,
+
+        create: {
+          birthdayId:
+            firstBirthday.id,
+
+          leagueId:
+            preference.leagueId,
+
+          recipientUserId:
+            ownerUserId,
+
+          birthdayYear,
+
+          reminderType:
+            "OWNER_SMS",
+
+          status:
+            "PENDING",
+
+          recipientPhone:
+            ownerPhone,
+
+          notificationTitle:
+            "Cric4All birthday summary",
+
+          notificationBody,
+        },
+
+        update: {
+          status:
+            "PENDING",
+
+          recipientPhone:
+            ownerPhone,
+
+          notificationTitle:
+            "Cric4All birthday summary",
+
+          notificationBody,
+
+          providerMessageId:
+            null,
+
+          providerStatus:
+            null,
+
+          errorMessage:
+            null,
+
+          sentAt:
+            null,
+        },
+      });
+
+  try {
+    const result =
+      await sendBirthdayOwnerSms({
+        ownerPhone,
 
         birthdays:
           birthdays.map(
@@ -276,1115 +444,927 @@ export async function GET(request) {
               birthdayId:
                 birthday.id,
 
-              playerName:
-                birthday.player?.name ||
-                birthday.name,
-
               leagueId:
-                birthday.league?.id,
+                birthday.leagueId,
 
               leagueName:
-                birthday.league?.name,
+                birthday.league?.name ||
+                "Cric4All League",
+
+              playerName:
+                getBirthdayPlayerName(
+                  birthday
+                ),
             })
           ),
+
+        date:
+          birthdayDate,
+      });
+
+    await prisma
+      .birthdayReminderLog
+      .update({
+        where: {
+          id: log.id,
+        },
+
+        data: {
+          status:
+            "SENT",
+
+          sentAt:
+            new Date(),
+
+          providerMessageId:
+            result.messageId,
+
+          providerStatus:
+            result.status ||
+            "queued",
+
+          errorMessage:
+            null,
+        },
+      });
+
+    console.log(
+      "[BIRTHDAY_OWNER_SMS_SENT]",
+      {
+        leagueId:
+          preference.leagueId,
+
+        birthdayCount:
+          birthdays.length,
+
+        messageId:
+          result.messageId,
+
+        status:
+          result.status,
       }
     );
 
-    /*
-     * 4. Nothing needs to be sent.
-     */
-    if (
-      birthdays.length === 0
-    ) {
-      console.log(
-        "[BIRTHDAY_CRON_COMPLETE]",
-        {
-          sentDate,
-          birthdaysFound: 0,
-          notificationsSent: 0,
-          reason:
-            "No birthdays today.",
-        }
-      );
+    return {
+      sent: true,
+      messageId:
+        result.messageId,
+    };
+  } catch (error) {
+    const errorMessage =
+      getErrorMessage(error);
 
-      return NextResponse.json({
-        success: true,
-        date: sentDate,
-        timeZone,
-        birthdaysFound: 0,
-        leaguesProcessed: 0,
+    await prisma
+      .birthdayReminderLog
+      .update({
+        where: {
+          id: log.id,
+        },
 
-        notificationsAttempted: 0,
-        notificationsSent: 0,
-        notificationsFailed: 0,
+        data: {
+          status:
+            "FAILED",
 
-        whatsappAttempted: 0,
-        whatsappSent: 0,
-        whatsappFailed: 0,
-        whatsappSkipped: 0,
+          providerStatus:
+            "failed",
 
-        message:
-          "No active birthdays were found today.",
+          errorMessage,
+        },
       });
-    }
+
+    console.error(
+      "[BIRTHDAY_OWNER_SMS_FAILED]",
+      {
+        leagueId:
+          preference.leagueId,
+
+        error:
+          errorMessage,
+      }
+    );
+
+    return {
+      sent: false,
+      reason:
+        "SEND_FAILED",
+    };
+  }
+}
+
+/*
+ * Sends a birthday WhatsApp template to one
+ * opted-in birthday player.
+ */
+async function sendPlayerBirthdayWhatsApp({
+  birthday,
+  preference,
+  birthdayYear,
+}) {
+  const playerName =
+    getBirthdayPlayerName(
+      birthday
+    );
+
+  const recipientPhone =
+    String(
+      birthday.whatsappNumber ||
+      birthday.player
+        ?.whatsappNumber ||
+      ""
+    ).trim();
+
+  const whatsappOptIn =
+    birthday.whatsappOptIn ===
+      true ||
+    birthday.player
+      ?.whatsappOptIn ===
+      true;
+
+  const leagueWhatsAppEnabled =
+    birthday.league
+      ?.whatsappNotificationsEnabled ===
+    true;
+
+  if (!leagueWhatsAppEnabled) {
+    return {
+      skipped: true,
+      reason:
+        "LEAGUE_WHATSAPP_DISABLED",
+    };
+  }
+
+  if (!whatsappOptIn) {
+    return {
+      skipped: true,
+      reason:
+        "PLAYER_NOT_OPTED_IN",
+    };
+  }
+
+  if (!recipientPhone) {
+    return {
+      skipped: true,
+      reason:
+        "PLAYER_PHONE_MISSING",
+    };
+  }
+
+  const ownerUserId =
+    birthday.league?.ownerId ||
+    preference.userId;
+
+  const uniqueWhere = {
+    birthdayId_recipientUserId_birthdayYear_reminderType:
+      {
+        birthdayId:
+          birthday.id,
+
+        recipientUserId:
+          ownerUserId,
+
+        birthdayYear,
+
+        reminderType:
+          "PLAYER_WHATSAPP",
+      },
+  };
+
+  const existing =
+    await prisma.birthdayReminderLog
+      .findUnique({
+        where: uniqueWhere,
+
+        select: {
+          id: true,
+          status: true,
+          providerStatus: true,
+        },
+      });
+
+  if (shouldSkipExistingLog(existing)) {
+    return {
+      skipped: true,
+      reason:
+        "PLAYER_WHATSAPP_ALREADY_PROCESSED",
+    };
+  }
+
+  const leagueName =
+    birthday.league?.name ||
+    "Cric4All League";
+
+  const log =
+    await prisma.birthdayReminderLog
+      .upsert({
+        where: uniqueWhere,
+
+        create: {
+          birthdayId:
+            birthday.id,
+
+          leagueId:
+            birthday.leagueId,
+
+          recipientUserId:
+            ownerUserId,
+
+          birthdayYear,
+
+          reminderType:
+            "PLAYER_WHATSAPP",
+
+          status:
+            "PENDING",
+
+          recipientPhone,
+
+          notificationTitle:
+            `Birthday greeting for ${playerName}`,
+
+          notificationBody:
+            `Birthday greeting from ${leagueName}.`,
+        },
+
+        update: {
+          status:
+            "PENDING",
+
+          recipientPhone,
+
+          notificationTitle:
+            `Birthday greeting for ${playerName}`,
+
+          notificationBody:
+            `Birthday greeting from ${leagueName}.`,
+
+          providerMessageId:
+            null,
+
+          providerStatus:
+            null,
+
+          errorMessage:
+            null,
+
+          sentAt:
+            null,
+        },
+      });
+
+  try {
+    const result =
+      await sendTwilioWhatsAppBirthdayMessage({
+        recipientPhone,
+        playerName,
+        leagueName,
+
+        birthdayId:
+          birthday.id,
+
+        leagueId:
+          birthday.leagueId,
+      });
 
     /*
-     * 5. Group birthdays by league.
-     */
-    const leagueGroups =
-      groupBirthdaysByLeague(
-        birthdays
-      );
-
-    const leagueIds =
-      leagueGroups.map(
-        (group) =>
-          group.leagueId
-      );
-
-    /*
-     * 6. Find eligible Web Push recipients.
+     * SENT means the cron successfully submitted
+     * the message to Twilio.
      *
-     * This preserves the existing behavior:
-     * Web Push is sent to league members
-     * whose role is OWNER.
+     * providerStatus records the current Twilio
+     * lifecycle state, normally "queued".
      */
-    const leagueRecipients =
+    await prisma
+      .birthdayReminderLog
+      .update({
+        where: {
+          id: log.id,
+        },
+
+        data: {
+          status:
+            "SENT",
+
+          sentAt:
+            new Date(),
+
+          providerMessageId:
+            result.messageSid,
+
+          providerStatus:
+            result.status ||
+            "queued",
+
+          errorMessage:
+            null,
+        },
+      });
+
+    console.log(
+      "[BIRTHDAY_PLAYER_WHATSAPP_QUEUED]",
+      {
+        birthdayId:
+          birthday.id,
+
+        playerName,
+
+        messageSid:
+          result.messageSid,
+
+        status:
+          result.status,
+      }
+    );
+
+    return {
+      queued: true,
+      messageSid:
+        result.messageSid,
+    };
+  } catch (error) {
+    const errorMessage =
+      getErrorMessage(error);
+
+    await prisma
+      .birthdayReminderLog
+      .update({
+        where: {
+          id: log.id,
+        },
+
+        data: {
+          status:
+            "FAILED",
+
+          providerStatus:
+            "failed",
+
+          errorMessage,
+        },
+      });
+
+    console.error(
+      "[BIRTHDAY_PLAYER_WHATSAPP_FAILED]",
+      {
+        birthdayId:
+          birthday.id,
+
+        playerName,
+
+        error:
+          errorMessage,
+      }
+    );
+
+    return {
+      queued: false,
+      reason:
+        "SEND_FAILED",
+    };
+  }
+}
+
+export async function GET(request) {
+  if (!authorizeCron(request)) {
+    return NextResponse.json(
+      {
+        error:
+          "Unauthorized cron request.",
+      },
+      {
+        status: 401,
+      }
+    );
+  }
+
+  try {
+    const now =
+      DateTime.utc();
+
+    const preferences =
       await prisma
-        .leagueMember
+        .birthdayNotificationPreference
         .findMany({
           where: {
-            leagueId: {
-              in: leagueIds,
-            },
+            enabled:
+              true,
 
-            role: {
-              in: ["OWNER"],
-            },
+            OR: [
+              {
+                notifyDayBefore:
+                  true,
+              },
+              {
+                notifyOnBirthday:
+                  true,
+              },
+            ],
           },
 
           select: {
-            leagueId: true,
-            userId: true,
+            userId:
+              true,
+
+            leagueId:
+              true,
+
+            notifyDayBefore:
+              true,
+
+            notifyOnBirthday:
+              true,
+
+            reminderHour:
+              true,
+
+            timeZone:
+              true,
           },
         });
 
-    const recipientUserIds = [
-      ...new Set(
-        leagueRecipients.map(
-          (recipient) =>
-            recipient.userId
-        )
-      ),
-    ];
+    let checkedPreferences =
+      0;
 
-    console.log(
-      "[BIRTHDAY_CRON_RECIPIENTS]",
-      {
-        leagueRecipientCount:
-          leagueRecipients.length,
+    let skippedPreferences =
+      0;
 
-        recipientUserCount:
-          recipientUserIds.length,
+    let pushSent =
+      0;
 
-        recipients:
-          leagueRecipients,
+    let pushSkipped =
+      0;
+
+    let pushFailed =
+      0;
+
+    let ownerSmsSent =
+      0;
+
+    let ownerSmsSkipped =
+      0;
+
+    let ownerSmsFailed =
+      0;
+
+    let playerWhatsAppQueued =
+      0;
+
+    let playerWhatsAppSkipped =
+      0;
+
+    let playerWhatsAppFailed =
+      0;
+
+    let todayBirthdaysFound =
+      0;
+
+    let tomorrowBirthdaysFound =
+      0;
+
+    for (
+      const preference
+      of preferences
+    ) {
+      let check;
+
+      try {
+        check =
+          getLocalBirthdayCheck({
+            now,
+
+            timeZone:
+              preference.timeZone,
+
+            reminderHour:
+              preference.reminderHour,
+          });
+      } catch (error) {
+        console.error(
+          "[BIRTHDAY_INVALID_PREFERENCE]",
+          {
+            userId:
+              preference.userId,
+
+            leagueId:
+              preference.leagueId,
+
+            error:
+              getErrorMessage(
+                error
+              ),
+          }
+        );
+
+        pushFailed += 1;
+        continue;
       }
-    );
 
-    /*
-     * Do not return early when there are no
-     * Web Push recipients.
-     *
-     * WhatsApp processing must still be allowed.
-     */
+      if (!check.shouldRun) {
+        skippedPreferences +=
+          1;
 
-    /*
-     * 7. Load active Web Push subscriptions.
-     */
-    const subscriptions =
-      recipientUserIds.length > 0
-        ? await prisma
-            .webPushSubscription
+        continue;
+      }
+
+      checkedPreferences +=
+        1;
+
+      /*
+       * Birthday-today processing.
+       */
+      if (
+        preference.notifyOnBirthday
+      ) {
+        const todayBirthdays =
+          await prisma
+            .leagueBirthday
             .findMany({
               where: {
-                userId: {
-                  in:
-                    recipientUserIds,
-                },
+                leagueId:
+                  preference.leagueId,
 
-                isActive: true,
+                isActive:
+                  true,
+
+                ...birthdayWhereForDate(
+                  check.today.month,
+                  check.today.day,
+                  check.today.year
+                ),
               },
 
               select: {
-                id: true,
-                userId: true,
-                endpoint: true,
-                p256dh: true,
-                auth: true,
-              },
-            })
-        : [];
-
-    console.log(
-      "[BIRTHDAY_CRON_SUBSCRIPTIONS]",
-      {
-        activeSubscriptionCount:
-          subscriptions.length,
-      }
-    );
-
-    let notificationsAttempted = 0;
-    let notificationsSent = 0;
-    let notificationsFailed = 0;
-
-    let whatsappAttempted = 0;
-    let whatsappSent = 0;
-    let whatsappFailed = 0;
-    let whatsappSkipped = 0;
-
-    const deliveryResults = [];
-    const whatsappDeliveryResults = [];
-
-    /*
-     * 8. Process each league.
-     */
-    for (
-      const leagueGroup
-      of leagueGroups
-    ) {
-      /*
-       * Existing Web Push section.
-       */
-      const eligibleUserIds =
-        new Set(
-          leagueRecipients
-            .filter(
-              (recipient) =>
-                recipient.leagueId ===
-                leagueGroup.leagueId
-            )
-            .map(
-              (recipient) =>
-                recipient.userId
-            )
-        );
-
-      const leagueSubscriptions =
-        subscriptions.filter(
-          (subscription) =>
-            eligibleUserIds.has(
-              subscription.userId
-            )
-        );
-
-      const birthdayCount =
-        leagueGroup
-          .birthdays
-          .length;
-
-      const payload = {
-        title:
-          birthdayCount === 1
-            ? `🎂 Birthday today in ${leagueGroup.leagueName}`
-            : `🎂 ${birthdayCount} birthdays today in ${leagueGroup.leagueName}`,
-
-        body:
-          createNotificationBody(
-            leagueGroup.birthdays
-          ),
-
-        icon:
-          "/icons/icon-192x192.png",
-
-        badge:
-          "/icons/icon-96x96.png",
-
-        tag:
-          `birthday-${leagueGroup.leagueId}-${sentDate}`,
-
-        renotify: false,
-
-        url:
-          `/leagues/${leagueGroup.leagueId}/birthdays/today`,
-
-        data: {
-          type:
-            "LEAGUE_BIRTHDAY",
-
-          leagueId:
-            leagueGroup.leagueId,
-
-          date:
-            sentDate,
-
-          url:
-            `/leagues/${leagueGroup.leagueId}/birthdays/today`,
-        },
-      };
-
-      console.log(
-        "[BIRTHDAY_CRON_LEAGUE]",
-        {
-          leagueId:
-            leagueGroup.leagueId,
-
-          leagueName:
-            leagueGroup.leagueName,
-
-          birthdayCount,
-
-          subscriptionCount:
-            leagueSubscriptions.length,
-        }
-      );
-
-      /*
-       * Existing browser/device Web Push loop.
-       */
-      for (
-        const subscription
-        of leagueSubscriptions
-      ) {
-        notificationsAttempted += 1;
-
-        try {
-          const sendResult =
-            await sendWebPushNotification({
-              subscription,
-              payload,
-            });
-
-          notificationsSent += 1;
-
-          deliveryResults.push({
-            success: true,
-
-            leagueId:
-              leagueGroup.leagueId,
-
-            subscriptionId:
-              subscription.id,
-
-            statusCode:
-              sendResult?.statusCode ??
-              201,
-          });
-
-          console.log(
-            "[BIRTHDAY_CRON_PUSH_SUCCESS]",
-            {
-              leagueId:
-                leagueGroup.leagueId,
-
-              subscriptionId:
-                subscription.id,
-
-              statusCode:
-                sendResult?.statusCode ??
-                201,
-            }
-          );
-
-          /*
-           * Preserve existing last-used update.
-           */
-          await prisma
-            .webPushSubscription
-            .update({
-              where: {
                 id:
-                  subscription.id,
+                  true,
+
+                leagueId:
+                  true,
+
+                playerId:
+                  true,
+
+                name:
+                  true,
+
+                birthMonth:
+                  true,
+
+                birthDay:
+                  true,
+
+                whatsappNumber:
+                  true,
+
+                whatsappOptIn:
+                  true,
+
+                league: {
+                  select: {
+                    id:
+                      true,
+
+                    name:
+                      true,
+
+                    ownerId:
+                      true,
+
+                    ownerWhatsAppNumber:
+                      true,
+
+                    whatsappNotificationsEnabled:
+                      true,
+                  },
+                },
+
+                player: {
+                  select: {
+                    id:
+                      true,
+
+                    name:
+                      true,
+
+                    whatsappNumber:
+                      true,
+
+                    whatsappOptIn:
+                      true,
+                  },
+                },
               },
 
-              data: {
-                lastUsedAt:
-                  new Date(),
+              orderBy: {
+                name:
+                  "asc",
               },
             });
-        } catch (pushError) {
-          notificationsFailed += 1;
 
-          const statusCode =
-            pushError?.statusCode ??
-            null;
+        todayBirthdaysFound +=
+          todayBirthdays.length;
 
-          const errorMessage =
-            getErrorMessage(
-              pushError
-            );
-
-          deliveryResults.push({
-            success: false,
-
-            leagueId:
-              leagueGroup.leagueId,
-
-            subscriptionId:
-              subscription.id,
-
-            statusCode,
-
-            error:
-              errorMessage,
-          });
-
-          console.error(
-            "[BIRTHDAY_CRON_PUSH_FAILED]",
-            {
-              leagueId:
-                leagueGroup.leagueId,
-
-              subscriptionId:
-                subscription.id,
-
-              statusCode,
-
-              error:
-                errorMessage,
-            }
-          );
-
-          /*
-           * Preserve existing expired
-           * subscription cleanup.
-           */
-          if (
-            statusCode === 404 ||
-            statusCode === 410
-          ) {
-            try {
-              await prisma
-                .webPushSubscription
-                .update({
-                  where: {
-                    id:
-                      subscription.id,
-                  },
-
-                  data: {
-                    isActive:
-                      false,
-                  },
-                });
-            } catch (
-              subscriptionUpdateError
-            ) {
-              console.error(
-                "[BIRTHDAY_CRON_PUSH_SUBSCRIPTION_UPDATE_FAILED]",
-                {
-                  leagueId:
-                    leagueGroup.leagueId,
-
-                  subscriptionId:
-                    subscription.id,
-
-                  error:
-                    getErrorMessage(
-                      subscriptionUpdateError
-                    ),
-                }
-              );
-            }
-          }
-        }
-      }
-
-      /*
-       * 9. Independent WhatsApp processing.
-       *
-       * This runs after Web Push.
-       * Any WhatsApp failure is contained.
-       */
-      const leagueWhatsAppEnabled =
-        Boolean(
-          leagueGroup
-            .whatsappNotificationsEnabled
-        );
-
-      const leagueOwnerWhatsAppNumber =
-        String(
-          leagueGroup
-            .ownerWhatsAppNumber ||
-            ""
-        ).trim();
-
-      const leagueOwnerUserId =
-        leagueGroup.ownerId;
-
-      if (
-        !leagueWhatsAppEnabled
-      ) {
-        whatsappSkipped +=
-          leagueGroup
-            .birthdays
-            .length;
-
-        whatsappDeliveryResults.push({
-          success: true,
-          skipped: true,
-
-          leagueId:
-            leagueGroup.leagueId,
-
-          reason:
-            "WhatsApp notifications are disabled for this league.",
-
-          birthdayCount:
-            leagueGroup
-              .birthdays
-              .length,
-        });
-
-        continue;
-      }
-
-      if (
-        !leagueOwnerWhatsAppNumber
-      ) {
-        whatsappSkipped +=
-          leagueGroup
-            .birthdays
-            .length;
-
-        whatsappDeliveryResults.push({
-          success: true,
-          skipped: true,
-
-          leagueId:
-            leagueGroup.leagueId,
-
-          reason:
-            "The league owner WhatsApp number is missing.",
-
-          birthdayCount:
-            leagueGroup
-              .birthdays
-              .length,
-        });
-
-        continue;
-      }
-
-      if (
-        !leagueOwnerUserId
-      ) {
-        whatsappSkipped +=
-          leagueGroup
-            .birthdays
-            .length;
-
-        whatsappDeliveryResults.push({
-          success: true,
-          skipped: true,
-
-          leagueId:
-            leagueGroup.leagueId,
-
-          reason:
-            "The league does not have an owner user assigned.",
-
-          birthdayCount:
-            leagueGroup
-              .birthdays
-              .length,
-        });
-
-        continue;
-      }
-
-      for (
-        const birthday
-        of leagueGroup.birthdays
-      ) {
-        let reminderLog = null;
-
-        /*
-         * Check for an existing WhatsApp log.
-         */
-        try {
-          reminderLog =
-            await prisma
-              .birthdayReminderLog
-              .findUnique({
-                where: {
-                  birthdayId_recipientUserId_birthdayYear_reminderType:
-                    {
-                      birthdayId:
-                        birthday.birthdayId,
-
-                      recipientUserId:
-                        leagueOwnerUserId,
-
-                      birthdayYear:
-                        today.year,
-
-                      reminderType:
-                        "WHATSAPP",
-                    },
-                },
-              });
-        } catch (lookupError) {
-          whatsappFailed += 1;
-
-          const lookupErrorMessage =
-            getErrorMessage(
-              lookupError
-            );
-
-          whatsappDeliveryResults.push({
-            success: false,
-            skipped: false,
-
-            leagueId:
-              leagueGroup.leagueId,
-
-            birthdayId:
-              birthday.birthdayId,
-
-            playerName:
-              birthday.playerName,
-
-            error:
-              `Unable to check WhatsApp reminder history: ${lookupErrorMessage}`,
-          });
-
-          console.error(
-            "[BIRTHDAY_CRON_WHATSAPP_LOG_LOOKUP_FAILED]",
-            {
-              leagueId:
-                leagueGroup.leagueId,
-
-              birthdayId:
-                birthday.birthdayId,
-
-              playerName:
-                birthday.playerName,
-
-              error:
-                lookupErrorMessage,
-            }
-          );
-
-          /*
-           * Do not risk sending a duplicate
-           * when log lookup fails.
-           */
-          continue;
-        }
-
-        /*
-         * Never resend an already successful
-         * reminder in the same birthday year.
-         */
         if (
-          reminderLog?.status ===
-          "SENT"
+          todayBirthdays.length >
+          0
         ) {
-          whatsappSkipped += 1;
+          const birthdayDate =
+            DateTime.fromObject(
+              {
+                year:
+                  check.today.year,
 
-          whatsappDeliveryResults.push({
-            success: true,
-            skipped: true,
+                month:
+                  check.today.month,
 
-            leagueId:
-              leagueGroup.leagueId,
+                day:
+                  check.today.day,
+              },
+              {
+                zone:
+                  preference.timeZone,
+              }
+            ).toISODate();
 
-            birthdayId:
-              birthday.birthdayId,
+          /*
+           * 1. Send one owner SMS summary first.
+           */
+          const ownerSmsResult =
+            await sendOwnerBirthdaySummary({
+              birthdays:
+                todayBirthdays,
 
-            playerName:
-              birthday.playerName,
+              preference,
 
-            reminderLogId:
-              reminderLog.id,
+              birthdayYear:
+                check.today.year,
 
-            reason:
-              "This WhatsApp birthday reminder was already sent for this year.",
-          });
+              birthdayDate,
+            });
 
-          continue;
-        }
+          if (
+            ownerSmsResult.sent
+          ) {
+            ownerSmsSent +=
+              1;
+          } else if (
+            ownerSmsResult.skipped
+          ) {
+            ownerSmsSkipped +=
+              1;
 
-        /*
-         * Create a new PENDING log or reset
-         * an existing FAILED/PENDING log.
-         */
-        try {
-          if (reminderLog) {
-            reminderLog =
-              await prisma
-                .birthdayReminderLog
-                .update({
-                  where: {
-                    id:
-                      reminderLog.id,
-                  },
+            console.log(
+              "[BIRTHDAY_OWNER_SMS_SKIPPED]",
+              {
+                leagueId:
+                  preference.leagueId,
 
-                  data: {
-                    status:
-                      "PENDING",
-
-                    recipientPhone:
-                      leagueOwnerWhatsAppNumber,
-
-                    notificationTitle:
-                      `Birthday wish for ${birthday.playerName}`,
-
-                    notificationBody:
-                      `Birthday wish for ${birthday.playerName} from ${leagueGroup.leagueName}.`,
-
-                    providerMessageId:
-                      null,
-
-                    providerStatus:
-                      null,
-
-                    errorMessage:
-                      null,
-
-                    sentAt:
-                      null,
-                  },
-                });
+                reason:
+                  ownerSmsResult.reason,
+              }
+            );
           } else {
-            reminderLog =
-              await prisma
-                .birthdayReminderLog
-                .create({
-                  data: {
-                    birthdayId:
-                      birthday.birthdayId,
-
-                    leagueId:
-                      leagueGroup.leagueId,
-
-                    recipientUserId:
-                      leagueOwnerUserId,
-
-                    birthdayYear:
-                      today.year,
-
-                    reminderType:
-                      "WHATSAPP",
-
-                    status:
-                      "PENDING",
-
-                    recipientPhone:
-                      leagueOwnerWhatsAppNumber,
-
-                    notificationTitle:
-                      `Birthday wish for ${birthday.playerName}`,
-
-                    notificationBody:
-                      `Birthday wish for ${birthday.playerName} from ${leagueGroup.leagueName}.`,
-                  },
-                });
-          }
-        } catch (
-          logPreparationError
-        ) {
-          /*
-           * A simultaneous cron may create
-           * the same unique log first.
-           */
-          if (
-            logPreparationError?.code ===
-            "P2002"
-          ) {
-            whatsappSkipped += 1;
-
-            whatsappDeliveryResults.push({
-              success: true,
-              skipped: true,
-
-              leagueId:
-                leagueGroup.leagueId,
-
-              birthdayId:
-                birthday.birthdayId,
-
-              playerName:
-                birthday.playerName,
-
-              reason:
-                "Another cron execution already reserved this WhatsApp reminder.",
-            });
-
-            continue;
+            ownerSmsFailed +=
+              1;
           }
 
-          whatsappFailed += 1;
+          /*
+           * 2. Send one push reminder per birthday.
+           */
+          for (
+            const birthday
+            of todayBirthdays
+          ) {
+            const pushResult =
+              await createAndSendPushReminder({
+                birthday,
+                preference,
 
-          const preparationErrorMessage =
-            getErrorMessage(
-              logPreparationError
-            );
+                reminderType:
+                  "BIRTHDAY_TODAY",
 
-          whatsappDeliveryResults.push({
-            success: false,
-            skipped: false,
+                birthdayYear:
+                  check.today.year,
+              });
 
-            leagueId:
-              leagueGroup.leagueId,
-
-            birthdayId:
-              birthday.birthdayId,
-
-            playerName:
-              birthday.playerName,
-
-            error:
-              `Unable to prepare WhatsApp reminder log: ${preparationErrorMessage}`,
-          });
-
-          console.error(
-            "[BIRTHDAY_CRON_WHATSAPP_LOG_PREPARATION_FAILED]",
-            {
-              leagueId:
-                leagueGroup.leagueId,
-
-              birthdayId:
-                birthday.birthdayId,
-
-              playerName:
-                birthday.playerName,
-
-              error:
-                preparationErrorMessage,
+            if (pushResult.sent) {
+              pushSent +=
+                1;
+            } else if (
+              pushResult.skipped
+            ) {
+              pushSkipped +=
+                1;
+            } else {
+              pushFailed +=
+                1;
             }
-          );
-
-          continue;
-        }
-
-        whatsappAttempted += 1;
-
-        try {
-          const whatsappResult =
-            await sendTwilioWhatsAppBirthdayMessage({
-              recipientPhone:
-                leagueOwnerWhatsAppNumber,
-
-              playerName:
-                birthday.playerName,
-
-              leagueName:
-                leagueGroup.leagueName,
-            });
-
-          await prisma
-            .birthdayReminderLog
-            .update({
-              where: {
-                id:
-                  reminderLog.id,
-              },
-
-              data: {
-                status:
-                  "SENT",
-
-                sentAt:
-                  new Date(),
-
-                recipientPhone:
-                  leagueOwnerWhatsAppNumber,
-
-                providerMessageId:
-                  whatsappResult
-                    .messageSid,
-
-                providerStatus:
-                  whatsappResult.status ||
-                  "queued",
-
-                errorMessage:
-                  null,
-              },
-            });
-
-          whatsappSent += 1;
-
-          whatsappDeliveryResults.push({
-            success: true,
-            skipped: false,
-
-            leagueId:
-              leagueGroup.leagueId,
-
-            birthdayId:
-              birthday.birthdayId,
-
-            playerName:
-              birthday.playerName,
-
-            reminderLogId:
-              reminderLog.id,
-
-            messageSid:
-              whatsappResult
-                .messageSid,
-
-            status:
-              whatsappResult.status,
-
-            recipient:
-              whatsappResult.recipient,
-          });
-
-          console.log(
-            "[BIRTHDAY_CRON_WHATSAPP_SUCCESS]",
-            {
-              leagueId:
-                leagueGroup.leagueId,
-
-              birthdayId:
-                birthday.birthdayId,
-
-              playerName:
-                birthday.playerName,
-
-              reminderLogId:
-                reminderLog.id,
-
-              messageSid:
-                whatsappResult
-                  .messageSid,
-
-              status:
-                whatsappResult.status,
-            }
-          );
-        } catch (whatsappError) {
-          whatsappFailed += 1;
-
-          const whatsappErrorMessage =
-            getErrorMessage(
-              whatsappError
-            );
+          }
 
           /*
-           * Mark as FAILED so the cron
-           * can retry it later.
+           * 3. Send a personal WhatsApp birthday
+           * greeting to each opted-in player.
            */
-          if (
-            reminderLog?.id
+          for (
+            const birthday
+            of todayBirthdays
           ) {
-            await prisma
-              .birthdayReminderLog
-              .update({
-                where: {
-                  id:
-                    reminderLog.id,
-                },
+            const whatsappResult =
+              await sendPlayerBirthdayWhatsApp({
+                birthday,
+                preference,
 
-                data: {
-                  status:
-                    "FAILED",
+                birthdayYear:
+                  check.today.year,
+              });
 
-                  recipientPhone:
-                    leagueOwnerWhatsAppNumber,
+            if (
+              whatsappResult.queued
+            ) {
+              playerWhatsAppQueued +=
+                1;
+            } else if (
+              whatsappResult.skipped
+            ) {
+              playerWhatsAppSkipped +=
+                1;
 
-                  errorMessage:
-                    whatsappErrorMessage
-                      .slice(
-                        0,
-                        1000
-                      ),
+              console.log(
+                "[BIRTHDAY_PLAYER_WHATSAPP_SKIPPED]",
+                {
+                  birthdayId:
+                    birthday.id,
 
-                  providerStatus:
-                    "failed",
-                },
-              })
-              .catch(
-                (
-                  logUpdateError
-                ) => {
-                  console.error(
-                    "[BIRTHDAY_CRON_WHATSAPP_LOG_UPDATE_FAILED]",
-                    {
-                      reminderLogId:
-                        reminderLog.id,
+                  playerName:
+                    getBirthdayPlayerName(
+                      birthday
+                    ),
 
-                      error:
-                        getErrorMessage(
-                          logUpdateError
-                        ),
-                    }
-                  );
+                  reason:
+                    whatsappResult.reason,
                 }
               );
-          }
-
-          whatsappDeliveryResults.push({
-            success: false,
-            skipped: false,
-
-            leagueId:
-              leagueGroup.leagueId,
-
-            birthdayId:
-              birthday.birthdayId,
-
-            playerName:
-              birthday.playerName,
-
-            reminderLogId:
-              reminderLog?.id ??
-              null,
-
-            error:
-              whatsappErrorMessage,
-          });
-
-          console.error(
-            "[BIRTHDAY_CRON_WHATSAPP_FAILED]",
-            {
-              leagueId:
-                leagueGroup.leagueId,
-
-              birthdayId:
-                birthday.birthdayId,
-
-              playerName:
-                birthday.playerName,
-
-              reminderLogId:
-                reminderLog?.id ??
-                null,
-
-              error:
-                whatsappErrorMessage,
+            } else {
+              playerWhatsAppFailed +=
+                1;
             }
-          );
+          }
+        }
+      }
 
-          /*
-           * Do not throw.
-           * Continue with remaining birthdays.
-           */
+      /*
+       * Day-before push reminders.
+       *
+       * No owner SMS and no player WhatsApp are sent
+       * for the day-before reminder.
+       */
+      if (
+        preference.notifyDayBefore
+      ) {
+        const tomorrowBirthdays =
+          await prisma
+            .leagueBirthday
+            .findMany({
+              where: {
+                leagueId:
+                  preference.leagueId,
+
+                isActive:
+                  true,
+
+                ...birthdayWhereForDate(
+                  check.tomorrow.month,
+                  check.tomorrow.day,
+                  check.tomorrow.year
+                ),
+              },
+
+              select: {
+                id:
+                  true,
+
+                leagueId:
+                  true,
+
+                name:
+                  true,
+
+                birthMonth:
+                  true,
+
+                birthDay:
+                  true,
+
+                player: {
+                  select: {
+                    id:
+                      true,
+
+                    name:
+                      true,
+                  },
+                },
+              },
+
+              orderBy: {
+                name:
+                  "asc",
+              },
+            });
+
+        tomorrowBirthdaysFound +=
+          tomorrowBirthdays.length;
+
+        for (
+          const birthday
+          of tomorrowBirthdays
+        ) {
+          const pushResult =
+            await createAndSendPushReminder({
+              birthday,
+              preference,
+
+              reminderType:
+                "DAY_BEFORE",
+
+              birthdayYear:
+                check.tomorrow.year,
+            });
+
+          if (pushResult.sent) {
+            pushSent +=
+              1;
+          } else if (
+            pushResult.skipped
+          ) {
+            pushSkipped +=
+              1;
+          } else {
+            pushFailed +=
+              1;
+          }
         }
       }
     }
 
-    const completedAt =
-      new Date();
-
-    console.log(
-      "[BIRTHDAY_CRON_COMPLETE]",
-      {
-        startedAt:
-          startedAt.toISOString(),
-
-        completedAt:
-          completedAt.toISOString(),
-
-        date:
-          sentDate,
-
-        birthdaysFound:
-          birthdays.length,
-
-        leaguesProcessed:
-          leagueGroups.length,
-
-        notificationsAttempted,
-        notificationsSent,
-        notificationsFailed,
-
-        whatsappAttempted,
-        whatsappSent,
-        whatsappFailed,
-        whatsappSkipped,
-      }
-    );
-
     return NextResponse.json({
-      /*
-       * Preserve Web Push success separately
-       * from WhatsApp success.
-       */
       success:
-        notificationsFailed === 0,
+        ownerSmsFailed === 0 &&
+        playerWhatsAppFailed === 0,
 
-      whatsappSuccess:
-        whatsappFailed === 0,
+      checkedAtUtc:
+        now.toISO(),
 
-      date:
-        sentDate,
+      preferenceCount:
+        preferences.length,
 
-      timeZone,
+      checkedPreferences,
+      skippedPreferences,
 
-      startedAt:
-        startedAt.toISOString(),
+      birthdays: {
+        todayFound:
+          todayBirthdaysFound,
 
-      completedAt:
-        completedAt.toISOString(),
+        tomorrowFound:
+          tomorrowBirthdaysFound,
+      },
 
-      birthdaysFound:
-        birthdays.length,
+      push: {
+        sent:
+          pushSent,
 
-      leaguesProcessed:
-        leagueGroups.length,
+        skipped:
+          pushSkipped,
 
-      leagueRecipientCount:
-        leagueRecipients.length,
+        failed:
+          pushFailed,
+      },
 
-      activeSubscriptionCount:
-        subscriptions.length,
+      ownerSms: {
+        sent:
+          ownerSmsSent,
 
-      notificationsAttempted,
-      notificationsSent,
-      notificationsFailed,
+        skipped:
+          ownerSmsSkipped,
 
-      whatsappAttempted,
-      whatsappSent,
-      whatsappFailed,
-      whatsappSkipped,
+        failed:
+          ownerSmsFailed,
+      },
 
-      message:
-        notificationsSent > 0 ||
-        whatsappSent > 0
-          ? "Birthday notifications processed."
-          : "Birthdays were found, but no notifications were delivered.",
+      playerWhatsApp: {
+        queued:
+          playerWhatsAppQueued,
 
-      leagues:
-        leagueGroups.map(
-          (group) => ({
-            leagueId:
-              group.leagueId,
+        skipped:
+          playerWhatsAppSkipped,
 
-            leagueName:
-              group.leagueName,
-
-            birthdayCount:
-              group.birthdays.length,
-
-            whatsappEnabled:
-              group
-                .whatsappNotificationsEnabled,
-
-            hasOwnerWhatsAppNumber:
-              Boolean(
-                group
-                  .ownerWhatsAppNumber
-              ),
-
-            birthdays:
-              group.birthdays,
-          })
-        ),
-
-      deliveryResults,
-      whatsappDeliveryResults,
+        failed:
+          playerWhatsAppFailed,
+      },
     });
   } catch (error) {
     const errorMessage =
       getErrorMessage(error);
 
     console.error(
-      "[BIRTHDAY_CRON_FATAL_ERROR]",
+      "[BIRTHDAY_REMINDER_CRON_FAILED]",
       {
         error:
           errorMessage,
@@ -1393,12 +1373,18 @@ export async function GET(request) {
 
     return NextResponse.json(
       {
-        success: false,
+        success:
+          false,
+
         error:
+          "Birthday reminder processing failed.",
+
+        details:
           errorMessage,
       },
       {
-        status: 500,
+        status:
+          500,
       }
     );
   }

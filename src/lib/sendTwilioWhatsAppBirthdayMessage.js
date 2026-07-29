@@ -31,6 +31,39 @@ function getTwilioClient() {
   return cachedClient;
 }
 
+function getBirthdayWhatsAppStatusCallbackUrl({
+  birthdayId,
+  leagueId,
+}) {
+  const baseUrl =
+    String(
+      process.env.NEXT_PUBLIC_APP_URL ||
+      "https://cric4all.app"
+    ).replace(/\/+$/, "");
+
+  const searchParams =
+    new URLSearchParams();
+
+  if (birthdayId) {
+    searchParams.set(
+      "birthdayId",
+      String(birthdayId)
+    );
+  }
+
+  if (leagueId) {
+    searchParams.set(
+      "leagueId",
+      String(leagueId)
+    );
+  }
+
+  return (
+    `${baseUrl}/api/webhooks/twilio/birthday-status?` +
+    searchParams.toString()
+  );
+}
+
 export function normalizeWhatsAppNumber(value) {
   const normalized = String(value || "")
     .trim()
@@ -51,6 +84,8 @@ export async function sendTwilioWhatsAppBirthdayMessage({
   recipientPhone,
   playerName,
   leagueName,
+  birthdayId,
+  leagueId,
 }) {
   const messagingServiceSid =
     process.env
@@ -97,20 +132,28 @@ export async function sendTwilioWhatsAppBirthdayMessage({
 
   const client = getTwilioClient();
 
-  const message =
-    await client.messages.create({
-      messagingServiceSid,
+const statusCallback =
+  getBirthdayWhatsAppStatusCallbackUrl({
+    birthdayId,
+    leagueId,
+  });
 
-      to: `whatsapp:${normalizedRecipient}`,
+const message =
+  await client.messages.create({
+    messagingServiceSid,
 
-      contentSid,
+    to: `whatsapp:${normalizedRecipient}`,
 
-      contentVariables:
-        JSON.stringify({
-          1: cleanPlayerName,
-          2: cleanLeagueName,
-        }),
-    });
+    contentSid,
+
+    contentVariables:
+      JSON.stringify({
+        1: cleanPlayerName,
+        2: cleanLeagueName,
+      }),
+
+    statusCallback,
+  });
 
   return {
     success: true,
