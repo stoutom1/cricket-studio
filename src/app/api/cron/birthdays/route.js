@@ -209,10 +209,11 @@ async function createAndSendPushReminder({
           },
         });
 
-      return {
-        sent: false,
-        reason: "NO_DEVICE",
-      };
+return {
+  sent: false,
+  skipped: true,
+  reason: "NO_DEVICE",
+};
     }
 
     if (result.sentCount === 0) {
@@ -277,8 +278,12 @@ async function createAndSendPushReminder({
 
         reminderType,
 
-        error:
-          errorMessage,
+        userId: preference.userId,
+      
+      error:
+        error instanceof Error
+          ? error.message
+          : String(error),
       }
     );
 
