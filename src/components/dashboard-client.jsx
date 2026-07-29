@@ -13345,7 +13345,10 @@ onClick={() => {
             Create leagues, add teams and players, organize series, schedule
             matches, score live games, use Scorer Mode, share spectator links,
             track points, view rankings, manage permissions, review audit logs,
-            monitor user activity, and generate AI-powered match insights.
+            monitor user activity, generate AI-powered match insights, create
+            balanced teams with AI Team Builder, run player availability polls,
+            import player lists from screenshots or files, generate AI Match
+            Strategy recommendations, and share AI strategies through WhatsApp.
           </p>
         </div>
       </div>
@@ -13442,6 +13445,74 @@ onClick={() => {
         </div>
       </div>
 
+      <h3 className="help-section-title">🧠 AI Team Builder</h3>
+
+      <div className="help-grid">
+        <div className="help-card">
+          <h3>🤖 AI Team Builder</h3>
+          <p>
+            Create balanced cricket teams using player statistics, batting
+            ability, bowling ability, all-round performance, and historical
+            match data.
+          </p>
+        </div>
+
+        <div className="help-card">
+          <h3>👥 Player Availability</h3>
+          <p>
+            Create an optional availability poll before team generation so
+            players can confirm whether they are available for the match.
+            Players who respond Yes can be selected automatically.
+          </p>
+        </div>
+
+        <div className="help-card">
+          <h3>📷 Player List Import</h3>
+          <p>
+            Import player names from screenshots using OCR, or upload Excel,
+            CSV, text, PNG, JPG, JPEG, or WEBP files instead of typing every
+            player manually.
+          </p>
+        </div>
+
+        <div className="help-card">
+          <h3>⚖️ Balance Two Teams</h3>
+          <p>
+            Select players and generate two evenly matched teams using
+            historical batting, bowling, and all-round statistics. Review the
+            suggested split before using it for a match.
+          </p>
+        </div>
+
+        <div className="help-card">
+          <h3>🎯 Single Team Strategy</h3>
+          <p>
+            Select one team, choose at least 11 players, and generate an AI
+            Match Strategy with a recommended batting order, bowling plan,
+            player roles, match scenarios, and confidence guidance.
+          </p>
+        </div>
+
+        <div className="help-card">
+          <h3>🔄 Surprise Cricket League</h3>
+          <p>
+            For Surprise Cricket League, AI Strategy combines matching player
+            history from Surprise 1 and Surprise 2. For example, Vamsi's
+            performance in both teams contributes to one combined strategy
+            profile. Other leagues continue to use the selected team's history.
+          </p>
+        </div>
+
+        <div className="help-card">
+          <h3>📲 Share AI Strategy</h3>
+          <p>
+            After generating a strategy, use the WhatsApp share button to send
+            the league, team, batting order, bowling plan, recommendations, and
+            Cric4All link to captains and players.
+          </p>
+        </div>
+      </div>
+
       <h3 className="help-section-title">🧭 Main Tabs</h3>
 
       <div className="help-grid">
@@ -13513,6 +13584,15 @@ onClick={() => {
             Use the account icon near Sign Out to view your Cric4All account,
             quick actions, dashboard shortcut, Explore shortcut, and sign-out
             option.
+          </p>
+        </div>
+
+        <div className="help-card">
+          <h3>🧠 AI Team Builder</h3>
+          <p>
+            Use availability polls, player-list imports, balanced team
+            generation, Single Team Strategy, and WhatsApp strategy sharing
+            from the AI Team Builder workspace.
           </p>
         </div>
       </div>
@@ -13811,6 +13891,24 @@ onClick={() => {
         </div>
 
         <div className="help-card">
+          <h3>🧠 AI Match Strategy</h3>
+          <p>
+            Before a match, select one team and at least 11 players to generate
+            a recommended batting order, bowling rotation, player roles,
+            powerplay plan, middle-overs approach, death-over plan, match
+            scenarios, and confidence notes.
+          </p>
+        </div>
+
+        <div className="help-card">
+          <h3>📲 Share AI Strategy</h3>
+          <p>
+            Share the generated AI Match Strategy directly to WhatsApp so
+            captains and players can review the plan before the toss or match.
+          </p>
+        </div>
+
+        <div className="help-card">
           <h3>📤 Share Match</h3>
           <p>
             Share live scores using a polished message that includes league,
@@ -13908,6 +14006,12 @@ onClick={() => {
           <li>Completed matches automatically open the scoreboard instead of scoring.</li>
           <li>Use AI Match Insights only after the match is completed.</li>
           <li>Use Admin Center to review user activity and audit logs.</li>
+          <li>Use AI Team Builder to create balanced teams based on player statistics.</li>
+          <li>Run an optional Player Availability Poll before generating teams.</li>
+          <li>Import player names from screenshots, Excel, CSV, or text files to save time.</li>
+          <li>Generate an AI Match Strategy after selecting one team and at least 11 players.</li>
+          <li>Review the recommended batting order and bowling plan before starting play.</li>
+          <li>Share the AI Match Strategy to your WhatsApp team group before the toss.</li>
         </ul>
       </div>
 
@@ -14052,6 +14156,66 @@ onClick={() => {
             Voice scoring support is being introduced inside Scorer Mode and
             depends on browser microphone support.
           </div>
+
+          <div>
+            <strong>How does AI Team Builder work?</strong>
+            <br />
+            AI Team Builder uses available historical batting, bowling, and
+            all-round statistics to suggest two evenly matched teams from the
+            selected players.
+          </div>
+
+          <div>
+            <strong>Is the player availability poll required?</strong>
+            <br />
+            No. The poll is optional. You can select players manually, or use
+            Yes responses to populate the selected-player list.
+          </div>
+
+          <div>
+            <strong>Can I import players from a screenshot?</strong>
+            <br />
+            Yes. The import tool can detect player names from supported image
+            files and add the detected names to the selection workflow.
+          </div>
+
+          <div>
+            <strong>Can I upload Excel, CSV, or text files?</strong>
+            <br />
+            Yes. XLS, XLSX, CSV, and TXT player lists are supported in addition
+            to PNG, JPG, JPEG, and WEBP images.
+          </div>
+
+          <div>
+            <strong>What is Single Team Strategy?</strong>
+            <br />
+            It lets you select one team and at least 11 players without balancing
+            two teams, then generates a batting order, bowling plan, roles,
+            scenarios, and confidence guidance.
+          </div>
+
+          <div>
+            <strong>How are Surprise 1 and Surprise 2 statistics handled?</strong>
+            <br />
+            In Surprise Cricket League, matching player history from Surprise 1
+            and Surprise 2 is combined for AI Match Strategy. Other leagues keep
+            their normal selected-team-only behavior.
+          </div>
+
+          <div>
+            <strong>Can I share the AI Match Strategy?</strong>
+            <br />
+            Yes. After generating the strategy, use Share to WhatsApp to send
+            the batting order, bowling plan, recommendations, and Cric4All link.
+          </div>
+
+          <div>
+            <strong>Does AI Team Builder change my original teams?</strong>
+            <br />
+            No. A generated split is a recommendation for the selected players
+            and does not rename, delete, or permanently modify your existing
+            league teams or player records.
+          </div>
         </div>
       </div>
     </div>
@@ -14068,15 +14232,17 @@ onClick={() => {
 
           <p>
             A modern cricket scoring, league management, live spectator sharing,
-            AI match review, statistics, admin activity, and audit tracking
-            platform built for clubs, leagues, academies, tournaments, and
-            community cricket.
+            AI team building, AI match strategy, AI match review, statistics,
+            admin activity, and audit tracking platform built for clubs, leagues,
+            academies, tournaments, and community cricket.
           </p>
 
           <div className="release-badge-row">
             <span className="release-badge">Live Scoring</span>
             <span className="release-badge">Scorer Mode</span>
             <span className="release-badge">AI Insights</span>
+            <span className="release-badge">AI Team Builder</span>
+            <span className="release-badge">AI Match Strategy</span>
             <span className="release-badge">Android App</span>
             <span className="release-badge">Admin Center</span>
           </div>
@@ -14089,7 +14255,8 @@ onClick={() => {
           Cric4All makes cricket easier to organize, score, follow, review, and
           share. It brings leagues, teams, players, matches, series, scorecards,
           commentary, points tables, rankings, permissions, public league pages,
-          live spectator links, audit logs, and user activity into one simple
+          live spectator links, AI team balancing, availability polls, player
+          imports, AI match strategy, audit logs, and user activity into one simple
           platform.
         </p>
         <p>
@@ -14113,6 +14280,12 @@ onClick={() => {
         <div className="about-feature">📊 Live Scoreboard Panels</div>
         <div className="about-feature">🏟️ Spectator Score Sharing</div>
         <div className="about-feature">🤖 AI Post-Match Review</div>
+        <div className="about-feature">🧠 AI Team Builder</div>
+        <div className="about-feature">✅ Player Availability Polls</div>
+        <div className="about-feature">📷 Screenshot / File Player Import</div>
+        <div className="about-feature">⚖️ Balanced Team Generation</div>
+        <div className="about-feature">🎯 Single Team Match Strategy</div>
+        <div className="about-feature">📲 WhatsApp Strategy Sharing</div>
         <div className="about-feature">📈 Points Table</div>
         <div className="about-feature">🏆 Rankings Hub</div>
         <div className="about-feature">🔎 Smart Filters / Context Lens</div>
@@ -14133,6 +14306,8 @@ onClick={() => {
           <span className="release-badge">MVP 1.0+</span>
           <span className="release-badge">Live Scoring Ready</span>
           <span className="release-badge">Public Pages Ready</span>
+          <span className="release-badge">AI Team Builder Ready</span>
+          <span className="release-badge">AI Strategy Ready</span>
           <span className="release-badge">Android Production Ready</span>
         </div>
 
@@ -14179,6 +14354,18 @@ onClick={() => {
           <span>✅ Rankings and league leaders</span>
           <span>✅ Smart Filters / Context Lens</span>
           <span>✅ AI match insights</span>
+          <span>✅ AI Team Builder</span>
+          <span>✅ Optional player availability polls</span>
+          <span>✅ Player selection from poll responses</span>
+          <span>✅ Screenshot OCR player-name import</span>
+          <span>✅ Excel, CSV, TXT, PNG, JPG, JPEG, and WEBP imports</span>
+          <span>✅ Balanced two-team generation using player statistics</span>
+          <span>✅ Single Team Strategy workspace</span>
+          <span>✅ AI batting-order recommendations</span>
+          <span>✅ AI over-by-over bowling plans</span>
+          <span>✅ Player role and match-scenario recommendations</span>
+          <span>✅ Surprise Cricket League combined player history</span>
+          <span>✅ WhatsApp AI Strategy sharing</span>
           <span>✅ Voice scoring foundation</span>
           <span>✅ Account details page</span>
           <span>✅ Admin activity center</span>
@@ -14240,6 +14427,67 @@ onClick={() => {
       </div>
 
       <div className="about-card">
+        <h3>🧠 AI Team Builder & Match Strategy</h3>
+
+        <p>
+          Cric4All helps captains and organizers prepare before the match by
+          combining player selection, historical performance, balanced team
+          generation, and tactical match recommendations in one workflow.
+        </p>
+
+        <div className="about-workflow-grid">
+          <div>
+            <strong>Availability Polls</strong>
+            <p>
+              Run an optional player availability poll and use confirmed responses
+              to build the match-day player pool.
+            </p>
+          </div>
+
+          <div>
+            <strong>Smart Player Import</strong>
+            <p>
+              Import names from screenshots with OCR or upload Excel, CSV, TXT,
+              PNG, JPG, JPEG, and WEBP files.
+            </p>
+          </div>
+
+          <div>
+            <strong>Balanced Teams</strong>
+            <p>
+              Split selected players into two balanced teams using batting, bowling,
+              all-round ability, and historical performance.
+            </p>
+          </div>
+
+          <div>
+            <strong>Single Team Strategy</strong>
+            <p>
+              Select one team and generate a recommended batting order, bowling
+              rotation, player roles, match scenarios, and confidence notes.
+            </p>
+          </div>
+
+          <div>
+            <strong>Surprise Cricket League</strong>
+            <p>
+              For this league, AI Strategy combines the same player&apos;s history from
+              Surprise 1 and Surprise 2 while keeping the selected match team
+              unchanged.
+            </p>
+          </div>
+
+          <div>
+            <strong>WhatsApp Sharing</strong>
+            <p>
+              Share the generated AI Match Strategy directly with captains and
+              players through WhatsApp.
+            </p>
+          </div>
+        </div>
+      </div>
+
+      <div className="about-card">
         <h3>🌐 Public Cricket Experience</h3>
 
         <p>
@@ -14296,7 +14544,8 @@ onClick={() => {
             <strong>For Players</strong>
             <p>
               Track batting, bowling, fielding records, rankings, leaders,
-              captaincy, wicketkeeping, and performance history.
+              captaincy, wicketkeeping, performance history, availability, and
+              AI-recommended match roles.
             </p>
           </div>
 
@@ -14348,11 +14597,16 @@ onClick={() => {
           Cric4All goes beyond basic scoring with professional match cards,
           live scoring state, chase requirements, partnerships, fall of wickets,
           over summaries, mobile-friendly score tables, public score sharing,
+          AI team balancing, pre-match strategy, WhatsApp strategy sharing,
           and post-match intelligence.
         </p>
 
         <div className="about-highlight-row">
           <span>🤖 AI Analysis</span>
+          <span>🧠 AI Team Builder</span>
+          <span>⚖️ Balanced Teams</span>
+          <span>🎯 Match Strategy</span>
+          <span>📲 WhatsApp Sharing</span>
           <span>📊 Stats</span>
           <span>📝 Commentary</span>
           <span>🏆 Rankings</span>
@@ -14402,7 +14656,7 @@ onClick={() => {
 
       <div className="about-footer">
         <h3>🏏 Cric4All</h3>
-        <p>Manage Leagues. Score Matches. Share Live Cricket.</p>
+        <p>Manage Leagues. Build Teams. Plan Strategy. Score and Share Live Cricket.</p>
         <p className="about-copy">© 2026 Cric4All</p>
       </div>
     </div>
