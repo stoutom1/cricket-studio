@@ -1,6 +1,11 @@
 import { Suspense } from "react";
+import { getServerSession } from "next-auth";
+import { authOptions } from "@/lib/auth";
+import { canUseAIStrategy } from "@/lib/aiStrategyAccess";
 import AITeamSplitterClient from "./AITeamSplitterClient";
 import "./team-builder-v2.css";
+
+export const runtime = "nodejs";
 
 function TeamBuilderLoading() {
   return (
@@ -14,10 +19,13 @@ function TeamBuilderLoading() {
   );
 }
 
-export default function AITeamSplitterPage() {
+export default async function AITeamSplitterPage() {
+  const session = await getServerSession(authOptions);
+  const allowAIStrategy = canUseAIStrategy(session?.user?.email);
+
   return (
     <Suspense fallback={<TeamBuilderLoading />}>
-      <AITeamSplitterClient />
+      <AITeamSplitterClient allowAIStrategy={allowAIStrategy} />
     </Suspense>
   );
 }

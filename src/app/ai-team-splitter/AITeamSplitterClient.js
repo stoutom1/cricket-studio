@@ -4,6 +4,7 @@ import Link from "next/link";
 import { useEffect, useMemo, useRef, useState } from "react";
 import { useSearchParams } from "next/navigation";
 import { suggestCaptainsForTeam } from "@/lib/captainSuggestions";
+import AIMatchStrategyPanel from "./AIMatchStrategyPanel";
 
 const STEPS = [
   { id: "SOURCE", label: "Players", icon: "1" },
@@ -102,7 +103,9 @@ function pollMatchesScheduledMatch(item, match) {
   return titleMatches || dateMatches;
 }
 
-export default function AITeamSplitterClient() {
+export default function AITeamSplitterClient({
+  allowAIStrategy = false,
+}) {
   const searchParams = useSearchParams();
   const requestedLeagueId = Number(searchParams.get("leagueId"));
   const uploadRef = useRef(null);
@@ -144,6 +147,15 @@ export default function AITeamSplitterClient() {
   const [availabilitySetupCollapsed, setAvailabilitySetupCollapsed] = useState(false);
   const [showAdHocPollForm, setShowAdHocPollForm] = useState(false);
 
+  // Independent AI Strategy workspace. This data is loaded directly from the
+  // league and is not affected by match, poll, upload, or balancing filters.
+  const [builderMode, setBuilderMode] = useState("BALANCE");
+  const [strategyTeams, setStrategyTeams] = useState([]);
+  const [strategyTeamId, setStrategyTeamId] = useState("");
+  const [strategySelectedIds, setStrategySelectedIds] = useState([]);
+  const [strategyLoading, setStrategyLoading] = useState(false);
+  const [strategyLoadError, setStrategyLoadError] = useState("");
+
   useEffect(() => {
     if (!Number.isInteger(requestedLeagueId) || requestedLeagueId <= 0) {
       setLoading(false);
@@ -159,6 +171,29 @@ export default function AITeamSplitterClient() {
     const timer = setInterval(refreshPoll, 10000);
     return () => clearInterval(timer);
   }, [poll?.token]);
+
+  useEffect(() => {
+    if (!allowAIStrategy || builderMode !== "SINGLE_TEAM_STRATEGY" || !leagueId) return;
+    if (strategyTeams.length || strategyLoading) return;
+    loadIndependentStrategyTeams();
+  }, [allowAIStrategy, builderMode, leagueId]);
+
+  const selectedStrategyTeam = useMemo(
+    () => strategyTeams.find((team) => String(team.id) === String(strategyTeamId)) || null,
+    [strategyTeams, strategyTeamId]
+  );
+
+  const strategyTeamPlayers = useMemo(
+    () => [...(selectedStrategyTeam?.players || [])].sort((a, b) =>
+      String(a.playerName || a.name || "").localeCompare(String(b.playerName || b.name || ""))
+    ),
+    [selectedStrategyTeam]
+  );
+
+  const selectedStrategyPlayers = useMemo(() => {
+    const selected = new Set(strategySelectedIds.map(Number));
+    return strategyTeamPlayers.filter((player) => selected.has(Number(player.id)));
+  }, [strategyTeamPlayers, strategySelectedIds]);
 
   const selectedPlayers = useMemo(() => {
     const ids = new Set(selectedIds.map(String));
@@ -245,6 +280,66 @@ export default function AITeamSplitterClient() {
     if (nextMode === "POLL") {
       setPollCenterOpen(true);
     }
+  }
+
+  async function loadIndependentStrategyTeams() {
+    setStrategyLoading(true);
+    setStrategyLoadError("");
+
+    try {
+      const response = await fetch(`/api/ai-team-strategy/team-data?leagueId=${leagueId}`, {
+        cache: "no-store",
+      });
+      const data = await response.json();
+
+      if (!response.ok) {
+        throw new Error(data.error || "Failed to load league teams and players.");
+      }
+
+      const loadedTeams = Array.isArray(data.teams) ? data.teams : [];
+      setStrategyTeams(loadedTeams);
+
+      if (loadedTeams.length) {
+        setStrategyTeamId((current) =>
+          loadedTeams.some((team) => String(team.id) === String(current))
+            ? current
+            : String(loadedTeams[0].id)
+        );
+      }
+    } catch (error) {
+      setStrategyLoadError(error.message || "Failed to load league teams and players.");
+    } finally {
+      setStrategyLoading(false);
+    }
+  }
+
+  function changeBuilderMode(nextMode) {
+    setBuilderMode(nextMode);
+    setMessage("");
+
+    if (nextMode === "SINGLE_TEAM_STRATEGY" && !strategyTeams.length && !strategyLoading) {
+      loadIndependentStrategyTeams();
+    }
+  }
+
+  function changeStrategyTeam(event) {
+    setStrategyTeamId(event.target.value);
+    setStrategySelectedIds([]);
+  }
+
+  function toggleStrategyPlayer(playerId) {
+    const id = Number(playerId);
+    setStrategySelectedIds((current) =>
+      current.includes(id) ? current.filter((value) => value !== id) : [...current, id]
+    );
+  }
+
+  function selectAllStrategyPlayers() {
+    setStrategySelectedIds(strategyTeamPlayers.map((player) => Number(player.id)).filter(Boolean));
+  }
+
+  function clearStrategyPlayers() {
+    setStrategySelectedIds([]);
   }
 
   async function loadInitial(targetLeagueId) {
@@ -966,6 +1061,27 @@ export default function AITeamSplitterClient() {
 
       {message && <div className="c4tb-notice" role="status"><span>{message}</span><button onClick={() => setMessage("")}>×</button></div>}
 
+      {allowAIStrategy && (
+        <div className="c4tb-mode-switch" role="tablist" aria-label="Team Builder mode">
+          <button
+            type="button"
+            className={builderMode === "BALANCE" ? "active" : ""}
+            onClick={() => changeBuilderMode("BALANCE")}
+          >
+            ⚖️ Balance Two Teams
+          </button>
+          <button
+            type="button"
+            className={builderMode === "SINGLE_TEAM_STRATEGY" ? "active" : ""}
+            onClick={() => changeBuilderMode("SINGLE_TEAM_STRATEGY")}
+          >
+            ✨ Single Team Strategy
+          </button>
+        </div>
+      )}
+
+      {builderMode === "BALANCE" ? (
+        <>
       <section className="c4tb-premium-summary" aria-label="Team Builder summary">
         <div className="c4tb-match-banner">
           <div className="c4tb-match-banner-icon">🏏</div>
@@ -1846,10 +1962,134 @@ export default function AITeamSplitterClient() {
               <div className="c4tb-footer-action"><div><span>Teams are ready</span><strong>{result.teamA.length} vs {result.teamB.length}</strong></div><button type="button" onClick={generateTeams} disabled={working}>{working ? "Balancing..." : "Regenerate Teams"}</button></div>
             </>
           )}
+          {allowAIStrategy && result && (
+  <div className="c4tb-ai-strategy-grid">
+    <AIMatchStrategyPanel
+      teamName={teamAName}
+      players={result.teamA || []}
+      defaultOvers={
+        selectedMatch?.oversPerInnings ||
+        20
+      }
+    />
+
+    <AIMatchStrategyPanel
+      teamName={teamBName}
+      players={result.teamB || []}
+      defaultOvers={
+        selectedMatch?.oversPerInnings ||
+        20
+      }
+    />
+  </div>
+)}
         </section>
 
 
       </div>
+        </>
+      ) : (
+        <section className="c4tb-single-strategy-workspace">
+          <header className="c4tb-single-strategy-head">
+            <div>
+              <span className="c4tb-private-badge">Private beta</span>
+              <h2>✨ Single Team Match Strategy</h2>
+              <p>
+                Select one league team and choose at least 11 players. This workspace loads
+                every team and player directly from the league, independently of matches,
+                polls, uploads, and the two-team balancing filters.
+              </p>
+            </div>
+          </header>
+
+          {strategyLoadError && (
+            <div className="c4tb-ai-strategy-error" role="alert">
+              <span>{strategyLoadError}</span>
+              <button type="button" onClick={loadIndependentStrategyTeams}>Try again</button>
+            </div>
+          )}
+
+          <div className="c4tb-single-strategy-controls">
+            <label>
+              <span>Select team</span>
+              <select
+                value={strategyTeamId}
+                onChange={changeStrategyTeam}
+                disabled={strategyLoading || !strategyTeams.length}
+              >
+                {strategyLoading && <option value="">Loading all league teams...</option>}
+                {!strategyLoading && !strategyTeams.length && <option value="">No teams found</option>}
+                {strategyTeams.map((team) => (
+                  <option key={team.id} value={team.id}>
+                    {team.name} ({team.players?.length || 0} players)
+                  </option>
+                ))}
+              </select>
+            </label>
+          </div>
+
+          {selectedStrategyTeam && (
+            <>
+              <div className="c4tb-strategy-selection-bar">
+                <div>
+                  <strong>{strategySelectedIds.length} selected</strong>
+                  <span>
+                    {strategyTeamPlayers.length} total player{strategyTeamPlayers.length === 1 ? "" : "s"} in {selectedStrategyTeam.name}
+                    {strategySelectedIds.length < 11
+                      ? ` • Select ${11 - strategySelectedIds.length} more to continue`
+                      : " • Ready to generate strategy"}
+                  </span>
+                </div>
+                <div className="c4tb-strategy-selection-actions">
+                  <button type="button" onClick={selectAllStrategyPlayers} disabled={!strategyTeamPlayers.length}>Select All</button>
+                  <button type="button" onClick={clearStrategyPlayers} disabled={!strategySelectedIds.length}>Clear</button>
+                </div>
+              </div>
+
+              {strategyTeamPlayers.length ? (
+                <div className="c4tb-single-player-grid">
+                  {strategyTeamPlayers.map((player) => {
+                    const playerId = Number(player.id);
+                    const selected = strategySelectedIds.includes(playerId);
+                    return (
+                      <button
+                        key={playerId}
+                        type="button"
+                        className={`c4tb-single-player${selected ? " selected" : ""}`}
+                        onClick={() => toggleStrategyPlayer(playerId)}
+                      >
+                        <span className="c4tb-player-check">{selected ? "✓" : ""}</span>
+                        <span className="c4tb-player-details">
+                          <strong>{player.playerName || player.name}</strong>
+                          <small>{selectedStrategyTeam.name}</small>
+                        </span>
+                      </button>
+                    );
+                  })}
+                </div>
+              ) : (
+                <div className="c4tb-ai-strategy-empty">No players are assigned to this team.</div>
+              )}
+
+              {strategySelectedIds.length > 0 && strategySelectedIds.length < 11 && (
+                <div className="c4tb-selection-warning">
+                  Select {11 - strategySelectedIds.length} more player{11 - strategySelectedIds.length === 1 ? "" : "s"} to enable Match AI Strategy.
+                </div>
+              )}
+
+              {strategySelectedIds.length >= 11 && (
+                <AIMatchStrategyPanel
+                  teamName={selectedStrategyTeam.name}
+                  players={selectedStrategyPlayers}
+                  defaultOvers={20}
+                  minimumPlayers={11}
+                  strategyType="SINGLE_TEAM"
+                />
+              )}
+            </>
+          )}
+        </section>
+      )}
     </main>
   );
 }
