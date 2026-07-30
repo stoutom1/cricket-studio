@@ -1,3 +1,5 @@
+import twilio from "twilio";
+
 import {
   maskPhoneNumber,
   normalizeInternationalPhone,
@@ -15,13 +17,32 @@ function requiredEnvironmentValue(name) {
   return value;
 }
 
+function normalizeWhatsAppAddress(phoneNumber) {
+  const normalizedPhone =
+    normalizeInternationalPhone(phoneNumber);
+
+  if (!normalizedPhone) {
+    return null;
+  }
+
+  return normalizedPhone.startsWith("whatsapp:")
+    ? normalizedPhone
+    : `whatsapp:${normalizedPhone}`;
+}
+
+function getErrorMessage(error) {
+  return error instanceof Error
+    ? error.message
+    : String(error);
+}
+
 /**
- * Sends a pre-approved WhatsApp template through
- * Meta WhatsApp Cloud API.
+ * Sends a pre-approved WhatsApp Content Template
+ * through Twilio Programmable Messaging.
  *
- * Business-initiated reminders generally need an approved
- * message template. The template name is configured through
- * WHATSAPP_KIT_REMINDER_TEMPLATE.
+ * Twilio accepts the request immediately and initially
+ * returns a status such as "queued". Final delivery status
+ * must be obtained through the Twilio status callback.
  */
 export async function sendKitReminderWhatsApp({
   phoneNumber,
@@ -41,259 +62,258 @@ export async function sendKitReminderWhatsApp({
     );
   }
 
-  const accessToken =
+  const to =
+    normalizeWhatsAppAddress(normalizedPhone);
+
+  if (!to) {
+    throw new Error(
+      "Unable to build the WhatsApp recipient address."
+    );
+  }
+
+  const accountSid =
     requiredEnvironmentValue(
-      "WHATSAPP_ACCESS_TOKEN"
+      "TWILIO_ACCOUNT_SID"
     );
 
-  const phoneNumberId =
+  const authToken =
     requiredEnvironmentValue(
-      "WHATSAPP_PHONE_NUMBER_ID"
+      "TWILIO_AUTH_TOKEN"
     );
 
-  const apiVersion =
-    String(
-      process.env.WHATSAPP_API_VERSION ||
-        "v23.0"
-    ).trim();
-
-  const templateName =
+  const messagingServiceSid =
     requiredEnvironmentValue(
-      "WHATSAPP_KIT_REMINDER_TEMPLATE"
+      "TWILIO_WHATSAPP_MESSAGING_SERVICE_SID"
     );
 
-  const templateLanguage =
-    String(
-      process.env
-        .WHATSAPP_TEMPLATE_LANGUAGE ||
-        "en_US"
-    ).trim();
+  const whatsappFrom =
+    requiredEnvironmentValue(
+      "TWILIO_WHATSAPP_FROM"
+    );
 
-  const requestBody = {
-    messaging_product: "whatsapp",
+  const contentSid =
+    requiredEnvironmentValue(
+      "TWILIO_KIT_REMINDER_CONTENT_SID"
+    );
 
-    to: normalizedPhone,
+  const from =
+    whatsappFrom.startsWith("whatsapp:")
+      ? whatsappFrom
+      : `whatsapp:${whatsappFrom}`;
 
-    type: "template",
+  const contentVariables = {
+    "1": String(
+      playerName || "Player"
+    ),
 
-    template: {
-      name: templateName,
+    "2": String(
+      teamName || "Your team"
+    ),
 
-      language: {
-        code: templateLanguage,
-      },
+    "3": String(
+      opponentName || "the opponent"
+    ),
 
-      components: [
-        {
-          type: "body",
+    "4": String(
+      matchDateText ||
+        "the scheduled date"
+    ),
 
-          parameters: [
-            {
-              type: "text",
-              text:
-                String(
-                  playerName ||
-                    "Player"
-                ),
-            },
-            {
-              type: "text",
-              text:
-                String(
-                  teamName ||
-                    "Your team"
-                ),
-            },
-            {
-              type: "text",
-              text:
-                String(
-                  opponentName ||
-                    "the opponent"
-                ),
-            },
-            {
-              type: "text",
-              text:
-                String(
-                  matchDateText ||
-                    "the scheduled date"
-                ),
-            },
-            {
-              type: "text",
-              text:
-                String(
-                  matchTimeText ||
-                    "the scheduled time"
-                ),
-            },
-            {
-              type: "text",
-              text:
-                String(
-                  leagueName ||
-                    "your league"
-                ),
-            },
-          ],
-        },
-      ],
-    },
+    "5": String(
+      matchTimeText ||
+        "the scheduled time"
+    ),
+
+    "6": String(
+      leagueName || "your league"
+    ),
   };
 
+  const appUrl =
+    String(
+      process.env.NEXT_PUBLIC_APP_URL ||
+        process.env.APP_URL ||
+        ""
+    )
+      .trim()
+      .replace(/\/+$/, "");
+
   /*
-   * Safe diagnostic log.
-   *
-   * Never log the access token or full recipient
-   * phone number.
+   * Add your real deployed callback endpoint here.
+   * It is omitted during localhost testing because Twilio
+   * cannot reach localhost directly.
    */
+  const statusCallback = appUrl
+    ? `${appUrl}/api/webhooks/kit-whatsapp-status`
+    : undefined;
+
   console.log(
-    "[KIT_WHATSAPP_REQUEST_CONFIG]",
+    "[KIT_WHATSAPP_TWILIO_REQUEST]",
     {
-      apiVersion,
-      phoneNumberId,
-      templateName,
-      templateLanguage,
+      from,
 
       maskedPhone:
         maskPhoneNumber(
           normalizedPhone
         ),
 
+      messagingServiceSid,
+      contentSid,
+
       parameterCount:
-        requestBody.template
-          .components[0]
-          .parameters.length,
+        Object.keys(
+          contentVariables
+        ).length,
+
+      hasStatusCallback:
+        Boolean(statusCallback),
     }
   );
 
-  const response = await fetch(
-    `https://graph.facebook.com/${apiVersion}/${phoneNumberId}/messages`,
-    {
-      method: "POST",
+  const client =
+    twilio(
+      accountSid,
+      authToken
+    );
 
-      headers: {
-        Authorization:
-          `Bearer ${accessToken}`,
+  try {
+    const message =
+      await client.messages.create({
+        from,
+        to,
 
-        "Content-Type":
-          "application/json",
-      },
+        /*
+         * Explicitly route this template through the
+         * Cric4AllWhatsApp Messaging Service.
+         */
+        messagingServiceSid,
 
-      body:
-        JSON.stringify(
-          requestBody
-        ),
+        contentSid,
 
-      cache:
-        "no-store",
-    }
-  );
+        contentVariables:
+          JSON.stringify(
+            contentVariables
+          ),
 
-  const responseData =
-    await response
-      .json()
-      .catch(() => null);
+        ...(statusCallback
+          ? {
+              statusCallback,
+            }
+          : {}),
+      });
 
-  if (!response.ok) {
-    const providerMessage =
-      responseData?.error?.message ||
-      "WhatsApp provider rejected the message.";
-
-    const providerCode =
-      responseData?.error?.code ||
-      null;
-
-    const providerSubcode =
-      responseData?.error
-        ?.error_subcode ||
-      null;
-
-    console.error(
-      "[KIT_WHATSAPP_PROVIDER_FAILED]",
+    console.log(
+      "[KIT_WHATSAPP_TWILIO_QUEUED]",
       {
-        httpStatus:
-          response.status,
+        messageSid:
+          message.sid,
 
-        providerCode,
-        providerSubcode,
+        status:
+          message.status,
 
-        providerMessage,
+        errorCode:
+          message.errorCode ||
+          null,
 
-        phoneNumberId,
-        templateName,
-        templateLanguage,
+        errorMessage:
+          message.errorMessage ||
+          null,
 
         maskedPhone:
           maskPhoneNumber(
             normalizedPhone
           ),
 
-        errorData:
-          responseData?.error
-            ?.error_data ||
-          null,
-
-        fbtraceId:
-          responseData?.error
-            ?.fbtrace_id ||
-          null,
+        messagingServiceSid,
+        contentSid,
       }
     );
 
-    const error =
-      new Error(
-        providerMessage
-      );
+    return {
+      success: true,
 
-    error.providerResponse =
-      responseData;
+      /*
+       * This means Twilio accepted/queued the request.
+       * It does not prove final WhatsApp delivery.
+       */
+      queued: true,
+      delivered: false,
 
-    error.httpStatus =
-      response.status;
-
-    error.maskedPhone =
-      maskPhoneNumber(
-        normalizedPhone
-      );
-
-    throw error;
-  }
-
-  console.log(
-    "[KIT_WHATSAPP_SENT]",
-    {
       providerMessageId:
-        responseData
-          ?.messages?.[0]?.id ||
+        message.sid,
+
+      providerStatus:
+        message.status,
+
+      providerErrorCode:
+        message.errorCode ||
         null,
 
-      phoneNumberId,
-      templateName,
-      templateLanguage,
+      providerErrorMessage:
+        message.errorMessage ||
+        null,
 
       maskedPhone:
         maskPhoneNumber(
           normalizedPhone
         ),
-    }
-  );
+    };
+  } catch (error) {
+    console.error(
+      "[KIT_WHATSAPP_TWILIO_FAILED]",
+      {
+        code:
+          error?.code ||
+          null,
 
-  return {
-    success: true,
+        status:
+          error?.status ||
+          null,
 
-    providerMessageId:
-      responseData
-        ?.messages?.[0]?.id ||
-      null,
+        message:
+          getErrorMessage(error),
 
-    providerResponse:
-      responseData,
+        moreInfo:
+          error?.moreInfo ||
+          null,
 
-    maskedPhone:
+        details:
+          error?.details ||
+          null,
+
+        maskedPhone:
+          maskPhoneNumber(
+            normalizedPhone
+          ),
+
+        messagingServiceSid,
+        contentSid,
+      }
+    );
+
+    const wrappedError =
+      new Error(
+        getErrorMessage(error) ||
+          "Twilio rejected the WhatsApp kit reminder."
+      );
+
+    wrappedError.providerCode =
+      error?.code ||
+      null;
+
+    wrappedError.httpStatus =
+      error?.status ||
+      null;
+
+    wrappedError.moreInfo =
+      error?.moreInfo ||
+      null;
+
+    wrappedError.maskedPhone =
       maskPhoneNumber(
         normalizedPhone
-      ),
-  };
+      );
+
+    throw wrappedError;
+  }
 }
