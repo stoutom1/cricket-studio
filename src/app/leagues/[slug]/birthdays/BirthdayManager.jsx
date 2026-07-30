@@ -599,13 +599,13 @@ useEffect(() => {
 
     notes: birthday.notes ?? "",
 
-    whatsappNumber:
-      birthday.player?.whatsappNumber ?? "",
+ whatsappNumber:
+  birthday.whatsappNumber ?? "",
 
-    whatsappOptIn:
-      Boolean(
-        birthday.player?.whatsappOptIn
-      ),
+whatsappOptIn:
+  Boolean(
+    birthday.whatsappOptIn
+  ),  
   });
 
   setMessage("");
@@ -692,10 +692,10 @@ body: JSON.stringify({
   notes:
     String(form.notes ?? "").trim(),
 
-  whatsappNumber:
-    String(
-      form.whatsappNumber ?? ""
-    ).replace(/\D/g, "") || null,
+whatsappNumber:
+  String(
+    form.whatsappNumber ?? ""
+  ).trim() || null,
 
   whatsappOptIn:
     Boolean(form.whatsappOptIn),
@@ -1779,17 +1779,19 @@ async function runBirthdayAction(birthdayId, actionName, callback) {
             <label>
   WhatsApp number
 
-  <input
-    type="tel"
-    value={form.whatsappNumber}
-    placeholder="Example: 12223334444"
-    onChange={(event) =>
-      setForm((current) => ({
-        ...current,
-        whatsappNumber: event.target.value.replace(/\D/g, ""),
-      }))
-    }
-  />
+<input
+  type="tel"
+  value={form.whatsappNumber}
+  placeholder="Example: +16104252773"
+  autoComplete="tel"
+  onChange={(event) =>
+    setForm((current) => ({
+      ...current,
+      whatsappNumber:
+        event.target.value,
+    }))
+  }
+/>
 </label>
 
 <label

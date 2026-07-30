@@ -30,6 +30,36 @@ async function resolveAccess(session, params) {
   };
 }
 
+function normalizeWhatsAppNumber(value) {
+  const raw = String(value ?? "").trim();
+
+  if (!raw) {
+    return null;
+  }
+
+  const digits = raw.replace(/\D/g, "");
+
+  if (digits.length === 10) {
+    return `+1${digits}`;
+  }
+
+  if (digits.length === 11 && digits.startsWith("1")) {
+    return `+${digits}`;
+  }
+
+  if (
+    raw.startsWith("+") &&
+    digits.length >= 8 &&
+    digits.length <= 15
+  ) {
+    return `+${digits}`;
+  }
+
+  throw new Error(
+    "Enter a valid WhatsApp number with country code, such as +16104252773."
+  );
+}
+
 export async function PATCH(request, { params }) {
   try {
     const { id, birthdayId: birthdayIdParam } = await params;
@@ -269,6 +299,23 @@ const whatsappOptIn =
       );
     }
 
+    let normalizedWhatsAppNumber;
+
+try {
+  normalizedWhatsAppNumber =
+    normalizeWhatsAppNumber(body.whatsappNumber);
+} catch (error) {
+  return NextResponse.json(
+    {
+      error:
+        error instanceof Error
+          ? error.message
+          : "Invalid WhatsApp number.",
+    },
+    { status: 400 }
+  );
+}
+
     const updatedBirthday =
       await prisma.leagueBirthday.update({
         where: {
@@ -284,7 +331,7 @@ const whatsappOptIn =
           birthMonth,
           birthDay,
           notes: notes || null,
-          whatsappNumber: whatsappNumber || null,
+          whatsappNumber: normalizedWhatsAppNumber,
           whatsappOptIn,
         },
       });
