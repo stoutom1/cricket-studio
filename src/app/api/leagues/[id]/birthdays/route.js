@@ -336,6 +336,33 @@ if (!currentUser) {
   );
 }
 
+function normalizePhone(value) {
+  const raw = String(value || "").trim();
+
+  if (!raw) return null;
+
+  // Already E.164
+  if (raw.startsWith("+")) {
+    return "+" + raw.slice(1).replace(/\D/g, "");
+  }
+
+  const digits = raw.replace(/\D/g, "");
+
+  // US/Canada 10-digit number
+  if (digits.length === 10) {
+    return `+1${digits}`;
+  }
+
+  // US/Canada with leading 1
+  if (digits.length === 11 && digits.startsWith("1")) {
+    return `+${digits}`;
+  }
+
+  throw new Error(
+    "Phone number must include a valid country code."
+  );
+}
+
 const birthday =
   await prisma.leagueBirthday.create({
     data: {
@@ -363,8 +390,7 @@ const birthday =
       notes: notes || null,
       isActive: true,
 
-      whatsappNumber:
-        whatsappNumber || null,
+      whatsappNumber: normalizePhone(whatsappNumber),
 
       whatsappOptIn,
     },
