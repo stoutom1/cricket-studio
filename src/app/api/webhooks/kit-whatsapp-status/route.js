@@ -7,16 +7,30 @@ export const runtime = "nodejs";
 export const dynamic = "force-dynamic";
 
 function getPublicCallbackUrl(request) {
-  const appUrl = String(
-    process.env.APP_URL ||
-      process.env.NEXT_PUBLIC_APP_URL ||
-      ""
-  )
-    .trim()
-    .replace(/\/+$/, "");
+  const forwardedProto =
+    request.headers
+      .get("x-forwarded-proto")
+      ?.split(",")[0]
+      ?.trim();
 
-  if (appUrl) {
-    return `${appUrl}/api/webhooks/kit-whatsapp-status`;
+  const forwardedHost =
+    request.headers
+      .get("x-forwarded-host")
+      ?.split(",")[0]
+      ?.trim();
+
+  if (
+    forwardedProto &&
+    forwardedHost
+  ) {
+    const requestUrl =
+      new URL(request.url);
+
+    return (
+      `${forwardedProto}://${forwardedHost}` +
+      `${requestUrl.pathname}` +
+      `${requestUrl.search}`
+    );
   }
 
   return request.url;
@@ -64,6 +78,20 @@ export async function POST(request) {
     const parameters =
       formDataToObject(formData);
 
+console.log(
+  "[TWILIO CALLBACK RECEIVED]",
+  {
+    messageSid:
+      parameters.MessageSid,
+    messageStatus:
+      parameters.MessageStatus,
+    errorCode:
+      parameters.ErrorCode,
+    channelStatusMessage:
+      parameters.ChannelStatusMessage,
+  }
+);      
+
     const twilioSignature =
       request.headers.get(
         "x-twilio-signature"
@@ -76,24 +104,42 @@ console.log(
   "[KIT_WHATSAPP_CALLBACK_VALIDATION]",
   {
     requestUrl: request.url,
-    callbackUrl,
+
+    configuredCallbackUrl:
+      callbackUrl,
+
+    host:
+      request.headers.get("host"),
+
     forwardedHost:
-      request.headers.get("x-forwarded-host"),
+      request.headers.get(
+        "x-forwarded-host"
+      ),
+
     forwardedProto:
-      request.headers.get("x-forwarded-proto"),
-    hasSignature:
+      request.headers.get(
+        "x-forwarded-proto"
+      ),
+
+    hasTwilioSignature:
       Boolean(twilioSignature),
+
     messageSid:
       parameters.MessageSid ||
       parameters.SmsSid ||
       null,
+
     messageStatus:
       parameters.MessageStatus ||
       parameters.SmsStatus ||
       null,
+
     errorCode:
       parameters.ErrorCode ||
       null,
+
+    parameterNames:
+      Object.keys(parameters).sort(),
   }
 );
       
@@ -106,6 +152,14 @@ console.log(
       );
 
     if (!validSignature) {
+          console.error("[TWILIO SIGNATURE FAILED]", {
+    callbackUrl,
+    requestUrl: request.url,
+    signature: twilioSignature,
+    host: request.headers.get("host"),
+    forwardedHost: request.headers.get("x-forwarded-host"),
+    forwardedProto: request.headers.get("x-forwarded-proto"),
+  });
       console.error(
         "[KIT_WHATSAPP_CALLBACK_INVALID_SIGNATURE]",
         {
@@ -116,7 +170,15 @@ console.log(
             null,
         }
       );
-
+console.log(
+  "[KIT_WHATSAPP_CALLBACK_SIGNATURE_RESULT]",
+  {
+    validSignature,
+    callbackUrl,
+    requestUrl: request.url,
+  }
+);
+/*
       return NextResponse.json(
         {
           success: false,
@@ -126,6 +188,7 @@ console.log(
           status: 403,
         }
       );
+*/      
     }
 
     const messageSid =

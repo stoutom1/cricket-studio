@@ -147,6 +147,11 @@ export async function sendKitReminderWhatsApp({
     ? `${appUrl}/api/webhooks/kit-whatsapp-status`
     : undefined;
 
+    console.log("[KIT_WHATSAPP_TWILIO_REQUEST_YYYYYYYY]", {
+  statusCallback,
+  // other fields
+});
+
   console.log(
     "[KIT_WHATSAPP_TWILIO_REQUEST]",
     {
