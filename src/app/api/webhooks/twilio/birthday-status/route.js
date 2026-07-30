@@ -114,7 +114,10 @@ export async function POST(request) {
   try {
     const formData = await request.formData();
     const parameters = formDataToObject(formData);
-
+console.log(
+  "[BIRTHDAY_WHATSAPP_CALLBACK_PARAMETERS]",
+  parameters
+);
     const requestUrl = new URL(request.url);
     const birthdayId = parsePositiveInteger(
       requestUrl.searchParams.get("birthdayId")
@@ -126,7 +129,15 @@ export async function POST(request) {
     const messageSid = String(
       parameters.MessageSid || parameters.SmsSid || ""
     ).trim();
-
+console.log(
+  "[BIRTHDAY_WHATSAPP_CALLBACK_SID]",
+  {
+    messageSid,
+    smsSid: parameters.SmsSid,
+    originalMessageSid: parameters.OriginalMessageSid,
+    messageStatus,
+  }
+);
     const messageStatus = normalizeStatus(
       parameters.MessageStatus || parameters.SmsStatus
     );
@@ -213,7 +224,15 @@ export async function POST(request) {
       birthdayId,
       leagueId,
     });
-
+console.log(
+  "[LOOKUP_RESULT]",
+  {
+    searchedMessageSid: messageSid,
+    reminderLogId: reminderLog?.id,
+    storedProviderMessageId:
+      reminderLog?.providerMessageId,
+  }
+);
     console.log("[BIRTHDAY_WHATSAPP_CALLBACK_MATCH]", {
       reminderLogId: reminderLog?.id ?? null,
       providerMessageId: reminderLog?.providerMessageId ?? null,
