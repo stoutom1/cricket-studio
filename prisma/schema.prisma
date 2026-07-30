@@ -620,6 +620,14 @@ model BirthdayReminderLog {
   sharedAt           DateTime?
   sharedById         String?
 
+  fallbackSmsBody        String?
+  fallbackSmsAllowed     Boolean   @default(false)
+  fallbackSmsStatus      String?
+  fallbackSmsMessageId   String?
+  fallbackSmsAttemptedAt DateTime?
+  fallbackSmsQueuedAt    DateTime?
+  fallbackSmsError       String?
+
   createdAt DateTime @default(now())
   updatedAt DateTime @updatedAt
 

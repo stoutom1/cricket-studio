@@ -2,6 +2,9 @@ import { NextResponse } from "next/server";
 import twilio from "twilio";
 
 import prisma from "@/lib/prisma";
+import {
+  sendTwilioBirthdaySmsFallback,
+} from "@/lib/sendTwilioBirthdaySmsFallback";
 
 export const runtime = "nodejs";
 export const dynamic = "force-dynamic";
@@ -108,6 +111,285 @@ async function updateReminderLog(logId, data) {
     where: { id: logId },
     data,
   });
+}
+
+async function attempt63049SmsFallback({
+  reminderLog,
+  birthdayId,
+  leagueId,
+}) {
+  if (!reminderLog?.id) {
+    return {
+      attempted: false,
+      reason: "MISSING_REMINDER_LOG",
+    };
+  }
+
+  if (!reminderLog.recipientPhone) {
+    console.warn(
+      "[BIRTHDAY_SMS_FALLBACK_SKIPPED]",
+      {
+        reminderLogId:
+          reminderLog.id,
+        birthdayId,
+        leagueId,
+        reason:
+          "MISSING_RECIPIENT_PHONE",
+      }
+    );
+
+    return {
+      attempted: false,
+      reason: "MISSING_RECIPIENT_PHONE",
+    };
+  }
+
+  if (!reminderLog.fallbackSmsBody) {
+    console.warn(
+      "[BIRTHDAY_SMS_FALLBACK_SKIPPED]",
+      {
+        reminderLogId:
+          reminderLog.id,
+        birthdayId,
+        leagueId,
+        reason:
+          "MISSING_FALLBACK_SMS_BODY",
+      }
+    );
+
+    return {
+      attempted: false,
+      reason:
+        "MISSING_FALLBACK_SMS_BODY",
+    };
+  }
+
+  if (
+  reminderLog.fallbackSmsAllowed !==
+  true
+) {
+  console.log(
+    "[BIRTHDAY_SMS_FALLBACK_SKIPPED]",
+    {
+      reminderLogId:
+        reminderLog.id,
+
+      birthdayId,
+      leagueId,
+
+      reason:
+        "SMS_NOT_OPTED_IN",
+    }
+  );
+
+  return {
+    attempted:
+      false,
+
+    reason:
+      "SMS_NOT_OPTED_IN",
+  };
+}
+  /*
+   * Atomic claim:
+   *
+   * Only one webhook request can change the fallback
+   * status from NULL to PROCESSING.
+   *
+   * If Twilio sends the same callback multiple times,
+   * every later request receives count = 0 and skips.
+   */
+  const claimedAt = new Date();
+
+  const claimResult =
+    await prisma.birthdayReminderLog.updateMany({
+      where: {
+        id: reminderLog.id,
+
+        reminderType:
+          "PLAYER_WHATSAPP",
+
+        lastErrorCode:
+          "63049",
+        
+        fallbackSmsAllowed: true,  
+
+        fallbackSmsStatus:
+          null,
+      },
+
+      data: {
+        fallbackSmsStatus:
+          "PROCESSING",
+
+        fallbackSmsAttemptedAt:
+          claimedAt,
+
+        fallbackSmsError:
+          null,
+      },
+    });
+
+  if (claimResult.count !== 1) {
+    const latestLog =
+      await prisma.birthdayReminderLog.findUnique({
+        where: {
+          id: reminderLog.id,
+        },
+
+        select: {
+          fallbackSmsStatus:
+            true,
+
+          fallbackSmsMessageId:
+            true,
+
+          fallbackSmsAttemptedAt:
+            true,
+        },
+      });
+
+    console.log(
+      "[BIRTHDAY_SMS_FALLBACK_DUPLICATE_SKIPPED]",
+      {
+        reminderLogId:
+          reminderLog.id,
+        birthdayId,
+        leagueId,
+        fallbackSmsStatus:
+          latestLog?.fallbackSmsStatus ??
+          null,
+        fallbackSmsMessageId:
+          latestLog?.fallbackSmsMessageId ??
+          null,
+      }
+    );
+
+    return {
+      attempted: false,
+      duplicate: true,
+      reason:
+        "FALLBACK_ALREADY_CLAIMED",
+      status:
+        latestLog?.fallbackSmsStatus ??
+        null,
+      messageSid:
+        latestLog?.fallbackSmsMessageId ??
+        null,
+    };
+  }
+
+  try {
+    const smsResult =
+      await sendTwilioBirthdaySmsFallback({
+        recipientPhone:
+          reminderLog.recipientPhone,
+
+        messageBody:
+          reminderLog.fallbackSmsBody,
+
+        reminderLogId:
+          reminderLog.id,
+
+        birthdayId,
+        leagueId,
+      });
+
+    const queuedAt = new Date();
+
+    await prisma.birthdayReminderLog.update({
+      where: {
+        id: reminderLog.id,
+      },
+
+      data: {
+        fallbackSmsStatus:
+          String(
+            smsResult.status ||
+            "QUEUED"
+          ).toUpperCase(),
+
+        fallbackSmsMessageId:
+          smsResult.messageSid,
+
+        fallbackSmsQueuedAt:
+          queuedAt,
+
+        fallbackSmsError:
+          null,
+      },
+    });
+
+    console.log(
+      "[BIRTHDAY_SMS_FALLBACK_QUEUED]",
+      {
+        reminderLogId:
+          reminderLog.id,
+        birthdayId,
+        leagueId,
+        recipientPhone:
+          reminderLog.recipientPhone,
+        messageSid:
+          smsResult.messageSid,
+        providerStatus:
+          smsResult.status,
+        queuedAt:
+          queuedAt.toISOString(),
+      }
+    );
+
+    return {
+      attempted: true,
+      queued: true,
+      messageSid:
+        smsResult.messageSid,
+      status:
+        smsResult.status,
+    };
+  } catch (error) {
+    const fallbackError =
+      String(
+        error instanceof Error
+          ? error.message
+          : error
+      ).slice(0, 1000);
+
+    await prisma.birthdayReminderLog.update({
+      where: {
+        id: reminderLog.id,
+      },
+
+      data: {
+        fallbackSmsStatus:
+          "FAILED",
+
+        fallbackSmsError:
+          fallbackError,
+      },
+    });
+
+    console.error(
+      "[BIRTHDAY_SMS_FALLBACK_FAILED]",
+      {
+        reminderLogId:
+          reminderLog.id,
+        birthdayId,
+        leagueId,
+        recipientPhone:
+          reminderLog.recipientPhone,
+        error:
+          fallbackError,
+      }
+    );
+
+    return {
+      attempted: true,
+      queued: false,
+      failed: true,
+      error:
+        fallbackError,
+    };
+  }
 }
 
 export async function POST(request) {
@@ -294,6 +576,8 @@ console.log(
         providerStatus: messageStatus,
         providerResponse,
         lastCallbackAt: now,
+        callbackReceivedAt:
+  reminderLog.callbackReceivedAt || now,
         lastErrorCode: null,
         errorMessage: null,
       });
@@ -314,6 +598,8 @@ console.log(
         providerStatus: messageStatus,
         providerResponse,
         lastCallbackAt: now,
+        callbackReceivedAt:
+  reminderLog.callbackReceivedAt || now,
         lastErrorCode: null,
         errorMessage: null,
         sentAt: reminderLog.sentAt || now,
@@ -329,53 +615,131 @@ console.log(
       });
     }
 
-    if (["FAILED", "UNDELIVERED"].includes(messageStatus)) {
-      const failureMessage = [
-        `WhatsApp delivery ${messageStatus.toLowerCase()}.`,
-        errorCode ? `Twilio error ${errorCode}.` : "",
-        channelStatusMessage,
-      ]
-        .filter(Boolean)
-        .join(" ")
-        .slice(0, 1000);
+if (
+  ["FAILED", "UNDELIVERED"].includes(
+    messageStatus
+  )
+) {
+  const failureMessage = [
+    `WhatsApp delivery ${messageStatus.toLowerCase()}.`,
 
-      await updateReminderLog(reminderLog.id, {
-        status: "FAILED",
-        providerMessageId: messageSid,
-        providerStatus: messageStatus,
-        providerResponse,
-        lastCallbackAt: now,
-        lastErrorCode: errorCode || null,
-        errorMessage: failureMessage || "WhatsApp delivery failed.",
-      });
+    errorCode
+      ? `Twilio error ${errorCode}.`
+      : "",
 
-      console.error("[BIRTHDAY_WHATSAPP_CALLBACK_DELIVERY_FAILED]", {
-        reminderLogId: reminderLog.id,
+    channelStatusMessage,
+  ]
+    .filter(Boolean)
+    .join(" ")
+    .slice(0, 1000);
+
+  await updateReminderLog(
+    reminderLog.id,
+    {
+      status:
+        "FAILED",
+
+      providerMessageId:
+        messageSid,
+
+      providerStatus:
+        messageStatus,
+
+      providerResponse,
+
+      callbackReceivedAt:
+        reminderLog.callbackReceivedAt ||
+        now,
+
+      lastCallbackAt:
+        now,
+
+      lastErrorCode:
+        errorCode || null,
+
+      errorMessage:
+        failureMessage ||
+        "WhatsApp delivery failed.",
+    }
+  );
+
+  console.error(
+    "[BIRTHDAY_WHATSAPP_CALLBACK_DELIVERY_FAILED]",
+    {
+      reminderLogId:
+        reminderLog.id,
+      birthdayId,
+      leagueId,
+      messageSid,
+      messageStatus,
+      errorCode,
+      channelStatusMessage,
+    }
+  );
+
+  let smsFallback = {
+    attempted: false,
+    reason:
+      "ERROR_NOT_ELIGIBLE",
+  };
+
+  /*
+   * 63049:
+   * Meta rejected the WhatsApp Marketing template.
+   *
+   * Do not retry the same WhatsApp template.
+   * Attempt the duplicate-protected SMS fallback.
+   */
+  if (
+    errorCode === "63049" &&
+    reminderLog.reminderType ===
+      "PLAYER_WHATSAPP"
+  ) {
+    smsFallback =
+      await attempt63049SmsFallback({
+        reminderLog: {
+          ...reminderLog,
+
+          /*
+           * The database row has just been updated above.
+           * Pass the confirmed error code into the
+           * atomic claim condition.
+           */
+          lastErrorCode:
+            "63049",
+        },
+
         birthdayId,
         leagueId,
-        messageSid,
-        messageStatus,
-        errorCode,
-        channelStatusMessage,
       });
+  }
 
-      return NextResponse.json({
-        success: true,
-        received: true,
-        matched: true,
-        failed: true,
-        metaBlocked: errorCode === "63049",
-        messageSid,
-        messageStatus,
-        errorCode: errorCode || null,
-      });
-    }
+  return NextResponse.json({
+    success: true,
+    received: true,
+    matched: true,
+    failed: true,
+
+    metaBlocked:
+      errorCode === "63049",
+
+    smsFallback,
+
+    messageSid,
+    messageStatus,
+
+    errorCode:
+      errorCode || null,
+  });
+}
 
     await updateReminderLog(reminderLog.id, {
       providerMessageId: messageSid,
       providerStatus: messageStatus || "UNKNOWN",
       providerResponse,
       lastCallbackAt: now,
+      callbackReceivedAt:
+  reminderLog.callbackReceivedAt || now,
       lastErrorCode: errorCode || null,
       errorMessage:
         errorCode || channelStatusMessage

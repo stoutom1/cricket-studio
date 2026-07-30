@@ -559,6 +559,10 @@ async function sendOwnerBirthdaySummary({
 /*
  * Sends a birthday WhatsApp template to one
  * opted-in birthday player.
+ *
+ * If WhatsApp later fails with Twilio error 63049,
+ * the webhook may send an SMS fallback only when
+ * fallbackSmsAllowed is true.
  */
 async function sendPlayerBirthdayWhatsApp({
   birthday,
@@ -566,51 +570,50 @@ async function sendPlayerBirthdayWhatsApp({
   birthdayYear,
 }) {
   const playerName =
-    getBirthdayPlayerName(
-      birthday
-    );
+    getBirthdayPlayerName(birthday);
 
-  const recipientPhone =
-    String(
-      birthday.whatsappNumber ||
-      birthday.player
-        ?.whatsappNumber ||
+  const recipientPhone = String(
+    birthday.whatsappNumber ||
+      birthday.player?.whatsappNumber ||
       ""
-    ).trim();
+  ).trim();
 
   const whatsappOptIn =
-    birthday.whatsappOptIn ===
-      true ||
-    birthday.player
-      ?.whatsappOptIn ===
-      true;
+    birthday.whatsappOptIn === true ||
+    birthday.player?.whatsappOptIn === true;
+
+  /*
+   * SMS permission must be explicit.
+   *
+   * Do not replace this with whatsappOptIn unless
+   * your consent language explicitly covers SMS.
+   */
+  const smsOptIn =
+    birthday.smsOptIn === true ||
+    birthday.player?.smsOptIn === true;
 
   const leagueWhatsAppEnabled =
     birthday.league
-      ?.whatsappNotificationsEnabled ===
-    true;
+      ?.whatsappNotificationsEnabled === true;
 
   if (!leagueWhatsAppEnabled) {
     return {
       skipped: true,
-      reason:
-        "LEAGUE_WHATSAPP_DISABLED",
+      reason: "LEAGUE_WHATSAPP_DISABLED",
     };
   }
 
   if (!whatsappOptIn) {
     return {
       skipped: true,
-      reason:
-        "PLAYER_NOT_OPTED_IN",
+      reason: "PLAYER_NOT_OPTED_IN",
     };
   }
 
   if (!recipientPhone) {
     return {
       skipped: true,
-      reason:
-        "PLAYER_PHONE_MISSING",
+      reason: "PLAYER_PHONE_MISSING",
     };
   }
 
@@ -619,32 +622,27 @@ async function sendPlayerBirthdayWhatsApp({
     preference.userId;
 
   const uniqueWhere = {
-    birthdayId_recipientUserId_birthdayYear_reminderType:
-      {
-        birthdayId:
-          birthday.id,
-
-        recipientUserId:
-          ownerUserId,
-
-        birthdayYear,
-
-        reminderType:
-          "PLAYER_WHATSAPP",
-      },
+    birthdayId_recipientUserId_birthdayYear_reminderType: {
+      birthdayId: birthday.id,
+      recipientUserId: ownerUserId,
+      birthdayYear,
+      reminderType: "PLAYER_WHATSAPP",
+    },
   };
 
   const existing =
-    await prisma.birthdayReminderLog
-      .findUnique({
-        where: uniqueWhere,
+    await prisma.birthdayReminderLog.findUnique({
+      where: uniqueWhere,
 
-        select: {
-          id: true,
-          status: true,
-          providerStatus: true,
-        },
-      });
+      select: {
+        id: true,
+        status: true,
+        providerStatus: true,
+
+        fallbackSmsStatus: true,
+        fallbackSmsMessageId: true,
+      },
+    });
 
   if (shouldSkipExistingLog(existing)) {
     return {
@@ -658,65 +656,117 @@ async function sendPlayerBirthdayWhatsApp({
     birthday.league?.name ||
     "Cric4All League";
 
+  const fallbackSmsBody =
+    `Happy Birthday, ${playerName}! ` +
+    `Best wishes from ${leagueName}. ` +
+    `- Cric4All`;
+
+  /*
+   * This flag controls whether error 63049 is
+   * eligible for an SMS fallback.
+   *
+   * The environment flag gives you an emergency
+   * off switch without requiring another deployment.
+   */
+  const fallbackFeatureEnabled =
+    String(
+      process.env
+        .BIRTHDAY_SMS_FALLBACK_ENABLED ||
+        ""
+    )
+      .trim()
+      .toLowerCase() === "true";
+
+  const fallbackSmsAllowed =
+    fallbackFeatureEnabled &&
+    smsOptIn;
+
   const log =
-    await prisma.birthdayReminderLog
-      .upsert({
-        where: uniqueWhere,
+    await prisma.birthdayReminderLog.upsert({
+      where: uniqueWhere,
 
-        create: {
-          birthdayId:
-            birthday.id,
+      create: {
+        birthdayId:
+          birthday.id,
 
-          leagueId:
-            birthday.leagueId,
+        leagueId:
+          birthday.leagueId,
 
-          recipientUserId:
-            ownerUserId,
+        recipientUserId:
+          ownerUserId,
 
-          birthdayYear,
+        birthdayYear,
 
-          reminderType:
-            "PLAYER_WHATSAPP",
+        reminderType:
+          "PLAYER_WHATSAPP",
 
-          status:
-            "PENDING",
+        status:
+          "PENDING",
 
-          recipientPhone,
+        recipientPhone,
 
-          notificationTitle:
-            `Birthday greeting for ${playerName}`,
+        notificationTitle:
+          `Birthday greeting for ${playerName}`,
 
-          notificationBody:
-            `Birthday greeting from ${leagueName}.`,
-        },
+        notificationBody:
+          `Birthday greeting from ${leagueName}.`,
 
-        update: {
-          status:
-            "PENDING",
+        /*
+         * Step 4:
+         * Store the SMS text and whether this
+         * recipient has permission for fallback.
+         */
+        fallbackSmsBody,
+        fallbackSmsAllowed,
 
-          recipientPhone,
+        errorMessage:
+          null,
+      },
 
-          notificationTitle:
-            `Birthday greeting for ${playerName}`,
+      update: {
+        /*
+         * A failed WhatsApp reminder may be
+         * attempted again by the cron.
+         */
+        status:
+          "PENDING",
 
-          notificationBody:
-            `Birthday greeting from ${leagueName}.`,
+        recipientPhone,
 
-          providerMessageId:
-            null,
+        notificationTitle:
+          `Birthday greeting for ${playerName}`,
 
-          providerStatus:
-            null,
+        notificationBody:
+          `Birthday greeting from ${leagueName}.`,
 
-          errorMessage:
-            null,
+        /*
+         * Refresh the text and consent value.
+         *
+         * Do not clear fallbackSmsStatus,
+         * fallbackSmsMessageId or fallback timestamps.
+         * They provide duplicate protection.
+         */
+        fallbackSmsBody,
+        fallbackSmsAllowed,
 
-          sentAt:
-            null,
-        },
-      });
+        providerMessageId:
+          null,
+
+        providerStatus:
+          null,
+
+        errorMessage:
+          null,
+
+        sentAt:
+          null,
+      },
+    });
 
   try {
+    const attemptTime =
+      new Date();
+
     const result =
       await sendTwilioWhatsAppBirthdayMessage({
         recipientPhone,
@@ -731,88 +781,131 @@ async function sendPlayerBirthdayWhatsApp({
       });
 
     /*
-     * SENT means the cron successfully submitted
-     * the message to Twilio.
-     *
-     * providerStatus records the current Twilio
-     * lifecycle state, normally "queued".
+     * Twilio has accepted the message, but it has
+     * not yet confirmed delivery. Keep the internal
+     * status PENDING until the webhook receives a
+     * terminal status.
      */
-    await prisma
-      .birthdayReminderLog
-      .update({
-        where: {
-          id: log.id,
-        },
+    await prisma.birthdayReminderLog.update({
+      where: {
+        id: log.id,
+      },
 
-        data: {
-          status:
-            "SENT",
+      data: {
+        status:
+          "PENDING",
 
-          sentAt:
-            new Date(),
+        sentAt:
+          null,
 
-          providerMessageId:
-            result.messageSid,
+        providerMessageId:
+          result.messageSid,
 
-          providerStatus:
+        providerStatus:
+          String(
             result.status ||
-            "queued",
+              "ACCEPTED"
+          ).toUpperCase(),
 
-          errorMessage:
-            null,
-        },
-      });
+        recipientPhone,
+
+        lastAttemptAt:
+          attemptTime,
+
+        errorMessage:
+          null,
+
+        lastErrorCode:
+          null,
+      },
+    });
 
     console.log(
       "[BIRTHDAY_PLAYER_WHATSAPP_QUEUED]",
       {
+        reminderLogId:
+          log.id,
+
         birthdayId:
           birthday.id,
 
+        leagueId:
+          birthday.leagueId,
+
         playerName,
+
+        recipientPhone,
 
         messageSid:
           result.messageSid,
 
-        status:
-          result.status,
+        providerStatus:
+          String(
+            result.status ||
+              "ACCEPTED"
+          ).toUpperCase(),
+
+        fallbackSmsAllowed,
+
+        attemptedAt:
+          attemptTime.toISOString(),
       }
     );
 
     return {
       queued: true,
+
       messageSid:
         result.messageSid,
+
+      fallbackSmsAllowed,
     };
   } catch (error) {
+    const attemptTime =
+      new Date();
+
     const errorMessage =
       getErrorMessage(error);
 
-    await prisma
-      .birthdayReminderLog
-      .update({
-        where: {
-          id: log.id,
-        },
+    await prisma.birthdayReminderLog.update({
+      where: {
+        id: log.id,
+      },
 
-        data: {
-          status:
-            "FAILED",
+      data: {
+        status:
+          "FAILED",
 
-          providerStatus:
-            "failed",
+        providerStatus:
+          "FAILED",
 
-          errorMessage,
-        },
-      });
+        lastAttemptAt:
+          attemptTime,
+
+        errorMessage,
+      },
+    });
 
     console.error(
       "[BIRTHDAY_PLAYER_WHATSAPP_FAILED]",
       {
+        reminderLogId:
+          log.id,
+
         birthdayId:
           birthday.id,
 
+        leagueId:
+          birthday.leagueId,
+
         playerName,
+
+        recipientPhone,
+
+        fallbackSmsAllowed,
+
+        attemptedAt:
+          attemptTime.toISOString(),
 
         error:
           errorMessage,
@@ -821,8 +914,7 @@ async function sendPlayerBirthdayWhatsApp({
 
     return {
       queued: false,
-      reason:
-        "SEND_FAILED",
+      reason: "SEND_FAILED",
     };
   }
 }
@@ -1021,6 +1113,8 @@ export async function GET(request) {
                 whatsappOptIn:
                   true,
 
+                smsOptIn: true,  
+
                 league: {
                   select: {
                     id:
@@ -1053,6 +1147,8 @@ export async function GET(request) {
 
                     whatsappOptIn:
                       true,
+
+                    smsOptIn: true,  
                   },
                 },
               },
