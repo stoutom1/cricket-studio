@@ -3,7 +3,9 @@
 import { useRouter } from "next/navigation";
 import { useState } from "react";
 import { signIn } from "next-auth/react";
-
+import {
+  SMS_CONSENT_TEXT,
+} from "@/lib/compliance/sms-consent";
 
 export default function RegisterForm({
   callbackUrl
@@ -20,6 +22,12 @@ export default function RegisterForm({
   const [message, setMessage] =
     useState("");
 
+    const [smsPhoneNumber, setSmsPhoneNumber] =
+  useState("");
+
+const [smsOptIn, setSmsOptIn] =
+  useState(false);
+
   async function handleRegister(e) {
     e.preventDefault();
 
@@ -34,7 +42,16 @@ export default function RegisterForm({
       body: JSON.stringify({
         name,
         email,
-        password
+        password,
+          smsPhoneNumber:
+    smsPhoneNumber.trim(),
+
+  smsOptIn,
+
+  smsConsentText:
+    smsOptIn
+      ? SMS_CONSENT_TEXT
+      : null,
       })
     });
 
@@ -141,7 +158,17 @@ return (
               required
             />
           </label>
-
+<SmsConsentFields
+  phoneNumber={smsPhoneNumber}
+  smsOptIn={smsOptIn}
+  onPhoneNumberChange={
+    setSmsPhoneNumber
+  }
+  onSmsOptInChange={
+    setSmsOptIn
+  }
+  disabled={loading}
+/>
           <button type="submit" disabled={loading} className="auth-primary-btn">
             {loading ? "Creating account..." : "Create Account"}
           </button>

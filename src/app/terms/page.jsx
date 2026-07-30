@@ -1,281 +1,327 @@
+import Link from "next/link";
+
 export const metadata = {
-  title: "Terms & Conditions | Cric4All",
+  title: "Terms and Conditions | Cric4All",
   description:
-    "Terms and Conditions for using the Cric4All cricket management platform.",
+    "Terms and conditions for Cric4All, including the Cric4All SMS notification program.",
 };
 
 export default function TermsPage() {
   return (
-    <main
-      style={{
-        maxWidth: "1000px",
-        margin: "0 auto",
-        padding: "40px 20px",
-        lineHeight: 1.7,
-      }}
-    >
-      <h1>Terms & Conditions</h1>
+    <main className="legal-page">
+      <article className="legal-card">
+        <header className="legal-header">
+          <p className="legal-eyebrow">
+            Cric4All Legal
+          </p>
 
-      <p>
-        <strong>Effective Date:</strong> July 29, 2026
-      </p>
+          <h1>Terms and Conditions</h1>
 
-      <p>
-        Welcome to <strong>Cric4All</strong>. These Terms &
-        Conditions govern your use of the Cric4All website,
-        mobile applications, and related services.
-      </p>
+          <p className="legal-effective-date">
+            Effective date: July 30, 2026
+          </p>
+        </header>
 
-      <p>
-        By creating an account or using Cric4All, you agree to
-        these Terms.
-      </p>
+        <section>
+          <h2>1. Acceptance of these terms</h2>
 
-      <hr />
+          <p>
+            These Terms and Conditions govern your
+            access to and use of the Cric4All website,
+            mobile application, cricket scoring tools,
+            league-management services, and related
+            notification services.
+          </p>
 
-      <h2>1. Eligibility</h2>
+          <p>
+            By accessing or using Cric4All, you agree
+            to these Terms and Conditions and the
+            Cric4All Privacy Policy. If you do not
+            agree, you must not use the service.
+          </p>
+        </section>
 
-      <p>
-        You must be at least 13 years old to use Cric4All. If
-        you are under the age required by your local laws, you
-        must use the Service under the supervision of a parent
-        or legal guardian.
-      </p>
+        <section>
+          <h2>2. About Cric4All</h2>
 
-      <h2>2. User Accounts</h2>
+          <p>
+            Cric4All provides cricket league,
+            tournament, team, player, scheduling,
+            scoring, statistics, communication, and
+            notification services.
+          </p>
 
-      <p>You are responsible for:</p>
+          <p>
+            Features may include match reminders,
+            schedule updates, kit reminders, league
+            announcements, score notifications,
+            account notices, email notifications,
+            push notifications, SMS notifications,
+            and WhatsApp notifications.
+          </p>
+        </section>
 
-      <ul>
-        <li>Maintaining your account credentials.</li>
-        <li>Keeping your password secure.</li>
-        <li>Providing accurate account information.</li>
-        <li>All activity that occurs under your account.</li>
-      </ul>
+        <section>
+          <h2>3. Account responsibilities</h2>
 
-      <p>You agree not to:</p>
+          <p>
+            You are responsible for providing accurate
+            information, maintaining the security of
+            your account credentials, and promptly
+            notifying Cric4All of suspected
+            unauthorized account access.
+          </p>
 
-      <ul>
-        <li>Create fake accounts.</li>
-        <li>Impersonate another person.</li>
-        <li>Attempt unauthorized access.</li>
-        <li>Share your password.</li>
-      </ul>
+          <p>
+            You may not use Cric4All to violate any
+            law, impersonate another person, interfere
+            with the operation of the service, or send
+            unauthorized or abusive communications.
+          </p>
+        </section>
 
-      <h2>3. Cricket League Management</h2>
+        <section id="sms-terms">
+          <h2>
+            4. Cric4All SMS notification program
+          </h2>
 
-      <p>Cric4All allows users to:</p>
+          <p>
+            The Cric4All SMS notification program is
+            an optional messaging program for users
+            who expressly choose to receive text
+            messages from Cric4All.
+          </p>
 
-      <ul>
-        <li>Create leagues</li>
-        <li>Create teams</li>
-        <li>Manage players</li>
-        <li>Score live cricket matches</li>
-        <li>View statistics</li>
-        <li>Share live scorecards</li>
-      </ul>
+          <p>
+            SMS messages may include:
+          </p>
 
-      <p>
-        League owners are responsible for ensuring the accuracy
-        of league information and match data.
-      </p>
+          <ul>
+            <li>Match reminders</li>
+            <li>Match schedule updates</li>
+            <li>Kit assignment reminders</li>
+            <li>Weather or cancellation notices</li>
+            <li>League announcements</li>
+            <li>Account and security notifications</li>
+            <li>Other Cric4All service notifications</li>
+          </ul>
 
-      <h2>4. Notifications</h2>
+          <p>
+            Message frequency varies depending on your
+            account settings, league activity, match
+            schedule, and the notifications you have
+            enabled.
+          </p>
 
-      <p>
-        By enabling notifications you consent to receiving:
-      </p>
+          <p>
+            Message and data rates may apply.
+          </p>
 
-      <ul>
-        <li>Browser Push Notifications</li>
-        <li>Email Notifications</li>
-        <li>SMS Notifications</li>
-        <li>WhatsApp Notifications</li>
-      </ul>
+          <p>
+            Consent to receive SMS messages is not a
+            condition of creating a Cric4All account,
+            using Cric4All, or purchasing any product
+            or service.
+          </p>
 
-      <p>Notifications may include:</p>
+          <p>
+            Cric4All will only send recurring SMS
+            notifications when the mobile-number owner
+            has provided direct and affirmative
+            consent for the Cric4All SMS notification
+            program.
+          </p>
+        </section>
 
-      <ul>
-        <li>Birthday reminders</li>
-        <li>Match reminders</li>
-        <li>Live score updates</li>
-        <li>League announcements</li>
-        <li>Account notifications</li>
-      </ul>
+        <section>
+          <h2>5. SMS opt-out instructions</h2>
 
-      <h2>5. SMS & WhatsApp Messaging</h2>
+          <p>
+            <strong>
+              To stop receiving Cric4All SMS messages,
+              reply STOP.
+            </strong>
+          </p>
 
-      <p>
-        If you provide a mobile phone number, you consent to
-        receiving account-related messages from Cric4All.
-      </p>
+          <p>
+            After you reply STOP, Cric4All or its
+            messaging provider may send one final
+            confirmation message. You will not receive
+            additional program messages unless you
+            subsequently opt in again.
+          </p>
+        </section>
 
-      <p>
-        Message frequency varies depending on your league
-        activity.
-      </p>
+        <section>
+          <h2>6. SMS help instructions</h2>
 
-      <p>
-        Standard carrier messaging and data rates may apply.
-      </p>
+          <p>
+            <strong>
+              For assistance with Cric4All SMS
+              messages, reply HELP.
+            </strong>
+          </p>
 
-      <p>
-        You may opt out of SMS messages by replying STOP where
-        supported or by disabling notifications within your
-        Cric4All account.
-      </p>
+          <p>
+            You may also contact Cric4All at:
+          </p>
 
-      <h2>6. User Content</h2>
+          <p>
+            <a href="mailto:support@cric4all.app">
+              support@cric4all.app
+            </a>
+          </p>
+        </section>
 
-      <p>You retain ownership of content you upload including:</p>
+        <section>
+          <h2>7. Mobile information and consent</h2>
 
-      <ul>
-        <li>League information</li>
-        <li>Team names</li>
-        <li>Player names</li>
-        <li>Match scores</li>
-        <li>Photos</li>
-        <li>Documents</li>
-      </ul>
+          <p>
+            Cric4All does not sell, rent, or share
+            mobile phone numbers, SMS opt-in data, or
+            SMS consent records with third parties or
+            affiliates for their own marketing or
+            promotional purposes.
+          </p>
 
-      <p>
-        You grant Cric4All a non-exclusive, worldwide,
-        royalty-free license to store, display and distribute
-        that content solely for operating the Service.
-      </p>
+          <p>
+            Cric4All may provide limited information
+            to service providers that help operate the
+            Cric4All service, such as telecommunications
+            and messaging providers. Such providers
+            may use the information only to perform
+            services for Cric4All and not for their
+            own marketing or promotional purposes.
+          </p>
 
-      <h2>7. Acceptable Use</h2>
+          <p>
+            SMS consent is specific to Cric4All and is
+            not transferred to another business or
+            campaign.
+          </p>
+        </section>
 
-      <p>You agree not to:</p>
+        <section>
+          <h2>8. Carrier disclaimer</h2>
 
-      <ul>
-        <li>Violate applicable laws.</li>
-        <li>Upload malicious software.</li>
-        <li>Attempt unauthorized access.</li>
-        <li>Harass other users.</li>
-        <li>Use Cric4All for fraudulent purposes.</li>
-      </ul>
+          <p>
+            Carriers are not liable for delayed or
+            undelivered messages.
+          </p>
 
-      <h2>8. Availability</h2>
+          <p>
+            Delivery of SMS messages may depend on
+            your wireless carrier, device availability,
+            network conditions, and other factors
+            outside Cric4All&apos;s control.
+          </p>
+        </section>
 
-      <p>
-        Cric4All is provided on an "as available" basis.
-        Maintenance, updates, and third-party service outages
-        may temporarily affect availability.
-      </p>
+        <section>
+          <h2>9. WhatsApp notifications</h2>
 
-      <h2>9. Accuracy of Scores</h2>
+          <p>
+            Users who separately enable WhatsApp
+            notifications may receive approved
+            WhatsApp Business messages related to
+            matches, kit assignments, league activity,
+            or account services.
+          </p>
 
-      <p>
-        Cric4All provides tools to score cricket matches.
-        Users are responsible for ensuring that scores,
-        statistics and player information entered into the
-        platform are accurate.
-      </p>
+          <p>
+            WhatsApp participation is optional and may
+            be disabled through available account
+            settings or other provided opt-out
+            mechanisms.
+          </p>
+        </section>
 
-      <h2>10. Intellectual Property</h2>
+        <section>
+          <h2>10. Email and push notifications</h2>
 
-      <p>
-        All Cric4All software, branding, graphics, logos and
-        platform features are owned by Cric4All or its
-        licensors and may not be copied or redistributed
-        without permission.
-      </p>
+          <p>
+            Cric4All may send operational email and
+            push notifications, including welcome
+            messages, password-reset messages, account
+            alerts, league invitations, match updates,
+            and service notices.
+          </p>
+        </section>
 
-      <h2>11. Privacy</h2>
+        <section>
+          <h2>11. Privacy</h2>
 
-      <p>
-        Your use of Cric4All is also governed by our Privacy
-        Policy.
-      </p>
+          <p>
+            Cric4All&apos;s collection and use of
+            personal information is described in the
+            Cric4All Privacy Policy:
+          </p>
 
-      <p>
-        <a href="/privacy">Privacy Policy</a>
-      </p>
+          <p>
+            <Link href="/privacy">
+              https://cric4all.app/privacy
+            </Link>
+          </p>
+        </section>
 
-      <h2>12. Third-Party Services</h2>
+        <section>
+          <h2>12. Availability of the service</h2>
 
-      <p>
-        Cric4All integrates with third-party providers,
-        including but not limited to:
-      </p>
+          <p>
+            Cric4All is provided on an
+            &quot;as is&quot; and
+            &quot;as available&quot; basis. We do not
+            guarantee that every feature will always
+            be available, uninterrupted, or error-free.
+          </p>
+        </section>
 
-      <ul>
-        <li>Twilio</li>
-        <li>Firebase</li>
-        <li>Google</li>
-        <li>Apple</li>
-        <li>Vercel</li>
-      </ul>
+        <section>
+          <h2>13. Limitation of liability</h2>
 
-      <p>
-        We are not responsible for outages or interruptions
-        caused by third-party services.
-      </p>
+          <p>
+            To the maximum extent permitted by
+            applicable law, Cric4All will not be
+            liable for indirect, incidental, special,
+            consequential, or punitive damages arising
+            from the use of or inability to use the
+            service.
+          </p>
+        </section>
 
-      <h2>13. Limitation of Liability</h2>
+        <section>
+          <h2>14. Changes to these terms</h2>
 
-      <p>
-        To the maximum extent permitted by law, Cric4All shall
-        not be liable for indirect, incidental, special,
-        consequential or punitive damages arising from the use
-        of the Service.
-      </p>
+          <p>
+            Cric4All may update these Terms and
+            Conditions from time to time. The updated
+            version will be posted on this page with a
+            revised effective date.
+          </p>
+        </section>
 
-      <h2>14. Account Suspension</h2>
+        <section>
+          <h2>15. Contact</h2>
 
-      <p>
-        We reserve the right to suspend or terminate accounts
-        that violate these Terms or engage in fraudulent,
-        abusive or unlawful activity.
-      </p>
+          <p>
+            Cric4All
+          </p>
 
-      <h2>15. Changes to These Terms</h2>
+          <p>
+            Website:{" "}
+            <a href="https://cric4all.app">
+              https://cric4all.app
+            </a>
+          </p>
 
-      <p>
-        We may update these Terms periodically. Continued use
-        of Cric4All after changes become effective constitutes
-        acceptance of the updated Terms.
-      </p>
-
-      <h2>16. Governing Law</h2>
-
-      <p>
-        These Terms shall be governed by the laws of the State
-        of Arizona, United States, without regard to conflict
-        of law principles.
-      </p>
-
-      <h2>17. Contact Us</h2>
-
-      <p>
-        If you have questions regarding these Terms, please
-        contact us:
-      </p>
-
-      <p>
-        <strong>Cric4All</strong>
-        <br />
-        Website:
-        <br />
-        <a href="https://cric4all.app">
-          https://cric4all.app
-        </a>
-        <br />
-        Email:
-        <br />
-        <a href="mailto:support@cric4all.app">
-          support@cric4all.app
-        </a>
-      </p>
-
-      <hr />
-
-      <p>
-        By creating an account or using Cric4All, you
-        acknowledge that you have read, understood and agree to
-        these Terms & Conditions.
-      </p>
+          <p>
+            Email:{" "}
+            <a href="mailto:support@cric4all.app">
+              support@cric4all.app
+            </a>
+          </p>
+        </section>
+      </article>
     </main>
   );
 }

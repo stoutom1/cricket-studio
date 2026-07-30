@@ -91,7 +91,51 @@ export default function PrivacyPage() {
           personal information by contacting our support team.
         </p>
       </section>
+<section id="mobile-messaging-privacy">
+  <h2>Mobile messaging information</h2>
 
+  <p>
+    Cric4All may collect a mobile phone number,
+    messaging preferences, opt-in status, opt-in
+    date and time, opt-out date and time, and
+    related consent records when a user chooses
+    to receive SMS or WhatsApp notifications.
+  </p>
+
+  <p>
+    Cric4All uses this information to provide
+    requested match reminders, schedule updates,
+    kit reminders, league announcements, account
+    notifications, security notices, and other
+    Cric4All service communications.
+  </p>
+
+  <p>
+    Mobile information, including mobile phone
+    numbers, SMS opt-in data, and SMS consent,
+    will not be shared, sold, rented, or
+    transferred to third parties or affiliates
+    for their own marketing or promotional
+    purposes.
+  </p>
+
+  <p>
+    Cric4All may disclose limited mobile
+    information to service providers that help
+    deliver Cric4All communications. Those
+    providers may use the information only to
+    provide services to Cric4All and may not use
+    it for their own marketing or promotional
+    purposes.
+  </p>
+
+  <p>
+    Message frequency varies. Message and data
+    rates may apply. Users may reply STOP to opt
+    out of SMS messages or reply HELP for
+    assistance.
+  </p>
+</section>
       <section className="privacy-card">
         <h2>📧 Contact Us</h2>
 

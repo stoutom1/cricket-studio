@@ -32,6 +32,14 @@ model User {
   webPushSubscriptions         WebPushSubscription[]
   assignedKitResponsibilities  KitAssignment[]                  @relation("KitAssignmentAssignedBy")
   pickupRecordedKitAssignments KitAssignment[]                  @relation("KitAssignmentPickupRecordedBy")
+  smsPhoneNumber               String?
+  smsOptIn                     Boolean   @default(false)
+  smsOptInAt                   DateTime?
+  smsOptOutAt                  DateTime?
+  smsConsentSource             String?
+  smsConsentIp                 String?
+  smsConsentUserAgent          String?
+  smsConsentText               String?
 }
 
 model Team {
