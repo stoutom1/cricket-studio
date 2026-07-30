@@ -33,7 +33,7 @@ model User {
   assignedKitResponsibilities  KitAssignment[]                  @relation("KitAssignmentAssignedBy")
   pickupRecordedKitAssignments KitAssignment[]                  @relation("KitAssignmentPickupRecordedBy")
   smsPhoneNumber               String?
-  smsOptIn                     Boolean   @default(false)
+  smsOptIn                     Boolean                          @default(false)
   smsOptInAt                   DateTime?
   smsOptOutAt                  DateTime?
   smsConsentSource             String?
