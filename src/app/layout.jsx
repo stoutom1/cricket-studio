@@ -22,7 +22,7 @@ export default function RootLayout({ children }) {
                 <div>
 <div className="brand-section">
   <div className="brand-title">
-    🏏 Cricket Studio
+    🏏 Cric4All
   </div>
 
   <div

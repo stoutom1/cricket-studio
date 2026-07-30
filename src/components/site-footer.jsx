@@ -3,7 +3,7 @@ import Link from "next/link";
 export default function SiteFooter() {
   return (
     <footer className="site-footer">
-      <div>© 2026 Cric4All</div>
+      <div>© 2026 Cric4All is a cricket league management and live scoring platform operated by VSJ Serv LLC.</div>
 
       <div className="site-footer-links">
         <Link href="/privacy">Privacy Policy</Link>
