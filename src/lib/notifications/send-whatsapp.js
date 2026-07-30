@@ -41,109 +41,259 @@ export async function sendKitReminderWhatsApp({
     );
   }
 
-  const accessToken = requiredEnvironmentValue(
-    "WHATSAPP_ACCESS_TOKEN"
-  );
+  const accessToken =
+    requiredEnvironmentValue(
+      "WHATSAPP_ACCESS_TOKEN"
+    );
 
-  const phoneNumberId = requiredEnvironmentValue(
-    "WHATSAPP_PHONE_NUMBER_ID"
-  );
+  const phoneNumberId =
+    requiredEnvironmentValue(
+      "WHATSAPP_PHONE_NUMBER_ID"
+    );
 
   const apiVersion =
     String(
-      process.env.WHATSAPP_API_VERSION || "v23.0"
+      process.env.WHATSAPP_API_VERSION ||
+        "v23.0"
     ).trim();
 
-  const templateName = requiredEnvironmentValue(
-    "WHATSAPP_KIT_REMINDER_TEMPLATE"
-  );
+  const templateName =
+    requiredEnvironmentValue(
+      "WHATSAPP_KIT_REMINDER_TEMPLATE"
+    );
 
   const templateLanguage =
     String(
-      process.env.WHATSAPP_TEMPLATE_LANGUAGE || "en_US"
+      process.env
+        .WHATSAPP_TEMPLATE_LANGUAGE ||
+        "en_US"
     ).trim();
+
+  const requestBody = {
+    messaging_product: "whatsapp",
+
+    to: normalizedPhone,
+
+    type: "template",
+
+    template: {
+      name: templateName,
+
+      language: {
+        code: templateLanguage,
+      },
+
+      components: [
+        {
+          type: "body",
+
+          parameters: [
+            {
+              type: "text",
+              text:
+                String(
+                  playerName ||
+                    "Player"
+                ),
+            },
+            {
+              type: "text",
+              text:
+                String(
+                  teamName ||
+                    "Your team"
+                ),
+            },
+            {
+              type: "text",
+              text:
+                String(
+                  opponentName ||
+                    "the opponent"
+                ),
+            },
+            {
+              type: "text",
+              text:
+                String(
+                  matchDateText ||
+                    "the scheduled date"
+                ),
+            },
+            {
+              type: "text",
+              text:
+                String(
+                  matchTimeText ||
+                    "the scheduled time"
+                ),
+            },
+            {
+              type: "text",
+              text:
+                String(
+                  leagueName ||
+                    "your league"
+                ),
+            },
+          ],
+        },
+      ],
+    },
+  };
+
+  /*
+   * Safe diagnostic log.
+   *
+   * Never log the access token or full recipient
+   * phone number.
+   */
+  console.log(
+    "[KIT_WHATSAPP_REQUEST_CONFIG]",
+    {
+      apiVersion,
+      phoneNumberId,
+      templateName,
+      templateLanguage,
+
+      maskedPhone:
+        maskPhoneNumber(
+          normalizedPhone
+        ),
+
+      parameterCount:
+        requestBody.template
+          .components[0]
+          .parameters.length,
+    }
+  );
 
   const response = await fetch(
     `https://graph.facebook.com/${apiVersion}/${phoneNumberId}/messages`,
     {
       method: "POST",
+
       headers: {
-        Authorization: `Bearer ${accessToken}`,
-        "Content-Type": "application/json",
+        Authorization:
+          `Bearer ${accessToken}`,
+
+        "Content-Type":
+          "application/json",
       },
-      body: JSON.stringify({
-        messaging_product: "whatsapp",
-        to: normalizedPhone,
-        type: "template",
-        template: {
-          name: templateName,
-          language: {
-            code: templateLanguage,
-          },
-          components: [
-            {
-              type: "body",
-              parameters: [
-                {
-                  type: "text",
-                  text: playerName || "Player",
-                },
-                {
-                  type: "text",
-                  text: teamName || "Your team",
-                },
-                {
-                  type: "text",
-                  text: opponentName || "the opponent",
-                },
-                {
-                  type: "text",
-                  text: matchDateText || "the scheduled date",
-                },
-                {
-                  type: "text",
-                  text: matchTimeText || "the scheduled time",
-                },
-                {
-                  type: "text",
-                  text: leagueName || "your league",
-                },
-              ],
-            },
-          ],
-        },
-      }),
-      cache: "no-store",
+
+      body:
+        JSON.stringify(
+          requestBody
+        ),
+
+      cache:
+        "no-store",
     }
   );
 
-  const responseData = await response
-    .json()
-    .catch(() => null);
+  const responseData =
+    await response
+      .json()
+      .catch(() => null);
 
   if (!response.ok) {
     const providerMessage =
       responseData?.error?.message ||
       "WhatsApp provider rejected the message.";
 
-    const error = new Error(providerMessage);
+    const providerCode =
+      responseData?.error?.code ||
+      null;
 
-    error.providerResponse = responseData;
-    error.httpStatus = response.status;
-    error.maskedPhone = maskPhoneNumber(
-      normalizedPhone
+    const providerSubcode =
+      responseData?.error
+        ?.error_subcode ||
+      null;
+
+    console.error(
+      "[KIT_WHATSAPP_PROVIDER_FAILED]",
+      {
+        httpStatus:
+          response.status,
+
+        providerCode,
+        providerSubcode,
+
+        providerMessage,
+
+        phoneNumberId,
+        templateName,
+        templateLanguage,
+
+        maskedPhone:
+          maskPhoneNumber(
+            normalizedPhone
+          ),
+
+        errorData:
+          responseData?.error
+            ?.error_data ||
+          null,
+
+        fbtraceId:
+          responseData?.error
+            ?.fbtrace_id ||
+          null,
+      }
     );
+
+    const error =
+      new Error(
+        providerMessage
+      );
+
+    error.providerResponse =
+      responseData;
+
+    error.httpStatus =
+      response.status;
+
+    error.maskedPhone =
+      maskPhoneNumber(
+        normalizedPhone
+      );
 
     throw error;
   }
 
+  console.log(
+    "[KIT_WHATSAPP_SENT]",
+    {
+      providerMessageId:
+        responseData
+          ?.messages?.[0]?.id ||
+        null,
+
+      phoneNumberId,
+      templateName,
+      templateLanguage,
+
+      maskedPhone:
+        maskPhoneNumber(
+          normalizedPhone
+        ),
+    }
+  );
+
   return {
     success: true,
+
     providerMessageId:
-      responseData?.messages?.[0]?.id || null,
-    providerResponse: responseData,
-    maskedPhone: maskPhoneNumber(
-      normalizedPhone
-    ),
+      responseData
+        ?.messages?.[0]?.id ||
+      null,
+
+    providerResponse:
+      responseData,
+
+    maskedPhone:
+      maskPhoneNumber(
+        normalizedPhone
+      ),
   };
 }
