@@ -2,7 +2,7 @@ import { NextResponse } from "next/server";
 import twilio from "twilio";
 
 import prisma from "@/lib/prisma";
-import { sendBirthdayPlayerSms } from "@/lib/sendBirthdayOwnerSms";
+import { sendBirthdayOwnerSms } from "@/lib/sendBirthdayOwnerSms";
 
 export const runtime = "nodejs";
 export const dynamic = "force-dynamic";
@@ -284,7 +284,7 @@ export async function POST(request) {
     }
 
     try {
-      const smsResult = await sendBirthdayPlayerSms({
+      const smsResult = await sendBirthdayOwnerSms({
         playerPhone,
         playerName,
         leagueName: birthday.league?.name || "Cric4All League",
