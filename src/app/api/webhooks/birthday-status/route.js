@@ -47,9 +47,20 @@ async function findReminderLog({ messageSid, birthdayId, leagueId }) {
   return null;
 }
 
-async function updateReminderLog(logId, data) {
-  if (!logId) return;
-  await prisma.birthdayReminderLog.update({ where: { id: logId }, data });
+async function updateReminderLog(
+  logId,
+  data
+) {
+  if (!logId) {
+    return null;
+  }
+
+  return prisma.birthdayReminderLog.update({
+    where: {
+      id: logId,
+    },
+    data,
+  });
 }
 
 export async function POST(request) {
@@ -107,19 +118,34 @@ export async function POST(request) {
 
     if (["accepted", "scheduled", "queued", "sending"].includes(messageStatus)) {
       await updateReminderLog(reminderLog?.id, {
-        providerStatus: messageStatus,
-        errorMessage: null,
-      });
+  providerStatus: messageStatus,
+  providerMessageId: messageSid,
+  providerResponse: {
+    messageSid,
+    messageStatus,
+    errorCode,
+    channelStatusMessage,
+    callbackReceivedAt: new Date().toISOString(),
+    callbackPayload: parameters,
+  },
+});
 
       return NextResponse.json({ received: true, messageStatus });
     }
 
     if (["sent", "delivered", "read"].includes(messageStatus)) {
       await updateReminderLog(reminderLog?.id, {
-        status: "SENT",
-        providerStatus: messageStatus,
-        errorMessage: null,
-      });
+  providerStatus: messageStatus,
+  providerMessageId: messageSid,
+  providerResponse: {
+    messageSid,
+    messageStatus,
+    errorCode,
+    channelStatusMessage,
+    callbackReceivedAt: new Date().toISOString(),
+    callbackPayload: parameters,
+  },
+});
 
       return NextResponse.json({
         received: true,
@@ -130,8 +156,17 @@ export async function POST(request) {
 
     if (!["failed", "undelivered"].includes(messageStatus)) {
       await updateReminderLog(reminderLog?.id, {
-        providerStatus: messageStatus || "unknown",
-      });
+  providerStatus: messageStatus,
+  providerMessageId: messageSid,
+  providerResponse: {
+    messageSid,
+    messageStatus,
+    errorCode,
+    channelStatusMessage,
+    callbackReceivedAt: new Date().toISOString(),
+    callbackPayload: parameters,
+  },
+});
 
       return NextResponse.json({
         received: true,
@@ -151,10 +186,17 @@ export async function POST(request) {
         .slice(0, 1000);
 
       await updateReminderLog(reminderLog?.id, {
-        status: "FAILED",
-        providerStatus: messageStatus,
-        errorMessage: failureMessage,
-      });
+  providerStatus: messageStatus,
+  providerMessageId: messageSid,
+  providerResponse: {
+    messageSid,
+    messageStatus,
+    errorCode,
+    channelStatusMessage,
+    callbackReceivedAt: new Date().toISOString(),
+    callbackPayload: parameters,
+  },
+});
 
       return NextResponse.json({
         received: true,
@@ -165,11 +207,17 @@ export async function POST(request) {
 
     if (!birthdayId || !leagueId) {
       await updateReminderLog(reminderLog?.id, {
-        status: "FAILED",
-        providerStatus: "sms-fallback-unavailable",
-        errorMessage:
-          "Twilio callback is missing birthdayId or leagueId, so the SMS fallback could not run.",
-      });
+  providerStatus: messageStatus,
+  providerMessageId: messageSid,
+  providerResponse: {
+    messageSid,
+    messageStatus,
+    errorCode,
+    channelStatusMessage,
+    callbackReceivedAt: new Date().toISOString(),
+    callbackPayload: parameters,
+  },
+});
 
       return NextResponse.json({
         received: true,
@@ -245,10 +293,17 @@ export async function POST(request) {
 
     if (!birthday) {
       await updateReminderLog(reminderLog?.id, {
-        status: "FAILED",
-        providerStatus: "sms-fallback-failed",
-        errorMessage: "Birthday record was not found or is disabled.",
-      });
+  providerStatus: messageStatus,
+  providerMessageId: messageSid,
+  providerResponse: {
+    messageSid,
+    messageStatus,
+    errorCode,
+    channelStatusMessage,
+    callbackReceivedAt: new Date().toISOString(),
+    callbackPayload: parameters,
+  },
+});
 
       return NextResponse.json({
         received: true,
@@ -270,10 +325,17 @@ export async function POST(request) {
         : "SMS fallback skipped because the player has not opted in.";
 
       await updateReminderLog(reminderLog?.id, {
-        status: "FAILED",
-        providerStatus: "sms-fallback-skipped",
-        errorMessage: reason,
-      });
+  providerStatus: messageStatus,
+  providerMessageId: messageSid,
+  providerResponse: {
+    messageSid,
+    messageStatus,
+    errorCode,
+    channelStatusMessage,
+    callbackReceivedAt: new Date().toISOString(),
+    callbackPayload: parameters,
+  },
+});
 
       return NextResponse.json({
         received: true,
@@ -291,17 +353,17 @@ export async function POST(request) {
       });
 
       await updateReminderLog(reminderLog?.id, {
-        status: "SENT",
-        providerStatus: "sms-fallback-sent",
-        errorMessage: [
-          "WhatsApp delivery was blocked by Meta with error 63049.",
-          "SMS fallback sent successfully.",
-          smsResult.messageId ? `SMS SID: ${smsResult.messageId}.` : "",
-        ]
-          .filter(Boolean)
-          .join(" ")
-          .slice(0, 1000),
-      });
+  providerStatus: messageStatus,
+  providerMessageId: messageSid,
+  providerResponse: {
+    messageSid,
+    messageStatus,
+    errorCode,
+    channelStatusMessage,
+    callbackReceivedAt: new Date().toISOString(),
+    callbackPayload: parameters,
+  },
+});
 
       return NextResponse.json({
         received: true,
@@ -313,10 +375,17 @@ export async function POST(request) {
       const errorMessage = getErrorMessage(error);
 
       await updateReminderLog(reminderLog?.id, {
-        status: "FAILED",
-        providerStatus: "sms-fallback-failed",
-        errorMessage,
-      });
+  providerStatus: messageStatus,
+  providerMessageId: messageSid,
+  providerResponse: {
+    messageSid,
+    messageStatus,
+    errorCode,
+    channelStatusMessage,
+    callbackReceivedAt: new Date().toISOString(),
+    callbackPayload: parameters,
+  },
+});
 
       return NextResponse.json(
         {

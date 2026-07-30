@@ -203,6 +203,7 @@ let ownerSmsFailed = 0;
 let playerWhatsAppQueued = 0;
 let playerWhatsAppSkipped = 0;
 let playerWhatsAppFailed = 0;
+let duplicatePlayerWhatsApps = 0;
 
     for (const preference of preferences) {
       let check;
@@ -371,22 +372,40 @@ for (const birthday of todayBirthdays) {
     },
   };
 
-  const existingPlayerWhatsAppLog =
-    await prisma.birthdayReminderLog.findUnique({
-      where: playerWhatsAppUniqueWhere,
-      select: {
-        id: true,
-        status: true,
-      },
-    });
+const existingPlayerWhatsAppLog =
+  await prisma.birthdayReminderLog.findUnique({
+    where: playerWhatsAppUniqueWhere,
+    select: {
+      id: true,
+      status: true,
+      providerStatus: true,
+      providerMessageId: true,
+    },
+  });
 
-  if (
-    existingPlayerWhatsAppLog?.status === "SENT" ||
-    existingPlayerWhatsAppLog?.status === "SHARED"
-  ) {
-    playerWhatsAppSkipped += 1;
-    continue;
-  }
+const completedStatuses = [
+  "PENDING",
+  "SENT",
+  "SHARED",
+  "DELIVERED",
+  "READ",
+];
+
+if (
+  existingPlayerWhatsAppLog &&
+  completedStatuses.includes(existingPlayerWhatsAppLog.status)
+) {
+  playerWhatsAppSkipped++;
+
+  console.log("[BIRTHDAY_PLAYER_WHATSAPP_SKIP]", {
+    reminderLogId: existingPlayerWhatsAppLog.id,
+    status: existingPlayerWhatsAppLog.status,
+    providerStatus: existingPlayerWhatsAppLog.providerStatus,
+    messageSid: existingPlayerWhatsAppLog.providerMessageId,
+  });
+
+  continue;
+}
 
   const playerWhatsAppLog =
     await prisma.birthdayReminderLog.upsert({
@@ -412,15 +431,40 @@ for (const birthday of todayBirthdays) {
           }.`,
       },
 
-      update: {
-        status: "PENDING",
-        recipientPhone,
-        errorMessage: null,
-        providerMessageId: null,
-        providerStatus: null,
-        sentAt: null,
-      },
+update: {
+    status: "PENDING",
+    recipientPhone,
+    errorMessage: null,
+}
     });
+const latestReminder =
+  await prisma.birthdayReminderLog.findUnique({
+    where: {
+      id: playerWhatsAppLog.id,
+    },
+    select: {
+      status: true,
+      providerMessageId: true,
+    },
+  });
+
+if (
+  latestReminder?.providerMessageId ||
+  latestReminder?.status === "PENDING"
+) {
+  playerWhatsAppSkipped++;
+
+  console.log(
+    "[BIRTHDAY_PLAYER_WHATSAPP_ALREADY_QUEUED]",
+    {
+      reminderLogId: playerWhatsAppLog.id,
+    }
+  );
+
+  continue;
+}
+
+const startedAt = Date.now();
 
   try {
     const whatsappResult =
@@ -449,41 +493,52 @@ for (const birthday of todayBirthdays) {
      * providerStatus will normally be "queued".
      * The callback should later update final delivery status.
      */
-    await prisma.birthdayReminderLog.update({
-      where: {
-        id: playerWhatsAppLog.id,
-      },
+    const elapsedMs = Date.now() - startedAt;
+    const attemptTime = new Date();
 
-      data: {
-        status: "SENT",
-        sentAt: new Date(),
-        providerMessageId:
-          whatsappResult.messageSid,
-        providerStatus:
-          whatsappResult.status || "queued",
-        errorMessage: null,
-      },
-    });
+await prisma.birthdayReminderLog.update({
+  where: {
+    id: playerWhatsAppLog.id,
+  },
+
+  data: {
+    status: "PENDING",
+
+    providerMessageId: whatsappResult.messageSid,
+
+    providerStatus:
+      (whatsappResult.status || "QUEUED").toUpperCase(),
+
+    recipientPhone,
+
+    lastAttemptAt: attemptTime,
+
+    errorMessage: null,
+  },
+});
 
     playerWhatsAppQueued += 1;
 
-    console.log(
-      "[BIRTHDAY_PLAYER_WHATSAPP_QUEUED]",
-      {
-        birthdayId:
-          birthday.id,
+console.log("[BIRTHDAY_PLAYER_WHATSAPP_QUEUED]", {
+  reminderLogId: playerWhatsAppLog.id,
+  birthdayId: birthday.id,
+  leagueId: birthday.leagueId,
 
-        playerName:
-          birthday.player?.name ||
-          birthday.name,
+  playerName:
+    birthday.player?.name ||
+    birthday.name,
 
-        messageSid:
-          whatsappResult.messageSid,
+  recipientPhone,
 
-        status:
-          whatsappResult.status,
-      }
-    );
+  messageSid:
+    whatsappResult.messageSid,
+
+  providerStatus:
+    (whatsappResult.status || "QUEUED").toUpperCase(),
+
+  attemptedAt: attemptTime.toISOString(),
+  elapsedMs,
+});
   } catch (whatsappError) {
     playerWhatsAppFailed += 1;
 
@@ -506,16 +561,24 @@ for (const birthday of todayBirthdays) {
       },
     });
 
-    console.error(
-      "[BIRTHDAY_PLAYER_WHATSAPP_FAILED]",
-      {
-        birthdayId: birthday.id,
-        playerName:
-          birthday.player?.name ||
-          birthday.name,
-        error: errorMessage,
-      }
-    );
+ console.error(
+  "[BIRTHDAY_PLAYER_WHATSAPP_FAILED]",
+  {
+    reminderLogId: playerWhatsAppLog.id,
+    birthdayId: birthday.id,
+    leagueId: birthday.leagueId,
+
+    playerName:
+      birthday.player?.name ||
+      birthday.name,
+
+    recipientPhone,
+
+    attemptedAt: attemptTime.toISOString(),
+
+    error: errorMessage,
+  }
+);
   }
 }
       }
@@ -659,24 +722,30 @@ if (todayBirthdays.length > 0) {
     } catch (ownerSmsError) {
       ownerSmsFailed += 1;
 
-      const errorMessage =
-        String(
-          ownerSmsError instanceof Error
-            ? ownerSmsError.message
-            : ownerSmsError
-        ).slice(0, 1000);
+ const attemptTime = new Date();
 
-      await prisma.birthdayReminderLog.update({
-        where: {
-          id: ownerSmsLog.id,
-        },
+const errorMessage =
+  String(
+    whatsappError instanceof Error
+      ? whatsappError.message
+      : whatsappError
+  ).slice(0, 1000);
 
-        data: {
-          status: "FAILED",
-          providerStatus: "failed",
-          errorMessage,
-        },
-      });
+await prisma.birthdayReminderLog.update({
+  where: {
+    id: playerWhatsAppLog.id,
+  },
+
+  data: {
+    status: "FAILED",
+
+    providerStatus: "FAILED",
+
+    lastAttemptAt: attemptTime,
+
+    errorMessage,
+  },
+});
 
       console.error(
         "[BIRTHDAY_OWNER_SMS_FAILED]",
@@ -761,6 +830,8 @@ return NextResponse.json({
 
     skipped:
       playerWhatsAppSkipped,
+
+    duplicates: duplicatePlayerWhatsApps,  
 
     failed:
       playerWhatsAppFailed,

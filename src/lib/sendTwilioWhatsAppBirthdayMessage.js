@@ -67,8 +67,12 @@ function getBirthdayWhatsAppStatusCallbackUrl({
 export function normalizeWhatsAppNumber(value) {
   const normalized = String(value || "")
     .trim()
-    .replace(/[^\d+]/g, "");
-
+    .replace(/\s+/g, "")
+if (!normalized.startsWith("+")) {
+    throw new Error(
+        "Phone number must begin with '+'."
+    );
+}
   if (
     !/^\+[1-9]\d{7,14}$/.test(normalized)
   ) {
@@ -138,27 +142,66 @@ const statusCallback =
     leagueId,
   });
 
-const message =
-  await client.messages.create({
-    messagingServiceSid,
+let message;
 
-    to: `whatsapp:${normalizedRecipient}`,
+try {
 
-    contentSid,
+  message =
+    await client.messages.create({
+      messagingServiceSid,
 
-    contentVariables:
-      JSON.stringify({
+      to: `whatsapp:${normalizedRecipient}`,
+
+      contentSid,
+
+      contentVariables: JSON.stringify({
         1: cleanPlayerName,
         2: cleanLeagueName,
       }),
 
-    statusCallback,
-  });
+      statusCallback,
+    });
 
-  return {
-    success: true,
-    messageSid: message.sid,
-    status: message.status,
-    recipient: message.to,
-  };
+} catch (error) {
+
+  console.error(
+    "[TWILIO_WHATSAPP_SEND_FAILED]",
+    {
+      birthdayId,
+      leagueId,
+      recipient: normalizedRecipient,
+
+      code: error.code,
+
+      status: error.status,
+
+      message: error.message,
+    }
+  );
+
+  throw error;
+}
+
+if (!message.sid) {
+  throw new Error(
+    "Twilio accepted the request but did not return a Message SID."
+  );
+}
+
+return {
+  success: true,
+
+  messageSid: message.sid,
+
+  status:
+    (message.status || "queued").toUpperCase(),
+
+  recipient: message.to,
+
+  dateCreated:
+    message.dateCreated ?? null,
+
+  dateUpdated:
+    message.dateUpdated ?? null,
+};
 }

@@ -603,15 +603,22 @@ model BirthdayReminderLog {
 
   notificationTitle String?
   notificationBody  String?
-  errorMessage      String?
 
-  recipientPhone    String?
-  providerMessageId String?
-  providerStatus    String?
-
-  sentAt     DateTime?
-  sharedAt   DateTime?
-  sharedById String?
+  recipientPhone     String?
+  providerMessageId  String?
+  providerStatus     String?
+  providerResponse   Json?
+  retryCount         Int       @default(0)
+  nextRetryAt        DateTime?
+  lastAttemptAt      DateTime?
+  callbackExpectedAt DateTime?
+  callbackReceivedAt DateTime?
+  lastCallbackAt     DateTime?
+  lastErrorCode      String?
+  errorMessage       String?
+  sentAt             DateTime?
+  sharedAt           DateTime?
+  sharedById         String?
 
   createdAt DateTime @default(now())
   updatedAt DateTime @updatedAt
