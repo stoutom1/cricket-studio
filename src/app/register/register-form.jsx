@@ -6,7 +6,7 @@ import { signIn } from "next-auth/react";
 import {
   SMS_CONSENT_TEXT,
 } from "@/lib/compliance/sms-consent";
-
+import SmsConsentFields from "@/components/SmsConsentFields";
 export default function RegisterForm({
   callbackUrl
 }) {
