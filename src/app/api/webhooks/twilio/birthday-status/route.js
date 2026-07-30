@@ -118,43 +118,64 @@ console.log(
   "[BIRTHDAY_WHATSAPP_CALLBACK_PARAMETERS]",
   parameters
 );
-    const requestUrl = new URL(request.url);
-    const birthdayId = parsePositiveInteger(
-      requestUrl.searchParams.get("birthdayId")
-    );
-    const leagueId = parsePositiveInteger(
-      requestUrl.searchParams.get("leagueId")
-    );
+const requestUrl = new URL(request.url);
 
-    const messageSid = String(
-      parameters.MessageSid || parameters.SmsSid || ""
-    ).trim();
+const birthdayId = parsePositiveInteger(
+  requestUrl.searchParams.get("birthdayId")
+);
+
+const leagueId = parsePositiveInteger(
+  requestUrl.searchParams.get("leagueId")
+);
+
+const messageSid = String(
+  parameters.MessageSid ||
+  parameters.SmsSid ||
+  ""
+).trim();
+
+const messageStatus = normalizeStatus(
+  parameters.MessageStatus ||
+  parameters.SmsStatus
+);
+
+const errorCode = String(
+  parameters.ErrorCode || ""
+).trim();
+
+const channelStatusMessage = String(
+  parameters.ChannelStatusMessage || ""
+).trim();
+
+// All referenced variables have now been initialized.
+console.log(
+  "[BIRTHDAY_WHATSAPP_CALLBACK_PARAMETERS]",
+  parameters
+);
+
 console.log(
   "[BIRTHDAY_WHATSAPP_CALLBACK_SID]",
   {
     messageSid,
-    smsSid: parameters.SmsSid,
-    originalMessageSid: parameters.OriginalMessageSid,
+    smsSid:
+      parameters.SmsSid || null,
+    originalMessageSid:
+      parameters.OriginalMessageSid || null,
     messageStatus,
   }
 );
-    const messageStatus = normalizeStatus(
-      parameters.MessageStatus || parameters.SmsStatus
-    );
 
-    const errorCode = String(parameters.ErrorCode || "").trim();
-    const channelStatusMessage = String(
-      parameters.ChannelStatusMessage || ""
-    ).trim();
-
-    console.log("[BIRTHDAY_WHATSAPP_CALLBACK_RECEIVED]", {
-      birthdayId,
-      leagueId,
-      messageSid,
-      messageStatus,
-      errorCode,
-      channelStatusMessage,
-    });
+console.log(
+  "[BIRTHDAY_WHATSAPP_CALLBACK_RECEIVED]",
+  {
+    birthdayId,
+    leagueId,
+    messageSid,
+    messageStatus,
+    errorCode,
+    channelStatusMessage,
+  }
+);
 
     const authToken = String(process.env.TWILIO_AUTH_TOKEN || "").trim();
 
