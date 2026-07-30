@@ -237,30 +237,43 @@ async function claimReminder(reminderId) {
 /**
  * Saves a successful WhatsApp result.
  */
-async function markReminderSent(
+async function markReminderQueued(
   reminderId,
   result
 ) {
-  const providerResponse =
-    result?.providerResponse ?? null;
+  const providerStatus =
+    String(
+      result?.providerStatus ||
+        "ACCEPTED"
+    )
+      .trim()
+      .toUpperCase();
 
   return prisma.kitReminderLog.update({
     where: {
       id: reminderId,
     },
     data: {
-      status: "SENT",
-      sentAt: new Date(),
-      failedAt: null,
-      processingStartedAt: null,
-      errorMessage: null,
-      providerStatus: "SENT",
-      providerMessageId:
-        result?.providerMessageId || null,
+      status: "PROCESSING",
 
-      ...(providerResponse !== null
+      sentAt: null,
+      failedAt: null,
+
+      processingStartedAt:
+        new Date(),
+
+      errorMessage: null,
+
+      providerStatus,
+
+      providerMessageId:
+        result?.providerMessageId ||
+        null,
+
+      ...(result?.providerResponse
         ? {
-            providerResponse,
+            providerResponse:
+              result.providerResponse,
           }
         : {}),
     },
@@ -457,6 +470,7 @@ export async function processDayBeforeKitReminders({
     sent: 0,
     skipped: 0,
     failed: 0,
+    queued: 0,
     notDueTomorrow: 0,
     notClaimed: 0,
   };
@@ -628,12 +642,13 @@ export async function processDayBeforeKitReminders({
               formattedMatch.timeText,
           });
 
-        await markReminderSent(
-          reminder.id,
-          result
-        );
+        await markReminderQueued(
+  reminder.id,
+  result
+);
 
-        summary.sent += 1;
+summary.queued =
+  (summary.queued || 0) + 1;
       } catch (error) {
         console.error(
           `Kit reminder failed for assignment ${assignment.id}:`,
