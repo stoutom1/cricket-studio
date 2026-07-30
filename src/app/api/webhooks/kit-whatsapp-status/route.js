@@ -178,7 +178,7 @@ console.log(
     requestUrl: request.url,
   }
 );
-/*
+
       return NextResponse.json(
         {
           success: false,
@@ -188,7 +188,6 @@ console.log(
           status: 403,
         }
       );
-*/      
     }
 
     const messageSid =
