@@ -67,6 +67,34 @@ function pickupLabel(status) {
   }
 }
 
+function teamHolderName(holder) {
+  return (
+    holder?.holderName ||
+    holder?.actualDisplayName ||
+    holder?.actualRotationMember?.displayName ||
+    holder?.actualMatchKitPlayer?.displayName ||
+    "Not recorded yet"
+  );
+}
+
+function previousMatchLabel(holder) {
+  if (holder?.previousMatchName) {
+    return holder.previousMatchName;
+  }
+
+  const teamAName =
+    holder?.previousMatch?.teamA?.name;
+
+  const teamBName =
+    holder?.previousMatch?.teamB?.name;
+
+  if (teamAName && teamBName) {
+    return `${teamAName} vs ${teamBName}`;
+  }
+
+  return "";
+}
+
 function kitStatusLabel(status) {
   switch (
     String(status || "")
@@ -209,6 +237,11 @@ export default function KitAssignmentPanel({
   ] = useState(null);
 
   const [
+    teamCurrentHolders,
+    setTeamCurrentHolders,
+  ] = useState([]);
+
+  const [
     savedPlayerCount,
     setSavedPlayerCount,
   ] = useState(0);
@@ -305,6 +338,7 @@ export default function KitAssignmentPanel({
         setLeagueKit(null);
         setCurrentHolder(null);
         setPreviousHolder(null);
+        setTeamCurrentHolders([]);
         setSavedPlayerCount(0);
         setSavedPlayerCounts({
           total: 0,
@@ -324,6 +358,7 @@ export default function KitAssignmentPanel({
       setLeagueKit(null);
       setCurrentHolder(null);
       setPreviousHolder(null);
+      setTeamCurrentHolders([]);
       setSavedPlayerCount(0);
       setSavedPlayerCounts({
         total: 0,
@@ -380,6 +415,14 @@ export default function KitAssignmentPanel({
         setPreviousHolder(
           data.previousHolder ||
             null
+        );
+
+        setTeamCurrentHolders(
+          Array.isArray(
+            data.teamCurrentHolders
+          )
+            ? data.teamCurrentHolders
+            : []
         );
 
         setSavedPlayerCount(
@@ -1016,6 +1059,97 @@ export default function KitAssignmentPanel({
         </div>
       ) : (
         <>
+          {!sharedKit &&
+            teamCurrentHolders.length > 0 && (
+              <section className="kit-current-custody-card">
+                <div className="kit-current-custody-heading">
+                  <span className="kit-section-kicker">
+                    Current physical custody
+                  </span>
+
+                  <h4>
+                    🎒 Who currently has each team kit
+                  </h4>
+
+                  <p>
+                    These holders were recorded after the
+                    latest previous match. Confirm today&apos;s
+                    playing rosters before generating the next
+                    kit responsibilities.
+                  </p>
+                </div>
+
+                <div className="kit-current-custody-grid">
+                  {teamCurrentHolders.map(
+                    (holder) => {
+                      const matchLabel =
+                        previousMatchLabel(
+                          holder
+                        );
+
+                      return (
+                        <article
+                          key={
+                            holder.teamId
+                          }
+                          className="kit-current-custody-item"
+                        >
+                          <div className="kit-current-custody-team">
+                            <span>
+                              Team kit
+                            </span>
+
+                            <strong>
+                              {holder.teamName ||
+                                holder.team
+                                  ?.name ||
+                                `Team ${holder.teamId}`}
+                            </strong>
+                          </div>
+
+                          <div className="kit-current-custody-holder">
+                            <span
+                              className="kit-person-avatar"
+                              aria-hidden="true"
+                            >
+                              👤
+                            </span>
+
+                            <div>
+                              <small>
+                                Currently held by
+                              </small>
+
+                              <strong>
+                                {teamHolderName(
+                                  holder
+                                )}
+                              </strong>
+                            </div>
+                          </div>
+
+                          {matchLabel && (
+                            <small className="kit-current-custody-source">
+                              Recorded after{" "}
+                              {matchLabel}
+                            </small>
+                          )}
+
+                          {holder.recordedAt && (
+                            <small className="kit-current-custody-date">
+                              {formatDate(
+                                holder.recordedAt
+                              )}
+                            </small>
+                          )}
+                        </article>
+                      );
+                    }
+                  )}
+                </div>
+              </section>
+            )}
+
           {savedPlayerCount ===
             0 && (
             <div className="kit-info-message">
@@ -2031,6 +2165,98 @@ export default function KitAssignmentPanel({
       )}
 
       <style jsx>{`
+        .kit-current-custody-card {
+          display: grid;
+          gap: 14px;
+          margin-bottom: 18px;
+          padding: 18px;
+          border: 1px solid rgba(56, 189, 248, 0.28);
+          border-radius: 18px;
+          background:
+            linear-gradient(
+              135deg,
+              rgba(14, 165, 233, 0.09),
+              rgba(15, 23, 42, 0.18)
+            );
+        }
+
+        .kit-current-custody-heading h4 {
+          margin: 4px 0 6px;
+          font-size: 1.08rem;
+        }
+
+        .kit-current-custody-heading p {
+          margin: 0;
+          opacity: 0.78;
+          line-height: 1.55;
+        }
+
+        .kit-current-custody-grid {
+          display: grid;
+          grid-template-columns:
+            repeat(2, minmax(0, 1fr));
+          gap: 14px;
+        }
+
+        .kit-current-custody-item {
+          display: flex;
+          flex-direction: column;
+          gap: 14px;
+          min-width: 0;
+          padding: 16px;
+          border: 1px solid rgba(148, 163, 184, 0.24);
+          border-radius: 16px;
+          background: var(--card-bg, rgba(15, 23, 42, 0.7));
+        }
+
+        .kit-current-custody-team {
+          display: flex;
+          flex-direction: column;
+          gap: 3px;
+        }
+
+        .kit-current-custody-team span,
+        .kit-current-custody-holder small,
+        .kit-current-custody-source,
+        .kit-current-custody-date {
+          opacity: 0.72;
+        }
+
+        .kit-current-custody-team strong,
+        .kit-current-custody-holder strong {
+          font-size: 1.05rem;
+          overflow-wrap: anywhere;
+        }
+
+        .kit-current-custody-holder {
+          display: flex;
+          align-items: center;
+          gap: 11px;
+        }
+
+        .kit-current-custody-holder > div {
+          display: flex;
+          flex-direction: column;
+          gap: 3px;
+          min-width: 0;
+        }
+
+        .kit-current-custody-source,
+        .kit-current-custody-date {
+          display: block;
+          font-size: 0.78rem;
+        }
+
+        @media (max-width: 720px) {
+          .kit-current-custody-grid {
+            grid-template-columns: 1fr;
+          }
+
+          .kit-current-custody-card {
+            padding: 14px;
+          }
+        }
+
         .league-kit-card {
           display: grid;
           gap: 16px;

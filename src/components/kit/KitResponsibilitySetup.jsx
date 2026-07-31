@@ -270,9 +270,8 @@ function PlayerReviewRow({
               }
             />
           </div>
-
-          {!useOneSharedCarrier && (
-            <div className="kit-player-field kit-player-match-cell">
+{!isLeaguePlayerMode && (
+  <div className="kit-player-field kit-player-match-cell">
               <label className="kit-mobile-field-label">
                 Cric4All player
               </label>
@@ -517,7 +516,7 @@ function TeamPlayerReview({
             ) : (
               <>
                 <span>Screenshot name</span>
-                {!useOneSharedCarrier && (
+                {!isLeaguePlayerMode && (
                   <span>Cric4All player</span>
                 )}
               </>
@@ -2289,14 +2288,15 @@ const handleKitAssignmentError =
             </div>
           )}
 
-          <KitAssignmentPanel
-            matchId={selectedMatch?.id}
-            refreshKey={kitAssignmentRefreshKey}
-            selectedTeamId=""
-            sourceMode="SCREENSHOT"
-            onMessage={handleKitAssignmentMessage}
-            onError={handleKitAssignmentError}
-          />
+<KitAssignmentPanel
+  matchId={selectedMatch?.id}
+  refreshKey={kitAssignmentRefreshKey}
+  selectedTeamId=""
+  sourceMode="SCREENSHOT"
+  forceSharedKit={useOneSharedCarrier}
+  onMessage={handleKitAssignmentMessage}
+  onError={handleKitAssignmentError}
+/>
         </>
       )}
       {kitInputMode === "TEAM_ROSTER" && (
@@ -2541,13 +2541,13 @@ const handleKitAssignmentError =
               <div className="kit-review-actions kit-review-actions-premium">
                 <div>
                   <strong>
-                    Both teams are ready
+                    Confirm today&apos;s playing rosters
                   </strong>
 
                   <p>
                     {useOneSharedCarrier
                       ? `Save both playing lists together. Because ${activeLeague?.name || "this league"} uses one shared kit and a league-wide player rotation, Cric4All will show only one suggested carrier box for the entire match. Duplicate players appearing under both teams are considered one person in the rotation.`
-                      : "Save both confirmed player lists together. Cric4All will calculate the appropriate kit carrier assignment for each team."}
+                      : "The current kit holders from the previous match are shown below. Confirm who is playing in this new match before Cric4All generates the next kit carrier assignments."}
                   </p>
                 </div>
 
@@ -2562,8 +2562,8 @@ const handleKitAssignmentError =
                   }
                 >
                   {isSavingPlayerLists
-                    ? "Saving Both Teams..."
-                    : "✓ Save Both Teams & Continue"}
+                    ? "Confirming Rosters..."
+                    : "✓ Confirm Rosters & Continue"}
                 </button>
               </div>
 

@@ -428,94 +428,144 @@ if (sourceMode === "SCREENSHOT") {
          * Synchronize every person into the correct
          * kit-rotation scope.
          */
-        for (const row of rows) {
-          const rotationKey =
-            getKitRotationKey({
-              leagueId: row.leagueId,
-              teamId: row.teamId,
-              rotationMode:
-                match.league.kitRotationMode,
-            });
+/*
+ * Build one rotation-member operation per unique
+ * rotation identity.
+ *
+ * TEAM mode:
+ *   each team has an independent rotation.
+ *
+ * LEAGUE_PLAYER mode:
+ *   the same person appearing in both teams is
+ *   synchronized only once.
+ */
+const rotationRowsByKey =
+  new Map();
 
-          await tx.kitRotationMember.upsert({
-            where: {
-              rotationKey_normalizedName: {
-                rotationKey,
-                normalizedName:
-                  row.normalizedName,
-              },
-            },
+for (const row of rows) {
+  const rotationKey =
+    getKitRotationKey({
+      leagueId:
+        row.leagueId,
 
-            update: {
-              displayName:
-                row.displayName,
+      teamId:
+        row.teamId,
 
-              /*
-               * Preserve the existing player link when the
-               * newly submitted row has no playerId.
-               */
-              ...(row.playerId
-                ? {
-                    playerId: row.playerId,
-                  }
-                : {}),
+      rotationMode:
+        match.league
+          .kitRotationMode,
+    });
 
-              /*
-               * Preserve an existing number when this form
-               * submits no number.
-               */
-              ...(row.whatsappNumber
-                ? {
-                    whatsappNumber:
-                      row.whatsappNumber,
-                  }
-                : {}),
+  const uniqueKey =
+    `${rotationKey}:${row.normalizedName}`;
 
-              whatsappOptIn:
-                row.whatsappOptIn,
+  const existing =
+    rotationRowsByKey.get(
+      uniqueKey
+    );
 
-              isActive: true,
-            },
+  /*
+   * Prefer the row containing a registered playerId
+   * or a phone number when duplicate league-level
+   * identities occur across both Surprise teams.
+   */
+  if (
+    !existing ||
+    (!existing.playerId &&
+      row.playerId) ||
+    (!existing.whatsappNumber &&
+      row.whatsappNumber)
+  ) {
+    rotationRowsByKey.set(
+      uniqueKey,
+      {
+        ...row,
+        rotationKey,
+      }
+    );
+  }
+}
 
-            create: {
-              leagueId:
-                row.leagueId,
+const uniqueRotationRows =
+  Array.from(
+    rotationRowsByKey.values()
+  );
 
-              rotationKey,
-
-              /*
-               * Standard league:
-               * history belongs to the team.
-               *
-               * Surprise Cricket League:
-               * history belongs to the league-level person,
-               * so teamId must be null.
-               */
-              teamId:
-                match.league
-                  .kitRotationMode === "TEAM"
-                  ? row.teamId
-                  : null,
-
-              playerId:
-                row.playerId,
-
-              displayName:
-                row.displayName,
+await Promise.all(
+  uniqueRotationRows.map(
+    (row) =>
+      tx.kitRotationMember.upsert({
+        where: {
+          rotationKey_normalizedName:
+            {
+              rotationKey:
+                row.rotationKey,
 
               normalizedName:
                 row.normalizedName,
-
-              whatsappNumber:
-                row.whatsappNumber,
-
-              whatsappOptIn:
-                row.whatsappOptIn,
-
-              isActive: true,
             },
-          });
-        }
+        },
+
+        update: {
+          displayName:
+            row.displayName,
+
+          ...(row.playerId
+            ? {
+                playerId:
+                  row.playerId,
+              }
+            : {}),
+
+          ...(row.whatsappNumber
+            ? {
+                whatsappNumber:
+                  row.whatsappNumber,
+              }
+            : {}),
+
+          whatsappOptIn:
+            row.whatsappOptIn,
+
+          isActive:
+            true,
+        },
+
+        create: {
+          leagueId:
+            row.leagueId,
+
+          rotationKey:
+            row.rotationKey,
+
+          teamId:
+            match.league
+              .kitRotationMode ===
+            "TEAM"
+              ? row.teamId
+              : null,
+
+          playerId:
+            row.playerId,
+
+          displayName:
+            row.displayName,
+
+          normalizedName:
+            row.normalizedName,
+
+          whatsappNumber:
+            row.whatsappNumber,
+
+          whatsappOptIn:
+            row.whatsappOptIn,
+
+          isActive:
+            true,
+        },
+      })
+  )
+);
 
         const savedPlayers =
           await tx.matchKitPlayer.findMany({
@@ -551,7 +601,10 @@ if (sourceMode === "SCREENSHOT") {
         return {
           savedPlayers,
         };
-      });
+        }, {
+    maxWait: 10_000,
+    timeout: 30_000,
+  });
 
     return NextResponse.json({
       success: true,
