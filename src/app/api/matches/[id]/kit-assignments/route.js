@@ -1,12 +1,106 @@
 import { NextResponse } from "next/server";
 import prisma from "@/lib/prisma";
-import { getKitRotationKey } from "@/lib/kit/rotation-scope";
+import {
+  getKitRotationKey,
+  isLeaguePlayerKitRotation,
+} from "@/lib/kit/rotation-scope";
 
 export const runtime = "nodejs";
 
 function isValidPositiveInteger(value) {
   return Number.isInteger(value) && value > 0;
 }
+
+const assignmentInclude = {
+  leagueKit: {
+    include: {
+      currentHolderRotationMember: {
+        select: {
+          id: true,
+          playerId: true,
+          displayName: true,
+          normalizedName: true,
+          whatsappNumber: true,
+          whatsappOptIn: true,
+          completedCount: true,
+          lastCompletedAt: true,
+          lastAssignedAt: true,
+          rotationKey: true,
+        },
+      },
+      previousHolderRotationMember: {
+        select: {
+          id: true,
+          playerId: true,
+          displayName: true,
+          normalizedName: true,
+          rotationKey: true,
+        },
+      },
+    },
+  },
+  team: {
+    select: {
+      id: true,
+      name: true,
+    },
+  },
+  rotationMember: {
+    select: {
+      id: true,
+      playerId: true,
+      displayName: true,
+      normalizedName: true,
+      whatsappNumber: true,
+      whatsappOptIn: true,
+      completedCount: true,
+      lastCompletedAt: true,
+      lastAssignedAt: true,
+      rotationKey: true,
+    },
+  },
+  matchKitPlayer: {
+    select: {
+      id: true,
+      displayName: true,
+      normalizedName: true,
+      teamId: true,
+      playerId: true,
+      isConfirmed: true,
+      isEligible: true,
+      team: {
+        select: {
+          id: true,
+          name: true,
+        },
+      },
+    },
+  },
+  actualRotationMember: {
+    select: {
+      id: true,
+      playerId: true,
+      displayName: true,
+      normalizedName: true,
+      rotationKey: true,
+    },
+  },
+  actualMatchKitPlayer: {
+    select: {
+      id: true,
+      displayName: true,
+      normalizedName: true,
+      teamId: true,
+      playerId: true,
+      team: {
+        select: {
+          id: true,
+          name: true,
+        },
+      },
+    },
+  },
+};
 
 export async function GET(request, { params }) {
   try {
@@ -28,11 +122,39 @@ export async function GET(request, { params }) {
         teamAId: true,
         teamBId: true,
         status: true,
+        scheduledAt: true,
         league: {
           select: {
             id: true,
             name: true,
             kitRotationMode: true,
+            leagueKit: {
+              include: {
+                currentHolderRotationMember: {
+                  select: {
+                    id: true,
+                    playerId: true,
+                    displayName: true,
+                    normalizedName: true,
+                    whatsappNumber: true,
+                    whatsappOptIn: true,
+                    completedCount: true,
+                    lastCompletedAt: true,
+                    lastAssignedAt: true,
+                    rotationKey: true,
+                  },
+                },
+                previousHolderRotationMember: {
+                  select: {
+                    id: true,
+                    playerId: true,
+                    displayName: true,
+                    normalizedName: true,
+                    rotationKey: true,
+                  },
+                },
+              },
+            },
           },
         },
         teamA: {
@@ -57,7 +179,7 @@ export async function GET(request, { params }) {
       );
     }
 
-    if (!match.league) {
+    if (!match.league || !match.leagueId) {
       return NextResponse.json(
         {
           error:
@@ -69,6 +191,9 @@ export async function GET(request, { params }) {
 
     const rotationMode =
       match.league.kitRotationMode || "TEAM";
+
+    const sharedKit =
+      isLeaguePlayerKitRotation(rotationMode);
 
     const teamARotationKey = getKitRotationKey({
       leagueId: match.leagueId,
@@ -87,60 +212,10 @@ export async function GET(request, { params }) {
         prisma.kitAssignment.findMany({
           where: { matchId },
           orderBy: [
-            { teamId: "asc" },
             { assignedAt: "desc" },
+            { id: "desc" },
           ],
-          include: {
-            team: {
-              select: {
-                id: true,
-                name: true,
-              },
-            },
-            rotationMember: {
-              select: {
-                id: true,
-                playerId: true,
-                displayName: true,
-                normalizedName: true,
-                whatsappNumber: true,
-                whatsappOptIn: true,
-                completedCount: true,
-                lastCompletedAt: true,
-                lastAssignedAt: true,
-                rotationKey: true,
-              },
-            },
-            matchKitPlayer: {
-              select: {
-                id: true,
-                displayName: true,
-                normalizedName: true,
-                teamId: true,
-                playerId: true,
-                isConfirmed: true,
-                isEligible: true,
-              },
-            },
-            actualRotationMember: {
-              select: {
-                id: true,
-                playerId: true,
-                displayName: true,
-                normalizedName: true,
-                rotationKey: true,
-              },
-            },
-            actualMatchKitPlayer: {
-              select: {
-                id: true,
-                displayName: true,
-                normalizedName: true,
-                teamId: true,
-                playerId: true,
-              },
-            },
-          },
+          include: assignmentInclude,
         }),
 
         prisma.matchKitPlayer.findMany({
@@ -151,6 +226,7 @@ export async function GET(request, { params }) {
           },
           orderBy: [
             { teamId: "asc" },
+            { sortOrder: "asc" },
             { displayName: "asc" },
           ],
           select: {
@@ -227,30 +303,63 @@ export async function GET(request, { params }) {
       (player) => player.teamId === match.teamBId
     );
 
+    const activeAssignments = assignments.filter(
+      (assignment) => assignment.status !== "CANCELLED"
+    );
+
+    const sharedAssignment = sharedKit
+      ? activeAssignments.find(
+          (assignment) =>
+            assignment.leagueKitId !== null
+        ) || activeAssignments[0] || null
+      : null;
+
     const assignmentsByTeam = {
-      teamA:
-        assignments.find(
-          (assignment) =>
-            assignment.teamId === match.teamAId
-        ) || null,
-      teamB:
-        assignments.find(
-          (assignment) =>
-            assignment.teamId === match.teamBId
-        ) || null,
+      teamA: sharedKit
+        ? null
+        : activeAssignments.find(
+            (assignment) =>
+              assignment.teamId === match.teamAId
+          ) || null,
+      teamB: sharedKit
+        ? null
+        : activeAssignments.find(
+            (assignment) =>
+              assignment.teamId === match.teamBId
+          ) || null,
     };
+
+    const currentHolder =
+      match.league.leagueKit
+        ?.currentHolderRotationMember || null;
+
+    const previousHolder =
+      match.league.leagueKit
+        ?.previousHolderRotationMember || null;
 
     return NextResponse.json({
       success: true,
       match: {
         id: match.id,
         status: match.status,
+        scheduledAt: match.scheduledAt,
         leagueId: match.leagueId,
         leagueName: match.league.name || "",
         kitRotationMode: rotationMode,
+        sharedKit,
         teamA: match.teamA,
         teamB: match.teamB,
       },
+      leagueKit: match.league.leagueKit
+        ? {
+            ...match.league.leagueKit,
+            currentHolder,
+            previousHolder,
+          }
+        : null,
+      currentHolder,
+      previousHolder,
+      sharedAssignment,
       savedPlayerCount: eligiblePlayers.length,
       savedPlayerCounts: {
         total: eligiblePlayers.length,
@@ -263,7 +372,12 @@ export async function GET(request, { params }) {
         teamA: teamAPlayers,
         teamB: teamBPlayers,
       },
-      assignments,
+      assignments: sharedKit
+        ? sharedAssignment
+          ? [sharedAssignment]
+          : []
+        : activeAssignments,
+      assignmentHistory: assignments,
       assignmentsByTeam,
     });
   } catch (error) {

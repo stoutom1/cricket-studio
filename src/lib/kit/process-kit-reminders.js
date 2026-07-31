@@ -1,28 +1,47 @@
 import prisma from "@/lib/prisma";
+
 import {
   formatMatchDateTime,
   isTomorrowInTimeZone,
+  isWithinLeadTimeWindow,
+  minutesUntilMatch,
   validTimeZone,
 } from "@/lib/kit/reminder-time";
+
 import {
   normalizeInternationalPhone,
 } from "@/lib/notifications/phone";
+
 import {
   sendKitReminderWhatsApp,
 } from "@/lib/notifications/send-whatsapp";
+
+import {
+  sendAssignedCarrierKitWhatsApp,
+  sendCurrentHolderKitWhatsApp,
+} from "@/lib/notifications/send-kit-role-whatsapp";
+
 import {
   sendPlayerCommunication,
 } from "@/lib/communications/sendPlayerCommunication";
+
 import {
   buildKitReminderCommunicationContent,
 } from "@/lib/communications/templates/kitReminder";
 
-/**
- * Reminder configuration.
- */
-const REMINDER_TYPE = "DAY_BEFORE";
-const REMINDER_CHANNEL = "WHATSAPP";
-const RECIPIENT_TYPE = "PLAYER";
+import {
+  buildAssignedCarrierKitContent,
+  buildCurrentHolderKitContent,
+} from "@/lib/communications/templates/kitRoleReminders";
+
+const REMINDER_CHANNEL =
+  "WHATSAPP";
+
+const SUPPORTED_REMINDER_TYPES =
+  new Set([
+    "DAY_BEFORE",
+    "TWO_HOURS_BEFORE",
+  ]);
 
 const ACTIVE_ASSIGNMENT_STATUSES = [
   "SUGGESTED",
@@ -30,219 +49,476 @@ const ACTIVE_ASSIGNMENT_STATUSES = [
   "CONFIRMED",
 ];
 
-const CLOSED_MATCH_STATUSES = new Set([
-  "COMPLETED",
-  "COMPLETED_LOCKED",
-  "COMPLETED_CORRECTED",
-  "ABANDONED",
-  "CANCELLED",
-  "CANCELED",
-]);
+const CLOSED_MATCH_STATUSES =
+  new Set([
+    "COMPLETED",
+    "COMPLETED_LOCKED",
+    "COMPLETED_CORRECTED",
+    "ABANDONED",
+    "CANCELLED",
+    "CANCELED",
+  ]);
 
-/**
- * Normalizes a match status because your Match.status field may contain
- * either lowercase or uppercase values.
- */
 function normalizeStatus(value) {
   return String(value || "")
     .trim()
     .toUpperCase();
 }
 
-/**
- * Returns true when reminders should not be sent for the match.
- */
 function isClosedMatch(match) {
   return CLOSED_MATCH_STATUSES.has(
-    normalizeStatus(match?.status)
+    normalizeStatus(
+      match?.status
+    )
   );
 }
 
-/**
- * Returns the opponent's team name for a kit assignment.
- */
-function getOpponentName(match, assignedTeamId) {
-  const teamId = Number(assignedTeamId);
+function getOpponentName(
+  match,
+  assignedTeamId
+) {
+  const teamId =
+    Number(assignedTeamId);
 
-  if (teamId === Number(match.teamAId)) {
-    return match.teamB?.name || "the opponent";
+  if (
+    teamId ===
+    Number(match.teamAId)
+  ) {
+    return (
+      match.teamB?.name ||
+      "the opponent"
+    );
   }
 
-  if (teamId === Number(match.teamBId)) {
-    return match.teamA?.name || "the opponent";
+  if (
+    teamId ===
+    Number(match.teamBId)
+  ) {
+    return (
+      match.teamA?.name ||
+      "the opponent"
+    );
   }
 
   return "the opponent";
 }
 
-/**
- * Gets the player information associated with the assignment.
- *
- * KitRotationMember is preferred because it represents the persistent
- * rotation member. MatchKitPlayer is used as a fallback.
- */
-function getAssignedPlayer(assignment) {
-  const rotationMember = assignment.rotationMember;
-  const matchKitPlayer = assignment.matchKitPlayer;
+function contactFromRotationMember(
+  rotationMember
+) {
+  const player =
+    rotationMember?.player ||
+    null;
+
+  return {
+    name:
+      player?.name ||
+      rotationMember
+        ?.displayName ||
+      "Player",
+
+    phone:
+      player
+        ?.whatsappNumber ||
+      rotationMember
+        ?.whatsappNumber ||
+      null,
+
+    optedIn:
+      player
+        ?.whatsappOptIn ===
+        true ||
+      rotationMember
+        ?.whatsappOptIn ===
+        true,
+  };
+}
+
+function getAssignedPlayer(
+  assignment
+) {
+  const rotationMember =
+    assignment.rotationMember;
+
+  const matchKitPlayer =
+    assignment.matchKitPlayer;
 
   const player =
     rotationMember?.player ||
     matchKitPlayer?.player ||
     null;
 
-  const name =
-    player?.name ||
-    rotationMember?.displayName ||
-    matchKitPlayer?.displayName ||
-    "Player";
-
   return {
-    name,
-    phone: player?.whatsappNumber || null,
-    optedIn: player?.whatsappOptIn === true,
+    name:
+      player?.name ||
+      rotationMember
+        ?.displayName ||
+      matchKitPlayer
+        ?.displayName ||
+      "Player",
+
+    phone:
+      player
+        ?.whatsappNumber ||
+      rotationMember
+        ?.whatsappNumber ||
+      matchKitPlayer
+        ?.whatsappNumber ||
+      null,
+
+    optedIn:
+      player
+        ?.whatsappOptIn ===
+        true ||
+      rotationMember
+        ?.whatsappOptIn ===
+        true ||
+      matchKitPlayer
+        ?.whatsappOptIn ===
+        true,
   };
 }
 
-/**
- * Creates the reminder log if it does not already exist.
- *
- * Your Prisma unique constraint is:
- *
- * @@unique([
- *   assignmentId,
- *   reminderType,
- *   channel,
- *   recipientType
- * ])
- *
- * Therefore Prisma generates:
- *
- * assignmentId_reminderType_channel_recipientType
- */
-async function createOrLoadReminder({
-  assignment,
-  playerName,
-  phoneNumber,
-  scheduledFor,
-}) {
-  return prisma.kitReminderLog.upsert({
-    where: {
-      assignmentId_reminderType_channel_recipientType:
-        {
-          assignmentId: assignment.id,
-          reminderType: REMINDER_TYPE,
-          channel: REMINDER_CHANNEL,
-          recipientType: RECIPIENT_TYPE,
-        },
-    },
+function parsePositiveInteger(
+  value,
+  fallback
+) {
+  const parsed =
+    Number(value);
 
-    /**
-     * Keep the recipient information synchronized in case the kit
-     * assignment is edited before the reminder is sent.
-     */
-    update: {
-      leagueId: assignment.leagueId,
-      matchId: assignment.matchId,
-      teamId: assignment.teamId,
-      recipientName: playerName,
-      recipientPhone: phoneNumber,
-      scheduledFor,
-    },
-
-    create: {
-      leagueId: assignment.leagueId,
-      matchId: assignment.matchId,
-      teamId: assignment.teamId,
-      assignmentId: assignment.id,
-
-      recipientType: RECIPIENT_TYPE,
-      reminderType: REMINDER_TYPE,
-      channel: REMINDER_CHANNEL,
-
-      recipientName: playerName,
-      recipientPhone: phoneNumber,
-
-      status: "PENDING",
-      scheduledFor,
-      attemptCount: 0,
-    },
-  });
+  return (
+    Number.isInteger(parsed) &&
+    parsed > 0
+      ? parsed
+      : fallback
+  );
 }
 
-/**
- * Marks a reminder as skipped.
- *
- * Your current schema has no skippedAt field, so the reason is stored in
- * errorMessage and the status is set to SKIPPED.
- */
+function getTwoHourWindowMinutes() {
+  return parsePositiveInteger(
+    process.env
+      .KIT_TWO_HOUR_REMINDER_WINDOW_MINUTES,
+    60
+  );
+}
+
+function getReminderEligibility({
+  reminderType,
+  match,
+  now,
+  timeZone,
+}) {
+  if (
+    reminderType ===
+    "DAY_BEFORE"
+  ) {
+    const eligible =
+      isTomorrowInTimeZone({
+        scheduledAt:
+          match.scheduledAt,
+
+        now,
+        timeZone,
+      });
+
+    return {
+      eligible,
+
+      minutesUntilMatch:
+        minutesUntilMatch({
+          scheduledAt:
+            match.scheduledAt,
+
+          now,
+          timeZone,
+        }),
+    };
+  }
+
+  if (
+    reminderType ===
+    "TWO_HOURS_BEFORE"
+  ) {
+    const windowMinutes =
+      getTwoHourWindowMinutes();
+
+    const remainingMinutes =
+      minutesUntilMatch({
+        scheduledAt:
+          match.scheduledAt,
+
+        now,
+        timeZone,
+      });
+
+    return {
+      eligible:
+        isWithinLeadTimeWindow({
+          scheduledAt:
+            match.scheduledAt,
+
+          now,
+          timeZone,
+
+          leadMinutes:
+            120,
+
+          windowMinutes,
+        }),
+
+      minutesUntilMatch:
+        remainingMinutes,
+    };
+  }
+
+  throw new Error(
+    `Unsupported kit reminder type: ${reminderType}`
+  );
+}
+
+function getReminderScheduledFor({
+  reminderType,
+  match,
+  now,
+}) {
+  if (
+    reminderType ===
+    "TWO_HOURS_BEFORE"
+  ) {
+    return new Date(
+      new Date(
+        match.scheduledAt
+      ).getTime() -
+        120 *
+          60 *
+          1000
+    );
+  }
+
+  return new Date(now);
+}
+
+function getReminderLogLabel(
+  reminderType
+) {
+  return (
+    reminderType ===
+    "TWO_HOURS_BEFORE"
+      ? "two-hours-before"
+      : "day-before"
+  );
+}
+
+function holderNeedsTwoHourReminder(
+  leagueKit
+) {
+  if (!leagueKit) {
+    return false;
+  }
+
+  if (
+    leagueKit
+      .venueConfirmedAt
+  ) {
+    return false;
+  }
+
+  if (
+    normalizeStatus(
+      leagueKit.status
+    ) === "AT_VENUE"
+  ) {
+    return false;
+  }
+
+  const handoverStatus =
+    normalizeStatus(
+      leagueKit
+        .handoverStatus
+    );
+
+  return ![
+    "COORDINATED",
+    "HANDED_OVER",
+  ].includes(
+    handoverStatus
+  );
+}
+
+async function createOrLoadReminder({
+  assignment,
+  recipientType,
+  recipientName,
+  recipientPhone,
+  scheduledFor,
+  reminderType,
+}) {
+  return prisma
+    .kitReminderLog
+    .upsert({
+      where: {
+        assignmentId_reminderType_channel_recipientType:
+          {
+            assignmentId:
+              assignment.id,
+
+            reminderType,
+
+            channel:
+              REMINDER_CHANNEL,
+
+            recipientType,
+          },
+      },
+
+      update: {
+        leagueId:
+          assignment.leagueId,
+
+        matchId:
+          assignment.matchId,
+
+        teamId:
+          assignment.teamId,
+
+        recipientName,
+
+        recipientPhone,
+
+        scheduledFor,
+      },
+
+      create: {
+        leagueId:
+          assignment.leagueId,
+
+        matchId:
+          assignment.matchId,
+
+        teamId:
+          assignment.teamId,
+
+        assignmentId:
+          assignment.id,
+
+        recipientType,
+
+        reminderType,
+
+        channel:
+          REMINDER_CHANNEL,
+
+        recipientName,
+
+        recipientPhone,
+
+        status:
+          "PENDING",
+
+        scheduledFor,
+
+        attemptCount:
+          0,
+      },
+    });
+}
+
 async function markReminderSkipped(
   reminderId,
   reason
 ) {
-  return prisma.kitReminderLog.update({
-    where: {
-      id: reminderId,
-    },
-    data: {
-      status: "SKIPPED",
-      errorMessage: reason,
-      providerStatus: "SKIPPED",
-      processingStartedAt: null,
-      failedAt: null,
-    },
-  });
-}
-
-/**
- * Resets a skipped or failed reminder when its data is now valid.
- *
- * Examples:
- * - The player previously had no phone number.
- * - The player previously had WhatsApp opt-in disabled.
- * - A temporary provider error caused a failure.
- */
-async function resetReminderToPending(reminderId) {
-  return prisma.kitReminderLog.update({
-    where: {
-      id: reminderId,
-    },
-    data: {
-      status: "PENDING",
-      providerStatus: null,
-      errorMessage: null,
-      processingStartedAt: null,
-      failedAt: null,
-    },
-  });
-}
-
-/**
- * Attempts to claim a reminder before contacting WhatsApp.
- *
- * updateMany makes the claim atomic. If two cron executions overlap,
- * only one execution can change the same PENDING record to PROCESSING.
- */
-async function claimReminder(reminderId) {
-  return prisma.kitReminderLog.updateMany({
-    where: {
-      id: reminderId,
-      status: "PENDING",
-    },
-    data: {
-      status: "PROCESSING",
-      processingStartedAt: new Date(),
-      providerStatus: "PROCESSING",
-      errorMessage: null,
-      attemptCount: {
-        increment: 1,
+  return prisma
+    .kitReminderLog
+    .update({
+      where: {
+        id:
+          reminderId,
       },
-    },
-  });
+
+      data: {
+        status:
+          "SKIPPED",
+
+        errorMessage:
+          reason,
+
+        providerStatus:
+          "SKIPPED",
+
+        processingStartedAt:
+          null,
+
+        failedAt:
+          null,
+      },
+    });
 }
 
-/**
- * Saves a successful WhatsApp result.
- */
+async function resetReminderToPending(
+  reminderId
+) {
+  return prisma
+    .kitReminderLog
+    .update({
+      where: {
+        id:
+          reminderId,
+      },
+
+      data: {
+        status:
+          "PENDING",
+
+        providerStatus:
+          null,
+
+        errorMessage:
+          null,
+
+        processingStartedAt:
+          null,
+
+        failedAt:
+          null,
+      },
+    });
+}
+
+async function claimReminder(
+  reminderId
+) {
+  return prisma
+    .kitReminderLog
+    .updateMany({
+      where: {
+        id:
+          reminderId,
+
+        status:
+          "PENDING",
+      },
+
+      data: {
+        status:
+          "PROCESSING",
+
+        processingStartedAt:
+          new Date(),
+
+        providerStatus:
+          "PROCESSING",
+
+        errorMessage:
+          null,
+
+        attemptCount: {
+          increment:
+            1,
+        },
+      },
+    });
+}
+
 async function markReminderQueued(
   reminderId,
   result
@@ -255,277 +531,862 @@ async function markReminderQueued(
       .trim()
       .toUpperCase();
 
-  return prisma.kitReminderLog.update({
-    where: {
-      id: reminderId,
-    },
-    data: {
-      status: "PROCESSING",
+  return prisma
+    .kitReminderLog
+    .update({
+      where: {
+        id:
+          reminderId,
+      },
 
-      sentAt: null,
-      failedAt: null,
+      data: {
+        status:
+          "PROCESSING",
 
-      processingStartedAt:
-        new Date(),
+        sentAt:
+          null,
 
-      errorMessage: null,
+        failedAt:
+          null,
 
-      providerStatus,
+        processingStartedAt:
+          new Date(),
 
-      providerMessageId:
-        result?.providerMessageId ||
-        null,
+        errorMessage:
+          null,
 
-      ...(result?.providerResponse
-        ? {
-            providerResponse:
-              result.providerResponse,
-          }
-        : {}),
-    },
-  });
+        providerStatus,
+
+        providerMessageId:
+          result
+            ?.providerMessageId ||
+          null,
+
+        fallbackSmsAllowed:
+          result
+            ?.fallbackEligible ===
+          true,
+
+        fallbackSmsBody:
+          result
+            ?.fallbackMessageBody ||
+          null,
+
+        fallbackSmsStatus:
+          null,
+
+        fallbackSmsMessageId:
+          null,
+
+        fallbackSmsAttemptedAt:
+          null,
+
+        fallbackSmsQueuedAt:
+          null,
+
+        fallbackSmsError:
+          null,
+
+        ...(result
+          ?.providerResponse
+          ? {
+              providerResponse:
+                result
+                  .providerResponse,
+            }
+          : {}),
+      },
+    });
 }
 
-/**
- * Converts an error into JSON-safe provider data.
- */
-function getProviderResponse(error) {
-  const providerResponse =
-    error?.providerResponse;
-
-  if (
-    providerResponse &&
-    typeof providerResponse === "object"
-  ) {
-    return providerResponse;
-  }
-
-  return null;
-}
-
-/**
- * Saves a failed WhatsApp result.
- */
 async function markReminderFailed(
   reminderId,
   error
 ) {
-  const providerResponse =
-    getProviderResponse(error);
+  return prisma
+    .kitReminderLog
+    .update({
+      where: {
+        id:
+          reminderId,
+      },
 
-  return prisma.kitReminderLog.update({
-    where: {
-      id: reminderId,
-    },
-    data: {
-      status: "FAILED",
-      failedAt: new Date(),
-      processingStartedAt: null,
-      providerStatus:
-        error?.httpStatus
-          ? `HTTP_${error.httpStatus}`
-          : "FAILED",
-      errorMessage:
-        error?.message ||
-        "Unable to send the WhatsApp reminder.",
+      data: {
+        status:
+          "FAILED",
 
-      ...(providerResponse !== null
-        ? {
-            providerResponse,
-          }
-        : {}),
-    },
-  });
+        failedAt:
+          new Date(),
+
+        processingStartedAt:
+          null,
+
+        providerStatus:
+          error?.httpStatus
+            ? `HTTP_${error.httpStatus}`
+            : "FAILED",
+
+        errorMessage:
+          error?.message ||
+          "Unable to send the WhatsApp reminder.",
+
+        ...(error
+          ?.providerResponse &&
+        typeof error
+          .providerResponse ===
+          "object"
+          ? {
+              providerResponse:
+                error
+                  .providerResponse,
+            }
+          : {}),
+      },
+    });
 }
 
-/**
- * Processes kit reminders for matches occurring tomorrow in each
- * league's configured timezone.
- *
- * A dry run:
- * - performs all eligibility checks;
- * - creates or updates the reminder log;
- * - does not call WhatsApp;
- * - leaves the reminder available for a later real send.
- */
-export async function processDayBeforeKitReminders({
-  now = new Date(),
-  dryRun =
+function createSummary({
+  reminderType,
+  checkedMatches,
+}) {
+  return {
+    reminderType,
+
+    checkedMatches,
+
+    closedMatches:
+      0,
+
+    eligibleMatches:
+      0,
+
+    checkedAssignments:
+      0,
+
+    checkedRecipients:
+      0,
+
+    assignedCarrierQueued:
+      0,
+
+    currentHolderQueued:
+      0,
+
+    holderNotRequired:
+      0,
+
+    alreadySent:
+      0,
+
+    dryRun:
+      0,
+
+    skipped:
+      0,
+
+    failed:
+      0,
+
+    queued:
+      0,
+
+    sent:
+      0,
+
+    submittedToProvider:
+      0,
+
+    awaitingDeliveryCallback:
+      0,
+
+    immediatelySentByProvider:
+      0,
+
+    notClaimed:
+      0,
+
+    notDueTomorrow:
+      0,
+
+    notInTwoHourWindow:
+      0,
+
+    matchesAlreadyStarted:
+      0,
+  };
+}
+
+function addProviderResultToSummary(
+  summary,
+  result,
+  recipientType
+) {
+  const providerStatus =
     String(
-      process.env.KIT_REMINDER_DRY_RUN ||
-        "false"
+      result?.providerStatus ||
+        "ACCEPTED"
     )
       .trim()
-      .toLowerCase() === "true",
-} = {}) {
-  const matches = await prisma.match.findMany({
+      .toUpperCase();
+
+  summary.queued +=
+    1;
+
+  summary
+    .submittedToProvider +=
+    1;
+
+  if (
+    recipientType ===
+    "ASSIGNED_CARRIER"
+  ) {
+    summary
+      .assignedCarrierQueued +=
+      1;
+  }
+
+  if (
+    recipientType ===
+    "CURRENT_HOLDER"
+  ) {
+    summary
+      .currentHolderQueued +=
+      1;
+  }
+
+  if (
+    [
+      "SENT",
+      "DELIVERED",
+      "READ",
+    ].includes(
+      providerStatus
+    )
+  ) {
+    summary.sent +=
+      1;
+
+    summary
+      .immediatelySentByProvider +=
+      1;
+  } else {
+    summary
+      .awaitingDeliveryCallback +=
+      1;
+  }
+}
+
+function finalizeSummary(
+  summary
+) {
+  summary.deliveryStatusNote =
+    summary
+      .awaitingDeliveryCallback >
+    0
+      ? `${summary.awaitingDeliveryCallback} role-specific kit reminder request(s) were accepted by Twilio and are awaiting asynchronous delivery callbacks.`
+      : "No role-specific kit reminder requests are currently awaiting delivery callbacks.";
+
+  return summary;
+}
+
+async function loadMatches() {
+  return prisma.match.findMany({
     where: {
       scheduledAt: {
-        not: null,
+        not:
+          null,
       },
 
       kitAssignments: {
         some: {
           status: {
-            in: ACTIVE_ASSIGNMENT_STATUSES,
+            in:
+              ACTIVE_ASSIGNMENT_STATUSES,
           },
         },
       },
     },
 
     select: {
-      id: true,
-      leagueId: true,
-      teamAId: true,
-      teamBId: true,
-      scheduledAt: true,
-      status: true,
+      id:
+        true,
+
+      leagueId:
+        true,
+
+      teamAId:
+        true,
+
+      teamBId:
+        true,
+
+      scheduledAt:
+        true,
+
+      status:
+        true,
 
       league: {
         select: {
-          id: true,
-          name: true,
-          timeZone: true,
+          id:
+            true,
+
+          name:
+            true,
+
+          timeZone:
+            true,
+
+          kitRotationMode:
+            true,
         },
       },
 
       teamA: {
         select: {
-          id: true,
-          name: true,
+          id:
+            true,
+
+          name:
+            true,
         },
       },
 
       teamB: {
         select: {
-          id: true,
-          name: true,
+          id:
+            true,
+
+          name:
+            true,
         },
       },
 
       kitAssignments: {
         where: {
           status: {
-            in: ACTIVE_ASSIGNMENT_STATUSES,
+            in:
+              ACTIVE_ASSIGNMENT_STATUSES,
           },
         },
 
+        orderBy: {
+          id:
+            "asc",
+        },
+
         select: {
-          id: true,
-          leagueId: true,
-          matchId: true,
-          teamId: true,
-          status: true,
-          rotationMemberId: true,
-          matchKitPlayerId: true,
+          id:
+            true,
+
+          leagueId:
+            true,
+
+          matchId:
+            true,
+
+          teamId:
+            true,
+
+          leagueKitId:
+            true,
+
+          status:
+            true,
+
+          rotationMemberId:
+            true,
+
+          matchKitPlayerId:
+            true,
 
           team: {
             select: {
-              id: true,
-              name: true,
+              id:
+                true,
+
+              name:
+                true,
             },
           },
 
-            rotationMember: {
-              select: {
-                id: true,
-                displayName: true,
-                normalizedName: true,
-                playerId: true,
+          leagueKit: {
+            select: {
+              id:
+                true,
 
-                player: {
+              status:
+                true,
+
+              handoverStatus:
+                true,
+
+              venueConfirmedAt:
+                true,
+
+              currentHolderRotationMember:
+                {
                   select: {
-                    id: true,
-                    name: true,
-                    whatsappNumber: true,
-                    whatsappOptIn: true,
+                    id:
+                      true,
+
+                    displayName:
+                      true,
+
+                    whatsappNumber:
+                      true,
+
+                    whatsappOptIn:
+                      true,
+
+                    player: {
+                      select: {
+                        id:
+                          true,
+
+                        name:
+                          true,
+
+                        whatsappNumber:
+                          true,
+
+                        whatsappOptIn:
+                          true,
+                      },
+                    },
                   },
+                },
+            },
+          },
+
+          rotationMember: {
+            select: {
+              id:
+                true,
+
+              displayName:
+                true,
+
+              normalizedName:
+                true,
+
+              whatsappNumber:
+                true,
+
+              whatsappOptIn:
+                true,
+
+              playerId:
+                true,
+
+              player: {
+                select: {
+                  id:
+                    true,
+
+                  name:
+                    true,
+
+                  whatsappNumber:
+                    true,
+
+                  whatsappOptIn:
+                    true,
                 },
               },
             },
+          },
 
-            matchKitPlayer: {
-              select: {
-                id: true,
-                displayName: true,
-                normalizedName: true,
-                playerId: true,
+          matchKitPlayer: {
+            select: {
+              id:
+                true,
 
-                player: {
-                  select: {
-                    id: true,
-                    name: true,
-                    whatsappNumber: true,
-                    whatsappOptIn: true,
-                  },
+              displayName:
+                true,
+
+              normalizedName:
+                true,
+
+              whatsappNumber:
+                true,
+
+              whatsappOptIn:
+                true,
+
+              playerId:
+                true,
+
+              player: {
+                select: {
+                  id:
+                    true,
+
+                  name:
+                    true,
+
+                  whatsappNumber:
+                    true,
+
+                  whatsappOptIn:
+                    true,
                 },
               },
             },
+          },
         },
       },
     },
   });
+}
 
-  const summary = {
-  checkedMatches: matches.length,
-  closedMatches: 0,
-  eligibleMatches: 0,
-  checkedAssignments: 0,
+async function sendOneRecipient({
+  assignment,
+  match,
+  reminderType,
+  recipientType,
+  recipient,
+  scheduledFor,
+  content,
+  sendPrimary,
+  summary,
+  dryRun,
+}) {
+  summary
+    .checkedRecipients +=
+    1;
 
-  /*
-   * Reminders that had already reached a successful
-   * terminal state before this cron execution.
-   */
-  alreadySent: 0,
+  const normalizedPhone =
+    normalizeInternationalPhone(
+      recipient.phone
+    );
 
-  dryRun: 0,
-  skipped: 0,
-  failed: 0,
-  notDueTomorrow: 0,
-  notClaimed: 0,
+  let reminder =
+    await createOrLoadReminder({
+      assignment,
 
-  /*
-   * Backward-compatible counters.
-   *
-   * "queued" means Twilio accepted the outbound request.
-   * "sent" is retained for existing consumers, but final
-   * delivery normally occurs asynchronously through the
-   * Twilio status callback.
-   */
-  queued: 0,
-  sent: 0,
+      recipientType,
 
-  /*
-   * Clearer communication lifecycle counters.
-   */
-  submittedToProvider: 0,
-  awaitingDeliveryCallback: 0,
-  immediatelySentByProvider: 0,
-};
+      recipientName:
+        recipient.name,
 
-  for (const match of matches) {
-    if (isClosedMatch(match)) {
-      summary.closedMatches += 1;
+      recipientPhone:
+        normalizedPhone ||
+        recipient.phone ||
+        null,
+
+      scheduledFor,
+
+      reminderType,
+    });
+
+  if (
+    reminder.status ===
+    "SENT"
+  ) {
+    summary
+      .alreadySent +=
+      1;
+
+    return;
+  }
+
+  if (
+    reminder.status ===
+    "PROCESSING"
+  ) {
+    summary
+      .notClaimed +=
+      1;
+
+    return;
+  }
+
+  if (!recipient.optedIn) {
+    await markReminderSkipped(
+      reminder.id,
+      `${recipientType === "CURRENT_HOLDER" ? "The current kit holder" : "The assigned carrier"} has not granted Cric4All communication consent.`
+    );
+
+    summary.skipped +=
+      1;
+
+    return;
+  }
+
+  if (!normalizedPhone) {
+    await markReminderSkipped(
+      reminder.id,
+      `${recipientType === "CURRENT_HOLDER" ? "The current kit holder" : "The assigned carrier"} does not have a valid international phone number.`
+    );
+
+    summary.skipped +=
+      1;
+
+    return;
+  }
+
+  if (
+    reminder.status ===
+      "SKIPPED" ||
+    reminder.status ===
+      "FAILED"
+  ) {
+    reminder =
+      await resetReminderToPending(
+        reminder.id
+      );
+  }
+
+  if (dryRun) {
+    summary.dryRun +=
+      1;
+
+    return;
+  }
+
+  const claim =
+    await claimReminder(
+      reminder.id
+    );
+
+  if (
+    claim.count !==
+    1
+  ) {
+    summary
+      .notClaimed +=
+      1;
+
+    return;
+  }
+
+  try {
+    const result =
+      await sendPlayerCommunication({
+        type:
+          "KIT_REMINDER",
+
+        consentGranted:
+          recipient.optedIn,
+
+        recipientPhone:
+          normalizedPhone,
+
+        fallbackEligible:
+          true,
+
+        fallbackBody:
+          content
+            .fallbackSmsBody,
+
+        context: {
+          assignmentId:
+            assignment.id,
+
+          reminderId:
+            reminder.id,
+
+          recipientType,
+
+          reminderType,
+
+          reminderTiming:
+            getReminderLogLabel(
+              reminderType
+            ),
+
+          matchId:
+            assignment.matchId,
+
+          leagueId:
+            assignment.leagueId,
+
+          teamId:
+            assignment.teamId,
+
+          playerName:
+            recipient.name,
+        },
+
+        sendPrimary:
+          () =>
+            sendPrimary({
+              recipientPhone:
+                normalizedPhone,
+
+              context: {
+                assignmentId:
+                  assignment.id,
+
+                reminderId:
+                  reminder.id,
+
+                recipientType,
+
+                reminderType,
+
+                matchId:
+                  assignment.matchId,
+
+                leagueId:
+                  assignment.leagueId,
+              },
+            }),
+      });
+
+    await markReminderQueued(
+      reminder.id,
+      result
+    );
+
+    addProviderResultToSummary(
+      summary,
+      result,
+      recipientType
+    );
+  } catch (error) {
+    console.error(
+      `[KIT_ROLE_REMINDER_FAILED] ${recipientType} ${reminderType} assignment ${assignment.id}`,
+      error
+    );
+
+    await markReminderFailed(
+      reminder.id,
+      error
+    );
+
+    summary.failed +=
+      1;
+  }
+}
+
+export async function processKitReminders({
+  reminderType,
+  now = new Date(),
+
+  dryRun =
+    String(
+      process.env
+        .KIT_REMINDER_DRY_RUN ||
+        "false"
+    )
+      .trim()
+      .toLowerCase() ===
+    "true",
+} = {}) {
+  const normalizedReminderType =
+    normalizeStatus(
+      reminderType
+    );
+
+  if (
+    !SUPPORTED_REMINDER_TYPES.has(
+      normalizedReminderType
+    )
+  ) {
+    throw new Error(
+      `Unsupported kit reminder type: ${reminderType}`
+    );
+  }
+
+  const matches =
+    await loadMatches();
+
+  const summary =
+    createSummary({
+      reminderType:
+        normalizedReminderType,
+
+      checkedMatches:
+        matches.length,
+    });
+
+  for (
+    const match
+    of matches
+  ) {
+    if (
+      isClosedMatch(match)
+    ) {
+      summary
+        .closedMatches +=
+        1;
+
       continue;
     }
 
-    const timeZone = validTimeZone(
-      match.league?.timeZone
-    );
+    const timeZone =
+      validTimeZone(
+        match.league
+          ?.timeZone
+      );
 
-    const dueTomorrow =
-      isTomorrowInTimeZone({
-        scheduledAt: match.scheduledAt,
+    const eligibility =
+      getReminderEligibility({
+        reminderType:
+          normalizedReminderType,
+
+        match,
         now,
         timeZone,
       });
 
-    if (!dueTomorrow) {
-      summary.notDueTomorrow += 1;
+    if (
+      !eligibility.eligible
+    ) {
+      if (
+        eligibility
+          .minutesUntilMatch !==
+          null &&
+        eligibility
+          .minutesUntilMatch <=
+          0
+      ) {
+        summary
+          .matchesAlreadyStarted +=
+          1;
+      } else if (
+        normalizedReminderType ===
+        "DAY_BEFORE"
+      ) {
+        summary
+          .notDueTomorrow +=
+          1;
+      } else {
+        summary
+          .notInTwoHourWindow +=
+          1;
+      }
+
       continue;
     }
 
-    summary.eligibleMatches += 1;
+    const activeAssignments =
+      match.league
+        ?.kitRotationMode ===
+      "LEAGUE_PLAYER"
+        ? match
+            .kitAssignments
+            .filter(
+              (assignment) =>
+                assignment
+                  .leagueKitId
+            )
+            .slice(0, 1)
+        : match
+            .kitAssignments;
+
+    if (
+      activeAssignments.length ===
+      0
+    ) {
+      continue;
+    }
+
+    summary
+      .eligibleMatches +=
+      1;
 
     const formattedMatch =
       formatMatchDateTime(
@@ -533,296 +1394,367 @@ export async function processDayBeforeKitReminders({
         timeZone
       );
 
-    for (const assignment of
-      match.kitAssignments) {
-      summary.checkedAssignments += 1;
+    for (
+      const assignment
+      of activeAssignments
+    ) {
+      summary
+        .checkedAssignments +=
+        1;
 
-      const assignedPlayer =
-        getAssignedPlayer(assignment);
+      const scheduledFor =
+        getReminderScheduledFor({
+          reminderType:
+            normalizedReminderType,
 
-      const normalizedPhone =
-        normalizeInternationalPhone(
-          assignedPlayer.phone
-        );
-
-      let reminder =
-        await createOrLoadReminder({
-          assignment,
-          playerName: assignedPlayer.name,
-          phoneNumber:
-            normalizedPhone ||
-            assignedPlayer.phone ||
-            null,
-          scheduledFor: now,
+          match,
+          now,
         });
 
-      /**
-       * A successfully sent reminder must never be sent again.
-       */
-      if (reminder.status === "SENT") {
-        summary.alreadySent += 1;
-        continue;
-      }
-
-      /**
-       * Do not take over a reminder that another process is currently
-       * sending.
-       */
-      if (
-        reminder.status === "PROCESSING"
-      ) {
-        summary.notClaimed += 1;
-        continue;
-      }
-
-      if (!assignedPlayer.optedIn) {
-        await markReminderSkipped(
-          reminder.id,
-          "The assigned player has not opted in to WhatsApp reminders."
+      const assignedPlayer =
+        getAssignedPlayer(
+          assignment
         );
 
-        summary.skipped += 1;
-        continue;
-      }
-
-      if (!normalizedPhone) {
-        await markReminderSkipped(
-          reminder.id,
-          "The assigned player does not have a valid international WhatsApp number."
+      const opponentName =
+        getOpponentName(
+          match,
+          assignment.teamId
         );
 
-        summary.skipped += 1;
-        continue;
-      }
+      const leagueName =
+        match.league?.name ||
+        "Your league";
 
-      /**
-       * A reminder may previously have been skipped because the player
-       * had no number or had not opted in. It may also have failed due
-       * to a temporary provider problem.
+      const teamName =
+        assignment.team
+          ?.name ||
+        "Your team";
+
+      /*
+       * Shared league kit: two distinct operational roles.
        */
       if (
-        reminder.status === "SKIPPED" ||
-        reminder.status === "FAILED"
+        assignment
+          .leagueKitId
       ) {
-        reminder =
-          await resetReminderToPending(
-            reminder.id
+        const holder =
+          contactFromRotationMember(
+            assignment
+              .leagueKit
+              ?.currentHolderRotationMember
           );
-      }
 
-      /**
-       * Dry-run mode never sends a real message.
-       *
-       * The record stays PENDING so changing
-       * KIT_REMINDER_DRY_RUN to false later will allow the same reminder
-       * to be sent.
-       */
-      if (dryRun) {
-        await prisma.kitReminderLog.update({
-  where: {
-    id: reminder.id,
-  },
-
-  data: {
-    status: "PROCESSING",
-
-    providerMessageId:
-      result.providerMessageId,
-
-    providerStatus:
-      result.providerStatus,
-
-    processingStartedAt:
-      new Date(),
-
-    attemptCount: {
-      increment: 1,
-    },
-
-    fallbackSmsAllowed:
-      result.fallbackEligible,
-
-    fallbackSmsBody:
-      result.fallbackMessageBody,
-
-    fallbackSmsStatus:
-      null,
-
-    fallbackSmsMessageId:
-      null,
-
-    fallbackSmsAttemptedAt:
-      null,
-
-    fallbackSmsQueuedAt:
-      null,
-
-    fallbackSmsError:
-      null,
-
-    errorMessage: null,
-  },
-});
-        summary.dryRun += 1;
-        continue;
-      }
-
-      const claim =
-        await claimReminder(reminder.id);
-
-      if (claim.count !== 1) {
-        summary.notClaimed += 1;
-        continue;
-      }
-
-      try {
-        const communicationContent =
-          buildKitReminderCommunicationContent({
-            playerName:
+        const assignedContent =
+          buildAssignedCarrierKitContent({
+            assignedCarrierName:
               assignedPlayer.name,
 
-            teamName:
-              assignment.team?.name ||
-              "Your team",
+            assignedTeamName:
+              teamName,
 
-            opponentName:
-              getOpponentName(
-                match,
-                assignment.teamId
-              ),
+            opponentName,
 
-            leagueName:
-              match.league?.name ||
-              "Your league",
+            currentHolderName:
+              holder.name,
 
             matchDateText:
-              formattedMatch.dateText,
+              formattedMatch
+                .dateText,
 
             matchTimeText:
-              formattedMatch.timeText,
+              formattedMatch
+                .timeText,
+
+            leagueName,
+
+            reminderType:
+              normalizedReminderType,
           });
 
-        const whatsappVariables =
-          communicationContent.whatsappVariables;
+        await sendOneRecipient({
+          assignment,
+          match,
 
-        const result =
-          await sendPlayerCommunication({
-            type: "KIT_REMINDER",
+          reminderType:
+            normalizedReminderType,
 
-            consentGranted:
-              assignedPlayer.optedIn,
+          recipientType:
+            "ASSIGNED_CARRIER",
 
-            recipientPhone:
-              normalizedPhone,
+          recipient:
+            assignedPlayer,
 
-            /*
-             * This PR migrates the primary WhatsApp send to the
-             * shared communication service. SMS fallback remains
-             * disabled until KitReminderLog receives dedicated,
-             * duplicate-protected fallback fields.
-             */
-            fallbackEligible: false,
+          scheduledFor,
 
-            fallbackBody:
-              communicationContent.fallbackSmsBody,
+          content:
+            assignedContent,
 
-            context: {
-              assignmentId:
-                assignment.id,
+          summary,
+          dryRun,
 
-              reminderId:
-                reminder.id,
+          sendPrimary:
+            ({
+              recipientPhone,
+              context,
+            }) =>
+              sendAssignedCarrierKitWhatsApp({
+                recipientPhone,
 
-              reminderType:
-                REMINDER_TYPE,
+                assignedCarrierName:
+                  assignedPlayer.name,
 
-              matchId:
-                assignment.matchId,
+                assignedTeamName:
+                  teamName,
 
-              leagueId:
-                assignment.leagueId,
-
-              teamId:
-                assignment.teamId,
-
-              playerName:
-                assignedPlayer.name,
-            },
-
-            sendPrimary: () =>
-              sendKitReminderWhatsApp({
-                phoneNumber:
-                  normalizedPhone,
-
-                playerName:
-                  whatsappVariables.playerName,
-
-                teamName:
-                  whatsappVariables.teamName,
-
-                opponentName:
-                  whatsappVariables.opponentName,
-
-                leagueName:
-                  whatsappVariables.leagueName,
+                opponentName,
 
                 matchDateText:
-                  whatsappVariables.matchDateText,
+                  formattedMatch
+                    .dateText,
 
                 matchTimeText:
-                  whatsappVariables.matchTimeText,
+                  formattedMatch
+                    .timeText,
+
+                currentHolderName:
+                  holder.name,
+
+                leagueName,
+
+                context,
               }),
+        });
+
+        const shouldSendHolder =
+          normalizedReminderType ===
+            "DAY_BEFORE" ||
+          (normalizedReminderType ===
+            "TWO_HOURS_BEFORE" &&
+            holderNeedsTwoHourReminder(
+              assignment
+                .leagueKit
+            ));
+
+        const samePerson =
+          assignment
+            .leagueKit
+            ?.currentHolderRotationMember
+            ?.id &&
+          Number(
+            assignment
+              .leagueKit
+              .currentHolderRotationMember
+              .id
+          ) ===
+            Number(
+              assignment
+                .rotationMemberId
+            );
+
+        if (
+          shouldSendHolder &&
+          !samePerson &&
+          assignment
+            .leagueKit
+            ?.currentHolderRotationMember
+        ) {
+          const holderContent =
+            buildCurrentHolderKitContent({
+              currentHolderName:
+                holder.name,
+
+              assignedCarrierName:
+                assignedPlayer.name,
+
+              assignedTeamName:
+                teamName,
+
+              opponentName,
+
+              matchDateText:
+                formattedMatch
+                  .dateText,
+
+              matchTimeText:
+                formattedMatch
+                  .timeText,
+
+              leagueName,
+
+              reminderType:
+                normalizedReminderType,
+            });
+
+          await sendOneRecipient({
+            assignment,
+            match,
+
+            reminderType:
+              normalizedReminderType,
+
+            recipientType:
+              "CURRENT_HOLDER",
+
+            recipient:
+              holder,
+
+            scheduledFor,
+
+            content:
+              holderContent,
+
+            summary,
+            dryRun,
+
+            sendPrimary:
+              ({
+                recipientPhone,
+                context,
+              }) =>
+                sendCurrentHolderKitWhatsApp({
+                  recipientPhone,
+
+                  currentHolderName:
+                    holder.name,
+
+                  assignedCarrierName:
+                    assignedPlayer.name,
+
+                  assignedTeamName:
+                    teamName,
+
+                  opponentName,
+
+                  matchDateText:
+                    formattedMatch
+                      .dateText,
+
+                  matchTimeText:
+                    formattedMatch
+                      .timeText,
+
+                  leagueName,
+
+                  context,
+                }),
           });
+        } else {
+          summary
+            .holderNotRequired +=
+            1;
+        }
 
-        await markReminderQueued(
-          reminder.id,
-          result
-        );
-
-        const normalizedProviderStatus =
-  String(
-    result?.providerStatus ||
-      "ACCEPTED"
-  )
-    .trim()
-    .toUpperCase();
-
-summary.queued += 1;
-summary.submittedToProvider += 1;
-
-/*
- * Twilio normally returns ACCEPTED or QUEUED here.
- * Final SENT/DELIVERED status arrives asynchronously
- * through /api/webhooks/kit-whatsapp-status.
- */
-if (
-  normalizedProviderStatus === "SENT" ||
-  normalizedProviderStatus === "DELIVERED" ||
-  normalizedProviderStatus === "READ"
-) {
-  summary.sent += 1;
-  summary.immediatelySentByProvider += 1;
-} else {
-  summary.awaitingDeliveryCallback += 1;
-}
-      } catch (error) {
-        console.error(
-          `Kit reminder failed for assignment ${assignment.id}:`,
-          error
-        );
-
-        await markReminderFailed(
-          reminder.id,
-          error
-        );
-
-        summary.failed += 1;
+        continue;
       }
+
+      /*
+       * Ordinary team-level kit reminder:
+       * preserve the existing approved template and behavior.
+       */
+      const content =
+        buildKitReminderCommunicationContent({
+          playerName:
+            assignedPlayer.name,
+
+          teamName,
+
+          opponentName,
+
+          leagueName,
+
+          matchDateText:
+            formattedMatch
+              .dateText,
+
+          matchTimeText:
+            formattedMatch
+              .timeText,
+        });
+
+      const whatsappVariables =
+        content
+          .whatsappVariables;
+
+      await sendOneRecipient({
+        assignment,
+        match,
+
+        reminderType:
+          normalizedReminderType,
+
+        recipientType:
+          "PLAYER",
+
+        recipient:
+          assignedPlayer,
+
+        scheduledFor,
+
+        content,
+
+        summary,
+        dryRun,
+
+        sendPrimary:
+          ({
+            recipientPhone,
+          }) =>
+            sendKitReminderWhatsApp({
+              phoneNumber:
+                recipientPhone,
+
+              playerName:
+                whatsappVariables
+                  .playerName,
+
+              teamName:
+                whatsappVariables
+                  .teamName,
+
+              opponentName:
+                whatsappVariables
+                  .opponentName,
+
+              leagueName:
+                whatsappVariables
+                  .leagueName,
+
+              matchDateText:
+                whatsappVariables
+                  .matchDateText,
+
+              matchTimeText:
+                whatsappVariables
+                  .matchTimeText,
+            }),
+      });
     }
   }
-summary.deliveryStatusNote =
-  summary.awaitingDeliveryCallback > 0
-    ? `${summary.awaitingDeliveryCallback} reminder request(s) were accepted by Twilio and are awaiting asynchronous delivery callbacks. Check KitReminderLog for final SENT, DELIVERED, FAILED, or UNDELIVERED status.`
-    : "No kit reminder requests are currently awaiting delivery callbacks.";
-  return summary;
+
+  return finalizeSummary(
+    summary
+  );
+}
+
+export function processDayBeforeKitReminders(
+  options
+) {
+  return processKitReminders({
+    ...options,
+
+    reminderType:
+      "DAY_BEFORE",
+  });
+}
+
+export function processTwoHoursBeforeKitReminders(
+  options
+) {
+  return processKitReminders({
+    ...options,
+
+    reminderType:
+      "TWO_HOURS_BEFORE",
+  });
 }

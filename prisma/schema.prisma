@@ -125,6 +125,7 @@ model Match {
   matchKitPlayers       MatchKitPlayer[]
   kitAssignments        KitAssignment[]
   kitReminderLogs       KitReminderLog[]
+  leagueKitEvents       LeagueKitEvent[]
 }
 
 model Ball {
@@ -198,6 +199,8 @@ model League {
   kitRotationMode              KitRotationMode                  @default(TEAM)
   timeZone                     String                           @default("America/Los_Angeles")
   kitReminderLogs              KitReminderLog[]
+  leagueKit                    LeagueKit?
+  leagueKitEvents              LeagueKitEvent[]
 }
 
 model LeagueRegistration {
@@ -690,6 +693,8 @@ enum KitAssignmentStatus {
 
 enum KitReminderRecipientType {
   PLAYER
+  ASSIGNED_CARRIER
+  CURRENT_HOLDER
   CAPTAIN
   TEAM_MANAGER
   SCORER
@@ -811,6 +816,9 @@ model KitRotationMember {
 
   actualKitAssignments KitAssignment[] @relation("ActualKitCarrier")
 
+  currentHolderForLeagueKits  LeagueKit[] @relation("LeagueKitCurrentHolder")
+  previousHolderForLeagueKits LeagueKit[] @relation("LeagueKitPreviousHolder")
+
   createdAt DateTime @default(now())
   updatedAt DateTime @updatedAt
 
@@ -819,12 +827,119 @@ model KitRotationMember {
   @@index([rotationKey, completedCount, lastCompletedAt])
 }
 
+enum LeagueKitStatus {
+  UNASSIGNED
+  WITH_HOLDER
+  AWAITING_COORDINATION
+  HANDOVER_CONFIRMED
+  AT_VENUE
+}
+
+enum LeagueKitHandoverStatus {
+  NOT_REQUIRED
+  PENDING
+  COORDINATED
+  HANDED_OVER
+}
+
+/**
+ * One physical kit owned and tracked at league level.
+ * The current holder is the person presently recorded as having
+ * custody of the kit. The previous holder is retained for display
+ * and audit context after custody changes. Upcoming responsibility
+ * remains in KitAssignment so the assigned and actual carriers are
+ * never overwritten.
+ */
+model LeagueKit {
+  id       Int @id @default(autoincrement())
+  leagueId Int @unique
+
+  name String @default("League Kit")
+
+  status         LeagueKitStatus         @default(UNASSIGNED)
+  handoverStatus LeagueKitHandoverStatus @default(NOT_REQUIRED)
+
+  currentHolderRotationMemberId  Int?
+  previousHolderRotationMemberId Int?
+
+  holderConfirmedAt   DateTime?
+  handoverConfirmedAt DateTime?
+  venueConfirmedAt    DateTime?
+
+  notes String?
+
+  league League @relation(fields: [leagueId], references: [id], onDelete: Cascade)
+
+  currentHolderRotationMember  KitRotationMember? @relation("LeagueKitCurrentHolder", fields: [currentHolderRotationMemberId], references: [id], onDelete: SetNull)
+  previousHolderRotationMember KitRotationMember? @relation("LeagueKitPreviousHolder", fields: [previousHolderRotationMemberId], references: [id], onDelete: SetNull)
+
+  assignments KitAssignment[]
+  events      LeagueKitEvent[]
+
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  @@index([currentHolderRotationMemberId])
+  @@index([previousHolderRotationMemberId])
+  @@index([status, handoverStatus])
+}
+
+enum LeagueKitEventType {
+  KIT_CREATED
+  ASSIGNMENT_CREATED
+  ASSIGNMENT_CHANGED
+  COORDINATION_CONFIRMED
+  HANDOVER_CONFIRMED
+  VENUE_CONFIRMED
+  STATUS_RESET
+  CUSTODY_TRANSFERRED
+  CUSTODY_NOT_TRANSFERRED
+}
+
+model LeagueKitEvent {
+  id Int @id @default(autoincrement())
+
+  leagueKitId  Int
+  leagueId     Int
+  matchId      Int?
+  assignmentId Int?
+
+  eventType LeagueKitEventType
+
+  fromHolderRotationMemberId Int?
+  toHolderRotationMemberId   Int?
+
+  fromHolderName String?
+  toHolderName   String?
+
+  description String?
+  metadata    Json?
+
+  occurredAt DateTime @default(now())
+  createdAt  DateTime @default(now())
+
+  leagueKit  LeagueKit      @relation(fields: [leagueKitId], references: [id], onDelete: Cascade)
+  league     League         @relation(fields: [leagueId], references: [id], onDelete: Cascade)
+  match      Match?         @relation(fields: [matchId], references: [id], onDelete: SetNull)
+  assignment KitAssignment? @relation(fields: [assignmentId], references: [id], onDelete: SetNull)
+
+  @@index([leagueKitId, occurredAt])
+  @@index([leagueId, occurredAt])
+  @@index([matchId])
+  @@index([assignmentId])
+  @@index([eventType, occurredAt])
+}
+
 model KitAssignment {
   id Int @id @default(autoincrement())
 
   leagueId Int
   matchId  Int
   teamId   Int
+
+  // Populated for leagues that use one shared league kit.
+  // Null preserves the existing one-kit-per-team workflow.
+  leagueKitId Int?
 
   rotationKey String
 
@@ -864,6 +979,8 @@ model KitAssignment {
 
   league League @relation(fields: [leagueId], references: [id], onDelete: Cascade)
 
+  leagueKit LeagueKit? @relation(fields: [leagueKitId], references: [id], onDelete: SetNull)
+
   match Match @relation(fields: [matchId], references: [id], onDelete: Cascade)
 
   team Team @relation(fields: [teamId], references: [id], onDelete: Cascade)
@@ -896,12 +1013,14 @@ model KitAssignment {
 
   pickupRecordedBy User? @relation("KitAssignmentPickupRecordedBy", fields: [pickupRecordedById], references: [id], onDelete: SetNull)
 
-  reminderLogs KitReminderLog[]
+  reminderLogs    KitReminderLog[]
+  leagueKitEvents LeagueKitEvent[]
 
   createdAt DateTime @default(now())
   updatedAt DateTime @updatedAt
 
   @@unique([matchId, teamId])
+  @@index([leagueKitId, matchId, status])
   @@index([leagueId, teamId, status])
   @@index([rotationMemberId, status])
   @@index([actualRotationMemberId, pickupStatus])
