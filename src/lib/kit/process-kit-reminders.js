@@ -10,6 +10,12 @@ import {
 import {
   sendKitReminderWhatsApp,
 } from "@/lib/notifications/send-whatsapp";
+import {
+  sendPlayerCommunication,
+} from "@/lib/communications/sendPlayerCommunication";
+import {
+  buildKitReminderCommunicationContent,
+} from "@/lib/communications/templates/kitReminder";
 
 /**
  * Reminder configuration.
@@ -591,21 +597,50 @@ export async function processDayBeforeKitReminders({
        */
       if (dryRun) {
         await prisma.kitReminderLog.update({
-          where: {
-            id: reminder.id,
-          },
-          data: {
-            status: "PENDING",
-            providerStatus: "DRY_RUN",
-            errorMessage:
-              "Dry run completed. No WhatsApp message was sent.",
-            recipientName:
-              assignedPlayer.name,
-            recipientPhone:
-              normalizedPhone,
-          },
-        });
+  where: {
+    id: reminder.id,
+  },
 
+  data: {
+    status: "PROCESSING",
+
+    providerMessageId:
+      result.providerMessageId,
+
+    providerStatus:
+      result.providerStatus,
+
+    processingStartedAt:
+      new Date(),
+
+    attemptCount: {
+      increment: 1,
+    },
+
+    fallbackSmsAllowed:
+      result.fallbackEligible,
+
+    fallbackSmsBody:
+      result.fallbackMessageBody,
+
+    fallbackSmsStatus:
+      null,
+
+    fallbackSmsMessageId:
+      null,
+
+    fallbackSmsAttemptedAt:
+      null,
+
+    fallbackSmsQueuedAt:
+      null,
+
+    fallbackSmsError:
+      null,
+
+    errorMessage: null,
+  },
+});
         summary.dryRun += 1;
         continue;
       }
@@ -619,36 +654,111 @@ export async function processDayBeforeKitReminders({
       }
 
       try {
-        const result =
-          await sendKitReminderWhatsApp({
-            phoneNumber:
-              normalizedPhone,
+        const communicationContent =
+          buildKitReminderCommunicationContent({
             playerName:
               assignedPlayer.name,
+
             teamName:
               assignment.team?.name ||
               "Your team",
+
             opponentName:
               getOpponentName(
                 match,
                 assignment.teamId
               ),
+
             leagueName:
               match.league?.name ||
               "Your league",
+
             matchDateText:
               formattedMatch.dateText,
+
             matchTimeText:
               formattedMatch.timeText,
           });
 
-        await markReminderQueued(
-  reminder.id,
-  result
-);
+        const whatsappVariables =
+          communicationContent.whatsappVariables;
 
-summary.queued =
-  (summary.queued || 0) + 1;
+        const result =
+          await sendPlayerCommunication({
+            type: "KIT_REMINDER",
+
+            consentGranted:
+              assignedPlayer.optedIn,
+
+            recipientPhone:
+              normalizedPhone,
+
+            /*
+             * This PR migrates the primary WhatsApp send to the
+             * shared communication service. SMS fallback remains
+             * disabled until KitReminderLog receives dedicated,
+             * duplicate-protected fallback fields.
+             */
+            fallbackEligible: false,
+
+            fallbackBody:
+              communicationContent.fallbackSmsBody,
+
+            context: {
+              assignmentId:
+                assignment.id,
+
+              reminderId:
+                reminder.id,
+
+              reminderType:
+                REMINDER_TYPE,
+
+              matchId:
+                assignment.matchId,
+
+              leagueId:
+                assignment.leagueId,
+
+              teamId:
+                assignment.teamId,
+
+              playerName:
+                assignedPlayer.name,
+            },
+
+            sendPrimary: () =>
+              sendKitReminderWhatsApp({
+                phoneNumber:
+                  normalizedPhone,
+
+                playerName:
+                  whatsappVariables.playerName,
+
+                teamName:
+                  whatsappVariables.teamName,
+
+                opponentName:
+                  whatsappVariables.opponentName,
+
+                leagueName:
+                  whatsappVariables.leagueName,
+
+                matchDateText:
+                  whatsappVariables.matchDateText,
+
+                matchTimeText:
+                  whatsappVariables.matchTimeText,
+              }),
+          });
+
+        await markReminderQueued(
+          reminder.id,
+          result
+        );
+
+        summary.queued =
+          (summary.queued || 0) + 1;
       } catch (error) {
         console.error(
           `Kit reminder failed for assignment ${assignment.id}:`,

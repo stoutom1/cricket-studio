@@ -129,12 +129,10 @@ async function attempt63049SmsFallback({
     console.warn(
       "[BIRTHDAY_SMS_FALLBACK_SKIPPED]",
       {
-        reminderLogId:
-          reminderLog.id,
+        reminderLogId: reminderLog.id,
         birthdayId,
         leagueId,
-        reason:
-          "MISSING_RECIPIENT_PHONE",
+        reason: "MISSING_RECIPIENT_PHONE",
       }
     );
 
@@ -144,52 +142,40 @@ async function attempt63049SmsFallback({
     };
   }
 
-  if (!reminderLog.fallbackSmsBody) {
-    console.warn(
+  if (reminderLog.fallbackSmsAllowed !== true) {
+    console.log(
       "[BIRTHDAY_SMS_FALLBACK_SKIPPED]",
       {
-        reminderLogId:
-          reminderLog.id,
+        reminderLogId: reminderLog.id,
         birthdayId,
         leagueId,
-        reason:
-          "MISSING_FALLBACK_SMS_BODY",
+        reason: "COMMUNICATION_CONSENT_NOT_GRANTED",
       }
     );
 
     return {
       attempted: false,
-      reason:
-        "MISSING_FALLBACK_SMS_BODY",
+      reason: "COMMUNICATION_CONSENT_NOT_GRANTED",
     };
   }
 
-  if (
-  reminderLog.fallbackSmsAllowed !==
-  true
-) {
-  console.log(
-    "[BIRTHDAY_SMS_FALLBACK_SKIPPED]",
-    {
-      reminderLogId:
-        reminderLog.id,
+  if (!reminderLog.fallbackSmsBody) {
+    console.warn(
+      "[BIRTHDAY_SMS_FALLBACK_SKIPPED]",
+      {
+        reminderLogId: reminderLog.id,
+        birthdayId,
+        leagueId,
+        reason: "MISSING_FALLBACK_SMS_BODY",
+      }
+    );
 
-      birthdayId,
-      leagueId,
+    return {
+      attempted: false,
+      reason: "MISSING_FALLBACK_SMS_BODY",
+    };
+  }
 
-      reason:
-        "SMS_NOT_OPTED_IN",
-    }
-  );
-
-  return {
-    attempted:
-      false,
-
-    reason:
-      "SMS_NOT_OPTED_IN",
-  };
-}
   /*
    * Atomic claim:
    *
@@ -244,8 +230,8 @@ async function attempt63049SmsFallback({
           fallbackSmsMessageId:
             true,
 
-          fallbackSmsAttemptedAt:
-            true,
+          fallbackSmsAttemptedAt: true,
+          sentAt: true,
         },
       });
 
@@ -265,17 +251,40 @@ async function attempt63049SmsFallback({
       }
     );
 
+    const existingFallbackStatus = String(
+      latestLog?.fallbackSmsStatus || ""
+    ).toUpperCase();
+
+    const fallbackWasAccepted = [
+      "ACCEPTED",
+      "QUEUED",
+      "SENDING",
+      "SENT",
+      "DELIVERED",
+    ].includes(existingFallbackStatus);
+
+    if (fallbackWasAccepted) {
+      await prisma.birthdayReminderLog.update({
+        where: {
+          id: reminderLog.id,
+        },
+        data: {
+          status: "SENT",
+          sentAt: latestLog?.sentAt || new Date(),
+          errorMessage:
+            "WhatsApp delivery was blocked with Twilio error 63049. SMS fallback was accepted by Twilio.",
+        },
+      });
+    }
+
     return {
       attempted: false,
       duplicate: true,
-      reason:
-        "FALLBACK_ALREADY_CLAIMED",
-      status:
-        latestLog?.fallbackSmsStatus ??
-        null,
+      recovered: fallbackWasAccepted,
+      reason: "FALLBACK_ALREADY_CLAIMED",
+      status: existingFallbackStatus || null,
       messageSid:
-        latestLog?.fallbackSmsMessageId ??
-        null,
+        latestLog?.fallbackSmsMessageId || null,
     };
   }
 
@@ -303,11 +312,12 @@ async function attempt63049SmsFallback({
       },
 
       data: {
-        fallbackSmsStatus:
-          String(
-            smsResult.status ||
-            "QUEUED"
-          ).toUpperCase(),
+        status: "SENT",
+        sentAt: reminderLog.sentAt || queuedAt,
+
+        fallbackSmsStatus: String(
+          smsResult.status || "QUEUED"
+        ).toUpperCase(),
 
         fallbackSmsMessageId:
           smsResult.messageSid,
@@ -315,8 +325,10 @@ async function attempt63049SmsFallback({
         fallbackSmsQueuedAt:
           queuedAt,
 
-        fallbackSmsError:
-          null,
+        fallbackSmsError: null,
+
+        errorMessage:
+          "WhatsApp delivery was blocked with Twilio error 63049. SMS fallback was accepted by Twilio.",
       },
     });
 
@@ -341,10 +353,9 @@ async function attempt63049SmsFallback({
     return {
       attempted: true,
       queued: true,
-      messageSid:
-        smsResult.messageSid,
-      status:
-        smsResult.status,
+      deliveredBy: "SMS_FALLBACK",
+      messageSid: smsResult.messageSid,
+      status: smsResult.status,
     };
   } catch (error) {
     const fallbackError =
@@ -396,11 +407,7 @@ export async function POST(request) {
   try {
     const formData = await request.formData();
     const parameters = formDataToObject(formData);
-console.log(
-  "[BIRTHDAY_WHATSAPP_CALLBACK_PARAMETERS]",
-  parameters
-);
-const requestUrl = new URL(request.url);
+    const requestUrl = new URL(request.url);
 
 const birthdayId = parsePositiveInteger(
   requestUrl.searchParams.get("birthdayId")
@@ -718,7 +725,14 @@ if (
     success: true,
     received: true,
     matched: true,
-    failed: true,
+    failed: smsFallback.queued !== true &&
+      smsFallback.recovered !== true,
+
+    deliveredBy:
+      smsFallback.queued === true ||
+      smsFallback.recovered === true
+        ? "SMS_FALLBACK"
+        : null,
 
     metaBlocked:
       errorCode === "63049",
@@ -768,11 +782,16 @@ if (
       error: errorMessage,
     });
 
-    return NextResponse.json({
-      success: true,
-      received: true,
-      processingError: true,
-      details: errorMessage,
-    });
+    return NextResponse.json(
+      {
+        success: false,
+        received: true,
+        processingError: true,
+        details: errorMessage,
+      },
+      {
+        status: 500,
+      }
+    );
   }
 }

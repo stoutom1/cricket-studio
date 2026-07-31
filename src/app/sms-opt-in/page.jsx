@@ -58,7 +58,7 @@ export default function SmsOptInPage() {
               />
 
               <span>
-                I agree to receive recurring SMS
+                I agree to receive recurring SMS/WhatsApp
                 notifications from Cric4All regarding
                 match reminders, schedule updates,
                 kit assignments, league announcements,

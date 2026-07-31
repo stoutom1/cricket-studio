@@ -1777,7 +1777,7 @@ async function runBirthdayAction(birthdayId, actionName, callback) {
               </select>
             </label>
             <label>
-  WhatsApp number
+  Personal Phone number
 
 <input
   type="tel"
@@ -1800,7 +1800,7 @@ async function runBirthdayAction(birthdayId, actionName, callback) {
   }`}
 >
   <span className="consent-text">
-    <strong>📱 WhatsApp Consent</strong>
+    <strong>📱 Consent to receive SMS/WhatsApp Messages</strong>
 
     <small>
       {form.whatsappOptIn

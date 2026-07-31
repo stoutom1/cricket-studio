@@ -2,6 +2,9 @@ import { NextResponse } from "next/server";
 import twilio from "twilio";
 
 import prisma from "@/lib/prisma";
+import {
+  sendTwilioBirthdaySmsFallback,
+} from "@/lib/sendTwilioBirthdaySmsFallback";
 
 export const runtime = "nodejs";
 export const dynamic = "force-dynamic";
@@ -258,6 +261,26 @@ const reminder =
     messageSid
   );
 
+async function claimSmsFallback(logId) {
+  const result =
+    await prisma.kitReminderLog.updateMany({
+      where: {
+        id: logId,
+
+        fallbackSmsAllowed: true,
+
+        fallbackSmsQueuedAt: null,
+      },
+
+      data: {
+        fallbackSmsQueuedAt:
+          new Date(),
+      },
+    });
+
+  return result.count === 1;
+}
+
     /*
      * A callback can arrive before the providerMessageId
      * transaction has completed. Return 200 so Twilio does
@@ -348,6 +371,104 @@ const reminder =
           providerResponse,
         },
       });
+
+      if (
+  errorCode === "63049" &&
+  reminder.fallbackSmsAllowed
+) {
+  const claimed =
+    await claimSmsFallback(
+      reminder.id
+    );
+
+  if (claimed) {
+    try {
+      await prisma.kitReminderLog.update({
+        where: {
+          id: reminder.id,
+        },
+
+        data: {
+          fallbackSmsAttemptedAt:
+            new Date(),
+        },
+      });
+
+      const sms =
+        await sendTwilioBirthdaySmsFallback({
+          recipientPhone:
+            reminder.recipientPhone,
+
+          messageBody:
+            reminder.fallbackSmsBody,
+
+          reminderLogId:
+            reminder.id,
+
+          birthdayId:
+            null,
+
+          leagueId:
+            reminder.leagueId,
+        });
+
+      await prisma.kitReminderLog.update({
+        where: {
+          id: reminder.id,
+        },
+
+        data: {
+          fallbackSmsStatus:
+            sms.status,
+
+          fallbackSmsMessageId:
+            sms.messageSid,
+
+          fallbackSmsError:
+            null,
+        },
+      });
+
+      console.log(
+        "[KIT_SMS_FALLBACK_ACCEPTED]",
+        {
+          reminderLogId:
+            reminder.id,
+
+          smsSid:
+            sms.messageSid,
+        }
+      );
+    } catch (error) {
+      await prisma.kitReminderLog.update({
+        where: {
+          id: reminder.id,
+        },
+
+        data: {
+          fallbackSmsError:
+            error instanceof Error
+              ? error.message
+              : String(error),
+        },
+      });
+
+      console.error(
+        "[KIT_SMS_FALLBACK_FAILED]",
+        error
+      );
+    }
+  } else {
+    console.log(
+      "[KIT_SMS_ALREADY_QUEUED]",
+      {
+        reminderLogId:
+          reminder.id,
+      }
+    );
+  }
+}
+
     } else {
       /*
        * ACCEPTED, QUEUED, SENDING and SENT are

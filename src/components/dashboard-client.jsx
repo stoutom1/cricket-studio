@@ -17751,7 +17751,7 @@ onChange={(e)=>setEditPlayerName(e.target.value)}
     }
   />
 
-  Receive WhatsApp notifications
+  Receive SMS/Whatsapp notifications
 </label>
 
 <div className="rename-note">

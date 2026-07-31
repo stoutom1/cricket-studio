@@ -20,6 +20,14 @@ import {
   sendTwilioWhatsAppBirthdayMessage,
 } from "@/lib/sendTwilioWhatsAppBirthdayMessage";
 
+import {
+  sendPlayerCommunication,
+} from "@/lib/communications/sendPlayerCommunication";
+
+import {
+  buildBirthdayCommunicationContent,
+} from "@/lib/communications/templates/birthday";
+
 export const runtime = "nodejs";
 export const dynamic = "force-dynamic";
 export const maxDuration = 60;
@@ -578,19 +586,17 @@ async function sendPlayerBirthdayWhatsApp({
       ""
   ).trim();
 
-  const whatsappOptIn =
+  /*
+   * Backward-compatible communication consent.
+   *
+   * The existing whatsappOptIn value now represents the
+   * player's consent to receive Cric4All communications.
+   * WhatsApp remains the primary transport and SMS may be
+   * used only as an eligible fallback.
+   */
+  const communicationConsent =
     birthday.whatsappOptIn === true ||
     birthday.player?.whatsappOptIn === true;
-
-  /*
-   * SMS permission must be explicit.
-   *
-   * Do not replace this with whatsappOptIn unless
-   * your consent language explicitly covers SMS.
-   */
-  const smsOptIn =
-    birthday.smsOptIn === true ||
-    birthday.player?.smsOptIn === true;
 
   const leagueWhatsAppEnabled =
     birthday.league
@@ -603,7 +609,7 @@ async function sendPlayerBirthdayWhatsApp({
     };
   }
 
-  if (!whatsappOptIn) {
+  if (!communicationConsent) {
     return {
       skipped: true,
       reason: "PLAYER_NOT_OPTED_IN",
@@ -656,10 +662,14 @@ async function sendPlayerBirthdayWhatsApp({
     birthday.league?.name ||
     "Cric4All League";
 
+  const communicationContent =
+    buildBirthdayCommunicationContent({
+      playerName,
+      leagueName,
+    });
+
   const fallbackSmsBody =
-    `Happy Birthday, ${playerName}! ` +
-    `Best wishes from ${leagueName}. ` +
-    `- Cric4All`;
+    communicationContent.fallbackSmsBody;
 
   /*
    * This flag controls whether error 63049 is
@@ -677,9 +687,9 @@ async function sendPlayerBirthdayWhatsApp({
       .trim()
       .toLowerCase() === "true";
 
-  const fallbackSmsAllowed =
+const fallbackSmsAllowed =
     fallbackFeatureEnabled &&
-    smsOptIn;
+    communicationConsent;
 
   const log =
     await prisma.birthdayReminderLog.upsert({
@@ -768,16 +778,33 @@ async function sendPlayerBirthdayWhatsApp({
       new Date();
 
     const result =
-      await sendTwilioWhatsAppBirthdayMessage({
+      await sendPlayerCommunication({
+        type: "BIRTHDAY",
+        consentGranted:
+          communicationConsent,
         recipientPhone,
-        playerName,
-        leagueName,
-
-        birthdayId:
-          birthday.id,
-
-        leagueId:
-          birthday.leagueId,
+        fallbackEligible:
+          fallbackSmsAllowed,
+        fallbackBody:
+          fallbackSmsBody,
+        context: {
+          birthdayId:
+            birthday.id,
+          leagueId:
+            birthday.leagueId,
+          playerName,
+          leagueName,
+        },
+        sendPrimary: () =>
+          sendTwilioWhatsAppBirthdayMessage({
+            recipientPhone,
+            playerName,
+            leagueName,
+            birthdayId:
+              birthday.id,
+            leagueId:
+              birthday.leagueId,
+          }),
       });
 
     /*
@@ -1088,70 +1115,45 @@ export async function GET(request) {
                 ),
               },
 
-              select: {
-                id:
-                  true,
+select: {
+  id: true,
+  leagueId: true,
+  playerId: true,
+  name: true,
+  birthMonth: true,
+  birthDay: true,
 
-                leagueId:
-                  true,
+  whatsappNumber: true,
+  whatsappOptIn: true,
 
-                playerId:
-                  true,
+  smsOptIn: true,
+  smsOptInAt: true,
+  smsOptOutAt: true,
 
-                name:
-                  true,
+  league: {
+    select: {
+      id: true,
+      name: true,
+      ownerId: true,
+      ownerWhatsAppNumber: true,
+      whatsappNotificationsEnabled: true,
+    },
+  },
 
-                birthMonth:
-                  true,
+  player: {
+    select: {
+      id: true,
+      name: true,
 
-                birthDay:
-                  true,
+      whatsappNumber: true,
+      whatsappOptIn: true,
 
-                whatsappNumber:
-                  true,
-
-                whatsappOptIn:
-                  true,
-
-                smsOptIn: true,  
-
-                league: {
-                  select: {
-                    id:
-                      true,
-
-                    name:
-                      true,
-
-                    ownerId:
-                      true,
-
-                    ownerWhatsAppNumber:
-                      true,
-
-                    whatsappNotificationsEnabled:
-                      true,
-                  },
-                },
-
-                player: {
-                  select: {
-                    id:
-                      true,
-
-                    name:
-                      true,
-
-                    whatsappNumber:
-                      true,
-
-                    whatsappOptIn:
-                      true,
-
-                    smsOptIn: true,  
-                  },
-                },
-              },
+      smsOptIn: true,
+      smsOptInAt: true,
+      smsOptOutAt: true,
+    },
+  },
+},
 
               orderBy: {
                 name:

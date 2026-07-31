@@ -74,6 +74,12 @@ model Player {
   leagueBirthdays    LeagueBirthday[]
   whatsappNumber     String?
   whatsappOptIn      Boolean             @default(false)
+  smsOptIn           Boolean             @default(false)
+  smsOptInAt         DateTime?
+  smsOptOutAt        DateTime?
+  smsOptInSource     String?
+  smsOptInIpAddress  String?
+  smsOptInUserAgent  String?
   matchKitPlayers    MatchKitPlayer[]
   kitRotationMembers KitRotationMember[]
 
@@ -534,10 +540,16 @@ model LeagueBirthday {
   createdById String
   updatedById String?
 
-  createdAt      DateTime @default(now())
-  updatedAt      DateTime @updatedAt
-  whatsappNumber String?
-  whatsappOptIn  Boolean  @default(false)
+  createdAt         DateTime  @default(now())
+  updatedAt         DateTime  @updatedAt
+  whatsappNumber    String?
+  whatsappOptIn     Boolean   @default(false)
+  smsOptIn          Boolean   @default(false)
+  smsOptInAt        DateTime?
+  smsOptOutAt       DateTime?
+  smsOptInSource    String?
+  smsOptInIpAddress String?
+  smsOptInUserAgent String?
 
   league    League @relation(fields: [leagueId], references: [id], onDelete: Cascade)
   createdBy User   @relation("BirthdayCreatedBy", fields: [createdById], references: [id], onDelete: Restrict)
@@ -917,6 +929,20 @@ model KitReminderLog {
   providerStatus    String?
   errorMessage      String?
   providerResponse  Json?
+
+  fallbackSmsAllowed Boolean @default(false)
+
+  fallbackSmsBody String?
+
+  fallbackSmsStatus String?
+
+  fallbackSmsMessageId String?
+
+  fallbackSmsAttemptedAt DateTime?
+
+  fallbackSmsQueuedAt DateTime?
+
+  fallbackSmsError String?
 
   scheduledFor        DateTime
   processingStartedAt DateTime?
