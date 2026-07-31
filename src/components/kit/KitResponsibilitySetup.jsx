@@ -271,7 +271,7 @@ function PlayerReviewRow({
             />
           </div>
 
-          {!isLeaguePlayerMode && (
+          {!useOneSharedCarrier && (
             <div className="kit-player-field kit-player-match-cell">
               <label className="kit-mobile-field-label">
                 Cric4All player
@@ -373,6 +373,7 @@ function TeamPlayerReview({
   onAddPlayer,
   onUpdatePlayer,
   onRemovePlayer,
+  onSetAllIncluded,
   sourceMode = "SCREENSHOT",
 }) {
   const isTeamRosterMode =
@@ -383,33 +384,75 @@ function TeamPlayerReview({
   ).length;
 
   return (
-    <section
-      className={`kit-team-review-card ${
+    <details
+      className={`kit-team-review-card kit-team-review-details ${
         isTeamRosterMode
           ? "kit-team-review-card-roster"
           : ""
       }`}
     >
-      <div className="kit-team-review-header">
-        <div>
-          <span className="kit-team-kicker">
-            {isTeamRosterMode
-              ? "Registered team roster"
-              : "Team-specific kit rotation"}
+      <summary className="kit-team-review-summary">
+        <div className="kit-team-review-summary-main">
+          <span className="kit-team-review-icon">
+            👥
           </span>
 
-          <h4>{title}</h4>
+          <div>
+            <span className="kit-team-kicker">
+              {isTeamRosterMode
+                ? "Registered playing roster"
+                : "Detected playing team"}
+            </span>
 
-          <small>
-            Team ID: {teamId || "Not available"}
-          </small>
+            <h4>{title}</h4>
+
+            <small>
+              {includedCount} selected of {players.length}
+            </small>
+          </div>
         </div>
 
-        <div className="kit-player-count-badge">
-          {includedCount} included
-        </div>
-      </div>
+        <div className="kit-team-review-summary-actions">
+          <button
+            type="button"
+            className="kit-team-bulk-btn"
+            disabled={players.length === 0}
+            onClick={(event) => {
+              event.preventDefault();
+              event.stopPropagation();
+              onSetAllIncluded?.(false);
+            }}
+          >
+            Clear All
+          </button>
 
+          <button
+            type="button"
+            className="kit-team-bulk-btn"
+            disabled={players.length === 0}
+            onClick={(event) => {
+              event.preventDefault();
+              event.stopPropagation();
+              onSetAllIncluded?.(true);
+            }}
+          >
+            Select All
+          </button>
+
+          <span className="kit-player-count-badge">
+            {includedCount}
+          </span>
+
+          <span
+            className="kit-team-review-chevron"
+            aria-hidden="true"
+          >
+            ⌄
+          </span>
+        </div>
+      </summary>
+
+      <div className="kit-team-review-body">
       <div className="kit-add-player-row">
         <input
           type="text"
@@ -474,7 +517,7 @@ function TeamPlayerReview({
             ) : (
               <>
                 <span>Screenshot name</span>
-                {!isLeaguePlayerMode && (
+                {!useOneSharedCarrier && (
                   <span>Cric4All player</span>
                 )}
               </>
@@ -505,7 +548,8 @@ function TeamPlayerReview({
           ))}
         </div>
       )}
-    </section>
+      </div>
+    </details>
   );
 }
 
@@ -558,7 +602,7 @@ export default function KitResponsibilitySetup({
   ] = useState(0);
 
   const [kitInputMode, setKitInputMode] =
-  useState("SCREENSHOT");
+  useState("TEAM_ROSTER");
 
 const [
   selectedRosterTeamId,
@@ -621,10 +665,90 @@ const isLeaguePlayerMode =
     .toUpperCase() ===
   "LEAGUE_PLAYER";
 
+
+const normalizedActiveLeagueName =
+  String(
+    activeLeague?.name || ""
+  )
+    .trim()
+    .replace(/\s+/g, " ")
+    .toLowerCase();
+
+const isSurpriseCricketLeague =
+  normalizedActiveLeagueName ===
+  "surprise cricket league";
+
+/*
+ * Surprise Cricket League is the explicit one-kit exception.
+ * LEAGUE_PLAYER remains supported as the scalable configuration.
+ */
+const useOneSharedCarrier =
+  isSurpriseCricketLeague ||
+  isLeaguePlayerMode;
+
   const availableMatches = useMemo(
     () => matches.filter(isAvailableMatch),
     [matches]
   );
+
+  /*
+   * The shared kit always follows the earliest available
+   * upcoming match. Users can still change the match, but
+   * the normal workflow requires no match selection.
+   */
+  useEffect(() => {
+    if (
+      selectedMatchId ||
+      availableMatches.length === 0 ||
+      typeof onSelectedMatchIdChange !==
+        "function"
+    ) {
+      return;
+    }
+
+    const sortedMatches = [
+      ...availableMatches,
+    ].sort((left, right) => {
+      const leftTime =
+        new Date(
+          left.scheduledAt ||
+            left.matchDate ||
+            left.createdAt
+        ).getTime();
+
+      const rightTime =
+        new Date(
+          right.scheduledAt ||
+            right.matchDate ||
+            right.createdAt
+        ).getTime();
+
+      const safeLeft =
+        Number.isFinite(leftTime)
+          ? leftTime
+          : Number.MAX_SAFE_INTEGER;
+
+      const safeRight =
+        Number.isFinite(rightTime)
+          ? rightTime
+          : Number.MAX_SAFE_INTEGER;
+
+      return safeLeft - safeRight;
+    });
+
+    const nextMatch =
+      sortedMatches[0];
+
+    if (nextMatch?.id) {
+      onSelectedMatchIdChange(
+        String(nextMatch.id)
+      );
+    }
+  }, [
+    availableMatches,
+    onSelectedMatchIdChange,
+    selectedMatchId,
+  ]);
 
   const selectedMatch = useMemo(
     () =>
@@ -1217,6 +1341,40 @@ async function handleReadPlayerNames() {
 }
 }
 
+  function setAllTeamPlayersIncluded(
+    side,
+    included
+  ) {
+    const setter =
+      side === "A"
+        ? setTeamAPlayers
+        : setTeamBPlayers;
+
+    setter((currentPlayers) =>
+      currentPlayers.map(
+        (player) => ({
+          ...player,
+          included,
+        })
+      )
+    );
+
+    setScreenshotError("");
+    setKitMessage(
+      included
+        ? `Selected every player for ${
+            side === "A"
+              ? teamAName
+              : teamBName
+          }.`
+        : `Cleared every player for ${
+            side === "A"
+              ? teamAName
+              : teamBName
+          }. Choose only the players participating in this match.`
+    );
+  }
+
   function updateTeamPlayer(
     side,
     clientId,
@@ -1316,34 +1474,53 @@ async function handleReadPlayerNames() {
     );
   }
 
-  async function loadSelectedTeamRoster() {
+  async function loadBothTeamRosters() {
   setScreenshotError("");
   setKitMessage("");
 
   if (!selectedMatch) {
     setScreenshotError(
-      "Please select a match first."
+      "No upcoming match is available."
     );
     return;
   }
 
-  if (!selectedRosterTeam) {
-    setScreenshotError(
-      "Please select a team."
-    );
-    return;
-  }
-
-  const rosterPlayers =
+  const teamARoster =
     Array.isArray(
-      selectedRosterTeam.players
+      selectedMatchTeams.find(
+        (team) =>
+          Number(team.id) ===
+          Number(teamAId)
+      )?.players
     )
-      ? selectedRosterTeam.players
+      ? selectedMatchTeams.find(
+          (team) =>
+            Number(team.id) ===
+            Number(teamAId)
+        ).players
       : [];
 
-  if (rosterPlayers.length === 0) {
+  const teamBRoster =
+    Array.isArray(
+      selectedMatchTeams.find(
+        (team) =>
+          Number(team.id) ===
+          Number(teamBId)
+      )?.players
+    )
+      ? selectedMatchTeams.find(
+          (team) =>
+            Number(team.id) ===
+            Number(teamBId)
+        ).players
+      : [];
+
+  if (
+    teamARoster.length === 0 &&
+    teamBRoster.length === 0
+  ) {
     setScreenshotError(
-      `${selectedRosterTeam.name} does not have any registered players.`
+      "Neither playing team has registered players."
     );
     return;
   }
@@ -1351,42 +1528,79 @@ async function handleReadPlayerNames() {
   setIsLoadingTeamRoster(true);
 
   try {
-    const reviewPlayers =
-      rosterPlayers.map((player) => ({
-        ...createTemporaryPlayer(
-          player.name
-        ),
+    const toReviewPlayers =
+      (players) =>
+        players.map(
+          (player) => ({
+            ...createTemporaryPlayer(
+              player.name
+            ),
 
-        playerId: String(player.id),
-        displayName: player.name,
-        matchStatus: "MATCHED",
-      }));
+            playerId:
+              String(player.id),
 
-    if (
-      Number(selectedRosterTeam.id) ===
-      Number(teamAId)
-    ) {
-      setTeamAPlayers(reviewPlayers);
-      setTeamBPlayers([]);
-    } else {
-      setTeamAPlayers([]);
-      setTeamBPlayers(reviewPlayers);
-    }
+            displayName:
+              player.name,
+
+            matchStatus:
+              "MATCHED",
+          })
+        );
+
+    const nextTeamAPlayers =
+      toReviewPlayers(
+        teamARoster
+      );
+
+    const nextTeamBPlayers =
+      toReviewPlayers(
+        teamBRoster
+      );
+
+    setTeamAPlayers(
+      nextTeamAPlayers
+    );
+
+    setTeamBPlayers(
+      nextTeamBPlayers
+    );
+
+    setSelectedRosterTeamId(
+      ""
+    );
 
     setKitMessage(
-      `${reviewPlayers.length} registered players loaded for ${selectedRosterTeam.name}. Review the list before saving.`
+      `Loaded ${nextTeamAPlayers.length} players for ${teamAName} and ${nextTeamBPlayers.length} players for ${teamBName}. Uncheck anyone who is not playing, then save both teams once.`
     );
   } catch (error) {
     setScreenshotError(
       error?.message ||
-        "Unable to load the selected team roster."
+        "Unable to load the two playing-team rosters."
     );
   } finally {
     setIsLoadingTeamRoster(false);
   }
 }
+
 const isTeamRosterWorkflow =
   kitInputMode === "TEAM_ROSTER";
+
+
+  useEffect(() => {
+    if (
+      !selectedMatch ||
+      !isTeamRosterWorkflow
+    ) {
+      return;
+    }
+
+    loadBothTeamRosters();
+    // The selected match already supplies both team rosters.
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [
+    selectedMatch?.id,
+    isTeamRosterWorkflow,
+  ]);
 
   async function validateReviewData() {
   setScreenshotError("");
@@ -1438,39 +1652,40 @@ const isTeamRosterWorkflow =
   let teamsToSave = [];
 
   if (isTeamRosterWorkflow) {
-    if (!selectedRosterTeam) {
+    if (
+      includedTeamAPlayers.length === 0
+    ) {
       setScreenshotError(
-        "Please select and load a team roster."
+        `Select at least one eligible player for ${teamAName}.`
       );
       return;
     }
 
-    const selectedTeamIsA =
-      Number(selectedRosterTeam.id) ===
-      Number(teamAId);
-
-    const selectedTeamPlayers =
-      selectedTeamIsA
-        ? includedTeamAPlayers
-        : includedTeamBPlayers;
-
     if (
-      selectedTeamPlayers.length === 0
+      includedTeamBPlayers.length === 0
     ) {
       setScreenshotError(
-        `Load at least one eligible player for ${selectedRosterTeam.name}.`
+        `Select at least one eligible player for ${teamBName}.`
       );
       return;
     }
 
     teamsToSave = [
       {
-        teamId: Number(
-          selectedRosterTeam.id
-        ),
+        teamId:
+          Number(teamAId),
 
         players:
-          selectedTeamPlayers.map(
+          includedTeamAPlayers.map(
+            mapPlayerForSave
+          ),
+      },
+      {
+        teamId:
+          Number(teamBId),
+
+        players:
+          includedTeamBPlayers.map(
             mapPlayerForSave
           ),
       },
@@ -1549,17 +1764,11 @@ const isTeamRosterWorkflow =
     }
 
     const successMessage =
-      isTeamRosterWorkflow
-        ? `Saved ${
-            teamsToSave[0].players.length
-          } players for ${
-            selectedRosterTeam.name
-          }.`
-        : `Saved ${
-            includedTeamAPlayers.length
-          } players for ${teamAName} and ${
-            includedTeamBPlayers.length
-          } players for ${teamBName}.`;
+      `Saved ${
+        includedTeamAPlayers.length
+      } players for ${teamAName} and ${
+        includedTeamBPlayers.length
+      } players for ${teamBName}.`;
 
     setKitMessage(
       data?.message || successMessage
@@ -1597,7 +1806,7 @@ const handleKitAssignmentError =
       <div className="kit-responsibility-heading">
         <div>
           <span className="kit-section-kicker">
-            Team-level rotation
+            Guided shared-kit workflow
           </span>
 
           <h3>
@@ -1605,14 +1814,12 @@ const handleKitAssignmentError =
           </h3>
 
           <p>
-            {kitInputMode === "TEAM_ROSTER"
-              ? "Choose a Cric4All team, load its registered roster, and assign kit responsibility in a few clear steps."
-              : "Upload today’s playing-team screenshot, review both sides, and prepare fair kit rotations for the match."}
+            Cric4All automatically selects the earliest upcoming match, loads both playing teams together, and guides you through one confirmation before suggesting the responsible carrier.
           </p>
         </div>
 
         <div className="kit-feature-badge">
-          One carrier per team
+          One shared league kit
         </div>
       </div>
 
@@ -1622,78 +1829,106 @@ const handleKitAssignmentError =
             League: {activeLeague.name}
           </strong>
 
-          {isLeaguePlayerMode && (
+          {useOneSharedCarrier && (
             <span>
-              Surprise Cricket League mode: the
-              confirmed screenshot columns—not the
-              duplicated database rosters—determine
-              the eligible players for each side.
+              One shared-kit carrier is selected for the entire match. The same player may appear in both Surprise teams, but Cric4All treats that person as one league-wide rotation identity.
             </span>
           )}
         </div>
       )}
 
-      <div className="kit-match-selection-grid">
-        <label className="kit-form-field">
-          <span>Select match</span>
+      <div className="kit-active-match-card">
+        <div className="kit-active-match-primary">
+          <span className="kit-section-kicker">
+            Active kit match
+          </span>
 
-          <select
-            value={selectedMatchId}
-            onChange={(event) => {
-              if (
-                typeof onSelectedMatchIdChange ===
-                "function"
-              ) {
-                onSelectedMatchIdChange(
-                  event.target.value
-                );
-              }
-            }}
-          >
-            <option value="">
-              Select a scheduled or active match
-            </option>
+          {selectedMatch ? (
+            <>
+              <strong>
+                {teamAName} vs {teamBName}
+              </strong>
 
-            {availableMatches.map((match) => {
-              const matchTeamA =
-                getMatchTeamName(match, "A");
+              <small>
+                {formatMatchDate(
+                  selectedMatch.scheduledAt ||
+                    selectedMatch.matchDate ||
+                    selectedMatch.createdAt
+                )}
+              </small>
+            </>
+          ) : (
+            <>
+              <strong>
+                No upcoming match
+              </strong>
 
-              const matchTeamB =
-                getMatchTeamName(match, "B");
+              <small>
+                Schedule a future match to start the kit workflow.
+              </small>
+            </>
+          )}
+        </div>
 
-              return (
-                <option
-                  key={match.id}
-                  value={match.id}
-                >
-                  {matchTeamA} vs {matchTeamB} —{" "}
-                  {formatMatchDate(
-                    match.scheduledAt ||
-                      match.matchDate ||
-                      match.createdAt
-                  )}
-                </option>
-              );
-            })}
-          </select>
-        </label>
+        {availableMatches.length > 1 && (
+          <details className="kit-change-match">
+            <summary>
+              Change match
+            </summary>
 
-        {selectedMatch && (
-          <div className="kit-selected-match-summary">
-            <span>Selected match</span>
+            <label className="kit-form-field">
+              <span>
+                Upcoming match
+              </span>
 
-            <strong>
-              {teamAName} vs {teamBName}
-            </strong>
-
-            <small>
-              {formatMatchDate(
-                selectedMatch.scheduledAt ||
-                  selectedMatch.matchDate ||
-                  selectedMatch.createdAt
-              )}
-            </small>
-          </div>
+              <select
+                value={
+                  selectedMatchId
+                }
+                onChange={(
+                  event
+                ) => {
+                  if (
+                    typeof onSelectedMatchIdChange ===
+                    "function"
+                  ) {
+                    onSelectedMatchIdChange(
+                      event.target.value
+                    );
+                  }
+                }}
+              >
+                {availableMatches.map(
+                  (match) => (
+                    <option
+                      key={
+                        match.id
+                      }
+                      value={
+                        match.id
+                      }
+                    >
+                      {getMatchTeamName(
+                        match,
+                        "A"
+                      )}{" "}
+                      vs{" "}
+                      {getMatchTeamName(
+                        match,
+                        "B"
+                      )}{" "}
+                      —{" "}
+                      {formatMatchDate(
+                        match.scheduledAt ||
+                          match.matchDate ||
+                          match.createdAt
+                      )}
+                    </option>
+                  )
+                )}
+              </select>
+            </label>
+          </details>
         )}
       </div>
 
@@ -1737,8 +1972,7 @@ const handleKitAssignmentError =
       <span>
         <strong>Scan Playing-Team Screenshot</strong>
         <small>
-          Read both match teams and suggest one
-          carrier for each side.
+          Read both playing teams from one screenshot.
         </small>
       </span>
     </button>
@@ -1761,10 +1995,9 @@ const handleKitAssignmentError =
       </span>
 
       <span>
-        <strong>Select Cric4All Team</strong>
+        <strong>Use Both Team Rosters</strong>
         <small>
-          Use one match team’s saved roster without
-          scanning a screenshot.
+          Automatically load both playing teams’ saved rosters in one step.
         </small>
       </span>
     </button>
@@ -1989,6 +2222,12 @@ const handleKitAssignmentError =
                   onRemovePlayer={(clientId) =>
                     removeTeamPlayer("A", clientId)
                   }
+                  onSetAllIncluded={(included) =>
+                    setAllTeamPlayersIncluded(
+                      "A",
+                      included
+                    )
+                  }
                 />
 
                 <TeamPlayerReview
@@ -2007,6 +2246,12 @@ const handleKitAssignmentError =
                   onRemovePlayer={(clientId) =>
                     removeTeamPlayer("B", clientId)
                   }
+                  onSetAllIncluded={(included) =>
+                    setAllTeamPlayersIncluded(
+                      "B",
+                      included
+                    )
+                  }
                 />
               </div>
 
@@ -2014,7 +2259,7 @@ const handleKitAssignmentError =
                 <div>
                   <strong>Both teams are ready for review</strong>
                   <p>
-                    {isLeaguePlayerMode
+                    {useOneSharedCarrier
                       ? `Today’s screenshot controls eligibility, while each player’s history follows them across ${teamAName} and ${teamBName}.`
                       : `Kit responsibility rotates independently for ${teamAName} and ${teamBName}.`}
                   </p>
@@ -2059,92 +2304,127 @@ const handleKitAssignmentError =
           <div className="kit-roster-mode-heading">
             <div>
               <span className="kit-section-kicker">
-                Existing roster
+                One-step roster setup
               </span>
 
-              <h4>Select a match team</h4>
+              <h4>
+                Confirm both playing teams
+              </h4>
 
               <p>
-                Cric4All will load the selected
-                team’s registered players and use
-                their existing kit-rotation history.
+                Both registered rosters are loaded automatically from the active match. Uncheck players who are not playing, then save once.
               </p>
             </div>
-          </div>
 
-          <div className="kit-roster-steps" aria-label="Team roster workflow">
-            <span className={selectedRosterTeam ? "is-complete" : "is-active"}>
-              <b>1</b> Select team
-            </span>
-            <span className={hasReviewPlayers ? "is-complete" : selectedRosterTeam ? "is-active" : ""}>
-              <b>2</b> Load roster
-            </span>
-            <span className={hasReviewPlayers ? "is-active" : ""}>
-              <b>3</b> Review & save
-            </span>
-            <span>
-              <b>4</b> Suggest carrier
-            </span>
-          </div>
-
-          <label className="kit-form-field">
-            <span>Team</span>
-
-            <select
-              value={selectedRosterTeamId}
-              onChange={(event) => {
-                setSelectedRosterTeamId(
-                  event.target.value
-                );
-                setTeamAPlayers([]);
-                setTeamBPlayers([]);
-                setScreenshotError("");
-                setKitMessage("");
-              }}
+            <button
+              type="button"
+              className="btn btn-outline"
+              disabled={
+                isLoadingTeamRoster ||
+                !selectedMatch
+              }
+              onClick={
+                loadBothTeamRosters
+              }
             >
-              <option value="">
-                Select a team
-              </option>
+              {isLoadingTeamRoster
+                ? "Loading Both Rosters..."
+                : "↻ Reload Both Rosters"}
+            </button>
+          </div>
 
-              {selectedMatchTeams.map(
-                (team) => (
-                  <option
-                    key={team.id}
-                    value={team.id}
-                  >
-                    {team.name}
-                  </option>
-                )
-              )}
-            </select>
-          </label>
+          {useOneSharedCarrier && (
+            <div className="kit-shared-league-exception">
+              <span>🏏</span>
 
-          {selectedRosterTeam && (
-            <div className="kit-roster-selection-summary">
               <div>
-                <span>Selected team</span>
                 <strong>
-                  {selectedRosterTeam.name}
+                  One shared-kit assignment for both teams
                 </strong>
-                <small>
-                  {selectedRosterTeam.players
-                    ?.length || 0}{" "}
-                  registered players
-                </small>
-              </div>
 
-              <button
-                type="button"
-                className="btn kit-load-roster-btn"
-                disabled={isLoadingTeamRoster}
-                onClick={loadSelectedTeamRoster}
-              >
-                {isLoadingTeamRoster
-                  ? "Loading Roster..."
-                  : "👥 Load Team Roster"}
-              </button>
+                <p>
+                  This league uses a league-wide player rotation. Even when the same players appear under both teams, Cric4All combines them into one unique pool and shows one suggested kit carrier for the match.
+                </p>
+              </div>
             </div>
           )}
+
+          <div className="kit-wizard-progress">
+            <span className="is-complete">
+              <b>1</b>
+              Match selected
+            </span>
+
+            <span
+              className={
+                hasReviewPlayers
+                  ? "is-complete"
+                  : "is-active"
+              }
+            >
+              <b>2</b>
+              Confirm players
+            </span>
+
+            <span
+              className={
+                hasReviewPlayers
+                  ? "is-active"
+                  : ""
+              }
+            >
+              <b>3</b>
+              Save and assign
+            </span>
+          </div>
+
+          <div className="kit-roster-team-overview">
+            <article>
+              <span>
+                Team A
+              </span>
+
+              <strong>
+                {teamAName}
+              </strong>
+
+              <small>
+                {
+                  teamAPlayers.filter(
+                    (player) =>
+                      player.included
+                  ).length
+                }{" "}
+                selected of{" "}
+                {teamAPlayers.length}
+              </small>
+            </article>
+
+            <div className="kit-versus-badge">
+              VS
+            </div>
+
+            <article>
+              <span>
+                Team B
+              </span>
+
+              <strong>
+                {teamBName}
+              </strong>
+
+              <small>
+                {
+                  teamBPlayers.filter(
+                    (player) =>
+                      player.included
+                  ).length
+                }{" "}
+                selected of{" "}
+                {teamBPlayers.length}
+              </small>
+            </article>
+          </div>
 
           {screenshotError && (
             <div className="kit-error-message">
@@ -2158,124 +2438,147 @@ const handleKitAssignmentError =
             </div>
           )}
 
-          {selectedRosterTeam &&
-            teamAPlayers.length > 0 &&
-            Number(selectedRosterTeam.id) ===
-              Number(teamAId) && (
-              <TeamPlayerReview
-        sourceMode={kitInputMode}
-                title={teamAName}
-                teamId={teamAId}
-                players={teamAPlayers}
-                databasePlayers={
-                  teamADatabasePlayers
-                }
-                isLeaguePlayerMode={false}
-                newPlayerName={
-                  newTeamAPlayerName
-                }
-                onNewPlayerNameChange={
-                  setNewTeamAPlayerName
-                }
-                onAddPlayer={() =>
-                  addManualPlayer("A")
-                }
-                onUpdatePlayer={(
-                  clientId,
-                  changes
-                ) =>
-                  updateTeamPlayer(
-                    "A",
-                    clientId,
-                    changes
-                  )
-                }
-                onRemovePlayer={(clientId) =>
-                  removeTeamPlayer(
-                    "A",
-                    clientId
-                  )
-                }
-              />
-            )}
-
-          {selectedRosterTeam &&
-            teamBPlayers.length > 0 &&
-            Number(selectedRosterTeam.id) ===
-              Number(teamBId) && (
-              <TeamPlayerReview
-        sourceMode={kitInputMode}
-                title={teamBName}
-                teamId={teamBId}
-                players={teamBPlayers}
-                databasePlayers={
-                  teamBDatabasePlayers
-                }
-                isLeaguePlayerMode={false}
-                newPlayerName={
-                  newTeamBPlayerName
-                }
-                onNewPlayerNameChange={
-                  setNewTeamBPlayerName
-                }
-                onAddPlayer={() =>
-                  addManualPlayer("B")
-                }
-                onUpdatePlayer={(
-                  clientId,
-                  changes
-                ) =>
-                  updateTeamPlayer(
-                    "B",
-                    clientId,
-                    changes
-                  )
-                }
-                onRemovePlayer={(clientId) =>
-                  removeTeamPlayer(
-                    "B",
-                    clientId
-                  )
-                }
-              />
-            )}
-
-          {selectedRosterTeam &&
-            (teamAPlayers.length > 0 || teamBPlayers.length > 0) && (
+          {hasReviewPlayers ? (
             <>
-              <div className="kit-review-actions">
+              <div className="kit-team-review-grid">
+                <TeamPlayerReview
+                  sourceMode="TEAM_ROSTER"
+                  title={teamAName}
+                  teamId={teamAId}
+                  players={teamAPlayers}
+                  databasePlayers={
+                    teamADatabasePlayers
+                  }
+                  isLeaguePlayerMode={
+                    useOneSharedCarrier
+                  }
+                  newPlayerName={
+                    newTeamAPlayerName
+                  }
+                  onNewPlayerNameChange={
+                    setNewTeamAPlayerName
+                  }
+                  onAddPlayer={() =>
+                    addManualPlayer("A")
+                  }
+                  onUpdatePlayer={(
+                    clientId,
+                    changes
+                  ) =>
+                    updateTeamPlayer(
+                      "A",
+                      clientId,
+                      changes
+                    )
+                  }
+                  onRemovePlayer={(
+                    clientId
+                  ) =>
+                    removeTeamPlayer(
+                      "A",
+                      clientId
+                    )
+                  }
+                  onSetAllIncluded={(
+                    included
+                  ) =>
+                    setAllTeamPlayersIncluded(
+                      "A",
+                      included
+                    )
+                  }
+                />
+
+                <TeamPlayerReview
+                  sourceMode="TEAM_ROSTER"
+                  title={teamBName}
+                  teamId={teamBId}
+                  players={teamBPlayers}
+                  databasePlayers={
+                    teamBDatabasePlayers
+                  }
+                  isLeaguePlayerMode={
+                    useOneSharedCarrier
+                  }
+                  newPlayerName={
+                    newTeamBPlayerName
+                  }
+                  onNewPlayerNameChange={
+                    setNewTeamBPlayerName
+                  }
+                  onAddPlayer={() =>
+                    addManualPlayer("B")
+                  }
+                  onUpdatePlayer={(
+                    clientId,
+                    changes
+                  ) =>
+                    updateTeamPlayer(
+                      "B",
+                      clientId,
+                      changes
+                    )
+                  }
+                  onRemovePlayer={(
+                    clientId
+                  ) =>
+                    removeTeamPlayer(
+                      "B",
+                      clientId
+                    )
+                  }
+                  onSetAllIncluded={(
+                    included
+                  ) =>
+                    setAllTeamPlayersIncluded(
+                      "B",
+                      included
+                    )
+                  }
+                />
+              </div>
+
+              <div className="kit-review-actions kit-review-actions-premium">
                 <div>
                   <strong>
-                    Single-team kit rotation
+                    Both teams are ready
                   </strong>
+
                   <p>
-                    Save the selected team roster,
-                    then suggest one kit carrier for{" "}
-                    {selectedRosterTeam.name}.
+                    {useOneSharedCarrier
+                      ? `Save both playing lists together. Because ${activeLeague?.name || "this league"} uses one shared kit and a league-wide player rotation, Cric4All will show only one suggested carrier box for the entire match. Duplicate players appearing under both teams are considered one person in the rotation.`
+                      : "Save both confirmed player lists together. Cric4All will calculate the appropriate kit carrier assignment for each team."}
                   </p>
                 </div>
 
                 <button
                   type="button"
                   className="btn kit-confirm-review-btn"
-                  onClick={validateReviewData}
-                  disabled={isSavingPlayerLists}
+                  onClick={
+                    validateReviewData
+                  }
+                  disabled={
+                    isSavingPlayerLists
+                  }
                 >
                   {isSavingPlayerLists
-                    ? "Saving Player List..."
-                    : "✓ Confirm & Save Team Roster"}
+                    ? "Saving Both Teams..."
+                    : "✓ Save Both Teams & Continue"}
                 </button>
               </div>
 
               <KitAssignmentPanel
-                matchId={selectedMatch?.id}
+                matchId={
+                  selectedMatch?.id
+                }
                 refreshKey={
                   kitAssignmentRefreshKey
                 }
-                selectedTeamId={
-                  selectedRosterTeamId
-                }
+                selectedTeamId=""
                 sourceMode="TEAM_ROSTER"
+                forceSharedKit={
+                  useOneSharedCarrier
+                }
                 onMessage={
                   handleKitAssignmentMessage
                 }
@@ -2284,6 +2587,22 @@ const handleKitAssignmentError =
                 }
               />
             </>
+          ) : (
+            <div className="kit-workflow-placeholder">
+              <div className="kit-workflow-placeholder-icon">
+                👥
+              </div>
+
+              <div>
+                <strong>
+                  No registered players loaded
+                </strong>
+
+                <p>
+                  Add players to the two teams or use the screenshot option for today’s playing lists.
+                </p>
+              </div>
+            </div>
           )}
         </section>
       )}
@@ -2292,6 +2611,286 @@ const handleKitAssignmentError =
         .kit-responsibility-card {
           --kit-glow: rgba(34, 197, 94, 0.28);
           --kit-cyan: rgba(14, 165, 233, 0.22);
+        }
+
+        .kit-team-review-details {
+          padding: 0 !important;
+          overflow: hidden;
+        }
+
+        .kit-team-review-summary {
+          display: flex;
+          align-items: center;
+          justify-content: space-between;
+          gap: 14px;
+          min-height: 76px;
+          padding: 14px 16px;
+          cursor: pointer;
+          list-style: none;
+          user-select: none;
+          background:
+            linear-gradient(
+              135deg,
+              rgba(56, 189, 248, 0.08),
+              rgba(99, 102, 241, 0.05)
+            );
+        }
+
+        .kit-team-review-summary::-webkit-details-marker {
+          display: none;
+        }
+
+        .kit-team-review-details[open]
+          > .kit-team-review-summary {
+          border-bottom: 1px solid
+            rgba(148, 163, 184, 0.24);
+        }
+
+        .kit-team-review-summary-main {
+          display: flex;
+          align-items: center;
+          gap: 12px;
+          min-width: 0;
+        }
+
+        .kit-team-review-summary-main > div {
+          display: grid;
+          gap: 3px;
+          min-width: 0;
+        }
+
+        .kit-team-review-summary-main h4 {
+          margin: 0;
+        }
+
+        .kit-team-review-summary-main small {
+          opacity: 0.72;
+        }
+
+        .kit-team-review-icon {
+          display: flex;
+          align-items: center;
+          justify-content: center;
+          width: 42px;
+          height: 42px;
+          flex: 0 0 auto;
+          border-radius: 13px;
+          background: rgba(56, 189, 248, 0.12);
+          border: 1px solid rgba(56, 189, 248, 0.18);
+        }
+
+        .kit-team-review-summary-actions {
+          display: flex;
+          align-items: center;
+          justify-content: flex-end;
+          gap: 8px;
+          flex: 0 0 auto;
+        }
+
+        .kit-team-bulk-btn {
+          min-height: 34px;
+          padding: 6px 10px;
+          border: 1px solid rgba(148, 163, 184, 0.3);
+          border-radius: 999px;
+          background: rgba(15, 23, 42, 0.18);
+          color: inherit;
+          font: inherit;
+          font-size: 0.76rem;
+          font-weight: 700;
+          cursor: pointer;
+        }
+
+        .kit-team-bulk-btn:hover:not(:disabled) {
+          border-color: rgba(56, 189, 248, 0.52);
+          background: rgba(56, 189, 248, 0.1);
+        }
+
+        .kit-team-bulk-btn:disabled {
+          opacity: 0.42;
+          cursor: not-allowed;
+        }
+
+        .kit-team-review-chevron {
+          display: inline-block;
+          transition: transform 0.2s ease;
+        }
+
+        .kit-team-review-details[open]
+          .kit-team-review-chevron {
+          transform: rotate(180deg);
+        }
+
+        .kit-team-review-body {
+          padding: 16px;
+          animation: kitTeamReveal 0.2s ease;
+        }
+
+        @keyframes kitTeamReveal {
+          from {
+            opacity: 0;
+            transform: translateY(-4px);
+          }
+
+          to {
+            opacity: 1;
+            transform: translateY(0);
+          }
+        }
+
+        .kit-shared-league-exception {
+          display: flex;
+          gap: 12px;
+          margin: 16px 0;
+          padding: 14px;
+          border: 1px solid rgba(34, 197, 94, 0.34);
+          border-radius: 14px;
+          background:
+            linear-gradient(
+              135deg,
+              rgba(34, 197, 94, 0.09),
+              rgba(56, 189, 248, 0.06)
+            );
+        }
+
+        .kit-shared-league-exception > span {
+          font-size: 1.25rem;
+        }
+
+        .kit-shared-league-exception strong {
+          display: block;
+          margin-bottom: 4px;
+        }
+
+        .kit-shared-league-exception p {
+          margin: 0;
+          line-height: 1.5;
+          opacity: 0.8;
+        }
+
+        .kit-active-match-card {
+          display: flex;
+          align-items: center;
+          justify-content: space-between;
+          gap: 16px;
+          margin: 18px 0;
+          padding: 18px;
+          border: 1px solid rgba(56, 189, 248, 0.3);
+          border-radius: 18px;
+          background:
+            radial-gradient(
+              circle at 10% 20%,
+              rgba(56, 189, 248, 0.12),
+              transparent 34%
+            ),
+            rgba(15, 23, 42, 0.32);
+          box-shadow:
+            inset 0 1px 0 rgba(255, 255, 255, 0.04),
+            0 16px 34px rgba(2, 6, 23, 0.18);
+        }
+
+        .kit-active-match-primary {
+          display: grid;
+          gap: 5px;
+        }
+
+        .kit-active-match-primary strong {
+          font-size: 1.15rem;
+        }
+
+        .kit-active-match-primary small {
+          opacity: 0.74;
+        }
+
+        .kit-change-match {
+          min-width: min(100%, 320px);
+        }
+
+        .kit-change-match summary {
+          cursor: pointer;
+          font-weight: 700;
+          text-align: right;
+        }
+
+        .kit-change-match[open] summary {
+          margin-bottom: 10px;
+        }
+
+        .kit-wizard-progress {
+          display: grid;
+          grid-template-columns: repeat(3, minmax(0, 1fr));
+          gap: 10px;
+          margin: 18px 0;
+        }
+
+        .kit-wizard-progress span {
+          display: flex;
+          align-items: center;
+          gap: 9px;
+          min-height: 46px;
+          padding: 10px 12px;
+          border: 1px solid rgba(148, 163, 184, 0.24);
+          border-radius: 12px;
+          opacity: 0.66;
+        }
+
+        .kit-wizard-progress b {
+          display: inline-flex;
+          align-items: center;
+          justify-content: center;
+          width: 26px;
+          height: 26px;
+          border-radius: 50%;
+          background: rgba(148, 163, 184, 0.14);
+        }
+
+        .kit-wizard-progress .is-active {
+          opacity: 1;
+          border-color: rgba(56, 189, 248, 0.48);
+          background: rgba(56, 189, 248, 0.08);
+        }
+
+        .kit-wizard-progress .is-complete {
+          opacity: 1;
+          border-color: rgba(34, 197, 94, 0.4);
+          background: rgba(34, 197, 94, 0.08);
+        }
+
+        .kit-roster-team-overview {
+          display: grid;
+          grid-template-columns: minmax(0, 1fr) auto minmax(0, 1fr);
+          align-items: center;
+          gap: 12px;
+          margin-bottom: 18px;
+        }
+
+        .kit-roster-team-overview article {
+          display: grid;
+          gap: 5px;
+          padding: 15px;
+          border: 1px solid rgba(148, 163, 184, 0.26);
+          border-radius: 14px;
+          background: rgba(15, 23, 42, 0.22);
+        }
+
+        .kit-roster-team-overview article span,
+        .kit-roster-team-overview article small {
+          opacity: 0.72;
+        }
+
+        .kit-versus-badge {
+          display: flex;
+          align-items: center;
+          justify-content: center;
+          width: 42px;
+          height: 42px;
+          border-radius: 50%;
+          font-size: 0.78rem;
+          font-weight: 800;
+          background: linear-gradient(
+            145deg,
+            rgba(34, 197, 94, 0.2),
+            rgba(56, 189, 248, 0.2)
+          );
         }
 
         .kit-source-mode-card,
@@ -2570,6 +3169,64 @@ const handleKitAssignmentError =
             width: 100%;
           }
         }
+
+        @media (max-width: 760px) {
+          .kit-team-review-summary {
+            align-items: flex-start;
+            padding: 12px;
+          }
+
+          .kit-team-review-summary-actions {
+            display: grid;
+            grid-template-columns: repeat(2, auto);
+          }
+
+          .kit-player-count-badge,
+          .kit-team-review-chevron {
+            display: none;
+          }
+
+          .kit-team-bulk-btn {
+            min-height: 32px;
+            padding: 5px 8px;
+          }
+
+          .kit-team-review-body {
+            padding: 12px;
+          }
+
+
+          .kit-active-match-card {
+            display: grid;
+            padding: 14px;
+          }
+
+          .kit-change-match {
+            min-width: 0;
+          }
+
+          .kit-change-match summary {
+            text-align: left;
+          }
+
+          .kit-wizard-progress {
+            grid-template-columns: 1fr;
+          }
+
+          .kit-roster-team-overview {
+            grid-template-columns: 1fr;
+          }
+
+          .kit-versus-badge {
+            margin: 0 auto;
+          }
+
+          .kit-source-mode-options,
+          .kit-team-review-grid {
+            grid-template-columns: 1fr;
+          }
+        }
+
       `}</style>
 
     </section>

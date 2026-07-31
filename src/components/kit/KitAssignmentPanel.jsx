@@ -163,6 +163,7 @@ function kitEventIcon(eventType) {
 export default function KitAssignmentPanel({
   matchId,
   refreshKey = 0,
+  forceSharedKit = false,
   onMessage,
   onError,
 }) {
@@ -492,7 +493,10 @@ export default function KitAssignmentPanel({
     }
 
     const sharedKit =
-      match.sharedKit === true;
+      forceSharedKit === true ||
+      match.sharedKit === true ||
+      match.kitRotationMode ===
+        "LEAGUE_PLAYER";
 
     const targetTeamIds = [];
 
@@ -548,6 +552,8 @@ export default function KitAssignmentPanel({
           ? [
               {
                 suggestNext,
+                sharedKit:
+                  true,
               },
             ]
           : targetTeamIds.map(
@@ -623,6 +629,8 @@ export default function KitAssignmentPanel({
     }
 
     if (
+      forceSharedKit ===
+        true ||
       match?.sharedKit ===
         true ||
       match?.kitRotationMode ===
@@ -951,7 +959,10 @@ export default function KitAssignmentPanel({
     !suggesting;
 
   const sharedKit =
-    match?.sharedKit === true;
+    forceSharedKit === true ||
+    match?.sharedKit === true ||
+    match?.kitRotationMode ===
+      "LEAGUE_PLAYER";
 
   const sharedAssignment =
     sharedKit

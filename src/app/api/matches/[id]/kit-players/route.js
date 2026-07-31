@@ -372,7 +372,7 @@ if (sourceMode === "SCREENSHOT") {
           Number(match.teamBId) &&
         teamANames.has(row.normalizedName)
     );
-
+/*
     if (duplicateAcrossTeams) {
       return NextResponse.json(
         {
@@ -385,7 +385,7 @@ if (sourceMode === "SCREENSHOT") {
         }
       );
     }
-
+*/
     /*
      * Everything below runs inside one transaction.
      *

@@ -138,13 +138,15 @@ export async function GET(
   }
 ) {
   try {
-    const {
-      leagueId:
-        leagueIdParam,
-    } = await params;
+    
+const resolvedParams =
+  await params;
 
-    const leagueId =
-      Number(leagueIdParam);
+const leagueId =
+  Number(
+    resolvedParams.id ??
+      resolvedParams.leagueId
+  );
 
     if (
       !Number.isInteger(
@@ -234,134 +236,112 @@ export async function GET(
     const now =
       new Date();
 
-    const upcomingMatches =
-      await prisma.match.findMany({
-        where: {
-          leagueId,
+const upcomingMatches =
+  await prisma.match.findMany({
+    where: {
+      leagueId,
 
-          scheduledAt: {
-            gte:
-              now,
-          },
-        },
+      scheduledAt: {
+        not: null,
+        gte: now,
+      },
 
-        orderBy: {
-          scheduledAt:
-            "asc",
-        },
+      status: {
+        notIn: [
+          "COMPLETED",
+          "COMPLETED_LOCKED",
+          "COMPLETED_CORRECTED",
+          "ABANDONED",
+          "CANCELLED",
+          "CANCELED",
+        ],
+      },
+    },
 
-        take:
-          10,
+    orderBy: {
+      scheduledAt: "asc",
+    },
 
+    take: 10,
+
+    select: {
+      id: true,
+      scheduledAt: true,
+      status: true,
+
+      teamA: {
         select: {
-          id:
-            true,
+          id: true,
+          name: true,
+        },
+      },
 
-          scheduledAt:
-            true,
+      teamB: {
+        select: {
+          id: true,
+          name: true,
+        },
+      },
 
-          status:
-            true,
+      kitAssignments: {
+        where: {
+          status: {
+            in: [
+              "SUGGESTED",
+              "ASSIGNED",
+              "CONFIRMED",
+            ],
+          },
+        },
 
-          teamA: {
+        orderBy: [
+          {
+            assignedAt: "desc",
+          },
+          {
+            id: "desc",
+          },
+        ],
+
+        take: 1,
+
+        include: {
+          team: {
             select: {
-              id:
-                true,
-
-              name:
-                true,
+              id: true,
+              name: true,
             },
           },
 
-          teamB: {
+          rotationMember: {
             select: {
-              id:
-                true,
-
-              name:
-                true,
+              id: true,
+              displayName: true,
+              completedCount: true,
+              lastCompletedAt: true,
             },
           },
 
-          kitAssignments: {
-            where: {
-              leagueKitId: {
-                not:
-                  null,
-              },
+          matchKitPlayer: {
+            select: {
+              id: true,
+              displayName: true,
 
-              status: {
-                in:
-                  ACTIVE_ASSIGNMENT_STATUSES,
-              },
-            },
-
-            orderBy: {
-              assignedAt:
-                "desc",
-            },
-
-            take:
-              1,
-
-            include: {
               team: {
                 select: {
-                  id:
-                    true,
-
-                  name:
-                    true,
-                },
-              },
-
-              rotationMember: {
-                select: {
-                  id:
-                    true,
-
-                  displayName:
-                    true,
-
-                  completedCount:
-                    true,
-
-                  lastCompletedAt:
-                    true,
-                },
-              },
-
-              matchKitPlayer: {
-                select: {
-                  id:
-                    true,
-
-                  displayName:
-                    true,
-
-                  team: {
-                    select: {
-                      id:
-                        true,
-
-                      name:
-                        true,
-                    },
-                  },
+                  id: true,
+                  name: true,
                 },
               },
             },
           },
         },
-      });
+      },
+    },
+  });
 
-    const nextMatch =
-      upcomingMatches.find(
-        (match) =>
-          !isClosedMatch(
-            match.status
-          )
-      ) || null;
+const nextMatch =
+  upcomingMatches[0] || null;
 
     const nextAssignment =
       nextMatch

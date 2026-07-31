@@ -9,6 +9,7 @@ import { buildMatchInsights } from "@/lib/match-insights";
 import { createPortal } from "react-dom";
 import BirthdayPushSettings from "@/components/BirthdayPushSettings";
 import KitResponsibilitySetup from "@/components/kit/KitResponsibilitySetup";
+import LeagueKitDashboard from "@/components/LeagueKitDashboard";
 import Link from "next/link";
 
 function Card({
@@ -11559,7 +11560,92 @@ const playerRoleBadge = (row) => {
         🌐 Discover Public Leagues
       </button>
     </div>
-{isSuperAdmin && permissions?.canManagePermissions && ( <BirthdayPushSettings leagueId={activeLeagueId}/> )}   
+{isSuperAdmin && permissions?.canManagePermissions && (
+  <>
+<div className="league-tools-shell">
+  <details className="league-tool-panel birthday-tool">
+    <summary className="league-tool-summary">
+      <div className="league-tool-summary-main">
+        <span className="league-tool-icon">
+          🎂
+        </span>
+
+        <div>
+          <strong>
+            League Birthday Reminders
+          </strong>
+
+          <small>
+            Manage birthday alerts and player birthday records.
+          </small>
+        </div>
+      </div>
+
+      <span className="league-tool-action">
+        <span className="league-tool-action-collapsed">
+          Expand
+        </span>
+
+        <span className="league-tool-action-open">
+          Collapse
+        </span>
+
+        <span className="league-tool-chevron">
+         ⌄
+        </span>
+      </span>
+    </summary>
+
+    <div className="league-tool-content">
+      <BirthdayPushSettings
+        leagueId={activeLeagueId}
+      />
+    </div>
+  </details>
+
+  <details className="league-tool-panel kit-tool">
+    <summary className="league-tool-summary">
+      <div className="league-tool-summary-main">
+        <span className="league-tool-icon">
+          🏏
+        </span>
+
+        <div>
+          <strong>
+            League Kit Management
+          </strong>
+
+          <small>
+            Track custody, reminders, readiness, and fair rotation.
+          </small>
+        </div>
+      </div>
+
+      <span className="league-tool-action">
+        <span className="league-tool-action-collapsed">
+          Expand
+        </span>
+
+        <span className="league-tool-action-open">
+          Collapse
+        </span>
+
+        <span className="league-tool-chevron">
+         ⌄
+        </span>
+      </span>
+    </summary>
+
+    <div className="league-tool-content">
+      <LeagueKitDashboard
+        key={`league-kit-${activeLeague.id}`}
+        leagueId={Number(activeLeague.id)}
+      />
+    </div>
+  </details>
+</div>
+  </>
+)}
   </div>
 
   {/* Mobile-only state-aware experience */}

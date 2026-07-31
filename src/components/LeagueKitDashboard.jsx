@@ -53,6 +53,15 @@ function eventLabel(value) {
 export default function LeagueKitDashboard({
   leagueId,
 }) {
+    const numericLeagueId =
+    Number(leagueId);
+
+  const hasValidLeagueId =
+    Number.isInteger(
+      numericLeagueId
+    ) &&
+    numericLeagueId > 0;
+
   const [
     data,
     setData,
@@ -69,11 +78,12 @@ export default function LeagueKitDashboard({
   ] = useState("");
 
   const loadDashboard =
-    useCallback(async () => {
-      if (!leagueId) {
-        setData(null);
-        return;
-      }
+  useCallback(async () => {
+    if (!hasValidLeagueId) {
+      setData(null);
+      setError("");
+      return;
+    }
 
       setLoading(true);
       setError("");
@@ -81,7 +91,7 @@ export default function LeagueKitDashboard({
       try {
         const response =
           await fetch(
-            `/api/leagues/${leagueId}/kit-dashboard`,
+            `/api/leagues/${numericLeagueId}/kit-dashboard`,
             {
               method:
                 "GET",
@@ -110,15 +120,18 @@ export default function LeagueKitDashboard({
       } finally {
         setLoading(false);
       }
-    }, [leagueId]);
+    }, [
+  hasValidLeagueId,
+  numericLeagueId,
+]);
 
   useEffect(() => {
     loadDashboard();
   }, [loadDashboard]);
 
-  if (!leagueId) {
-    return null;
-  }
+if (!hasValidLeagueId) {
+  return null;
+}
 
   if (
     loading &&
