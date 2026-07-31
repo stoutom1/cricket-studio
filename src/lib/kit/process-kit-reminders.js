@@ -467,19 +467,41 @@ export async function processDayBeforeKitReminders({
   });
 
   const summary = {
-    checkedMatches: matches.length,
-    closedMatches: 0,
-    eligibleMatches: 0,
-    checkedAssignments: 0,
-    alreadySent: 0,
-    dryRun: 0,
-    sent: 0,
-    skipped: 0,
-    failed: 0,
-    queued: 0,
-    notDueTomorrow: 0,
-    notClaimed: 0,
-  };
+  checkedMatches: matches.length,
+  closedMatches: 0,
+  eligibleMatches: 0,
+  checkedAssignments: 0,
+
+  /*
+   * Reminders that had already reached a successful
+   * terminal state before this cron execution.
+   */
+  alreadySent: 0,
+
+  dryRun: 0,
+  skipped: 0,
+  failed: 0,
+  notDueTomorrow: 0,
+  notClaimed: 0,
+
+  /*
+   * Backward-compatible counters.
+   *
+   * "queued" means Twilio accepted the outbound request.
+   * "sent" is retained for existing consumers, but final
+   * delivery normally occurs asynchronously through the
+   * Twilio status callback.
+   */
+  queued: 0,
+  sent: 0,
+
+  /*
+   * Clearer communication lifecycle counters.
+   */
+  submittedToProvider: 0,
+  awaitingDeliveryCallback: 0,
+  immediatelySentByProvider: 0,
+};
 
   for (const match of matches) {
     if (isClosedMatch(match)) {
@@ -757,8 +779,32 @@ export async function processDayBeforeKitReminders({
           result
         );
 
-        summary.queued =
-          (summary.queued || 0) + 1;
+        const normalizedProviderStatus =
+  String(
+    result?.providerStatus ||
+      "ACCEPTED"
+  )
+    .trim()
+    .toUpperCase();
+
+summary.queued += 1;
+summary.submittedToProvider += 1;
+
+/*
+ * Twilio normally returns ACCEPTED or QUEUED here.
+ * Final SENT/DELIVERED status arrives asynchronously
+ * through /api/webhooks/kit-whatsapp-status.
+ */
+if (
+  normalizedProviderStatus === "SENT" ||
+  normalizedProviderStatus === "DELIVERED" ||
+  normalizedProviderStatus === "READ"
+) {
+  summary.sent += 1;
+  summary.immediatelySentByProvider += 1;
+} else {
+  summary.awaitingDeliveryCallback += 1;
+}
       } catch (error) {
         console.error(
           `Kit reminder failed for assignment ${assignment.id}:`,
@@ -774,6 +820,9 @@ export async function processDayBeforeKitReminders({
       }
     }
   }
-
+summary.deliveryStatusNote =
+  summary.awaitingDeliveryCallback > 0
+    ? `${summary.awaitingDeliveryCallback} reminder request(s) were accepted by Twilio and are awaiting asynchronous delivery callbacks. Check KitReminderLog for final SENT, DELIVERED, FAILED, or UNDELIVERED status.`
+    : "No kit reminder requests are currently awaiting delivery callbacks.";
   return summary;
 }
