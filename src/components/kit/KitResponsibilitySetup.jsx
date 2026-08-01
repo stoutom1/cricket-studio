@@ -3227,6 +3227,312 @@ const handleKitAssignmentError =
           }
         }
 
+        /* =========================================================
+           MOBILE COMPACT MODE
+           Keeps the guided workflow but removes repeated storytelling.
+           ========================================================= */
+        @media (max-width: 700px) {
+          .kit-responsibility-card {
+            display: grid;
+            gap: 10px;
+          }
+
+          .kit-responsibility-heading {
+            display: flex !important;
+            align-items: center !important;
+            justify-content: space-between !important;
+            gap: 10px !important;
+            padding: 12px 14px !important;
+            border: 1px solid rgba(56, 189, 248, 0.28);
+            border-radius: 16px;
+            background:
+              linear-gradient(
+                135deg,
+                rgba(14, 165, 233, 0.12),
+                rgba(34, 197, 94, 0.08)
+              );
+          }
+
+          .kit-responsibility-heading h3 {
+            margin: 2px 0 0 !important;
+            font-size: 1.05rem !important;
+          }
+
+          .kit-responsibility-heading p,
+          .kit-league-notice span {
+            display: none !important;
+          }
+
+          .kit-feature-badge {
+            flex: 0 0 auto;
+            max-width: 112px;
+            padding: 6px 9px !important;
+            font-size: 0.68rem !important;
+            line-height: 1.2;
+            text-align: center;
+          }
+
+          .kit-league-notice {
+            display: flex !important;
+            align-items: center;
+            min-height: 38px;
+            margin: 0 !important;
+            padding: 9px 12px !important;
+            border-radius: 12px !important;
+          }
+
+          .kit-league-notice strong {
+            overflow: hidden;
+            font-size: 0.8rem;
+            text-overflow: ellipsis;
+            white-space: nowrap;
+          }
+
+          .kit-active-match-card {
+            grid-template-columns: minmax(0, 1fr) auto !important;
+            align-items: center !important;
+            gap: 10px !important;
+            margin: 0 !important;
+            padding: 11px 12px !important;
+            border-radius: 14px !important;
+          }
+
+          .kit-active-match-primary {
+            gap: 2px !important;
+            min-width: 0;
+          }
+
+          .kit-active-match-primary strong {
+            overflow: hidden;
+            font-size: 0.92rem !important;
+            text-overflow: ellipsis;
+            white-space: nowrap;
+          }
+
+          .kit-active-match-primary small {
+            font-size: 0.72rem;
+          }
+
+          .kit-change-match {
+            min-width: auto !important;
+          }
+
+          .kit-change-match summary {
+            padding: 7px 9px;
+            border: 1px solid rgba(125, 211, 252, 0.28);
+            border-radius: 999px;
+            font-size: 0.7rem;
+            text-align: center !important;
+          }
+
+          .kit-source-mode-card,
+          .kit-roster-mode-card {
+            padding: 12px !important;
+            border-radius: 16px !important;
+          }
+
+          .kit-source-mode-heading h4,
+          .kit-roster-mode-heading h4 {
+            margin: 2px 0 0 !important;
+            font-size: 0.95rem !important;
+          }
+
+          .kit-source-mode-heading p,
+          .kit-roster-mode-heading p,
+          .kit-shared-league-exception p,
+          .kit-review-actions p,
+          .kit-workflow-placeholder p {
+            display: none !important;
+          }
+
+          .kit-source-mode-options {
+            grid-template-columns: repeat(2, minmax(0, 1fr)) !important;
+            gap: 8px !important;
+          }
+
+          .kit-source-mode-option {
+            display: grid !important;
+            grid-template-columns: auto minmax(0, 1fr);
+            align-items: center;
+            min-height: 68px !important;
+            padding: 10px !important;
+            border-radius: 13px !important;
+          }
+
+          .kit-source-mode-icon {
+            font-size: 1.1rem !important;
+          }
+
+          .kit-source-mode-option strong {
+            display: block;
+            font-size: 0.73rem !important;
+            line-height: 1.2;
+          }
+
+          .kit-source-mode-option small {
+            display: none !important;
+          }
+
+          .kit-roster-mode-heading {
+            display: flex !important;
+            align-items: center !important;
+            justify-content: space-between !important;
+            gap: 10px !important;
+          }
+
+          .kit-roster-mode-heading .btn {
+            width: auto !important;
+            min-height: 34px !important;
+            padding: 6px 9px !important;
+            font-size: 0.68rem !important;
+          }
+
+          .kit-shared-league-exception {
+            align-items: center !important;
+            margin: 10px 0 !important;
+            padding: 9px 11px !important;
+          }
+
+          .kit-shared-league-exception strong {
+            font-size: 0.78rem !important;
+            line-height: 1.25;
+          }
+
+          .kit-wizard-progress {
+            display: flex !important;
+            gap: 6px !important;
+            margin: 10px 0 !important;
+            overflow-x: auto;
+            scrollbar-width: none;
+          }
+
+          .kit-wizard-progress::-webkit-scrollbar {
+            display: none;
+          }
+
+          .kit-wizard-progress span {
+            flex: 1 0 105px;
+            min-height: 34px !important;
+            padding: 6px 8px !important;
+            font-size: 0.68rem;
+            white-space: nowrap;
+          }
+
+          .kit-wizard-progress b {
+            width: 21px !important;
+            height: 21px !important;
+            font-size: 0.67rem;
+          }
+
+          .kit-roster-team-overview {
+            grid-template-columns: minmax(0, 1fr) auto minmax(0, 1fr) !important;
+            gap: 7px !important;
+            margin-bottom: 10px !important;
+          }
+
+          .kit-roster-team-overview article {
+            gap: 2px !important;
+            padding: 9px !important;
+            border-radius: 12px !important;
+          }
+
+          .kit-roster-team-overview article span,
+          .kit-roster-team-overview article small {
+            font-size: 0.67rem;
+          }
+
+          .kit-roster-team-overview article strong {
+            overflow: hidden;
+            font-size: 0.82rem;
+            text-overflow: ellipsis;
+            white-space: nowrap;
+          }
+
+          .kit-versus-badge {
+            width: 30px !important;
+            height: 30px !important;
+            font-size: 0.62rem !important;
+          }
+
+          .kit-team-review-grid {
+            gap: 8px !important;
+          }
+
+          .kit-team-review-summary {
+            min-height: 58px !important;
+            padding: 9px 10px !important;
+          }
+
+          .kit-team-review-icon {
+            width: 34px !important;
+            height: 34px !important;
+            border-radius: 10px !important;
+          }
+
+          .kit-team-review-summary-main {
+            gap: 8px !important;
+          }
+
+          .kit-team-review-summary-main h4 {
+            font-size: 0.82rem !important;
+          }
+
+          .kit-team-review-summary-main small,
+          .kit-team-kicker {
+            font-size: 0.63rem !important;
+          }
+
+          .kit-team-review-summary-actions {
+            display: flex !important;
+            gap: 5px !important;
+          }
+
+          .kit-team-bulk-btn {
+            min-height: 28px !important;
+            padding: 4px 7px !important;
+            font-size: 0.62rem !important;
+          }
+
+          .kit-review-actions-premium {
+            position: sticky;
+            bottom: 8px;
+            z-index: 25;
+            display: grid !important;
+            grid-template-columns: minmax(0, 1fr) auto;
+            align-items: center !important;
+            gap: 8px !important;
+            margin: 10px 0 !important;
+            padding: 10px !important;
+            border-radius: 15px !important;
+            backdrop-filter: blur(14px);
+          }
+
+          .kit-review-actions-premium strong {
+            font-size: 0.76rem !important;
+            line-height: 1.25;
+          }
+
+          .kit-review-actions-premium .kit-confirm-review-btn {
+            width: auto !important;
+            min-height: 38px !important;
+            padding: 8px 10px !important;
+            font-size: 0.68rem !important;
+          }
+
+          .kit-workflow-placeholder {
+            min-height: 70px !important;
+            margin-top: 8px !important;
+            padding: 11px !important;
+          }
+
+          .kit-workflow-placeholder-icon {
+            width: 38px !important;
+            height: 38px !important;
+            flex-basis: 38px !important;
+            font-size: 1rem !important;
+          }
+        }
+
       `}</style>
 
     </section>

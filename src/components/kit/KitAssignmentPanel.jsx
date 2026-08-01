@@ -2873,6 +2873,424 @@ async function saveKitPickup() {
             gap: 3px;
           }
         }
+        /* =========================================================
+           MOBILE COMPACT MODE
+           Condenses shared-kit management into a focused control deck.
+           ========================================================= */
+        @media (max-width: 700px) {
+          .kit-assignment-panel {
+            display: grid;
+            gap: 9px;
+            margin-top: 10px;
+            padding: 0 !important;
+            color: #e5eefc;
+          }
+
+          .kit-assignment-panel-heading {
+            display: flex !important;
+            align-items: center !important;
+            justify-content: space-between !important;
+            gap: 8px !important;
+            padding: 10px 11px !important;
+            border: 1px solid rgba(125, 211, 252, 0.24);
+            border-radius: 14px;
+            background:
+              linear-gradient(
+                135deg,
+                rgba(14, 165, 233, 0.12),
+                rgba(99, 102, 241, 0.08)
+              );
+          }
+
+          .kit-assignment-panel-heading h3 {
+            margin: 2px 0 0 !important;
+            font-size: 0.92rem !important;
+          }
+
+          .kit-assignment-panel-heading p {
+            display: none !important;
+          }
+
+          .kit-assignment-mode {
+            flex: 0 0 auto;
+            max-width: 105px;
+            padding: 5px 8px !important;
+            font-size: 0.62rem !important;
+            line-height: 1.2;
+            text-align: center;
+          }
+
+          .kit-assignment-toolbar {
+            display: grid !important;
+            grid-template-columns: minmax(0, 1fr) auto;
+            align-items: center !important;
+            gap: 8px !important;
+            padding: 10px !important;
+            border-radius: 14px !important;
+          }
+
+          .kit-assignment-toolbar strong {
+            font-size: 0.8rem !important;
+          }
+
+          .kit-assignment-toolbar small {
+            display: none !important;
+          }
+
+          .kit-assignment-toolbar-actions {
+            display: flex !important;
+            gap: 6px !important;
+          }
+
+          .kit-assignment-toolbar-actions .btn {
+            width: auto !important;
+            min-height: 36px !important;
+            padding: 7px 9px !important;
+            font-size: 0.64rem !important;
+            white-space: nowrap;
+          }
+
+          .league-kit-card,
+          .kit-assignment-card,
+          .kit-current-custody-card,
+          .league-kit-analytics,
+          .league-kit-timeline-item,
+          .league-kit-history-empty {
+            color: #e5eefc !important;
+            border-color: rgba(148, 163, 184, 0.2) !important;
+            background:
+              linear-gradient(
+                145deg,
+                rgba(9, 18, 35, 0.97),
+                rgba(15, 29, 52, 0.96)
+              ) !important;
+          }
+
+          .league-kit-card {
+            gap: 10px !important;
+            padding: 11px !important;
+            border-radius: 16px !important;
+            box-shadow: 0 16px 36px rgba(2, 6, 23, 0.32);
+          }
+
+          .league-kit-card-header {
+            align-items: center !important;
+            gap: 8px !important;
+          }
+
+          .league-kit-card-header h4 {
+            margin: 2px 0 0 !important;
+            font-size: 0.9rem !important;
+          }
+
+          .kit-assignment-status {
+            padding: 5px 7px !important;
+            font-size: 0.6rem !important;
+          }
+
+          .league-kit-flow {
+            grid-template-columns: minmax(0, 1fr) auto minmax(0, 1fr) !important;
+            gap: 7px !important;
+            align-items: stretch !important;
+          }
+
+          .league-kit-person-block {
+            min-height: 78px;
+            padding: 9px !important;
+            border-radius: 12px !important;
+          }
+
+          .league-kit-person-block small,
+          .league-kit-person-block span {
+            font-size: 0.62rem !important;
+            line-height: 1.25;
+          }
+
+          .league-kit-person-block > span {
+            display: none !important;
+          }
+
+          .league-kit-person-block strong {
+            overflow: hidden;
+            font-size: 0.82rem !important;
+            text-overflow: ellipsis;
+            white-space: nowrap;
+          }
+
+          .league-kit-arrow {
+            align-self: center;
+            transform: none !important;
+            font-size: 0.9rem !important;
+          }
+
+          .league-kit-details {
+            grid-template-columns: repeat(2, minmax(0, 1fr)) !important;
+            gap: 6px !important;
+          }
+
+          .league-kit-details > div,
+          .kit-pickup-summary > div {
+            min-height: 52px;
+            padding: 8px !important;
+            border-radius: 10px !important;
+          }
+
+          .league-kit-details span,
+          .kit-pickup-summary span {
+            font-size: 0.61rem !important;
+          }
+
+          .league-kit-details strong,
+          .kit-pickup-summary strong {
+            overflow: hidden;
+            font-size: 0.72rem !important;
+            text-overflow: ellipsis;
+          }
+
+          .league-kit-status-actions {
+            gap: 8px !important;
+            padding: 9px !important;
+            border-radius: 12px !important;
+          }
+
+          .league-kit-status-actions-heading span,
+          .league-kit-responsibility p,
+          .kit-assignment-reason p {
+            display: none !important;
+          }
+
+          .league-kit-status-actions-heading strong,
+          .league-kit-responsibility strong,
+          .kit-assignment-reason strong {
+            font-size: 0.72rem !important;
+          }
+
+          .league-kit-status-action-grid {
+            grid-template-columns: repeat(2, minmax(0, 1fr)) !important;
+            gap: 6px !important;
+          }
+
+          .league-kit-status-action-grid .btn {
+            min-height: 34px !important;
+            padding: 6px 7px !important;
+            font-size: 0.62rem !important;
+          }
+
+          .league-kit-responsibility,
+          .kit-assignment-reason {
+            padding: 9px !important;
+          }
+
+          .kit-pickup-summary {
+            grid-template-columns: repeat(2, minmax(0, 1fr)) !important;
+            gap: 6px !important;
+          }
+
+          .kit-record-pickup-btn {
+            min-height: 38px !important;
+            font-size: 0.72rem !important;
+          }
+
+          .kit-pickup-disabled-note {
+            font-size: 0.65rem !important;
+          }
+
+          .league-kit-analytics {
+            gap: 8px !important;
+            padding: 10px !important;
+          }
+
+          .league-kit-analytics-heading {
+            display: flex !important;
+            align-items: center !important;
+          }
+
+          .league-kit-analytics-heading span {
+            display: none !important;
+          }
+
+          .league-kit-analytics-summary {
+            display: flex !important;
+            gap: 6px !important;
+            overflow-x: auto;
+            padding-bottom: 2px;
+            scrollbar-width: none;
+          }
+
+          .league-kit-analytics-summary::-webkit-scrollbar {
+            display: none;
+          }
+
+          .league-kit-analytics-summary > div {
+            flex: 0 0 105px;
+            min-height: 54px;
+            padding: 8px !important;
+            background: rgba(30, 41, 59, 0.78) !important;
+          }
+
+          .league-kit-analytics-summary span {
+            font-size: 0.59rem !important;
+          }
+
+          .league-kit-analytics-summary strong {
+            font-size: 0.78rem !important;
+          }
+
+          .league-kit-carrier-table {
+            max-height: 210px;
+            overflow: auto !important;
+          }
+
+          .league-kit-history {
+            gap: 8px !important;
+            padding-top: 10px !important;
+          }
+
+          .league-kit-history-heading {
+            display: flex !important;
+            align-items: center !important;
+            justify-content: space-between !important;
+          }
+
+          .league-kit-history-heading span {
+            display: none !important;
+          }
+
+          .league-kit-history-heading .btn {
+            min-height: 32px !important;
+            padding: 5px 8px !important;
+            font-size: 0.62rem !important;
+          }
+
+          .league-kit-timeline {
+            gap: 7px !important;
+          }
+
+          .league-kit-timeline-item {
+            grid-template-columns: 28px minmax(0, 1fr) !important;
+            gap: 8px !important;
+            padding: 8px !important;
+          }
+
+          .league-kit-timeline-icon {
+            width: 28px !important;
+            height: 28px !important;
+            font-size: 0.75rem !important;
+          }
+
+          .league-kit-timeline-title {
+            display: grid !important;
+            gap: 2px !important;
+          }
+
+          .league-kit-timeline-body {
+            gap: 3px !important;
+          }
+
+          .league-kit-timeline-body p {
+            display: -webkit-box;
+            overflow: hidden;
+            margin: 0 !important;
+            font-size: 0.67rem !important;
+            line-height: 1.3 !important;
+            -webkit-box-orient: vertical;
+            -webkit-line-clamp: 2;
+          }
+
+          .league-kit-timeline-title time,
+          .league-kit-timeline-body small,
+          .league-kit-timeline-transfer {
+            font-size: 0.61rem !important;
+          }
+
+          .kit-current-custody-card {
+            gap: 8px !important;
+            padding: 10px !important;
+          }
+
+          .kit-current-custody-heading p {
+            display: none !important;
+          }
+
+          .kit-current-custody-heading h4 {
+            margin: 2px 0 0 !important;
+            font-size: 0.85rem !important;
+          }
+
+          .kit-current-custody-grid {
+            grid-template-columns: repeat(2, minmax(0, 1fr)) !important;
+            gap: 7px !important;
+          }
+
+          .kit-current-custody-item {
+            gap: 8px !important;
+            padding: 9px !important;
+          }
+
+          .kit-current-custody-source,
+          .kit-current-custody-date {
+            display: none !important;
+          }
+
+          .kit-pickup-dialog {
+            width: calc(100% - 12px) !important;
+            max-height: 86dvh !important;
+            padding: 13px !important;
+            border: 1px solid rgba(125, 211, 252, 0.22);
+            border-radius: 18px !important;
+            background:
+              linear-gradient(
+                145deg,
+                rgba(10, 20, 39, 0.99),
+                rgba(17, 31, 57, 0.99)
+              ) !important;
+            color: #eef6ff !important;
+          }
+
+          .kit-pickup-header p {
+            display: none !important;
+          }
+
+          .kit-pickup-assigned {
+            margin: 10px 0 !important;
+            padding: 9px !important;
+            background: rgba(30, 41, 59, 0.72) !important;
+          }
+
+          .kit-pickup-choice {
+            padding: 10px !important;
+            border-color: rgba(148, 163, 184, 0.3) !important;
+            background: rgba(15, 23, 42, 0.6) !important;
+          }
+
+          .kit-pickup-choice small {
+            font-size: 0.65rem !important;
+          }
+
+          .kit-actual-carrier-fields {
+            gap: 9px !important;
+            margin-top: 10px !important;
+          }
+
+          .kit-actual-carrier-fields input,
+          .kit-actual-carrier-fields select {
+            min-height: 40px !important;
+            border-color: rgba(148, 163, 184, 0.34) !important;
+            background: rgba(15, 23, 42, 0.85) !important;
+            color: #f8fafc !important;
+          }
+
+          .kit-pickup-actions {
+            position: sticky;
+            bottom: -1px;
+            grid-template-columns: 0.7fr 1.3fr !important;
+            gap: 7px !important;
+            margin-top: 12px !important;
+            padding-top: 9px;
+            background: rgba(10, 20, 39, 0.96);
+          }
+        }
+
       `}</style>
     </section>
   );
