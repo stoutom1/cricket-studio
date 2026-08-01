@@ -3533,6 +3533,300 @@ const handleKitAssignmentError =
           }
         }
 
+        /* =========================================================
+           MOBILE POLISH PASS
+           Restores readable typography and turns match navigation
+           into a true compact segmented tab row.
+           ========================================================= */
+        @media (max-width: 700px) {
+          /* Top Matches navigation: five real tabs in one row */
+          .matches-subtabs.pro-match-tabs {
+            display: grid !important;
+            grid-template-columns: repeat(5, minmax(0, 1fr)) !important;
+            gap: 4px !important;
+            width: 100% !important;
+            margin: 10px 0 14px !important;
+            padding: 4px !important;
+            overflow: visible !important;
+            border: 1px solid rgba(96, 165, 250, 0.22) !important;
+            border-radius: 14px !important;
+            background: rgba(6, 15, 32, 0.82) !important;
+            box-shadow:
+              inset 0 1px 0 rgba(255, 255, 255, 0.04),
+              0 10px 24px rgba(2, 6, 23, 0.2) !important;
+          }
+
+          .matches-subtabs.pro-match-tabs > button {
+            display: inline-flex !important;
+            flex-direction: row !important;
+            align-items: center !important;
+            justify-content: center !important;
+            gap: 3px !important;
+            width: 100% !important;
+            min-width: 0 !important;
+            min-height: 42px !important;
+            margin: 0 !important;
+            padding: 7px 3px !important;
+            border: 0 !important;
+            border-radius: 10px !important;
+            background: transparent !important;
+            box-shadow: none !important;
+            color: #aebbd0 !important;
+            font-size: 0.68rem !important;
+            line-height: 1 !important;
+            white-space: nowrap !important;
+          }
+
+          .matches-subtabs.pro-match-tabs > button.active {
+            color: #ffffff !important;
+            background:
+              linear-gradient(
+                135deg,
+                rgba(37, 99, 235, 0.98),
+                rgba(34, 211, 238, 0.9)
+              ) !important;
+            box-shadow:
+              0 8px 18px rgba(37, 99, 235, 0.28),
+              inset 0 1px 0 rgba(255, 255, 255, 0.18) !important;
+          }
+
+          .matches-subtabs.pro-match-tabs .tab-icon {
+            display: inline !important;
+            margin: 0 !important;
+            font-size: 0.78rem !important;
+            line-height: 1 !important;
+          }
+
+          .matches-subtabs.pro-match-tabs .tab-label {
+            overflow: hidden;
+            font-size: 0.65rem !important;
+            font-weight: 800 !important;
+            line-height: 1 !important;
+            text-overflow: clip;
+            white-space: nowrap;
+          }
+
+          /* Keep readable typography instead of shrinking text excessively */
+          .kit-responsibility-card,
+          .kit-responsibility-card button,
+          .kit-responsibility-card input,
+          .kit-responsibility-card select {
+            font-size: 0.9rem;
+          }
+
+          .kit-section-kicker,
+          .kit-source-mode-heading .kit-section-kicker,
+          .kit-team-kicker {
+            font-size: 0.72rem !important;
+            letter-spacing: 0.08em !important;
+          }
+
+          .kit-responsibility-heading h3 {
+            font-size: 1.1rem !important;
+            line-height: 1.2 !important;
+          }
+
+          .kit-league-notice strong,
+          .kit-active-match-primary strong,
+          .kit-source-mode-option strong,
+          .kit-team-review-summary-main h4 {
+            font-size: 0.86rem !important;
+            line-height: 1.28 !important;
+          }
+
+          .kit-active-match-primary small,
+          .kit-roster-team-overview article span,
+          .kit-roster-team-overview article small,
+          .kit-team-review-summary-main small {
+            font-size: 0.74rem !important;
+            line-height: 1.3 !important;
+          }
+
+          /* Active match card: no overlap between match info and selector */
+          .kit-active-match-card {
+            display: grid !important;
+            grid-template-columns: minmax(0, 1fr) auto !important;
+            align-items: center !important;
+            gap: 8px 10px !important;
+            padding: 11px 12px !important;
+          }
+
+          .kit-active-match-primary {
+            min-width: 0 !important;
+          }
+
+          .kit-active-match-primary strong {
+            overflow: hidden;
+            text-overflow: ellipsis;
+            white-space: nowrap;
+          }
+
+          .kit-change-match {
+            position: static !important;
+            min-width: 0 !important;
+          }
+
+          .kit-change-match summary {
+            min-width: 104px !important;
+            padding: 7px 10px !important;
+            font-size: 0.74rem !important;
+            white-space: nowrap !important;
+          }
+
+          .kit-change-match[open] {
+            grid-column: 1 / -1 !important;
+            width: 100% !important;
+          }
+
+          .kit-change-match[open] summary {
+            width: fit-content !important;
+            margin-left: auto !important;
+            margin-bottom: 8px !important;
+          }
+
+          .kit-change-match .kit-form-field {
+            display: grid !important;
+            grid-template-columns: 1fr !important;
+            gap: 6px !important;
+            width: 100% !important;
+            margin: 0 !important;
+          }
+
+          .kit-change-match .kit-form-field span {
+            font-size: 0.74rem !important;
+            font-weight: 800 !important;
+          }
+
+          .kit-change-match select {
+            width: 100% !important;
+            min-height: 44px !important;
+            padding: 9px 36px 9px 11px !important;
+            font-size: 0.82rem !important;
+            line-height: 1.25 !important;
+          }
+
+          /* Player source cards: aligned icon and readable labels */
+          .kit-source-mode-options {
+            grid-template-columns: repeat(2, minmax(0, 1fr)) !important;
+            gap: 8px !important;
+          }
+
+          .kit-source-mode-option {
+            grid-template-columns: 38px minmax(0, 1fr) !important;
+            min-height: 72px !important;
+            gap: 8px !important;
+            padding: 10px !important;
+          }
+
+          .kit-source-mode-icon {
+            display: grid !important;
+            place-items: center !important;
+            width: 38px !important;
+            height: 38px !important;
+            margin: 0 !important;
+            font-size: 1rem !important;
+          }
+
+          .kit-source-mode-option strong {
+            overflow-wrap: normal !important;
+            word-break: normal !important;
+          }
+
+          /* Screenshot orientation: compact radio rows, no text on far right */
+          .kit-screenshot-orientation {
+            display: grid !important;
+            gap: 8px !important;
+            padding: 12px !important;
+          }
+
+          .kit-screenshot-orientation > div:first-child {
+            margin-bottom: 2px !important;
+          }
+
+          .kit-screenshot-orientation > div:first-child strong {
+            font-size: 0.95rem !important;
+          }
+
+          .kit-screenshot-orientation > div:first-child p {
+            margin: 3px 0 0 !important;
+            font-size: 0.78rem !important;
+            line-height: 1.35 !important;
+          }
+
+          .kit-screenshot-orientation > label {
+            display: grid !important;
+            grid-template-columns: 24px minmax(0, 1fr) !important;
+            align-items: center !important;
+            gap: 9px !important;
+            width: 100% !important;
+            min-height: 54px !important;
+            margin: 0 !important;
+            padding: 10px 12px !important;
+            border: 1px solid rgba(148, 163, 184, 0.24) !important;
+            border-radius: 12px !important;
+            background: rgba(15, 23, 42, 0.54) !important;
+          }
+
+          .kit-screenshot-orientation > label input {
+            width: 20px !important;
+            height: 20px !important;
+            margin: 0 !important;
+          }
+
+          .kit-screenshot-orientation > label span {
+            display: block !important;
+            min-width: 0 !important;
+            font-size: 0.82rem !important;
+            line-height: 1.35 !important;
+            text-align: left !important;
+            overflow-wrap: anywhere !important;
+          }
+
+          .kit-screenshot-orientation > .btn {
+            width: 100% !important;
+            min-height: 42px !important;
+            margin-top: 2px !important;
+            font-size: 0.82rem !important;
+          }
+
+          .kit-upload-dropzone {
+            min-height: 205px !important;
+            padding: 20px 14px !important;
+          }
+
+          .kit-upload-dropzone strong {
+            font-size: 1rem !important;
+          }
+
+          .kit-upload-dropzone p {
+            font-size: 0.8rem !important;
+            line-height: 1.35 !important;
+          }
+
+          /* Keep action labels legible */
+          .kit-review-actions-premium strong,
+          .kit-review-actions-premium .kit-confirm-review-btn,
+          .kit-team-bulk-btn,
+          .kit-change-match summary {
+            font-size: 0.74rem !important;
+          }
+        }
+
+        @media (max-width: 390px) {
+          .matches-subtabs.pro-match-tabs > button {
+            gap: 2px !important;
+            padding-inline: 2px !important;
+          }
+
+          .matches-subtabs.pro-match-tabs .tab-label {
+            font-size: 0.6rem !important;
+          }
+
+          .matches-subtabs.pro-match-tabs .tab-icon {
+            font-size: 0.72rem !important;
+          }
+        }
+
       `}</style>
 
     </section>

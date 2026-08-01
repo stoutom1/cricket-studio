@@ -2248,7 +2248,7 @@ async function saveKitPickup() {
         </div>
       )}
 
-      <style jsx>{`
+      <style jsx global>{`
         .kit-current-custody-card {
           display: grid;
           gap: 14px;
@@ -3288,6 +3288,140 @@ async function saveKitPickup() {
             margin-top: 12px !important;
             padding-top: 9px;
             background: rgba(10, 20, 39, 0.96);
+          }
+        }
+
+        /* =========================================================
+           MOBILE TYPOGRAPHY + ALIGNMENT POLISH
+           Compactness now comes from layout, not tiny fonts.
+           ========================================================= */
+        @media (max-width: 700px) {
+          .kit-assignment-panel,
+          .kit-assignment-panel button,
+          .kit-assignment-panel input,
+          .kit-assignment-panel select {
+            font-size: 0.88rem !important;
+          }
+
+          .kit-assignment-panel-heading h3,
+          .league-kit-card-header h4,
+          .kit-current-custody-heading h4 {
+            font-size: 1rem !important;
+            line-height: 1.25 !important;
+          }
+
+          .kit-assignment-mode,
+          .kit-assignment-status {
+            font-size: 0.7rem !important;
+            line-height: 1.2 !important;
+          }
+
+          .kit-assignment-toolbar {
+            grid-template-columns: minmax(0, 1fr) auto !important;
+          }
+
+          .kit-assignment-toolbar strong {
+            font-size: 0.86rem !important;
+            line-height: 1.25 !important;
+          }
+
+          .kit-assignment-toolbar-actions .btn {
+            min-height: 38px !important;
+            padding: 8px 10px !important;
+            font-size: 0.72rem !important;
+          }
+
+          .league-kit-person-block {
+            min-height: 82px !important;
+          }
+
+          .league-kit-person-block small,
+          .league-kit-person-block span,
+          .league-kit-details span,
+          .kit-pickup-summary span,
+          .league-kit-analytics-summary span {
+            font-size: 0.72rem !important;
+            line-height: 1.3 !important;
+          }
+
+          .league-kit-person-block strong {
+            font-size: 0.9rem !important;
+            line-height: 1.25 !important;
+          }
+
+          .league-kit-details strong,
+          .kit-pickup-summary strong,
+          .league-kit-analytics-summary strong {
+            font-size: 0.82rem !important;
+            line-height: 1.28 !important;
+          }
+
+          .league-kit-details > div,
+          .kit-pickup-summary > div {
+            min-height: 58px !important;
+            display: grid !important;
+            align-content: center !important;
+            gap: 3px !important;
+          }
+
+          .league-kit-status-actions-heading strong,
+          .league-kit-responsibility strong,
+          .kit-assignment-reason strong {
+            font-size: 0.82rem !important;
+            line-height: 1.3 !important;
+          }
+
+          .league-kit-status-action-grid .btn {
+            min-height: 40px !important;
+            font-size: 0.74rem !important;
+            line-height: 1.2 !important;
+          }
+
+          .kit-record-pickup-btn {
+            min-height: 42px !important;
+            font-size: 0.82rem !important;
+          }
+
+          .league-kit-analytics-heading strong,
+          .league-kit-history-heading strong {
+            font-size: 0.95rem !important;
+          }
+
+          .league-kit-timeline-title strong {
+            font-size: 0.8rem !important;
+          }
+
+          .league-kit-timeline-body p,
+          .league-kit-timeline-title time,
+          .league-kit-timeline-body small,
+          .league-kit-timeline-transfer {
+            font-size: 0.72rem !important;
+            line-height: 1.35 !important;
+          }
+
+          .kit-current-custody-item strong {
+            font-size: 0.86rem !important;
+          }
+
+          .kit-pickup-dialog h3 {
+            font-size: 1.05rem !important;
+          }
+
+          .kit-pickup-choice strong,
+          .kit-pickup-assigned strong {
+            font-size: 0.86rem !important;
+          }
+
+          .kit-pickup-choice small,
+          .kit-actual-carrier-fields label,
+          .kit-pickup-disabled-note {
+            font-size: 0.74rem !important;
+            line-height: 1.35 !important;
+          }
+
+          .kit-pickup-actions .btn {
+            min-height: 42px !important;
+            font-size: 0.8rem !important;
           }
         }
 
