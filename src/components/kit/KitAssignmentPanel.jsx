@@ -77,6 +77,24 @@ function teamHolderName(holder) {
   );
 }
 
+const COMPLETED_MATCH_STATUSES = new Set([
+  "COMPLETED",
+  "COMPLETED_LOCKED",
+  "COMPLETED_CORRECTED",
+]);
+
+function normalizeMatchStatus(value) {
+  return String(value || "")
+    .trim()
+    .toUpperCase();
+}
+
+function canRecordKitPickup(match) {
+  return COMPLETED_MATCH_STATUSES.has(
+    normalizeMatchStatus(match?.status)
+  );
+}
+
 function previousMatchLabel(holder) {
   if (holder?.previousMatchName) {
     return holder.previousMatchName;
@@ -541,6 +559,9 @@ export default function KitAssignmentPanel({
       match.kitRotationMode ===
         "LEAGUE_PLAYER";
 
+    const pickupRecordingAllowed =
+  canRecordKitPickup(match);    
+
     const targetTeamIds = [];
 
     if (!sharedKit) {
@@ -694,6 +715,19 @@ export default function KitAssignmentPanel({
   function openPickupDialog(
     assignment
   ) {
+
+      if (!pickupRecordingAllowed) {
+    setPickupError(
+      "Complete the match before recording kit custody."
+    );
+
+    onErrorRef.current?.(
+      "Complete the match before recording kit custody."
+    );
+
+    return;
+  }
+
     setPickupAssignment(
       assignment
     );
@@ -820,104 +854,138 @@ export default function KitAssignmentPanel({
     setPickupError("");
   }
 
-  async function saveKitPickup() {
-    if (
-      !pickupAssignment
-        ?.teamId ||
-      !matchId
-    ) {
-      setPickupError(
-        "No kit assignment was selected."
-      );
-      return;
-    }
+async function saveKitPickup() {
+  if (
+    !pickupAssignment?.id ||
+    !matchId
+  ) {
 
-    if (
-      ![
-        "TOOK_KIT",
-        "DID_NOT_TAKE_KIT",
-      ].includes(
-        pickupStatus
-      )
-    ) {
-      setPickupError(
-        "Select what happened to the kit after the match."
-      );
-      return;
-    }
+      if (!pickupRecordingAllowed) {
+    setPickupError(
+      "Kit pickup can only be recorded after the match is completed."
+    );
+    return;
+  }
 
-    if (
-      pickupStatus ===
-        "TOOK_KIT" &&
-      !actualCarrierName.trim()
-    ) {
-      setPickupError(
-        "Enter the name of the person who actually took the kit."
-      );
-      return;
-    }
+    setPickupError(
+      "No kit assignment was selected."
+    );
+    return;
+  }
 
-    setIsSavingPickup(true);
-    setPickupError("");
-    onErrorRef.current?.("");
-    onMessageRef.current?.("");
+  if (
+    ![
+      "TOOK_KIT",
+      "DID_NOT_TAKE_KIT",
+    ].includes(pickupStatus)
+  ) {
+    setPickupError(
+      "Select what happened to the kit after the match."
+    );
+    return;
+  }
+
+  if (
+    pickupStatus === "TOOK_KIT" &&
+    !actualCarrierName.trim()
+  ) {
+    setPickupError(
+      "Enter the name of the person who actually took the kit."
+    );
+    return;
+  }
+
+  setIsSavingPickup(true);
+  setPickupError("");
+  onErrorRef.current?.("");
+  onMessageRef.current?.("");
+
+  try {
+    const response = await fetch(
+      `/api/kit-assignments/${pickupAssignment.id}/pickup`,
+      {
+        method: "PATCH",
+
+        headers: {
+          "Content-Type":
+            "application/json",
+        },
+
+        body: JSON.stringify({
+          pickupStatus,
+
+          actualRotationMemberId:
+            pickupStatus === "TOOK_KIT" &&
+            pickupAssignment
+              ?.rotationMember?.id
+              ? Number(
+                  pickupAssignment
+                    .rotationMember.id
+                )
+              : null,
+
+          actualMatchKitPlayerId:
+            pickupStatus === "TOOK_KIT" &&
+            actualCarrierMatchPlayerId
+              ? Number(
+                  actualCarrierMatchPlayerId
+                )
+              : null,
+
+          actualDisplayName:
+            pickupStatus === "TOOK_KIT"
+              ? actualCarrierName.trim()
+              : null,
+        }),
+      }
+    );
+
+    const responseText =
+      await response.text();
+
+    let data = {};
 
     try {
-      const response =
-        await fetch(
-          `/api/matches/${matchId}/kit-assignments/${pickupAssignment.teamId}/pickup`,
-          {
-            method: "PATCH",
-            headers: {
-              "Content-Type":
-                "application/json",
-            },
-            body: JSON.stringify({
-              pickupStatus,
-              actualMatchKitPlayerId:
-                pickupStatus ===
-                  "TOOK_KIT" &&
-                actualCarrierMatchPlayerId
-                  ? Number(
-                      actualCarrierMatchPlayerId
-                    )
-                  : null,
-              actualDisplayName:
-                pickupStatus ===
-                "TOOK_KIT"
-                  ? actualCarrierName.trim()
-                  : null,
-            }),
-          }
-        );
-
-      const data =
-        await response.json();
-
-      if (!response.ok) {
-        throw new Error(
-          data?.error ||
-            "Unable to record kit pickup."
-        );
-      }
-
-      onMessageRef.current?.(
-        data?.message ||
-          "Kit custody recorded successfully."
+      data = responseText
+        ? JSON.parse(responseText)
+        : {};
+    } catch {
+      throw new Error(
+        response.ok
+          ? "The server returned an invalid response."
+          : `Unable to save kit custody. Server returned HTTP ${response.status}.`
       );
-
-      closePickupDialog();
-      await loadAssignments();
-      await loadKitHistory();
-    } catch (error) {
-      setPickupError(
-        error?.message ||
-          "Unable to record kit pickup."
-      );
-    } finally {
-      setIsSavingPickup(false);
     }
+
+    if (!response.ok) {
+      throw new Error(
+        data?.error ||
+          `Unable to record kit pickup. HTTP ${response.status}.`
+      );
+    }
+
+    onMessageRef.current?.(
+      data?.message ||
+        "Kit custody recorded successfully."
+    );
+
+    setPickupAssignment(null);
+    setPickupStatus("PENDING");
+    setActualCarrierMatchPlayerId("");
+    setActualCarrierName("");
+    setPickupError("");
+
+    await loadAssignments();
+    await loadKitHistory();
+  } catch (error) {
+    setPickupError(
+      error?.message ||
+        "Unable to record kit pickup."
+    );
+  } finally {
+    setIsSavingPickup(false);
   }
+}
 
   async function updateLeagueKitStatus(
     action
@@ -1893,20 +1961,36 @@ export default function KitAssignmentPanel({
                       </div>
                     </div>
 
-                    <button
-                      type="button"
-                      className="btn kit-record-pickup-btn"
-                      onClick={() =>
-                        openPickupDialog(
-                          assignment
-                        )
-                      }
-                    >
-                      {assignment.pickupStatus ===
-                      "PENDING"
-                        ? "Record Kit Pickup"
-                        : "Edit Kit Pickup"}
-                    </button>
+<div className="kit-pickup-action">
+  <button
+    type="button"
+    className="btn kit-record-pickup-btn"
+    onClick={() =>
+      openPickupDialog(assignment)
+    }
+    disabled={!pickupRecordingAllowed}
+    title={
+      pickupRecordingAllowed
+        ? assignment.pickupStatus === "PENDING"
+          ? "Record who took the kit after the completed match"
+          : "Edit the recorded kit pickup"
+        : "Complete the match before recording kit custody"
+    }
+  >
+    {!pickupRecordingAllowed
+      ? "🔒 Complete Match First"
+      : assignment.pickupStatus === "PENDING"
+        ? "Record Kit Pickup"
+        : "Edit Kit Pickup"}
+  </button>
+
+  {!pickupRecordingAllowed && (
+    <small className="kit-pickup-disabled-note">
+      Kit custody can only be recorded after the
+      match is completed.
+    </small>
+  )}
+</div>
                   </article>
                 )
               )}
@@ -2722,6 +2806,27 @@ export default function KitAssignmentPanel({
           margin: 14px 0 0;
           color: #b91c1c;
         }
+
+        .kit-pickup-action {
+  display: grid;
+  gap: 8px;
+}
+
+.kit-record-pickup-btn:disabled {
+  cursor: not-allowed;
+  opacity: 0.55;
+  filter: grayscale(0.25);
+  box-shadow: none;
+}
+
+.kit-pickup-disabled-note {
+  display: block;
+  padding: 0 4px;
+  color: #fbbf24;
+  font-size: 0.78rem;
+  line-height: 1.4;
+  text-align: center;
+}
 
         @media (max-width: 700px) {
           .league-kit-flow {

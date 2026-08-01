@@ -175,6 +175,39 @@ export async function PATCH(request, { params }) {
       );
     }
 
+    const completedMatchStatuses = new Set([
+  "COMPLETED",
+  "COMPLETED_LOCKED",
+  "COMPLETED_CORRECTED",
+]);
+
+const normalizedMatchStatus =
+  String(assignment.match?.status || "")
+    .trim()
+    .toUpperCase();
+
+if (
+  !completedMatchStatuses.has(
+    normalizedMatchStatus
+  )
+) {
+  return NextResponse.json(
+    {
+      error:
+        "Kit pickup can only be recorded after the match is completed.",
+
+      code:
+        "MATCH_NOT_COMPLETED",
+
+      matchStatus:
+        assignment.match?.status || null,
+    },
+    {
+      status: 409,
+    }
+  );
+}
+
     /*
      * Nobody took the kit.
      *

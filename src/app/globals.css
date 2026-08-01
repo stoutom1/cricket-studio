@@ -20276,7 +20276,7 @@ color: var(--c4a-text-primary);
 
 .pro-match-tabs {
   display: grid;
-  grid-template-columns: repeat(4, 1fr);
+  grid-template-columns: repeat(5, 1fr);
   gap: 10px;
 }
 
@@ -65881,5 +65881,34 @@ transform:translateX(28px);
 
   .league-tool-content {
     padding: 12px;
+  }
+}
+.pro-match-tabs {
+  display: grid;
+  grid-template-columns: repeat(5, minmax(0, 1fr));
+  gap: 10px;
+  width: 100%;
+}
+
+.pro-match-tab {
+  min-width: 0;
+  width: 100%;
+  white-space: nowrap;
+}
+
+@media (max-width: 900px) {
+  .pro-match-tabs {
+    grid-template-columns: repeat(3, minmax(0, 1fr));
+  }
+}
+
+@media (max-width: 600px) {
+  .pro-match-tabs {
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+  }
+
+  .pro-match-tab {
+    padding: 12px 8px;
+    font-size: 0.9rem;
   }
 }

@@ -102,6 +102,33 @@ const assignmentInclude = {
   },
 };
 
+function buildPreviousMatchName(previousMatch) {
+  if (!previousMatch) {
+    return "";
+  }
+
+  const teamAName =
+    previousMatch.teamA?.name ||
+    "Team A";
+
+  const teamBName =
+    previousMatch.teamB?.name ||
+    "Team B";
+
+  return `${teamAName} vs ${teamBName}`;
+}
+
+function pickupHolderName(assignment) {
+  return (
+    assignment?.actualDisplayName ||
+    assignment?.actualRotationMember
+      ?.displayName ||
+    assignment?.actualMatchKitPlayer
+      ?.displayName ||
+    null
+  );
+}
+
 export async function GET(request, { params }) {
   try {
     const { id } = await params;
@@ -207,67 +234,249 @@ export async function GET(request, { params }) {
       rotationMode,
     });
 
-    const [assignments, savedPlayers, rotationMembers] =
-      await Promise.all([
-        prisma.kitAssignment.findMany({
-          where: { matchId },
-          orderBy: [
-            { assignedAt: "desc" },
-            { id: "desc" },
-          ],
-          include: assignmentInclude,
-        }),
+    const [
+      assignments,
+      savedPlayers,
+      rotationMembers,
+      latestTeamAPickup,
+      latestTeamBPickup,
+    ] = await Promise.all([
+      prisma.kitAssignment.findMany({
+        where: { matchId },
+        orderBy: [
+          { assignedAt: "desc" },
+          { id: "desc" },
+        ],
+        include: assignmentInclude,
+      }),
 
-        prisma.matchKitPlayer.findMany({
-          where: {
-            matchId,
-            isConfirmed: true,
-            isEligible: true,
+      prisma.matchKitPlayer.findMany({
+        where: {
+          matchId,
+          isConfirmed: true,
+          isEligible: true,
+        },
+        orderBy: [
+          { teamId: "asc" },
+          { sortOrder: "asc" },
+          { displayName: "asc" },
+        ],
+        select: {
+          id: true,
+          matchId: true,
+          teamId: true,
+          playerId: true,
+          displayName: true,
+          normalizedName: true,
+          isConfirmed: true,
+          isEligible: true,
+          team: {
+            select: {
+              id: true,
+              name: true,
+            },
           },
-          orderBy: [
-            { teamId: "asc" },
-            { sortOrder: "asc" },
-            { displayName: "asc" },
-          ],
-          select: {
-            id: true,
-            matchId: true,
-            teamId: true,
-            playerId: true,
-            displayName: true,
-            normalizedName: true,
-            isConfirmed: true,
-            isEligible: true,
-            team: {
-              select: {
-                id: true,
-                name: true,
+        },
+      }),
+
+      prisma.kitRotationMember.findMany({
+        where: {
+          rotationKey: {
+            in: [
+              ...new Set([
+                teamARotationKey,
+                teamBRotationKey,
+              ]),
+            ],
+          },
+          isActive: true,
+        },
+        select: {
+          id: true,
+          playerId: true,
+          displayName: true,
+          normalizedName: true,
+          rotationKey: true,
+        },
+      }),
+
+      sharedKit
+        ? Promise.resolve(null)
+        : prisma.kitAssignment.findFirst({
+            where: {
+              teamId: match.teamAId,
+              matchId: {
+                not: matchId,
+              },
+              pickupStatus: "TOOK_KIT",
+            },
+            orderBy: [
+              { pickupRecordedAt: "desc" },
+              { id: "desc" },
+            ],
+            select: {
+              id: true,
+              teamId: true,
+              matchId: true,
+              actualDisplayName: true,
+              pickupRecordedAt: true,
+              actualRotationMember: {
+                select: {
+                  id: true,
+                  displayName: true,
+                },
+              },
+              actualMatchKitPlayer: {
+                select: {
+                  id: true,
+                  displayName: true,
+                },
+              },
+              team: {
+                select: {
+                  id: true,
+                  name: true,
+                },
               },
             },
-          },
-        }),
+          }),
 
-        prisma.kitRotationMember.findMany({
-          where: {
-            rotationKey: {
-              in: [
-                ...new Set([
-                  teamARotationKey,
-                  teamBRotationKey,
-                ]),
-              ],
+      sharedKit
+        ? Promise.resolve(null)
+        : prisma.kitAssignment.findFirst({
+            where: {
+              teamId: match.teamBId,
+              matchId: {
+                not: matchId,
+              },
+              pickupStatus: "TOOK_KIT",
             },
-            isActive: true,
+            orderBy: [
+              { pickupRecordedAt: "desc" },
+              { id: "desc" },
+            ],
+            select: {
+              id: true,
+              teamId: true,
+              matchId: true,
+              actualDisplayName: true,
+              pickupRecordedAt: true,
+              actualRotationMember: {
+                select: {
+                  id: true,
+                  displayName: true,
+                },
+              },
+              actualMatchKitPlayer: {
+                select: {
+                  id: true,
+                  displayName: true,
+                },
+              },
+              team: {
+                select: {
+                  id: true,
+                  name: true,
+                },
+              },
+            },
+          }),
+    ]);
+
+    const previousMatchIds = [
+      latestTeamAPickup?.matchId,
+      latestTeamBPickup?.matchId,
+    ].filter(isValidPositiveInteger);
+
+    const previousMatches =
+      previousMatchIds.length > 0
+        ? await prisma.match.findMany({
+            where: {
+              id: {
+                in: [
+                  ...new Set(previousMatchIds),
+                ],
+              },
+            },
+            select: {
+              id: true,
+              teamA: {
+                select: {
+                  id: true,
+                  name: true,
+                },
+              },
+              teamB: {
+                select: {
+                  id: true,
+                  name: true,
+                },
+              },
+            },
+          })
+        : [];
+
+    const previousMatchById = new Map(
+      previousMatches.map(
+        (previousMatch) => [
+          previousMatch.id,
+          previousMatch,
+        ]
+      )
+    );
+
+    const teamCurrentHolders = sharedKit
+      ? []
+      : [
+          {
+            teamId: match.teamAId,
+            teamName:
+              match.teamA?.name ||
+              latestTeamAPickup?.team?.name ||
+              `Team ${match.teamAId}`,
+            holderName:
+              pickupHolderName(
+                latestTeamAPickup
+              ),
+            previousMatchId:
+              latestTeamAPickup?.matchId ||
+              null,
+            previousMatchName:
+              buildPreviousMatchName(
+                previousMatchById.get(
+                  latestTeamAPickup?.matchId
+                )
+              ),
+            recordedAt:
+              latestTeamAPickup
+                ?.pickupRecordedAt ||
+              null,
           },
-          select: {
-            id: true,
-            playerId: true,
-            displayName: true,
-            normalizedName: true,
-            rotationKey: true,
+          {
+            teamId: match.teamBId,
+            teamName:
+              match.teamB?.name ||
+              latestTeamBPickup?.team?.name ||
+              `Team ${match.teamBId}`,
+            holderName:
+              pickupHolderName(
+                latestTeamBPickup
+              ),
+            previousMatchId:
+              latestTeamBPickup?.matchId ||
+              null,
+            previousMatchName:
+              buildPreviousMatchName(
+                previousMatchById.get(
+                  latestTeamBPickup?.matchId
+                )
+              ),
+            recordedAt:
+              latestTeamBPickup
+                ?.pickupRecordedAt ||
+              null,
           },
-        }),
-      ]);
+        ];
 
     const rotationMemberByKeyAndName = new Map(
       rotationMembers.map((member) => [
@@ -291,27 +500,33 @@ export async function GET(request, { params }) {
       return {
         ...player,
         rotationKey,
-        rotationMemberId: rotationMember?.id || null,
+        rotationMemberId:
+          rotationMember?.id || null,
       };
     });
 
     const teamAPlayers = eligiblePlayers.filter(
-      (player) => player.teamId === match.teamAId
+      (player) =>
+        player.teamId === match.teamAId
     );
 
     const teamBPlayers = eligiblePlayers.filter(
-      (player) => player.teamId === match.teamBId
+      (player) =>
+        player.teamId === match.teamBId
     );
 
     const activeAssignments = assignments.filter(
-      (assignment) => assignment.status !== "CANCELLED"
+      (assignment) =>
+        assignment.status !== "CANCELLED"
     );
 
     const sharedAssignment = sharedKit
       ? activeAssignments.find(
           (assignment) =>
             assignment.leagueKitId !== null
-        ) || activeAssignments[0] || null
+        ) ||
+        activeAssignments[0] ||
+        null
       : null;
 
     const assignmentsByTeam = {
@@ -319,13 +534,15 @@ export async function GET(request, { params }) {
         ? null
         : activeAssignments.find(
             (assignment) =>
-              assignment.teamId === match.teamAId
+              assignment.teamId ===
+              match.teamAId
           ) || null,
       teamB: sharedKit
         ? null
         : activeAssignments.find(
             (assignment) =>
-              assignment.teamId === match.teamBId
+              assignment.teamId ===
+              match.teamBId
           ) || null,
     };
 
@@ -344,7 +561,8 @@ export async function GET(request, { params }) {
         status: match.status,
         scheduledAt: match.scheduledAt,
         leagueId: match.leagueId,
-        leagueName: match.league.name || "",
+        leagueName:
+          match.league.name || "",
         kitRotationMode: rotationMode,
         sharedKit,
         teamA: match.teamA,
@@ -359,25 +577,34 @@ export async function GET(request, { params }) {
         : null,
       currentHolder,
       previousHolder,
+      teamCurrentHolders,
       sharedAssignment,
-      savedPlayerCount: eligiblePlayers.length,
+      savedPlayerCount:
+        eligiblePlayers.length,
       savedPlayerCounts: {
-        total: eligiblePlayers.length,
-        teamA: teamAPlayers.length,
-        teamB: teamBPlayers.length,
+        total:
+          eligiblePlayers.length,
+        teamA:
+          teamAPlayers.length,
+        teamB:
+          teamBPlayers.length,
       },
-      savedPlayers: eligiblePlayers,
+      savedPlayers:
+        eligiblePlayers,
       eligiblePlayers,
       playersByTeam: {
-        teamA: teamAPlayers,
-        teamB: teamBPlayers,
+        teamA:
+          teamAPlayers,
+        teamB:
+          teamBPlayers,
       },
       assignments: sharedKit
         ? sharedAssignment
           ? [sharedAssignment]
           : []
         : activeAssignments,
-      assignmentHistory: assignments,
+      assignmentHistory:
+        assignments,
       assignmentsByTeam,
     });
   } catch (error) {

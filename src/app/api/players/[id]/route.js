@@ -7,167 +7,360 @@ import { logAudit } from "@/lib/audit";
 export const runtime = "nodejs";
 
 export async function PATCH(request, { params }) {
-  const { id } = await params;
-  const playerId = Number(id);
-  const body = await request.json();
-  const whatsappNumber =
-  typeof body.whatsappNumber === "string"
-    ? body.whatsappNumber.trim()
-    : "";
+  try {
+    const session =
+      await getServerSession(authOptions);
 
-const whatsappOptIn =
-  body.whatsappOptIn === true;
-
-  const session = await getServerSession(authOptions);
-
-  if (!playerId || Number.isNaN(playerId)) {
-    return Response.json({ error: "Invalid player id" }, { status: 400 });
-  }
-
-  const beforePlayer = await prisma.player.findUnique({
-    where: { id: playerId },
-    include: {
-      team: {
-        include: {
-          league: true,
+    if (!session?.user) {
+      return NextResponse.json(
+        {
+          error: "Unauthorized",
         },
-      },
-    },
-  });
-
-  if (!beforePlayer) {
-    return Response.json({ error: "Player not found" }, { status: 404 });
-  }
-
-  const data = {};
-
-  if (typeof body.name === "string") {
-    const name = body.name.trim();
-
-    if (!name) {
-      return Response.json({ error: "Player name is required" }, { status: 400 });
+        {
+          status: 401,
+        }
+      );
     }
 
-    data.name = name;
-  }
+    const { id } = await params;
+    const playerId = Number(id);
 
-  if (body.teamId) {
-    data.teamId = Number(body.teamId);
-  }
-
-  const isNameChanged =
-    typeof data.name === "string" &&
-    data.name !== beforePlayer.name;
-
-  const isTeamChanged =
-    data.teamId &&
-    Number(data.teamId) !== Number(beforePlayer.teamId);
-
-  const normalizedWhatsappNumber = whatsappNumber || null;
-
-  const isWhatsappNumberChanged =
-    normalizedWhatsappNumber !==
-    (beforePlayer.whatsappNumber || null);
-
-  const isWhatsappOptInChanged =
-    whatsappOptIn !== Boolean(beforePlayer.whatsappOptIn);
-    if (!isNameChanged && !isTeamChanged) {
-      return Response.json(beforePlayer);
+    if (
+      !Number.isInteger(playerId) ||
+      playerId <= 0
+    ) {
+      return NextResponse.json(
+        {
+          error: "Invalid player id",
+        },
+        {
+          status: 400,
+        }
+      );
     }
 
-if (
-  !isNameChanged &&
-  !isTeamChanged &&
-  !isWhatsappNumberChanged &&
-  !isWhatsappOptInChanged
-) {
-  return Response.json(beforePlayer);
-}
+    const body = await request.json();
 
-const player = await prisma.player.update({
-  where: { id: playerId },
-  data: {
-    ...data,
-    whatsappNumber: normalizedWhatsappNumber,
-    whatsappOptIn,
-  },
-  include: {
-    team: {
-      include: {
-        league: true,
+    const beforePlayer =
+      await prisma.player.findUnique({
+        where: {
+          id: playerId,
+        },
+
+        include: {
+          team: {
+            include: {
+              league: true,
+            },
+          },
+        },
+      });
+
+    if (!beforePlayer) {
+      return NextResponse.json(
+        {
+          error: "Player not found",
+        },
+        {
+          status: 404,
+        }
+      );
+    }
+
+    const data = {};
+
+    /*
+     * Player name
+     */
+    if (typeof body.name === "string") {
+      const name = body.name.trim();
+
+      if (!name) {
+        return NextResponse.json(
+          {
+            error:
+              "Player name is required",
+          },
+          {
+            status: 400,
+          }
+        );
+      }
+
+      data.name = name;
+    }
+
+    /*
+     * Team transfer
+     */
+    if (
+      body.teamId !== undefined &&
+      body.teamId !== null &&
+      body.teamId !== ""
+    ) {
+      const teamId = Number(body.teamId);
+
+      if (
+        !Number.isInteger(teamId) ||
+        teamId <= 0
+      ) {
+        return NextResponse.json(
+          {
+            error: "Invalid team id",
+          },
+          {
+            status: 400,
+          }
+        );
+      }
+
+      data.teamId = teamId;
+    }
+
+    /*
+     * Only update WhatsApp number when the frontend
+     * explicitly includes whatsappNumber.
+     */
+    const hasWhatsappNumber =
+      Object.prototype.hasOwnProperty.call(
+        body,
+        "whatsappNumber"
+      );
+
+    if (hasWhatsappNumber) {
+      data.whatsappNumber =
+        typeof body.whatsappNumber ===
+        "string"
+          ? body.whatsappNumber.trim() ||
+            null
+          : null;
+    }
+
+    /*
+     * Only update WhatsApp opt-in when the frontend
+     * explicitly includes whatsappOptIn.
+     *
+     * This prevents requests that omit the field from
+     * accidentally changing an existing true value to false.
+     */
+    const hasWhatsappOptIn =
+      Object.prototype.hasOwnProperty.call(
+        body,
+        "whatsappOptIn"
+      );
+
+    if (hasWhatsappOptIn) {
+      data.whatsappOptIn =
+        body.whatsappOptIn === true;
+    }
+
+    const nextName =
+      data.name !== undefined
+        ? data.name
+        : beforePlayer.name;
+
+    const nextTeamId =
+      data.teamId !== undefined
+        ? Number(data.teamId)
+        : Number(beforePlayer.teamId);
+
+    const nextWhatsappNumber =
+      hasWhatsappNumber
+        ? data.whatsappNumber
+        : beforePlayer.whatsappNumber ||
+          null;
+
+    const nextWhatsappOptIn =
+      hasWhatsappOptIn
+        ? Boolean(data.whatsappOptIn)
+        : Boolean(
+            beforePlayer.whatsappOptIn
+          );
+
+    const isNameChanged =
+      nextName !== beforePlayer.name;
+
+    const isTeamChanged =
+      nextTeamId !==
+      Number(beforePlayer.teamId);
+
+    const isWhatsappNumberChanged =
+      nextWhatsappNumber !==
+      (beforePlayer.whatsappNumber ||
+        null);
+
+    const isWhatsappOptInChanged =
+      nextWhatsappOptIn !==
+      Boolean(
+        beforePlayer.whatsappOptIn
+      );
+
+    /*
+     * This is the only no-change return.
+     * It checks name, team, phone number, and opt-in.
+     */
+    if (
+      !isNameChanged &&
+      !isTeamChanged &&
+      !isWhatsappNumberChanged &&
+      !isWhatsappOptInChanged
+    ) {
+      return NextResponse.json(
+        beforePlayer
+      );
+    }
+
+    const player =
+      await prisma.player.update({
+        where: {
+          id: playerId,
+        },
+
+        data,
+
+        include: {
+          team: {
+            include: {
+              league: true,
+            },
+          },
+        },
+      });
+
+    let action =
+      "PLAYER_UPDATED";
+
+    let description =
+      `Player "${player.name}" was updated in team ` +
+      `"${player.team?.name || "Unknown Team"}".`;
+
+    if (
+      isNameChanged &&
+      isTeamChanged
+    ) {
+      action =
+        "PLAYER_UPDATED_AND_TRANSFERRED";
+
+      description =
+        `Player "${beforePlayer.name}" was renamed to ` +
+        `"${player.name}" and transferred from ` +
+        `"${beforePlayer.team?.name || "Unknown Team"}" ` +
+        `to "${player.team?.name || "Unknown Team"}".`;
+    } else if (isTeamChanged) {
+      action =
+        "PLAYER_TRANSFERRED";
+
+      description =
+        `Player "${player.name}" was transferred from ` +
+        `"${beforePlayer.team?.name || "Unknown Team"}" ` +
+        `to "${player.team?.name || "Unknown Team"}".`;
+    } else if (isNameChanged) {
+      description =
+        `Player "${beforePlayer.name}" was renamed to ` +
+        `"${player.name}" in team ` +
+        `"${player.team?.name || "Unknown Team"}".`;
+    } else if (
+      isWhatsappNumberChanged ||
+      isWhatsappOptInChanged
+    ) {
+      action =
+        "PLAYER_NOTIFICATION_PREFERENCES_UPDATED";
+
+      description =
+        `WhatsApp preferences were updated for player ` +
+        `"${player.name}" in team ` +
+        `"${player.team?.name || "Unknown Team"}".`;
+    }
+
+    await logAudit({
+      action,
+      entityType: "PLAYER",
+      entityId: playerId,
+
+      leagueId:
+        player.team?.leagueId ||
+        beforePlayer.team?.leagueId ||
+        null,
+
+      teamId:
+        player.teamId ||
+        beforePlayer.teamId ||
+        null,
+
+      playerId,
+
+      actor: session.user,
+
+      description,
+
+      beforeData: {
+        id: beforePlayer.id,
+        name: beforePlayer.name,
+        teamId: beforePlayer.teamId,
+
+        teamName:
+          beforePlayer.team?.name ||
+          null,
+
+        leagueId:
+          beforePlayer.team?.leagueId ||
+          null,
+
+        leagueName:
+          beforePlayer.team?.league
+            ?.name || null,
+
+        whatsappNumber:
+          beforePlayer.whatsappNumber,
+
+        whatsappOptIn:
+          beforePlayer.whatsappOptIn,
       },
-    },
-  },
-});
 
-let action = "PLAYER_UPDATED";
-let description = `Player "${player.name}" was updated in team "${player.team?.name || "Unknown Team"}".`;
+      afterData: {
+        id: player.id,
+        name: player.name,
+        teamId: player.teamId,
 
-if (isNameChanged && isTeamChanged) {
-  action = "PLAYER_UPDATED_AND_TRANSFERRED";
+        teamName:
+          player.team?.name || null,
 
-  description =
-    `Player "${beforePlayer.name}" was renamed to "${player.name}" ` +
-    `and transferred from "${beforePlayer.team?.name || "Unknown Team"}" ` +
-    `to "${player.team?.name || "Unknown Team"}".`;
-} else if (isTeamChanged) {
-  action = "PLAYER_TRANSFERRED";
+        leagueId:
+          player.team?.leagueId ||
+          null,
 
-  description =
-    `Player "${player.name}" was transferred from ` +
-    `"${beforePlayer.team?.name || "Unknown Team"}" ` +
-    `to "${player.team?.name || "Unknown Team"}".`;
-} else if (isNameChanged) {
-  description =
-    `Player "${beforePlayer.name}" was renamed to "${player.name}" ` +
-    `in team "${player.team?.name || "Unknown Team"}".`;
-} else if (
-  isWhatsappNumberChanged ||
-  isWhatsappOptInChanged
-) {
-  description =
-    `WhatsApp preferences were updated for player "${player.name}" ` +
-    `in team "${player.team?.name || "Unknown Team"}".`;
-}
+        leagueName:
+          player.team?.league?.name ||
+          null,
 
-  await logAudit({
-    action,
-    entityType: "PLAYER",
-    entityId: playerId,
+        whatsappNumber:
+          player.whatsappNumber,
 
-    leagueId: player.team?.leagueId || beforePlayer.team?.leagueId || null,
-    teamId: player.teamId || beforePlayer.teamId || null,
-    playerId,
+        whatsappOptIn:
+          player.whatsappOptIn,
+      },
 
-    actor: session?.user,
-    description,
+      request,
+    });
 
-    beforeData: {
-      id: beforePlayer.id,
-      name: beforePlayer.name,
-      teamId: beforePlayer.teamId,
-      teamName: beforePlayer.team?.name || null,
-      leagueId: beforePlayer.team?.leagueId || null,
-      leagueName: beforePlayer.team?.league?.name || null,
-      whatsappNumber: beforePlayer.whatsappNumber,
-      whatsappOptIn: beforePlayer.whatsappOptIn,
-    },
+    return NextResponse.json(player);
+  } catch (error) {
+    console.error(
+      "[PLAYER_UPDATE_FAILED]",
+      error
+    );
 
-    afterData: {
-      id: player.id,
-      name: player.name,
-      teamId: player.teamId,
-      teamName: player.team?.name || null,
-      leagueId: player.team?.leagueId || null,
-      leagueName: player.team?.league?.name || null,
-      whatsappNumber: player.whatsappNumber,
-      whatsappOptIn: player.whatsappOptIn,
-    },
-
-    request,
-  });
-
-  return Response.json(player);
+    return NextResponse.json(
+      {
+        error:
+          error?.message ||
+          "Unable to update player.",
+      },
+      {
+        status: 500,
+      }
+    );
+  }
 }
 
 export async function DELETE(request, { params }) {
