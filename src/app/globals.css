@@ -66924,3 +66924,1020 @@ transform:translateX(28px);
     height: 34px !important;
   }
 }
+
+/* ==========================================================================
+   CRIC4ALL KIT — MOBILE UI V3
+   Add this block at the VERY END of app/globals.css.
+
+   IMPORTANT:
+   Remove any earlier blocks named:
+   - MOBILE COMPACT MODE
+   - MOBILE POLISH PASS
+   - CRIC4ALL KIT PAGE — COMPLETE MOBILE REDESIGN
+
+   This is the only mobile Kit override that should remain.
+   ========================================================================== */
+
+@media (max-width: 700px) {
+  :root {
+    --kit-m-bg: #0d1629;
+    --kit-m-surface: #131f39;
+    --kit-m-surface-2: #182744;
+    --kit-m-surface-3: #0f1a31;
+    --kit-m-border: rgba(126, 151, 210, 0.28);
+    --kit-m-border-strong: rgba(105, 154, 255, 0.58);
+    --kit-m-text: #f5f8ff;
+    --kit-m-muted: #aebbd2;
+    --kit-m-blue: #4d86f7;
+    --kit-m-cyan: #42bce9;
+    --kit-m-purple: #7b6cf6;
+    --kit-m-danger: #ef6f7b;
+    --kit-m-radius: 16px;
+    --kit-m-shadow: 0 14px 34px rgba(2, 6, 23, 0.3);
+  }
+
+  /* ================================================================
+     A. TOP MATCH TABS
+     ================================================================ */
+
+  .matches-subtabs.pro-match-tabs {
+    display: grid !important;
+    grid-template-columns: repeat(5, minmax(0, 1fr)) !important;
+    gap: 4px !important;
+    width: 100% !important;
+    margin: 10px 0 14px !important;
+    padding: 4px !important;
+    border: 1px solid var(--kit-m-border) !important;
+    border-radius: 15px !important;
+    background: #101a30 !important;
+    box-shadow: var(--kit-m-shadow) !important;
+  }
+
+  .matches-subtabs.pro-match-tabs > button {
+    display: flex !important;
+    flex-direction: column !important;
+    align-items: center !important;
+    justify-content: center !important;
+    gap: 4px !important;
+    min-width: 0 !important;
+    width: 100% !important;
+    min-height: 52px !important;
+    margin: 0 !important;
+    padding: 6px 2px !important;
+    border: 0 !important;
+    border-radius: 11px !important;
+    color: var(--kit-m-muted) !important;
+    background: transparent !important;
+    box-shadow: none !important;
+    font-size: 0.64rem !important;
+    font-weight: 800 !important;
+    line-height: 1 !important;
+    white-space: nowrap !important;
+  }
+
+  .matches-subtabs.pro-match-tabs > button.active {
+    color: #fff !important;
+    background: linear-gradient(135deg, var(--kit-m-blue), var(--kit-m-cyan)) !important;
+    box-shadow: 0 8px 20px rgba(55, 117, 235, 0.33) !important;
+  }
+
+  .matches-subtabs.pro-match-tabs .tab-icon {
+    display: block !important;
+    margin: 0 !important;
+    font-size: 1rem !important;
+    line-height: 1 !important;
+  }
+
+  .matches-subtabs.pro-match-tabs .tab-label {
+    display: block !important;
+    overflow: visible !important;
+    font-size: 0.61rem !important;
+    line-height: 1.05 !important;
+    text-overflow: clip !important;
+    white-space: nowrap !important;
+  }
+
+  /* ================================================================
+     B. KIT PAGE FOUNDATION
+     ================================================================ */
+
+  .kit-responsibility-card,
+  .kit-assignment-panel {
+    display: grid !important;
+    gap: 11px !important;
+    width: 100% !important;
+    margin: 0 !important;
+    padding: 11px !important;
+    border: 1px solid var(--kit-m-border) !important;
+    border-radius: 18px !important;
+    color: var(--kit-m-text) !important;
+    background: linear-gradient(160deg, #15213e, var(--kit-m-bg)) !important;
+    box-shadow: var(--kit-m-shadow) !important;
+  }
+
+  .kit-responsibility-card *,
+  .kit-assignment-panel * {
+    box-sizing: border-box !important;
+    min-width: 0;
+  }
+
+  .kit-responsibility-card,
+  .kit-responsibility-card button,
+  .kit-responsibility-card input,
+  .kit-responsibility-card select,
+  .kit-assignment-panel,
+  .kit-assignment-panel button,
+  .kit-assignment-panel input,
+  .kit-assignment-panel select {
+    font-family: inherit !important;
+  }
+
+  .kit-responsibility-card p,
+  .kit-assignment-panel p {
+    overflow-wrap: normal !important;
+    word-break: normal !important;
+  }
+
+  /* Every mobile section uses the Birthday-page navy family. */
+  .kit-responsibility-heading,
+  .kit-league-notice,
+  .kit-active-match-card,
+  .kit-source-mode-card,
+  .kit-roster-mode-card,
+  .kit-shared-league-exception,
+  .kit-workflow-placeholder,
+  .kit-assignment-panel-heading,
+  .kit-assignment-toolbar,
+  .league-kit-card,
+  .kit-assignment-card,
+  .kit-current-custody-card,
+  .league-kit-analytics,
+  .league-kit-history,
+  .league-kit-timeline-item,
+  .kit-pickup-dialog {
+    border: 1px solid var(--kit-m-border) !important;
+    color: var(--kit-m-text) !important;
+    background: var(--kit-m-surface) !important;
+  }
+
+  /* ================================================================
+     C. TEXT SCALE
+     No tiny copy and no giant wrapped titles.
+     ================================================================ */
+
+  .kit-section-kicker,
+  .kit-team-kicker {
+    color: #82c8ff !important;
+    font-size: 0.7rem !important;
+    font-weight: 900 !important;
+    line-height: 1.2 !important;
+    letter-spacing: 0.07em !important;
+    text-transform: uppercase !important;
+  }
+
+  .kit-responsibility-heading h3,
+  .kit-assignment-panel-heading h3 {
+    margin: 2px 0 0 !important;
+    color: #fff !important;
+    font-size: 1.05rem !important;
+    line-height: 1.22 !important;
+  }
+
+  .kit-source-mode-heading h4,
+  .kit-roster-mode-heading h4,
+  .league-kit-card-header h4,
+  .kit-current-custody-heading h4 {
+    margin: 0 !important;
+    color: #fff !important;
+    font-size: 0.96rem !important;
+    line-height: 1.26 !important;
+  }
+
+  .kit-responsibility-heading p,
+  .kit-assignment-panel-heading p,
+  .kit-source-mode-heading p,
+  .kit-roster-mode-heading p,
+  .kit-current-custody-heading p {
+    display: none !important;
+  }
+
+  /* ================================================================
+     D. BUTTON SYSTEM
+     Text may wrap, but it must never be clipped.
+     ================================================================ */
+
+  .kit-responsibility-card .btn,
+  .kit-assignment-panel .btn,
+  .kit-change-match summary,
+  .kit-team-bulk-btn,
+  .kit-source-mode-option {
+    cursor: pointer !important;
+    overflow: visible !important;
+    text-overflow: clip !important;
+  }
+
+  .kit-responsibility-card .btn,
+  .kit-assignment-panel .btn {
+    display: inline-flex !important;
+    align-items: center !important;
+    justify-content: center !important;
+    gap: 6px !important;
+    min-height: 44px !important;
+    padding: 9px 12px !important;
+    border: 1px solid rgba(117, 147, 218, 0.38) !important;
+    border-radius: 12px !important;
+    color: #f5f8ff !important;
+    background: var(--kit-m-surface-2) !important;
+    box-shadow: none !important;
+    font-size: 0.8rem !important;
+    font-weight: 850 !important;
+    line-height: 1.2 !important;
+    text-align: center !important;
+    white-space: normal !important;
+  }
+
+  .kit-responsibility-card .btn:hover,
+  .kit-assignment-panel .btn:hover {
+    border-color: var(--kit-m-border-strong) !important;
+  }
+
+  .kit-responsibility-card .btn:disabled,
+  .kit-assignment-panel .btn:disabled {
+    cursor: not-allowed !important;
+    opacity: 0.5 !important;
+  }
+
+  .kit-confirm-review-btn,
+  .kit-record-pickup-btn,
+  .kit-pickup-actions .btn:last-child {
+    border: 0 !important;
+    color: #fff !important;
+    background: linear-gradient(135deg, var(--kit-m-blue), var(--kit-m-cyan)) !important;
+    box-shadow: 0 9px 22px rgba(64, 126, 238, 0.28) !important;
+  }
+
+  /* ================================================================
+     E. HEADER + LEAGUE
+     ================================================================ */
+
+  .kit-responsibility-heading,
+  .kit-assignment-panel-heading {
+    display: grid !important;
+    grid-template-columns: minmax(0, 1fr) auto !important;
+    align-items: center !important;
+    gap: 8px !important;
+    padding: 12px !important;
+    border-radius: var(--kit-m-radius) !important;
+  }
+
+  .kit-feature-badge,
+  .kit-assignment-mode,
+  .kit-assignment-status {
+    max-width: 118px !important;
+    padding: 6px 9px !important;
+    border: 1px solid rgba(96, 165, 250, 0.28) !important;
+    border-radius: 999px !important;
+    color: #dceaff !important;
+    background: #1b2a4c !important;
+    font-size: 0.68rem !important;
+    font-weight: 850 !important;
+    line-height: 1.2 !important;
+    text-align: center !important;
+  }
+
+  .kit-league-notice {
+    display: flex !important;
+    align-items: center !important;
+    min-height: 42px !important;
+    padding: 9px 11px !important;
+    border-radius: 13px !important;
+  }
+
+  .kit-league-notice span {
+    display: none !important;
+  }
+
+  .kit-league-notice strong {
+    overflow: hidden !important;
+    color: #eef4ff !important;
+    font-size: 0.82rem !important;
+    line-height: 1.3 !important;
+    text-overflow: ellipsis !important;
+    white-space: nowrap !important;
+  }
+
+  /* ================================================================
+     F. ACTIVE MATCH + CHANGE MATCH
+     ================================================================ */
+
+  .kit-active-match-card {
+    display: grid !important;
+    grid-template-columns: minmax(0, 1fr) auto !important;
+    align-items: center !important;
+    gap: 8px 10px !important;
+    min-height: 78px !important;
+    margin: 0 !important;
+    padding: 11px 12px !important;
+    border-radius: 14px !important;
+  }
+
+  .kit-active-match-primary {
+    display: grid !important;
+    gap: 3px !important;
+  }
+
+  .kit-active-match-primary strong {
+    overflow: hidden !important;
+    color: #fff !important;
+    font-size: 0.9rem !important;
+    line-height: 1.25 !important;
+    text-overflow: ellipsis !important;
+    white-space: nowrap !important;
+  }
+
+  .kit-active-match-primary small {
+    color: var(--kit-m-muted) !important;
+    font-size: 0.74rem !important;
+    line-height: 1.3 !important;
+  }
+
+  .kit-change-match {
+    position: static !important;
+    width: auto !important;
+  }
+
+  .kit-change-match summary {
+    display: inline-flex !important;
+    align-items: center !important;
+    justify-content: center !important;
+    min-width: 106px !important;
+    min-height: 38px !important;
+    padding: 8px 10px !important;
+    border: 1px solid rgba(117, 147, 218, 0.38) !important;
+    border-radius: 999px !important;
+    color: #eef4ff !important;
+    background: var(--kit-m-surface-2) !important;
+    font-size: 0.74rem !important;
+    font-weight: 850 !important;
+    line-height: 1 !important;
+    white-space: nowrap !important;
+  }
+
+  .kit-change-match[open] {
+    grid-column: 1 / -1 !important;
+    display: grid !important;
+    gap: 8px !important;
+    width: 100% !important;
+  }
+
+  .kit-change-match[open] summary {
+    justify-self: end !important;
+  }
+
+  .kit-change-match .kit-form-field {
+    display: grid !important;
+    grid-template-columns: 1fr !important;
+    gap: 6px !important;
+    width: 100% !important;
+  }
+
+  .kit-change-match .kit-form-field span {
+    color: var(--kit-m-muted) !important;
+    font-size: 0.74rem !important;
+    font-weight: 800 !important;
+  }
+
+  .kit-change-match select,
+  .kit-actual-carrier-fields input,
+  .kit-actual-carrier-fields select {
+    width: 100% !important;
+    min-height: 44px !important;
+    padding: 9px 38px 9px 11px !important;
+    border: 1px solid rgba(117, 147, 218, 0.36) !important;
+    border-radius: 11px !important;
+    color: #fff !important;
+    background: #0e1830 !important;
+    font-size: 0.82rem !important;
+    line-height: 1.25 !important;
+  }
+
+  /* ================================================================
+     G. PLAYER SOURCE
+     ================================================================ */
+
+  .kit-source-mode-card,
+  .kit-roster-mode-card {
+    padding: 12px !important;
+    border-radius: 15px !important;
+  }
+
+  .kit-source-mode-heading,
+  .kit-roster-mode-heading {
+    display: grid !important;
+    gap: 3px !important;
+    margin-bottom: 10px !important;
+  }
+
+  .kit-source-mode-options {
+    display: grid !important;
+    grid-template-columns: repeat(2, minmax(0, 1fr)) !important;
+    gap: 8px !important;
+  }
+
+  .kit-source-mode-option {
+    display: grid !important;
+    grid-template-columns: 40px minmax(0, 1fr) !important;
+    align-items: center !important;
+    gap: 9px !important;
+    min-height: 74px !important;
+    padding: 10px !important;
+    border: 1px solid var(--kit-m-border) !important;
+    border-radius: 13px !important;
+    color: var(--kit-m-text) !important;
+    background: var(--kit-m-surface-3) !important;
+  }
+
+  .kit-source-mode-option.active,
+  .kit-source-mode-option[aria-pressed="true"] {
+    border-color: var(--kit-m-border-strong) !important;
+    background: #1a2d55 !important;
+  }
+
+  .kit-source-mode-icon {
+    display: grid !important;
+    place-items: center !important;
+    width: 40px !important;
+    height: 40px !important;
+    margin: 0 !important;
+    border-radius: 12px !important;
+    background: #1d2e50 !important;
+    font-size: 1rem !important;
+  }
+
+  .kit-source-mode-option strong {
+    display: block !important;
+    color: #fff !important;
+    font-size: 0.8rem !important;
+    line-height: 1.25 !important;
+    overflow-wrap: normal !important;
+    word-break: normal !important;
+  }
+
+  .kit-source-mode-option small {
+    display: none !important;
+  }
+
+  /* ================================================================
+     H. SCREENSHOT IMPORT
+     ================================================================ */
+
+  .kit-upload-dropzone {
+    display: grid !important;
+    place-items: center !important;
+    min-height: 185px !important;
+    padding: 18px 14px !important;
+    border: 2px dashed rgba(117, 147, 218, 0.46) !important;
+    border-radius: 15px !important;
+    color: var(--kit-m-text) !important;
+    background: var(--kit-m-surface-3) !important;
+    text-align: center !important;
+  }
+
+  .kit-upload-dropzone strong {
+    font-size: 1rem !important;
+    line-height: 1.25 !important;
+  }
+
+  .kit-upload-dropzone p {
+    color: var(--kit-m-muted) !important;
+    font-size: 0.8rem !important;
+    line-height: 1.4 !important;
+  }
+
+  .kit-screenshot-orientation {
+    display: grid !important;
+    gap: 8px !important;
+    width: 100% !important;
+    padding: 12px !important;
+    border: 1px solid var(--kit-m-border) !important;
+    border-radius: 15px !important;
+    color: var(--kit-m-text) !important;
+    background: var(--kit-m-surface) !important;
+  }
+
+  .kit-screenshot-orientation > div:first-child {
+    display: grid !important;
+    gap: 3px !important;
+  }
+
+  .kit-screenshot-orientation > div:first-child strong {
+    font-size: 0.95rem !important;
+    line-height: 1.25 !important;
+  }
+
+  .kit-screenshot-orientation > div:first-child p {
+    margin: 0 !important;
+    color: var(--kit-m-muted) !important;
+    font-size: 0.78rem !important;
+    line-height: 1.4 !important;
+  }
+
+  .kit-screenshot-orientation > label {
+    display: grid !important;
+    grid-template-columns: 22px minmax(0, 1fr) !important;
+    align-items: center !important;
+    gap: 10px !important;
+    width: 100% !important;
+    min-height: 56px !important;
+    margin: 0 !important;
+    padding: 10px 12px !important;
+    border: 1px solid var(--kit-m-border) !important;
+    border-radius: 12px !important;
+    color: var(--kit-m-text) !important;
+    background: var(--kit-m-surface-3) !important;
+  }
+
+  .kit-screenshot-orientation > label input {
+    width: 20px !important;
+    height: 20px !important;
+    margin: 0 !important;
+    accent-color: var(--kit-m-blue) !important;
+  }
+
+  .kit-screenshot-orientation > label span {
+    display: block !important;
+    color: var(--kit-m-text) !important;
+    font-size: 0.81rem !important;
+    line-height: 1.38 !important;
+    text-align: left !important;
+    overflow-wrap: break-word !important;
+    word-break: normal !important;
+  }
+
+  .kit-screenshot-orientation > .btn {
+    width: 100% !important;
+  }
+
+  /* ================================================================
+     I. ROSTER REVIEW
+     ================================================================ */
+
+  .kit-wizard-progress {
+    display: flex !important;
+    gap: 6px !important;
+    margin: 8px 0 !important;
+    overflow-x: auto !important;
+    scrollbar-width: none !important;
+  }
+
+  .kit-wizard-progress::-webkit-scrollbar {
+    display: none !important;
+  }
+
+  .kit-wizard-progress span {
+    flex: 1 0 110px !important;
+    min-height: 36px !important;
+    padding: 7px 8px !important;
+    border-radius: 999px !important;
+    color: var(--kit-m-muted) !important;
+    background: var(--kit-m-surface-3) !important;
+    font-size: 0.7rem !important;
+    white-space: nowrap !important;
+  }
+
+  .kit-wizard-progress span.active {
+    color: #fff !important;
+    background: #284477 !important;
+  }
+
+  .kit-roster-team-overview {
+    display: grid !important;
+    grid-template-columns: minmax(0, 1fr) auto minmax(0, 1fr) !important;
+    gap: 7px !important;
+  }
+
+  .kit-roster-team-overview article {
+    display: grid !important;
+    gap: 2px !important;
+    padding: 9px !important;
+    border: 1px solid var(--kit-m-border) !important;
+    border-radius: 12px !important;
+    background: var(--kit-m-surface-3) !important;
+  }
+
+  .kit-roster-team-overview article strong {
+    overflow: hidden !important;
+    font-size: 0.82rem !important;
+    text-overflow: ellipsis !important;
+    white-space: nowrap !important;
+  }
+
+  .kit-roster-team-overview article span,
+  .kit-roster-team-overview article small {
+    color: var(--kit-m-muted) !important;
+    font-size: 0.7rem !important;
+  }
+
+  .kit-team-review-grid {
+    display: grid !important;
+    gap: 8px !important;
+  }
+
+  .kit-team-review-card {
+    overflow: hidden !important;
+    border: 1px solid var(--kit-m-border) !important;
+    border-radius: 13px !important;
+    background: var(--kit-m-surface-3) !important;
+  }
+
+  .kit-team-review-summary {
+    display: grid !important;
+    grid-template-columns: minmax(0, 1fr) auto !important;
+    align-items: center !important;
+    gap: 8px !important;
+    min-height: 60px !important;
+    padding: 10px !important;
+  }
+
+  .kit-team-review-summary-main h4 {
+    font-size: 0.84rem !important;
+    line-height: 1.25 !important;
+  }
+
+  .kit-team-review-summary-main small {
+    color: var(--kit-m-muted) !important;
+    font-size: 0.71rem !important;
+  }
+
+  .kit-team-bulk-btn {
+    min-height: 36px !important;
+    padding: 7px 9px !important;
+    border: 1px solid var(--kit-m-border) !important;
+    border-radius: 10px !important;
+    color: var(--kit-m-text) !important;
+    background: var(--kit-m-surface-2) !important;
+    font-size: 0.7rem !important;
+    font-weight: 800 !important;
+    white-space: normal !important;
+  }
+
+  .kit-review-actions-premium {
+    position: sticky !important;
+    bottom: 7px !important;
+    z-index: 25 !important;
+    display: grid !important;
+    grid-template-columns: minmax(0, 1fr) auto !important;
+    align-items: center !important;
+    gap: 8px !important;
+    margin: 8px 0 0 !important;
+    padding: 10px !important;
+    border: 1px solid var(--kit-m-border) !important;
+    border-radius: 14px !important;
+    background: rgba(19, 31, 57, 0.96) !important;
+    backdrop-filter: blur(14px) !important;
+  }
+
+  .kit-review-actions-premium p {
+    display: none !important;
+  }
+
+  .kit-review-actions-premium strong {
+    font-size: 0.77rem !important;
+    line-height: 1.3 !important;
+  }
+
+  /* ================================================================
+     J. ASSIGNMENT DASHBOARD
+     ================================================================ */
+
+  .kit-assignment-toolbar {
+    display: grid !important;
+    grid-template-columns: minmax(0, 1fr) auto !important;
+    align-items: center !important;
+    gap: 8px !important;
+    padding: 10px !important;
+    border-radius: 13px !important;
+  }
+
+  .kit-assignment-toolbar strong {
+    font-size: 0.84rem !important;
+    line-height: 1.3 !important;
+  }
+
+  .kit-assignment-toolbar small {
+    display: none !important;
+  }
+
+  .kit-assignment-toolbar-actions {
+    display: flex !important;
+    gap: 6px !important;
+  }
+
+  .kit-assignment-toolbar-actions .btn {
+    min-height: 38px !important;
+    padding: 8px 10px !important;
+    font-size: 0.72rem !important;
+    white-space: nowrap !important;
+  }
+
+  .league-kit-card,
+  .kit-assignment-card {
+    display: grid !important;
+    gap: 10px !important;
+    padding: 11px !important;
+    border-radius: 15px !important;
+  }
+
+  .league-kit-card-header {
+    display: flex !important;
+    align-items: center !important;
+    justify-content: space-between !important;
+    gap: 8px !important;
+  }
+
+  .league-kit-flow {
+    display: grid !important;
+    grid-template-columns: minmax(0, 1fr) auto minmax(0, 1fr) !important;
+    align-items: stretch !important;
+    gap: 7px !important;
+  }
+
+  .league-kit-person-block {
+    display: grid !important;
+    align-content: center !important;
+    gap: 3px !important;
+    min-height: 84px !important;
+    padding: 9px !important;
+    border-radius: 11px !important;
+    background: var(--kit-m-surface-3) !important;
+  }
+
+  .league-kit-person-block > span {
+    display: none !important;
+  }
+
+  .league-kit-person-block small {
+    color: var(--kit-m-muted) !important;
+    font-size: 0.7rem !important;
+    line-height: 1.3 !important;
+  }
+
+  .league-kit-person-block strong {
+    overflow: hidden !important;
+    color: #fff !important;
+    font-size: 0.88rem !important;
+    line-height: 1.25 !important;
+    text-overflow: ellipsis !important;
+    white-space: nowrap !important;
+  }
+
+  .league-kit-arrow {
+    align-self: center !important;
+    color: #8fa5ca !important;
+    font-size: 0.92rem !important;
+    transform: none !important;
+  }
+
+  .league-kit-details,
+  .kit-pickup-summary {
+    display: grid !important;
+    grid-template-columns: repeat(2, minmax(0, 1fr)) !important;
+    gap: 7px !important;
+  }
+
+  .league-kit-details > div,
+  .kit-pickup-summary > div {
+    display: grid !important;
+    align-content: center !important;
+    gap: 3px !important;
+    min-height: 60px !important;
+    padding: 8px !important;
+    border-radius: 10px !important;
+    background: var(--kit-m-surface-3) !important;
+  }
+
+  .league-kit-details span,
+  .kit-pickup-summary span {
+    color: var(--kit-m-muted) !important;
+    font-size: 0.69rem !important;
+    line-height: 1.3 !important;
+  }
+
+  .league-kit-details strong,
+  .kit-pickup-summary strong {
+    color: #fff !important;
+    font-size: 0.8rem !important;
+    line-height: 1.3 !important;
+  }
+
+  .league-kit-status-actions {
+    display: grid !important;
+    gap: 8px !important;
+    padding: 9px !important;
+    border: 1px solid var(--kit-m-border) !important;
+    border-radius: 12px !important;
+    background: var(--kit-m-surface-3) !important;
+  }
+
+  .league-kit-status-actions-heading span,
+  .league-kit-responsibility p,
+  .kit-assignment-reason p {
+    display: none !important;
+  }
+
+  .league-kit-status-action-grid {
+    display: grid !important;
+    grid-template-columns: repeat(2, minmax(0, 1fr)) !important;
+    gap: 7px !important;
+  }
+
+  .league-kit-status-action-grid .btn {
+    min-height: 42px !important;
+    font-size: 0.73rem !important;
+  }
+
+  .league-kit-responsibility,
+  .kit-assignment-reason {
+    padding: 9px !important;
+    border: 1px solid var(--kit-m-border) !important;
+    border-radius: 10px !important;
+    background: var(--kit-m-surface-3) !important;
+  }
+
+  /* ================================================================
+     K. FAIRNESS + HISTORY
+     ================================================================ */
+
+  .league-kit-analytics,
+  .league-kit-history {
+    display: grid !important;
+    gap: 8px !important;
+    padding: 10px !important;
+    border-radius: 14px !important;
+  }
+
+  .league-kit-analytics-heading span,
+  .league-kit-history-heading span {
+    display: none !important;
+  }
+
+  .league-kit-analytics-summary {
+    display: flex !important;
+    gap: 7px !important;
+    overflow-x: auto !important;
+    scrollbar-width: none !important;
+  }
+
+  .league-kit-analytics-summary::-webkit-scrollbar {
+    display: none !important;
+  }
+
+  .league-kit-analytics-summary > div {
+    flex: 0 0 114px !important;
+    min-height: 60px !important;
+    padding: 8px !important;
+    border-radius: 10px !important;
+    background: var(--kit-m-surface-2) !important;
+  }
+
+  .league-kit-analytics-summary span {
+    color: var(--kit-m-muted) !important;
+    font-size: 0.68rem !important;
+  }
+
+  .league-kit-analytics-summary strong {
+    font-size: 0.82rem !important;
+  }
+
+  .league-kit-history-heading {
+    display: flex !important;
+    align-items: center !important;
+    justify-content: space-between !important;
+    gap: 8px !important;
+  }
+
+  .league-kit-timeline {
+    display: grid !important;
+    gap: 7px !important;
+  }
+
+  .league-kit-timeline-item {
+    display: grid !important;
+    grid-template-columns: 30px minmax(0, 1fr) !important;
+    gap: 8px !important;
+    padding: 9px !important;
+    border-radius: 11px !important;
+  }
+
+  .league-kit-timeline-icon {
+    display: grid !important;
+    place-items: center !important;
+    width: 30px !important;
+    height: 30px !important;
+    font-size: 0.76rem !important;
+  }
+
+  .league-kit-timeline-body p {
+    display: -webkit-box !important;
+    overflow: hidden !important;
+    margin: 0 !important;
+    color: #c8d3e6 !important;
+    font-size: 0.73rem !important;
+    line-height: 1.4 !important;
+    -webkit-box-orient: vertical !important;
+    -webkit-line-clamp: 2 !important;
+  }
+
+  /* ================================================================
+     L. PICKUP MODAL
+     ================================================================ */
+
+  .kit-pickup-overlay {
+    padding: 6px !important;
+  }
+
+  .kit-pickup-dialog {
+    width: calc(100% - 10px) !important;
+    max-height: 88dvh !important;
+    padding: 13px !important;
+    overflow-y: auto !important;
+    border-radius: 18px !important;
+  }
+
+  .kit-pickup-header h3 {
+    font-size: 1.04rem !important;
+    line-height: 1.25 !important;
+  }
+
+  .kit-pickup-header p {
+    display: none !important;
+  }
+
+  .kit-pickup-assigned,
+  .kit-pickup-choice {
+    padding: 10px !important;
+    border: 1px solid var(--kit-m-border) !important;
+    border-radius: 11px !important;
+    background: var(--kit-m-surface-3) !important;
+  }
+
+  .kit-pickup-choice strong,
+  .kit-pickup-assigned strong {
+    font-size: 0.84rem !important;
+  }
+
+  .kit-pickup-choice small,
+  .kit-actual-carrier-fields label,
+  .kit-pickup-disabled-note {
+    color: var(--kit-m-muted) !important;
+    font-size: 0.74rem !important;
+    line-height: 1.4 !important;
+  }
+
+  .kit-pickup-actions {
+    position: sticky !important;
+    bottom: -1px !important;
+    display: grid !important;
+    grid-template-columns: 0.72fr 1.28fr !important;
+    gap: 7px !important;
+    margin-top: 11px !important;
+    padding-top: 9px !important;
+    background: var(--kit-m-surface) !important;
+  }
+}
+
+/* Very narrow phones: preserve usability, never clip button labels. */
+@media (max-width: 390px) {
+  .matches-subtabs.pro-match-tabs {
+    gap: 2px !important;
+    padding: 3px !important;
+  }
+
+  .matches-subtabs.pro-match-tabs > button {
+    min-height: 50px !important;
+    padding-inline: 1px !important;
+  }
+
+  .matches-subtabs.pro-match-tabs .tab-label {
+    font-size: 0.56rem !important;
+  }
+
+  .kit-source-mode-option {
+    grid-template-columns: 36px minmax(0, 1fr) !important;
+    padding: 9px !important;
+  }
+
+  .kit-source-mode-icon {
+    width: 36px !important;
+    height: 36px !important;
+  }
+
+  .kit-assignment-toolbar {
+    grid-template-columns: 1fr !important;
+  }
+
+  .kit-assignment-toolbar-actions {
+    display: grid !important;
+    grid-template-columns: repeat(2, minmax(0, 1fr)) !important;
+  }
+}
