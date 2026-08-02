@@ -26,6 +26,12 @@ export default function LeagueKitShortcut({
           <strong>
             League Kit Tracking
           </strong>
+
+          <small>
+            {sharedKit
+              ? "Manage shared-kit custody in Matches → Kit."
+              : "Manage team-kit custody in Matches → Kit."}
+          </small>
         </div>
       </div>
 

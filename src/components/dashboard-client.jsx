@@ -11,6 +11,7 @@ import BirthdayPushSettings from "@/components/BirthdayPushSettings";
 import TeamKitManagement from "@/components/kit/TeamKitManagement";
 import Link from "next/link";
 import LeagueKitShortcut from "@/components/kit/LeagueKitShortcut";
+import mobileKitStyles from "./DashboardKitMobile.module.css";
 import KitPostMatchPrompt from "@/components/kit/KitPostMatchPrompt";
 
 function Card({
@@ -9614,7 +9615,9 @@ const playerRoleBadge = (row) => {
   </div>
 </div>
 
-<div className="matches-subtabs pro-match-tabs">
+<div
+  className={`matches-subtabs pro-match-tabs ${mobileKitStyles.matchTabs}`}
+>
   {[
     ["CREATE MATCH", "➕", "Create"],
     ["ACTIVE", "🟢", "Active"],
@@ -11778,6 +11781,35 @@ const playerRoleBadge = (row) => {
             <span aria-hidden="true">⌄</span>
           </div>
         </label>
+
+        {isSuperAdmin &&
+          permissions?.canManagePermissions && (
+            <div
+              className={
+                mobileKitStyles.mobileLeagueKitShortcut
+              }
+            >
+              <LeagueKitShortcut
+                leagueName={
+                  activeLeague?.name ||
+                  "Active league"
+                }
+                sharedKit={
+                  String(
+                    activeLeague?.kitRotationMode ||
+                    ""
+                  )
+                    .trim()
+                    .toUpperCase() ===
+                  "LEAGUE_PLAYER"
+                }
+                onOpenKit={() => {
+                  setActiveTab("matches");
+                  setMatchesSubTab("KIT");
+                }}
+              />
+            </div>
+          )}
 
         <div
           className={`mlcc-readiness ${

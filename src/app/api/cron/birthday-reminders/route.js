@@ -316,31 +316,11 @@ for (const birthday of todayBirthdays) {
 
   if (!leagueWhatsAppEnabled) {
     playerWhatsAppSkipped += 1;
-
-    console.log(
-      "[BIRTHDAY_PLAYER_WHATSAPP_SKIPPED]",
-      {
-        birthdayId: birthday.id,
-        reason:
-          "WhatsApp notifications are disabled for this league.",
-      }
-    );
-
     continue;
   }
 
   if (!whatsappOptIn) {
     playerWhatsAppSkipped += 1;
-
-    console.log(
-      "[BIRTHDAY_PLAYER_WHATSAPP_SKIPPED]",
-      {
-        birthdayId: birthday.id,
-        reason:
-          "The player has not opted in.",
-      }
-    );
-
     continue;
   }
 
