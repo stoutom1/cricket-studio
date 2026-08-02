@@ -802,13 +802,21 @@ export default function TeamKitManagement({
           >
             {refreshing ? "Refreshing…" : "↻ Refresh"}
           </button>
-          {data.access?.canManageAccess && !sharedKit && (
+          {data.access?.canManageAccess && (
             <button
               type="button"
               className={styles.secondaryButton}
-              onClick={() => setShowAccess((value) => !value)}
+              onClick={() =>
+                setShowAccess(
+                  (value) => !value
+                )
+              }
+              aria-expanded={showAccess}
             >
-              🔐 Team Access
+              🔐{" "}
+              {sharedKit
+                ? "League Access"
+                : "Team Access"}
             </button>
           )}
         </div>
@@ -838,50 +846,239 @@ export default function TeamKitManagement({
 
       {data.emptyReason && <div className={styles.emptyNotice}>{data.emptyReason}</div>}
 
-      {showAccess && data.access?.canManageAccess && (
-        <Section
-          title="Team visibility"
-          subtitle="Assign each league member only the teams they may view and record."
-          icon="🔐"
-          count={data.members?.length || 0}
-          open
-        >
-          <form className={styles.accessForm} onSubmit={saveMemberAccess}>
-            <label>
-              <span>League member</span>
-              <select value={accessUserId} onChange={(event) => loadMemberAccess(event.target.value)} required>
-                <option value="">Select member</option>
-                {(data.members || []).map((member) => (
-                  <option key={member.id} value={member.id}>
-                    {member.name || member.email} {member.role ? `• ${member.role}` : ""}
-                  </option>
-                ))}
-              </select>
-            </label>
-            <div className={styles.teamChecks}>
-              {teams.map((team) => (
-                <label key={team.id} className={styles.checkCard}>
-                  <input
-                    type="checkbox"
-                    checked={accessTeamIds.includes(String(team.id))}
-                    onChange={(event) => {
-                      setAccessTeamIds((current) =>
-                        event.target.checked
-                          ? [...current, String(team.id)]
-                          : current.filter((id) => id !== String(team.id))
-                      );
-                    }}
-                  />
-                  <span>{team.name}</span>
+      {showAccess &&
+        data.access?.canManageAccess && (
+          <Section
+            title={
+              sharedKit
+                ? "League kit access"
+                : "Team visibility"
+            }
+            subtitle={
+              sharedKit
+                ? "Shared-kit visibility applies league-wide for this league."
+                : "Assign each league member only the teams they may view and record."
+            }
+            icon="🔐"
+            count={
+              data.members?.length || 0
+            }
+            open
+          >
+            {sharedKit ? (
+              <div
+                className={
+                  styles.sharedAccessPanel
+                }
+              >
+                <div
+                  className={
+                    styles.sharedAccessHero
+                  }
+                >
+                  <span
+                    className={
+                      styles.sharedAccessIcon
+                    }
+                    aria-hidden="true"
+                  >
+                    🌐
+                  </span>
+
+                  <div>
+                    <strong>
+                      League-wide shared-kit
+                      visibility
+                    </strong>
+
+                    <p>
+                      Every authorized player in
+                      this league can view the
+                      shared kit holder, pending
+                      custody follow-ups, fair
+                      rotation, and history.
+                    </p>
+                  </div>
+
+                  <span
+                    className={
+                      styles.sharedAccessBadge
+                    }
+                  >
+                    Automatic
+                  </span>
+                </div>
+
+                <div
+                  className={
+                    styles.sharedAccessRules
+                  }
+                >
+                  <article>
+                    <span>Players</span>
+                    <strong>
+                      View shared-kit details
+                    </strong>
+                  </article>
+
+                  <article>
+                    <span>
+                      Scorer / Admin / Owner
+                    </span>
+                    <strong>
+                      View and record custody
+                    </strong>
+                  </article>
+
+                  <article>
+                    <span>League Owner</span>
+                    <strong>
+                      Full league oversight
+                    </strong>
+                  </article>
+                </div>
+
+                <div
+                  className={
+                    styles.sharedMemberSummary
+                  }
+                >
+                  <div>
+                    <strong>
+                      League members
+                    </strong>
+
+                    <small>
+                      {
+                        data.members?.length ||
+                        0
+                      }{" "}
+                      member
+                      {(data.members?.length ||
+                        0) === 1
+                        ? ""
+                        : "s"}{" "}
+                      found
+                    </small>
+                  </div>
+
+                  <p>
+                    Team-by-team access is not
+                    required for a shared league
+                    kit. Switch the league to a
+                    team-level kit mode only when
+                    teams must have separate
+                    custody visibility.
+                  </p>
+                </div>
+              </div>
+            ) : (
+              <form
+                className={
+                  styles.accessForm
+                }
+                onSubmit={
+                  saveMemberAccess
+                }
+              >
+                <label>
+                  <span>League member</span>
+
+                  <select
+                    value={accessUserId}
+                    onChange={(event) =>
+                      loadMemberAccess(
+                        event.target.value
+                      )
+                    }
+                    required
+                  >
+                    <option value="">
+                      Select member
+                    </option>
+
+                    {(data.members || []).map(
+                      (member) => (
+                        <option
+                          key={member.id}
+                          value={member.id}
+                        >
+                          {member.name ||
+                            member.email}{" "}
+                          {member.role
+                            ? `• ${member.role}`
+                            : ""}
+                        </option>
+                      )
+                    )}
+                  </select>
                 </label>
-              ))}
-            </div>
-            <button className={styles.primaryButton} disabled={!accessUserId || savingAccess}>
-              {savingAccess ? "Saving access…" : "Save Team Access"}
-            </button>
-          </form>
-        </Section>
-      )}
+
+                <div
+                  className={
+                    styles.teamChecks
+                  }
+                >
+                  {teams.map((team) => (
+                    <label
+                      key={team.id}
+                      className={
+                        styles.checkCard
+                      }
+                    >
+                      <input
+                        type="checkbox"
+                        checked={accessTeamIds.includes(
+                          String(team.id)
+                        )}
+                        onChange={(
+                          event
+                        ) => {
+                          setAccessTeamIds(
+                            (current) =>
+                              event.target
+                                .checked
+                                ? [
+                                    ...current,
+                                    String(
+                                      team.id
+                                    ),
+                                  ]
+                                : current.filter(
+                                    (id) =>
+                                      id !==
+                                      String(
+                                        team.id
+                                      )
+                                  )
+                          );
+                        }}
+                      />
+
+                      <span>
+                        {team.name}
+                      </span>
+                    </label>
+                  ))}
+                </div>
+
+                <button
+                  className={
+                    styles.primaryButton
+                  }
+                  disabled={
+                    !accessUserId ||
+                    savingAccess
+                  }
+                >
+                  {savingAccess
+                    ? "Saving access…"
+                    : "Save Team Access"}
+                </button>
+              </form>
+            )}
+          </Section>
+        )}
 
       <Section
         title="Needs attention"

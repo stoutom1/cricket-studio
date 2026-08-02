@@ -1,0 +1,150 @@
+.card {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 16px;
+  width: 100%;
+  min-height: 100px;
+  padding: 16px 18px;
+  border: 1px solid rgba(78, 119, 196, 0.34);
+  border-radius: 18px;
+  color: #eef4ff;
+  background: #0d172b;
+  box-sizing: border-box;
+}
+
+.summary {
+  display: flex;
+  align-items: center;
+  min-width: 0;
+  gap: 14px;
+}
+
+.icon {
+  display: grid;
+  place-items: center;
+  flex: 0 0 46px;
+  width: 46px;
+  height: 46px;
+  border-radius: 13px;
+  background: #1c3155;
+  font-size: 1.2rem;
+}
+
+.copy {
+  display: grid;
+  min-width: 0;
+  gap: 4px;
+}
+
+.copy strong,
+.copy small {
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.copy strong {
+  color: #fff;
+  font-size: 1rem;
+  line-height: 1.25;
+}
+
+.copy small {
+  color: #9fb0c9;
+  font-size: 0.8rem;
+  line-height: 1.35;
+}
+
+.action {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  flex: 0 0 auto;
+  gap: 7px;
+  min-width: 112px;
+  min-height: 42px;
+  padding: 9px 13px;
+  border: 1px solid rgba(92, 142, 229, 0.48);
+  border-radius: 999px;
+  color: #fff;
+  background: #162744;
+  font-size: 0.8rem;
+  font-weight: 900;
+  white-space: nowrap;
+  cursor: pointer;
+  transition:
+    border-color 160ms ease,
+    background 160ms ease,
+    transform 160ms ease;
+}
+
+.action:hover {
+  border-color: rgba(105, 170, 255, 0.76);
+  background: #203a64;
+  transform: translateY(-1px);
+}
+
+.action:focus-visible {
+  outline: 3px solid rgba(80, 151, 255, 0.45);
+  outline-offset: 3px;
+}
+
+@media (max-width: 760px) {
+  .card {
+    min-height: 92px;
+    padding: 14px;
+    gap: 12px;
+  }
+
+  .summary {
+    gap: 11px;
+  }
+
+  .icon {
+    flex-basis: 42px;
+    width: 42px;
+    height: 42px;
+  }
+
+  .copy strong {
+    font-size: 0.94rem;
+  }
+
+  .copy small {
+    font-size: 0.75rem;
+  }
+
+  .action {
+    min-width: 96px;
+    min-height: 40px;
+    padding: 8px 11px;
+    font-size: 0.76rem;
+  }
+}
+
+@media (max-width: 520px) {
+  .card {
+    min-height: 88px;
+    padding: 12px;
+  }
+
+  .copy small {
+    max-width: 44vw;
+  }
+
+  .action {
+    min-width: 88px;
+  }
+}
+
+@media (max-width: 390px) {
+  .copy small {
+    max-width: 40vw;
+  }
+
+  .action {
+    min-width: 82px;
+    padding-inline: 9px;
+  }
+}

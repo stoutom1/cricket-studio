@@ -9,6 +9,7 @@ import {
   ensureLeagueKitTrackingStarted,
   resolveTeamKitAccess,
   SHARED_SCOPE_KEY,
+  syncRecentLeagueKitCustodyTasks,
 } from "@/lib/kit/team-custody";
 
 export const runtime = "nodejs";
@@ -629,12 +630,21 @@ export async function GET(
      * Initializing tracking is a one-row lookup after the first league load.
      * The expensive historical match scan is intentionally NOT performed here.
      */
-    await Promise.all([
-      assertTeamKitTables(),
-      ensureLeagueKitTrackingStarted(
-        leagueId
-      ),
-    ]);
+    await assertTeamKitTables();
+
+    /*
+     * Fast self-healing check:
+     * synchronize only a small set of recent final matches.
+     * This guarantees Needs Attention appears even if the match was
+     * finalized through another route, while avoiding the old full
+     * historical rescan on every Kit-page load.
+     */
+    await syncRecentLeagueKitCustodyTasks(
+      leagueId,
+      {
+        limit: 20,
+      }
+    );
 
     const access =
       await resolveTeamKitAccess({

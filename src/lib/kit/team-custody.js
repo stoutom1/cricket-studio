@@ -82,45 +82,83 @@ export function canScoreKit(member) {
   );
 }
 
-async function tableExists(tableName) {
-  const rows = await prisma.$queryRaw`
-    SELECT EXISTS (
-      SELECT 1
-      FROM information_schema.tables
-      WHERE table_schema = 'public'
-        AND table_name = ${tableName}
-    ) AS "exists"
-  `;
+const REQUIRED_TEAM_KIT_TABLES = [
+  "TeamKitState",
+  "TeamKitCustodyTask",
+  "TeamKitCustodyEvent",
+  "TeamKitUserAccess",
+];
 
-  return Boolean(rows?.[0]?.exists);
-}
+let teamKitTableCheckPromise = null;
+const columnCache = new Map();
 
 export async function assertTeamKitTables() {
-  const required = [
-    "TeamKitState",
-    "TeamKitCustodyTask",
-    "TeamKitCustodyEvent",
-    "TeamKitUserAccess",
-  ];
+  if (!teamKitTableCheckPromise) {
+    teamKitTableCheckPromise = (async () => {
+      const rows = await prisma.$queryRaw`
+        SELECT table_name AS "name"
+        FROM information_schema.tables
+        WHERE table_schema = 'public'
+          AND table_name IN (
+            'TeamKitState',
+            'TeamKitCustodyTask',
+            'TeamKitCustodyEvent',
+            'TeamKitUserAccess'
+          )
+      `;
 
-  for (const tableName of required) {
-    if (!(await tableExists(tableName))) {
-      throw new Error(
-        "Team-kit migration is not installed. Run the included Prisma migration before opening the Kit tab."
+      const existing = new Set(
+        rows.map((row) => row.name)
       );
-    }
+
+      const missing =
+        REQUIRED_TEAM_KIT_TABLES.filter(
+          (tableName) =>
+            !existing.has(tableName)
+        );
+
+      if (missing.length) {
+        throw new Error(
+          `Team-kit migration is not installed. Missing table${
+            missing.length === 1 ? "" : "s"
+          }: ${missing.join(", ")}.`
+        );
+      }
+
+      return true;
+    })().catch((error) => {
+      teamKitTableCheckPromise = null;
+      throw error;
+    });
   }
+
+  return teamKitTableCheckPromise;
 }
 
 async function getColumns(tableName) {
-  const rows = await prisma.$queryRaw`
-    SELECT column_name AS "name"
-    FROM information_schema.columns
-    WHERE table_schema = 'public'
-      AND table_name = ${tableName}
-  `;
+  if (!columnCache.has(tableName)) {
+    columnCache.set(
+      tableName,
+      prisma.$queryRaw`
+        SELECT column_name AS "name"
+        FROM information_schema.columns
+        WHERE table_schema = 'public'
+          AND table_name = ${tableName}
+      `
+        .then(
+          (rows) =>
+            new Set(
+              rows.map((row) => row.name)
+            )
+        )
+        .catch((error) => {
+          columnCache.delete(tableName);
+          throw error;
+        })
+    );
+  }
 
-  return new Set(rows.map((row) => row.name));
+  return columnCache.get(tableName);
 }
 
 async function inferTeamIds({
@@ -486,17 +524,180 @@ export async function syncKitCustodyTasksForMatch(
   let created = 0;
 
   for (const scope of scopes) {
+    /*
+     * A fresh-start initialization may already have archived an older
+     * placeholder task for this same match/scope. Because the database
+     * has a unique key on (matchId, scopeKey), DO NOTHING would leave
+     * the newly completed match with no visible pending follow-up.
+     *
+     * Reactivate ARCHIVED tasks, keep existing PENDING tasks as-is,
+     * and never reopen a genuinely RESOLVED custody task.
+     */
     const result = await prisma.$executeRaw`
       INSERT INTO "TeamKitCustodyTask"
-        ("leagueId", "scopeKey", "teamId", "matchId", "status")
+        (
+          "leagueId",
+          "scopeKey",
+          "teamId",
+          "matchId",
+          "status"
+        )
       VALUES
-        (${league.id}, ${scope.scopeKey}, ${scope.teamId}, ${match.id}, 'PENDING')
-      ON CONFLICT ("matchId", "scopeKey") DO NOTHING
+        (
+          ${league.id},
+          ${scope.scopeKey},
+          ${scope.teamId},
+          ${match.id},
+          'PENDING'
+        )
+      ON CONFLICT ("matchId", "scopeKey")
+      DO UPDATE
+      SET
+        "leagueId" = EXCLUDED."leagueId",
+        "teamId" = EXCLUDED."teamId",
+        "status" = 'PENDING',
+        "resolvedAt" = NULL,
+        "resolvedByUserId" = NULL
+      WHERE
+        "TeamKitCustodyTask"."status" = 'ARCHIVED'
     `;
+
     created += Number(result || 0);
   }
 
   return { created };
+}
+
+export async function syncRecentLeagueKitCustodyTasks(
+  leagueId,
+  {
+    limit = 20,
+  } = {}
+) {
+  await assertTeamKitTables();
+
+  const numericLeagueId =
+    Number(leagueId);
+
+  if (
+    !Number.isInteger(numericLeagueId) ||
+    numericLeagueId <= 0
+  ) {
+    return {
+      checked: 0,
+      created: 0,
+    };
+  }
+
+  const trackingStartedAt =
+    await ensureLeagueKitTrackingStarted(
+      numericLeagueId
+    );
+
+  /*
+   * This is deliberately small and recent.
+   * It does not rescan the league's full match history.
+   * Its job is to recover when a match was finalized through a route
+   * that did not call syncKitCustodyTasksForMatch().
+   */
+  const recentMatches =
+    await prisma.match.findMany({
+      where: {
+        leagueId: numericLeagueId,
+        status: {
+          in: [
+            ...KIT_CLOSED_MATCH_STATUSES,
+          ],
+        },
+        OR: [
+          {
+            endedAt: {
+              gte: trackingStartedAt,
+            },
+          },
+          {
+            lockedAt: {
+              gte: trackingStartedAt,
+            },
+          },
+          {
+            AND: [
+              {
+                endedAt: null,
+              },
+              {
+                lockedAt: null,
+              },
+              {
+                scheduledAt: {
+                  gte: trackingStartedAt,
+                },
+              },
+            ],
+          },
+        ],
+      },
+      orderBy: [
+        {
+          lockedAt: "desc",
+        },
+        {
+          endedAt: "desc",
+        },
+        {
+          scheduledAt: "desc",
+        },
+        {
+          id: "desc",
+        },
+      ],
+      take: Math.max(
+        1,
+        Math.min(
+          Number(limit) || 20,
+          50
+        )
+      ),
+      select: {
+        id: true,
+        leagueId: true,
+        teamAId: true,
+        teamBId: true,
+        status: true,
+        scheduledAt: true,
+        endedAt: true,
+        lockedAt: true,
+        league: {
+          select: {
+            id: true,
+            name: true,
+            kitRotationMode: true,
+          },
+        },
+      },
+    });
+
+  let created = 0;
+
+  for (const match of recentMatches) {
+    const result =
+      await syncKitCustodyTasksForMatch(
+        match,
+        {
+          trackingStartedAt,
+        }
+      );
+
+    created += Number(
+      result?.created || 0
+    );
+  }
+
+  return {
+    checked:
+      recentMatches.length,
+    created,
+  };
 }
 
 export async function syncLeagueKitCustodyTasks(

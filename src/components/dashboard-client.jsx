@@ -9,8 +9,9 @@ import { buildMatchInsights } from "@/lib/match-insights";
 import { createPortal } from "react-dom";
 import BirthdayPushSettings from "@/components/BirthdayPushSettings";
 import TeamKitManagement from "@/components/kit/TeamKitManagement";
-import LeagueKitDashboard from "@/components/LeagueKitDashboard";
 import Link from "next/link";
+import LeagueKitShortcut from "@/components/kit/LeagueKitShortcut";
+import KitPostMatchPrompt from "@/components/kit/KitPostMatchPrompt";
 
 function Card({
   title,
@@ -461,6 +462,10 @@ const [selectedAuditLeagueKey, setSelectedAuditLeagueKey] = useState("ALL");
 const [showScoringFormSheet, setShowScoringFormSheet] = useState(false);
 const [bowlerSearchText, setBowlerSearchText] = useState("");
 const [scoringFormSubmitting, setScoringFormSubmitting] = useState(false);
+const [
+  postMatchKitPrompt,
+  setPostMatchKitPrompt,
+] = useState(null);
 const isSuperAdmin =
   session?.user?.email ===
   "surprisecricket11@gmail.com";
@@ -3973,6 +3978,85 @@ async function generateInviteLink(leagueId) {
     "Registration link copied"
   );
 }
+function showPostMatchKitPrompt(result) {
+  const nextAction =
+    result?.nextAction || {};
+
+  const kitCustody =
+    result?.kitCustody || {};
+
+  const selectedMatch =
+    matches.find(
+      (match) =>
+        String(match.id) ===
+        String(selectedMatchId)
+    );
+
+  const fallbackMatchLabel =
+    selectedMatch
+      ? `${
+          selectedMatch.teamAName ||
+          selectedMatch.teamA?.name ||
+          "Team A"
+        } vs ${
+          selectedMatch.teamBName ||
+          selectedMatch.teamB?.name ||
+          "Team B"
+        }`
+      : "Completed match";
+
+  setPostMatchKitPrompt({
+    matchId:
+      nextAction.matchId ||
+      selectedMatchId,
+
+    leagueId:
+      nextAction.leagueId ||
+      activeLeagueId,
+
+    matchLabel:
+      nextAction.matchLabel ||
+      fallbackMatchLabel,
+
+    taskCount:
+      Number(
+        kitCustody.pendingTaskCount ||
+        0
+      ),
+
+    warning:
+      kitCustody.warning || "",
+  });
+}
+
+function openKitFromPostMatchPrompt() {
+  const targetLeagueId =
+    postMatchKitPrompt?.leagueId;
+
+  const targetMatchId =
+    postMatchKitPrompt?.matchId;
+
+  if (targetLeagueId) {
+    setActiveLeagueId(
+      Number(targetLeagueId)
+    );
+  }
+
+  if (targetMatchId) {
+    setSelectedMatchId(
+      String(targetMatchId)
+    );
+  }
+
+  /*
+   * Keep the existing Matches navigation and open the existing KIT subtab.
+   * This preserves the Create / Active / Scheduled / Kit / Completed row.
+   */
+  setActiveTab("matches");
+  setMatchesSubTab("KIT");
+  setPostMatchKitPrompt(null);
+}
+
 async function handleEndMatch() {
   const confirmed = window.confirm(
     "End this match? No more scoring will be allowed."
@@ -3981,17 +4065,26 @@ async function handleEndMatch() {
   if (!confirmed) return;
 
   try {
-    await api(
+    const result = await api(
       `/api/matches/${selectedMatchId}/end`,
       {
         method: "POST",
         body: JSON.stringify({
-        matchEndType: "End" })
+          matchEndType: "End",
+        }),
       }
     );
+
     await loadMatches();
-    await loadSelectedMatch(selectedMatchId);
-    setMessage("Match ended successfully");
+    await loadSelectedMatch(
+      selectedMatchId
+    );
+
+    setMessage(
+      "Match ended successfully. Confirm who took the kit home."
+    );
+
+    showPostMatchKitPrompt(result);
   } catch (err) {
     setError(
       err.message ||
@@ -4001,53 +4094,71 @@ async function handleEndMatch() {
 }
 async function handleLockMatch() {
   const confirmed = window.confirm(
-    "Lock this match?  Once locked, this match cannot be edited or scored further."
+    "Lock this match? Once locked, this match cannot be edited or scored further."
   );
 
   if (!confirmed) return;
 
   try {
-    await api(
+    const result = await api(
       `/api/matches/${selectedMatchId}/end`,
       {
         method: "POST",
         body: JSON.stringify({
-        matchEndType: "Lock" })
+          matchEndType: "Lock",
+        }),
       }
     );
+
     await loadMatches();
-    await loadSelectedMatch(selectedMatchId);
-    setMessage("Match ended successfully");
+    await loadSelectedMatch(
+      selectedMatchId
+    );
+
+    setMessage(
+      "Match locked successfully. Confirm who took the kit home."
+    );
+
+    showPostMatchKitPrompt(result);
   } catch (err) {
     setError(
       err.message ||
-      "Failed to end match"
+      "Failed to lock match"
     );
   }
 }
 async function handleAbandonMatch() {
   const confirmed = window.confirm(
-    "Abandon this match?  Once abandoned, this match cannot be edited or scored further."
+    "Abandon this match? Once abandoned, this match cannot be edited or scored further."
   );
 
   if (!confirmed) return;
 
   try {
-    await api(
+    const result = await api(
       `/api/matches/${selectedMatchId}/end`,
       {
         method: "POST",
         body: JSON.stringify({
-        matchEndType: "Abandon" })
+          matchEndType: "Abandon",
+        }),
       }
     );
+
     await loadMatches();
-    await loadSelectedMatch(selectedMatchId);
-    setMessage("Match ended successfully");
+    await loadSelectedMatch(
+      selectedMatchId
+    );
+
+    setMessage(
+      "Match abandoned. Confirm whether someone took the kit home."
+    );
+
+    showPostMatchKitPrompt(result);
   } catch (err) {
     setError(
       err.message ||
-      "Failed to end match"
+      "Failed to abandon match"
     );
   }
 }
@@ -11485,46 +11596,25 @@ const playerRoleBadge = (row) => {
     </div>
   </details>
 
-  <details className="league-tool-panel kit-tool">
-    <summary className="league-tool-summary">
-      <div className="league-tool-summary-main">
-        <span className="league-tool-icon">
-          🏏
-        </span>
-
-        <div>
-          <strong>
-            League Kit Management
-          </strong>
-
-          <small>
-            Track custody, reminders, readiness, and fair rotation.
-          </small>
-        </div>
-      </div>
-
-      <span className="league-tool-action">
-        <span className="league-tool-action-collapsed">
-          Expand
-        </span>
-
-        <span className="league-tool-action-open">
-          Collapse
-        </span>
-
-        <span className="league-tool-chevron">
-         ⌄
-        </span>
-      </span>
-    </summary>
-
-    <div className="league-tool-content">
-      <LeagueKitDashboard
-        key={`league-kit-${activeLeague.id}`}
-        leagueId={Number(activeLeague.id)}
-      />
-    </div>
-  </details>
+  <LeagueKitShortcut
+    leagueName={
+      activeLeague?.name ||
+      "Active league"
+    }
+    sharedKit={
+      String(
+        activeLeague?.kitRotationMode ||
+        ""
+      )
+        .trim()
+        .toUpperCase() ===
+        "LEAGUE_PLAYER"
+    }
+    onOpenKit={() => {
+      setActiveTab("matches");
+      setMatchesSubTab("KIT");
+    }}
+  />
 </div>
   </>
 )}
@@ -19016,6 +19106,24 @@ setBallForm((previous) => ({
     </div>
   </div>
 )}
+<KitPostMatchPrompt
+  open={Boolean(postMatchKitPrompt)}
+  matchLabel={
+    postMatchKitPrompt?.matchLabel || ""
+  }
+  taskCount={
+    postMatchKitPrompt?.taskCount || 0
+  }
+  warning={
+    postMatchKitPrompt?.warning || ""
+  }
+  onRecordNow={
+    openKitFromPostMatchPrompt
+  }
+  onLater={() =>
+    setPostMatchKitPrompt(null)
+  }
+/>
 {toast && (
   <div
     className={`toast-popup ${

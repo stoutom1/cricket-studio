@@ -87,11 +87,11 @@ export async function POST(
       success: true,
       message:
         result.created > 0
-          ? `${result.created} missing kit follow-up task${
+          ? `${result.created} missing or archived kit follow-up task${
               result.created === 1
                 ? ""
                 : "s"
-            } created.`
+            } activated.`
           : "Kit follow-up tasks are already up to date.",
       ...result,
     });
