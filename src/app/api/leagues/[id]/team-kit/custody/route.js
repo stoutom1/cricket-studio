@@ -74,6 +74,16 @@ export async function POST(request, { params }) {
     const note = String(body.note || "")
       .trim()
       .slice(0, 500);
+    const suggestionName = String(
+      body.suggestionName || ""
+    )
+      .trim()
+      .replace(/\s+/g, " ")
+      .slice(0, 160);
+    const usedSuggestion =
+      suggestionName &&
+      suggestionName.toLowerCase() ===
+        holderName.toLowerCase();
 
     if (!holderName) {
       return NextResponse.json(
@@ -187,8 +197,26 @@ export async function POST(request, { params }) {
               ${holderPlayerId},
               ${holderName},
               ${previousState?.currentHolderName || null},
-              ${previousState ? "CORRECTED" : "RECORDED"},
-              ${note || null},
+              ${
+                previousState
+                  ? "CORRECTED"
+                  : usedSuggestion
+                    ? "RECORDED_AS_SUGGESTED"
+                    : "RECORDED"
+              },
+              ${
+                [
+                  note,
+                  suggestionName
+                    ? usedSuggestion
+                      ? `Suggested carrier confirmed: ${suggestionName}.`
+                      : `Suggested carrier was ${suggestionName}; actual holder was ${holderName}.`
+                    : "",
+                ]
+                  .filter(Boolean)
+                  .join(" ")
+                  .slice(0, 500) || null
+              },
               ${access.user.id}
             )
           RETURNING *

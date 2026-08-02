@@ -82,45 +82,83 @@ export function canScoreKit(member) {
   );
 }
 
-async function tableExists(tableName) {
-  const rows = await prisma.$queryRaw`
-    SELECT EXISTS (
-      SELECT 1
-      FROM information_schema.tables
-      WHERE table_schema = 'public'
-        AND table_name = ${tableName}
-    ) AS "exists"
-  `;
+const REQUIRED_TEAM_KIT_TABLES = [
+  "TeamKitState",
+  "TeamKitCustodyTask",
+  "TeamKitCustodyEvent",
+  "TeamKitUserAccess",
+];
 
-  return Boolean(rows?.[0]?.exists);
-}
+let teamKitTableCheckPromise = null;
+const columnCache = new Map();
 
 export async function assertTeamKitTables() {
-  const required = [
-    "TeamKitState",
-    "TeamKitCustodyTask",
-    "TeamKitCustodyEvent",
-    "TeamKitUserAccess",
-  ];
+  if (!teamKitTableCheckPromise) {
+    teamKitTableCheckPromise = (async () => {
+      const rows = await prisma.$queryRaw`
+        SELECT table_name AS "name"
+        FROM information_schema.tables
+        WHERE table_schema = 'public'
+          AND table_name IN (
+            'TeamKitState',
+            'TeamKitCustodyTask',
+            'TeamKitCustodyEvent',
+            'TeamKitUserAccess'
+          )
+      `;
 
-  for (const tableName of required) {
-    if (!(await tableExists(tableName))) {
-      throw new Error(
-        "Team-kit migration is not installed. Run the included Prisma migration before opening the Kit tab."
+      const existing = new Set(
+        rows.map((row) => row.name)
       );
-    }
+
+      const missing =
+        REQUIRED_TEAM_KIT_TABLES.filter(
+          (tableName) =>
+            !existing.has(tableName)
+        );
+
+      if (missing.length) {
+        throw new Error(
+          `Team-kit migration is not installed. Missing table${
+            missing.length === 1 ? "" : "s"
+          }: ${missing.join(", ")}.`
+        );
+      }
+
+      return true;
+    })().catch((error) => {
+      teamKitTableCheckPromise = null;
+      throw error;
+    });
   }
+
+  return teamKitTableCheckPromise;
 }
 
 async function getColumns(tableName) {
-  const rows = await prisma.$queryRaw`
-    SELECT column_name AS "name"
-    FROM information_schema.columns
-    WHERE table_schema = 'public'
-      AND table_name = ${tableName}
-  `;
+  if (!columnCache.has(tableName)) {
+    columnCache.set(
+      tableName,
+      prisma.$queryRaw`
+        SELECT column_name AS "name"
+        FROM information_schema.columns
+        WHERE table_schema = 'public'
+          AND table_name = ${tableName}
+      `
+        .then(
+          (rows) =>
+            new Set(
+              rows.map((row) => row.name)
+            )
+        )
+        .catch((error) => {
+          columnCache.delete(tableName);
+          throw error;
+        })
+    );
+  }
 
-  return new Set(rows.map((row) => row.name));
+  return columnCache.get(tableName);
 }
 
 async function inferTeamIds({

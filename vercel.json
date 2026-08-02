@@ -6,8 +6,8 @@
       "schedule": "0 15 * * *"
     },
     {
-      "path": "/api/cron/kit-reminders",
-      "schedule": "0 16 * * *"
+      "path": "/api/cron/team-kit-reminders",
+      "schedule": "*/15 * * * *"
     }
   ]
 }

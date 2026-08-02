@@ -1,6 +1,6 @@
 "use client";
 
-import { useCallback, useEffect, useMemo, useState } from "react";
+import { useCallback, useEffect, useMemo, useRef, useState } from "react";
 import styles from "./TeamKitManagement.module.css";
 
 function formatDate(value) {
@@ -75,36 +75,180 @@ export default function TeamKitManagement({
   const [accessUserId, setAccessUserId] = useState("");
   const [accessTeamIds, setAccessTeamIds] = useState([]);
   const [savingAccess, setSavingAccess] = useState(false);
+  const [eligibilityMode, setEligibilityMode] =
+    useState("ROSTER");
+  const [eligibleNames, setEligibleNames] =
+    useState([]);
+  const [screenshotFile, setScreenshotFile] =
+    useState(null);
+  const [readingScreenshot, setReadingScreenshot] =
+    useState(false);
+  const [suggesting, setSuggesting] =
+    useState(false);
+  const [suggestTeamId, setSuggestTeamId] =
+    useState("");
+
+  /*
+   * Parent dashboard callbacks may be recreated on every render.
+   * Keep their latest values in refs so they never cause the Kit API
+   * loading callback or its effect to be recreated.
+   */
+  const onMessageRef = useRef(onMessage);
+  const onErrorRef = useRef(onError);
+  const activeRequestRef = useRef(null);
+  const requestSequenceRef = useRef(0);
+  const mountedRef = useRef(true);
+
+  useEffect(() => {
+    onMessageRef.current = onMessage;
+  }, [onMessage]);
+
+  useEffect(() => {
+    onErrorRef.current = onError;
+  }, [onError]);
+
+  useEffect(() => {
+    return () => {
+      mountedRef.current = false;
+      requestSequenceRef.current += 1;
+    };
+  }, []);
 
   const notify = useCallback(
     (message, type = "success") => {
-      if (type === "error") onError?.(message);
-      else onMessage?.(message);
+      if (type === "error") {
+        onErrorRef.current?.(message);
+      } else {
+        onMessageRef.current?.(message);
+      }
     },
-    [onError, onMessage]
+    []
   );
 
-  const load = useCallback(async (quiet = false) => {
-    if (!leagueId) return;
-    quiet ? setRefreshing(true) : setLoading(true);
-    try {
-      const response = await fetch(`/api/leagues/${leagueId}/team-kit`, {
-        cache: "no-store",
-      });
-      const payload = await response.json();
-      if (!response.ok) throw new Error(payload?.error || "Unable to load kit custody.");
-      setData(payload);
-    } catch (error) {
-      notify(error.message || "Unable to load kit custody.", "error");
-    } finally {
-      setLoading(false);
-      setRefreshing(false);
-    }
-  }, [leagueId, notify]);
+  const load = useCallback(
+    async (quiet = false) => {
+      if (!leagueId) return null;
 
+      /*
+       * Ignore duplicate requests while the same league is already loading.
+       * This protects against React Strict Mode, rapid mobile rerenders,
+       * repeated disclosure changes, and accidental double taps.
+       */
+      if (activeRequestRef.current) {
+        return activeRequestRef.current;
+      }
+
+      const requestSequence =
+        requestSequenceRef.current + 1;
+
+      requestSequenceRef.current =
+        requestSequence;
+
+      if (quiet) {
+        setRefreshing(true);
+      } else {
+        setLoading(true);
+      }
+
+      const requestPromise = (async () => {
+        try {
+          const response = await fetch(
+            `/api/leagues/${leagueId}/team-kit`,
+            {
+              cache: "no-store",
+            }
+          );
+
+          const responseText =
+            await response.text();
+
+          let payload = null;
+
+          if (responseText) {
+            try {
+              payload =
+                JSON.parse(responseText);
+            } catch {
+              payload = {
+                error:
+                  "The Team Kit API returned an invalid response.",
+              };
+            }
+          }
+
+          if (!response.ok) {
+            throw new Error(
+              payload?.error ||
+                "Unable to load kit custody."
+            );
+          }
+
+          if (
+            mountedRef.current &&
+            requestSequence ===
+              requestSequenceRef.current
+          ) {
+            setData(payload);
+          }
+
+          return payload;
+        } catch (error) {
+          if (
+            mountedRef.current &&
+            requestSequence ===
+              requestSequenceRef.current
+          ) {
+            notify(
+              error?.message ||
+                "Unable to load kit custody.",
+              "error"
+            );
+          }
+
+          return null;
+        } finally {
+          if (
+            mountedRef.current &&
+            requestSequence ===
+              requestSequenceRef.current
+          ) {
+            setLoading(false);
+            setRefreshing(false);
+          }
+        }
+      })();
+
+      activeRequestRef.current =
+        requestPromise;
+
+      try {
+        return await requestPromise;
+      } finally {
+        if (
+          activeRequestRef.current ===
+          requestPromise
+        ) {
+          activeRequestRef.current = null;
+        }
+      }
+    },
+    [leagueId, notify]
+  );
+
+  /*
+   * Load only when the league itself changes.
+   * Parent callback identity changes no longer retrigger this effect.
+   */
   useEffect(() => {
-    load();
-  }, [load]);
+    mountedRef.current = true;
+    requestSequenceRef.current += 1;
+    activeRequestRef.current = null;
+    setData(null);
+    setLoading(true);
+    setRefreshing(false);
+
+    void load();
+  }, [leagueId, load]);
 
   const sharedKit = data?.league?.sharedKit === true;
   const teams = data?.teams || [];
@@ -114,6 +258,11 @@ export default function TeamKitManagement({
     data?.pendingMatchTotal || pendingTasks.length
   );
   const history = data?.history || [];
+  const upcomingMatch = data?.upcomingMatch || null;
+  const latestSuggestions =
+    data?.latestSuggestions || {};
+  const rotationByScope =
+    data?.rotationByScope || {};
 
   const stateByScope = useMemo(() => {
     const map = new Map();
@@ -124,14 +273,414 @@ export default function TeamKitManagement({
   const selectedTeam = teams.find((team) => String(team.id) === String(selectedTeamId));
   const availablePlayers = sharedKit ? data?.sharedPlayers || [] : selectedTeam?.players || [];
 
-  function openRecord(task = null, teamId = null) {
-    const resolvedTeamId = sharedKit ? "" : String(teamId || task?.teamId || teams[0]?.id || "");
-    setSelectedTask(task);
-    setRecordDialogOpen(true);
-    setSelectedTeamId(resolvedTeamId);
+
+  const pendingSuggestionScopeKey =
+    pendingTasks[0]?.scopeKey || "";
+
+  const suggestionScopeKey = sharedKit
+    ? "LEAGUE"
+    : upcomingMatch
+      ? (
+          suggestTeamId
+            ? `TEAM:${suggestTeamId}`
+            : teams[0]
+              ? `TEAM:${teams[0].id}`
+              : ""
+        )
+      : (
+          pendingSuggestionScopeKey ||
+          (
+            suggestTeamId
+              ? `TEAM:${suggestTeamId}`
+              : teams[0]
+                ? `TEAM:${teams[0].id}`
+                : ""
+          )
+        );
+
+  const activeSuggestion =
+    pendingTasks.find(
+      (task) =>
+        task.scopeKey ===
+          suggestionScopeKey &&
+        task.suggestion
+    )?.suggestion ||
+    latestSuggestions[
+      suggestionScopeKey
+    ] ||
+    null;
+
+  const suggestionTeam = teams.find(
+    (team) =>
+      String(team.id) ===
+      String(
+        suggestTeamId || teams[0]?.id || ""
+      )
+  );
+
+  const upcomingEligiblePlayers =
+    upcomingMatch?.eligiblePlayers || [];
+
+  const upcomingTeamPlayers =
+    upcomingMatch?.eligiblePlayersByTeam?.[
+      String(
+        suggestTeamId ||
+          teams[0]?.id ||
+          ""
+      )
+    ] ||
+    upcomingMatch?.eligiblePlayersByTeam?.[
+      Number(
+        suggestTeamId ||
+          teams[0]?.id ||
+          0
+      )
+    ] ||
+    [];
+
+  const rosterCandidates = sharedKit
+    ? (
+        upcomingEligiblePlayers.length
+          ? upcomingEligiblePlayers
+          : data?.sharedPlayers || []
+      )
+    : (
+        upcomingTeamPlayers.length
+          ? upcomingTeamPlayers
+          : suggestionTeam?.players || []
+      );
+
+  useEffect(() => {
+    if (!teams.length) {
+      if (suggestTeamId) {
+        setSuggestTeamId("");
+      }
+      return;
+    }
+
+    const upcomingTeamIds = [
+      upcomingMatch?.teamAId,
+      upcomingMatch?.teamBId,
+    ]
+      .map(Number)
+      .filter(
+        (teamId) =>
+          Number.isInteger(teamId) &&
+          teams.some(
+            (team) =>
+              team.id === teamId
+          )
+      );
+
+    const preferredTeamId =
+      upcomingTeamIds[0] ||
+      teams[0].id;
+
+    const selectedTeamStillValid =
+      teams.some(
+        (team) =>
+          String(team.id) ===
+          String(suggestTeamId)
+      ) &&
+      (
+        !upcomingTeamIds.length ||
+        upcomingTeamIds.includes(
+          Number(suggestTeamId)
+        )
+      );
+
+    if (!selectedTeamStillValid) {
+      setSuggestTeamId(
+        String(preferredTeamId)
+      );
+    }
+  }, [
+    suggestTeamId,
+    teams,
+    upcomingMatch?.id,
+    upcomingMatch?.teamAId,
+    upcomingMatch?.teamBId,
+  ]);
+
+  const rosterCandidateNames = useMemo(
+    () =>
+      rosterCandidates
+        .map((player) =>
+          String(player?.name || "")
+            .trim()
+            .replace(/\s+/g, " ")
+        )
+        .filter(Boolean),
+    [rosterCandidates]
+  );
+
+  const rosterSeedKey = useMemo(
+    () =>
+      [
+        suggestionScopeKey,
+        ...rosterCandidateNames.map(
+          normalizeName
+        ),
+      ].join("|"),
+    [
+      suggestionScopeKey,
+      rosterCandidateNames,
+    ]
+  );
+
+  const lastRosterSeedKeyRef =
+    useRef("");
+
+  /*
+   * Eligibility selections belong to one league only.
+   * Clear every league-specific selection immediately when the active
+   * league changes so players from the previous league can never remain
+   * visible while the new league is loading.
+   */
+  useEffect(() => {
+    setEligibilityMode("ROSTER");
+    setEligibleNames([]);
+    setScreenshotFile(null);
+    setReadingScreenshot(false);
+    setSuggesting(false);
+    setSuggestTeamId("");
+    setSelectedTask(null);
+    setSelectedTeamId("");
     setHolderPlayerId("");
     setHolderName("");
     setNote("");
+    setRecordDialogOpen(false);
+    lastRosterSeedKeyRef.current = "";
+  }, [leagueId]);
+
+  /*
+   * Seed the roster only when its actual scope/content changes.
+   * Quiet API refreshes no longer overwrite manual player selections.
+   */
+  useEffect(() => {
+    if (eligibilityMode !== "ROSTER") {
+      return;
+    }
+
+    if (
+      lastRosterSeedKeyRef.current ===
+      rosterSeedKey
+    ) {
+      return;
+    }
+
+    lastRosterSeedKeyRef.current =
+      rosterSeedKey;
+
+    setEligibleNames(rosterCandidateNames);
+  }, [
+    eligibilityMode,
+    rosterSeedKey,
+    rosterCandidateNames,
+  ]);
+
+  function toggleEligibleName(name) {
+    const key = normalizeName(name);
+
+    setEligibleNames((current) => {
+      const exists = current.some(
+        (item) => normalizeName(item) === key
+      );
+
+      return exists
+        ? current.filter(
+            (item) =>
+              normalizeName(item) !== key
+          )
+        : [...current, name];
+    });
+  }
+
+  async function readScreenshot() {
+    if (!screenshotFile) {
+      notify(
+        "Choose a playing-team screenshot first.",
+        "error"
+      );
+      return;
+    }
+
+    setReadingScreenshot(true);
+
+    try {
+      const formData = new FormData();
+      formData.append(
+        "image",
+        screenshotFile,
+        screenshotFile.name
+      );
+
+      const response = await fetch(
+        "/api/kit/read-screenshot",
+        {
+          method: "POST",
+          body: formData,
+        }
+      );
+
+      const payload = await response.json();
+
+      if (!response.ok) {
+        throw new Error(
+          payload?.error ||
+            "Unable to read the screenshot."
+        );
+      }
+
+      const names = [
+        ...(Array.isArray(payload?.leftTeam)
+          ? payload.leftTeam
+          : []),
+        ...(Array.isArray(payload?.rightTeam)
+          ? payload.rightTeam
+          : []),
+      ];
+
+      const unique = [];
+      const seen = new Set();
+
+      for (const value of names) {
+        const displayName = String(value || "")
+          .trim()
+          .replace(/\s+/g, " ");
+        const key = normalizeName(displayName);
+
+        if (!key || seen.has(key)) continue;
+        seen.add(key);
+        unique.push(displayName);
+      }
+
+      if (!unique.length) {
+        throw new Error(
+          "No player names were found in the screenshot."
+        );
+      }
+
+      setEligibleNames(unique);
+      notify(
+        `${unique.length} unique eligible player${
+          unique.length === 1 ? "" : "s"
+        } read from the screenshot.`
+      );
+    } catch (error) {
+      notify(
+        error.message ||
+          "Unable to read the screenshot.",
+        "error"
+      );
+    } finally {
+      setReadingScreenshot(false);
+    }
+  }
+
+  async function suggestNextCarrier() {
+    if (!eligibleNames.length) {
+      notify(
+        "Select at least one eligible player.",
+        "error"
+      );
+      return;
+    }
+
+    setSuggesting(true);
+
+    try {
+      const response = await fetch(
+        `/api/leagues/${leagueId}/team-kit/suggest`,
+        {
+          method: "POST",
+          headers: {
+            "Content-Type": "application/json",
+          },
+          body: JSON.stringify({
+            teamId: sharedKit
+              ? null
+              : Number(
+                  suggestTeamId ||
+                    teams[0]?.id
+                ),
+            matchId: upcomingMatch?.id || null,
+            eligibleNames,
+          }),
+        }
+      );
+
+      const payload = await response.json();
+
+      if (!response.ok) {
+        throw new Error(
+          payload?.error ||
+            "Unable to suggest the next carrier."
+        );
+      }
+
+      notify(payload.message);
+      await load(true);
+    } catch (error) {
+      notify(
+        error.message ||
+          "Unable to suggest the next carrier.",
+        "error"
+      );
+    } finally {
+      setSuggesting(false);
+    }
+  }
+
+  function openRecord(
+    task = null,
+    teamId = null,
+    preset = null
+  ) {
+    const resolvedTeamId = sharedKit
+      ? ""
+      : String(
+          teamId ||
+            task?.teamId ||
+            teams[0]?.id ||
+            ""
+        );
+
+    const taskScopeKey = sharedKit
+      ? "LEAGUE"
+      : `TEAM:${resolvedTeamId}`;
+
+    const taskSuggestion =
+      task?.suggestion ||
+      latestSuggestions[
+        taskScopeKey
+      ] ||
+      null;
+
+    const presetName =
+      preset?.name ||
+      taskSuggestion?.holderName ||
+      "";
+
+    const presetPlayerId =
+      preset?.playerId ||
+      taskSuggestion?.holderPlayerId ||
+      "";
+
+    setSelectedTask(task);
+    setRecordDialogOpen(true);
+    setSelectedTeamId(
+      resolvedTeamId
+    );
+    setHolderPlayerId(
+      presetPlayerId
+        ? String(presetPlayerId)
+        : ""
+    );
+    setHolderName(presetName);
+    setNote(
+      preset?.note || ""
+    );
   }
 
   function choosePlayer(value) {
@@ -158,6 +707,15 @@ export default function TeamKitManagement({
           holderPlayerId: holderPlayerId ? Number(holderPlayerId) : null,
           holderName: holderName.trim(),
           note: note.trim(),
+          suggestionName:
+            selectedTask?.suggestion
+              ?.holderName ||
+            latestSuggestions[
+              sharedKit
+                ? "LEAGUE"
+                : `TEAM:${selectedTeamId}`
+            ]?.holderName ||
+            "",
         }),
       });
       const payload = await response.json();
@@ -358,17 +916,478 @@ export default function TeamKitManagement({
                     {task.pendingMatchCount - 1 === 1 ? " match" : " matches"}.
                   </p>
                 )}
+                {task.suggestion?.holderName && (
+                  <div
+                    className={
+                      styles.pendingSuggestion
+                    }
+                  >
+                    <span>
+                      ✨ Suggested carrier
+                    </span>
+
+                    <strong>
+                      {
+                        task.suggestion
+                          .holderName
+                      }
+                    </strong>
+
+                    <small>
+                      The current holder does not
+                      change until final custody is
+                      confirmed.
+                    </small>
+                  </div>
+                )}
+
                 {data.access?.canRecord ? (
-                  <button className={styles.primaryButton} onClick={() => openRecord(task, task.teamId)}>
-                    Record Who Took the Kit
-                  </button>
+                  <div
+                    className={
+                      styles.custodyChoiceGrid
+                    }
+                  >
+                    {task.suggestion
+                      ?.holderName && (
+                      <button
+                        type="button"
+                        className={
+                          styles.primaryButton
+                        }
+                        onClick={() =>
+                          openRecord(
+                            task,
+                            task.teamId,
+                            {
+                              name:
+                                task
+                                  .suggestion
+                                  .holderName,
+                              playerId:
+                                task
+                                  .suggestion
+                                  .holderPlayerId,
+                              note:
+                                "Suggested carrier took the kit home.",
+                            }
+                          )
+                        }
+                      >
+                        ✓ Suggested person took it
+                      </button>
+                    )}
+
+                    {(() => {
+                      const taskState =
+                        stateByScope.get(
+                          task.scopeKey
+                        );
+
+                      return taskState
+                        ?.currentHolderName ? (
+                        <button
+                          type="button"
+                          className={
+                            styles.secondaryButton
+                          }
+                          onClick={() =>
+                            openRecord(
+                              task,
+                              task.teamId,
+                              {
+                                name:
+                                  taskState
+                                    .currentHolderName,
+                                playerId:
+                                  taskState
+                                    .currentHolderPlayerId,
+                                note:
+                                  "The same current holder kept the kit.",
+                              }
+                            )
+                          }
+                        >
+                          ↺ Same holder kept it
+                        </button>
+                      ) : null;
+                    })()}
+
+                    <button
+                      type="button"
+                      className={
+                        styles.secondaryButton
+                      }
+                      onClick={() =>
+                        openRecord(
+                          task,
+                          task.teamId,
+                          {
+                            name: "",
+                            playerId: "",
+                            note:
+                              "A different person took the kit home.",
+                          }
+                        )
+                      }
+                    >
+                      👤 Choose another person
+                    </button>
+                  </div>
                 ) : (
-                  <span className={styles.viewOnly}>Waiting for an authorized scorer</span>
+                  <span
+                    className={
+                      styles.viewOnly
+                    }
+                  >
+                    Waiting for an authorized scorer
+                  </span>
                 )}
               </article>
             ))}
           </div>
         )}
+      </Section>
+
+
+      <Section
+        title="Next fair turn"
+        subtitle="Choose who is playing, then let Cric4All suggest the fairest next carrier."
+        icon="✨"
+        count={
+          rotationByScope[suggestionScopeKey]?.length ||
+          0
+        }
+        open
+      >
+        <div className={styles.suggestionLayout}>
+          <article className={styles.suggestionHero}>
+            <div>
+              <span>
+                {upcomingMatch
+                  ? "NEXT SUGGESTED CARRIER"
+                  : pendingTasks.length
+                    ? "SUGGESTED CARRIER AWAITING CONFIRMATION"
+                    : "NEXT SUGGESTED CARRIER"}
+              </span>
+              <h3>
+                {activeSuggestion?.holderName ||
+                  "No suggestion yet"}
+              </h3>
+              <p>
+                {activeSuggestion
+                  ? activeSuggestion.note ||
+                    "Based on completed turns and the longest wait."
+                  : pendingTasks.length
+                    ? "The completed match has no saved suggestion. Choose the actual holder below."
+                    : "Confirm the next-match eligible players and generate a fair suggestion."}
+              </p>
+            </div>
+
+            {activeSuggestion && (
+              <div className={styles.suggestionBadge}>
+                Suggested
+              </div>
+            )}
+          </article>
+
+          <div className={styles.nextMatchBar}>
+            <span>Upcoming match</span>
+
+            <strong>
+              {upcomingMatch?.label ||
+                "No upcoming match found"}
+            </strong>
+
+            <small>
+              {formatDate(
+                upcomingMatch?.scheduledAt
+              )}
+            </small>
+
+            {upcomingMatch && (
+              <em
+                className={styles.rosterSourceBadge}
+              >
+                {upcomingMatch.savedPlayingRoster
+                  ? "Confirmed playing roster"
+                  : "Team roster fallback"}
+              </em>
+            )}
+          </div>
+
+          {!sharedKit && teams.length > 1 && (
+            <label className={styles.field}>
+              <span>Team kit</span>
+              <select
+                value={suggestTeamId}
+                onChange={(event) => {
+                  setSuggestTeamId(
+                    event.target.value
+                  );
+                  setEligibilityMode("ROSTER");
+                }}
+              >
+                {teams.map((team) => (
+                  <option
+                    key={team.id}
+                    value={team.id}
+                  >
+                    {team.name}
+                  </option>
+                ))}
+              </select>
+            </label>
+          )}
+
+          <div className={styles.segmentedControl}>
+            <button
+              type="button"
+              className={
+                eligibilityMode === "ROSTER"
+                  ? styles.segmentActive
+                  : ""
+              }
+              onClick={() => {
+                setEligibilityMode("ROSTER");
+                lastRosterSeedKeyRef.current =
+                  rosterSeedKey;
+                setEligibleNames(
+                  rosterCandidateNames
+                );
+              }}
+            >
+              👥 Team roster
+            </button>
+
+            <button
+              type="button"
+              className={
+                eligibilityMode === "SCREENSHOT"
+                  ? styles.segmentActive
+                  : ""
+              }
+              onClick={() =>
+                setEligibilityMode("SCREENSHOT")
+              }
+            >
+              🖼️ Playing-team screenshot
+            </button>
+          </div>
+
+          {eligibilityMode === "SCREENSHOT" && (
+            <div className={styles.uploadPanel}>
+              <label className={styles.uploadBox}>
+                <input
+                  type="file"
+                  accept="image/*"
+                  onChange={(event) => {
+                    setScreenshotFile(
+                      event.target.files?.[0] ||
+                        null
+                    );
+                    setEligibleNames([]);
+                  }}
+                />
+                <span>📷</span>
+                <strong>
+                  {screenshotFile?.name ||
+                    "Choose screenshot"}
+                </strong>
+                <small>
+                  PNG, JPG, JPEG, or WEBP • up to
+                  8 MB
+                </small>
+              </label>
+
+              <button
+                type="button"
+                className={styles.secondaryButton}
+                disabled={
+                  !screenshotFile ||
+                  readingScreenshot
+                }
+                onClick={readScreenshot}
+              >
+                {readingScreenshot
+                  ? "Reading names…"
+                  : "Read Player Names"}
+              </button>
+            </div>
+          )}
+
+          <div className={styles.eligibilityHeader}>
+            <div>
+              <strong>Eligible for the next turn</strong>
+              <small>
+                {eligibleNames.length} player
+                {eligibleNames.length === 1
+                  ? ""
+                  : "s"}{" "}
+                selected
+              </small>
+            </div>
+
+            {rosterCandidates.length > 0 && (
+              <button
+                type="button"
+                className={styles.textButton}
+                onClick={() =>
+                  setEligibleNames(
+                    rosterCandidates.map(
+                      (player) => player.name
+                    )
+                  )
+                }
+              >
+                Select all
+              </button>
+            )}
+          </div>
+
+          {(
+            eligibilityMode === "ROSTER"
+              ? rosterCandidates
+              : eligibleNames
+          ).length === 0 ? (
+            <div className={styles.eligibleEmptyState}>
+              <span aria-hidden="true">👥</span>
+
+              <div>
+                <strong>
+                  No eligible players loaded
+                </strong>
+
+                <small>
+                  {upcomingMatch
+                    ? "Save the match playing roster, or use a screenshot to confirm who is playing."
+                    : "Create or schedule the next match, then return to generate a fair suggestion."}
+                </small>
+              </div>
+            </div>
+          ) : (
+          <div className={styles.eligibleGrid}>
+            {(eligibilityMode === "ROSTER"
+              ? rosterCandidates.map(
+                  (player) => player.name
+                )
+              : eligibleNames
+            ).map((name) => {
+              const selected =
+                eligibleNames.some(
+                  (item) =>
+                    normalizeName(item) ===
+                    normalizeName(name)
+                );
+
+              return (
+                <button
+                  type="button"
+                  key={normalizeName(name)}
+                  className={`${styles.playerChip} ${
+                    selected
+                      ? styles.playerChipSelected
+                      : ""
+                  }`}
+                  onClick={() =>
+                    toggleEligibleName(name)
+                  }
+                >
+                  <span>
+                    {selected ? "✓" : "+"}
+                  </span>
+                  <strong>{name}</strong>
+                </button>
+              );
+            })}
+          </div>
+          )}
+
+          <button
+            type="button"
+            className={styles.primaryButton}
+            disabled={
+              suggesting ||
+              !eligibleNames.length ||
+              !data.access?.canRecord
+            }
+            onClick={suggestNextCarrier}
+          >
+            {suggesting
+              ? "Calculating fair turn…"
+              : activeSuggestion
+                ? "Suggest Another Fair Carrier"
+                : "Suggest Next Fair Carrier"}
+          </button>
+
+          {(rotationByScope[suggestionScopeKey] ||
+            []).length > 0 && (
+            <details
+              className={styles.rotationDisclosure}
+            >
+              <summary
+                className={styles.rotationDisclosureSummary}
+              >
+                <span
+                  className={styles.rotationDisclosureIcon}
+                  aria-hidden="true"
+                >
+                  📊
+                </span>
+
+                <span
+                  className={styles.rotationDisclosureCopy}
+                >
+                  <strong>
+                    Rotation standings
+                  </strong>
+
+                  <small>
+                    {
+                      rotationByScope[
+                        suggestionScopeKey
+                      ].length
+                    }{" "}
+                    eligible player
+                    {rotationByScope[
+                      suggestionScopeKey
+                    ].length === 1
+                      ? ""
+                      : "s"}{" "}
+                    ranked by completed turns
+                  </small>
+                </span>
+
+                <span
+                  className={styles.rotationDisclosureAction}
+                >
+                  View
+                </span>
+              </summary>
+
+              <div className={styles.rotationList}>
+                {(rotationByScope[
+                  suggestionScopeKey
+                ] || [])
+                  .slice(0, 12)
+                  .map((item, index) => (
+                    <div
+                      key={normalizeName(item.name)}
+                      className={styles.rotationRow}
+                    >
+                      <b>{index + 1}</b>
+                      <span>{item.name}</span>
+                      <small>
+                        {item.completedTurns} turn
+                        {item.completedTurns === 1
+                          ? ""
+                          : "s"}
+                      </small>
+                    </div>
+                  ))}
+              </div>
+            </details>
+          )}
+        </div>
       </Section>
 
       <Section
@@ -473,6 +1492,51 @@ export default function TeamKitManagement({
                   {teams.map((team) => <option key={team.id} value={team.id}>{team.name}</option>)}
                 </select>
               </label>
+            )}
+
+
+            {(selectedTask?.suggestion ||
+              latestSuggestions[
+                sharedKit
+                  ? "LEAGUE"
+                  : `TEAM:${selectedTeamId}`
+              ])?.holderName && (
+              <button
+                type="button"
+                className={styles.suggestedChoice}
+                onClick={() => {
+                  const name =
+                    (
+                      selectedTask
+                        ?.suggestion ||
+                      latestSuggestions[
+                        sharedKit
+                          ? "LEAGUE"
+                          : `TEAM:${selectedTeamId}`
+                      ]
+                    ).holderName;
+                  setHolderPlayerId("");
+                  setHolderName(name);
+                }}
+              >
+                <span>✨ Suggested carrier</span>
+                <strong>
+                  {
+                    (
+                      selectedTask
+                        ?.suggestion ||
+                      latestSuggestions[
+                        sharedKit
+                          ? "LEAGUE"
+                          : `TEAM:${selectedTeamId}`
+                      ]
+                    ).holderName
+                  }
+                </strong>
+                <small>
+                  Tap to confirm the same person took the kit
+                </small>
+              </button>
             )}
 
             <label>

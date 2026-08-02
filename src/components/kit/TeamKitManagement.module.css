@@ -445,3 +445,600 @@
   .modal footer { grid-template-columns: 1fr; }
   .teamChecks { grid-template-columns: 1fr; }
 }
+
+
+/* ================================================================
+   FAIR ROTATION + PLAYING ROSTER
+   ================================================================ */
+
+.suggestionLayout {
+  display: grid;
+  gap: 16px;
+}
+
+.suggestionHero {
+  display: flex;
+  align-items: flex-start;
+  justify-content: space-between;
+  gap: 18px;
+  padding: 22px;
+  border: 1px solid rgba(93, 153, 255, 0.34);
+  border-radius: 20px;
+  background:
+    radial-gradient(circle at top right, rgba(72, 177, 237, 0.2), transparent 44%),
+    linear-gradient(145deg, #17294b, #111c35);
+}
+
+.suggestionHero span {
+  color: #75cfff;
+  font-size: 0.76rem;
+  font-weight: 900;
+  letter-spacing: 0.09em;
+}
+
+.suggestionHero h3 {
+  margin: 5px 0 6px;
+  color: #fff;
+  font-size: clamp(1.45rem, 3vw, 2rem);
+}
+
+.suggestionHero p {
+  max-width: 720px;
+  margin: 0;
+  color: #b7c5dc;
+  line-height: 1.55;
+}
+
+.suggestionBadge {
+  flex: 0 0 auto;
+  padding: 8px 12px;
+  border-radius: 999px;
+  color: #fff;
+  background: linear-gradient(135deg, #4d85f4, #43bce8);
+  font-size: 0.75rem;
+  font-weight: 900;
+}
+
+.nextMatchBar {
+  display: grid;
+  grid-template-columns: auto minmax(0, 1fr) auto;
+  align-items: center;
+  gap: 12px;
+  padding: 13px 15px;
+  border: 1px solid rgba(116, 145, 208, 0.24);
+  border-radius: 14px;
+  background: #101b32;
+}
+
+.nextMatchBar span,
+.nextMatchBar small {
+  color: #9fadc6;
+  font-size: 0.8rem;
+}
+
+.nextMatchBar strong {
+  overflow: hidden;
+  color: #fff;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.field {
+  display: grid;
+  gap: 7px;
+}
+
+.field > span {
+  color: #b5c3da;
+  font-size: 0.8rem;
+  font-weight: 800;
+}
+
+.field select {
+  min-height: 46px;
+  padding: 10px 12px;
+  border: 1px solid rgba(116, 145, 208, 0.34);
+  border-radius: 12px;
+  color: #fff;
+  background: #0f1930;
+}
+
+.segmentedControl {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: 6px;
+  padding: 6px;
+  border: 1px solid rgba(116, 145, 208, 0.24);
+  border-radius: 14px;
+  background: #0e182d;
+}
+
+.segmentedControl button {
+  min-height: 46px;
+  border: 0;
+  border-radius: 10px;
+  color: #aebbd1;
+  background: transparent;
+  font-weight: 850;
+  cursor: pointer;
+}
+
+.segmentedControl .segmentActive {
+  color: #fff;
+  background: linear-gradient(135deg, #315fc8, #337fb7);
+  box-shadow: 0 8px 18px rgba(27, 72, 147, 0.28);
+}
+
+.uploadPanel {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr) auto;
+  align-items: stretch;
+  gap: 10px;
+}
+
+.uploadBox {
+  display: grid;
+  grid-template-columns: auto minmax(0, 1fr);
+  gap: 4px 12px;
+  align-items: center;
+  padding: 15px;
+  border: 1px dashed rgba(111, 164, 255, 0.48);
+  border-radius: 14px;
+  background: #101b32;
+  cursor: pointer;
+}
+
+.uploadBox input {
+  display: none;
+}
+
+.uploadBox > span {
+  grid-row: 1 / span 2;
+  font-size: 1.45rem;
+}
+
+.uploadBox strong {
+  color: #fff;
+}
+
+.uploadBox small {
+  color: #9fadc6;
+}
+
+.eligibilityHeader {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 12px;
+}
+
+.eligibilityHeader > div {
+  display: grid;
+  gap: 3px;
+}
+
+.eligibilityHeader strong {
+  color: #fff;
+}
+
+.eligibilityHeader small {
+  color: #9fadc6;
+}
+
+.textButton {
+  border: 0;
+  color: #7ccfff;
+  background: transparent;
+  font-weight: 850;
+  cursor: pointer;
+}
+
+.eligibleGrid {
+  display: grid;
+  grid-template-columns: repeat(3, minmax(0, 1fr));
+  gap: 9px;
+  max-height: 300px;
+  overflow-y: auto;
+  padding-right: 3px;
+}
+
+.playerChip {
+  display: grid;
+  grid-template-columns: 28px minmax(0, 1fr);
+  align-items: center;
+  gap: 8px;
+  min-height: 48px;
+  padding: 8px 10px;
+  border: 1px solid rgba(116, 145, 208, 0.28);
+  border-radius: 12px;
+  color: #dfe8f8;
+  background: #101b32;
+  text-align: left;
+  cursor: pointer;
+}
+
+.playerChip > span {
+  display: grid;
+  place-items: center;
+  width: 28px;
+  height: 28px;
+  border-radius: 9px;
+  color: #9eb0ca;
+  background: #1b2b4a;
+}
+
+.playerChip strong {
+  overflow: hidden;
+  font-size: 0.82rem;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.playerChipSelected {
+  border-color: rgba(77, 133, 244, 0.74);
+  background: #1a2f57;
+}
+
+.playerChipSelected > span {
+  color: #fff;
+  background: #4d85f4;
+}
+
+.rotationList {
+  display: grid;
+  gap: 7px;
+}
+
+.rotationRow {
+  display: grid;
+  grid-template-columns: 32px minmax(0, 1fr) auto;
+  align-items: center;
+  gap: 10px;
+  min-height: 46px;
+  padding: 8px 11px;
+  border-radius: 11px;
+  background: #101b32;
+}
+
+.rotationRow b {
+  display: grid;
+  place-items: center;
+  width: 28px;
+  height: 28px;
+  border-radius: 50%;
+  color: #dce7ff;
+  background: #1c2c4e;
+}
+
+.rotationRow span {
+  overflow: hidden;
+  color: #fff;
+  font-weight: 800;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.rotationRow small {
+  color: #9fadc6;
+}
+
+.suggestedChoice {
+  display: grid;
+  gap: 4px;
+  width: 100%;
+  padding: 13px 14px;
+  border: 1px solid rgba(77, 133, 244, 0.68);
+  border-radius: 13px;
+  color: #fff;
+  background: linear-gradient(145deg, #1d396b, #17294b);
+  text-align: left;
+  cursor: pointer;
+}
+
+.suggestedChoice > span {
+  color: #77ceff;
+  font-size: 0.72rem;
+  font-weight: 900;
+  letter-spacing: 0.07em;
+}
+
+.suggestedChoice strong {
+  font-size: 1rem;
+}
+
+.suggestedChoice small {
+  color: #b8c5da;
+}
+
+@media (max-width: 760px) {
+  .suggestionHero {
+    display: grid;
+    padding: 16px;
+  }
+
+  .suggestionBadge {
+    justify-self: start;
+  }
+
+  .nextMatchBar {
+    grid-template-columns: 1fr;
+    gap: 4px;
+  }
+
+  .nextMatchBar strong {
+    white-space: normal;
+  }
+
+  .uploadPanel {
+    grid-template-columns: 1fr;
+  }
+
+  .uploadPanel button {
+    width: 100%;
+  }
+
+  .eligibleGrid {
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+    max-height: 270px;
+  }
+}
+
+@media (max-width: 430px) {
+  .segmentedControl {
+    grid-template-columns: 1fr;
+  }
+
+  .eligibleGrid {
+    grid-template-columns: 1fr;
+  }
+
+  .playerChip strong {
+    white-space: normal;
+  }
+}
+
+
+/* ================================================================
+   LEAGUE-SAFE ELIGIBILITY + COLLAPSIBLE ROTATION
+   ================================================================ */
+
+.rotationDisclosure {
+  overflow: hidden;
+  border: 1px solid rgba(116, 145, 208, 0.28);
+  border-radius: 14px;
+  background: #101b32;
+}
+
+.rotationDisclosureSummary {
+  display: grid;
+  grid-template-columns: 42px minmax(0, 1fr) auto;
+  align-items: center;
+  gap: 11px;
+  min-height: 68px;
+  padding: 11px 13px;
+  cursor: pointer;
+  list-style: none;
+}
+
+.rotationDisclosureSummary::-webkit-details-marker {
+  display: none;
+}
+
+.rotationDisclosureIcon {
+  display: grid;
+  place-items: center;
+  width: 42px;
+  height: 42px;
+  border-radius: 12px;
+  background: #1d2e50;
+  font-size: 1.05rem;
+}
+
+.rotationDisclosureCopy {
+  display: grid;
+  gap: 3px;
+}
+
+.rotationDisclosureCopy strong {
+  color: #fff;
+  font-size: 0.9rem;
+  line-height: 1.25;
+}
+
+.rotationDisclosureCopy small {
+  color: #9fadc6;
+  font-size: 0.76rem;
+  line-height: 1.35;
+}
+
+.rotationDisclosureAction {
+  min-width: 54px;
+  padding: 7px 9px;
+  border: 1px solid rgba(105, 151, 244, 0.42);
+  border-radius: 999px;
+  color: #dce8ff;
+  background: #192b4d;
+  font-size: 0.7rem;
+  font-weight: 900;
+  text-align: center;
+}
+
+.rotationDisclosure[open]
+  .rotationDisclosureAction {
+  color: #fff;
+  background: #315fc8;
+}
+
+.rotationDisclosure[open]
+  .rotationDisclosureAction::before {
+  content: "Hide";
+  font-size: 0;
+}
+
+.rotationDisclosure[open]
+  .rotationDisclosureAction {
+  font-size: 0;
+}
+
+.rotationDisclosure[open]
+  .rotationDisclosureAction::after {
+  content: "Hide";
+  font-size: 0.7rem;
+}
+
+.rotationDisclosure .rotationList {
+  padding: 0 10px 10px;
+  border-top: 1px solid rgba(116, 145, 208, 0.18);
+}
+
+@media (max-width: 760px) {
+  .rotationDisclosureSummary {
+    grid-template-columns: 40px minmax(0, 1fr) auto;
+    min-height: 64px;
+    padding: 10px;
+  }
+
+  .rotationDisclosureIcon {
+    width: 40px;
+    height: 40px;
+  }
+
+  .rotationDisclosureCopy strong {
+    font-size: 0.88rem;
+  }
+
+  .rotationDisclosureCopy small {
+    display: -webkit-box;
+    overflow: hidden;
+    -webkit-box-orient: vertical;
+    -webkit-line-clamp: 2;
+  }
+}
+
+
+/* ================================================================
+   UPCOMING MATCH ROSTER SOURCE + EMPTY STATE
+   ================================================================ */
+
+.rosterSourceBadge {
+  justify-self: end;
+  padding: 6px 9px;
+  border: 1px solid rgba(98, 166, 255, 0.34);
+  border-radius: 999px;
+  color: #dceaff;
+  background: #1b2d50;
+  font-size: 0.68rem;
+  font-style: normal;
+  font-weight: 900;
+  line-height: 1;
+  white-space: nowrap;
+}
+
+.eligibleEmptyState {
+  display: grid;
+  grid-template-columns: 44px minmax(0, 1fr);
+  align-items: center;
+  gap: 12px;
+  min-height: 92px;
+  padding: 15px;
+  border: 1px dashed rgba(113, 149, 218, 0.38);
+  border-radius: 14px;
+  color: #f4f7ff;
+  background: #101b32;
+}
+
+.eligibleEmptyState > span {
+  display: grid;
+  place-items: center;
+  width: 44px;
+  height: 44px;
+  border-radius: 12px;
+  background: #1d2e50;
+  font-size: 1.12rem;
+}
+
+.eligibleEmptyState > div {
+  display: grid;
+  gap: 4px;
+}
+
+.eligibleEmptyState strong {
+  color: #fff;
+  font-size: 0.9rem;
+  line-height: 1.3;
+}
+
+.eligibleEmptyState small {
+  color: #a8b7d0;
+  font-size: 0.78rem;
+  line-height: 1.42;
+}
+
+@media (max-width: 760px) {
+  .rosterSourceBadge {
+    justify-self: start;
+  }
+
+  .eligibleEmptyState {
+    min-height: 84px;
+    padding: 12px;
+  }
+}
+
+
+/* ================================================================
+   POST-MATCH SUGGESTION CONTINUITY
+   ================================================================ */
+
+.pendingSuggestion {
+  display: grid;
+  gap: 4px;
+  padding: 13px 14px;
+  border: 1px solid rgba(94, 147, 255, 0.52);
+  border-radius: 13px;
+  background:
+    radial-gradient(
+      circle at top right,
+      rgba(67, 188, 232, 0.14),
+      transparent 48%
+    ),
+    #152748;
+}
+
+.pendingSuggestion > span {
+  color: #78ceff;
+  font-size: 0.72rem;
+  font-weight: 900;
+  letter-spacing: 0.06em;
+}
+
+.pendingSuggestion > strong {
+  color: #fff;
+  font-size: 1rem;
+  line-height: 1.3;
+}
+
+.pendingSuggestion > small {
+  color: #aebbd2;
+  font-size: 0.76rem;
+  line-height: 1.4;
+}
+
+.custodyChoiceGrid {
+  display: grid;
+  grid-template-columns:
+    repeat(3, minmax(0, 1fr));
+  gap: 8px;
+}
+
+.custodyChoiceGrid button {
+  width: 100%;
+  min-height: 48px;
+  white-space: normal;
+}
+
+@media (max-width: 900px) {
+  .custodyChoiceGrid {
+    grid-template-columns: 1fr;
+  }
+}
