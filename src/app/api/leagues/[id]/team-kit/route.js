@@ -891,20 +891,46 @@ export async function GET(
 
       prisma.$queryRaw`
         SELECT DISTINCT ON (
-          e."scopeKey"
+          suggestion."scopeKey"
         )
-          e.*
-        FROM "TeamKitCustodyEvent" e
-        WHERE e."leagueId" =
+          suggestion.*
+        FROM "TeamKitCustodyEvent"
+          suggestion
+        WHERE suggestion."leagueId" =
               ${leagueId}
-          AND e."scopeKey" IN (
+          AND suggestion."scopeKey" IN (
             ${scopeSql}
           )
-          AND e."action" =
+          AND suggestion."action" =
               'SUGGESTED'
+          AND NOT EXISTS (
+            SELECT 1
+            FROM "TeamKitCustodyEvent"
+              actual
+            WHERE actual."leagueId" =
+                  suggestion."leagueId"
+              AND actual."scopeKey" =
+                  suggestion."scopeKey"
+              AND actual."action" IN (
+                'RECORDED',
+                'CORRECTED',
+                'RECORDED_AS_SUGGESTED'
+              )
+              AND (
+                actual."createdAt" >
+                  suggestion."createdAt"
+                OR (
+                  actual."createdAt" =
+                    suggestion."createdAt"
+                  AND actual."id" >
+                    suggestion."id"
+                )
+              )
+          )
         ORDER BY
-          e."scopeKey",
-          e."createdAt" DESC
+          suggestion."scopeKey",
+          suggestion."createdAt" DESC,
+          suggestion."id" DESC
       `,
 
       prisma.$queryRaw`

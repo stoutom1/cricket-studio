@@ -1071,21 +1071,33 @@ export default function TeamKitManagement({
               </span>
               <h3>
                 {activeSuggestion?.holderName ||
-                  "No suggestion yet"}
+                  (
+                    upcomingMatch
+                      ? "No suggestion yet"
+                      : pendingTasks.length
+                        ? "Confirmation required"
+                        : "Waiting for the next match"
+                  )}
               </h3>
               <p>
                 {activeSuggestion
-                  ? activeSuggestion.note ||
-                    "Based on completed turns and the longest wait."
+                  ? pendingTasks.length
+                    ? "This was the saved suggestion for the completed match. Confirm who actually took the kit below."
+                    : activeSuggestion.note ||
+                      "Based on completed turns and the longest wait."
                   : pendingTasks.length
-                    ? "The completed match has no saved suggestion. Choose the actual holder below."
-                    : "Confirm the next-match eligible players and generate a fair suggestion."}
+                    ? "The match has ended. Confirm the actual person who took the kit so the current holder and fair rotation can be updated."
+                    : upcomingMatch
+                      ? "Confirm who is playing, then generate the next fair suggestion."
+                      : "Once the next match is scheduled, confirm its eligible players and generate a new fair suggestion."}
               </p>
             </div>
 
             {activeSuggestion && (
               <div className={styles.suggestionBadge}>
-                Suggested
+                {pendingTasks.length
+                  ? "Awaiting confirmation"
+                  : "Suggested"}
               </div>
             )}
           </article>
@@ -1302,11 +1314,35 @@ export default function TeamKitManagement({
           </div>
           )}
 
+          <div className={styles.workflowNotice}>
+            <strong>
+              {pendingTasks.length
+                ? "Finish the completed match workflow"
+                : activeSuggestion
+                  ? "Suggestion saved for the upcoming match"
+                  : upcomingMatch
+                    ? "Ready to calculate the next fair turn"
+                    : "No upcoming match is available"}
+            </strong>
+
+            <small>
+              {pendingTasks.length
+                ? "Select the suggested person, keep the same holder, or choose someone else. Saving the actual holder completes the turn."
+                : activeSuggestion
+                  ? "The current holder will not change until the match ends and an authorized user confirms who actually took the kit."
+                  : upcomingMatch
+                    ? "Suggestions do not count as completed turns. Only the actual recorded holder receives rotation credit."
+                    : "The previous suggestion is kept in history and is not reused as the next live suggestion."}
+            </small>
+          </div>
+
           <button
             type="button"
             className={styles.primaryButton}
             disabled={
               suggesting ||
+              !upcomingMatch ||
+              pendingTasks.length > 0 ||
               !eligibleNames.length ||
               !data.access?.canRecord
             }
@@ -1314,9 +1350,13 @@ export default function TeamKitManagement({
           >
             {suggesting
               ? "Calculating fair turn…"
-              : activeSuggestion
-                ? "Suggest Another Fair Carrier"
-                : "Suggest Next Fair Carrier"}
+              : pendingTasks.length > 0
+                ? "Confirm Match Custody First"
+                : !upcomingMatch
+                  ? "Waiting for Next Scheduled Match"
+                  : activeSuggestion
+                    ? "Suggest Another Fair Carrier"
+                    : "Suggest Next Fair Carrier"}
           </button>
 
           {(rotationByScope[suggestionScopeKey] ||

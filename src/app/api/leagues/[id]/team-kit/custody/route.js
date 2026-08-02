@@ -137,6 +137,19 @@ export async function POST(request, { params }) {
       LIMIT 1
     `;
     const previousState = previousRows[0] || null;
+    const resolvingMatchTask =
+      Boolean(taskId && task);
+
+    const custodyAction =
+      resolvingMatchTask
+        ? usedSuggestion
+          ? "RECORDED_AS_SUGGESTED"
+          : "RECORDED"
+        : previousState
+          ? "CORRECTED"
+          : usedSuggestion
+            ? "RECORDED_AS_SUGGESTED"
+            : "RECORDED";
 
     const result = await prisma.$transaction(
       async (tx) => {
@@ -197,13 +210,7 @@ export async function POST(request, { params }) {
               ${holderPlayerId},
               ${holderName},
               ${previousState?.currentHolderName || null},
-              ${
-                previousState
-                  ? "CORRECTED"
-                  : usedSuggestion
-                    ? "RECORDED_AS_SUGGESTED"
-                    : "RECORDED"
-              },
+              ${custodyAction},
               ${
                 [
                   note,
@@ -243,9 +250,11 @@ export async function POST(request, { params }) {
     );
 
     await logAudit({
-      action: previousState
-        ? "TEAM_KIT_CUSTODY_CORRECTED"
-        : "TEAM_KIT_CUSTODY_RECORDED",
+      action: resolvingMatchTask
+        ? "TEAM_KIT_CUSTODY_RECORDED"
+        : previousState
+          ? "TEAM_KIT_CUSTODY_CORRECTED"
+          : "TEAM_KIT_CUSTODY_RECORDED",
       entityType: access.sharedKit
         ? "LEAGUE_KIT"
         : "TEAM_KIT",
@@ -264,7 +273,9 @@ export async function POST(request, { params }) {
 
     return NextResponse.json({
       success: true,
-      message: "Kit custody recorded successfully.",
+      message: resolvingMatchTask
+        ? `${holderName} is now the current kit holder. The match custody follow-up is complete.`
+        : "Kit custody updated successfully.",
       ...result,
     });
   } catch (error) {
