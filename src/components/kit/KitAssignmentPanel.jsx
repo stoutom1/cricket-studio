@@ -4366,6 +4366,90 @@ async function saveKitPickup() {
           }
         }
 
+        /* =========================================================
+           MOBILE FINAL POLISH — BUTTON DEPTH + READABLE TYPE
+           ========================================================= */
+        @media (max-width: 700px) {
+          .kit-assignment-panel {
+            font-size: 0.88rem !important;
+          }
+
+          .kit-assignment-panel .btn:not(:disabled) {
+            border-color: rgba(105, 151, 244, 0.62) !important;
+            box-shadow:
+              0 8px 18px rgba(7, 20, 48, 0.24),
+              inset 0 1px 0 rgba(255, 255, 255, 0.05) !important;
+          }
+
+          .kit-assignment-panel .btn:not(:disabled):active {
+            transform: translateY(1px) !important;
+          }
+
+          .kit-record-pickup-btn,
+          .kit-generate-assignment-btn,
+          .kit-pickup-actions .btn:last-child {
+            min-height: 50px !important;
+            border: 0 !important;
+            color: #ffffff !important;
+            background:
+              linear-gradient(
+                135deg,
+                #4f85f3,
+                #43bce8
+              ) !important;
+            box-shadow:
+              0 10px 24px rgba(66, 126, 238, 0.32),
+              inset 0 1px 0 rgba(255, 255, 255, 0.18) !important;
+            font-size: 0.88rem !important;
+            font-weight: 900 !important;
+          }
+
+          .league-kit-status-action-grid .btn {
+            border-color: rgba(113, 142, 206, 0.52) !important;
+            box-shadow:
+              0 7px 16px rgba(7, 20, 48, 0.2),
+              inset 0 1px 0 rgba(255, 255, 255, 0.04) !important;
+          }
+
+          .league-kit-status-action-grid .btn.active {
+            border-color: rgba(94, 147, 255, 0.82) !important;
+            background:
+              linear-gradient(
+                135deg,
+                #244577,
+                #1b365f
+              ) !important;
+            box-shadow:
+              0 9px 22px rgba(25, 63, 122, 0.28),
+              inset 0 1px 0 rgba(255, 255, 255, 0.08) !important;
+          }
+
+          .mobile-kit-section-copy strong {
+            font-size: 0.94rem !important;
+          }
+
+          .mobile-kit-section-copy > span {
+            font-size: 0.75rem !important;
+            line-height: 1.38 !important;
+          }
+
+          .league-kit-person-block small,
+          .league-kit-details span,
+          .kit-pickup-summary span {
+            font-size: 0.77rem !important;
+          }
+
+          .league-kit-person-block strong,
+          .league-kit-details strong,
+          .kit-pickup-summary strong {
+            font-size: 0.92rem !important;
+          }
+
+          .kit-status-action-label {
+            font-size: 0.86rem !important;
+          }
+        }
+
       `}</style>
     </section>
   );

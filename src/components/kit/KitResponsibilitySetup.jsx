@@ -2074,18 +2074,24 @@ const handleKitAssignmentError =
               )}
 
               <div className="kit-orientation-card">
-                <div>
+                <div className="kit-orientation-heading">
                   <strong>
                     Confirm screenshot sides
                   </strong>
 
                   <p>
-                    Tell Cric4All which match team
-                    appears on the left and right.
+                    Choose the layout that matches the screenshot.
                   </p>
                 </div>
 
-                <label>
+                <label
+                  className={`kit-orientation-option ${
+                    screenshotOrientation ===
+                    "LEFT_TEAM_A"
+                      ? "is-selected"
+                      : ""
+                  }`}
+                >
                   <input
                     type="radio"
                     name="kitScreenshotOrientation"
@@ -2101,14 +2107,31 @@ const handleKitAssignmentError =
                     }
                   />
 
-                  <span>
-                    Left: {teamAName}
-                    <br />
-                    Right: {teamBName}
+                  <span className="kit-orientation-radio" />
+
+                  <span className="kit-orientation-option-copy">
+                    <strong>
+                      {teamAName} is on the left
+                    </strong>
+
+                    <small>
+                      {teamBName} is on the right
+                    </small>
+                  </span>
+
+                  <span className="kit-orientation-selected-label">
+                    Selected
                   </span>
                 </label>
 
-                <label>
+                <label
+                  className={`kit-orientation-option ${
+                    screenshotOrientation ===
+                    "LEFT_TEAM_B"
+                      ? "is-selected"
+                      : ""
+                  }`}
+                >
                   <input
                     type="radio"
                     name="kitScreenshotOrientation"
@@ -2124,20 +2147,31 @@ const handleKitAssignmentError =
                     }
                   />
 
-                  <span>
-                    Left: {teamBName}
-                    <br />
-                    Right: {teamAName}
+                  <span className="kit-orientation-radio" />
+
+                  <span className="kit-orientation-option-copy">
+                    <strong>
+                      {teamBName} is on the left
+                    </strong>
+
+                    <small>
+                      {teamAName} is on the right
+                    </small>
+                  </span>
+
+                  <span className="kit-orientation-selected-label">
+                    Selected
                   </span>
                 </label>
 
                 <button
                   type="button"
-                  className="btn btn-outline"
+                  className="btn btn-outline kit-swap-lists-btn"
                   onClick={swapTeamLists}
                   disabled={!hasReviewPlayers}
                 >
-                  ⇄ Swap Current Player Lists
+                  <span aria-hidden="true">⇄</span>
+                  <span>Swap Current Player Lists</span>
                 </button>
               </div>
 
@@ -4333,6 +4367,214 @@ const handleKitAssignmentError =
 
           .matches-subtabs.pro-match-tabs .tab-label {
             font-size: 0.76rem !important;
+          }
+        }
+
+        /* =========================================================
+           MOBILE FINAL POLISH — SCREENSHOT SIDES + BUTTON HIERARCHY
+           ========================================================= */
+        @media (max-width: 700px) {
+          .kit-orientation-card {
+            display: grid !important;
+            grid-template-columns: minmax(0, 1fr) !important;
+            gap: 10px !important;
+            width: 100% !important;
+            padding: 13px !important;
+            border: 1px solid rgba(113, 142, 206, 0.34) !important;
+            border-radius: 16px !important;
+            color: #f7f9ff !important;
+            background: #14203a !important;
+          }
+
+          .kit-orientation-heading {
+            display: grid !important;
+            gap: 4px !important;
+          }
+
+          .kit-orientation-heading strong {
+            color: #ffffff !important;
+            font-size: 1rem !important;
+            line-height: 1.25 !important;
+          }
+
+          .kit-orientation-heading p {
+            display: block !important;
+            margin: 0 !important;
+            color: #aebbd2 !important;
+            font-size: 0.8rem !important;
+            line-height: 1.4 !important;
+          }
+
+          .kit-orientation-option {
+            position: relative !important;
+            display: grid !important;
+            grid-template-columns: 24px minmax(0, 1fr) auto !important;
+            align-items: center !important;
+            gap: 11px !important;
+            width: 100% !important;
+            min-height: 70px !important;
+            margin: 0 !important;
+            padding: 12px !important;
+            border: 1px solid rgba(113, 142, 206, 0.34) !important;
+            border-radius: 13px !important;
+            color: #f7f9ff !important;
+            background: #101a30 !important;
+            cursor: pointer !important;
+          }
+
+          .kit-orientation-option.is-selected {
+            border-color: rgba(94, 147, 255, 0.78) !important;
+            background: #1a2d55 !important;
+            box-shadow:
+              0 0 0 1px rgba(94, 147, 255, 0.13),
+              0 8px 20px rgba(10, 28, 64, 0.24) !important;
+          }
+
+          .kit-orientation-option > input {
+            position: absolute !important;
+            width: 1px !important;
+            height: 1px !important;
+            opacity: 0 !important;
+            pointer-events: none !important;
+          }
+
+          .kit-orientation-radio {
+            position: relative !important;
+            display: block !important;
+            width: 22px !important;
+            height: 22px !important;
+            border: 2px solid rgba(152, 174, 219, 0.68) !important;
+            border-radius: 50% !important;
+            background: #0d1629 !important;
+          }
+
+          .kit-orientation-option.is-selected
+            .kit-orientation-radio {
+            border-color: #5e93ff !important;
+            box-shadow: 0 0 0 3px rgba(94, 147, 255, 0.12) !important;
+          }
+
+          .kit-orientation-option.is-selected
+            .kit-orientation-radio::after {
+            content: "" !important;
+            position: absolute !important;
+            inset: 4px !important;
+            border-radius: 50% !important;
+            background: linear-gradient(135deg, #4f85f3, #43bce8) !important;
+          }
+
+          .kit-orientation-option-copy {
+            display: grid !important;
+            gap: 4px !important;
+            min-width: 0 !important;
+          }
+
+          .kit-orientation-option-copy strong {
+            color: #ffffff !important;
+            font-size: 0.9rem !important;
+            line-height: 1.3 !important;
+            white-space: normal !important;
+          }
+
+          .kit-orientation-option-copy small {
+            color: #aebbd2 !important;
+            font-size: 0.78rem !important;
+            line-height: 1.35 !important;
+            white-space: normal !important;
+          }
+
+          .kit-orientation-selected-label {
+            visibility: hidden !important;
+            padding: 5px 7px !important;
+            border-radius: 999px !important;
+            color: #ffffff !important;
+            background: #4f85f3 !important;
+            font-size: 0.64rem !important;
+            font-weight: 900 !important;
+            line-height: 1 !important;
+          }
+
+          .kit-orientation-option.is-selected
+            .kit-orientation-selected-label {
+            visibility: visible !important;
+          }
+
+          .kit-swap-lists-btn {
+            display: inline-flex !important;
+            align-items: center !important;
+            justify-content: center !important;
+            gap: 8px !important;
+            width: 100% !important;
+            min-height: 48px !important;
+            padding: 10px 13px !important;
+            border: 1px solid rgba(105, 151, 244, 0.58) !important;
+            border-radius: 12px !important;
+            color: #ffffff !important;
+            background: #1a2948 !important;
+            box-shadow: 0 8px 18px rgba(7, 20, 48, 0.22) !important;
+            font-size: 0.82rem !important;
+            font-weight: 900 !important;
+            line-height: 1.25 !important;
+            white-space: normal !important;
+          }
+
+          /* Stronger, unmistakable button hierarchy across the setup flow. */
+          .kit-responsibility-card .btn:not(:disabled),
+          .kit-change-match summary,
+          .kit-team-bulk-btn {
+            border-color: rgba(105, 151, 244, 0.62) !important;
+            box-shadow:
+              0 8px 18px rgba(7, 20, 48, 0.24),
+              inset 0 1px 0 rgba(255, 255, 255, 0.05) !important;
+          }
+
+          .kit-responsibility-card
+            .btn:not(:disabled):active,
+          .kit-change-match summary:active,
+          .kit-team-bulk-btn:active,
+          .kit-source-mode-option:active,
+          .kit-orientation-option:active {
+            transform: translateY(1px) !important;
+          }
+
+          .kit-confirm-review-btn,
+          .kit-upload-dropzone .btn,
+          .kit-generate-assignment-btn {
+            min-height: 50px !important;
+            border: 0 !important;
+            color: #ffffff !important;
+            background:
+              linear-gradient(
+                135deg,
+                #4f85f3,
+                #43bce8
+              ) !important;
+            box-shadow:
+              0 10px 24px rgba(66, 126, 238, 0.32),
+              inset 0 1px 0 rgba(255, 255, 255, 0.18) !important;
+            font-size: 0.88rem !important;
+            font-weight: 900 !important;
+          }
+
+          /* Readable mobile type scale. */
+          .kit-responsibility-card {
+            font-size: 0.88rem !important;
+          }
+
+          .kit-responsibility-card label,
+          .kit-responsibility-card small,
+          .kit-responsibility-card p {
+            line-height: 1.4 !important;
+          }
+        }
+
+        @media (max-width: 390px) {
+          .kit-orientation-option {
+            grid-template-columns: 22px minmax(0, 1fr) !important;
+          }
+
+          .kit-orientation-selected-label {
+            display: none !important;
           }
         }
 
