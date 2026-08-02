@@ -1818,7 +1818,7 @@ const handleKitAssignmentError =
         </div>
 
         <p className="kit-shared-context-text">
-          One shared kit for the entire league
+          One shared kit • one holder • one responsible carrier
         </p>
       </div>
 
@@ -4043,6 +4043,296 @@ const handleKitAssignmentError =
           .matches-subtabs.pro-match-tabs > button {
             flex-basis: 90px !important;
             min-width: 90px !important;
+          }
+        }
+
+        /* =========================================================
+           FINAL MOBILE WOW DESIGN — SETUP FLOW
+           ========================================================= */
+        @media (max-width: 700px) {
+          .kit-responsibility-card {
+            gap: 10px !important;
+            padding: 10px !important;
+            border-radius: 18px !important;
+            background:
+              linear-gradient(
+                160deg,
+                #15213d,
+                #0d1629
+              ) !important;
+          }
+
+          .kit-responsibility-heading {
+            display: grid !important;
+            grid-template-columns: 1fr !important;
+            gap: 5px !important;
+            padding: 12px !important;
+            border-radius: 15px !important;
+            background: #14203a !important;
+          }
+
+          .kit-responsibility-heading h3 {
+            font-size: 1.08rem !important;
+            line-height: 1.22 !important;
+          }
+
+          .kit-shared-context-text {
+            display: block !important;
+            margin: 0 !important;
+            padding: 0 !important;
+            color: #aebbd2 !important;
+            background: transparent !important;
+            font-size: 0.8rem !important;
+            font-weight: 650 !important;
+            line-height: 1.35 !important;
+          }
+
+          .kit-league-notice {
+            min-height: 40px !important;
+            padding: 9px 11px !important;
+          }
+
+          .kit-active-match-card {
+            grid-template-columns: 1fr !important;
+            gap: 9px !important;
+            padding: 11px !important;
+          }
+
+          .kit-change-match summary {
+            width: 100% !important;
+            min-height: 46px !important;
+            border: 1px solid rgba(
+              94,
+              147,
+              255,
+              0.64
+            ) !important;
+            border-radius: 12px !important;
+            color: #ffffff !important;
+            background:
+              linear-gradient(
+                135deg,
+                #263d6d,
+                #1a2d55
+              ) !important;
+            font-size: 0.84rem !important;
+            font-weight: 900 !important;
+          }
+
+          .kit-source-mode-card,
+          .kit-roster-mode-card {
+            padding: 12px !important;
+            border-radius: 15px !important;
+            background: #14203a !important;
+          }
+
+          .kit-source-mode-heading h4,
+          .kit-roster-mode-heading h4 {
+            font-size: 1rem !important;
+          }
+
+          .kit-source-mode-options {
+            grid-template-columns: 1fr !important;
+            gap: 9px !important;
+          }
+
+          .kit-source-mode-option {
+            display: grid !important;
+            grid-template-columns:
+              48px minmax(0, 1fr) auto !important;
+            align-items: center !important;
+            gap: 11px !important;
+            width: 100% !important;
+            min-height: 80px !important;
+            padding: 12px !important;
+            border: 1px solid rgba(
+              113,
+              142,
+              206,
+              0.34
+            ) !important;
+            border-radius: 14px !important;
+            background: #101a30 !important;
+            text-align: left !important;
+          }
+
+          .kit-source-mode-option::after {
+            content: "Choose";
+            padding: 6px 8px;
+            border-radius: 999px;
+            color: #dce7ff;
+            background: #1d2d50;
+            font-size: 0.68rem;
+            font-weight: 900;
+          }
+
+          .kit-source-mode-option.active,
+          .kit-source-mode-option[aria-pressed="true"] {
+            border-color: rgba(
+              94,
+              147,
+              255,
+              0.76
+            ) !important;
+            background: #1a2d55 !important;
+          }
+
+          .kit-source-mode-option.active::after,
+          .kit-source-mode-option[aria-pressed="true"]::after {
+            content: "Selected";
+            color: #ffffff;
+            background: #4f85f3;
+          }
+
+          .kit-source-mode-icon {
+            width: 48px !important;
+            height: 48px !important;
+            border-radius: 13px !important;
+            background: #203255 !important;
+            font-size: 1.12rem !important;
+          }
+
+          .kit-source-mode-option strong {
+            font-size: 0.9rem !important;
+            line-height: 1.28 !important;
+          }
+
+          .kit-source-mode-option small {
+            display: block !important;
+            margin-top: 3px !important;
+            color: #aebbd2 !important;
+            font-size: 0.76rem !important;
+            line-height: 1.35 !important;
+          }
+
+          .kit-wizard-progress {
+            position: relative !important;
+            display: grid !important;
+            grid-template-columns:
+              repeat(
+                3,
+                minmax(0, 1fr)
+              ) !important;
+            gap: 5px !important;
+            margin: 11px 0 !important;
+            overflow: visible !important;
+          }
+
+          .kit-wizard-progress::before {
+            content: "";
+            position: absolute;
+            top: 18px;
+            left: 17%;
+            right: 17%;
+            height: 2px;
+            background: rgba(
+              117,
+              144,
+              202,
+              0.28
+            );
+          }
+
+          .kit-wizard-progress span {
+            position: relative !important;
+            z-index: 1 !important;
+            display: grid !important;
+            justify-items: center !important;
+            gap: 5px !important;
+            min-height: 0 !important;
+            padding: 0 2px !important;
+            border: 0 !important;
+            color: #aebbd2 !important;
+            background: transparent !important;
+            font-size: 0.72rem !important;
+            font-weight: 800 !important;
+            line-height: 1.25 !important;
+            text-align: center !important;
+            white-space: normal !important;
+          }
+
+          .kit-wizard-progress b {
+            width: 36px !important;
+            height: 36px !important;
+            border: 2px solid rgba(
+              117,
+              144,
+              202,
+              0.42
+            ) !important;
+            border-radius: 50% !important;
+            background: #101a30 !important;
+          }
+
+          .kit-wizard-progress .is-active b {
+            border-color: #43bce8 !important;
+            background: #1d4770 !important;
+          }
+
+          .kit-wizard-progress .is-complete b {
+            border-color: #4f85f3 !important;
+            background: #4f85f3 !important;
+          }
+
+          .kit-roster-team-overview {
+            grid-template-columns: 1fr !important;
+            gap: 7px !important;
+          }
+
+          .kit-versus-badge {
+            justify-self: center !important;
+            width: auto !important;
+            height: auto !important;
+            padding: 5px 13px !important;
+          }
+
+          .kit-review-actions-premium {
+            grid-template-columns: 1fr !important;
+            gap: 9px !important;
+          }
+
+          .kit-confirm-review-btn {
+            width: 100% !important;
+            min-height: 52px !important;
+            padding: 12px 15px !important;
+            border: 0 !important;
+            border-radius: 13px !important;
+            color: #ffffff !important;
+            background:
+              linear-gradient(
+                135deg,
+                #4f85f3,
+                #43bce8
+              ) !important;
+            font-size: 0.9rem !important;
+            font-weight: 900 !important;
+            white-space: normal !important;
+          }
+
+          .matches-subtabs.pro-match-tabs {
+            display: flex !important;
+            grid-template-columns: none !important;
+            gap: 8px !important;
+            padding: 6px !important;
+            overflow-x: auto !important;
+            scroll-snap-type: x proximity !important;
+            scrollbar-width: none !important;
+          }
+
+          .matches-subtabs.pro-match-tabs::-webkit-scrollbar {
+            display: none !important;
+          }
+
+          .matches-subtabs.pro-match-tabs > button {
+            flex: 0 0 96px !important;
+            min-width: 96px !important;
+            min-height: 62px !important;
+            padding: 8px 7px !important;
+            scroll-snap-align: start !important;
+          }
+
+          .matches-subtabs.pro-match-tabs .tab-label {
+            font-size: 0.76rem !important;
           }
         }
 

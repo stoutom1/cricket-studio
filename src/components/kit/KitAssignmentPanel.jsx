@@ -206,6 +206,99 @@ function kitEventIcon(eventType) {
   }
 }
 
+function MobileKitSection({
+  icon,
+  eyebrow,
+  title,
+  summary,
+  badge = "",
+  defaultOpen = false,
+  children,
+}) {
+  const [isMobile, setIsMobile] =
+    useState(false);
+
+  useEffect(() => {
+    const mediaQuery =
+      window.matchMedia(
+        "(max-width: 700px)"
+      );
+
+    const updateMobileState =
+      () =>
+        setIsMobile(
+          mediaQuery.matches
+        );
+
+    updateMobileState();
+
+    mediaQuery.addEventListener?.(
+      "change",
+      updateMobileState
+    );
+
+    return () =>
+      mediaQuery.removeEventListener?.(
+        "change",
+        updateMobileState
+      );
+  }, []);
+
+  if (!isMobile) {
+    return children;
+  }
+
+  return (
+    <details
+      className="mobile-kit-section"
+      open={defaultOpen}
+    >
+      <summary className="mobile-kit-section-summary">
+        <span
+          className="mobile-kit-section-icon"
+          aria-hidden="true"
+        >
+          {icon}
+        </span>
+
+        <span className="mobile-kit-section-copy">
+          {eyebrow && (
+            <small>
+              {eyebrow}
+            </small>
+          )}
+
+          <strong>
+            {title}
+          </strong>
+
+          {summary && (
+            <span>
+              {summary}
+            </span>
+          )}
+        </span>
+
+        <span className="mobile-kit-section-side">
+          {badge && (
+            <b>
+              {badge}
+            </b>
+          )}
+
+          <i
+            aria-hidden="true"
+          />
+        </span>
+      </summary>
+
+      <div className="mobile-kit-section-body">
+        {children}
+      </div>
+    </details>
+  );
+}
+
 export default function KitAssignmentPanel({
   matchId,
   refreshKey = 0,
@@ -1321,6 +1414,18 @@ async function saveKitPickup() {
                   </span>
                 </div>
 
+                <MobileKitSection
+                  icon="🎒"
+                  eyebrow="KIT RESPONSIBILITY"
+                  title="Holder and match carrier"
+                  summary="See who has the kit now and who must bring it."
+                  badge={
+                    currentHolder?.displayName
+                      ? "Holder recorded"
+                      : "Holder needed"
+                  }
+                  defaultOpen
+                >
                 <div className="league-kit-flow">
                   <div className="league-kit-person-block">
                     <small>
@@ -1421,6 +1526,19 @@ async function saveKitPickup() {
                   </div>
                 </div>
 
+                </MobileKitSection>
+
+                <MobileKitSection
+                  icon="✅"
+                  eyebrow="MATCH-DAY CONTROL"
+                  title="Coordination and handover"
+                  summary="Update only when the kit moves through the match-day process."
+                  badge={
+                    kitStatusLabel(
+                      leagueKit?.status
+                    )
+                  }
+                >
                 <div className="league-kit-status-actions">
                   <div className="league-kit-status-actions-heading">
                     <div>
@@ -1606,6 +1724,19 @@ async function saveKitPickup() {
                   </div>
                 )}
 
+                </MobileKitSection>
+
+                <MobileKitSection
+                  icon="🏠"
+                  eyebrow="AFTER THE MATCH"
+                  title="Record final custody"
+                  summary="Record who actually took the kit home after the match."
+                  badge={
+                    pickupLabel(
+                      sharedAssignment.pickupStatus
+                    )
+                  }
+                >
                 <div className="kit-pickup-summary">
                   <div>
                     <span>
@@ -1666,6 +1797,23 @@ async function saveKitPickup() {
                     : "Edit Kit Custody"}
                 </button>
 
+                </MobileKitSection>
+
+                <MobileKitSection
+                  icon="📊"
+                  eyebrow="FAIR ROTATION"
+                  title="Rotation fairness"
+                  summary="Review assignments, completed turns, and balance."
+                  badge={
+                    kitAnalytics?.fairnessStatus ===
+                    "BALANCED"
+                      ? "Balanced"
+                      : kitAnalytics?.fairnessStatus ===
+                          "NEEDS_ATTENTION"
+                        ? "Review"
+                        : "No history"
+                  }
+                >
                 <section className="league-kit-analytics">
                   <div className="league-kit-analytics-heading">
                     <div>
@@ -1804,6 +1952,19 @@ async function saveKitPickup() {
                   )}
                 </section>
 
+                </MobileKitSection>
+
+                <MobileKitSection
+                  icon="🕘"
+                  eyebrow="AUDIT TRAIL"
+                  title="Kit custody history"
+                  summary="See status updates and custody transfers."
+                  badge={`${kitHistory.length} event${
+                    kitHistory.length === 1
+                      ? ""
+                      : "s"
+                  }`}
+                >
                 <section className="league-kit-history">
                   <div className="league-kit-history-heading">
                     <div>
@@ -1917,6 +2078,7 @@ async function saveKitPickup() {
                     </div>
                   )}
                 </section>
+                </MobileKitSection>
               </article>
             )
           ) : !hasAssignments ? (
@@ -3764,6 +3926,443 @@ async function saveKitPickup() {
 
           .league-kit-history-heading .btn {
             width: 100% !important;
+          }
+        }
+
+        /* =========================================================
+           FINAL MOBILE WOW DESIGN — ASSIGNMENT + CUSTODY
+           ========================================================= */
+        @media (max-width: 700px) {
+          .kit-assignment-panel {
+            gap: 10px !important;
+            padding: 10px !important;
+            border-radius: 18px !important;
+            background:
+              linear-gradient(
+                160deg,
+                #15213d,
+                #0d1629
+              ) !important;
+          }
+
+          .kit-assignment-panel-heading {
+            grid-template-columns: 1fr !important;
+            gap: 5px !important;
+            padding: 12px !important;
+          }
+
+          .kit-assignment-panel-heading h3 {
+            font-size: 1.04rem !important;
+          }
+
+          .kit-assignment-context-text {
+            margin: 0 !important;
+            padding: 0 !important;
+            border: 0 !important;
+            color: #aebbd2 !important;
+            background: transparent !important;
+            font-size: 0.79rem !important;
+            line-height: 1.35 !important;
+          }
+
+          .kit-assignment-toolbar {
+            display: grid !important;
+            grid-template-columns: 1fr !important;
+            gap: 9px !important;
+            padding: 11px !important;
+          }
+
+          .kit-assignment-toolbar strong {
+            font-size: 0.92rem !important;
+          }
+
+          .kit-assignment-toolbar small {
+            display: block !important;
+            color: #aebbd2 !important;
+            font-size: 0.75rem !important;
+            line-height: 1.35 !important;
+          }
+
+          .kit-assignment-toolbar-actions {
+            display: grid !important;
+            grid-template-columns:
+              repeat(
+                2,
+                minmax(0, 1fr)
+              ) !important;
+            gap: 8px !important;
+          }
+
+          .kit-assignment-toolbar-actions .btn {
+            width: 100% !important;
+            min-height: 48px !important;
+            padding: 10px 8px !important;
+            border: 1px solid rgba(
+              105,
+              151,
+              244,
+              0.58
+            ) !important;
+            border-radius: 12px !important;
+            color: #ffffff !important;
+            background: #1a2e55 !important;
+            font-size: 0.8rem !important;
+            font-weight: 900 !important;
+            white-space: normal !important;
+          }
+
+          .kit-generate-assignment-btn {
+            border-color: transparent !important;
+            background:
+              linear-gradient(
+                135deg,
+                #4f85f3,
+                #43bce8
+              ) !important;
+          }
+
+          .league-kit-card {
+            gap: 9px !important;
+            padding: 10px !important;
+            background: #101a30 !important;
+          }
+
+          .league-kit-card-header {
+            padding: 2px !important;
+          }
+
+          .mobile-kit-section {
+            overflow: hidden !important;
+            border: 1px solid rgba(
+              113,
+              142,
+              206,
+              0.3
+            ) !important;
+            border-radius: 15px !important;
+            background: #14203a !important;
+            box-shadow:
+              inset 0 1px 0 rgba(
+                255,
+                255,
+                255,
+                0.03
+              ) !important;
+          }
+
+          .mobile-kit-section-summary {
+            display: grid !important;
+            grid-template-columns:
+              42px minmax(0, 1fr) auto !important;
+            align-items: center !important;
+            gap: 10px !important;
+            min-height: 74px !important;
+            padding: 11px !important;
+            cursor: pointer !important;
+            list-style: none !important;
+          }
+
+          .mobile-kit-section-summary::-webkit-details-marker {
+            display: none !important;
+          }
+
+          .mobile-kit-section-icon {
+            display: grid !important;
+            place-items: center !important;
+            width: 42px !important;
+            height: 42px !important;
+            border-radius: 12px !important;
+            background:
+              linear-gradient(
+                145deg,
+                #233861,
+                #192a4c
+              ) !important;
+            font-size: 1.05rem !important;
+          }
+
+          .mobile-kit-section-copy {
+            display: grid !important;
+            gap: 2px !important;
+          }
+
+          .mobile-kit-section-copy small {
+            color: #83c8ff !important;
+            font-size: 0.66rem !important;
+            font-weight: 900 !important;
+            letter-spacing: 0.07em !important;
+            line-height: 1.2 !important;
+          }
+
+          .mobile-kit-section-copy strong {
+            color: #ffffff !important;
+            font-size: 0.9rem !important;
+            line-height: 1.25 !important;
+          }
+
+          .mobile-kit-section-copy > span {
+            display: -webkit-box !important;
+            overflow: hidden !important;
+            color: #aebbd2 !important;
+            font-size: 0.72rem !important;
+            line-height: 1.32 !important;
+            -webkit-box-orient: vertical !important;
+            -webkit-line-clamp: 2 !important;
+          }
+
+          .mobile-kit-section-side {
+            display: grid !important;
+            justify-items: end !important;
+            gap: 7px !important;
+          }
+
+          .mobile-kit-section-side b {
+            max-width: 88px !important;
+            overflow: hidden !important;
+            padding: 5px 7px !important;
+            border-radius: 999px !important;
+            color: #dce8ff !important;
+            background: #1d2d50 !important;
+            font-size: 0.62rem !important;
+            line-height: 1.1 !important;
+            text-overflow: ellipsis !important;
+            white-space: nowrap !important;
+          }
+
+          .mobile-kit-section-side i {
+            position: relative !important;
+            display: block !important;
+            width: 16px !important;
+            height: 10px !important;
+            transition:
+              transform 180ms ease !important;
+          }
+
+          .mobile-kit-section-side i::before,
+          .mobile-kit-section-side i::after {
+            content: "" !important;
+            position: absolute !important;
+            top: 4px !important;
+            width: 9px !important;
+            height: 2px !important;
+            border-radius: 999px !important;
+            background: #83c8ff !important;
+          }
+
+          .mobile-kit-section-side i::before {
+            left: 0 !important;
+            transform: rotate(42deg) !important;
+          }
+
+          .mobile-kit-section-side i::after {
+            right: 0 !important;
+            transform: rotate(-42deg) !important;
+          }
+
+          .mobile-kit-section[open]
+            .mobile-kit-section-side i {
+            transform: rotate(180deg) !important;
+          }
+
+          .mobile-kit-section-body {
+            display: grid !important;
+            gap: 9px !important;
+            padding: 0 10px 10px !important;
+            animation:
+              mobile-kit-reveal
+              180ms
+              ease !important;
+          }
+
+          .mobile-kit-section-body::before {
+            content: "" !important;
+            display: block !important;
+            height: 1px !important;
+            margin-bottom: 1px !important;
+            background:
+              linear-gradient(
+                90deg,
+                transparent,
+                rgba(
+                  117,
+                  151,
+                  225,
+                  0.3
+                ),
+                transparent
+              ) !important;
+          }
+
+          .league-kit-flow,
+          .league-kit-details,
+          .kit-pickup-summary,
+          .league-kit-status-action-grid,
+          .league-kit-analytics-summary {
+            grid-template-columns: 1fr !important;
+            gap: 8px !important;
+            width: 100% !important;
+          }
+
+          .league-kit-arrow {
+            justify-self: center !important;
+            transform: rotate(90deg) !important;
+          }
+
+          .league-kit-person-block,
+          .league-kit-details > div,
+          .kit-pickup-summary > div,
+          .league-kit-analytics-summary > div {
+            display: grid !important;
+            grid-template-columns: 1fr !important;
+            gap: 4px !important;
+            width: 100% !important;
+            min-height: 0 !important;
+            padding: 11px !important;
+            overflow: hidden !important;
+            border-radius: 11px !important;
+            background: #101a30 !important;
+          }
+
+          .league-kit-person-block strong,
+          .league-kit-details strong,
+          .kit-pickup-summary strong {
+            color: #ffffff !important;
+            font-size: 0.9rem !important;
+            line-height: 1.32 !important;
+            text-align: left !important;
+            white-space: normal !important;
+            overflow-wrap: break-word !important;
+          }
+
+          .league-kit-person-block small,
+          .league-kit-details span,
+          .kit-pickup-summary span {
+            color: #aebbd2 !important;
+            font-size: 0.75rem !important;
+            line-height: 1.32 !important;
+          }
+
+          .league-kit-status-actions {
+            padding: 10px !important;
+          }
+
+          .league-kit-status-action-grid .btn {
+            display: grid !important;
+            grid-template-columns:
+              36px minmax(0, 1fr) auto !important;
+            align-items: center !important;
+            gap: 10px !important;
+            width: 100% !important;
+            min-height: 54px !important;
+            padding: 9px 12px !important;
+            border: 1px solid rgba(
+              113,
+              142,
+              206,
+              0.42
+            ) !important;
+            border-radius: 12px !important;
+            color: #ffffff !important;
+            background: #1a2948 !important;
+            text-align: left !important;
+            white-space: normal !important;
+          }
+
+          .league-kit-status-action-grid .btn::before {
+            content: none !important;
+            display: none !important;
+          }
+
+          .kit-status-action-icon {
+            display: grid !important;
+            place-items: center !important;
+            width: 36px !important;
+            height: 36px !important;
+            border-radius: 10px !important;
+            background: #22365d !important;
+            font-size: 1rem !important;
+          }
+
+          .kit-status-action-label {
+            color: #ffffff !important;
+            font-size: 0.84rem !important;
+            font-weight: 850 !important;
+            line-height: 1.3 !important;
+          }
+
+          .league-kit-status-action-grid .btn.active::after {
+            content: "Current";
+            padding: 5px 7px !important;
+            border-radius: 999px !important;
+            color: #ffffff !important;
+            background: #4f85f3 !important;
+            font-size: 0.64rem !important;
+            font-weight: 900 !important;
+          }
+
+          .kit-record-pickup-btn {
+            width: 100% !important;
+            min-height: 52px !important;
+            border: 0 !important;
+            border-radius: 13px !important;
+            color: #ffffff !important;
+            background:
+              linear-gradient(
+                135deg,
+                #4f85f3,
+                #43bce8
+              ) !important;
+            font-size: 0.88rem !important;
+            font-weight: 900 !important;
+          }
+
+          .league-kit-analytics,
+          .league-kit-history {
+            width: 100% !important;
+            max-width: 100% !important;
+            overflow: hidden !important;
+            padding: 10px !important;
+          }
+
+          .league-kit-analytics-summary > div {
+            grid-template-columns:
+              minmax(0, 1fr) auto !important;
+            align-items: center !important;
+          }
+
+          .league-kit-analytics-summary span {
+            font-size: 0.78rem !important;
+          }
+
+          .league-kit-analytics-summary strong {
+            font-size: 0.96rem !important;
+          }
+
+          .league-kit-carrier-table {
+            width: 100% !important;
+            max-width: 100% !important;
+            overflow-x: auto !important;
+          }
+
+          .league-kit-history-heading {
+            grid-template-columns: 1fr !important;
+            gap: 8px !important;
+          }
+
+          .league-kit-history-heading .btn {
+            width: 100% !important;
+          }
+
+          @keyframes mobile-kit-reveal {
+            from {
+              opacity: 0;
+              transform: translateY(-4px);
+            }
+
+            to {
+              opacity: 1;
+              transform: translateY(0);
+            }
           }
         }
 
