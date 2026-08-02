@@ -3,6 +3,7 @@ import prisma from "@/lib/prisma";
 import { getServerSession } from "next-auth";
 import { authOptions } from "@/lib/auth";
 import { logAudit } from "@/lib/audit";
+import { syncKitCustodyTasksForMatch } from "@/lib/kit/team-custody";
 
 export async function POST(request, { params }) {
   try {
@@ -86,6 +87,22 @@ export async function POST(request, { params }) {
         series: true,
       },
     });
+
+    try {
+      await syncKitCustodyTasksForMatch({
+        id: updatedMatch.id,
+        leagueId: updatedMatch.leagueId,
+        teamAId: updatedMatch.teamAId,
+        teamBId: updatedMatch.teamBId,
+        status: updatedMatch.status,
+        league: updatedMatch.league,
+      });
+    } catch (kitTaskError) {
+      console.error(
+        "Unable to create team-kit custody tasks:",
+        kitTaskError
+      );
+    }
 
     await logAudit({
       action: auditAction,

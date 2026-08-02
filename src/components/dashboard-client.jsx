@@ -8,7 +8,7 @@ import {formatMatchDateTime,getMatchTimelineText,} from "@/lib/date";
 import { buildMatchInsights } from "@/lib/match-insights";
 import { createPortal } from "react-dom";
 import BirthdayPushSettings from "@/components/BirthdayPushSettings";
-import KitResponsibilitySetup from "@/components/kit/KitResponsibilitySetup";
+import TeamKitManagement from "@/components/kit/TeamKitManagement";
 import LeagueKitDashboard from "@/components/LeagueKitDashboard";
 import Link from "next/link";
 
@@ -10265,46 +10265,17 @@ const playerRoleBadge = (row) => {
   </Card>
 )}
 {activeLeagueId &&
-  matchesSubTab === "KIT" &&
-  !permissions?.canScoreMatch && (
-    <Card title="🧳 Kit Responsibility">
-      <div className="kit-error-message">
-        You do not have permission to manage kit responsibility.
-      </div>
-    </Card>
-  )}
-{activeLeagueId &&
-  matchesSubTab === "KIT" &&
-  permissions?.canScoreMatch && (
-    <KitResponsibilitySetup
-      matches={matches.map((match) =>
-        String(match.id) ===
-          String(selectedMatchId) &&
-        matchDetail
-          ? {
-              ...match,
-              ...matchDetail,
-            }
-          : match
-      )}
-      teams={filteredTeams}
-      selectedMatchId={selectedMatchId}
-      onSelectedMatchIdChange={(matchId) => {
-        setSelectedMatchId(matchId);
-
-        if (!matchId) {
-          setMatchDetail(null);
-          setScoreboard(null);
-          return;
-        }
-
-        loadSelectedMatch(matchId);
+  matchesSubTab === "KIT" && (
+    <TeamKitManagement
+      leagueId={activeLeagueId}
+      leagueName={activeLeague?.name || ""}
+      onMessage={(message) => {
+        setMessage(message);
+        setError("");
       }}
-      activeLeague={activeLeague}
-      rotationMode={
-        activeLeague?.kitRotationMode ||
-        "TEAM"
-      }
+      onError={(message) => {
+        setError(message);
+      }}
     />
   )}
  {activeLeagueId && matchesSubTab === "SCHEDULED" && (

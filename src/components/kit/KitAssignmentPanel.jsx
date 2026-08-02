@@ -652,9 +652,6 @@ export default function KitAssignmentPanel({
       match.kitRotationMode ===
         "LEAGUE_PLAYER";
 
-    const pickupRecordingAllowed =
-  canRecordKitPickup(match);    
-
     const targetTeamIds = [];
 
     if (!sharedKit) {
@@ -808,18 +805,14 @@ export default function KitAssignmentPanel({
   function openPickupDialog(
     assignment
   ) {
+    if (!pickupRecordingAllowed) {
+      const message =
+        "Complete the match before recording kit custody.";
 
-      if (!pickupRecordingAllowed) {
-    setPickupError(
-      "Complete the match before recording kit custody."
-    );
-
-    onErrorRef.current?.(
-      "Complete the match before recording kit custody."
-    );
-
-    return;
-  }
+      setPickupError(message);
+      onErrorRef.current?.(message);
+      return;
+    }
 
     setPickupAssignment(
       assignment
@@ -947,26 +940,25 @@ export default function KitAssignmentPanel({
     setPickupError("");
   }
 
-async function saveKitPickup() {
-  if (
-    !pickupAssignment?.id ||
-    !matchId
-  ) {
+  async function saveKitPickup() {
+    if (!pickupRecordingAllowed) {
+      setPickupError(
+        "Kit pickup can only be recorded after the match is completed."
+      );
+      return;
+    }
 
-      if (!pickupRecordingAllowed) {
-    setPickupError(
-      "Kit pickup can only be recorded after the match is completed."
-    );
-    return;
-  }
+    if (
+      !pickupAssignment?.id ||
+      !matchId
+    ) {
+      setPickupError(
+        "No kit assignment was selected."
+      );
+      return;
+    }
 
-    setPickupError(
-      "No kit assignment was selected."
-    );
-    return;
-  }
-
-  if (
+    if (
     ![
       "TOOK_KIT",
       "DID_NOT_TAKE_KIT",
@@ -1168,12 +1160,16 @@ async function saveKitPickup() {
     match?.kitRotationMode ===
       "LEAGUE_PLAYER";
 
+  const pickupRecordingAllowed =
+    canRecordKitPickup(match);
+
   const sharedAssignment =
     sharedKit
       ? assignments[0] ||
         null
       : null;
 
+      
   return (
     <section className="kit-assignment-panel">
       <div className="kit-assignment-panel-heading">
