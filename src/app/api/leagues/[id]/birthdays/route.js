@@ -20,11 +20,6 @@ export async function GET(request, { params }) {
     const { id } = await params;
     const leagueId = parsePositiveInteger(id);
 
-    console.log("Birthday GET route params:", {
-      id,
-      leagueId,
-    });
-
     if (!leagueId) {
       return NextResponse.json(
         {
