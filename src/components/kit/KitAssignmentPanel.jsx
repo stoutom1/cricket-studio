@@ -1105,15 +1105,15 @@ async function saveKitPickup() {
         </div>
 
         {match?.kitRotationMode && (
-          <span className="kit-assignment-mode">
+          <p className="kit-assignment-context-text">
             {sharedKit
-              ? "Shared league custody"
+              ? "One shared-kit custody record"
               : match
                     .kitRotationMode ===
                   "LEAGUE_PLAYER"
-                ? "Person-level history"
-                : "Team-level history"}
-          </span>
+                ? "Person-level rotation history"
+                : "Team-level rotation history"}
+          </p>
         )}
       </div>
 
@@ -1458,7 +1458,7 @@ async function saveKitPickup() {
                       {updatingKitStatus ===
                       "COORDINATED"
                         ? "Saving..."
-                        : "Coordination Confirmed"}
+                        : "Mark Coordination Confirmed"}
                     </button>
 
                     <button
@@ -1485,7 +1485,7 @@ async function saveKitPickup() {
                       {updatingKitStatus ===
                       "HANDED_OVER"
                         ? "Saving..."
-                        : "Kit Handed Over"}
+                        : "Mark Kit Handed Over"}
                     </button>
 
                     <button
@@ -1512,7 +1512,7 @@ async function saveKitPickup() {
                       {updatingKitStatus ===
                       "AT_VENUE"
                         ? "Saving..."
-                        : "✓ Kit Is at the Venue"}
+                        : "Confirm Kit Is at the Venue"}
                     </button>
 
                     <button
@@ -1532,7 +1532,7 @@ async function saveKitPickup() {
                       {updatingKitStatus ===
                       "RESET_COORDINATION"
                         ? "Resetting..."
-                        : "Reset Status"}
+                        : "Reset Match-Day Status"}
                     </button>
                   </div>
 

@@ -1817,9 +1817,9 @@ const handleKitAssignmentError =
           </p>
         </div>
 
-        <div className="kit-feature-badge">
-          One shared league kit
-        </div>
+        <p className="kit-shared-context-text">
+          One shared kit for the entire league
+        </p>
       </div>
 
       {activeLeague?.name && (
@@ -2563,7 +2563,7 @@ const handleKitAssignmentError =
                 >
                   {isSavingPlayerLists
                     ? "Confirming Rosters..."
-                    : "✓ Confirm Rosters & Continue"}
+                    : "Confirm Rosters and Continue →"}
                 </button>
               </div>
 
