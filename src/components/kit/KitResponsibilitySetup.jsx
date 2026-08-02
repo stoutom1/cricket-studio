@@ -3827,6 +3827,225 @@ const handleKitAssignmentError =
           }
         }
 
+        /* =========================================================
+           MOBILE V6 FINAL OVERRIDE
+           This block intentionally appears last so older responsive
+           rules cannot compress or misalign this workflow.
+           ========================================================= */
+        @media (max-width: 700px) {
+          /* Player source is two full-width rows, never 50/50 columns. */
+          .kit-source-mode-options {
+            display: grid !important;
+            grid-template-columns: minmax(0, 1fr) !important;
+            gap: 10px !important;
+          }
+
+          .kit-source-mode-option {
+            display: grid !important;
+            grid-template-columns: 52px minmax(0, 1fr) auto !important;
+            align-items: center !important;
+            gap: 12px !important;
+            width: 100% !important;
+            min-height: 86px !important;
+            padding: 13px !important;
+            border: 1px solid rgba(113, 142, 206, 0.34) !important;
+            border-radius: 15px !important;
+            color: #f7f9ff !important;
+            background: #101a30 !important;
+            text-align: left !important;
+          }
+
+          .kit-source-mode-option::after {
+            content: "Select";
+            padding: 6px 9px;
+            border-radius: 999px;
+            color: #dce7ff;
+            background: #1d2d50;
+            font-size: 0.7rem;
+            font-weight: 900;
+            line-height: 1;
+          }
+
+          .kit-source-mode-option.active,
+          .kit-source-mode-option[aria-pressed="true"] {
+            border-color: rgba(94, 147, 255, 0.72) !important;
+            background: #1a2d55 !important;
+          }
+
+          .kit-source-mode-option.active::after,
+          .kit-source-mode-option[aria-pressed="true"]::after {
+            content: "Selected";
+            color: #ffffff;
+            background: #4f85f3;
+          }
+
+          .kit-source-mode-icon {
+            display: grid !important;
+            place-items: center !important;
+            width: 52px !important;
+            height: 52px !important;
+            margin: 0 !important;
+            border-radius: 14px !important;
+            background: #203255 !important;
+            font-size: 1.2rem !important;
+          }
+
+          .kit-source-mode-option strong {
+            display: block !important;
+            color: #ffffff !important;
+            font-size: 0.94rem !important;
+            line-height: 1.3 !important;
+            white-space: normal !important;
+            overflow-wrap: normal !important;
+            word-break: normal !important;
+          }
+
+          .kit-source-mode-option small {
+            display: block !important;
+            margin-top: 4px !important;
+            color: #adbbd2 !important;
+            font-size: 0.8rem !important;
+            line-height: 1.4 !important;
+            white-space: normal !important;
+          }
+
+          /* Progress is informational, not a row of buttons. */
+          .kit-wizard-progress {
+            position: relative !important;
+            display: grid !important;
+            grid-template-columns: repeat(3, minmax(0, 1fr)) !important;
+            gap: 6px !important;
+            margin: 12px 0 !important;
+            padding: 0 !important;
+            overflow: visible !important;
+          }
+
+          .kit-wizard-progress::before {
+            content: "";
+            position: absolute;
+            top: 18px;
+            left: 17%;
+            right: 17%;
+            height: 2px;
+            background: rgba(117, 144, 202, 0.28);
+          }
+
+          .kit-wizard-progress span {
+            position: relative !important;
+            z-index: 1 !important;
+            display: grid !important;
+            justify-items: center !important;
+            gap: 6px !important;
+            min-width: 0 !important;
+            min-height: 0 !important;
+            padding: 0 2px !important;
+            border: 0 !important;
+            border-radius: 0 !important;
+            color: #adbbd2 !important;
+            background: transparent !important;
+            box-shadow: none !important;
+            font-size: 0.75rem !important;
+            font-weight: 800 !important;
+            line-height: 1.3 !important;
+            text-align: center !important;
+            white-space: normal !important;
+          }
+
+          .kit-wizard-progress b {
+            display: grid !important;
+            place-items: center !important;
+            width: 36px !important;
+            height: 36px !important;
+            border: 2px solid rgba(117, 144, 202, 0.42) !important;
+            border-radius: 50% !important;
+            color: #dce7f8 !important;
+            background: #101a30 !important;
+            font-size: 0.8rem !important;
+          }
+
+          .kit-wizard-progress .is-active,
+          .kit-wizard-progress .is-complete {
+            color: #ffffff !important;
+          }
+
+          .kit-wizard-progress .is-active b {
+            border-color: #43bce8 !important;
+            background: #1d4770 !important;
+          }
+
+          .kit-wizard-progress .is-complete b {
+            border-color: #4f85f3 !important;
+            background: #4f85f3 !important;
+          }
+
+          /* Primary continuation action is unmistakably a button. */
+          .kit-review-actions-premium {
+            grid-template-columns: minmax(0, 1fr) !important;
+            gap: 10px !important;
+          }
+
+          .kit-confirm-review-btn {
+            width: 100% !important;
+            min-height: 52px !important;
+            padding: 12px 15px !important;
+            border: 0 !important;
+            border-radius: 13px !important;
+            color: #ffffff !important;
+            background: linear-gradient(135deg, #4f85f3, #43bce8) !important;
+            box-shadow: 0 10px 24px rgba(66, 126, 238, 0.3) !important;
+            font-size: 0.9rem !important;
+            font-weight: 900 !important;
+            line-height: 1.25 !important;
+            white-space: normal !important;
+          }
+
+          /* Match tabs remain readable by scrolling horizontally. */
+          .matches-subtabs.pro-match-tabs {
+            display: flex !important;
+            grid-template-columns: none !important;
+            gap: 8px !important;
+            padding: 6px !important;
+            overflow-x: auto !important;
+            scroll-snap-type: x proximity !important;
+            scrollbar-width: none !important;
+          }
+
+          .matches-subtabs.pro-match-tabs::-webkit-scrollbar {
+            display: none !important;
+          }
+
+          .matches-subtabs.pro-match-tabs > button {
+            flex: 0 0 96px !important;
+            min-width: 96px !important;
+            min-height: 62px !important;
+            padding: 8px 7px !important;
+            scroll-snap-align: start !important;
+          }
+
+          .matches-subtabs.pro-match-tabs .tab-label {
+            font-size: 0.76rem !important;
+          }
+
+          .matches-subtabs.pro-match-tabs .tab-icon {
+            font-size: 1.08rem !important;
+          }
+        }
+
+        @media (max-width: 390px) {
+          .kit-source-mode-option {
+            grid-template-columns: 48px minmax(0, 1fr) !important;
+          }
+
+          .kit-source-mode-option::after {
+            display: none;
+          }
+
+          .matches-subtabs.pro-match-tabs > button {
+            flex-basis: 90px !important;
+            min-width: 90px !important;
+          }
+        }
+
       `}</style>
 
     </section>

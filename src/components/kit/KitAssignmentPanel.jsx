@@ -1455,10 +1455,18 @@ async function saveKitPickup() {
                         )
                       }
                     >
-                      {updatingKitStatus ===
-                      "COORDINATED"
-                        ? "Saving..."
-                        : "Mark Coordination Confirmed"}
+                      <span
+                        className="kit-status-action-icon"
+                        aria-hidden="true"
+                      >
+                        ☎
+                      </span>
+                      <span className="kit-status-action-label">
+                        {updatingKitStatus ===
+                        "COORDINATED"
+                          ? "Saving..."
+                          : "Mark Coordination Confirmed"}
+                      </span>
                     </button>
 
                     <button
@@ -1482,10 +1490,18 @@ async function saveKitPickup() {
                         )
                       }
                     >
-                      {updatingKitStatus ===
-                      "HANDED_OVER"
-                        ? "Saving..."
-                        : "Mark Kit Handed Over"}
+                      <span
+                        className="kit-status-action-icon"
+                        aria-hidden="true"
+                      >
+                        🤝
+                      </span>
+                      <span className="kit-status-action-label">
+                        {updatingKitStatus ===
+                        "HANDED_OVER"
+                          ? "Saving..."
+                          : "Mark Kit Handed Over"}
+                      </span>
                     </button>
 
                     <button
@@ -1509,10 +1525,18 @@ async function saveKitPickup() {
                         )
                       }
                     >
-                      {updatingKitStatus ===
-                      "AT_VENUE"
-                        ? "Saving..."
-                        : "Confirm Kit Is at the Venue"}
+                      <span
+                        className="kit-status-action-icon"
+                        aria-hidden="true"
+                      >
+                        📍
+                      </span>
+                      <span className="kit-status-action-label">
+                        {updatingKitStatus ===
+                        "AT_VENUE"
+                          ? "Saving..."
+                          : "Confirm Kit Is at the Venue"}
+                      </span>
                     </button>
 
                     <button
@@ -1529,10 +1553,18 @@ async function saveKitPickup() {
                         )
                       }
                     >
-                      {updatingKitStatus ===
-                      "RESET_COORDINATION"
-                        ? "Resetting..."
-                        : "Reset Match-Day Status"}
+                      <span
+                        className="kit-status-action-icon"
+                        aria-hidden="true"
+                      >
+                        ↺
+                      </span>
+                      <span className="kit-status-action-label">
+                        {updatingKitStatus ===
+                        "RESET_COORDINATION"
+                          ? "Resetting..."
+                          : "Reset Match-Day Status"}
+                      </span>
                     </button>
                   </div>
 
@@ -3422,6 +3454,316 @@ async function saveKitPickup() {
           .kit-pickup-actions .btn {
             min-height: 42px !important;
             font-size: 0.8rem !important;
+          }
+        }
+
+        /* =========================================================
+           MOBILE V6 FINAL OVERRIDE
+           Fixes every overlap and horizontal overflow visible in the
+           supplied iPhone screenshots.
+           ========================================================= */
+        @media (max-width: 700px) {
+          /* Saved-player count first; two real action buttons beneath. */
+          .kit-assignment-toolbar {
+            display: grid !important;
+            grid-template-columns: minmax(0, 1fr) !important;
+            gap: 10px !important;
+            width: 100% !important;
+            padding: 12px !important;
+          }
+
+          .kit-assignment-toolbar > div:first-child {
+            display: grid !important;
+            gap: 3px !important;
+          }
+
+          .kit-assignment-toolbar strong {
+            color: #ffffff !important;
+            font-size: 0.94rem !important;
+            line-height: 1.3 !important;
+          }
+
+          .kit-assignment-toolbar small {
+            display: block !important;
+            color: #adbbd2 !important;
+            font-size: 0.77rem !important;
+            line-height: 1.4 !important;
+          }
+
+          .kit-assignment-toolbar-actions {
+            display: grid !important;
+            grid-template-columns: repeat(2, minmax(0, 1fr)) !important;
+            gap: 8px !important;
+            width: 100% !important;
+          }
+
+          .kit-assignment-toolbar-actions .btn {
+            display: inline-flex !important;
+            align-items: center !important;
+            justify-content: center !important;
+            width: 100% !important;
+            min-height: 48px !important;
+            padding: 10px 8px !important;
+            overflow: visible !important;
+            border: 1px solid rgba(105, 151, 244, 0.58) !important;
+            border-radius: 12px !important;
+            color: #ffffff !important;
+            background: #1a2e55 !important;
+            box-shadow: none !important;
+            font-size: 0.8rem !important;
+            font-weight: 900 !important;
+            line-height: 1.25 !important;
+            text-align: center !important;
+            text-overflow: clip !important;
+            white-space: normal !important;
+          }
+
+          .kit-assignment-toolbar-actions .kit-generate-assignment-btn {
+            background: linear-gradient(135deg, #4f85f3, #43bce8) !important;
+            border-color: transparent !important;
+          }
+
+          /* Holder → responsible person becomes a readable vertical flow. */
+          .league-kit-flow {
+            display: grid !important;
+            grid-template-columns: minmax(0, 1fr) !important;
+            gap: 8px !important;
+          }
+
+          .league-kit-arrow {
+            justify-self: center !important;
+            transform: rotate(90deg) !important;
+          }
+
+          .league-kit-person-block {
+            display: grid !important;
+            gap: 4px !important;
+            min-height: 0 !important;
+            padding: 12px !important;
+          }
+
+          .league-kit-person-block small {
+            color: #83c8ff !important;
+            font-size: 0.75rem !important;
+            font-weight: 900 !important;
+            letter-spacing: 0.04em !important;
+            line-height: 1.3 !important;
+            text-transform: uppercase !important;
+          }
+
+          .league-kit-person-block strong {
+            color: #ffffff !important;
+            font-size: 1rem !important;
+            line-height: 1.3 !important;
+            white-space: normal !important;
+          }
+
+          .league-kit-person-block > span {
+            display: block !important;
+            color: #adbbd2 !important;
+            font-size: 0.78rem !important;
+            line-height: 1.4 !important;
+          }
+
+          /* No label/value overlap: every fact is one full-width row. */
+          .league-kit-details,
+          .kit-pickup-summary {
+            display: grid !important;
+            grid-template-columns: minmax(0, 1fr) !important;
+            gap: 8px !important;
+            width: 100% !important;
+          }
+
+          .league-kit-details > div,
+          .kit-pickup-summary > div {
+            display: grid !important;
+            grid-template-columns: minmax(0, 1fr) !important;
+            align-content: start !important;
+            gap: 5px !important;
+            width: 100% !important;
+            min-height: 0 !important;
+            padding: 11px 12px !important;
+            overflow: hidden !important;
+            border-radius: 11px !important;
+            background: #101a30 !important;
+          }
+
+          .league-kit-details span,
+          .kit-pickup-summary span {
+            display: block !important;
+            color: #adbbd2 !important;
+            font-size: 0.76rem !important;
+            line-height: 1.35 !important;
+            white-space: normal !important;
+          }
+
+          .league-kit-details strong,
+          .kit-pickup-summary strong {
+            display: block !important;
+            overflow: visible !important;
+            color: #ffffff !important;
+            font-size: 0.92rem !important;
+            line-height: 1.35 !important;
+            text-align: left !important;
+            text-overflow: clip !important;
+            white-space: normal !important;
+            overflow-wrap: break-word !important;
+          }
+
+          /* Match-day actions: icon left, label right, one row each. */
+          .league-kit-status-action-grid {
+            display: grid !important;
+            grid-template-columns: minmax(0, 1fr) !important;
+            gap: 9px !important;
+            width: 100% !important;
+          }
+
+          .league-kit-status-action-grid .btn {
+            display: grid !important;
+            grid-template-columns: 36px minmax(0, 1fr) auto !important;
+            align-items: center !important;
+            gap: 10px !important;
+            width: 100% !important;
+            min-height: 54px !important;
+            padding: 9px 12px !important;
+            overflow: visible !important;
+            border: 1px solid rgba(113, 142, 206, 0.42) !important;
+            border-radius: 12px !important;
+            color: #ffffff !important;
+            background: #1a2948 !important;
+            box-shadow: none !important;
+            text-align: left !important;
+            white-space: normal !important;
+          }
+
+          /* Neutralize pseudo-icons from any earlier global mobile CSS. */
+          .league-kit-status-action-grid .btn::before {
+            content: none !important;
+            display: none !important;
+          }
+
+          .kit-status-action-icon {
+            display: grid !important;
+            place-items: center !important;
+            width: 36px !important;
+            height: 36px !important;
+            border-radius: 10px !important;
+            background: #22365d !important;
+            font-size: 1rem !important;
+            line-height: 1 !important;
+          }
+
+          .kit-status-action-label {
+            display: block !important;
+            color: #ffffff !important;
+            font-size: 0.84rem !important;
+            font-weight: 850 !important;
+            line-height: 1.3 !important;
+            white-space: normal !important;
+          }
+
+          .league-kit-status-action-grid .btn.active {
+            border-color: rgba(94, 147, 255, 0.74) !important;
+            background: #203b6d !important;
+          }
+
+          .league-kit-status-action-grid .btn.active::after {
+            content: "Current";
+            display: inline-flex !important;
+            align-items: center !important;
+            justify-content: center !important;
+            padding: 5px 7px !important;
+            border-radius: 999px !important;
+            color: #ffffff !important;
+            background: #4f85f3 !important;
+            font-size: 0.66rem !important;
+            font-weight: 900 !important;
+            line-height: 1 !important;
+          }
+
+          /* Pickup button is a clear primary action. */
+          .kit-record-pickup-btn {
+            width: 100% !important;
+            min-height: 52px !important;
+            padding: 11px 14px !important;
+            border: 0 !important;
+            border-radius: 13px !important;
+            color: #ffffff !important;
+            background: linear-gradient(135deg, #4f85f3, #43bce8) !important;
+            box-shadow: 0 10px 24px rgba(66, 126, 238, 0.28) !important;
+            font-size: 0.88rem !important;
+            font-weight: 900 !important;
+            white-space: normal !important;
+          }
+
+          /* Rotation fairness can never cross the viewport width. */
+          .league-kit-analytics {
+            width: 100% !important;
+            max-width: 100% !important;
+            overflow: hidden !important;
+          }
+
+          .league-kit-analytics-heading {
+            display: grid !important;
+            grid-template-columns: minmax(0, 1fr) !important;
+            gap: 7px !important;
+          }
+
+          .league-kit-fairness-status {
+            justify-self: start !important;
+            max-width: 100% !important;
+          }
+
+          .league-kit-analytics-summary {
+            display: grid !important;
+            grid-template-columns: minmax(0, 1fr) !important;
+            gap: 8px !important;
+            width: 100% !important;
+            max-width: 100% !important;
+            overflow: visible !important;
+          }
+
+          .league-kit-analytics-summary > div {
+            display: grid !important;
+            grid-template-columns: minmax(0, 1fr) auto !important;
+            align-items: center !important;
+            gap: 10px !important;
+            width: 100% !important;
+            max-width: 100% !important;
+            min-height: 50px !important;
+            padding: 10px 11px !important;
+            border-radius: 11px !important;
+            background: #101a30 !important;
+          }
+
+          .league-kit-analytics-summary span {
+            color: #adbbd2 !important;
+            font-size: 0.8rem !important;
+            line-height: 1.3 !important;
+            white-space: normal !important;
+          }
+
+          .league-kit-analytics-summary strong {
+            color: #ffffff !important;
+            font-size: 0.98rem !important;
+            line-height: 1.2 !important;
+          }
+
+          .league-kit-carrier-table {
+            width: 100% !important;
+            max-width: 100% !important;
+            overflow-x: auto !important;
+          }
+
+          /* Timeline header and refresh button stay inside the card. */
+          .league-kit-history-heading {
+            display: grid !important;
+            grid-template-columns: minmax(0, 1fr) !important;
+            gap: 9px !important;
+          }
+
+          .league-kit-history-heading .btn {
+            width: 100% !important;
           }
         }
 
