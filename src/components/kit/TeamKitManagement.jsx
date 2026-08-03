@@ -350,57 +350,59 @@ export default function TeamKitManagement({
           : suggestionTeam?.players || []
       );
 
-  useEffect(() => {
-    if (!teams.length) {
-      if (suggestTeamId) {
-        setSuggestTeamId("");
-      }
-      return;
-    }
+useEffect(() => {
+  if (!teams.length) {
+    setSuggestTeamId("");
+    return;
+  }
 
-    const upcomingTeamIds = [
-      upcomingMatch?.teamAId,
-      upcomingMatch?.teamBId,
-    ]
-      .map(Number)
-      .filter(
-        (teamId) =>
-          Number.isInteger(teamId) &&
-          teams.some(
-            (team) =>
-              team.id === teamId
-          )
-      );
+  /*
+   * Preserve the team selected by the user.
+   * Only initialize a default when there is no valid selection.
+   */
+  const selectedTeamStillExists = teams.some(
+    (team) =>
+      String(team.id) ===
+      String(suggestTeamId)
+  );
 
-    const preferredTeamId =
-      upcomingTeamIds[0] ||
-      teams[0].id;
+  if (selectedTeamStillExists) {
+    return;
+  }
 
-    const selectedTeamStillValid =
-      teams.some(
-        (team) =>
-          String(team.id) ===
-          String(suggestTeamId)
-      ) &&
-      (
-        !upcomingTeamIds.length ||
-        upcomingTeamIds.includes(
-          Number(suggestTeamId)
-        )
-      );
-
-    if (!selectedTeamStillValid) {
-      setSuggestTeamId(
-        String(preferredTeamId)
-      );
-    }
-  }, [
-    suggestTeamId,
-    teams,
-    upcomingMatch?.id,
+  const upcomingTeamIds = [
     upcomingMatch?.teamAId,
     upcomingMatch?.teamBId,
-  ]);
+  ]
+    .map((value) => Number(value))
+    .filter((teamId) =>
+      Number.isInteger(teamId)
+    );
+
+  const firstUpcomingVisibleTeam =
+    teams.find((team) =>
+      upcomingTeamIds.includes(
+        Number(team.id)
+      )
+    );
+
+  const defaultTeamId =
+    firstUpcomingVisibleTeam?.id ??
+    teams[0]?.id ??
+    "";
+
+  setSuggestTeamId(
+    defaultTeamId
+      ? String(defaultTeamId)
+      : ""
+  );
+}, [
+  teams,
+  suggestTeamId,
+  upcomingMatch?.id,
+  upcomingMatch?.teamAId,
+  upcomingMatch?.teamBId,
+]); 
 
   const rosterCandidateNames = useMemo(
     () =>
