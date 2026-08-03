@@ -92,3 +92,191 @@
     font-size: 0.79rem !important;
   }
 }
+
+
+/* ================================================================
+   MOBILE LEAGUE TOOLS ORDER
+   Birthday first, Kit second
+   ================================================================ */
+
+.mobileLeagueTools {
+  grid-column: 1 / -1;
+  display: grid;
+  gap: 14px;
+  width: 100%;
+  margin-top: 14px;
+}
+
+.mobileBirthdaySection {
+  overflow: hidden;
+  width: 100%;
+  border: 1px solid rgba(75, 127, 210, 0.36);
+  border-radius: 17px;
+  background:
+    linear-gradient(
+      145deg,
+      rgba(14, 29, 52, 0.98),
+      rgba(9, 20, 38, 0.98)
+    );
+}
+
+.mobileBirthdaySection > summary {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 12px;
+  min-height: 86px;
+  padding: 13px 14px;
+  list-style: none;
+  cursor: pointer;
+  -webkit-tap-highlight-color: transparent;
+}
+
+.mobileBirthdaySection > summary::-webkit-details-marker {
+  display: none;
+}
+
+.mobileToolSummaryMain {
+  display: flex;
+  align-items: center;
+  min-width: 0;
+  gap: 12px;
+}
+
+.mobileToolIcon {
+  display: grid;
+  place-items: center;
+  flex: 0 0 46px;
+  width: 46px;
+  height: 46px;
+  border: 1px solid rgba(101, 164, 255, 0.35);
+  border-radius: 13px;
+  background:
+    linear-gradient(
+      145deg,
+      #214577,
+      #172f54
+    );
+  font-size: 1.25rem;
+}
+
+.mobileToolCopy {
+  display: grid;
+  min-width: 0;
+  gap: 4px;
+}
+
+.mobileToolCopy strong,
+.mobileToolCopy small {
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.mobileToolCopy strong {
+  color: #fff;
+  font-size: 0.96rem;
+  line-height: 1.25;
+}
+
+.mobileToolCopy small {
+  color: #9fadc4;
+  font-size: 0.75rem;
+  line-height: 1.35;
+}
+
+.mobileToolToggle {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  flex: 0 0 auto;
+  gap: 7px;
+  min-width: 78px;
+  min-height: 40px;
+  padding: 8px 11px;
+  border: 1px solid rgba(92, 142, 229, 0.5);
+  border-radius: 999px;
+  color: #fff;
+  background: #172a49;
+  font-size: 0.75rem;
+  font-weight: 900;
+}
+
+.mobileToolToggle b {
+  font-size: 0.78rem;
+  transition: transform 180ms ease;
+}
+
+.mobileToolCloseText {
+  display: none;
+}
+
+.mobileBirthdaySection[open]
+  .mobileToolOpenText {
+  display: none;
+}
+
+.mobileBirthdaySection[open]
+  .mobileToolCloseText {
+  display: inline;
+}
+
+.mobileBirthdaySection[open]
+  .mobileToolToggle b {
+  transform: rotate(180deg);
+}
+
+.mobileBirthdayContent {
+  padding: 0 12px 14px;
+  border-top: 1px solid rgba(79, 119, 185, 0.25);
+}
+
+.mobileBirthdayContent > :global(*) {
+  margin-top: 12px;
+}
+
+.mobileLeagueKitBelowBirthday {
+  width: 100%;
+}
+
+@media (max-width: 520px) {
+  .mobileLeagueTools {
+    gap: 12px;
+    margin-top: 12px;
+  }
+
+  .mobileBirthdaySection > summary {
+    min-height: 82px;
+    padding: 12px;
+  }
+
+  .mobileToolSummaryMain {
+    gap: 10px;
+  }
+
+  .mobileToolIcon {
+    flex-basis: 42px;
+    width: 42px;
+    height: 42px;
+  }
+
+  .mobileToolCopy strong {
+    font-size: 0.91rem;
+  }
+
+  .mobileToolCopy small {
+    max-width: 44vw;
+    font-size: 0.72rem;
+  }
+
+  .mobileToolToggle {
+    min-width: 72px;
+    min-height: 38px;
+    padding-inline: 9px;
+    font-size: 0.72rem;
+  }
+
+  .mobileBirthdayContent {
+    padding: 0 9px 11px;
+  }
+}

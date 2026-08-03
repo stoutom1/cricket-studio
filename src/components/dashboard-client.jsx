@@ -11782,35 +11782,6 @@ const playerRoleBadge = (row) => {
           </div>
         </label>
 
-        {isSuperAdmin &&
-          permissions?.canManagePermissions && (
-            <div
-              className={
-                mobileKitStyles.mobileLeagueKitShortcut
-              }
-            >
-              <LeagueKitShortcut
-                leagueName={
-                  activeLeague?.name ||
-                  "Active league"
-                }
-                sharedKit={
-                  String(
-                    activeLeague?.kitRotationMode ||
-                    ""
-                  )
-                    .trim()
-                    .toUpperCase() ===
-                  "LEAGUE_PLAYER"
-                }
-                onOpenKit={() => {
-                  setActiveTab("matches");
-                  setMatchesSubTab("KIT");
-                }}
-              />
-            </div>
-          )}
-
         <div
           className={`mlcc-readiness ${
             leagueReadyForMatches ? "is-ready" : "needs-setup"
@@ -11983,7 +11954,113 @@ const playerRoleBadge = (row) => {
             <small>Browse public cricket leagues</small>
           </span>
         </button>
-{isSuperAdmin && permissions?.canManagePermissions && ( <BirthdayPushSettings leagueId={activeLeagueId}/> )}   
+        {isSuperAdmin &&
+          permissions?.canManagePermissions && (
+            <div
+              className={
+                mobileKitStyles.mobileLeagueTools
+              }
+            >
+              <details
+                className={
+                  mobileKitStyles.mobileBirthdaySection
+                }
+              >
+                <summary>
+                  <span
+                    className={
+                      mobileKitStyles.mobileToolSummaryMain
+                    }
+                  >
+                    <span
+                      className={
+                        mobileKitStyles.mobileToolIcon
+                      }
+                      aria-hidden="true"
+                    >
+                      🎂
+                    </span>
+
+                    <span
+                      className={
+                        mobileKitStyles.mobileToolCopy
+                      }
+                    >
+                      <strong>
+                        Birthday Management
+                      </strong>
+
+                      <small>
+                        Manage birthday alerts and
+                        player records.
+                      </small>
+                    </span>
+                  </span>
+
+                  <span
+                    className={
+                      mobileKitStyles.mobileToolToggle
+                    }
+                    aria-hidden="true"
+                  >
+                    <span
+                      className={
+                        mobileKitStyles.mobileToolOpenText
+                      }
+                    >
+                      Open
+                    </span>
+
+                    <span
+                      className={
+                        mobileKitStyles.mobileToolCloseText
+                      }
+                    >
+                      Close
+                    </span>
+
+                    <b>⌄</b>
+                  </span>
+                </summary>
+
+                <div
+                  className={
+                    mobileKitStyles.mobileBirthdayContent
+                  }
+                >
+                  <BirthdayPushSettings
+                    leagueId={activeLeagueId}
+                  />
+                </div>
+              </details>
+
+              <div
+                className={
+                  mobileKitStyles.mobileLeagueKitBelowBirthday
+                }
+              >
+                <LeagueKitShortcut
+                  leagueName={
+                    activeLeague?.name ||
+                    "Active league"
+                  }
+                  sharedKit={
+                    String(
+                      activeLeague?.kitRotationMode ||
+                      ""
+                    )
+                      .trim()
+                      .toUpperCase() ===
+                    "LEAGUE_PLAYER"
+                  }
+                  onOpenKit={() => {
+                    setActiveTab("matches");
+                    setMatchesSubTab("KIT");
+                  }}
+                />
+              </div>
+            </div>
+          )}
       </div>
 
       {selectedLeague && permissions?.canDeleteLeague && (
