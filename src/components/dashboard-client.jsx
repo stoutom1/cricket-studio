@@ -13,6 +13,7 @@ import Link from "next/link";
 import LeagueKitShortcut from "@/components/kit/LeagueKitShortcut";
 import mobileKitStyles from "./DashboardKitMobile.module.css";
 import KitPostMatchPrompt from "@/components/kit/KitPostMatchPrompt";
+import LeagueResourcesShortcut from "@/components/resources/LeagueResourcesShortcut";
 
 function Card({
   title,
@@ -11621,6 +11622,14 @@ const playerRoleBadge = (row) => {
 </div>
   </>
 )}
+
+  <LeagueResourcesShortcut
+    leagueId={activeLeagueId}
+    leagueName={
+      activeLeague?.name ||
+      "Active league"
+    }
+  />
   </div>
 
   {/* Mobile-only state-aware experience */}
@@ -11954,6 +11963,16 @@ const playerRoleBadge = (row) => {
             <small>Browse public cricket leagues</small>
           </span>
         </button>
+
+        <LeagueResourcesShortcut
+          leagueId={activeLeagueId}
+          leagueName={
+            activeLeague?.name ||
+            "Active league"
+          }
+          compact
+        />
+
         {isSuperAdmin &&
           permissions?.canManagePermissions && (
             <div

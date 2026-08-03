@@ -41,6 +41,7 @@ model User {
   smsConsentUserAgent          String?
   smsConsentText               String?
   smsConsentVersion            String?
+  leagueResourcesCreated       LeagueResource[]
 }
 
 model Team {
@@ -202,6 +203,7 @@ model League {
   kitReminderLogs              KitReminderLog[]
   leagueKit                    LeagueKit?
   leagueKitEvents              LeagueKitEvent[]
+  resources                    LeagueResource[]
 }
 
 model LeagueRegistration {
@@ -1157,4 +1159,32 @@ model TeamKitUserAccess {
 
   @@unique([leagueId, userId, teamId], map: "TeamKitUserAccess_user_team_key")
   @@index([leagueId, userId])
+}
+
+model LeagueResource {
+  id               Int      @id @default(autoincrement())
+  leagueId         Int
+  createdById      String
+  title            String
+  description      String?
+  category         String   @default("OTHER")
+  resourceType     String   @default("LINK")
+  visibility       String   @default("LEAGUE")
+  externalUrl      String?
+  blobUrl          String?
+  blobPathname     String?
+  originalFileName String?
+  contentType      String?
+  fileSize         Int?
+  isPinned         Boolean  @default(false)
+  sortOrder        Int      @default(0)
+  createdAt        DateTime @default(now())
+  updatedAt        DateTime @updatedAt
+
+  league    League @relation(fields: [leagueId], references: [id], onDelete: Cascade)
+  createdBy User   @relation(fields: [createdById], references: [id])
+
+  @@index([leagueId, category])
+  @@index([leagueId, isPinned, sortOrder])
+  @@index([createdById])
 }

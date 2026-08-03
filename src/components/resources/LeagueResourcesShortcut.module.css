@@ -1,0 +1,88 @@
+.shortcut {
+  display: grid;
+  grid-template-columns: auto minmax(0, 1fr) auto;
+  align-items: center;
+  gap: 13px;
+  min-width: 0;
+  margin-top: 12px;
+  padding: 15px 16px;
+  border: 1px solid #bfd8ea;
+  border-radius: 18px;
+  color: #12324e;
+  text-decoration: none;
+  background:
+    radial-gradient(circle at 95% 0%, rgba(59, 130, 246, .15), transparent 11rem),
+    linear-gradient(145deg, #f7fcff, #f0fbf7);
+  box-shadow: 0 9px 22px rgba(31, 72, 105, .08);
+  transition: transform .18s ease, box-shadow .18s ease;
+}
+
+.shortcut:hover {
+  transform: translateY(-2px);
+  box-shadow: 0 14px 28px rgba(31, 72, 105, .13);
+}
+
+.icon {
+  display: grid;
+  place-items: center;
+  width: 48px;
+  height: 48px;
+  border-radius: 15px;
+  font-size: 1.45rem;
+  background: #fff;
+  box-shadow: 0 6px 16px rgba(31,72,105,.1);
+}
+
+.copy {
+  min-width: 0;
+}
+
+.copy strong,
+.copy small {
+  display: block;
+  overflow-wrap: anywhere;
+}
+
+.copy strong {
+  font-size: .98rem;
+  line-height: 1.25;
+}
+
+.copy small {
+  margin-top: 3px;
+  color: #60798e;
+  font-size: .78rem;
+  line-height: 1.35;
+}
+
+.action {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  min-height: 38px;
+  padding: 0 13px;
+  border-radius: 11px;
+  color: #fff;
+  background: #0b6e61;
+  font-size: .8rem;
+  font-weight: 900;
+  white-space: nowrap;
+}
+
+.compact {
+  margin-top: 10px;
+}
+
+@media (max-width: 520px) {
+  .shortcut {
+    grid-template-columns: auto minmax(0, 1fr);
+    padding: 13px;
+  }
+
+  .action {
+    grid-column: 1 / -1;
+    justify-content: center;
+    width: 100%;
+    box-sizing: border-box;
+  }
+}

@@ -1,0 +1,751 @@
+"use client";
+
+import { upload } from "@vercel/blob/client";
+import Link from "next/link";
+import { useCallback, useEffect, useMemo, useRef, useState } from "react";
+
+import styles from "./resources.module.css";
+
+const CATEGORIES = [
+  ["ALL", "Everything", "✨"],
+  ["RULES", "Rules", "📘"],
+  ["VENUES", "Venues", "📍"],
+  ["RESTAURANTS", "Restaurants", "🍽️"],
+  ["HOTELS", "Hotels", "🏨"],
+  ["CONTACTS", "Contacts", "☎️"],
+  ["FORMS", "Forms", "📝"],
+  ["SPONSORS", "Sponsors", "🤝"],
+  ["TRAINING", "Training", "🏏"],
+  ["DOCUMENTS", "Documents", "📄"],
+  ["IMAGES", "Images", "🖼️"],
+  ["VIDEOS", "Videos", "🎥"],
+  ["LINKS", "Links", "🔗"],
+  ["OTHER", "Other", "📦"],
+];
+
+const EMPTY_FORM = {
+  title: "",
+  description: "",
+  category: "RULES",
+  visibility: "LEAGUE",
+  externalUrl: "",
+  isPinned: false,
+};
+
+function categoryMeta(category) {
+  return (
+    CATEGORIES.find(([value]) => value === category) ||
+    CATEGORIES[CATEGORIES.length - 1]
+  );
+}
+
+function formatBytes(value) {
+  const bytes = Number(value);
+
+  if (!Number.isFinite(bytes) || bytes < 0) return "";
+  if (bytes < 1024) return `${bytes} B`;
+  if (bytes < 1024 ** 2) return `${(bytes / 1024).toFixed(1)} KB`;
+  return `${(bytes / 1024 ** 2).toFixed(1)} MB`;
+}
+
+function formatDate(value) {
+  if (!value) return "";
+
+  return new Intl.DateTimeFormat(undefined, {
+    month: "short",
+    day: "numeric",
+    year: "numeric",
+  }).format(new Date(value));
+}
+
+function getResourceIcon(resource) {
+  if (resource.resourceType === "LINK") {
+    const linkIcons = {
+      RESTAURANTS: "🍽️",
+      HOTELS: "🏨",
+      VENUES: "📍",
+      CONTACTS: "☎️",
+      VIDEOS: "🎥",
+    };
+
+    return linkIcons[resource.category] || "🔗";
+  }
+
+  const type = String(resource.contentType || "").toLowerCase();
+
+  if (type.includes("pdf")) return "📕";
+  if (type.includes("image")) return "🖼️";
+  if (type.includes("video")) return "🎥";
+  if (type.includes("audio")) return "🎧";
+  if (type.includes("sheet") || type.includes("excel") || type.includes("csv")) {
+    return "📊";
+  }
+  if (type.includes("presentation") || type.includes("powerpoint")) return "📽️";
+  if (type.includes("word") || type.includes("document")) return "📄";
+  if (type.includes("zip")) return "🗜️";
+  return "📎";
+}
+
+function safePathName(fileName) {
+  return String(fileName || "resource-file")
+    .replace(/[^a-zA-Z0-9._-]+/g, "-")
+    .replace(/-+/g, "-")
+    .replace(/^-|-$/g, "") || "resource-file";
+}
+
+export default function LeagueResourcesClient({ leagueId }) {
+  const fileInputRef = useRef(null);
+  const [resources, setResources] = useState([]);
+  const [league, setLeague] = useState(null);
+  const [canManage, setCanManage] = useState(false);
+  const [loading, setLoading] = useState(true);
+  const [busy, setBusy] = useState(false);
+  const [message, setMessage] = useState("");
+  const [error, setError] = useState("");
+  const [search, setSearch] = useState("");
+  const [category, setCategory] = useState("ALL");
+  const [showModal, setShowModal] = useState(false);
+  const [mode, setMode] = useState("LINK");
+  const [editing, setEditing] = useState(null);
+  const [selectedFile, setSelectedFile] = useState(null);
+  const [form, setForm] = useState(EMPTY_FORM);
+
+  const loadResources = useCallback(async () => {
+    if (!Number.isInteger(Number(leagueId)) || Number(leagueId) <= 0) {
+      setError("A valid league is required.");
+      setLoading(false);
+      return;
+    }
+
+    setLoading(true);
+    setError("");
+
+    try {
+      const response = await fetch(`/api/leagues/${leagueId}/resources`, {
+        cache: "no-store",
+      });
+      const result = await response.json();
+
+      if (!response.ok) {
+        throw new Error(result?.error || "Unable to load league resources.");
+      }
+
+      setResources(result.resources || []);
+      setLeague(result.league || null);
+      setCanManage(result.canManage === true);
+    } catch (loadError) {
+      setError(
+        loadError instanceof Error
+          ? loadError.message
+          : "Unable to load league resources."
+      );
+    } finally {
+      setLoading(false);
+    }
+  }, [leagueId]);
+
+  useEffect(() => {
+    loadResources();
+  }, [loadResources]);
+
+  const filteredResources = useMemo(() => {
+    const term = search.trim().toLowerCase();
+
+    return resources.filter((resource) => {
+      if (category !== "ALL" && resource.category !== category) {
+        return false;
+      }
+
+      if (!term) return true;
+
+      return [
+        resource.title,
+        resource.description,
+        resource.originalFileName,
+        resource.externalUrl,
+        resource.category,
+      ]
+        .filter(Boolean)
+        .some((value) => String(value).toLowerCase().includes(term));
+    });
+  }, [resources, search, category]);
+
+  const categoryCounts = useMemo(() => {
+    const counts = { ALL: resources.length };
+
+    for (const resource of resources) {
+      counts[resource.category] = (counts[resource.category] || 0) + 1;
+    }
+
+    return counts;
+  }, [resources]);
+
+  function resetModal() {
+    setShowModal(false);
+    setEditing(null);
+    setSelectedFile(null);
+    setMode("LINK");
+    setForm(EMPTY_FORM);
+    setError("");
+  }
+
+  function openCreate(nextMode) {
+    setEditing(null);
+    setSelectedFile(null);
+    setMode(nextMode);
+    setForm({
+      ...EMPTY_FORM,
+      category: nextMode === "LINK" ? "LINKS" : "DOCUMENTS",
+    });
+    setMessage("");
+    setError("");
+    setShowModal(true);
+  }
+
+  function openEdit(resource) {
+    setEditing(resource);
+    setMode(resource.resourceType);
+    setSelectedFile(null);
+    setForm({
+      title: resource.title || "",
+      description: resource.description || "",
+      category: resource.category || "OTHER",
+      visibility: resource.visibility || "LEAGUE",
+      externalUrl: resource.externalUrl || "",
+      isPinned: resource.isPinned === true,
+    });
+    setMessage("");
+    setError("");
+    setShowModal(true);
+  }
+
+  async function saveResource(event) {
+    event.preventDefault();
+    setBusy(true);
+    setError("");
+    setMessage("");
+
+    try {
+      if (!form.title.trim()) {
+        throw new Error("Enter a clear resource title.");
+      }
+
+      if (editing) {
+        const response = await fetch(
+          `/api/leagues/${leagueId}/resources/${editing.id}`,
+          {
+            method: "PATCH",
+            headers: { "Content-Type": "application/json" },
+            body: JSON.stringify(form),
+          }
+        );
+        const result = await response.json();
+
+        if (!response.ok) {
+          throw new Error(result?.error || "Unable to update the resource.");
+        }
+
+        setResources((current) =>
+          current.map((item) =>
+            item.id === result.resource.id ? result.resource : item
+          )
+        );
+        setMessage("Resource updated successfully.");
+        resetModal();
+        return;
+      }
+
+      let payload = {
+        ...form,
+        resourceType: mode,
+      };
+
+      if (mode === "FILE") {
+        if (!selectedFile) {
+          throw new Error("Choose a file to upload.");
+        }
+
+        const pathname =
+          `league-resources/${leagueId}/${Date.now()}-` +
+          safePathName(selectedFile.name);
+
+        const blob = await upload(pathname, selectedFile, {
+          access: "private",
+          handleUploadUrl: `/api/leagues/${leagueId}/resources/upload`,
+          multipart: selectedFile.size > 5 * 1024 * 1024,
+        });
+
+        payload = {
+          ...payload,
+          blobUrl: blob.url,
+          blobPathname: blob.pathname,
+          originalFileName: selectedFile.name,
+          contentType: selectedFile.type || blob.contentType || "",
+          fileSize: selectedFile.size,
+        };
+      }
+
+      const response = await fetch(`/api/leagues/${leagueId}/resources`, {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify(payload),
+      });
+      const result = await response.json();
+
+      if (!response.ok) {
+        throw new Error(result?.error || "Unable to save the resource.");
+      }
+
+      setResources((current) => [result.resource, ...current]);
+      setMessage(
+        mode === "FILE"
+          ? "Document uploaded successfully."
+          : "Useful link added successfully."
+      );
+      resetModal();
+    } catch (saveError) {
+      setError(
+        saveError instanceof Error
+          ? saveError.message
+          : "Unable to save the resource."
+      );
+    } finally {
+      setBusy(false);
+    }
+  }
+
+  async function deleteResource(resource) {
+    const confirmed = window.confirm(
+      `Delete “${resource.title}”? This cannot be undone.`
+    );
+
+    if (!confirmed) return;
+
+    setBusy(true);
+    setError("");
+    setMessage("");
+
+    try {
+      const response = await fetch(
+        `/api/leagues/${leagueId}/resources/${resource.id}`,
+        { method: "DELETE" }
+      );
+      const result = await response.json();
+
+      if (!response.ok) {
+        throw new Error(result?.error || "Unable to delete the resource.");
+      }
+
+      setResources((current) =>
+        current.filter((item) => item.id !== resource.id)
+      );
+      setMessage("Resource deleted.");
+    } catch (deleteError) {
+      setError(
+        deleteError instanceof Error
+          ? deleteError.message
+          : "Unable to delete the resource."
+      );
+    } finally {
+      setBusy(false);
+    }
+  }
+
+  function openResource(resource, download = false) {
+    const url =
+      resource.resourceType === "LINK"
+        ? resource.externalUrl
+        : `/api/leagues/${leagueId}/resources/${resource.id}/file?download=${
+            download ? "1" : "0"
+          }`;
+
+    window.open(url, "_blank", "noopener,noreferrer");
+  }
+
+  return (
+    <div className={styles.resourcesApp}>
+      <header className={styles.hero}>
+        <div className={styles.heroGlow} aria-hidden="true" />
+
+        <div className={styles.heroTopRow}>
+          <Link href="/dashboard" className={styles.backButton}>
+            <span aria-hidden="true">←</span>
+            Dashboard
+          </Link>
+
+          <span className={styles.secureBadge}>
+            <span aria-hidden="true">🔒</span>
+            Private & permission-aware
+          </span>
+        </div>
+
+        <div className={styles.heroContent}>
+          <div className={styles.heroIcon} aria-hidden="true">
+            📚
+          </div>
+
+          <div className={styles.heroCopy}>
+            <span className={styles.eyebrow}>CRIC4ALL KNOWLEDGE CENTER</span>
+            <h1>{league?.name || "League Knowledge Center"}</h1>
+            <p>
+              Your league’s organized home for rules, venue directions, nearby
+              restaurants and hotels, forms, contacts, training material, media,
+              and every document members need.
+            </p>
+          </div>
+        </div>
+
+        <div className={styles.heroStats}>
+          <div>
+            <strong>{resources.length}</strong>
+            <span>Total resources</span>
+          </div>
+          <div>
+            <strong>{resources.filter((item) => item.resourceType === "FILE").length}</strong>
+            <span>Stored files</span>
+          </div>
+          <div>
+            <strong>{resources.filter((item) => item.resourceType === "LINK").length}</strong>
+            <span>Useful links</span>
+          </div>
+        </div>
+      </header>
+
+      <section className={styles.controlPanel}>
+        <label className={styles.searchBox}>
+          <span aria-hidden="true">⌕</span>
+          <input
+            value={search}
+            onChange={(event) => setSearch(event.target.value)}
+            placeholder="Search rules, venues, restaurants, hotels, forms..."
+            aria-label="Search the league knowledge center"
+          />
+        </label>
+
+        {canManage && (
+          <div className={styles.primaryActions}>
+            <button
+              type="button"
+              className={styles.addLinkButton}
+              onClick={() => openCreate("LINK")}
+            >
+              <span aria-hidden="true">🔗</span>
+              <span>Add link or place</span>
+            </button>
+
+            <button
+              type="button"
+              className={styles.uploadButton}
+              onClick={() => openCreate("FILE")}
+            >
+              <span aria-hidden="true">⬆</span>
+              <span>Upload file</span>
+            </button>
+          </div>
+        )}
+      </section>
+
+      <nav className={styles.categoryRail} aria-label="Resource categories">
+        {CATEGORIES.map(([value, label, icon]) => (
+          <button
+            key={value}
+            type="button"
+            className={category === value ? styles.categoryActive : ""}
+            onClick={() => setCategory(value)}
+          >
+            <span aria-hidden="true">{icon}</span>
+            <span>{label}</span>
+            <b>{categoryCounts[value] || 0}</b>
+          </button>
+        ))}
+      </nav>
+
+      {message && <div className={styles.successBanner}>{message}</div>}
+      {error && !showModal && <div className={styles.errorBanner}>{error}</div>}
+
+      {loading ? (
+        <div className={styles.loadingState}>
+          <span className={styles.spinner} aria-hidden="true" />
+          <strong>Opening your knowledge center...</strong>
+        </div>
+      ) : filteredResources.length === 0 ? (
+        <section className={styles.emptyState}>
+          <div aria-hidden="true">📚</div>
+          <h2>{resources.length ? "No matching resources" : "Build your league knowledge center"}</h2>
+          <p>
+            {resources.length
+              ? "Try another search or category."
+              : "Upload league rules, add venue, restaurant or hotel links, and keep important forms and contacts easy to find."}
+          </p>
+          {canManage && !resources.length && (
+            <div className={styles.emptyActions}>
+              <button type="button" onClick={() => openCreate("FILE")}>Upload first file</button>
+              <button type="button" onClick={() => openCreate("LINK")}>Add first link</button>
+            </div>
+          )}
+        </section>
+      ) : (
+        <section className={styles.resourceGrid} aria-live="polite">
+          {filteredResources.map((resource) => {
+            const [, categoryLabel, categoryIcon] = categoryMeta(resource.category);
+
+            return (
+              <article key={resource.id} className={styles.resourceCard}>
+                <div className={styles.cardAccent} />
+
+                <div className={styles.cardTop}>
+                  <span className={styles.resourceIcon} aria-hidden="true">
+                    {getResourceIcon(resource)}
+                  </span>
+
+                  <div className={styles.cardBadges}>
+                    {resource.isPinned && <span className={styles.pinnedBadge}>★ Pinned</span>}
+                    <span className={styles.visibilityBadge}>
+                      {resource.visibility === "PUBLIC" ? "🌍 Public" : "👥 League"}
+                    </span>
+                  </div>
+                </div>
+
+                <div className={styles.cardBody}>
+                  <span className={styles.categoryLabel}>
+                    {categoryIcon} {categoryLabel}
+                  </span>
+                  <h2 title={resource.title}>{resource.title}</h2>
+                  <p>
+                    {resource.description ||
+                      (resource.resourceType === "FILE"
+                        ? resource.originalFileName
+                        : "Open this useful league link.")}
+                  </p>
+                </div>
+
+                <div className={styles.cardMeta}>
+                  <span>
+                    {resource.resourceType === "FILE"
+                      ? [resource.originalFileName, formatBytes(resource.fileSize)]
+                          .filter(Boolean)
+                          .join(" • ")
+                      : (() => {
+                          try {
+                            return new URL(resource.externalUrl).hostname;
+                          } catch {
+                            return "External link";
+                          }
+                        })()}
+                  </span>
+                  <span>Updated {formatDate(resource.updatedAt)}</span>
+                </div>
+
+                <div className={styles.cardActions}>
+                  <button
+                    type="button"
+                    className={styles.openButton}
+                    onClick={() => openResource(resource)}
+                  >
+                    <span>{resource.resourceType === "FILE" ? "Open" : "Visit"}</span>
+                    <b aria-hidden="true">↗</b>
+                  </button>
+
+                  {resource.resourceType === "FILE" && (
+                    <button
+                      type="button"
+                      className={styles.iconButton}
+                      title="Download file"
+                      aria-label={`Download ${resource.title}`}
+                      onClick={() => openResource(resource, true)}
+                    >
+                      ⬇
+                    </button>
+                  )}
+
+                  {canManage && (
+                    <>
+                      <button
+                        type="button"
+                        className={styles.iconButton}
+                        title="Edit resource"
+                        aria-label={`Edit ${resource.title}`}
+                        onClick={() => openEdit(resource)}
+                      >
+                        ✎
+                      </button>
+                      <button
+                        type="button"
+                        className={styles.deleteButton}
+                        title="Delete resource"
+                        aria-label={`Delete ${resource.title}`}
+                        onClick={() => deleteResource(resource)}
+                        disabled={busy}
+                      >
+                        🗑
+                      </button>
+                    </>
+                  )}
+                </div>
+              </article>
+            );
+          })}
+        </section>
+      )}
+
+      {showModal && (
+        <div className={styles.modalBackdrop} role="presentation" onMouseDown={resetModal}>
+          <section
+            className={styles.modal}
+            role="dialog"
+            aria-modal="true"
+            aria-labelledby="league-resource-modal-title"
+            onMouseDown={(event) => event.stopPropagation()}
+          >
+            <header className={styles.modalHeader}>
+              <div>
+                <span>{editing ? "UPDATE RESOURCE" : mode === "FILE" ? "NEW FILE" : "NEW LINK OR PLACE"}</span>
+                <h2 id="league-resource-modal-title">
+                  {editing
+                    ? `Edit ${editing.title}`
+                    : mode === "FILE"
+                      ? "Upload to the knowledge center"
+                      : "Add a link, venue, restaurant, hotel or contact"}
+                </h2>
+              </div>
+              <button type="button" onClick={resetModal} aria-label="Close dialog">×</button>
+            </header>
+
+            <form className={styles.resourceForm} onSubmit={saveResource}>
+              {!editing && (
+                <div className={styles.modeSwitch}>
+                  <button
+                    type="button"
+                    className={mode === "FILE" ? styles.modeActive : ""}
+                    onClick={() => setMode("FILE")}
+                  >
+                    ⬆ Upload file
+                  </button>
+                  <button
+                    type="button"
+                    className={mode === "LINK" ? styles.modeActive : ""}
+                    onClick={() => setMode("LINK")}
+                  >
+                    🔗 Add link or place
+                  </button>
+                </div>
+              )}
+
+              <label>
+                <span>Resource title *</span>
+                <input
+                  value={form.title}
+                  onChange={(event) => setForm((current) => ({ ...current, title: event.target.value }))}
+                  placeholder="Example: 2026 League Playing Rules"
+                  maxLength={160}
+                  required
+                />
+              </label>
+
+              <label>
+                <span>Description</span>
+                <textarea
+                  value={form.description}
+                  onChange={(event) => setForm((current) => ({ ...current, description: event.target.value }))}
+                  placeholder="Explain what members will find in this resource."
+                  rows={3}
+                  maxLength={1200}
+                />
+              </label>
+
+              <div className={styles.formGrid}>
+                <label>
+                  <span>Category</span>
+                  <select
+                    value={form.category}
+                    onChange={(event) => setForm((current) => ({ ...current, category: event.target.value }))}
+                  >
+                    {CATEGORIES.filter(([value]) => value !== "ALL").map(([value, label, icon]) => (
+                      <option key={value} value={value}>{icon} {label}</option>
+                    ))}
+                  </select>
+                </label>
+
+                <label>
+                  <span>Who can access it?</span>
+                  <select
+                    value={form.visibility}
+                    onChange={(event) => setForm((current) => ({ ...current, visibility: event.target.value }))}
+                  >
+                    <option value="LEAGUE">👥 League members only</option>
+                    <option value="PUBLIC">🌍 Anyone with the resource page</option>
+                  </select>
+                </label>
+              </div>
+
+              {mode === "LINK" ? (
+                <label>
+                  <span>Website or map link *</span>
+                  <input
+                    type="url"
+                    value={form.externalUrl}
+                    onChange={(event) => setForm((current) => ({ ...current, externalUrl: event.target.value }))}
+                    placeholder="https://..."
+                    required
+                  />
+                </label>
+              ) : !editing ? (
+                <button
+                  type="button"
+                  className={styles.filePicker}
+                  onClick={() => fileInputRef.current?.click()}
+                >
+                  <input
+                    ref={fileInputRef}
+                    type="file"
+                    hidden
+                    onChange={(event) => setSelectedFile(event.target.files?.[0] || null)}
+                    accept=".pdf,.doc,.docx,.xls,.xlsx,.ppt,.pptx,.txt,.csv,.zip,.jpg,.jpeg,.png,.webp,.gif"
+                  />
+                  <span className={styles.filePickerIcon} aria-hidden="true">{selectedFile ? "✅" : "☁️"}</span>
+                  <strong>{selectedFile ? selectedFile.name : "Choose a document or image"}</strong>
+                  <small>
+                    {selectedFile
+                      ? formatBytes(selectedFile.size)
+                      : "PDF, Office files, CSV, ZIP, JPG, PNG or WebP • up to 25 MB"}
+                  </small>
+                </button>
+              ) : (
+                <div className={styles.existingFileNotice}>
+                  <span aria-hidden="true">📎</span>
+                  <div>
+                    <strong>{editing.originalFileName}</strong>
+                    <small>To replace a file, delete this resource and upload the new version.</small>
+                  </div>
+                </div>
+              )}
+
+              <label className={styles.checkboxRow}>
+                <input
+                  type="checkbox"
+                  checked={form.isPinned}
+                  onChange={(event) => setForm((current) => ({ ...current, isPinned: event.target.checked }))}
+                />
+                <span>
+                  <strong>Pin this resource</strong>
+                  <small>Keep it at the top for quick access.</small>
+                </span>
+              </label>
+
+              {error && <div className={styles.formError}>{error}</div>}
+
+              <footer className={styles.modalFooter}>
+                <button type="button" className={styles.cancelButton} onClick={resetModal} disabled={busy}>
+                  Cancel
+                </button>
+                <button type="submit" className={styles.saveButton} disabled={busy}>
+                  {busy ? "Saving..." : editing ? "Save changes" : mode === "FILE" ? "Upload resource" : "Add resource"}
+                </button>
+              </footer>
+            </form>
+          </section>
+        </div>
+      )}
+    </div>
+  );
+}
