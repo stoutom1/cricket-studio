@@ -1,88 +1,234 @@
-.shortcut {
-  display: grid;
-  grid-template-columns: auto minmax(0, 1fr) auto;
-  align-items: center;
-  gap: 13px;
+.resourceCard {
+  width: 100%;
   min-width: 0;
-  margin-top: 12px;
+  display: grid;
+  grid-template-columns:
+    auto minmax(0, 1fr) auto;
+  align-items: center;
+  gap: 14px;
+
   padding: 15px 16px;
-  border: 1px solid #bfd8ea;
-  border-radius: 18px;
-  color: #12324e;
+
+  color: #f8fbff;
   text-decoration: none;
+
   background:
-    radial-gradient(circle at 95% 0%, rgba(59, 130, 246, .15), transparent 11rem),
-    linear-gradient(145deg, #f7fcff, #f0fbf7);
-  box-shadow: 0 9px 22px rgba(31, 72, 105, .08);
-  transition: transform .18s ease, box-shadow .18s ease;
+    linear-gradient(
+      145deg,
+      rgba(12, 31, 59, 0.96),
+      rgba(10, 27, 51, 0.98)
+    );
+
+  border:
+    1px solid rgba(
+      77,
+      148,
+      231,
+      0.38
+    );
+
+  border-radius: 17px;
+
+  box-shadow:
+    inset 0 1px 0
+      rgba(255, 255, 255, 0.035),
+    0 12px 26px
+      rgba(0, 0, 0, 0.18);
+
+  transition:
+    transform 160ms ease,
+    border-color 160ms ease,
+    background 160ms ease,
+    box-shadow 160ms ease;
 }
 
-.shortcut:hover {
-  transform: translateY(-2px);
-  box-shadow: 0 14px 28px rgba(31, 72, 105, .13);
+.resourceCard:hover {
+  transform: translateY(-1px);
+
+  border-color:
+    rgba(77, 164, 255, 0.68);
+
+  background:
+    linear-gradient(
+      145deg,
+      rgba(15, 39, 73, 0.98),
+      rgba(10, 30, 57, 0.98)
+    );
+
+  box-shadow:
+    inset 0 1px 0
+      rgba(255, 255, 255, 0.045),
+    0 16px 30px
+      rgba(0, 0, 0, 0.22);
 }
 
-.icon {
+.resourceCard:focus-visible {
+  outline:
+    3px solid
+    rgba(67, 154, 255, 0.38);
+
+  outline-offset: 3px;
+}
+
+.iconBox {
+  width: 50px;
+  height: 50px;
+  flex: 0 0 auto;
+
   display: grid;
   place-items: center;
-  width: 48px;
-  height: 48px;
-  border-radius: 15px;
-  font-size: 1.45rem;
-  background: #fff;
-  box-shadow: 0 6px 16px rgba(31,72,105,.1);
+
+  font-size: 24px;
+  line-height: 1;
+
+  border-radius: 14px;
+
+  background:
+    linear-gradient(
+      145deg,
+      rgba(32, 87, 150, 0.7),
+      rgba(15, 52, 96, 0.92)
+    );
+
+  border:
+    1px solid rgba(
+      93,
+      170,
+      255,
+      0.36
+    );
+
+  box-shadow:
+    inset 0 1px 0
+      rgba(255, 255, 255, 0.06);
 }
 
 .copy {
   min-width: 0;
+
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
 }
 
-.copy strong,
-.copy small {
-  display: block;
-  overflow-wrap: anywhere;
-}
+.title {
+  min-width: 0;
 
-.copy strong {
-  font-size: .98rem;
-  line-height: 1.25;
-}
+  color: #f7fbff;
 
-.copy small {
-  margin-top: 3px;
-  color: #60798e;
-  font-size: .78rem;
-  line-height: 1.35;
-}
+  font-size: 16px;
+  font-weight: 800;
+  line-height: 1.2;
 
-.action {
-  display: inline-flex;
-  align-items: center;
-  gap: 6px;
-  min-height: 38px;
-  padding: 0 13px;
-  border-radius: 11px;
-  color: #fff;
-  background: #0b6e61;
-  font-size: .8rem;
-  font-weight: 900;
+  overflow: hidden;
+  text-overflow: ellipsis;
   white-space: nowrap;
 }
 
-.compact {
-  margin-top: 10px;
+.description {
+  min-width: 0;
+
+  color: #9fb1c8;
+
+  font-size: 12px;
+  font-weight: 500;
+  line-height: 1.35;
+
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
 }
 
-@media (max-width: 520px) {
-  .shortcut {
-    grid-template-columns: auto minmax(0, 1fr);
-    padding: 13px;
+.action {
+  flex: 0 0 auto;
+
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+
+  color: #eaf4ff;
+
+  font-size: 13px;
+  font-weight: 800;
+  white-space: nowrap;
+}
+
+.actionText {
+  display: inline-block;
+}
+
+.arrowBox {
+  width: 34px;
+  height: 34px;
+
+  display: grid;
+  place-items: center;
+
+  border-radius: 11px;
+
+  color: #dff1ff;
+  font-size: 17px;
+  font-weight: 900;
+
+  background:
+    rgba(30, 82, 137, 0.62);
+
+  border:
+    1px solid rgba(
+      89,
+      166,
+      255,
+      0.4
+    );
+}
+
+@media (max-width: 640px) {
+  .resourceCard {
+    gap: 11px;
+
+    padding: 13px 12px;
+
+    border-radius: 15px;
+  }
+
+  .iconBox {
+    width: 44px;
+    height: 44px;
+
+    font-size: 21px;
+
+    border-radius: 12px;
+  }
+
+  .title {
+    font-size: 14px;
+  }
+
+  .description {
+    font-size: 10.5px;
   }
 
   .action {
-    grid-column: 1 / -1;
-    justify-content: center;
-    width: 100%;
-    box-sizing: border-box;
+    gap: 6px;
+
+    font-size: 12px;
+  }
+
+  .arrowBox {
+    width: 31px;
+    height: 31px;
+
+    border-radius: 10px;
+  }
+}
+
+@media (max-width: 390px) {
+  .resourceCard {
+    grid-template-columns:
+      auto minmax(0, 1fr) auto;
+  }
+
+  .actionText {
+    display: none;
   }
 }

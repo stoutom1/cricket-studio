@@ -5,30 +5,45 @@ import styles from "./LeagueResourcesShortcut.module.css";
 
 export default function LeagueResourcesShortcut({
   leagueId,
-  leagueName = "Active league",
-  compact = false,
 }) {
-  const validLeagueId =
-    Number.isInteger(Number(leagueId)) && Number(leagueId) > 0;
-
-  if (!validLeagueId) return null;
+  if (!leagueId) {
+    return null;
+  }
 
   return (
     <Link
       href={`/leagues/${leagueId}/resources`}
-      className={`${styles.shortcut} ${compact ? styles.compact : ""}`}
-      aria-label={`Open the knowledge center for ${leagueName}`}
+      className={styles.resourceCard}
+      aria-label="Open Knowledge Center"
     >
-      <span className={styles.icon} aria-hidden="true">📚</span>
+      <span
+        className={styles.iconBox}
+        aria-hidden="true"
+      >
+        📚
+      </span>
 
       <span className={styles.copy}>
-        <strong>Knowledge Center</strong>
-        <small>Rules • places • forms • files • contacts</small>
+        <span className={styles.title}>
+          Knowledge Center
+        </span>
+
+        <span className={styles.description}>
+          Rules · places · forms · files · contacts
+        </span>
       </span>
 
       <span className={styles.action}>
-        Explore
-        <b aria-hidden="true">→</b>
+        <span className={styles.actionText}>
+          Explore
+        </span>
+
+        <span
+          className={styles.arrowBox}
+          aria-hidden="true"
+        >
+          →
+        </span>
       </span>
     </Link>
   );
