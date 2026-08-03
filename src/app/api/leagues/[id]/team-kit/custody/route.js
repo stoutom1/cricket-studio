@@ -74,16 +74,6 @@ export async function POST(request, { params }) {
     const note = String(body.note || "")
       .trim()
       .slice(0, 500);
-    const suggestionName = String(
-      body.suggestionName || ""
-    )
-      .trim()
-      .replace(/\s+/g, " ")
-      .slice(0, 160);
-    const usedSuggestion =
-      suggestionName &&
-      suggestionName.toLowerCase() ===
-        holderName.toLowerCase();
 
     if (!holderName) {
       return NextResponse.json(
@@ -136,9 +126,62 @@ export async function POST(request, { params }) {
         AND "scopeKey" = ${scopeKey}
       LIMIT 1
     `;
-    const previousState = previousRows[0] || null;
+    const previousState =
+      previousRows[0] || null;
+
     const resolvingMatchTask =
       Boolean(taskId && task);
+
+    const stateSuggestionMatches =
+      Boolean(
+        previousState
+          ?.suggestedHolderName &&
+        (
+          !previousState
+            .suggestedForMatchId ||
+          !matchId ||
+          Number(
+            previousState
+              .suggestedForMatchId
+          ) === Number(matchId)
+        )
+      );
+
+    /*
+     * TeamKitState is now the source of truth for the live suggestion.
+     * The body fallback keeps older pending tasks compatible during rollout.
+     */
+    const suggestionName =
+      String(
+        stateSuggestionMatches
+          ? previousState
+              .suggestedHolderName
+          : body.suggestionName || ""
+      )
+        .trim()
+        .replace(/\s+/g, " ")
+        .slice(0, 160);
+
+    const usedSuggestion =
+      Boolean(
+        suggestionName &&
+        suggestionName.toLowerCase() ===
+          holderName.toLowerCase()
+      );
+
+    const clearLiveSuggestion =
+      Boolean(
+        resolvingMatchTask ||
+        (
+          matchId &&
+          previousState
+            ?.suggestedForMatchId &&
+          Number(
+            previousState
+              .suggestedForMatchId
+          ) === Number(matchId)
+        )
+      );
 
     const custodyAction =
       resolvingMatchTask
@@ -182,7 +225,50 @@ export async function POST(request, { params }) {
             "currentHolderPlayerId" = EXCLUDED."currentHolderPlayerId",
             "currentHolderName" = EXCLUDED."currentHolderName",
             "lastMatchId" = EXCLUDED."lastMatchId",
-            "recordedByUserId" = EXCLUDED."recordedByUserId",
+            "recordedByUserId" =
+              EXCLUDED."recordedByUserId",
+            "suggestedHolderPlayerId" =
+              CASE
+                WHEN ${clearLiveSuggestion}
+                  THEN NULL
+                ELSE
+                  "TeamKitState"."suggestedHolderPlayerId"
+              END,
+            "suggestedHolderName" =
+              CASE
+                WHEN ${clearLiveSuggestion}
+                  THEN NULL
+                ELSE
+                  "TeamKitState"."suggestedHolderName"
+              END,
+            "suggestedForMatchId" =
+              CASE
+                WHEN ${clearLiveSuggestion}
+                  THEN NULL
+                ELSE
+                  "TeamKitState"."suggestedForMatchId"
+              END,
+            "suggestedAt" =
+              CASE
+                WHEN ${clearLiveSuggestion}
+                  THEN NULL
+                ELSE
+                  "TeamKitState"."suggestedAt"
+              END,
+            "suggestedByUserId" =
+              CASE
+                WHEN ${clearLiveSuggestion}
+                  THEN NULL
+                ELSE
+                  "TeamKitState"."suggestedByUserId"
+              END,
+            "suggestionNote" =
+              CASE
+                WHEN ${clearLiveSuggestion}
+                  THEN NULL
+                ELSE
+                  "TeamKitState"."suggestionNote"
+              END,
             "updatedAt" = NOW()
           RETURNING *
         `;

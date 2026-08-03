@@ -4,6 +4,7 @@ import { NextResponse } from "next/server";
 
 import prisma from "@/lib/prisma";
 import { authOptions } from "@/lib/auth";
+import { logAudit } from "@/lib/audit";
 import {
   assertTeamKitTables,
   resolveTeamKitAccess,
@@ -153,8 +154,13 @@ export async function POST(request, { params }) {
 
     for (const event of history) {
       if (
-        !["RECORDED", "CORRECTED"].includes(
-          String(event.action || "").toUpperCase()
+        ![
+          "RECORDED",
+          "RECORDED_AS_SUGGESTED",
+        ].includes(
+          String(
+            event.action || ""
+          ).toUpperCase()
         ) ||
         !event.holderName
       ) {
@@ -317,39 +323,133 @@ export async function POST(request, { params }) {
         },
       });
 
-    const rows = await prisma.$queryRaw`
-      INSERT INTO "TeamKitCustodyEvent"
-        (
+    const suggestionNote =
+      `Fair suggestion from ${uniqueNames.length} eligible player(s). ` +
+      `Completed turns: ${selected.completedTurns}.`;
+
+    /*
+     * The live suggestion belongs in TeamKitState, not the permanent
+     * custody-event timeline. Re-suggesting simply overwrites these
+     * suggestion columns for the same league/team scope.
+     */
+    const stateRows =
+      await prisma.$queryRaw`
+        INSERT INTO "TeamKitState"
+          (
+            "leagueId",
+            "scopeKey",
+            "teamId",
+            "suggestedHolderPlayerId",
+            "suggestedHolderName",
+            "suggestedForMatchId",
+            "suggestedAt",
+            "suggestedByUserId",
+            "suggestionNote",
+            "updatedAt"
+          )
+        VALUES
+          (
+            ${leagueId},
+            ${scopeKey},
+            ${teamId},
+            ${selectedPlayer?.id || null},
+            ${selected.name},
+            ${matchId},
+            NOW(),
+            ${access.user.id},
+            ${suggestionNote},
+            NOW()
+          )
+        ON CONFLICT (
           "leagueId",
-          "scopeKey",
-          "teamId",
-          "matchId",
-          "holderPlayerId",
-          "holderName",
-          "action",
-          "note",
-          "recordedByUserId"
+          "scopeKey"
         )
-      VALUES
-        (
-          ${leagueId},
-          ${scopeKey},
-          ${teamId},
-          ${matchId},
-          ${selectedPlayer?.id || null},
-          ${selected.name},
-          'SUGGESTED',
-          ${`Fair suggestion from ${uniqueNames.length} eligible player(s). Completed turns: ${selected.completedTurns}.`},
-          ${access.user.id}
-        )
-      RETURNING *
-    `;
+        DO UPDATE SET
+          "teamId" =
+            EXCLUDED."teamId",
+          "suggestedHolderPlayerId" =
+            EXCLUDED."suggestedHolderPlayerId",
+          "suggestedHolderName" =
+            EXCLUDED."suggestedHolderName",
+          "suggestedForMatchId" =
+            EXCLUDED."suggestedForMatchId",
+          "suggestedAt" =
+            EXCLUDED."suggestedAt",
+          "suggestedByUserId" =
+            EXCLUDED."suggestedByUserId",
+          "suggestionNote" =
+            EXCLUDED."suggestionNote",
+          "updatedAt" =
+            NOW()
+        RETURNING *
+      `;
+
+    const state =
+      stateRows[0];
+
+    await logAudit({
+      action:
+        "TEAM_KIT_SUGGESTION_UPDATED",
+      entityType:
+        access.sharedKit
+          ? "LEAGUE_KIT"
+          : "TEAM_KIT",
+      entityId:
+        state.id,
+      leagueId,
+      teamId,
+      matchId,
+      actor:
+        session?.user,
+      description:
+        `${selected.name} was saved as the live fair kit-carrier suggestion.`,
+      beforeData:
+        stateRows[0]
+          ? {
+              scopeKey:
+                state.scopeKey,
+            }
+          : null,
+      afterData: {
+        suggestedHolderPlayerId:
+          state.suggestedHolderPlayerId,
+        suggestedHolderName:
+          state.suggestedHolderName,
+        suggestedForMatchId:
+          state.suggestedForMatchId,
+        suggestedAt:
+          state.suggestedAt,
+      },
+      request,
+    });
 
     return NextResponse.json({
       success: true,
-      message: `${selected.name} is the next fair kit-carrier suggestion.`,
+      message:
+        `${selected.name} is the next fair kit-carrier suggestion.`,
       suggestion: {
-        ...rows[0],
+        id:
+          state.id,
+        leagueId:
+          state.leagueId,
+        scopeKey:
+          state.scopeKey,
+        teamId:
+          state.teamId,
+        matchId:
+          state.suggestedForMatchId,
+        holderPlayerId:
+          state.suggestedHolderPlayerId,
+        holderName:
+          state.suggestedHolderName,
+        action:
+          "SUGGESTED",
+        note:
+          state.suggestionNote,
+        recordedByUserId:
+          state.suggestedByUserId,
+        createdAt:
+          state.suggestedAt,
         completedTurns:
           selected.completedTurns,
         lastCompletedAt:

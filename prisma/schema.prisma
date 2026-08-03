@@ -1084,7 +1084,7 @@ model KitReminderLog {
 }
 
 model TeamKitState {
-  id                    Int      @id @default(autoincrement())
+  id                    Int     @id @default(autoincrement())
   leagueId              Int
   scopeKey              String
   teamId                Int?
@@ -1092,11 +1092,22 @@ model TeamKitState {
   currentHolderName     String?
   lastMatchId           Int?
   recordedByUserId      String?
-  updatedAt             DateTime @default(now()) @db.Timestamp(3)
+
+  // One mutable/live suggestion per league/team scope.
+  // Re-suggesting overwrites these columns.
+  suggestedHolderPlayerId Int?
+  suggestedHolderName     String?
+  suggestedForMatchId     Int?
+  suggestedAt             DateTime? @db.Timestamp(3)
+  suggestedByUserId       String?
+  suggestionNote          String?
+
+  updatedAt DateTime @default(now()) @db.Timestamp(3)
 
   @@unique([leagueId, scopeKey], map: "TeamKitState_league_scope_key")
   @@index([leagueId])
   @@index([teamId])
+  @@index([suggestedForMatchId])
 }
 
 model TeamKitCustodyTask {

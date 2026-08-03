@@ -9,7 +9,6 @@ import {
   ensureLeagueKitTrackingStarted,
   resolveTeamKitAccess,
   SHARED_SCOPE_KEY,
-  syncRecentLeagueKitCustodyTasks,
 } from "@/lib/kit/team-custody";
 
 export const runtime = "nodejs";
@@ -630,21 +629,12 @@ export async function GET(
      * Initializing tracking is a one-row lookup after the first league load.
      * The expensive historical match scan is intentionally NOT performed here.
      */
-    await assertTeamKitTables();
-
-    /*
-     * Fast self-healing check:
-     * synchronize only a small set of recent final matches.
-     * This guarantees Needs Attention appears even if the match was
-     * finalized through another route, while avoiding the old full
-     * historical rescan on every Kit-page load.
-     */
-    await syncRecentLeagueKitCustodyTasks(
-      leagueId,
-      {
-        limit: 20,
-      }
-    );
+    await Promise.all([
+      assertTeamKitTables(),
+      ensureLeagueKitTrackingStarted(
+        leagueId
+      ),
+    ]);
 
     const access =
       await resolveTeamKitAccess({
@@ -900,47 +890,57 @@ export async function GET(
       }),
 
       prisma.$queryRaw`
-        SELECT DISTINCT ON (
-          suggestion."scopeKey"
-        )
-          suggestion.*
-        FROM "TeamKitCustodyEvent"
-          suggestion
-        WHERE suggestion."leagueId" =
+        SELECT
+          state."id",
+          state."leagueId",
+          state."scopeKey",
+          state."teamId",
+          state."suggestedForMatchId"
+            AS "matchId",
+          state."suggestedHolderPlayerId"
+            AS "holderPlayerId",
+          state."suggestedHolderName"
+            AS "holderName",
+          'SUGGESTED'::TEXT
+            AS "action",
+          state."suggestionNote"
+            AS "note",
+          state."suggestedByUserId"
+            AS "recordedByUserId",
+          state."suggestedAt"
+            AS "createdAt",
+          m."status"
+            AS "matchStatus",
+          m."scheduledAt",
+          m."endedAt",
+          m."lockedAt",
+          ta."id"
+            AS "teamAId",
+          ta."name"
+            AS "teamAName",
+          tb."id"
+            AS "teamBId",
+          tb."name"
+            AS "teamBName"
+        FROM "TeamKitState" state
+        LEFT JOIN "Match" m
+          ON m."id" =
+             state."suggestedForMatchId"
+        LEFT JOIN "Team" ta
+          ON ta."id" =
+             m."teamAId"
+        LEFT JOIN "Team" tb
+          ON tb."id" =
+             m."teamBId"
+        WHERE state."leagueId" =
               ${leagueId}
-          AND suggestion."scopeKey" IN (
+          AND state."scopeKey" IN (
             ${scopeSql}
           )
-          AND suggestion."action" =
-              'SUGGESTED'
-          AND NOT EXISTS (
-            SELECT 1
-            FROM "TeamKitCustodyEvent"
-              actual
-            WHERE actual."leagueId" =
-                  suggestion."leagueId"
-              AND actual."scopeKey" =
-                  suggestion."scopeKey"
-              AND actual."action" IN (
-                'RECORDED',
-                'CORRECTED',
-                'RECORDED_AS_SUGGESTED'
-              )
-              AND (
-                actual."createdAt" >
-                  suggestion."createdAt"
-                OR (
-                  actual."createdAt" =
-                    suggestion."createdAt"
-                  AND actual."id" >
-                    suggestion."id"
-                )
-              )
-          )
-        ORDER BY
-          suggestion."scopeKey",
-          suggestion."createdAt" DESC,
-          suggestion."id" DESC
+          AND state."suggestedHolderName"
+              IS NOT NULL
+          AND state."suggestedAt"
+              IS NOT NULL
       `,
 
       prisma.$queryRaw`
@@ -960,7 +960,6 @@ export async function GET(
           )
           AND e."action" IN (
             'RECORDED',
-            'CORRECTED',
             'RECORDED_AS_SUGGESTED'
           )
           AND e."holderName"
