@@ -32,6 +32,57 @@ export const runtime = "nodejs";
 export const dynamic = "force-dynamic";
 export const maxDuration = 60;
 
+function getCronSource(request) {
+  const customSource =
+    request.headers.get(
+      "x-cron-source"
+    );
+
+  if (customSource) {
+    return customSource;
+  }
+
+  const userAgent =
+    request.headers.get(
+      "user-agent"
+    ) || "";
+
+  if (
+    userAgent
+      .toLowerCase()
+      .includes("cron-job.org")
+  ) {
+    return "cron-job.org";
+  }
+
+  if (
+    request.headers.get(
+      "x-vercel-cron"
+    )
+  ) {
+    return "vercel-cron";
+  }
+
+  return "manual-or-unknown";
+}
+
+function getRequestIp(request) {
+  const forwardedFor =
+    request.headers.get(
+      "x-forwarded-for"
+    );
+
+  return (
+    forwardedFor
+      ?.split(",")[0]
+      ?.trim() ||
+    request.headers.get(
+      "x-real-ip"
+    ) ||
+    null
+  );
+}
+
 function authorizeCron(request) {
   const secret =
     process.env.CRON_SECRET;
@@ -946,7 +997,7 @@ const fallbackSmsAllowed =
   }
 }
 
-export async function GET(request) {
+async function handler(request) {
   if (!authorizeCron(request)) {
     return NextResponse.json(
       {
@@ -959,9 +1010,42 @@ export async function GET(request) {
     );
   }
 
+  const cronStartedAt =
+    new Date();
+
+  const cronSource =
+    getCronSource(request);
+
+  console.log(
+    "[BIRTHDAY_CRON_STARTED]",
+    {
+      startedAt:
+        cronStartedAt.toISOString(),
+
+      source:
+        cronSource,
+
+      userAgent:
+        request.headers.get(
+          "user-agent"
+        ),
+
+      requestIp:
+        getRequestIp(request),
+
+      requestUrl:
+        request.url,
+    }
+  );
+
   try {
     const now =
-      DateTime.utc();
+      DateTime.fromJSDate(
+        cronStartedAt,
+        {
+          zone: "utc",
+        }
+      );
 
     const preferences =
       await prisma
@@ -1407,7 +1491,10 @@ select: {
       }
     }
 
-    return NextResponse.json({
+    const cronCompletedAt =
+      new Date();
+
+    const summary = {
       success:
         ownerSmsFailed === 0 &&
         playerWhatsAppFailed === 0,
@@ -1461,16 +1548,74 @@ select: {
         failed:
           playerWhatsAppFailed,
       },
+    };
+
+    console.log(
+      "[BIRTHDAY_CRON_COMPLETED]",
+      {
+        startedAt:
+          cronStartedAt.toISOString(),
+
+        completedAt:
+          cronCompletedAt.toISOString(),
+
+        durationMs:
+          cronCompletedAt.getTime() -
+          cronStartedAt.getTime(),
+
+        source:
+          cronSource,
+
+        ...summary,
+      }
+    );
+
+    return NextResponse.json({
+      source:
+        cronSource,
+
+      startedAt:
+        cronStartedAt.toISOString(),
+
+      completedAt:
+        cronCompletedAt.toISOString(),
+
+      durationMs:
+        cronCompletedAt.getTime() -
+        cronStartedAt.getTime(),
+
+      ...summary,
     });
   } catch (error) {
+    const cronFailedAt =
+      new Date();
+
     const errorMessage =
       getErrorMessage(error);
 
     console.error(
-      "[BIRTHDAY_REMINDER_CRON_FAILED]",
+      "[BIRTHDAY_CRON_FAILED]",
       {
+        startedAt:
+          cronStartedAt.toISOString(),
+
+        failedAt:
+          cronFailedAt.toISOString(),
+
+        durationMs:
+          cronFailedAt.getTime() -
+          cronStartedAt.getTime(),
+
+        source:
+          cronSource,
+
         error:
           errorMessage,
+
+        stack:
+          error instanceof Error
+            ? error.stack
+            : null,
       }
     );
 
@@ -1478,6 +1623,19 @@ select: {
       {
         success:
           false,
+
+        source:
+          cronSource,
+
+        startedAt:
+          cronStartedAt.toISOString(),
+
+        completedAt:
+          cronFailedAt.toISOString(),
+
+        durationMs:
+          cronFailedAt.getTime() -
+          cronStartedAt.getTime(),
 
         error:
           "Birthday reminder processing failed.",
@@ -1491,4 +1649,12 @@ select: {
       }
     );
   }
+}
+
+export async function GET(request) {
+  return handler(request);
+}
+
+export async function POST(request) {
+  return handler(request);
 }
