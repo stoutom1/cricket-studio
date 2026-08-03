@@ -514,20 +514,50 @@ export default function LeagueResourcesClient({ leagueId }) {
         )}
       </section>
 
-      <nav className={styles.categoryRail} aria-label="Resource categories">
-        {CATEGORIES.map(([value, label, icon]) => (
-          <button
-            key={value}
-            type="button"
-            className={category === value ? styles.categoryActive : ""}
-            onClick={() => setCategory(value)}
+      <section
+        className={styles.categoryNavShell}
+        aria-label="Browse resource categories"
+      >
+        <div className={styles.categoryNavHeader}>
+          <span>Browse categories</span>
+
+          <span className={styles.categorySwipeHint}>
+            Swipe to see more
+            <b aria-hidden="true">→</b>
+          </span>
+        </div>
+
+        <div className={styles.categoryRailViewport}>
+          <nav
+            className={styles.categoryRail}
+            aria-label="Resource categories"
           >
-            <span aria-hidden="true">{icon}</span>
-            <span>{label}</span>
-            <b>{categoryCounts[value] || 0}</b>
-          </button>
-        ))}
-      </nav>
+            {CATEGORIES.map(([value, label, icon]) => (
+              <button
+                key={value}
+                type="button"
+                className={
+                  category === value
+                    ? styles.categoryActive
+                    : ""
+                }
+                onClick={() => setCategory(value)}
+              >
+                <span aria-hidden="true">{icon}</span>
+                <span>{label}</span>
+                <b>{categoryCounts[value] || 0}</b>
+              </button>
+            ))}
+          </nav>
+
+          <span
+            className={styles.categoryScrollCue}
+            aria-hidden="true"
+          >
+            →
+          </span>
+        </div>
+      </section>
 
       {message && <div className={styles.successBanner}>{message}</div>}
       {error && !showModal && <div className={styles.errorBanner}>{error}</div>}
