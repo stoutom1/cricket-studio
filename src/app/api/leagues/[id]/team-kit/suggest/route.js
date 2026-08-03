@@ -130,17 +130,19 @@ export async function POST(request, { params }) {
       ORDER BY "createdAt" DESC
     `;
 
-    const stateRows = await prisma.$queryRaw`
-      SELECT *
-      FROM "TeamKitState"
-      WHERE "leagueId" = ${leagueId}
-        AND "scopeKey" = ${scopeKey}
-      LIMIT 1
-    `;
+    const currentStateRows =
+  await prisma.$queryRaw`
+    SELECT *
+    FROM "TeamKitState"
+    WHERE "leagueId" = ${leagueId}
+      AND "scopeKey" = ${scopeKey}
+    LIMIT 1
+  `;
 
-    const currentHolderKey = nameKey(
-      stateRows[0]?.currentHolderName || ""
-    );
+const currentHolderKey = nameKey(
+  currentStateRows[0]
+    ?.currentHolderName || ""
+);
 
     const counts = new Map();
 
