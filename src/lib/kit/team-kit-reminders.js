@@ -78,6 +78,42 @@ function whatsappAddress(value) {
     : "";
 }
 
+function smsAddress(value) {
+  return cleanPhone(value);
+}
+
+function smsFallbackEnabled() {
+  return (
+    String(
+      process.env
+        .TEAM_KIT_SMS_FALLBACK_ENABLED ||
+        "false"
+    ).toLowerCase() === "true"
+  );
+}
+
+function twilioStatusCallbackUrl({
+  leagueId,
+  scopeKey,
+  matchId,
+  action,
+  holderPlayerId,
+}) {
+  const params =
+    new URLSearchParams({
+      leagueId: String(leagueId),
+      scopeKey: String(scopeKey),
+      matchId: String(matchId),
+      action: String(action),
+      holderPlayerId:
+        String(holderPlayerId),
+    });
+
+  return appUrl(
+    `/api/twilio/team-kit-status?${params.toString()}`
+  );
+}
+
 function appUrl(path = "") {
   const root = String(
     process.env.NEXT_PUBLIC_APP_URL ||
@@ -230,74 +266,151 @@ function contentVariables({
   };
 }
 
-async function sendTwilioMessage({
+async function sendTwilioApiMessage({
+  from,
   to,
-  reminderType,
   body,
-  variables,
+  contentSid = "",
+  variables = null,
+  statusCallback = "",
 }) {
   const accountSid =
     process.env.TWILIO_ACCOUNT_SID;
   const authToken =
     process.env.TWILIO_AUTH_TOKEN;
-  const from =
-    process.env.TWILIO_WHATSAPP_FROM ||
-    process.env.TWILIO_FROM_NUMBER;
 
-  if (!accountSid || !authToken || !from) {
+  if (
+    !accountSid ||
+    !authToken ||
+    !from ||
+    !to
+  ) {
     throw new Error(
       "Twilio environment variables are incomplete."
     );
   }
 
-  const contentSid =
-    process.env[
-      CONTENT_SID_ENV[reminderType]
-    ] || "";
-
-  const form = new URLSearchParams();
+  const form =
+    new URLSearchParams();
 
   form.set("From", from);
   form.set("To", to);
 
   if (contentSid) {
-    form.set("ContentSid", contentSid);
+    form.set(
+      "ContentSid",
+      contentSid
+    );
     form.set(
       "ContentVariables",
-      JSON.stringify(variables)
+      JSON.stringify(
+        variables || {}
+      )
     );
   } else {
     form.set("Body", body);
   }
 
-  const credentials = Buffer.from(
-    `${accountSid}:${authToken}`
-  ).toString("base64");
-
-  const response = await fetch(
-    `https://api.twilio.com/2010-04-01/Accounts/${accountSid}/Messages.json`,
-    {
-      method: "POST",
-      headers: {
-        Authorization:
-          `Basic ${credentials}`,
-        "Content-Type":
-          "application/x-www-form-urlencoded",
-      },
-      body: form.toString(),
-    }
-  );
-
-  const payload = await response.json();
-
-  if (!response.ok) {
-    throw new Error(
-      payload?.message ||
-        "Twilio rejected the kit reminder."
+  if (statusCallback) {
+    form.set(
+      "StatusCallback",
+      statusCallback
     );
   }
 
+  const credentials =
+    Buffer.from(
+      `${accountSid}:${authToken}`
+    ).toString("base64");
+
+  const response =
+    await fetch(
+      `https://api.twilio.com/2010-04-01/Accounts/${accountSid}/Messages.json`,
+      {
+        method: "POST",
+        headers: {
+          Authorization:
+            `Basic ${credentials}`,
+          "Content-Type":
+            "application/x-www-form-urlencoded",
+        },
+        body:
+          form.toString(),
+      }
+    );
+
+  const payload =
+    await response.json();
+
+  if (!response.ok) {
+    const error =
+      new Error(
+        payload?.message ||
+          "Twilio rejected the message."
+      );
+
+    error.code =
+      payload?.code || null;
+
+    throw error;
+  }
+
   return payload;
+}
+
+async function sendWhatsAppMessage({
+  to,
+  reminderType,
+  body,
+  variables,
+  statusCallback,
+}) {
+  const from =
+    process.env
+      .TWILIO_WHATSAPP_FROM;
+
+  if (!from) {
+    throw new Error(
+      "TWILIO_WHATSAPP_FROM is not configured."
+    );
+  }
+
+  const contentSid =
+    process.env[
+      CONTENT_SID_ENV[
+        reminderType
+      ]
+    ] || "";
+
+  return sendTwilioApiMessage({
+    from,
+    to,
+    body,
+    contentSid,
+    variables,
+    statusCallback,
+  });
+}
+
+async function sendSmsMessage({
+  to,
+  body,
+}) {
+  const from =
+    process.env.TWILIO_SMS_FROM ||
+    process.env.TWILIO_FROM_NUMBER;
+
+  if (!from) {
+    throw new Error(
+      "TWILIO_SMS_FROM or TWILIO_FROM_NUMBER is not configured."
+    );
+  }
+
+  return sendTwilioApiMessage({
+    from,
+    to,
+    body,
+  });
 }
 
 async function reminderAlreadySent({
@@ -360,7 +473,9 @@ async function recordReminderEvent({
 async function currentHolderRecipient(
   state
 ) {
-  if (!state.currentHolderPlayerId) {
+  if (
+    !state.currentHolderPlayerId
+  ) {
     return null;
   }
 
@@ -376,27 +491,48 @@ async function currentHolderRecipient(
         name: true,
         whatsappNumber: true,
         whatsappOptIn: true,
+        smsOptIn: true,
+        smsOptOutAt: true,
       },
     });
 
-  if (
-    !player ||
-    !player.whatsappOptIn ||
-    !player.whatsappNumber
-  ) {
+  if (!player) {
     return null;
   }
 
-  const to = whatsappAddress(
-    player.whatsappNumber
-  );
+  const phone =
+    cleanPhone(
+      player.whatsappNumber
+    );
 
-  return to
-    ? {
-        ...player,
-        to,
-      }
-    : null;
+  const canWhatsApp =
+    Boolean(
+      phone &&
+      player.whatsappOptIn ===
+        true
+    );
+
+  const canSms =
+    Boolean(
+      phone &&
+      player.smsOptIn === true &&
+      player.smsOptOutAt == null
+    );
+
+  return {
+    ...player,
+    phone,
+    canWhatsApp,
+    canSms,
+    whatsappTo:
+      canWhatsApp
+        ? whatsappAddress(phone)
+        : "",
+    smsTo:
+      canSms
+        ? smsAddress(phone)
+        : "",
+  };
 }
 
 async function sendReminder({
@@ -405,37 +541,68 @@ async function sendReminder({
   state,
 }) {
   const action =
-    REMINDER_ACTIONS[reminderType];
+    REMINDER_ACTIONS[
+      reminderType
+    ];
 
   if (
     await reminderAlreadySent({
-      leagueId: Number(row.leagueId),
-      scopeKey: state.scopeKey,
-      matchId: Number(row.matchId),
+      leagueId:
+        Number(row.leagueId),
+      scopeKey:
+        state.scopeKey,
+      matchId:
+        Number(row.matchId),
       action,
     })
   ) {
     return {
-      status: "alreadySent",
+      status:
+        "alreadySent",
     };
   }
 
   const recipient =
-    await currentHolderRecipient(state);
+    await currentHolderRecipient(
+      state
+    );
 
   if (!recipient) {
     return {
-      status: "noRecipient",
+      status:
+        "noRecipient",
+      reason:
+        "PLAYER_NOT_FOUND",
     };
   }
 
-  const scopeName = state.teamId
-    ? `${row.scopeTeamName || "Team"} kit`
-    : "the shared league kit";
+  if (
+    !recipient.canWhatsApp &&
+    !(
+      smsFallbackEnabled() &&
+      recipient.canSms
+    )
+  ) {
+    return {
+      status:
+        "noRecipient",
+      reason:
+        "NO_OPTED_IN_CHANNEL",
+    };
+  }
 
-  const kitUrl = appUrl(
-    `/dashboard?tab=kit&leagueId=${row.leagueId}`
-  );
+  const scopeName =
+    state.teamId
+      ? `${
+          row.scopeTeamName ||
+          "Team"
+        } kit`
+      : "the shared league kit";
+
+  const kitUrl =
+    appUrl(
+      `/dashboard?tab=kit&leagueId=${row.leagueId}`
+    );
 
   const values = {
     holderName:
@@ -443,46 +610,156 @@ async function sendReminder({
       state.currentHolderName ||
       "Current holder",
     scopeName,
-    matchName: matchLabel(row),
+    matchName:
+      matchLabel(row),
     scheduledAt:
       matchStart(row) ||
       finalReferenceTime(row),
     leagueName:
-      row.leagueName || "Cric4All",
+      row.leagueName ||
+      "Cric4All",
     kitUrl,
   };
 
-  const result =
-    await sendTwilioMessage({
-      to: recipient.to,
+  const body =
+    messageBody({
       reminderType,
-      body: messageBody({
-        reminderType,
-        ...values,
-      }),
-      variables:
-        contentVariables(values),
+      ...values,
     });
 
-  await recordReminderEvent({
-    leagueId: Number(row.leagueId),
-    scopeKey: state.scopeKey,
-    teamId: state.teamId
-      ? Number(state.teamId)
-      : null,
-    matchId: Number(row.matchId),
-    holderPlayerId:
-      recipient.id,
-    holderName:
-      recipient.name,
-    action,
-    note:
-      `Twilio message ${result.sid || "submitted"}; status ${result.status || "queued"}.`,
-  });
+  const variables =
+    contentVariables(
+      values
+    );
+
+  let whatsappError =
+    null;
+
+  if (
+    recipient.canWhatsApp &&
+    recipient.whatsappTo
+  ) {
+    try {
+      const result =
+        await sendWhatsAppMessage({
+          to:
+            recipient.whatsappTo,
+          reminderType,
+          body,
+          variables,
+          statusCallback:
+            twilioStatusCallbackUrl({
+              leagueId:
+                Number(row.leagueId),
+              scopeKey:
+                state.scopeKey,
+              matchId:
+                Number(row.matchId),
+              action,
+              holderPlayerId:
+                recipient.id,
+            }),
+        });
+
+      await recordReminderEvent({
+        leagueId:
+          Number(row.leagueId),
+        scopeKey:
+          state.scopeKey,
+        teamId:
+          state.teamId
+            ? Number(
+                state.teamId
+              )
+            : null,
+        matchId:
+          Number(row.matchId),
+        holderPlayerId:
+          recipient.id,
+        holderName:
+          recipient.name,
+        action,
+        note:
+          `Channel WHATSAPP; Twilio message ${result.sid || "submitted"}; status ${result.status || "queued"}.`,
+      });
+
+      return {
+        status:
+          "queued",
+        channel:
+          "WHATSAPP",
+        sid:
+          result.sid || null,
+      };
+    } catch (error) {
+      whatsappError =
+        error;
+    }
+  }
+
+  if (
+    smsFallbackEnabled() &&
+    recipient.canSms &&
+    recipient.smsTo
+  ) {
+    const result =
+      await sendSmsMessage({
+        to:
+          recipient.smsTo,
+        body,
+      });
+
+    await recordReminderEvent({
+      leagueId:
+        Number(row.leagueId),
+      scopeKey:
+        state.scopeKey,
+      teamId:
+        state.teamId
+          ? Number(
+              state.teamId
+            )
+          : null,
+      matchId:
+        Number(row.matchId),
+      holderPlayerId:
+        recipient.id,
+      holderName:
+        recipient.name,
+      action,
+      note: [
+        "Channel SMS_FALLBACK.",
+        whatsappError
+          ? `WhatsApp submission failed: ${
+              whatsappError.message ||
+              String(
+                whatsappError
+              )
+            }.`
+          : "WhatsApp was unavailable.",
+        `Twilio SMS ${result.sid || "submitted"}; status ${result.status || "queued"}.`,
+      ].join(" "),
+    });
+
+    return {
+      status:
+        "queued",
+      channel:
+        "SMS_FALLBACK",
+      sid:
+        result.sid || null,
+    };
+  }
+
+  if (whatsappError) {
+    throw whatsappError;
+  }
 
   return {
-    status: "queued",
-    sid: result.sid || null,
+    status:
+      "noRecipient",
+    reason:
+      "NO_OPTED_IN_CHANNEL",
   };
 }
 
@@ -682,6 +959,8 @@ export async function runTeamKitReminders({
     checkedPendingTasks: 0,
     due: 0,
     queued: 0,
+    whatsappQueued: 0,
+    smsFallbackQueued: 0,
     alreadySent: 0,
     noCurrentHolder: 0,
     noOptedInRecipient: 0,
@@ -761,6 +1040,15 @@ export async function runTeamKitReminders({
 
         if (result.status === "queued") {
           summary.queued += 1;
+
+          if (
+            result.channel ===
+            "SMS_FALLBACK"
+          ) {
+            summary.smsFallbackQueued += 1;
+          } else {
+            summary.whatsappQueued += 1;
+          }
         } else if (
           result.status ===
           "alreadySent"
@@ -832,6 +1120,15 @@ export async function runTeamKitReminders({
 
       if (result.status === "queued") {
         summary.queued += 1;
+
+        if (
+          result.channel ===
+          "SMS_FALLBACK"
+        ) {
+          summary.smsFallbackQueued += 1;
+        } else {
+          summary.whatsappQueued += 1;
+        }
       } else if (
         result.status ===
         "alreadySent"
