@@ -42,6 +42,7 @@ model User {
   smsConsentText               String?
   smsConsentVersion            String?
   leagueResourcesCreated       LeagueResource[]
+  leagueResourceReactions      LeagueResourceReaction[]
 }
 
 model Team {
@@ -1181,10 +1182,27 @@ model LeagueResource {
   createdAt        DateTime @default(now())
   updatedAt        DateTime @updatedAt
 
-  league    League @relation(fields: [leagueId], references: [id], onDelete: Cascade)
-  createdBy User   @relation(fields: [createdById], references: [id])
+  league    League                   @relation(fields: [leagueId], references: [id], onDelete: Cascade)
+  createdBy User                     @relation(fields: [createdById], references: [id])
+  reactions LeagueResourceReaction[]
 
   @@index([leagueId, category])
   @@index([leagueId, isPinned, sortOrder])
   @@index([createdById])
+}
+
+model LeagueResourceReaction {
+  id         Int      @id @default(autoincrement())
+  resourceId Int
+  userId     String
+  reaction   String
+  createdAt  DateTime @default(now())
+  updatedAt  DateTime @updatedAt
+
+  resource LeagueResource @relation(fields: [resourceId], references: [id], onDelete: Cascade)
+  user     User           @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@unique([resourceId, userId])
+  @@index([resourceId, reaction])
+  @@index([userId])
 }

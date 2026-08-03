@@ -20,6 +20,26 @@ async function getCurrentUserId() {
   return session?.user?.id || null;
 }
 
+function addReactionSummary(resources, groupedCounts, userReactions) {
+  const countMap = new Map();
+
+  for (const row of groupedCounts) {
+    const key = `${row.resourceId}:${row.reaction}`;
+    countMap.set(key, row._count?._all || 0);
+  }
+
+  const myReactionMap = new Map(
+    userReactions.map((row) => [row.resourceId, row.reaction])
+  );
+
+  return resources.map((resource) => ({
+    ...resource,
+    upCount: countMap.get(`${resource.id}:UP`) || 0,
+    downCount: countMap.get(`${resource.id}:DOWN`) || 0,
+    myReaction: myReactionMap.get(resource.id) || null,
+  }));
+}
+
 export async function GET(request, { params }) {
   const { id } = await params;
   const leagueId = Number(id);
@@ -69,11 +89,40 @@ export async function GET(request, { params }) {
     },
   });
 
+  const resourceIds = resources.map((resource) => resource.id);
+
+  const [groupedCounts, userReactions] = resourceIds.length
+    ? await Promise.all([
+        prisma.leagueResourceReaction.groupBy({
+          by: ["resourceId", "reaction"],
+          where: {
+            resourceId: { in: resourceIds },
+            reaction: { in: ["UP", "DOWN"] },
+          },
+          _count: { _all: true },
+        }),
+        prisma.leagueResourceReaction.findMany({
+          where: {
+            resourceId: { in: resourceIds },
+            userId,
+          },
+          select: {
+            resourceId: true,
+            reaction: true,
+          },
+        }),
+      ])
+    : [[], []];
+
   return NextResponse.json({
     success: true,
     league: access.league,
     canManage: access.canManage,
-    resources,
+    resources: addReactionSummary(
+      resources,
+      groupedCounts,
+      userReactions
+    ),
   });
 }
 
@@ -146,10 +195,7 @@ export async function POST(request, { params }) {
       );
     }
 
-    data = {
-      ...data,
-      externalUrl,
-    };
+    data = { ...data, externalUrl };
   } else {
     const blobUrl = cleanText(body.blobUrl, 2000);
     const blobPathname = cleanText(body.blobPathname, 1000);
@@ -191,7 +237,15 @@ export async function POST(request, { params }) {
   });
 
   return NextResponse.json(
-    { success: true, resource },
+    {
+      success: true,
+      resource: {
+        ...resource,
+        upCount: 0,
+        downCount: 0,
+        myReaction: null,
+      },
+    },
     { status: 201 }
   );
 }

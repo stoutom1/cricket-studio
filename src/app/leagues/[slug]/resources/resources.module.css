@@ -1667,3 +1667,119 @@
     flex-basis: auto;
   }
 }
+
+
+/* League resource reactions */
+.reactionRow {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 12px;
+  margin: 14px 0 0;
+  padding: 11px 12px;
+  border: 1px solid rgba(91, 145, 205, 0.22);
+  border-radius: 13px;
+  background: rgba(7, 24, 47, 0.52);
+}
+
+.reactionPrompt {
+  min-width: 0;
+  color: #9fb5cf;
+  font-size: 0.76rem;
+  font-weight: 750;
+  letter-spacing: 0.01em;
+}
+
+.reactionButtons {
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+  flex: 0 0 auto;
+}
+
+.reactionButton {
+  appearance: none;
+  min-width: 58px;
+  min-height: 36px;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 7px;
+  padding: 0 11px;
+  border: 1px solid rgba(112, 157, 210, 0.28);
+  border-radius: 11px;
+  color: #c9d8ea;
+  background: rgba(9, 28, 54, 0.82);
+  font: inherit;
+  font-size: 0.82rem;
+  font-weight: 800;
+  cursor: pointer;
+  transition:
+    transform 150ms ease,
+    border-color 150ms ease,
+    background 150ms ease,
+    box-shadow 150ms ease;
+}
+
+.reactionButton:hover:not(:disabled) {
+  transform: translateY(-1px);
+  border-color: rgba(82, 162, 255, 0.62);
+  background: rgba(17, 52, 94, 0.92);
+}
+
+.reactionButton:focus-visible {
+  outline: 3px solid rgba(61, 146, 255, 0.34);
+  outline-offset: 2px;
+}
+
+.reactionButton:disabled {
+  cursor: wait;
+  opacity: 0.62;
+}
+
+.reactionButtonActive {
+  color: #ffffff;
+  border-color: rgba(75, 158, 255, 0.78);
+  background: linear-gradient(135deg, rgba(31, 101, 214, 0.96), rgba(25, 133, 203, 0.96));
+  box-shadow: 0 8px 20px rgba(25, 105, 210, 0.22);
+}
+
+.reactionButtonActiveDown {
+  color: #ffffff;
+  border-color: rgba(244, 114, 182, 0.66);
+  background: linear-gradient(135deg, rgba(164, 48, 104, 0.96), rgba(119, 53, 134, 0.96));
+  box-shadow: 0 8px 20px rgba(154, 48, 103, 0.2);
+}
+
+@media (max-width: 520px) {
+  .reactionRow {
+    gap: 9px;
+    padding: 9px 10px;
+  }
+
+  .reactionPrompt {
+    font-size: 0.69rem;
+  }
+
+  .reactionButton {
+    min-width: 53px;
+    min-height: 34px;
+    padding: 0 9px;
+    font-size: 0.78rem;
+  }
+}
+
+@media (max-width: 370px) {
+  .reactionPrompt {
+    position: absolute;
+    width: 1px;
+    height: 1px;
+    overflow: hidden;
+    clip: rect(0, 0, 0, 0);
+    white-space: nowrap;
+  }
+
+  .reactionRow {
+    justify-content: flex-end;
+  }
+}

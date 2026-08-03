@@ -100,6 +100,7 @@ export default function LeagueResourcesClient({ leagueId }) {
   const [canManage, setCanManage] = useState(false);
   const [loading, setLoading] = useState(true);
   const [busy, setBusy] = useState(false);
+  const [reactionBusyId, setReactionBusyId] = useState(null);
   const [message, setMessage] = useState("");
   const [error, setError] = useState("");
   const [search, setSearch] = useState("");
@@ -247,7 +248,9 @@ export default function LeagueResourcesClient({ leagueId }) {
 
         setResources((current) =>
           current.map((item) =>
-            item.id === result.resource.id ? result.resource : item
+            item.id === result.resource.id
+              ? { ...item, ...result.resource }
+              : item
           )
         );
         setMessage("Resource updated successfully.");
@@ -360,6 +363,50 @@ export default function LeagueResourcesClient({ leagueId }) {
           }`;
 
     window.open(url, "_blank", "noopener,noreferrer");
+  }
+
+  async function toggleReaction(resource, reaction) {
+    if (reactionBusyId === resource.id) return;
+
+    setReactionBusyId(resource.id);
+    setError("");
+
+    try {
+      const response = await fetch(
+        `/api/leagues/${leagueId}/resources/${resource.id}/reaction`,
+        {
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify({ reaction }),
+        }
+      );
+      const result = await response.json();
+
+      if (!response.ok) {
+        throw new Error(result?.error || "Unable to save your reaction.");
+      }
+
+      setResources((current) =>
+        current.map((item) =>
+          item.id === resource.id
+            ? {
+                ...item,
+                upCount: result.upCount || 0,
+                downCount: result.downCount || 0,
+                myReaction: result.myReaction || null,
+              }
+            : item
+        )
+      );
+    } catch (reactionError) {
+      setError(
+        reactionError instanceof Error
+          ? reactionError.message
+          : "Unable to save your reaction."
+      );
+    } finally {
+      setReactionBusyId(null);
+    }
   }
 
   return (
@@ -534,6 +581,49 @@ export default function LeagueResourcesClient({ leagueId }) {
                         })()}
                   </span>
                   <span>Updated {formatDate(resource.updatedAt)}</span>
+                </div>
+
+                <div
+                  className={styles.reactionRow}
+                  aria-label={`Member reactions for ${resource.title}`}
+                >
+                  <span className={styles.reactionPrompt}>Member feedback</span>
+
+                  <div className={styles.reactionButtons}>
+                    <button
+                      type="button"
+                      className={`${styles.reactionButton} ${
+                        resource.myReaction === "UP"
+                          ? styles.reactionButtonActive
+                          : ""
+                      }`}
+                      aria-label={`Like ${resource.title}`}
+                      aria-pressed={resource.myReaction === "UP"}
+                      title="Like"
+                      disabled={reactionBusyId === resource.id}
+                      onClick={() => toggleReaction(resource, "UP")}
+                    >
+                      <span aria-hidden="true">👍</span>
+                      <strong>{resource.upCount || 0}</strong>
+                    </button>
+
+                    <button
+                      type="button"
+                      className={`${styles.reactionButton} ${
+                        resource.myReaction === "DOWN"
+                          ? styles.reactionButtonActiveDown
+                          : ""
+                      }`}
+                      aria-label={`Dislike ${resource.title}`}
+                      aria-pressed={resource.myReaction === "DOWN"}
+                      title="Dislike"
+                      disabled={reactionBusyId === resource.id}
+                      onClick={() => toggleReaction(resource, "DOWN")}
+                    >
+                      <span aria-hidden="true">👎</span>
+                      <strong>{resource.downCount || 0}</strong>
+                    </button>
+                  </div>
                 </div>
 
                 <div className={styles.cardActions}>
