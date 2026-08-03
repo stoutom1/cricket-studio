@@ -55,7 +55,7 @@ if (
 }
 
 const forwardedFor =
-  request.headers.get(
+  req.headers.get(
     "x-forwarded-for"
   );
 
@@ -63,13 +63,13 @@ const consentIp =
   forwardedFor
     ?.split(",")[0]
     ?.trim() ||
-  request.headers.get(
+  req.headers.get(
     "x-real-ip"
   ) ||
   null;
 
 const consentUserAgent =
-  request.headers.get(
+  req.headers.get(
     "user-agent"
   ) ||
   null;
