@@ -34,9 +34,12 @@ export async function POST(request, { params }) {
           userId,
         });
 
-        if (!access.exists || !access.canManage) {
+        if (
+          !access.exists ||
+          !access.canAddEdit
+        ) {
           throw new Error(
-            "You do not have permission to upload league resources."
+            "Only league members can upload Knowledge Center resources."
           );
         }
 

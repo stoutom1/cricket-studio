@@ -97,7 +97,15 @@ export default function LeagueResourcesClient({ leagueId }) {
   const fileInputRef = useRef(null);
   const [resources, setResources] = useState([]);
   const [league, setLeague] = useState(null);
-  const [canManage, setCanManage] = useState(false);
+  const [
+    canAddEdit,
+    setCanAddEdit,
+  ] = useState(false);
+
+  const [
+    canDelete,
+    setCanDelete,
+  ] = useState(false);
   const [loading, setLoading] = useState(true);
   const [busy, setBusy] = useState(false);
   const [reactionBusyId, setReactionBusyId] = useState(null);
@@ -133,7 +141,14 @@ export default function LeagueResourcesClient({ leagueId }) {
 
       setResources(result.resources || []);
       setLeague(result.league || null);
-      setCanManage(result.canManage === true);
+      setCanAddEdit(
+        result.canAddEdit === true ||
+        result.canManage === true
+      );
+
+      setCanDelete(
+        result.canDelete === true
+      );
     } catch (loadError) {
       setError(
         loadError instanceof Error
@@ -318,6 +333,13 @@ export default function LeagueResourcesClient({ leagueId }) {
   }
 
   async function deleteResource(resource) {
+    if (!canDelete) {
+      setError(
+        "Deleting Knowledge Center resources requires permission-management access."
+      );
+      return;
+    }
+
     const confirmed = window.confirm(
       `Delete “${resource.title}”? This cannot be undone.`
     );
@@ -469,7 +491,7 @@ export default function LeagueResourcesClient({ leagueId }) {
           />
         </label>
 
-        {canManage && (
+        {canAddEdit && (
           <div className={styles.primaryActions}>
             <button
               type="button"
@@ -524,7 +546,7 @@ export default function LeagueResourcesClient({ leagueId }) {
               ? "Try another search or category."
               : "Upload league rules, add venue, restaurant or hotel links, and keep important forms and contacts easy to find."}
           </p>
-          {canManage && !resources.length && (
+          {canAddEdit && !resources.length && (
             <div className={styles.emptyActions}>
               <button type="button" onClick={() => openCreate("FILE")}>Upload first file</button>
               <button type="button" onClick={() => openCreate("LINK")}>Add first link</button>
@@ -648,28 +670,41 @@ export default function LeagueResourcesClient({ leagueId }) {
                     </button>
                   )}
 
-                  {canManage && (
-                    <>
-                      <button
-                        type="button"
-                        className={styles.iconButton}
-                        title="Edit resource"
-                        aria-label={`Edit ${resource.title}`}
-                        onClick={() => openEdit(resource)}
-                      >
-                        ✎
-                      </button>
-                      <button
-                        type="button"
-                        className={styles.deleteButton}
-                        title="Delete resource"
-                        aria-label={`Delete ${resource.title}`}
-                        onClick={() => deleteResource(resource)}
-                        disabled={busy}
-                      >
-                        🗑
-                      </button>
-                    </>
+                  {canAddEdit && (
+                    <button
+                      type="button"
+                      className={
+                        styles.iconButton
+                      }
+                      title="Edit resource"
+                      aria-label={`Edit ${resource.title}`}
+                      onClick={() =>
+                        openEdit(
+                          resource
+                        )
+                      }
+                    >
+                      ✎
+                    </button>
+                  )}
+
+                  {canDelete && (
+                    <button
+                      type="button"
+                      className={
+                        styles.deleteButton
+                      }
+                      title="Delete resource"
+                      aria-label={`Delete ${resource.title}`}
+                      onClick={() =>
+                        deleteResource(
+                          resource
+                        )
+                      }
+                      disabled={busy}
+                    >
+                      🗑
+                    </button>
                   )}
                 </div>
               </article>

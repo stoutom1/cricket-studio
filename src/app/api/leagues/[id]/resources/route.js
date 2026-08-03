@@ -117,7 +117,17 @@ export async function GET(request, { params }) {
   return NextResponse.json({
     success: true,
     league: access.league,
-    canManage: access.canManage,
+    canAddEdit:
+      access.canAddEdit,
+    canDelete:
+      access.canDelete,
+
+    /*
+     * Backward-compatible response field.
+     */
+    canManage:
+      access.canAddEdit,
+
     resources: addReactionSummary(
       resources,
       groupedCounts,
@@ -150,10 +160,15 @@ export async function POST(request, { params }) {
     );
   }
 
-  if (!access.canManage) {
+  if (!access.canAddEdit) {
     return NextResponse.json(
-      { error: "You cannot add league resources." },
-      { status: 403 }
+      {
+        error:
+          "Only league members can add Knowledge Center resources.",
+      },
+      {
+        status: 403,
+      }
     );
   }
 

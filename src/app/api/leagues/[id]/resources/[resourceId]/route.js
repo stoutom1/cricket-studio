@@ -45,10 +45,15 @@ export async function PATCH(request, { params }) {
     userId,
   });
 
-  if (!access.canManage) {
+  if (!access.canAddEdit) {
     return NextResponse.json(
-      { error: "You cannot edit league resources." },
-      { status: 403 }
+      {
+        error:
+          "Only league members can edit Knowledge Center resources.",
+      },
+      {
+        status: 403,
+      }
     );
   }
 
@@ -133,10 +138,15 @@ export async function DELETE(request, { params }) {
     userId,
   });
 
-  if (!access.canManage) {
+  if (!access.canDelete) {
     return NextResponse.json(
-      { error: "You cannot delete league resources." },
-      { status: 403 }
+      {
+        error:
+          "Deleting Knowledge Center resources requires permission-management access.",
+      },
+      {
+        status: 403,
+      }
     );
   }
 
