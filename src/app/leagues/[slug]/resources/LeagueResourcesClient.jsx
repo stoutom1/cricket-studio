@@ -559,109 +559,166 @@ export default function LeagueResourcesClient({ leagueId }) {
             const [, categoryLabel, categoryIcon] = categoryMeta(resource.category);
 
             return (
-              <article key={resource.id} className={styles.resourceCard}>
-                <div className={styles.cardAccent} />
+              <article
+                key={resource.id}
+                className={styles.resourceCardV3}
+              >
+                <div
+                  className={styles.resourceCardV3Accent}
+                  aria-hidden="true"
+                />
 
-                <div className={styles.cardTop}>
-                  <span className={styles.resourceIcon} aria-hidden="true">
+                <header className={styles.resourceCardV3Header}>
+                  <span
+                    className={styles.resourceCardV3Icon}
+                    aria-hidden="true"
+                  >
                     {getResourceIcon(resource)}
                   </span>
 
-                  <div className={styles.cardBadges}>
-                    {resource.isPinned && <span className={styles.pinnedBadge}>★ Pinned</span>}
-                    <span className={styles.visibilityBadge}>
-                      {resource.visibility === "PUBLIC" ? "🌍 Public" : "👥 League"}
-                    </span>
-                  </div>
-                </div>
+                  <div className={styles.resourceCardV3Heading}>
+                    <div className={styles.resourceCardV3Badges}>
+                      <span className={styles.resourceCardV3Category}>
+                        <span aria-hidden="true">{categoryIcon}</span>
+                        <span>{categoryLabel}</span>
+                      </span>
 
-                <div className={styles.cardBody}>
-                  <span className={styles.categoryLabel}>
-                    {categoryIcon} {categoryLabel}
-                  </span>
-                  <h2 title={resource.title}>{resource.title}</h2>
-                  <p>
+                      {resource.isPinned && (
+                        <span
+                          className={styles.resourceCardV3StatusIcon}
+                          title="Pinned resource"
+                          aria-label="Pinned resource"
+                        >
+                          ★
+                        </span>
+                      )}
+
+                      <span
+                        className={styles.resourceCardV3StatusIcon}
+                        title={
+                          resource.visibility === "PUBLIC"
+                            ? "Public resource"
+                            : "League members only"
+                        }
+                        aria-label={
+                          resource.visibility === "PUBLIC"
+                            ? "Public resource"
+                            : "League members only"
+                        }
+                      >
+                        {resource.visibility === "PUBLIC" ? "🌍" : "👥"}
+                      </span>
+                    </div>
+
+                    <h2 title={resource.title}>
+                      {resource.title}
+                    </h2>
+                  </div>
+                </header>
+
+                <div className={styles.resourceCardV3Body}>
+                  <p className={styles.resourceCardV3Description}>
                     {resource.description ||
                       (resource.resourceType === "FILE"
-                        ? resource.originalFileName
+                        ? "Open this stored league document."
                         : "Open this useful league link.")}
                   </p>
-                </div>
 
-                <div className={styles.cardMeta}>
-                  <span>
-                    {resource.resourceType === "FILE"
-                      ? [resource.originalFileName, formatBytes(resource.fileSize)]
-                          .filter(Boolean)
-                          .join(" • ")
-                      : (() => {
-                          try {
-                            return new URL(resource.externalUrl).hostname;
-                          } catch {
-                            return "External link";
-                          }
-                        })()}
-                  </span>
-                  <span>Updated {formatDate(resource.updatedAt)}</span>
-                </div>
+                  <div className={styles.resourceCardV3Meta}>
+                    {resource.resourceType === "FILE" ? (
+                      <button
+                        type="button"
+                        className={styles.resourceCardV3MetaLink}
+                        title={resource.originalFileName || "Open stored file"}
+                        onClick={() => openResource(resource)}
+                      >
+                        <span>
+                          {[resource.originalFileName, formatBytes(resource.fileSize)]
+                            .filter(Boolean)
+                            .join(" • ") || "Open stored file"}
+                        </span>
+                        <b aria-hidden="true">↗</b>
+                      </button>
+                    ) : (
+                      <a
+                        className={styles.resourceCardV3MetaLink}
+                        href={resource.externalUrl}
+                        target="_blank"
+                        rel="noopener noreferrer"
+                        title={resource.externalUrl || "Open external link"}
+                      >
+                        <span>
+                          {(() => {
+                            try {
+                              return new URL(resource.externalUrl).hostname;
+                            } catch {
+                              return "Open external link";
+                            }
+                          })()}
+                        </span>
+                        <b aria-hidden="true">↗</b>
+                      </a>
+                    )}
 
-                <div
-                  className={styles.reactionRow}
-                  aria-label={`Member reactions for ${resource.title}`}
-                >
-                  <span className={styles.reactionPrompt}>Member feedback</span>
-
-                  <div className={styles.reactionButtons}>
-                    <button
-                      type="button"
-                      className={`${styles.reactionButton} ${
-                        resource.myReaction === "UP"
-                          ? styles.reactionButtonActive
-                          : ""
-                      }`}
-                      aria-label={`Like ${resource.title}`}
-                      aria-pressed={resource.myReaction === "UP"}
-                      title="Like"
-                      disabled={reactionBusyId === resource.id}
-                      onClick={() => toggleReaction(resource, "UP")}
+                    <time
+                      className={styles.resourceCardV3Date}
+                      dateTime={resource.updatedAt || undefined}
                     >
-                      <span aria-hidden="true">👍</span>
-                      <strong>{resource.upCount || 0}</strong>
-                    </button>
-
-                    <button
-                      type="button"
-                      className={`${styles.reactionButton} ${
-                        resource.myReaction === "DOWN"
-                          ? styles.reactionButtonActiveDown
-                          : ""
-                      }`}
-                      aria-label={`Dislike ${resource.title}`}
-                      aria-pressed={resource.myReaction === "DOWN"}
-                      title="Dislike"
-                      disabled={reactionBusyId === resource.id}
-                      onClick={() => toggleReaction(resource, "DOWN")}
-                    >
-                      <span aria-hidden="true">👎</span>
-                      <strong>{resource.downCount || 0}</strong>
-                    </button>
+                      {formatDate(resource.updatedAt)}
+                    </time>
                   </div>
                 </div>
 
-                <div className={styles.cardActions}>
+                <footer className={styles.resourceCardV3Footer}>
                   <button
                     type="button"
-                    className={styles.openButton}
+                    className={styles.resourceCardV3Primary}
                     onClick={() => openResource(resource)}
                   >
-                    <span>{resource.resourceType === "FILE" ? "Open" : "Visit"}</span>
+                    <span>
+                      {resource.resourceType === "FILE" ? "Open" : "Visit"}
+                    </span>
                     <b aria-hidden="true">↗</b>
+                  </button>
+
+                  <button
+                    type="button"
+                    className={`${styles.resourceCardV3Reaction} ${
+                      resource.myReaction === "UP"
+                        ? styles.resourceCardV3ReactionUpActive
+                        : ""
+                    }`}
+                    aria-label={`Like ${resource.title}`}
+                    aria-pressed={resource.myReaction === "UP"}
+                    title="Like"
+                    disabled={reactionBusyId === resource.id}
+                    onClick={() => toggleReaction(resource, "UP")}
+                  >
+                    <span aria-hidden="true">👍</span>
+                    <strong>{resource.upCount || 0}</strong>
+                  </button>
+
+                  <button
+                    type="button"
+                    className={`${styles.resourceCardV3Reaction} ${
+                      resource.myReaction === "DOWN"
+                        ? styles.resourceCardV3ReactionDownActive
+                        : ""
+                    }`}
+                    aria-label={`Dislike ${resource.title}`}
+                    aria-pressed={resource.myReaction === "DOWN"}
+                    title="Dislike"
+                    disabled={reactionBusyId === resource.id}
+                    onClick={() => toggleReaction(resource, "DOWN")}
+                  >
+                    <span aria-hidden="true">👎</span>
+                    <strong>{resource.downCount || 0}</strong>
                   </button>
 
                   {resource.resourceType === "FILE" && (
                     <button
                       type="button"
-                      className={styles.iconButton}
+                      className={styles.resourceCardV3IconButton}
                       title="Download file"
                       aria-label={`Download ${resource.title}`}
                       onClick={() => openResource(resource, true)}
@@ -673,16 +730,10 @@ export default function LeagueResourcesClient({ leagueId }) {
                   {canAddEdit && (
                     <button
                       type="button"
-                      className={
-                        styles.iconButton
-                      }
+                      className={styles.resourceCardV3IconButton}
                       title="Edit resource"
                       aria-label={`Edit ${resource.title}`}
-                      onClick={() =>
-                        openEdit(
-                          resource
-                        )
-                      }
+                      onClick={() => openEdit(resource)}
                     >
                       ✎
                     </button>
@@ -691,22 +742,16 @@ export default function LeagueResourcesClient({ leagueId }) {
                   {canDelete && (
                     <button
                       type="button"
-                      className={
-                        styles.deleteButton
-                      }
+                      className={styles.resourceCardV3DeleteButton}
                       title="Delete resource"
                       aria-label={`Delete ${resource.title}`}
-                      onClick={() =>
-                        deleteResource(
-                          resource
-                        )
-                      }
+                      onClick={() => deleteResource(resource)}
                       disabled={busy}
                     >
                       🗑
                     </button>
                   )}
-                </div>
+                </footer>
               </article>
             );
           })}

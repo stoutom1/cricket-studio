@@ -1783,3 +1783,2128 @@
     justify-content: flex-end;
   }
 }
+
+/* =========================================================
+   Cric4All Knowledge Center — Compact responsive layout v4
+   Compact hero + denser resource grid without changing logic
+   ========================================================= */
+
+.resourcesApp {
+  width: min(1380px, 100%);
+}
+
+.hero {
+  padding: 16px 20px 18px;
+  border-radius: 20px;
+}
+
+.heroGlow {
+  width: 220px;
+  height: 220px;
+  right: -92px;
+  top: -126px;
+  opacity: 0.72;
+}
+
+.heroTopRow {
+  min-height: 32px;
+}
+
+.backButton,
+.secureBadge {
+  min-height: 32px;
+  padding: 6px 11px;
+  font-size: 0.7rem;
+}
+
+.heroContent {
+  grid-template-columns: 48px minmax(0, 1fr);
+  gap: 13px;
+  margin-top: 14px;
+}
+
+.heroIcon {
+  width: 48px;
+  height: 48px;
+  border-radius: 13px;
+  font-size: 1.45rem;
+}
+
+.eyebrow {
+  margin-bottom: 3px;
+  font-size: 0.62rem;
+  letter-spacing: 0.12em;
+}
+
+.heroCopy h1 {
+  font-size: clamp(1.48rem, 2.45vw, 2.2rem);
+  line-height: 1.08;
+  letter-spacing: -0.028em;
+}
+
+.heroCopy p {
+  max-width: 760px;
+  margin-top: 6px;
+  font-size: 0.78rem;
+  line-height: 1.45;
+}
+
+.heroStats {
+  gap: 8px;
+  margin-top: 14px;
+}
+
+.heroStats div {
+  padding: 9px 12px;
+  border-radius: 12px;
+}
+
+.heroStats strong {
+  font-size: 1rem;
+  line-height: 1;
+}
+
+.heroStats span {
+  margin-top: 4px;
+  font-size: 0.64rem;
+  line-height: 1.15;
+}
+
+.controlPanel {
+  gap: 9px;
+  margin-top: 12px;
+  padding: 9px;
+  border-radius: 15px;
+}
+
+.searchBox {
+  min-height: 40px;
+  padding: 0 12px;
+  border-radius: 10px;
+}
+
+.searchBox span {
+  font-size: 0.95rem;
+}
+
+.searchBox input {
+  font-size: 0.78rem;
+}
+
+.addLinkButton,
+.uploadButton {
+  min-height: 40px;
+  padding: 0 13px;
+  border-radius: 10px;
+  font-size: 0.76rem;
+}
+
+.categoryRail {
+  gap: 7px;
+  margin: 11px 0 12px;
+  padding-bottom: 6px;
+}
+
+.categoryRail button {
+  min-height: 34px;
+  padding: 0 10px;
+  font-size: 0.7rem;
+}
+
+.categoryRail button b {
+  min-width: 19px;
+  height: 19px;
+  padding: 0 5px;
+  font-size: 0.6rem;
+}
+
+.resourceGrid {
+  grid-template-columns: repeat(auto-fill, minmax(245px, 1fr));
+  align-items: stretch;
+  gap: 11px;
+}
+
+.resourceCard {
+  min-height: 0;
+  border-radius: 15px;
+}
+
+.cardAccent {
+  height: 2px;
+}
+
+.cardTop,
+.cardBody,
+.cardMeta,
+.cardActions {
+  padding-left: 12px;
+  padding-right: 12px;
+}
+
+.cardTop {
+  gap: 8px;
+  padding-top: 12px;
+}
+
+.resourceIcon {
+  width: 38px;
+  height: 38px;
+  border-radius: 10px;
+  font-size: 1.08rem;
+}
+
+.cardBadges {
+  gap: 4px;
+}
+
+.pinnedBadge,
+.visibilityBadge {
+  padding: 4px 7px;
+}
+
+.pinnedBadge,
+.visibilityBadge,
+.categoryLabel {
+  font-size: 0.57rem;
+}
+
+.categoryLabel {
+  padding: 4px 7px;
+}
+
+.cardBody {
+  padding-top: 10px;
+}
+
+.cardBody h2 {
+  margin: 8px 0 5px;
+  font-size: 0.88rem;
+  line-height: 1.25;
+  -webkit-line-clamp: 2;
+}
+
+.cardBody p {
+  font-size: 0.72rem;
+  line-height: 1.4;
+  -webkit-line-clamp: 2;
+}
+
+.cardMeta {
+  gap: 3px;
+  margin-top: 10px;
+  padding-top: 9px;
+  padding-bottom: 9px;
+  font-size: 0.61rem;
+}
+
+.reactionRow {
+  gap: 7px;
+  margin-top: 8px;
+  padding: 7px 8px;
+  border-radius: 10px;
+}
+
+.reactionPrompt {
+  font-size: 0.63rem;
+}
+
+.reactionButtons {
+  gap: 5px;
+}
+
+.reactionButton {
+  min-width: 45px;
+  min-height: 29px;
+  gap: 4px;
+  padding: 0 7px;
+  border-radius: 8px;
+  font-size: 0.68rem;
+}
+
+.cardActions {
+  gap: 6px;
+  padding-bottom: 11px;
+}
+
+.cardActions button {
+  min-height: 34px;
+  border-radius: 9px;
+  font-size: 0.7rem;
+}
+
+.openButton {
+  padding: 0 10px;
+}
+
+.iconButton,
+.deleteButton {
+  flex-basis: 34px;
+  width: 34px;
+}
+
+@media (min-width: 1180px) {
+  .resourceGrid {
+    grid-template-columns: repeat(4, minmax(0, 1fr));
+  }
+}
+
+@media (min-width: 760px) and (max-width: 1179px) {
+  .resourceGrid {
+    grid-template-columns: repeat(3, minmax(0, 1fr));
+  }
+}
+
+@media (max-width: 760px) {
+  .pageShell {
+    padding: 7px;
+  }
+
+  .hero {
+    padding: 12px;
+    border-radius: 16px;
+  }
+
+  .heroTopRow {
+    gap: 7px;
+  }
+
+  .backButton,
+  .secureBadge {
+    min-height: 30px;
+    padding: 5px 8px;
+    font-size: 0.61rem;
+  }
+
+  .secureBadge {
+    max-width: 58%;
+  }
+
+  .heroContent {
+    grid-template-columns: 40px minmax(0, 1fr);
+    gap: 9px;
+    margin-top: 11px;
+  }
+
+  .heroIcon {
+    width: 40px;
+    height: 40px;
+    border-radius: 11px;
+    font-size: 1.16rem;
+  }
+
+  .eyebrow {
+    margin-bottom: 2px;
+    font-size: 0.52rem;
+    letter-spacing: 0.08em;
+  }
+
+  .heroCopy h1 {
+    font-size: clamp(1.12rem, 5.8vw, 1.48rem);
+    line-height: 1.12;
+  }
+
+  .heroCopy p {
+    margin-top: 4px;
+    font-size: 0.66rem;
+    line-height: 1.38;
+    display: -webkit-box;
+    overflow: hidden;
+    -webkit-line-clamp: 3;
+    -webkit-box-orient: vertical;
+  }
+
+  .heroStats {
+    grid-template-columns: repeat(3, minmax(0, 1fr));
+    gap: 5px;
+    margin-top: 10px;
+  }
+
+  .heroStats div {
+    padding: 7px 5px;
+    text-align: center;
+  }
+
+  .heroStats strong {
+    font-size: 0.88rem;
+  }
+
+  .heroStats span {
+    font-size: 0.53rem;
+  }
+
+  .controlPanel {
+    gap: 7px;
+    margin-top: 9px;
+    padding: 7px;
+  }
+
+  .searchBox {
+    min-height: 38px;
+  }
+
+  .primaryActions {
+    gap: 6px;
+  }
+
+  .addLinkButton,
+  .uploadButton {
+    min-height: 38px;
+    padding: 0 8px;
+    font-size: 0.68rem;
+  }
+
+  .categoryRail {
+    margin: 9px 0 10px;
+  }
+
+  .categoryRail button {
+    min-height: 32px;
+    padding: 0 9px;
+    font-size: 0.66rem;
+  }
+
+  .resourceGrid {
+    grid-template-columns: 1fr;
+    gap: 9px;
+  }
+
+  .resourceCard {
+    border-radius: 14px;
+  }
+
+  .cardTop {
+    padding-top: 11px;
+  }
+
+  .cardBody h2 {
+    font-size: 0.9rem;
+  }
+
+  .cardBody p {
+    font-size: 0.72rem;
+    -webkit-line-clamp: 3;
+  }
+}
+
+@media (max-width: 390px) {
+  .backButton span,
+  .secureBadge span {
+    max-width: 120px;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+  }
+
+  .primaryActions {
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+  }
+
+  .reactionPrompt {
+    position: static;
+    width: auto;
+    height: auto;
+    overflow: visible;
+    clip: auto;
+    white-space: normal;
+  }
+}
+
+
+/* =========================================================
+   Knowledge Center compact resource cards v5
+   Keeps essential information and every action visible.
+   ========================================================= */
+
+.resourceGrid {
+  grid-template-columns: repeat(4, minmax(0, 1fr));
+  align-items: start;
+  gap: 12px;
+}
+
+.resourceCard {
+  min-height: 0;
+  height: auto;
+  border-radius: 15px;
+  overflow: hidden;
+  background:
+    linear-gradient(180deg, rgba(18, 39, 73, 0.98), rgba(12, 28, 54, 0.98));
+  box-shadow: 0 9px 22px rgba(0, 0, 0, 0.2);
+}
+
+.resourceCard:hover {
+  transform: translateY(-2px);
+  box-shadow: 0 14px 28px rgba(0, 0, 0, 0.28);
+}
+
+.cardAccent {
+  height: 3px;
+}
+
+.compactCardHeader {
+  display: grid;
+  grid-template-columns: 36px minmax(0, 1fr);
+  align-items: start;
+  gap: 9px;
+  min-width: 0;
+  padding: 11px 11px 0;
+}
+
+.resourceIcon {
+  width: 36px;
+  height: 36px;
+  border-radius: 10px;
+  font-size: 1.05rem;
+}
+
+.compactCardHeading {
+  min-width: 0;
+}
+
+.compactBadgeLine {
+  display: flex;
+  align-items: center;
+  flex-wrap: wrap;
+  gap: 4px;
+  min-width: 0;
+}
+
+.compactBadgeLine .categoryLabel,
+.compactBadgeLine .pinnedBadge,
+.compactBadgeLine .visibilityBadge {
+  max-width: 100%;
+  padding: 3px 6px;
+  font-size: 0.58rem;
+  line-height: 1.2;
+}
+
+.compactCardHeading h2 {
+  display: -webkit-box;
+  overflow: hidden;
+  margin: 7px 0 0;
+  color: #f5f8ff;
+  font-size: 0.86rem;
+  line-height: 1.24;
+  letter-spacing: -0.012em;
+  overflow-wrap: anywhere;
+  -webkit-line-clamp: 2;
+  -webkit-box-orient: vertical;
+}
+
+.compactSummary {
+  display: -webkit-box;
+  overflow: hidden;
+  min-height: 2.45em;
+  margin: 8px 11px 0;
+  color: #b9c8dd;
+  font-size: 0.71rem;
+  line-height: 1.38;
+  overflow-wrap: anywhere;
+  -webkit-line-clamp: 2;
+  -webkit-box-orient: vertical;
+}
+
+.compactMeta {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr) auto;
+  align-items: center;
+  gap: 8px;
+  min-width: 0;
+  margin: 9px 11px 0;
+  padding-top: 8px;
+  border-top: 1px solid rgba(112, 148, 207, 0.17);
+  color: #91a5c0;
+  font-size: 0.62rem;
+  font-weight: 700;
+}
+
+.compactMeta span {
+  min-width: 0;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.compactMeta span:last-child {
+  text-align: right;
+}
+
+.compactCardFooter {
+  display: grid;
+  gap: 7px;
+  margin-top: 9px;
+  padding: 8px 9px 9px;
+  border-top: 1px solid rgba(112, 148, 207, 0.17);
+  background: rgba(4, 13, 29, 0.19);
+}
+
+.compactCardFooter .reactionRow {
+  min-height: 0;
+  margin: 0;
+  padding: 0;
+  border: 0;
+  background: transparent;
+}
+
+.compactCardFooter .reactionPrompt {
+  color: #91a5c0;
+  font-size: 0.62rem;
+  font-weight: 750;
+}
+
+.compactCardFooter .reactionButtons {
+  gap: 5px;
+}
+
+.compactCardFooter .reactionButton {
+  min-width: 39px;
+  height: 27px;
+  padding: 0 7px;
+  border-radius: 8px;
+  font-size: 0.67rem;
+}
+
+.compactCardFooter .cardActions {
+  display: grid;
+  grid-template-columns: minmax(62px, 1fr) repeat(3, 31px);
+  gap: 5px;
+  padding: 0;
+}
+
+.compactCardFooter .cardActions button {
+  min-height: 31px;
+  height: 31px;
+  border-radius: 8px;
+  font-size: 0.68rem;
+}
+
+.compactCardFooter .openButton {
+  gap: 6px;
+  padding: 0 9px;
+}
+
+.compactCardFooter .iconButton,
+.compactCardFooter .deleteButton {
+  width: 31px;
+  min-width: 31px;
+  flex-basis: 31px;
+}
+
+@media (max-width: 1180px) {
+  .resourceGrid {
+    grid-template-columns: repeat(3, minmax(0, 1fr));
+  }
+}
+
+@media (max-width: 860px) {
+  .resourceGrid {
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+  }
+}
+
+@media (max-width: 620px) {
+  .resourceGrid {
+    grid-template-columns: 1fr;
+    gap: 9px;
+  }
+
+  .resourceCard {
+    border-radius: 14px;
+  }
+
+  .compactCardHeader {
+    grid-template-columns: 34px minmax(0, 1fr);
+    gap: 8px;
+    padding: 10px 10px 0;
+  }
+
+  .resourceIcon {
+    width: 34px;
+    height: 34px;
+  }
+
+  .compactCardHeading h2 {
+    font-size: 0.88rem;
+    -webkit-line-clamp: 2;
+  }
+
+  .compactSummary {
+    min-height: 0;
+    margin: 7px 10px 0;
+    font-size: 0.72rem;
+    -webkit-line-clamp: 2;
+  }
+
+  .compactMeta {
+    margin: 8px 10px 0;
+    font-size: 0.61rem;
+  }
+
+  .compactCardFooter {
+    grid-template-columns: minmax(0, 1fr) auto;
+    align-items: center;
+    gap: 8px;
+    padding: 8px 9px;
+  }
+
+  .compactCardFooter .reactionRow {
+    min-width: 0;
+  }
+
+  .compactCardFooter .reactionPrompt {
+    display: none;
+  }
+
+  .compactCardFooter .cardActions {
+    grid-template-columns: minmax(58px, auto) repeat(3, 31px);
+  }
+}
+
+@media (max-width: 390px) {
+  .compactBadgeLine .visibilityBadge {
+    display: none;
+  }
+
+  .compactCardFooter {
+    grid-template-columns: 1fr;
+  }
+
+  .compactCardFooter .reactionRow {
+    justify-content: flex-start;
+  }
+
+  .compactCardFooter .cardActions {
+    width: 100%;
+    grid-template-columns: minmax(70px, 1fr) repeat(3, 32px);
+  }
+}
+
+
+/* =========================================================
+   Compact card actions v6
+   - Clickable file/link metadata
+   - Reactions share the action row
+   - No separate Feedback row
+   - Wider, shorter cards on laptop and mobile
+   ========================================================= */
+
+.resourceGrid {
+  grid-template-columns: repeat(3, minmax(260px, 1fr));
+  gap: 14px;
+}
+
+.resourceCard {
+  min-height: 0;
+  height: auto;
+}
+
+.compactSummary {
+  min-height: 0;
+  -webkit-line-clamp: 2;
+}
+
+.compactMeta {
+  grid-template-columns: minmax(0, 1fr) auto;
+  gap: 10px;
+  min-height: 27px;
+}
+
+.metaLink,
+.metaLinkButton {
+  display: inline-flex;
+  align-items: center;
+  gap: 5px;
+  min-width: 0;
+  max-width: 100%;
+  padding: 0;
+  border: 0;
+  color: #c5dcff;
+  background: transparent;
+  cursor: pointer;
+  font: inherit;
+  font-weight: 800;
+  line-height: 1.25;
+  text-align: left;
+  text-decoration: none;
+}
+
+.metaLink span,
+.metaLinkButton span {
+  min-width: 0;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.metaLink b,
+.metaLinkButton b {
+  flex: 0 0 auto;
+  color: #70a9ff;
+  font-size: 0.7rem;
+}
+
+.metaLink:hover,
+.metaLinkButton:hover {
+  color: #ffffff;
+  text-decoration: underline;
+  text-underline-offset: 3px;
+}
+
+.metaLink:focus-visible,
+.metaLinkButton:focus-visible {
+  outline: 2px solid rgba(96, 165, 250, 0.85);
+  outline-offset: 3px;
+  border-radius: 4px;
+}
+
+.compactMeta time {
+  color: #91a5c0;
+  font-size: inherit;
+  font-weight: 750;
+  white-space: nowrap;
+}
+
+.compactCardFooter {
+  display: block;
+  margin-top: 8px;
+  padding: 7px 9px 9px;
+}
+
+.compactCardFooter .cardActions {
+  display: flex;
+  align-items: center;
+  gap: 5px;
+  width: 100%;
+  min-width: 0;
+  padding: 0;
+}
+
+.compactCardFooter .cardActions button {
+  height: 31px;
+  min-height: 31px;
+  border-radius: 8px;
+  font-size: 0.67rem;
+}
+
+.compactCardFooter .openButton {
+  flex: 1 1 72px;
+  min-width: 64px;
+  padding: 0 9px;
+}
+
+.compactCardFooter .reactionButton {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 4px;
+  flex: 0 0 auto;
+  width: auto;
+  min-width: 44px;
+  padding: 0 7px;
+  border: 1px solid rgba(112, 157, 210, 0.28);
+  color: #c9d8ea;
+  background: rgba(8, 25, 48, 0.72);
+}
+
+.compactCardFooter .reactionButton:hover:not(:disabled) {
+  border-color: rgba(82, 162, 255, 0.62);
+  background: rgba(16, 49, 88, 0.88);
+}
+
+.compactCardFooter .reactionButtonActive {
+  color: #ffffff;
+  border-color: rgba(65, 145, 255, 0.88);
+  background: linear-gradient(135deg, rgba(36, 105, 220, 0.96), rgba(29, 142, 204, 0.96));
+}
+
+.compactCardFooter .reactionButtonActiveDown {
+  color: #ffffff;
+  border-color: rgba(245, 120, 120, 0.82);
+  background: linear-gradient(135deg, rgba(179, 55, 66, 0.96), rgba(129, 39, 63, 0.96));
+}
+
+.compactCardFooter .iconButton,
+.compactCardFooter .deleteButton {
+  flex: 0 0 31px;
+  width: 31px;
+  min-width: 31px;
+  padding: 0;
+}
+
+@media (max-width: 1100px) {
+  .resourceGrid {
+    grid-template-columns: repeat(2, minmax(250px, 1fr));
+  }
+}
+
+@media (max-width: 620px) {
+  .resourceGrid {
+    grid-template-columns: 1fr;
+    gap: 9px;
+  }
+
+  .compactCardHeader {
+    grid-template-columns: 32px minmax(0, 1fr);
+    padding: 9px 9px 0;
+  }
+
+  .resourceIcon {
+    width: 32px;
+    height: 32px;
+    font-size: 0.98rem;
+  }
+
+  .compactCardHeading h2 {
+    margin-top: 5px;
+    font-size: 0.84rem;
+  }
+
+  .compactSummary {
+    margin: 6px 9px 0;
+    font-size: 0.7rem;
+    -webkit-line-clamp: 2;
+  }
+
+  .compactMeta {
+    margin: 7px 9px 0;
+    padding-top: 7px;
+    font-size: 0.6rem;
+  }
+
+  .compactCardFooter {
+    padding: 7px 8px 8px;
+  }
+
+  .compactCardFooter .cardActions {
+    gap: 4px;
+  }
+
+  .compactCardFooter .openButton {
+    min-width: 62px;
+  }
+
+  .compactCardFooter .reactionButton {
+    min-width: 42px;
+    padding: 0 6px;
+  }
+}
+
+@media (max-width: 390px) {
+  .compactMeta {
+    grid-template-columns: minmax(0, 1fr);
+    gap: 3px;
+  }
+
+  .compactMeta time {
+    display: block;
+  }
+
+  .compactCardFooter .cardActions {
+    flex-wrap: wrap;
+  }
+
+  .compactCardFooter .openButton {
+    flex: 1 1 90px;
+  }
+}
+
+
+/* =========================================================
+   Equal-size readable resource cards v7
+   - Consistent card dimensions within each responsive layout
+   - Larger readable typography
+   - Compact but complete content
+   - Icon-only visibility badge
+   - Refined Cric4All navy/blue visual treatment
+   ========================================================= */
+
+.resourceGrid {
+  align-items: stretch;
+  grid-template-columns: repeat(3, minmax(285px, 1fr));
+  gap: 16px;
+}
+
+.resourceCard {
+  position: relative;
+  isolation: isolate;
+  height: 286px;
+  min-height: 286px;
+  border: 1px solid rgba(91, 145, 222, 0.34);
+  border-radius: 17px;
+  background:
+    radial-gradient(circle at 100% 0%, rgba(55, 112, 220, 0.18), transparent 42%),
+    linear-gradient(155deg, rgba(18, 44, 82, 0.98), rgba(9, 28, 57, 0.99));
+  box-shadow:
+    inset 0 1px 0 rgba(255, 255, 255, 0.045),
+    0 14px 32px rgba(0, 8, 24, 0.28);
+}
+
+.resourceCard::after {
+  content: "";
+  position: absolute;
+  z-index: -1;
+  inset: 0;
+  pointer-events: none;
+  border-radius: inherit;
+  background: linear-gradient(120deg, rgba(75, 133, 255, 0.045), transparent 42%, rgba(136, 92, 246, 0.05));
+}
+
+.resourceCard:hover {
+  transform: translateY(-3px);
+  border-color: rgba(96, 165, 250, 0.64);
+  box-shadow:
+    inset 0 1px 0 rgba(255, 255, 255, 0.06),
+    0 18px 38px rgba(0, 12, 35, 0.38),
+    0 0 0 1px rgba(65, 132, 246, 0.08);
+}
+
+.cardAccent {
+  height: 4px;
+  background: linear-gradient(90deg, #288cff, #6d75ff 58%, #9a5cf6);
+}
+
+.compactCardHeader {
+  grid-template-columns: 38px minmax(0, 1fr);
+  gap: 10px;
+  padding: 12px 12px 0;
+}
+
+.resourceIcon {
+  width: 38px;
+  height: 38px;
+  border: 1px solid rgba(108, 169, 255, 0.28);
+  border-radius: 11px;
+  font-size: 1.08rem;
+  background: linear-gradient(145deg, rgba(45, 96, 176, 0.62), rgba(18, 49, 95, 0.92));
+  box-shadow: inset 0 1px 0 rgba(255,255,255,.07);
+}
+
+.compactBadgeLine {
+  gap: 5px;
+}
+
+.categoryLabel,
+.pinnedBadge,
+.visibilityBadge {
+  min-height: 24px;
+  padding: 4px 8px;
+  font-size: 0.72rem;
+  line-height: 1;
+}
+
+.visibilityBadge {
+  display: inline-grid;
+  place-items: center;
+  width: 25px;
+  min-width: 25px;
+  padding: 0;
+  cursor: help;
+}
+
+.compactCardHeading h2 {
+  margin-top: 7px;
+  color: #f8fbff;
+  font-size: 0.98rem;
+  line-height: 1.25;
+  letter-spacing: -0.012em;
+  -webkit-line-clamp: 2;
+}
+
+.compactSummary {
+  min-height: 2.8em;
+  margin: 9px 12px 0;
+  color: #c1cee0;
+  font-size: 0.79rem;
+  line-height: 1.42;
+  -webkit-line-clamp: 2;
+}
+
+.compactMeta {
+  min-height: 31px;
+  margin: 10px 12px 0;
+  padding-top: 9px;
+  font-size: 0.69rem;
+}
+
+.metaLink,
+.metaLinkButton {
+  color: #d5e5ff;
+  font-size: 0.69rem;
+}
+
+.compactMeta time {
+  color: #aebed4;
+  font-size: 0.68rem;
+}
+
+.compactCardFooter {
+  margin-top: auto;
+  padding: 9px 10px 10px;
+  border-top-color: rgba(104, 151, 219, 0.2);
+  background: rgba(3, 14, 34, 0.28);
+}
+
+.compactCardFooter .cardActions {
+  gap: 6px;
+}
+
+.compactCardFooter .cardActions button {
+  height: 35px;
+  min-height: 35px;
+  border-radius: 9px;
+  font-size: 0.74rem;
+}
+
+.compactCardFooter .openButton {
+  min-width: 72px;
+  padding: 0 11px;
+  background: linear-gradient(135deg, #267af1, #356ee8);
+  box-shadow: 0 7px 16px rgba(25, 93, 217, 0.22);
+}
+
+.compactCardFooter .reactionButton {
+  min-width: 46px;
+  padding: 0 8px;
+  font-size: 0.72rem;
+}
+
+.compactCardFooter .iconButton,
+.compactCardFooter .deleteButton {
+  flex-basis: 35px;
+  width: 35px;
+  min-width: 35px;
+}
+
+@media (min-width: 1280px) {
+  .resourceGrid {
+    grid-template-columns: repeat(3, minmax(300px, 1fr));
+  }
+}
+
+@media (max-width: 1100px) {
+  .resourceGrid {
+    grid-template-columns: repeat(2, minmax(280px, 1fr));
+  }
+}
+
+@media (max-width: 620px) {
+  .resourceGrid {
+    grid-template-columns: 1fr;
+    gap: 11px;
+  }
+
+  .resourceCard {
+    height: 254px;
+    min-height: 254px;
+    border-radius: 15px;
+  }
+
+  .compactCardHeader {
+    grid-template-columns: 36px minmax(0, 1fr);
+    gap: 9px;
+    padding: 10px 10px 0;
+  }
+
+  .resourceIcon {
+    width: 36px;
+    height: 36px;
+    font-size: 1.02rem;
+  }
+
+  .categoryLabel,
+  .pinnedBadge,
+  .visibilityBadge {
+    min-height: 22px;
+    font-size: 0.68rem;
+  }
+
+  .visibilityBadge {
+    width: 23px;
+    min-width: 23px;
+  }
+
+  .compactCardHeading h2 {
+    margin-top: 6px;
+    font-size: 0.94rem;
+  }
+
+  .compactSummary {
+    min-height: 2.65em;
+    margin: 7px 10px 0;
+    font-size: 0.77rem;
+    line-height: 1.36;
+  }
+
+  .compactMeta {
+    margin: 8px 10px 0;
+    padding-top: 7px;
+    font-size: 0.67rem;
+  }
+
+  .metaLink,
+  .metaLinkButton,
+  .compactMeta time {
+    font-size: 0.67rem;
+  }
+
+  .compactCardFooter {
+    padding: 8px 9px 9px;
+  }
+
+  .compactCardFooter .cardActions {
+    flex-wrap: nowrap;
+    gap: 5px;
+  }
+
+  .compactCardFooter .cardActions button {
+    height: 34px;
+    min-height: 34px;
+  }
+
+  .compactCardFooter .openButton {
+    flex: 1 1 auto;
+    min-width: 70px;
+  }
+
+  .compactCardFooter .reactionButton {
+    min-width: 44px;
+  }
+
+  .compactCardFooter .iconButton,
+  .compactCardFooter .deleteButton {
+    flex-basis: 34px;
+    width: 34px;
+    min-width: 34px;
+  }
+}
+
+@media (max-width: 390px) {
+  .resourceCard {
+    height: 260px;
+    min-height: 260px;
+  }
+
+  .compactSummary {
+    -webkit-line-clamp: 2;
+  }
+
+  .compactMeta {
+    grid-template-columns: minmax(0, 1fr) auto;
+    gap: 6px;
+  }
+
+  .compactMeta time {
+    display: block;
+  }
+
+  .compactCardFooter .cardActions {
+    flex-wrap: nowrap;
+  }
+
+  .compactCardFooter .openButton {
+    min-width: 62px;
+    padding: 0 8px;
+  }
+
+  .compactCardFooter .reactionButton {
+    min-width: 41px;
+    padding: 0 6px;
+  }
+}
+
+
+/* =========================================================
+   FINAL COMPACT RESOURCE CARD POLISH
+   - Keeps all actions visible
+   - Removes unnecessary vertical space
+   - Uses icon-only pinned badge
+   - Improves laptop and mobile readability
+   ========================================================= */
+
+.resourceGrid {
+  grid-template-columns:
+    repeat(
+      auto-fit,
+      minmax(min(100%, 320px), 1fr)
+    );
+  align-items: stretch;
+  gap: 14px;
+}
+
+.resourceCard {
+  min-height: 0 !important;
+  height: 100%;
+  border-radius: 16px;
+}
+
+.compactCardHeader {
+  align-items: flex-start;
+  gap: 10px;
+  padding: 12px 12px 0;
+}
+
+.resourceIcon {
+  width: 38px;
+  height: 38px;
+  border-radius: 11px;
+  font-size: 1.08rem;
+}
+
+.compactCardHeading {
+  gap: 7px;
+}
+
+.compactBadgeLine {
+  align-items: center;
+  gap: 5px;
+  min-height: 24px;
+}
+
+.pinnedBadge {
+  display: inline-grid;
+  place-items: center;
+  width: 25px;
+  height: 25px;
+  min-width: 25px;
+  padding: 0 !important;
+  color: #ffe37b;
+  border: 1px solid rgba(250, 204, 21, 0.28);
+  border-radius: 999px;
+  background: rgba(126, 87, 0, 0.32);
+  font-size: 0.78rem;
+  line-height: 1;
+}
+
+.visibilityBadge {
+  width: 25px;
+  height: 25px;
+  min-width: 25px;
+  justify-content: center;
+  padding: 0 !important;
+}
+
+.categoryLabel {
+  min-height: 25px;
+  padding: 4px 8px;
+  font-size: 0.72rem;
+}
+
+.compactCardHeading h2 {
+  margin: 2px 0 0 !important;
+  font-size: 0.96rem;
+  line-height: 1.22;
+  -webkit-line-clamp: 2;
+}
+
+.compactSummary {
+  min-height: 0 !important;
+  margin: 8px 12px 0 !important;
+  font-size: 0.82rem;
+  line-height: 1.38;
+  -webkit-line-clamp: 2;
+}
+
+.compactMeta {
+  display: grid;
+  grid-template-columns:
+    minmax(0, 1fr) auto;
+  align-items: center;
+  gap: 8px;
+  min-height: 0 !important;
+  margin: 8px 12px 0 !important;
+  padding: 8px 0 0 !important;
+  border-top:
+    1px solid rgba(129, 170, 220, 0.16);
+}
+
+.metaLink,
+.metaLinkButton {
+  min-width: 0;
+  max-width: 100%;
+  font-size: 0.78rem;
+}
+
+.metaLink span,
+.metaLinkButton span {
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.compactMeta time {
+  flex: 0 0 auto;
+  white-space: nowrap;
+  font-size: 0.74rem;
+}
+
+.compactCardFooter {
+  margin-top: 9px !important;
+  padding: 8px 8px 8px !important;
+  border-top:
+    1px solid rgba(129, 170, 220, 0.16);
+}
+
+.compactCardFooter .cardActions {
+  display: flex !important;
+  align-items: center;
+  flex-wrap: nowrap;
+  gap: 5px !important;
+  width: 100%;
+  min-width: 0;
+}
+
+.compactCardFooter .cardActions button {
+  flex: 0 0 34px;
+  width: 34px !important;
+  min-width: 34px !important;
+  height: 34px !important;
+  min-height: 34px !important;
+  padding: 0 !important;
+  border-radius: 9px !important;
+  font-size: 0.74rem !important;
+}
+
+.compactCardFooter .openButton {
+  flex: 1 1 auto;
+  width: auto !important;
+  min-width: 72px !important;
+  padding: 0 9px !important;
+  justify-content: center;
+  gap: 5px;
+}
+
+.compactCardFooter .reactionButton {
+  gap: 2px;
+}
+
+.compactCardFooter .reactionButton strong {
+  font-size: 0.68rem;
+}
+
+@media (min-width: 1180px) {
+  .resourceGrid {
+    grid-template-columns:
+      repeat(
+        auto-fit,
+        minmax(330px, 1fr)
+      );
+  }
+}
+
+@media (max-width: 760px) {
+  .resourceGrid {
+    grid-template-columns: 1fr;
+    gap: 11px;
+  }
+
+  .resourceCard {
+    width: 100%;
+  }
+
+  .compactCardHeader {
+    padding: 11px 11px 0;
+  }
+
+  .compactSummary {
+    margin-inline: 11px !important;
+    font-size: 0.84rem;
+  }
+
+  .compactMeta {
+    margin-inline: 11px !important;
+  }
+
+  .compactCardFooter {
+    margin-top: 8px !important;
+  }
+
+  .compactCardFooter .cardActions {
+    display: flex !important;
+    flex-wrap: nowrap;
+    gap: 5px !important;
+  }
+
+  .compactCardFooter .cardActions button {
+    flex-basis: 36px;
+    width: 36px !important;
+    min-width: 36px !important;
+    height: 36px !important;
+    min-height: 36px !important;
+  }
+
+  .compactCardFooter .openButton {
+    flex: 1 1 auto;
+    width: auto !important;
+    min-width: 76px !important;
+  }
+}
+
+@media (max-width: 410px) {
+  .compactCardFooter .cardActions {
+    display: flex !important;
+    flex-wrap: nowrap;
+    gap: 4px !important;
+  }
+
+  .compactCardFooter .openButton {
+    flex: 1 1 auto;
+    min-width: 66px !important;
+  }
+
+  .compactCardFooter .reactionButton,
+  .compactCardFooter .iconButton,
+  .compactCardFooter .deleteButton {
+    flex: 0 0 33px;
+    width: 33px !important;
+    min-width: 33px !important;
+    height: 34px !important;
+    min-height: 34px !important;
+  }
+
+  .compactMeta {
+    grid-template-columns:
+      minmax(0, 1fr);
+    gap: 4px;
+  }
+
+  .compactMeta time {
+    justify-self: start;
+  }
+}
+
+
+/* =========================================================
+   KNOWLEDGE CENTER RESOURCE CARDS V3
+   Final responsive redesign
+   ========================================================= */
+
+.resourceGrid {
+  display: grid;
+  grid-template-columns:
+    repeat(
+      auto-fit,
+      minmax(min(100%, 360px), 1fr)
+    );
+  align-items: stretch;
+  gap: 16px;
+}
+
+.resourceCardV3 {
+  position: relative;
+  min-width: 0;
+  overflow: hidden;
+
+  display: flex;
+  flex-direction: column;
+
+  min-height: 252px;
+
+  color: #edf6ff;
+
+  background:
+    radial-gradient(
+      circle at 100% 0%,
+      rgba(90, 80, 255, 0.16),
+      transparent 34%
+    ),
+    linear-gradient(
+      155deg,
+      rgba(20, 54, 101, 0.98),
+      rgba(10, 31, 62, 0.99)
+    );
+
+  border:
+    1px solid rgba(
+      92,
+      160,
+      245,
+      0.34
+    );
+
+  border-radius: 18px;
+
+  box-shadow:
+    inset 0 1px 0
+      rgba(255, 255, 255, 0.055),
+    0 14px 32px
+      rgba(0, 0, 0, 0.22);
+
+  transition:
+    transform 170ms ease,
+    border-color 170ms ease,
+    box-shadow 170ms ease;
+}
+
+.resourceCardV3:hover {
+  transform: translateY(-2px);
+
+  border-color:
+    rgba(100, 175, 255, 0.62);
+
+  box-shadow:
+    inset 0 1px 0
+      rgba(255, 255, 255, 0.07),
+    0 18px 38px
+      rgba(0, 0, 0, 0.28);
+}
+
+.resourceCardV3Accent {
+  position: absolute;
+  inset: 0 0 auto;
+  height: 3px;
+
+  background:
+    linear-gradient(
+      90deg,
+      #2f8cff,
+      #745cff,
+      #a65cff
+    );
+}
+
+.resourceCardV3Header {
+  min-width: 0;
+
+  display: grid;
+  grid-template-columns:
+    44px minmax(0, 1fr);
+  gap: 11px;
+  align-items: flex-start;
+
+  padding: 15px 15px 0;
+}
+
+.resourceCardV3Icon {
+  width: 44px;
+  height: 44px;
+
+  display: grid;
+  place-items: center;
+
+  border-radius: 13px;
+
+  font-size: 1.2rem;
+  line-height: 1;
+
+  background:
+    linear-gradient(
+      145deg,
+      rgba(48, 112, 202, 0.74),
+      rgba(24, 67, 128, 0.92)
+    );
+
+  border:
+    1px solid rgba(
+      108,
+      180,
+      255,
+      0.34
+    );
+
+  box-shadow:
+    inset 0 1px 0
+      rgba(255, 255, 255, 0.08);
+}
+
+.resourceCardV3Heading {
+  min-width: 0;
+
+  display: flex;
+  flex-direction: column;
+  gap: 7px;
+}
+
+.resourceCardV3Badges {
+  min-width: 0;
+
+  display: flex;
+  align-items: center;
+  gap: 6px;
+}
+
+.resourceCardV3Category {
+  min-width: 0;
+  max-width: 100%;
+
+  display: inline-flex;
+  align-items: center;
+  gap: 5px;
+
+  padding: 5px 9px;
+
+  color: #d8e9ff;
+
+  background:
+    rgba(52, 105, 181, 0.3);
+
+  border:
+    1px solid rgba(
+      105,
+      166,
+      238,
+      0.2
+    );
+
+  border-radius: 999px;
+
+  font-size: 0.76rem;
+  font-weight: 800;
+  line-height: 1;
+  white-space: nowrap;
+}
+
+.resourceCardV3StatusIcon {
+  width: 27px;
+  height: 27px;
+  min-width: 27px;
+
+  display: grid;
+  place-items: center;
+
+  color: #e7efff;
+
+  background:
+    rgba(75, 83, 174, 0.25);
+
+  border:
+    1px solid rgba(
+      126,
+      137,
+      244,
+      0.2
+    );
+
+  border-radius: 999px;
+
+  font-size: 0.76rem;
+  line-height: 1;
+}
+
+.resourceCardV3Heading h2 {
+  min-width: 0;
+  margin: 0;
+
+  color: #ffffff;
+
+  font-size: 1.03rem;
+  font-weight: 850;
+  line-height: 1.24;
+  letter-spacing: -0.015em;
+
+  display: -webkit-box;
+  overflow: hidden;
+  -webkit-box-orient: vertical;
+  -webkit-line-clamp: 2;
+}
+
+.resourceCardV3Body {
+  min-width: 0;
+
+  display: flex;
+  flex: 1 1 auto;
+  flex-direction: column;
+
+  padding: 10px 15px 0;
+}
+
+.resourceCardV3Description {
+  min-height: 2.75em;
+  margin: 0;
+
+  color: #bfd0e4;
+
+  font-size: 0.87rem;
+  font-weight: 500;
+  line-height: 1.42;
+
+  display: -webkit-box;
+  overflow: hidden;
+  -webkit-box-orient: vertical;
+  -webkit-line-clamp: 2;
+}
+
+.resourceCardV3Meta {
+  min-width: 0;
+
+  display: grid;
+  grid-template-columns:
+    minmax(0, 1fr) auto;
+  align-items: center;
+  gap: 10px;
+
+  margin-top: auto;
+  padding: 11px 0 10px;
+
+  border-top:
+    1px solid rgba(
+      119,
+      164,
+      219,
+      0.16
+    );
+}
+
+.resourceCardV3MetaLink {
+  min-width: 0;
+
+  display: inline-flex;
+  align-items: center;
+  gap: 5px;
+
+  margin: 0;
+  padding: 0;
+
+  color: #d8e8fb;
+  background: transparent;
+  border: 0;
+
+  font: inherit;
+  font-size: 0.79rem;
+  font-weight: 750;
+  line-height: 1.2;
+  text-align: left;
+  text-decoration: none;
+
+  cursor: pointer;
+}
+
+.resourceCardV3MetaLink:hover {
+  color: #73b8ff;
+  text-decoration: underline;
+  text-underline-offset: 3px;
+}
+
+.resourceCardV3MetaLink span {
+  min-width: 0;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.resourceCardV3MetaLink b {
+  flex: 0 0 auto;
+  color: #74b8ff;
+}
+
+.resourceCardV3Date {
+  color: #aabbd0;
+
+  font-size: 0.75rem;
+  font-weight: 700;
+  white-space: nowrap;
+}
+
+.resourceCardV3Footer {
+  min-width: 0;
+
+  display: flex;
+  align-items: center;
+  gap: 6px;
+
+  padding: 10px 11px 11px;
+
+  background:
+    rgba(5, 22, 45, 0.46);
+
+  border-top:
+    1px solid rgba(
+      119,
+      164,
+      219,
+      0.17
+    );
+}
+
+.resourceCardV3Footer button {
+  height: 38px;
+  min-height: 38px;
+
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+
+  border-radius: 10px;
+
+  font-family: inherit;
+  font-size: 0.77rem;
+  font-weight: 850;
+  line-height: 1;
+
+  cursor: pointer;
+
+  transition:
+    transform 150ms ease,
+    border-color 150ms ease,
+    background 150ms ease,
+    box-shadow 150ms ease;
+}
+
+.resourceCardV3Footer button:hover:not(:disabled) {
+  transform: translateY(-1px);
+}
+
+.resourceCardV3Footer button:focus-visible {
+  outline:
+    3px solid
+    rgba(76, 159, 255, 0.34);
+  outline-offset: 2px;
+}
+
+.resourceCardV3Footer button:disabled {
+  opacity: 0.55;
+  cursor: wait;
+}
+
+.resourceCardV3Primary {
+  flex: 1 1 auto;
+  min-width: 82px;
+  gap: 6px;
+  padding: 0 13px;
+
+  color: #ffffff;
+
+  background:
+    linear-gradient(
+      135deg,
+      #2587ff,
+      #4169e8
+    );
+
+  border:
+    1px solid rgba(
+      119,
+      188,
+      255,
+      0.5
+    );
+
+  box-shadow:
+    0 8px 18px
+      rgba(36, 108, 230, 0.26);
+}
+
+.resourceCardV3Reaction,
+.resourceCardV3IconButton,
+.resourceCardV3DeleteButton {
+  flex: 0 0 38px;
+  width: 38px;
+  min-width: 38px;
+  padding: 0;
+
+  color: #d8e7f8;
+
+  background:
+    rgba(19, 49, 87, 0.86);
+
+  border:
+    1px solid rgba(
+      104,
+      151,
+      208,
+      0.27
+    );
+}
+
+.resourceCardV3Reaction {
+  gap: 2px;
+}
+
+.resourceCardV3Reaction strong {
+  font-size: 0.68rem;
+}
+
+.resourceCardV3ReactionUpActive {
+  color: #ffffff;
+
+  background:
+    linear-gradient(
+      135deg,
+      #1d86ef,
+      #256fce
+    );
+
+  border-color:
+    rgba(98, 183, 255, 0.72);
+}
+
+.resourceCardV3ReactionDownActive {
+  color: #ffffff;
+
+  background:
+    linear-gradient(
+      135deg,
+      #ce6c37,
+      #a64c25
+    );
+
+  border-color:
+    rgba(255, 164, 103, 0.68);
+}
+
+.resourceCardV3DeleteButton {
+  color: #ffb0bd;
+
+  background:
+    rgba(104, 24, 48, 0.55);
+
+  border-color:
+    rgba(223, 80, 111, 0.25);
+}
+
+.resourceCardV3DeleteButton:hover:not(:disabled) {
+  color: #ffffff;
+
+  background:
+    rgba(150, 32, 66, 0.78);
+}
+
+@media (min-width: 1320px) {
+  .resourceGrid {
+    grid-template-columns:
+      repeat(
+        3,
+        minmax(360px, 1fr)
+      );
+  }
+}
+
+@media (max-width: 900px) {
+  .resourceGrid {
+    grid-template-columns:
+      repeat(
+        2,
+        minmax(300px, 1fr)
+      );
+  }
+}
+
+@media (max-width: 680px) {
+  .resourceGrid {
+    grid-template-columns: 1fr;
+    gap: 12px;
+  }
+
+  .resourceCardV3 {
+    min-height: 238px;
+    border-radius: 16px;
+  }
+
+  .resourceCardV3Header {
+    grid-template-columns:
+      40px minmax(0, 1fr);
+    gap: 10px;
+    padding: 13px 13px 0;
+  }
+
+  .resourceCardV3Icon {
+    width: 40px;
+    height: 40px;
+    border-radius: 12px;
+    font-size: 1.08rem;
+  }
+
+  .resourceCardV3Category {
+    padding: 5px 8px;
+    font-size: 0.72rem;
+  }
+
+  .resourceCardV3StatusIcon {
+    width: 25px;
+    height: 25px;
+    min-width: 25px;
+    font-size: 0.72rem;
+  }
+
+  .resourceCardV3Heading h2 {
+    font-size: 0.99rem;
+  }
+
+  .resourceCardV3Body {
+    padding: 9px 13px 0;
+  }
+
+  .resourceCardV3Description {
+    min-height: 0;
+    font-size: 0.84rem;
+  }
+
+  .resourceCardV3Meta {
+    padding-block: 9px;
+  }
+
+  .resourceCardV3MetaLink {
+    font-size: 0.76rem;
+  }
+
+  .resourceCardV3Date {
+    font-size: 0.72rem;
+  }
+
+  .resourceCardV3Footer {
+    gap: 5px;
+    padding: 9px 9px 10px;
+  }
+
+  .resourceCardV3Footer button {
+    height: 36px;
+    min-height: 36px;
+  }
+
+  .resourceCardV3Primary {
+    min-width: 72px;
+    padding-inline: 10px;
+  }
+
+  .resourceCardV3Reaction,
+  .resourceCardV3IconButton,
+  .resourceCardV3DeleteButton {
+    flex-basis: 36px;
+    width: 36px;
+    min-width: 36px;
+  }
+}
+
+@media (max-width: 390px) {
+  .resourceCardV3Header {
+    grid-template-columns:
+      38px minmax(0, 1fr);
+    padding-inline: 11px;
+  }
+
+  .resourceCardV3Icon {
+    width: 38px;
+    height: 38px;
+  }
+
+  .resourceCardV3Body {
+    padding-inline: 11px;
+  }
+
+  .resourceCardV3Meta {
+    grid-template-columns:
+      minmax(0, 1fr);
+    gap: 5px;
+  }
+
+  .resourceCardV3Date {
+    justify-self: start;
+  }
+
+  .resourceCardV3Footer {
+    flex-wrap: nowrap;
+    gap: 4px;
+    padding-inline: 8px;
+  }
+
+  .resourceCardV3Primary {
+    min-width: 66px;
+    padding-inline: 8px;
+  }
+
+  .resourceCardV3Reaction,
+  .resourceCardV3IconButton,
+  .resourceCardV3DeleteButton {
+    flex-basis: 33px;
+    width: 33px;
+    min-width: 33px;
+  }
+}
