@@ -13533,8 +13533,9 @@ onClick={() => {
             monitor user activity, generate AI-powered match insights, create
             balanced teams with AI Team Builder, run player availability polls,
             import player lists from screenshots or files, generate AI Match
-            Strategy recommendations, share AI strategies through WhatsApp, set up
-            player birthdays, receive birthday notifications, and manage kit reminders.
+            Strategy recommendations, share AI strategies through WhatsApp,
+            manage player birthdays, and run fair team-level or shared-league
+            cricket-kit custody with reminders and post-match follow-up.
           </p>
         </div>
       </div>
@@ -13690,6 +13691,16 @@ onClick={() => {
         </div>
 
         <div className="help-card">
+          <h3>🔐 Who Can Use AI Team Builder?</h3>
+          <p>
+            League Owners have full access. Admins, Scorers, Captains, or other
+            members can use it only when the league grants the required AI Team
+            Builder permission. Ordinary Players and Spectators cannot generate
+            or save teams by default.
+          </p>
+        </div>
+
+        <div className="help-card">
           <h3>📲 Share AI Strategy</h3>
           <p>
             After generating a strategy, use the WhatsApp share button to send
@@ -13699,54 +13710,140 @@ onClick={() => {
         </div>
       </div>
 
-      <h3 className="help-section-title">🎂 Player Birthdays & Kit Reminders</h3>
+      <h3 className="help-section-title">🎂 Player Birthdays & Team Kit Custody</h3>
 
       <div className="help-grid">
         <div className="help-card">
           <h3>🎂 Birthday Setup</h3>
           <p>
-            Add or update player birthday information from the available player
-            management workflow so Cric4All can recognize upcoming birthdays.
+            Add or update a player&apos;s birthday from Birthday Management. Keep
+            the league, player, birthday, phone number, and notification consent
+            accurate so reminders are sent to the correct people.
           </p>
         </div>
 
         <div className="help-card">
-          <h3>🎉 Birthday Notifications</h3>
+          <h3>🔔 Day-Before Birthday Reminder</h3>
           <p>
-            Birthday notifications help organizers, captains, and teammates remember
-            and celebrate player birthdays when reminder information is available.
+            When <strong>notifyDayBefore</strong> is enabled, Cric4All sends an
+            internal push reminder to the configured league preference user at the
+            league&apos;s local reminder hour. The birthday player does not receive
+            a day-before WhatsApp message.
           </p>
         </div>
 
         <div className="help-card">
-          <h3>👕 Kit Reminder Setup</h3>
+          <h3>🎉 Birthday-Day Notifications</h3>
           <p>
-            Use the available kit reminder controls to record player-related kit
-            follow-ups without changing match, team, or scoring information.
+            When <strong>notifyOnBirthday</strong> is enabled, the configured league
+            user receives a birthday-day push. An opted-in birthday player can
+            receive the approved WhatsApp greeting, and the League Owner can receive
+            the owner birthday summary when a valid contact is available.
           </p>
         </div>
 
         <div className="help-card">
-          <h3>⏰ Kit Notifications</h3>
+          <h3>🧾 Birthday Duplicate Protection</h3>
           <p>
-            Kit reminders help players and organizers stay aware of outstanding or
-            upcoming kit-related actions that require attention.
+            BirthdayReminderLog records each birthday year, recipient, reminder
+            type, provider message ID, and delivery status so the same reminder is
+            not submitted repeatedly.
           </p>
         </div>
 
         <div className="help-card">
-          <h3>👤 Player Information</h3>
+          <h3>🎒 Team Kit Overview</h3>
           <p>
-            Keep birthday and kit reminder information associated with the correct
-            player so notifications remain useful and easy to understand.
+            Open <strong>Matches → Kit</strong> to view the current holder, the live
+            fair suggestion, completed-match follow-ups, rotation standings, and
+            custody history for the active league.
           </p>
         </div>
 
         <div className="help-card">
-          <h3>🔔 Reminder Awareness</h3>
+          <h3>👥 Team Kit vs Shared League Kit</h3>
           <p>
-            Review birthday and kit reminders regularly so important community and
-            equipment follow-ups are not missed.
+            Normal leagues keep separate custody for each team and show only the
+            teams a user is authorized to see. Shared-kit leagues use one
+            league-wide holder and history. Surprise Cricket League uses the shared
+            league-kit view with unique players from Surprise 1 and Surprise 2.
+          </p>
+        </div>
+
+        <div className="help-card">
+          <h3>✨ Fair Next Carrier</h3>
+          <p>
+            Select the team and eligible players, then generate a fair suggestion.
+            The system chooses randomly among players with the lowest completed-turn
+            count. A suggestion does not change the current holder or count as a
+            completed turn.
+          </p>
+        </div>
+
+        <div className="help-card">
+          <h3>🔄 Suggest Again</h3>
+          <p>
+            Suggesting another player replaces the live suggestion stored in
+            TeamKitState. It does not create another permanent SUGGESTED event, so
+            the audit history remains clean.
+          </p>
+        </div>
+
+        <div className="help-card">
+          <h3>⚠️ Needs Attention</h3>
+          <p>
+            After a match reaches a final status such as completed, completed locked,
+            or abandoned, Cric4All creates or synchronizes a pending custody task.
+            An authorized user must confirm who actually took the kit.
+          </p>
+        </div>
+
+        <div className="help-card">
+          <h3>✅ Record Actual Holder</h3>
+          <p>
+            An Owner, permitted Admin, or user with kit record access can confirm
+            that the suggested player took it, the same holder kept it, or another
+            person took it. Saving resolves the task, updates the current holder,
+            clears the live suggestion, and records permanent history.
+          </p>
+        </div>
+
+        <div className="help-card">
+          <h3>⚖️ Fair Rotation Credit</h3>
+          <p>
+            Only the actual recorded holder receives a completed rotation turn.
+            Suggestions do not count, and a later manual correction does not add an
+            extra completed turn.
+          </p>
+        </div>
+
+        <div className="help-card">
+          <h3>⏰ Kit Reminder Timing</h3>
+          <p>
+            The current confirmed holder can receive day-before, approximately
+            two-hours-before, post-match, and overdue WhatsApp reminders when
+            opted in. The frequent scheduler checks every 15 minutes, but reminder
+            events prevent the same match, scope, and reminder type from being sent
+            repeatedly.
+          </p>
+        </div>
+
+        <div className="help-card">
+          <h3>🔐 Kit Visibility & Actions</h3>
+          <p>
+            The League Owner can see every kit scope. Other users see only mapped
+            teams unless the league uses a shared kit. Suggesting, recording,
+            correcting, and resolving custody require kit record permission;
+            view-only players cannot change custody.
+          </p>
+        </div>
+
+        <div className="help-card">
+          <h3>🕘 Custody History</h3>
+          <p>
+            TeamKitCustodyEvent keeps the permanent timeline of actual custody,
+            corrections, and reminder submissions. TeamKitState remains the source
+            of truth for the current holder and one live suggestion.
           </p>
         </div>
       </div>
@@ -13767,9 +13864,10 @@ onClick={() => {
           <h3>📋 Matches</h3>
           <p>
             Matches are separated into <strong>Create</strong>,{" "}
-            <strong>Active</strong>, <strong>Scheduled</strong>, and{" "}
-            <strong>Completed</strong>. Completed matches can generate AI
-            reviews.
+            <strong>Active</strong>, <strong>Scheduled</strong>,{" "}
+            <strong>Completed</strong>, and the authorized{" "}
+            <strong>Kit</strong> workflow. Completed matches can generate AI
+            reviews and can create kit-custody follow-up tasks.
           </p>
         </div>
 
@@ -13820,8 +13918,9 @@ onClick={() => {
           <h3>👤 Account</h3>
           <p>
             Use the account icon near Sign Out to view your Cric4All account,
-            quick actions, dashboard shortcut, Explore shortcut, birthday and kit
-            reminder information where available, and the sign-out option.
+            quick actions, dashboard shortcut, Explore shortcut, notification
+            preferences where available, and the sign-out option. Team Kit custody
+            is managed from the Matches → Kit tab.
           </p>
         </div>
 
@@ -14250,10 +14349,14 @@ onClick={() => {
           <li>Generate an AI Match Strategy after selecting one team and at least 11 players.</li>
           <li>Review the recommended batting order and bowling plan before starting play.</li>
           <li>Share the AI Match Strategy to your WhatsApp team group before the toss.</li>
-          <li>Keep player birthday information current so birthday reminders remain accurate.</li>
-          <li>Review birthday notifications so your cricket community can celebrate players.</li>
-          <li>Set up kit reminders for players who need a kit-related follow-up.</li>
-          <li>Review kit notifications regularly so outstanding actions are not missed.</li>
+          <li>Keep player birthday information and WhatsApp consent current.</li>
+          <li>Remember: players receive birthday WhatsApp only on the actual birthday.</li>
+          <li>Use Matches → Kit to confirm the current holder and eligible next carriers.</li>
+          <li>A live kit suggestion is not an assignment and does not change the current holder.</li>
+          <li>After a completed or abandoned match, resolve the Needs Attention custody task.</li>
+          <li>Use Suggest Again when needed; only the latest live suggestion remains active.</li>
+          <li>Only the actual recorded kit holder receives fair-rotation credit.</li>
+          <li>Kit reminder duplicate protection allows the scheduler to check frequently without resending the same reminder.</li>
         </ul>
       </div>
 
@@ -14261,19 +14364,21 @@ onClick={() => {
         <h3>🔐 Roles & Permissions</h3>
 
         <p>
-          League Owners and Admins can manage users, teams, matches, scoring,
-          series, public visibility, audit activity, and access levels. Scorers
-          can score matches, captains can help manage team-related actions,
-          analysts can review stats, and viewers can follow league information.
+          Access is determined from the signed-in user, league membership, role,
+          explicit permissions, and team mapping. The League Owner has league-wide
+          oversight. Admins and Scorers can perform only the actions granted to
+          them. Captains and Players normally remain team-scoped, while Spectators
+          use public or shared links. An email address identifies the user but does
+          not grant ordinary league permissions by itself.
         </p>
 
         <div className="help-badges">
           <span className="badge">OWNER</span>
           <span className="badge">ADMIN</span>
-          <span className="badge">CAPTAIN</span>
           <span className="badge">SCORER</span>
-          <span className="badge">ANALYST</span>
-          <span className="badge">VIEWER</span>
+          <span className="badge">CAPTAIN</span>
+          <span className="badge">PLAYER</span>
+          <span className="badge">SPECTATOR</span>
         </div>
       </div>
 
@@ -14462,38 +14567,92 @@ onClick={() => {
           <div>
             <strong>How do I set up a player&apos;s birthday?</strong>
             <br />
-            Add or update the birthday through the available player management
-            workflow. Keep the information accurate so reminders appear for the
-            correct player.
+            Use Birthday Management for the active league. Keep the player,
+            birthday, contact information, and notification consent accurate.
           </div>
 
           <div>
-            <strong>How do birthday notifications work?</strong>
+            <strong>Will a player receive a WhatsApp message the day before?</strong>
             <br />
-            When birthday information and the related notification feature are
-            available, Cric4All surfaces reminders to help the league recognize
-            upcoming player birthdays.
+            No. The day-before flow is an internal push reminder to the configured
+            league preference user. The opted-in birthday player receives WhatsApp
+            only on the actual birthday.
           </div>
 
           <div>
-            <strong>What are kit reminders used for?</strong>
+            <strong>Who receives birthday notifications?</strong>
             <br />
-            Kit reminders are used for player-related kit actions that organizers
-            or players need to remember and follow up on.
+            On the day before, the configured preference user can receive push.
+            On the birthday, that user can receive push, the opted-in birthday
+            player can receive WhatsApp, and the League Owner can receive the owner
+            summary when a valid contact exists.
           </div>
 
           <div>
-            <strong>Can Cric4All notify me about kit-related follow-ups?</strong>
+            <strong>Where do I manage Team Kit custody?</strong>
             <br />
-            Yes. Use the available kit reminder setup so relevant kit notifications
-            can help surface actions that still need attention.
+            Open <strong>Matches → Kit</strong> for the active league.
           </div>
 
           <div>
-            <strong>Do birthday or kit reminders affect player statistics?</strong>
+            <strong>Who can see Team Kit information?</strong>
             <br />
-            No. Birthday and kit reminder information is separate from live scoring,
-            match records, team balancing, and player performance statistics.
+            The League Owner can see all scopes. Other users see only authorized
+            teams. In a shared-kit league, authorized league users see the one
+            shared kit. Surprise Cricket League uses this shared-kit behavior.
+          </div>
+
+          <div>
+            <strong>Who can suggest or record a kit holder?</strong>
+            <br />
+            The Owner and users granted kit record access can generate suggestions,
+            resolve post-match custody, and correct the current holder. View-only
+            players cannot change custody.
+          </div>
+
+          <div>
+            <strong>What happens when I suggest another player?</strong>
+            <br />
+            The new live suggestion replaces the previous one in TeamKitState.
+            Cric4All does not add another permanent SUGGESTED custody event.
+          </div>
+
+          <div>
+            <strong>Does a suggestion immediately make that player the holder?</strong>
+            <br />
+            No. The current holder changes only after an authorized user records
+            who actually took the kit.
+          </div>
+
+          <div>
+            <strong>What happens after a match is completed or abandoned?</strong>
+            <br />
+            Cric4All creates or synchronizes a Needs Attention custody task. An
+            authorized user confirms that the suggested person, the same holder,
+            or another person took the kit.
+          </div>
+
+          <div>
+            <strong>How is fair rotation calculated?</strong>
+            <br />
+            Only actual completed custody records count. The system suggests
+            randomly among eligible players with the lowest completed-turn count.
+            Suggestions and manual corrections do not add rotation turns.
+          </div>
+
+          <div>
+            <strong>Why does the kit scheduler run every 15 minutes?</strong>
+            <br />
+            It checks time-sensitive day-before, two-hour, post-match, and overdue
+            windows. Duplicate reminder events ensure the same reminder is not sent
+            every 15 minutes.
+          </div>
+
+          <div>
+            <strong>Do birthday or kit workflows affect player statistics?</strong>
+            <br />
+            No. Birthday preferences, reminder logs, kit state, custody tasks, and
+            custody events are separate from scoring and performance statistics.
           </div>
         </div>
       </div>
@@ -14512,9 +14671,9 @@ onClick={() => {
           <p>
             A modern cricket scoring, league management, live spectator sharing,
             AI team building, AI match strategy, AI match review, player birthday
-            notifications, kit reminders, statistics, admin activity, and audit
-            tracking platform built for clubs, leagues, academies, tournaments,
-            and community cricket.
+            notifications, fair team-kit custody and rotation, automated WhatsApp
+            reminders, statistics, admin activity, and audit tracking for clubs,
+            leagues, academies, tournaments, and community cricket.
           </p>
 
           <div className="release-badge-row">
@@ -14524,7 +14683,7 @@ onClick={() => {
             <span className="release-badge">AI Team Builder</span>
             <span className="release-badge">AI Match Strategy</span>
             <span className="release-badge">Birthday Notifications</span>
-            <span className="release-badge">Kit Reminders</span>
+            <span className="release-badge">Team Kit Custody</span>
             <span className="release-badge">Android App</span>
             <span className="release-badge">Admin Center</span>
           </div>
@@ -14538,8 +14697,9 @@ onClick={() => {
           share. It brings leagues, teams, players, matches, series, scorecards,
           commentary, points tables, rankings, permissions, public league pages,
           live spectator links, AI team balancing, availability polls, player
-          imports, AI match strategy, birthday setup and notifications, kit
-          reminders, audit logs, and user activity into one simple platform.
+          imports, AI match strategy, birthday setup and notifications, team-kit
+          custody, fair carrier rotation, operational reminders, audit logs, and
+          user activity into one simple platform.
         </p>
         <p>
           Whether you are running a weekend tournament, a yearly league, an
@@ -14570,8 +14730,10 @@ onClick={() => {
         <div className="about-feature">📲 WhatsApp Strategy Sharing</div>
         <div className="about-feature">🎂 Player Birthday Setup</div>
         <div className="about-feature">🎉 Birthday Notifications</div>
-        <div className="about-feature">👕 Kit Reminder Management</div>
-        <div className="about-feature">⏰ Player Kit Reminders</div>
+        <div className="about-feature">🎒 Team Kit Custody</div>
+        <div className="about-feature">⚖️ Fair Kit Rotation</div>
+        <div className="about-feature">✅ Post-Match Kit Confirmation</div>
+        <div className="about-feature">⏰ Automated Kit Reminders</div>
         <div className="about-feature">📈 Points Table</div>
         <div className="about-feature">🏆 Rankings Hub</div>
         <div className="about-feature">🔎 Smart Filters / Context Lens</div>
@@ -14594,7 +14756,7 @@ onClick={() => {
           <span className="release-badge">Public Pages Ready</span>
           <span className="release-badge">AI Team Builder Ready</span>
           <span className="release-badge">AI Strategy Ready</span>
-          <span className="release-badge">Player Reminders Ready</span>
+          <span className="release-badge">Birthday & Kit Automation Ready</span>
           <span className="release-badge">Android Production Ready</span>
         </div>
 
@@ -14655,13 +14817,24 @@ onClick={() => {
           <span>✅ WhatsApp AI Strategy sharing</span>
           <span>✅ Player birthday setup</span>
           <span>✅ Birthday notifications</span>
-          <span>✅ Kit reminder setup</span>
-          <span>✅ Player kit reminder notifications</span>
+          <span>✅ Team-level and shared-league kit custody</span>
+          <span>✅ Current holder and post-match confirmation workflow</span>
+          <span>✅ Fair next-carrier suggestions from eligible players</span>
+          <span>✅ Re-suggestion without duplicate custody history</span>
+          <span>✅ Day-before, two-hour, post-match, and overdue kit reminders</span>
+          <span>✅ Team-scoped and shared-kit visibility rules</span>
+          <span>✅ Kit custody audit history and rotation standings</span>
           <span>✅ Voice scoring foundation</span>
           <span>✅ Account details page</span>
           <span>✅ Admin activity center</span>
           <span>✅ Audit logs</span>
           <span>✅ Login activity tracking</span>
+          <span>✅ Role, permission, and team-scope authorization</span>
+          <span>✅ Birthday reminder duplicate protection and delivery logging</span>
+          <span>✅ Team Kit reminder duplicate protection through custody events</span>
+          <span>✅ Daily Vercel birthday automation</span>
+          <span>✅ Frequent cron-job.org Team Kit reminder checks</span>
+          <span>✅ Neon PostgreSQL branch-based migration safety</span>
         </div>
       </div>
 
@@ -14726,6 +14899,13 @@ onClick={() => {
           generation, and tactical match recommendations in one workflow.
         </p>
 
+        <p>
+          AI Team Builder access is intended for League Owners and permitted Admins.
+          Captains or other league members can use it only when the league grants the
+          dedicated permission; ordinary Players and Spectators remain view-only and
+          cannot generate or save teams.
+        </p>
+
         <div className="about-workflow-grid">
           <div>
             <strong>Availability Polls</strong>
@@ -14779,13 +14959,14 @@ onClick={() => {
       </div>
 
       <div className="about-card">
-        <h3>🎂 Player Birthdays & Kit Reminders</h3>
+        <h3>🎂 Player Birthdays & Team Kit Custody</h3>
 
         <p>
-          Cric4All supports the off-field responsibilities that help cricket
-          communities stay organized and connected. League organizers can maintain
-          player birthday information and use reminders for birthdays and cricket
-          kit-related follow-ups.
+          Cric4All supports the off-field responsibilities that keep cricket
+          communities organized and connected. League organizers can maintain player
+          birthdays, notify the right recipients, track who currently holds each team
+          or shared league kit, suggest a fair next carrier, and confirm actual custody
+          after completed matches.
         </p>
 
         <div className="about-workflow-grid">
@@ -14795,18 +14976,45 @@ onClick={() => {
           </div>
 
           <div>
-            <strong>Birthday Notifications</strong>
-            <p>Surface birthday reminders so league members can celebrate players.</p>
+            <strong>Birthday Notification Flow</strong>
+            <p>
+              Send an internal day-before push reminder to the configured league user,
+              then send the opted-in player&apos;s WhatsApp greeting only on the actual birthday.
+            </p>
           </div>
 
           <div>
-            <strong>Kit Reminder Setup</strong>
-            <p>Maintain kit-related reminder information for players who need follow-up.</p>
+            <strong>Fair Kit Rotation</strong>
+            <p>
+              Use confirmed match-day players and completed turns to suggest a fair next
+              carrier. Re-suggesting replaces only the live suggestion and does not create
+              misleading permanent custody history.
+            </p>
           </div>
 
           <div>
-            <strong>Kit Notifications</strong>
-            <p>Use reminders to help players and organizers stay aware of kit actions.</p>
+            <strong>Match-Day Custody Workflow</strong>
+            <p>
+              Notify the current confirmed holder before the match, create a Needs Attention
+              task after a final match, and let an Owner, Admin, or authorized Scorer record
+              the person who actually took the kit.
+            </p>
+          </div>
+
+          <div>
+            <strong>Team and Shared-Kit Access</strong>
+            <p>
+              Keep normal team-kit records private to authorized team scopes while allowing
+              league-wide visibility for shared-kit leagues such as Surprise Cricket League.
+            </p>
+          </div>
+
+          <div>
+            <strong>Automated WhatsApp Reminders</strong>
+            <p>
+              Use duplicate-protected day-before, two-hour, post-match, and overdue utility
+              reminders for the current confirmed holder when WhatsApp consent is available.
+            </p>
           </div>
         </div>
       </div>
@@ -14851,8 +15059,8 @@ onClick={() => {
             <strong>For Organizers</strong>
             <p>
               Create leagues, series, teams, matches, invite links, visibility
-              settings, roles, permissions, birthday notifications, kit reminders,
-              and review important activity.
+              settings, roles, permissions, birthday notifications, team-kit access,
+              custody follow-ups, fair rotation, and important activity.
             </p>
           </div>
 
@@ -14870,7 +15078,7 @@ onClick={() => {
             <p>
               Track batting, bowling, fielding records, rankings, leaders,
               captaincy, wicketkeeping, performance history, availability,
-              birthday reminders, kit reminders, and AI-recommended match roles.
+              birthday greetings, authorized kit details, and AI-recommended match roles.
             </p>
           </div>
 
@@ -14923,7 +15131,7 @@ onClick={() => {
           live scoring state, chase requirements, partnerships, fall of wickets,
           over summaries, mobile-friendly score tables, public score sharing,
           AI team balancing, pre-match strategy, WhatsApp strategy sharing,
-          player birthday notifications, kit reminders, and post-match intelligence.
+          player birthday notifications, team-kit custody, fair rotation, automated reminders, and post-match intelligence.
         </p>
 
         <div className="about-highlight-row">
@@ -14933,7 +15141,7 @@ onClick={() => {
           <span>🎯 Match Strategy</span>
           <span>📲 WhatsApp Sharing</span>
           <span>🎂 Birthday Notifications</span>
-          <span>👕 Kit Reminders</span>
+          <span>🎒 Team Kit Custody</span>
           <span>📊 Stats</span>
           <span>📝 Commentary</span>
           <span>🏆 Rankings</span>
@@ -14948,7 +15156,7 @@ onClick={() => {
         <h3>🛣️ Roadmap</h3>
 
         <div className="about-list-grid">
-          <span>📱 Push notifications</span>
+          <span>📱 Expanded match and league push notifications</span>
           <span>☁️ Offline scoring sync</span>
           <span>🏆 Tournament brackets</span>
           <span>🎥 Match highlights</span>
@@ -14958,7 +15166,7 @@ onClick={() => {
           <span>📊 Advanced analytics dashboard</span>
           <span>🔍 SEO upgrades for public league pages</span>
           <span>🎤 Enhanced voice scoring</span>
-          <span>📲 Android app improvements</span>
+          <span>📲 Android app performance and native UX improvements</span>
           <span>🍎 iOS app packaging</span>
           <span>💳 Premium league tools</span>
           <span>📤 Export scorecards and stats</span>
@@ -14973,9 +15181,12 @@ onClick={() => {
           <span className="badge">React</span>
           <span className="badge">Prisma</span>
           <span className="badge">PostgreSQL</span>
+          <span className="badge">Neon</span>
           <span className="badge">NextAuth</span>
           <span className="badge">OpenAI</span>
           <span className="badge">Vercel</span>
+          <span className="badge">Twilio</span>
+          <span className="badge">cron-job.org</span>
           <span className="badge">Capacitor</span>
           <span className="badge">Google Play</span>
         </div>
@@ -14983,7 +15194,7 @@ onClick={() => {
 
       <div className="about-footer">
         <h3>🏏 Cric4All</h3>
-        <p>Manage Leagues. Build Teams. Plan Strategy. Celebrate Players. Score and Share Live Cricket.</p>
+        <p>Manage Leagues. Build Teams. Plan Strategy. Celebrate Players. Track Kit Custody. Score and Share Live Cricket.</p>
         <p className="about-copy">© 2026 Cric4All</p>
       </div>
     </div>
