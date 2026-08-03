@@ -3,11 +3,11 @@
   "crons": [
     {
       "path": "/api/cron/birthdays",
-      "schedule": "0 15 * * *"
+      "schedule": "0 6 * * *"
     },
     {
       "path": "/api/cron/team-kit-reminders",
-      "schedule": "*/15 * * * *"
+      "schedule": "0 6 * * *"
     }
   ]
 }
