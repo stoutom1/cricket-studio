@@ -606,15 +606,76 @@ function normalizeGeneratedReview(generated, fallback, context) {
 }
 
 function parseCachedReview(value) {
-  if (!value || !String(value).startsWith(CACHE_PREFIX)) {
+  if (
+    !value ||
+    !String(value).startsWith(
+      CACHE_PREFIX
+    )
+  ) {
     return null;
   }
 
   try {
-    return JSON.parse(String(value).slice(CACHE_PREFIX.length));
+    const parsed =
+      JSON.parse(
+        String(value).slice(
+          CACHE_PREFIX.length
+        )
+      );
+
+    if (
+      !parsed ||
+      typeof parsed !==
+        "object"
+    ) {
+      return null;
+    }
+
+    return parsed;
   } catch {
     return null;
   }
+}
+
+function cacheMatchesCurrentMatch({
+  cachedReview,
+  match,
+}) {
+  if (!cachedReview) {
+    return false;
+  }
+
+  const cachedVersion =
+    Number(
+      cachedReview
+        ?.cacheMetadata
+        ?.reviewVersion
+    );
+
+  const cachedMatchUpdatedAt =
+    String(
+      cachedReview
+        ?.cacheMetadata
+        ?.matchUpdatedAt ||
+      ""
+    );
+
+  const currentMatchUpdatedAt =
+    match.updatedAt instanceof
+      Date
+      ? match.updatedAt
+          .toISOString()
+      : String(
+          match.updatedAt ||
+          ""
+        );
+
+  return (
+    cachedVersion ===
+      REVIEW_VERSION &&
+    cachedMatchUpdatedAt ===
+      currentMatchUpdatedAt
+  );
 }
 
 export async function GET(request, { params }) {
@@ -660,13 +721,50 @@ export async function GET(request, { params }) {
       );
     }
 
-    const cachedReview = parseCachedReview(match.aiAnalysis);
-    if (cachedReview && !refresh) {
+    const cachedReview =
+      parseCachedReview(
+        match.aiAnalysis
+      );
+
+    const cacheIsCurrent =
+      cacheMatchesCurrentMatch({
+        cachedReview,
+        match,
+      });
+
+    /*
+     * Normal AI Review clicks return the database copy immediately.
+     * OpenAI is called only when:
+     * - no V2 review exists;
+     * - the match changed after the review was generated; or
+     * - refresh=1 is explicitly requested.
+     */
+    if (
+      cacheIsCurrent &&
+      !refresh
+    ) {
       return NextResponse.json({
-        analysis: cachedReview.executiveSummary?.summary || "",
-        review: cachedReview,
-        cached: true,
-        version: REVIEW_VERSION,
+        analysis:
+          cachedReview
+            .executiveSummary
+            ?.summary ||
+          "",
+
+        review:
+          cachedReview,
+
+        cached:
+          true,
+
+        generatedAt:
+          cachedReview
+            ?.cacheMetadata
+            ?.generatedAt ||
+          match.aiAnalysisAt ||
+          null,
+
+        version:
+          REVIEW_VERSION,
       });
     }
 
@@ -726,22 +824,77 @@ export async function GET(request, { params }) {
       }
     }
 
-    const review = normalizeGeneratedReview(generated, fallback, context);
-    const serialized = `${CACHE_PREFIX}${JSON.stringify(review)}`;
+    const generatedAt =
+      new Date();
+
+    const review = {
+      ...normalizeGeneratedReview(
+        generated,
+        fallback,
+        context
+      ),
+
+      cacheMetadata: {
+        reviewVersion:
+          REVIEW_VERSION,
+
+        generatedAt:
+          generatedAt
+            .toISOString(),
+
+        matchUpdatedAt:
+          match.updatedAt instanceof
+            Date
+            ? match.updatedAt
+                .toISOString()
+            : String(
+                match.updatedAt ||
+                ""
+              ),
+
+        generationSource:
+          generated
+            ? "OPENAI"
+            : "VERIFIED_FALLBACK",
+      },
+    };
+
+    const serialized =
+      `${CACHE_PREFIX}${JSON.stringify(
+        review
+      )}`;
 
     await prisma.match.update({
-      where: { id: matchId },
+      where: {
+        id:
+          matchId,
+      },
+
       data: {
-        aiAnalysis: serialized,
-        aiAnalysisAt: new Date(),
+        aiAnalysis:
+          serialized,
+
+        aiAnalysisAt:
+          generatedAt,
       },
     });
 
     return NextResponse.json({
-      analysis: review.executiveSummary.summary,
+      analysis:
+        review.executiveSummary
+          .summary,
+
       review,
-      cached: false,
-      version: REVIEW_VERSION,
+
+      cached:
+        false,
+
+      generatedAt:
+        generatedAt
+          .toISOString(),
+
+      version:
+        REVIEW_VERSION,
     });
   } catch (error) {
     console.error("AI analysis failed:", error);

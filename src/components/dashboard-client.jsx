@@ -413,6 +413,7 @@ const [leagueStats, setLeagueStats] = useState(null);
 const [rankingType, setRankingType] = useState("topRunScorers");
 const [aiAnalysis, setAiAnalysis] = useState("");
 const [aiReview, setAiReview] = useState(null);
+const [aiReviewMeta, setAiReviewMeta] = useState(null);
 const [aiReviewTab, setAiReviewTab] = useState("OVERVIEW");
 const [aiShareCopied, setAiShareCopied] = useState("");
 const [aiAnalysisLoading, setAiAnalysisLoading] = useState(false);
@@ -757,6 +758,25 @@ async function loadAiAnalysis(matchId) {
     setAiReview(
       data.review || null
     );
+
+    setAiReviewMeta({
+      cached:
+        data.cached ===
+        true,
+
+      generatedAt:
+        data.generatedAt ||
+        data.review
+          ?.cacheMetadata
+          ?.generatedAt ||
+        null,
+
+      generationSource:
+        data.review
+          ?.cacheMetadata
+          ?.generationSource ||
+        null,
+    });
 
     setAiReviewTab("OVERVIEW");
     setShowAiAnalysisModal(true);
@@ -16638,6 +16658,39 @@ KL Rahul`}
               {aiReview?.executiveSummary?.result ||
                 "Verified post-match insights"}
             </p>
+
+            {aiReviewMeta && (
+              <div className="ai-review-cache-status">
+                <span
+                  className={
+                    aiReviewMeta.cached
+                      ? "cached"
+                      : "generated"
+                  }
+                >
+                  {aiReviewMeta.cached
+                    ? "⚡ Loaded from saved review"
+                    : "✨ Generated and saved"}
+                </span>
+
+                {aiReviewMeta.generatedAt && (
+                  <time
+                    dateTime={
+                      aiReviewMeta.generatedAt
+                    }
+                    title={
+                      new Date(
+                        aiReviewMeta.generatedAt
+                      ).toLocaleString()
+                    }
+                  >
+                    {new Date(
+                      aiReviewMeta.generatedAt
+                    ).toLocaleDateString()}
+                  </time>
+                )}
+              </div>
+            )}
           </div>
         </div>
 

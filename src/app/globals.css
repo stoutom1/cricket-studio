@@ -66626,3 +66626,92 @@ transform:translateX(28px);
     text-align: left;
   }
 }
+
+
+/* =========================================================
+   AI MATCH INTELLIGENCE — DATABASE CACHE STATUS
+   ========================================================= */
+
+.ai-review-cache-status {
+  display: flex;
+  align-items: center;
+  flex-wrap: wrap;
+  gap: 6px;
+
+  margin-top: 6px;
+}
+
+.ai-review-cache-status > span,
+.ai-review-cache-status > time {
+  display: inline-flex;
+  align-items: center;
+
+  min-height: 23px;
+  padding: 0 8px;
+
+  border-radius: 999px;
+
+  font-size: 0.6rem;
+  font-weight: 850;
+  line-height: 1;
+  white-space: nowrap;
+}
+
+.ai-review-cache-status > span.cached {
+  color: #9fd4ff;
+
+  background:
+    rgba(37, 99, 170, 0.24);
+
+  border:
+    1px solid rgba(
+      101,
+      177,
+      250,
+      0.22
+    );
+}
+
+.ai-review-cache-status > span.generated {
+  color: #91ecc0;
+
+  background:
+    rgba(23, 122, 76, 0.24);
+
+  border:
+    1px solid rgba(
+      79,
+      211,
+      145,
+      0.22
+    );
+}
+
+.ai-review-cache-status > time {
+  color: #89a4c0;
+
+  background:
+    rgba(10, 34, 65, 0.5);
+
+  border:
+    1px solid rgba(
+      91,
+      139,
+      190,
+      0.16
+    );
+}
+
+@media (max-width: 620px) {
+  .ai-review-cache-status {
+    gap: 5px;
+  }
+
+  .ai-review-cache-status > span,
+  .ai-review-cache-status > time {
+    min-height: 25px;
+    padding-inline: 9px;
+
+    font-size: 0.62rem;
+  }
+}
