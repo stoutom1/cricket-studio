@@ -7,7 +7,10 @@ import {
   addResourcePersonalization,
   getResourcePersonalization,
 } from "@/lib/resources/personalization";
-import { getLeagueResourceAccess } from "@/lib/resources/access";
+import {
+  canEditLeagueResource,
+  getLeagueResourceAccess,
+} from "@/lib/resources/access";
 import {
   indexLeagueResource,
 } from "@/lib/resources/indexer";
@@ -48,6 +51,33 @@ function addReactionSummary(resources, groupedCounts, userReactions) {
     downCount: countMap.get(`${resource.id}:DOWN`) || 0,
     myReaction: myReactionMap.get(resource.id) || null,
   }));
+}
+
+function addResourcePermissions({
+  resources,
+  access,
+  userId,
+}) {
+  return resources.map(
+    (resource) => ({
+      ...resource,
+
+      canEdit:
+        canEditLeagueResource({
+          access,
+          resource,
+          userId,
+        }),
+
+      canDelete:
+        access.canDelete ===
+        true,
+
+      isOwnResource:
+        resource.createdById ===
+        userId,
+    })
+  );
 }
 
 export async function GET(request, { params }) {
@@ -148,28 +178,65 @@ export async function GET(request, { params }) {
       userReactions
     );
 
+  const personalizedResources =
+    addResourcePersonalization(
+      summarizedResources,
+      personalization
+    );
+
   return NextResponse.json({
     success: true,
     league: access.league,
-    canAddEdit:
-      access.canAddEdit,
+
+    permissions: {
+      role:
+        access.role,
+
+      canAdd:
+        access.canAdd,
+
+      canEditAny:
+        access.canEditAny,
+
+      canEditOwn:
+        access.canEditOwn,
+
+      canDelete:
+        access.canDelete,
+    },
+
+    canAdd:
+      access.canAdd,
+
+    canEditAny:
+      access.canEditAny,
+
+    canEditOwn:
+      access.canEditOwn,
+
     canDelete:
       access.canDelete,
 
     /*
-     * Backward-compatible response field.
+     * Backward-compatible response fields.
      */
+    canAddEdit:
+      access.canAdd,
+
     canManage:
-      access.canAddEdit,
+      access.canAdd,
 
     collections:
       personalization.collections,
 
     resources:
-      addResourcePersonalization(
-        summarizedResources,
-        personalization
-      ),
+      addResourcePermissions({
+        resources:
+          personalizedResources,
+
+        access,
+        userId,
+      }),
   });
 }
 
@@ -197,11 +264,11 @@ export async function POST(request, { params }) {
     );
   }
 
-  if (!access.canAddEdit) {
+  if (!access.canAdd) {
     return NextResponse.json(
       {
         error:
-          "Only league members can add Knowledge Center resources.",
+          "You do not have permission to add Knowledge Center resources.",
       },
       {
         status: 403,
@@ -358,6 +425,14 @@ export async function POST(request, { params }) {
         upCount: 0,
         downCount: 0,
         myReaction: null,
+
+        canEdit: true,
+
+        canDelete:
+          access.canDelete ===
+          true,
+
+        isOwnResource: true,
       },
     },
     { status: 201 }

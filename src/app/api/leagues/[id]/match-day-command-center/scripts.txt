@@ -1,0 +1,12 @@
+SELECT 
+  u.name AS username,
+  lm."userId",
+  lm."leagueId",
+  lm."canScoreMatch",
+  lm."canManagePermissions",
+  lm."canEditMatch",
+  lm.role
+FROM "User" u
+INNER JOIN "LeagueMember" lm ON u.id = lm."userId"
+ORDER BY u.name ASC
+

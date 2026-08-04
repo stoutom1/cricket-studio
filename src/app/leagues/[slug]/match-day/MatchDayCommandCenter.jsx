@@ -1106,13 +1106,20 @@ function MatchWorkspace({
             </strong>
 
             <small>
-              {permissions?.canScoreMatch
+              {permissions?.canScoreMatch &&
+              (
+                permissions?.canManageAvailability ||
+                permissions?.canManageTeams ||
+                permissions?.canManageKit
+              )
                 ? "Match operations and scoring access"
-                : permissions?.canManageAvailability ||
-                    permissions?.canManageTeams ||
-                    permissions?.canManageKit
-                  ? "Match operations access"
-                  : "Read-only Match Day access"}
+                : permissions?.canScoreMatch
+                  ? "Scoring access with read-only match operations"
+                  : permissions?.canManageAvailability ||
+                      permissions?.canManageTeams ||
+                      permissions?.canManageKit
+                    ? "Match operations access"
+                    : "Read-only Match Day access"}
             </small>
           </p>
         </div>

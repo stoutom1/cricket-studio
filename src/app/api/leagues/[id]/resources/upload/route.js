@@ -36,10 +36,10 @@ export async function POST(request, { params }) {
 
         if (
           !access.exists ||
-          !access.canAddEdit
+          !access.canAdd
         ) {
           throw new Error(
-            "Only league members can upload Knowledge Center resources."
+            "You do not have permission to upload Knowledge Center resources."
           );
         }
 

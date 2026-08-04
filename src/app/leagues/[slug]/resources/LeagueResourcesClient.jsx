@@ -100,8 +100,8 @@ export default function LeagueResourcesClient({ leagueId }) {
   const [resources, setResources] = useState([]);
   const [league, setLeague] = useState(null);
   const [
-    canAddEdit,
-    setCanAddEdit,
+    canAdd,
+    setCanAdd,
   ] = useState(false);
 
   const [
@@ -223,9 +223,14 @@ export default function LeagueResourcesClient({ leagueId }) {
       setCollections(
         result.collections || []
       );
-      setCanAddEdit(
-        result.canAddEdit === true ||
-        result.canManage === true
+      setCanAdd(
+        result.canAdd === true ||
+        result.permissions
+          ?.canAdd === true ||
+        result.canAddEdit ===
+          true ||
+        result.canManage ===
+          true
       );
 
       setCanDelete(
@@ -432,6 +437,13 @@ export default function LeagueResourcesClient({ leagueId }) {
   }
 
   function openCreate(nextMode) {
+    if (!canAdd) {
+      setError(
+        "You do not have permission to add Knowledge Center resources."
+      );
+      return;
+    }
+
     setEditing(null);
     setSelectedFile(null);
     setMode(nextMode);
@@ -445,6 +457,18 @@ export default function LeagueResourcesClient({ leagueId }) {
   }
 
   function openEdit(resource) {
+    if (
+      resource?.canEdit !==
+      true
+    ) {
+      setError(
+        resource?.isOwnResource
+          ? "You cannot edit this resource."
+          : "You can edit only resources that you added."
+      );
+      return;
+    }
+
     setEditing(resource);
     setMode(resource.resourceType);
     setSelectedFile(null);
@@ -1298,7 +1322,7 @@ export default function LeagueResourcesClient({ leagueId }) {
           )}
         </div>
 
-        {canAddEdit && (
+        {canAdd && (
           <div className={styles.primaryActions}>
             <button
               type="button"
@@ -1771,7 +1795,7 @@ export default function LeagueResourcesClient({ leagueId }) {
                 : "Try another search or category."
               : "Upload league rules, add venue, restaurant or hotel links, and keep important forms and contacts easy to find."}
           </p>
-          {canAddEdit && !resources.length && (
+          {canAdd && !resources.length && (
             <div className={styles.emptyActions}>
               <button type="button" onClick={() => openCreate("FILE")}>Upload first file</button>
               <button type="button" onClick={() => openCreate("LINK")}>Add first link</button>
@@ -1942,6 +1966,15 @@ export default function LeagueResourcesClient({ leagueId }) {
                     >
                       {formatDate(resource.updatedAt)}
                     </time>
+
+                    {resource.isOwnResource && (
+                      <span
+                        className={styles.resourceCardV3OwnerBadge}
+                        title="You added this resource"
+                      >
+                        Yours
+                      </span>
+                    )}
                   </div>
                 </div>
 
@@ -2003,19 +2036,29 @@ export default function LeagueResourcesClient({ leagueId }) {
                     </button>
                   )}
 
-                  {canAddEdit && (
+                  {resource.canEdit ===
+                    true && (
                     <button
                       type="button"
                       className={styles.resourceCardV3IconButton}
-                      title="Edit resource"
+                      title={
+                        resource.isOwnResource
+                          ? "Edit your resource"
+                          : "Edit resource"
+                      }
                       aria-label={`Edit ${resource.title}`}
-                      onClick={() => openEdit(resource)}
+                      onClick={() =>
+                        openEdit(
+                          resource
+                        )
+                      }
                     >
                       ✎
                     </button>
                   )}
 
-                  {canDelete && (
+                  {resource.canDelete ===
+                    true && (
                     <button
                       type="button"
                       className={styles.resourceCardV3DeleteButton}

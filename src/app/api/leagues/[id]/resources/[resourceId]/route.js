@@ -5,7 +5,10 @@ import { NextResponse } from "next/server";
 import { authOptions } from "@/lib/auth";
 import prisma from "@/lib/prisma";
 import { indexLeagueResource } from "@/lib/resources/indexer";
-import { getLeagueResourceAccess } from "@/lib/resources/access";
+import {
+  canEditLeagueResource,
+  getLeagueResourceAccess,
+} from "@/lib/resources/access";
 import {
   cleanText,
   normalizeCategory,
@@ -46,29 +49,48 @@ export async function PATCH(request, { params }) {
     userId,
   });
 
-  if (!access.canAddEdit) {
+  const existing =
+    await prisma
+      .leagueResource
+      .findFirst({
+        where: {
+          id:
+            resourceId,
+          leagueId,
+        },
+      });
+
+  if (!existing) {
     return NextResponse.json(
       {
         error:
-          "Only league members can edit Knowledge Center resources.",
+          "Resource not found.",
       },
       {
-        status: 403,
+        status: 404,
       }
     );
   }
 
-  const existing = await prisma.leagueResource.findFirst({
-    where: {
-      id: resourceId,
-      leagueId,
-    },
-  });
+  const mayEdit =
+    canEditLeagueResource({
+      access,
+      resource:
+        existing,
+      userId,
+    });
 
-  if (!existing) {
+  if (!mayEdit) {
     return NextResponse.json(
-      { error: "Resource not found." },
-      { status: 404 }
+      {
+        error:
+          access.canEditOwn
+            ? "You can edit only Knowledge Center resources that you added."
+            : "You do not have permission to edit Knowledge Center resources.",
+      },
+      {
+        status: 403,
+      }
     );
   }
 
@@ -136,7 +158,20 @@ export async function PATCH(request, { params }) {
 
   return NextResponse.json({
     success: true,
-    resource,
+
+    resource: {
+      ...resource,
+
+      canEdit: true,
+
+      canDelete:
+        access.canDelete ===
+        true,
+
+      isOwnResource:
+        resource.createdById ===
+        userId,
+    },
   });
 }
 

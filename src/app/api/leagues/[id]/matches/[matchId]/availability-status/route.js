@@ -175,21 +175,37 @@ export async function PATCH(
         .trim()
         .toUpperCase();
 
+    const isReadOnlyRole =
+      [
+        "VIEWER",
+        "SPECTATOR",
+        "PLAYER",
+        "READ_ONLY",
+        "READONLY",
+      ].includes(
+        normalizedRole
+      );
+
     const canManageMatchDay =
       isOwner ||
-      normalizedRole ===
-        "ADMIN" ||
-      normalizedRole ===
-        "CAPTAIN" ||
-      member
-        ?.canEditMatch ===
-        true ||
-      member
-        ?.canCreateMatch ===
-        true ||
-      member
-        ?.canManagePermissions ===
-        true;
+      (
+        !isReadOnlyRole &&
+        (
+          normalizedRole ===
+            "ADMIN" ||
+          normalizedRole ===
+            "CAPTAIN" ||
+          member
+            ?.canEditMatch ===
+            true ||
+          member
+            ?.canCreateMatch ===
+            true ||
+          member
+            ?.canManagePermissions ===
+            true
+        )
+      );
 
     if (!canManageMatchDay) {
       return NextResponse.json(

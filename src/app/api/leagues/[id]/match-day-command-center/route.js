@@ -1210,6 +1210,23 @@ export async function GET(
       "CAPTAIN";
 
     /*
+     * These roles are explicitly read-only. This override is important
+     * because older LeagueMember rows can retain stale/default boolean
+     * permissions such as canCreateMatch even after the member is changed
+     * to VIEWER.
+     */
+    const isReadOnlyRole =
+      [
+        "VIEWER",
+        "SPECTATOR",
+        "PLAYER",
+        "READ_ONLY",
+        "READONLY",
+      ].includes(
+        normalizedRole
+      );
+
+    /*
      * Match Day uses existing LeagueMember permissions as the primary
      * source of truth. ADMIN and CAPTAIN receive operational fallbacks
      * appropriate to their role when older member records do not yet
@@ -1217,43 +1234,64 @@ export async function GET(
      */
     const canManageAvailability =
       isOwner ||
-      isAdminRole ||
-      isCaptainRole ||
-      member
-        ?.canCreateMatch ===
-        true ||
-      member
-        ?.canEditMatch ===
-        true ||
-      member
-        ?.canManagePermissions ===
-        true;
+      (
+        !isReadOnlyRole &&
+        (
+          isAdminRole ||
+          isCaptainRole ||
+          member
+            ?.canCreateMatch ===
+            true ||
+          member
+            ?.canEditMatch ===
+            true ||
+          member
+            ?.canManagePermissions ===
+            true
+        )
+      );
 
     const canManageTeams =
       isOwner ||
-      isAdminRole ||
-      isCaptainRole ||
-      member
-        ?.canCreateMatch ===
-        true ||
-      member
-        ?.canEditMatch ===
-        true ||
-      member
-        ?.canManagePermissions ===
-        true;
+      (
+        !isReadOnlyRole &&
+        (
+          isAdminRole ||
+          isCaptainRole ||
+          member
+            ?.canCreateMatch ===
+            true ||
+          member
+            ?.canEditMatch ===
+            true ||
+          member
+            ?.canManagePermissions ===
+            true
+        )
+      );
 
     const canManageKit =
       isOwner ||
-      isAdminRole ||
-      isCaptainRole ||
-      member
-        ?.canEditMatch ===
-        true ||
-      member
-        ?.canManagePermissions ===
-        true;
+      (
+        !isReadOnlyRole &&
+        (
+          isAdminRole ||
+          isCaptainRole ||
+          member
+            ?.canEditMatch ===
+            true ||
+          member
+            ?.canManagePermissions ===
+            true
+        )
+      );
 
+    /*
+     * Scoring is the one explicit exception for read-only roles.
+     * A VIEWER/PLAYER/SPECTATOR remains read-only for availability,
+     * teams, and kit, but may score when the league owner grants the
+     * granular canScoreMatch permission.
+     */
     const canScoreMatch =
       isOwner ||
       member
@@ -1659,6 +1697,8 @@ export async function GET(
 
         canViewMatchDay:
           true,
+
+        isReadOnlyRole,
 
         canManageAvailability,
 

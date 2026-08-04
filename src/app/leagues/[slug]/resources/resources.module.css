@@ -5608,260 +5608,45 @@
 
 
 /* =========================================================
-   KNOWLEDGE CENTER TOOLBAR — FINAL RESPONSIVE ALIGNMENT
-   Search Health stays beside Upload on laptop and mobile.
+   KNOWLEDGE CENTER — RESOURCE OWNERSHIP BADGE
    ========================================================= */
 
-.controlPanel {
-  width: 100%;
-  min-width: 0;
-  min-height: 0 !important;
-  height: auto !important;
+.resourceCardV3OwnerBadge {
+  flex: 0 0 auto;
 
-  display: grid !important;
-  grid-template-columns:
-    minmax(260px, 1fr)
-    auto;
-  align-items: center !important;
-  gap: 10px !important;
-
-  padding: 9px 10px !important;
-}
-
-.smartSearchShell {
-  min-width: 0;
-  width: 100%;
-
-  flex: none !important;
-  align-self: center;
-
-  display: flex;
-  flex-direction: column;
-  gap: 5px;
-}
-
-.smartSearchShell .searchBox {
-  width: 100%;
-  min-width: 0;
-  min-height: 42px !important;
-  height: 42px !important;
-
-  flex: 0 0 auto !important;
-
-  margin: 0 !important;
-  padding-block: 0 !important;
-}
-
-.smartSearchShell .searchBox input {
-  min-width: 0;
-  width: 100%;
-  height: 100%;
-}
-
-.primaryActions {
-  min-width: 0;
-  width: auto;
-  height: auto !important;
-
-  display: grid !important;
-  grid-template-columns:
-    repeat(3, max-content) !important;
-  align-items: center;
-  gap: 7px !important;
-
-  align-self: center;
-}
-
-.primaryActions .addLinkButton,
-.primaryActions .uploadButton,
-.primaryActions .searchHealthButton {
-  width: auto !important;
-  min-width: 0 !important;
-  min-height: 42px !important;
-  height: 42px !important;
-
-  display: inline-flex !important;
+  display: inline-flex;
   align-items: center;
   justify-content: center;
-  gap: 6px;
 
-  margin: 0 !important;
-  padding: 0 13px !important;
+  min-height: 22px;
+  padding: 0 7px;
 
-  border-radius: 11px !important;
-
-  font-family: inherit;
-  font-size: 0.78rem !important;
-  font-weight: 850 !important;
-  line-height: 1 !important;
-  white-space: nowrap;
-
-  cursor: pointer;
-}
-
-.searchHealthButton {
-  color: #dcecff;
+  color: #9bd2ff;
 
   background:
-    linear-gradient(
-      145deg,
-      rgba(25, 63, 111, 0.98),
-      rgba(15, 43, 83, 0.99)
-    );
+    rgba(38, 101, 167, 0.26);
 
   border:
     1px solid rgba(
-      91,
-      158,
-      232,
-      0.4
+      93,
+      165,
+      237,
+      0.24
     );
 
-  box-shadow:
-    inset 0 1px 0
-      rgba(255, 255, 255, 0.045);
+  border-radius: 999px;
 
-  transition:
-    transform 150ms ease,
-    border-color 150ms ease,
-    background 150ms ease;
+  font-size: 0.58rem;
+  font-weight: 900;
+  line-height: 1;
+  white-space: nowrap;
 }
 
-.searchHealthButton:hover {
-  transform: translateY(-1px);
+@media (max-width: 620px) {
+  .resourceCardV3OwnerBadge {
+    min-height: 24px;
+    padding-inline: 8px;
 
-  color: #ffffff;
-
-  border-color:
-    rgba(111, 189, 255, 0.68);
-
-  background:
-    linear-gradient(
-      145deg,
-      rgba(34, 83, 143, 0.99),
-      rgba(21, 56, 104, 0.99)
-    );
-}
-
-.searchHealthButton:focus-visible {
-  outline:
-    3px solid
-    rgba(69, 155, 255, 0.32);
-  outline-offset: 2px;
-}
-
-.searchHealthButton b {
-  color: #83c4ff;
-  font-size: 0.68rem;
-}
-
-.smartSearchStatus,
-.smartSearchError {
-  width: 100%;
-  min-width: 0;
-}
-
-/*
- * Medium laptop/tablet:
- * keep all three action buttons beside each other, but put
- * them below the full-width search input.
- */
-@media (max-width: 980px) {
-  .controlPanel {
-    grid-template-columns:
-      minmax(0, 1fr) !important;
-    align-items: stretch !important;
-  }
-
-  .primaryActions {
-    width: 100%;
-
-    grid-template-columns:
-      repeat(3, minmax(0, 1fr)) !important;
-  }
-
-  .primaryActions .addLinkButton,
-  .primaryActions .uploadButton,
-  .primaryActions .searchHealthButton {
-    width: 100% !important;
-    padding-inline: 10px !important;
-  }
-}
-
-/*
- * Mobile:
- * the search remains full-width.
- * Add Link, Upload, and Search Health stay in one clear row.
- */
-@media (max-width: 680px) {
-  .controlPanel {
-    gap: 8px !important;
-
-    padding: 8px !important;
-
-    border-radius: 14px !important;
-  }
-
-  .smartSearchShell .searchBox {
-    min-height: 44px !important;
-    height: 44px !important;
-
-    border-radius: 11px !important;
-  }
-
-  .smartSearchShell .searchBox input {
-    font-size: 0.82rem !important;
-  }
-
-  .primaryActions {
-    gap: 6px !important;
-  }
-
-  .primaryActions .addLinkButton,
-  .primaryActions .uploadButton,
-  .primaryActions .searchHealthButton {
-    min-height: 43px !important;
-    height: 43px !important;
-
-    gap: 4px;
-
-    padding-inline: 6px !important;
-
-    border-radius: 10px !important;
-
-    font-size: 0.7rem !important;
-  }
-
-  .primaryActions button > span:first-child {
-    flex: 0 0 auto;
-  }
-
-  .primaryActions button > span:nth-child(2) {
-    min-width: 0;
-
-    overflow: hidden;
-    text-overflow: ellipsis;
-    white-space: nowrap;
-  }
-
-  .searchHealthButton b {
-    display: none;
-  }
-}
-
-@media (max-width: 390px) {
-  .primaryActions {
-    gap: 4px !important;
-  }
-
-  .primaryActions .addLinkButton,
-  .primaryActions .uploadButton,
-  .primaryActions .searchHealthButton {
-    min-height: 41px !important;
-    height: 41px !important;
-
-    padding-inline: 4px !important;
-
-    font-size: 0.65rem !important;
+    font-size: 0.61rem;
   }
 }

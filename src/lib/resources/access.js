@@ -1,5 +1,47 @@
 import prisma from "@/lib/prisma";
 
+const CONTRIBUTOR_ROLES =
+  new Set([
+    "ADMIN",
+    "CAPTAIN",
+    "SCORER",
+  ]);
+
+function normalizedRole(
+  value
+) {
+  return String(
+    value ||
+    "VIEWER"
+  )
+    .trim()
+    .toUpperCase();
+}
+
+function emptyAccess() {
+  return {
+    exists: false,
+    canView: false,
+
+    canAdd: false,
+    canEditAny: false,
+    canEditOwn: false,
+    canDelete: false,
+
+    /*
+     * Backward-compatible aliases used by older
+     * Knowledge Center components and routes.
+     */
+    canAddEdit: false,
+    canManage: false,
+
+    isOwner: false,
+    role: null,
+    member: null,
+    league: null,
+  };
+}
+
 export async function getLeagueResourceAccess({
   leagueId,
   userId,
@@ -14,91 +56,118 @@ export async function getLeagueResourceAccess({
     numericLeagueId <= 0 ||
     !userId
   ) {
-    return {
-      exists: false,
-      canView: false,
-      canAddEdit: false,
-      canDelete: false,
-
-      /*
-       * Backward-compatible alias used by older
-       * Knowledge Center components.
-       */
-      canManage: false,
-
-      isOwner: false,
-      member: null,
-      league: null,
-    };
+    return emptyAccess();
   }
 
   const league =
-    await prisma.league.findUnique({
-      where: {
-        id:
-          numericLeagueId,
-      },
+    await prisma.league
+      .findUnique({
+        where: {
+          id:
+            numericLeagueId,
+        },
 
-      select: {
-        id: true,
-        name: true,
-        slug: true,
-        visibility: true,
-        ownerId: true,
-      },
-    });
+        select: {
+          id: true,
+          name: true,
+          slug: true,
+          visibility: true,
+          ownerId: true,
+        },
+      });
 
   if (!league) {
-    return {
-      exists: false,
-      canView: false,
-      canAddEdit: false,
-      canDelete: false,
-      canManage: false,
-      isOwner: false,
-      member: null,
-      league: null,
-    };
+    return emptyAccess();
   }
 
   const isOwner =
-    league.ownerId === userId;
+    league.ownerId ===
+    userId;
 
-  const member = isOwner
-    ? null
-    : await prisma.leagueMember
-        .findUnique({
-          where: {
-            userId_leagueId: {
-              userId,
-              leagueId:
-                numericLeagueId,
+  const member =
+    isOwner
+      ? null
+      : await prisma
+          .leagueMember
+          .findUnique({
+            where: {
+              userId_leagueId: {
+                userId,
+                leagueId:
+                  numericLeagueId,
+              },
             },
-          },
 
-          select: {
-            role: true,
-            canManagePermissions:
-              true,
-          },
-        });
+            select: {
+              role: true,
+              canScoreMatch:
+                true,
+              canManagePermissions:
+                true,
+            },
+          });
 
   const isLeagueMember =
     isOwner ||
     Boolean(member);
 
-  /*
-   * Every league member may add and edit
-   * Knowledge Center resources.
-   *
-   * Delete remains restricted to:
-   * 1. The league owner; or
-   * 2. A LeagueMember whose
-   *    canManagePermissions flag is true.
-   */
-  const canAddEdit =
-    isLeagueMember;
+  const role =
+    isOwner
+      ? "OWNER"
+      : normalizedRole(
+          member?.role
+        );
 
+  /*
+   * Full Knowledge Center contributors:
+   * - Owner
+   * - Admin
+   * - Captain
+   * - Scorer
+   *
+   * They may add resources and edit any resource.
+   */
+  const fullContributor =
+    isOwner ||
+    CONTRIBUTOR_ROLES.has(
+      role
+    );
+
+  /*
+   * Special case:
+   * A Viewer with canScoreMatch=true may contribute,
+   * but may edit only resources that they created.
+   */
+  const viewerScorerContributor =
+    role === "VIEWER" &&
+    member?.canScoreMatch ===
+      true;
+
+  const canAdd =
+    isLeagueMember &&
+    (
+      fullContributor ||
+      viewerScorerContributor
+    );
+
+  const canEditAny =
+    isLeagueMember &&
+    fullContributor;
+
+  const canEditOwn =
+    isLeagueMember &&
+    (
+      fullContributor ||
+      viewerScorerContributor
+    );
+
+  /*
+   * Delete remains deliberately restricted:
+   * - League owner; or
+   * - League member with canManagePermissions=true.
+   *
+   * Resource ownership alone never grants delete access.
+   */
   const canDelete =
     isOwner ||
     member
@@ -110,18 +179,53 @@ export async function getLeagueResourceAccess({
     league,
     member,
     isOwner,
+    role,
 
     canView:
       isLeagueMember,
 
-    canAddEdit,
+    canAdd,
+    canEditAny,
+    canEditOwn,
     canDelete,
 
     /*
-     * Retained so older callers do not break.
-     * It now means add/edit permission only.
+     * Older code treated canAddEdit/canManage as one broad flag.
+     * Preserve them as "can contribute" aliases, while new code
+     * uses the granular values above.
      */
+    canAddEdit:
+      canAdd,
+
     canManage:
-      canAddEdit,
+      canAdd,
   };
+}
+
+export function canEditLeagueResource({
+  access,
+  resource,
+  userId,
+}) {
+  if (
+    !access ||
+    !resource ||
+    !userId
+  ) {
+    return false;
+  }
+
+  if (
+    access.canEditAny ===
+    true
+  ) {
+    return true;
+  }
+
+  return (
+    access.canEditOwn ===
+      true &&
+    resource.createdById ===
+      userId
+  );
 }
