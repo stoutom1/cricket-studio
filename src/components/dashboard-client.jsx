@@ -1,6 +1,6 @@
 "use client";
 import { useSession } from "next-auth/react";
-import React, { useEffect, useMemo, useState } from "react";
+import React, { useEffect, useMemo, useRef, useState } from "react";
 import { EXTRA_TYPES, getPlayerName, WICKET_TYPES } from "@/lib/scoring";
 import "@/app/globals.css";
 import { useRouter, useSearchParams } from "next/navigation";
@@ -341,6 +341,9 @@ export default function DashboardClient() {
         "matchId"
       )
     );
+
+  const scoringDeepLinkLoadedRef =
+    useRef("");
 
   const [teams, setTeams] = useState([]);
   const [matches, setMatches] = useState([]);
@@ -858,11 +861,21 @@ useEffect(() => {
       const res = await fetch("/api/me");
       const meData = await res.json();
 
-      const preferredLeagueId = meData?.activeLeagueId
-        ? Number(meData.activeLeagueId)
-        : loadedLeagues?.[0]?.id
-        ? Number(loadedLeagues[0].id)
-        : null;
+      const preferredLeagueId =
+        Number.isInteger(
+          requestedLeagueId
+        ) &&
+        requestedLeagueId > 0
+          ? requestedLeagueId
+          : meData?.activeLeagueId
+            ? Number(
+                meData.activeLeagueId
+              )
+            : loadedLeagues?.[0]?.id
+              ? Number(
+                  loadedLeagues[0].id
+                )
+              : null;
 
       if (preferredLeagueId) {
         setActiveLeagueId(preferredLeagueId);
@@ -870,7 +883,19 @@ useEffect(() => {
         await loadMatches(preferredLeagueId);
       }
 
-      setSelectedMatchId("");
+      if (
+        !(
+          requestedDashboardTab ===
+            "scoring" &&
+          Number.isInteger(
+            requestedMatchId
+          ) &&
+          requestedMatchId > 0
+        )
+      ) {
+        setSelectedMatchId("");
+      }
+
       setPreferencesLoaded(true);
     } catch (err) {
       setError(err.message);
@@ -987,31 +1012,102 @@ setSelectedMatchId("");
 
   useEffect(() => {
     if (
+      requestedDashboardTab !==
+        "scoring" ||
       !Number.isInteger(
         requestedMatchId
       ) ||
-      requestedMatchId <= 0
+      requestedMatchId <= 0 ||
+      !matches.length
     ) {
       return;
     }
 
-    const exists =
-      matches.some(
-        (match) =>
-          Number(match.id) ===
+    if (
+      Number.isInteger(
+        requestedLeagueId
+      ) &&
+      requestedLeagueId > 0 &&
+      Number(
+        activeLeagueId
+      ) !==
+        requestedLeagueId
+    ) {
+      return;
+    }
+
+    const match =
+      matches.find(
+        (candidate) =>
+          Number(
+            candidate.id
+          ) ===
           requestedMatchId
       );
 
-    if (exists) {
-      setSelectedMatchId(
-        String(
-          requestedMatchId
-        )
-      );
+    if (!match) {
+      return;
     }
+
+    const alreadyLoaded =
+      Number(
+        selectedMatchId
+      ) ===
+        requestedMatchId &&
+      Number(
+        matchDetail?.id
+      ) ===
+        requestedMatchId;
+
+    if (alreadyLoaded) {
+      return;
+    }
+
+    const deepLinkKey =
+      `${requestedLeagueId || activeLeagueId}:${requestedMatchId}`;
+
+    if (
+      scoringDeepLinkLoadedRef
+        .current ===
+      deepLinkKey
+    ) {
+      return;
+    }
+
+    scoringDeepLinkLoadedRef.current =
+      deepLinkKey;
+
+    handleScoringMatchSelect(
+      requestedMatchId
+    )
+      .catch(
+        (failure) => {
+          setError(
+            failure instanceof Error
+              ? failure.message
+              : "Unable to open the selected match for scoring."
+          );
+        }
+      )
+      .finally(
+        () => {
+          /*
+           * Release the guard after every load. If another dashboard
+           * initialization effect clears the selected match, this effect
+           * can safely restore it on the next render.
+           */
+          scoringDeepLinkLoadedRef.current =
+            "";
+        }
+      );
   }, [
+    activeLeagueId,
+    matchDetail?.id,
     matches,
+    requestedDashboardTab,
+    requestedLeagueId,
     requestedMatchId,
+    selectedMatchId,
   ]);
 
   useEffect(() => {

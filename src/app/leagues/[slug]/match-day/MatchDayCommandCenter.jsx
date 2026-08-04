@@ -171,6 +171,11 @@ export default function MatchDayCommandCenter({
     setSelectedMatchId,
   ] = useState(null);
 
+  const [
+    queueFilter,
+    setQueueFilter,
+  ] = useState("ALL");
+
   const loadCommandCenter =
     useCallback(
       async ({
@@ -317,6 +322,44 @@ export default function MatchDayCommandCenter({
       [
         data,
         selectedMatchId,
+      ]
+    );
+
+  const filteredMatches =
+    useMemo(
+      () => {
+        const matches =
+          data?.matches || [];
+
+        if (
+          queueFilter ===
+          "IN_PROGRESS"
+        ) {
+          return matches.filter(
+            (match) =>
+              matchIsLive(
+                match
+              )
+          );
+        }
+
+        if (
+          queueFilter ===
+          "SCHEDULED"
+        ) {
+          return matches.filter(
+            (match) =>
+              !matchIsLive(
+                match
+              )
+          );
+        }
+
+        return matches;
+      },
+      [
+        data,
+        queueFilter,
       ]
     );
 
@@ -558,12 +601,78 @@ export default function MatchDayCommandCenter({
                 </div>
 
                 <small>
-                  Auto-refreshes every minute
+                  Scheduled and in-progress only
                 </small>
               </div>
 
+              <div
+                className={styles.queueFilters}
+                role="group"
+                aria-label="Filter match queue"
+              >
+                <button
+                  type="button"
+                  className={
+                    queueFilter ===
+                    "ALL"
+                      ? styles.queueFilterActive
+                      : ""
+                  }
+                  onClick={() =>
+                    setQueueFilter(
+                      "ALL"
+                    )
+                  }
+                >
+                  All
+                  <b>
+                    {data.matches.length}
+                  </b>
+                </button>
+
+                <button
+                  type="button"
+                  className={
+                    queueFilter ===
+                    "IN_PROGRESS"
+                      ? styles.queueFilterActive
+                      : ""
+                  }
+                  onClick={() =>
+                    setQueueFilter(
+                      "IN_PROGRESS"
+                    )
+                  }
+                >
+                  In progress
+                  <b>
+                    {summary.live}
+                  </b>
+                </button>
+
+                <button
+                  type="button"
+                  className={
+                    queueFilter ===
+                    "SCHEDULED"
+                      ? styles.queueFilterActive
+                      : ""
+                  }
+                  onClick={() =>
+                    setQueueFilter(
+                      "SCHEDULED"
+                    )
+                  }
+                >
+                  Scheduled
+                  <b>
+                    {summary.upcoming}
+                  </b>
+                </button>
+              </div>
+
               <div className={styles.matchRail}>
-                {data.matches.map(
+                {filteredMatches.map(
                   (match) => (
                     <button
                       key={
@@ -623,6 +732,12 @@ export default function MatchDayCommandCenter({
                     </button>
                   )
                 )}
+
+                {!filteredMatches.length && (
+                  <div className={styles.queueEmpty}>
+                    No matches in this filter.
+                  </div>
+                )}
               </div>
             </section>
 
@@ -647,33 +762,43 @@ export default function MatchDayCommandCenter({
                     match,
                     complete
                   ) => {
+                    let note =
+                      null;
+
+                    if (complete) {
+                      note =
+                        window.prompt(
+                          "Optional note about how availability was confirmed:",
+                          match.availability
+                            ?.manualNote ||
+                            "Confirmed outside Cric4All"
+                        );
+
+                      if (
+                        note ===
+                        null
+                      ) {
+                        return;
+                      }
+                    }
+
                     setAvailabilitySavingId(
                       match.id
                     );
 
                     setError("");
 
+                    const controller =
+                      new AbortController();
+
+                    const timeoutId =
+                      window.setTimeout(
+                        () =>
+                          controller.abort(),
+                        15000
+                      );
+
                     try {
-                      let note =
-                        null;
-
-                      if (complete) {
-                        note =
-                          window.prompt(
-                            "Optional note about how availability was confirmed:",
-                            match.availability
-                              ?.manualNote ||
-                              "Confirmed outside Cric4All"
-                          );
-
-                        if (
-                          note ===
-                          null
-                        ) {
-                          return;
-                        }
-                      }
-
                       const response =
                         await fetch(
                           `/api/leagues/${leagueId}/matches/${match.id}/availability-status`,
@@ -694,12 +819,32 @@ export default function MatchDayCommandCenter({
                                 availabilityNote:
                                   note,
                               }),
+
+                            signal:
+                              controller.signal,
                           }
                         );
 
-                      const result =
-                        await response
-                          .json();
+                      const rawText =
+                        await response.text();
+
+                      let result =
+                        null;
+
+                      try {
+                        result =
+                          rawText
+                            ? JSON.parse(
+                                rawText
+                              )
+                            : null;
+                      } catch {
+                        result = {
+                          error:
+                            rawText ||
+                            "The server returned an invalid response.",
+                        };
+                      }
 
                       if (!response.ok) {
                         throw new Error(
@@ -708,17 +853,157 @@ export default function MatchDayCommandCenter({
                         );
                       }
 
-                      await loadCommandCenter({
+                      /*
+                       * Update Match Day immediately instead of waiting
+                       * for a second API request before changing the UI.
+                       */
+                      setData(
+                        (current) => {
+                          if (
+                            !current
+                              ?.matches
+                          ) {
+                            return current;
+                          }
+
+                          return {
+                            ...current,
+
+                            matches:
+                              current.matches.map(
+                                (
+                                  currentMatch
+                                ) => {
+                                  if (
+                                    currentMatch.id !==
+                                    match.id
+                                  ) {
+                                    return currentMatch;
+                                  }
+
+                                  const readinessItems =
+                                    (
+                                      currentMatch
+                                        .readiness
+                                        ?.items ||
+                                      []
+                                    ).map(
+                                      (
+                                        item
+                                      ) =>
+                                        item.key ===
+                                        "AVAILABILITY"
+                                          ? {
+                                              ...item,
+                                              complete,
+                                            }
+                                          : item
+                                    );
+
+                                  const completed =
+                                    readinessItems.filter(
+                                      (
+                                        item
+                                      ) =>
+                                        item.complete
+                                    ).length;
+
+                                  const total =
+                                    readinessItems.length ||
+                                    currentMatch
+                                      .readiness
+                                      ?.total ||
+                                    5;
+
+                                  return {
+                                    ...currentMatch,
+
+                                    availability: {
+                                      ...currentMatch
+                                        .availability,
+
+                                      manuallyCompleted:
+                                        complete,
+
+                                      manualNote:
+                                        complete
+                                          ? result
+                                              ?.status
+                                              ?.availabilityNote ||
+                                            note ||
+                                            "Confirmed outside Cric4All"
+                                          : null,
+
+                                      manualUpdatedAt:
+                                        result
+                                          ?.status
+                                          ?.updatedAt ||
+                                        new Date()
+                                          .toISOString(),
+                                    },
+
+                                    readiness: {
+                                      ...currentMatch
+                                        .readiness,
+
+                                      completed,
+                                      total,
+
+                                      percentage:
+                                        Math.round(
+                                          (
+                                            completed /
+                                            Math.max(
+                                              total,
+                                              1
+                                            )
+                                          ) *
+                                            100
+                                        ),
+
+                                      items:
+                                        readinessItems,
+
+                                      availabilitySource:
+                                        complete
+                                          ? "MANUAL"
+                                          : currentMatch
+                                              .availability
+                                              ?.pollId
+                                            ? "POLL"
+                                            : "NONE",
+                                    },
+                                  };
+                                }
+                              ),
+                          };
+                        }
+                      );
+
+                      /*
+                       * Refresh in the background for authoritative
+                       * server values, but do not leave the button stuck.
+                       */
+                      loadCommandCenter({
                         background:
                           true,
-                      });
+                      }).catch(
+                        () => {}
+                      );
                     } catch (failure) {
                       setError(
-                        failure instanceof Error
-                          ? failure.message
-                          : "Unable to update availability readiness."
+                        failure?.name ===
+                        "AbortError"
+                          ? "Saving availability took too long. Please try again."
+                          : failure instanceof Error
+                            ? failure.message
+                            : "Unable to update availability readiness."
                       );
                     } finally {
+                      window.clearTimeout(
+                        timeoutId
+                      );
+
                       setAvailabilitySavingId(
                         null
                       );
@@ -1128,47 +1413,67 @@ function MatchWorkspace({
             <StatusBadge
               ready={
                 match.kit
+                  ?.hasCarrier ===
+                  true &&
+                match.kit
                   ?.pending ===
-                0
+                  0
               }
             />
           </header>
 
-          <div className={styles.kitList}>
+          <div className={styles.kitTableWrap}>
             {match.kit
               ?.assignments
               ?.length ? (
-              match.kit.assignments.map(
-                (
-                  assignment
-                ) => (
-                  <div
-                    key={
-                      assignment.id
-                    }
-                  >
-                    <span>
-                      {assignment.teamName}
-                    </span>
+              <table className={styles.kitTable}>
+                <thead>
+                  <tr>
+                    <th>Team</th>
+                    <th>Current holder</th>
+                    <th>Suggested kit carrier</th>
+                  </tr>
+                </thead>
 
-                    <strong>
-                      {assignment.actualName ||
-                        assignment.assignedName ||
-                        "Not assigned"}
-                    </strong>
+                <tbody>
+                  {match.kit.assignments.map(
+                    (
+                      assignment
+                    ) => (
+                      <tr
+                        key={
+                          assignment.id
+                        }
+                      >
+                        <td
+                          data-label="Team"
+                        >
+                          {assignment.teamName}
+                        </td>
 
-                    <small>
-                      {statusLabel(
-                        assignment.pickupStatus ||
-                          assignment.status
-                      )}
-                    </small>
-                  </div>
-                )
-              )
+                        <td
+                          data-label="Current holder"
+                        >
+                          {assignment.currentHolderName ||
+                            assignment.actualName ||
+                            "Not recorded"}
+                        </td>
+
+                        <td
+                          data-label="Suggested kit carrier"
+                        >
+                          {assignment.suggestedHolderName ||
+                            assignment.assignedName ||
+                            "Not suggested"}
+                        </td>
+                      </tr>
+                    )
+                  )}
+                </tbody>
+              </table>
             ) : (
-              <p>
-                No kit assignment is required or recorded for this match.
+              <p className={styles.kitEmptyMessage}>
+                No kit carrier is assigned or suggested for this match yet.
               </p>
             )}
           </div>
