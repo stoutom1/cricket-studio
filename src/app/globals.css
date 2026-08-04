@@ -65883,3 +65883,746 @@ transform:translateX(28px);
     padding: 12px;
   }
 }
+
+
+/* =========================================================
+   AI MATCH INTELLIGENCE CENTER V2
+   Compact, responsive and scroll-efficient
+   ========================================================= */
+
+.ai-intelligence-backdrop {
+  padding: 14px;
+  z-index: 9999;
+  background: rgba(2, 10, 24, 0.78);
+  backdrop-filter: blur(12px);
+}
+
+.ai-intelligence-modal {
+  width: min(980px, 100%);
+  max-height: min(900px, calc(100dvh - 28px));
+  min-width: 0;
+  display: grid;
+  grid-template-rows: auto auto minmax(0, 1fr) auto;
+  overflow: hidden;
+  color: #edf6ff;
+  background:
+    radial-gradient(circle at 92% 0%, rgba(48, 128, 255, 0.18), transparent 34%),
+    radial-gradient(circle at 0% 100%, rgba(27, 183, 129, 0.12), transparent 36%),
+    linear-gradient(145deg, #071a35 0%, #092446 52%, #07182f 100%);
+  border: 1px solid rgba(111, 175, 240, 0.26);
+  border-radius: 22px;
+  box-shadow: 0 26px 90px rgba(0, 0, 0, 0.52);
+}
+
+.ai-intelligence-header {
+  min-width: 0;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 14px;
+  padding: 15px 17px 12px;
+  border-bottom: 1px solid rgba(110, 169, 228, 0.14);
+}
+
+.ai-intelligence-heading {
+  min-width: 0;
+  display: flex;
+  align-items: center;
+  gap: 11px;
+}
+
+.ai-intelligence-icon {
+  width: 40px;
+  height: 40px;
+  min-width: 40px;
+  display: grid;
+  place-items: center;
+  font-size: 1rem;
+  background: linear-gradient(145deg, rgba(34, 139, 255, 0.32), rgba(106, 79, 231, 0.3));
+  border: 1px solid rgba(131, 191, 255, 0.3);
+  border-radius: 12px;
+  box-shadow: inset 0 1px 0 rgba(255, 255, 255, 0.08);
+}
+
+.ai-intelligence-heading > div {
+  min-width: 0;
+}
+
+.ai-intelligence-kicker,
+.ai-review-hero-card > span,
+.ai-review-section-heading span,
+.ai-review-story-card > span,
+.ai-review-milestones > span {
+  display: block;
+  color: #77bfff;
+  font-size: 0.61rem;
+  font-weight: 900;
+  line-height: 1.1;
+  letter-spacing: 0.085em;
+}
+
+.ai-intelligence-heading h3 {
+  min-width: 0;
+  margin: 3px 0 2px;
+  color: #fff;
+  font-size: clamp(0.94rem, 2vw, 1.15rem);
+  font-weight: 900;
+  line-height: 1.2;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+.ai-intelligence-heading p {
+  min-width: 0;
+  margin: 0;
+  color: #91abc6;
+  font-size: 0.68rem;
+  line-height: 1.3;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+.ai-intelligence-close {
+  width: 36px;
+  height: 36px;
+  min-width: 36px;
+  display: grid;
+  place-items: center;
+  padding: 0;
+  color: #b9cde2;
+  background: rgba(18, 48, 83, 0.76);
+  border: 1px solid rgba(104, 160, 216, 0.22);
+  border-radius: 11px;
+  cursor: pointer;
+}
+
+.ai-intelligence-tabs {
+  min-width: 0;
+  display: flex;
+  align-items: center;
+  gap: 5px;
+  padding: 8px 12px;
+  overflow-x: auto;
+  background: rgba(3, 16, 34, 0.42);
+  border-bottom: 1px solid rgba(110, 169, 228, 0.12);
+  scrollbar-width: thin;
+}
+
+.ai-intelligence-tabs button {
+  flex: 1 0 auto;
+  min-width: 86px;
+  min-height: 34px;
+  padding: 0 12px;
+  color: #8fa9c4;
+  background: transparent;
+  border: 1px solid transparent;
+  border-radius: 10px;
+  font-family: inherit;
+  font-size: 0.68rem;
+  font-weight: 850;
+  cursor: pointer;
+  white-space: nowrap;
+}
+
+.ai-intelligence-tabs button.active {
+  color: #fff;
+  background: linear-gradient(135deg, rgba(28, 128, 245, 0.78), rgba(87, 79, 218, 0.76));
+  border-color: rgba(122, 190, 255, 0.34);
+  box-shadow: 0 7px 20px rgba(25, 98, 190, 0.22);
+}
+
+.ai-intelligence-body {
+  min-height: 0;
+  min-width: 0;
+  overflow-y: auto;
+  overscroll-behavior: contain;
+  padding: 12px;
+}
+
+.ai-review-overview,
+.ai-review-section-stack,
+.ai-review-story-layout {
+  min-width: 0;
+  display: grid;
+  gap: 10px;
+}
+
+.ai-review-hero-card,
+.ai-review-potm-card,
+.ai-review-story-card,
+.ai-review-milestones,
+.ai-review-share-grid > article,
+.ai-review-takeaways article,
+.ai-review-insight-layout > section {
+  min-width: 0;
+  background: linear-gradient(145deg, rgba(11, 43, 81, 0.86), rgba(7, 29, 58, 0.82));
+  border: 1px solid rgba(93, 153, 215, 0.19);
+  border-radius: 14px;
+}
+
+.ai-review-hero-card {
+  padding: 13px 14px;
+}
+
+.ai-review-hero-card h4 {
+  margin: 5px 0 5px;
+  color: #fff;
+  font-size: clamp(0.92rem, 2.2vw, 1.18rem);
+  font-weight: 900;
+  line-height: 1.25;
+  overflow-wrap: anywhere;
+}
+
+.ai-review-hero-card p,
+.ai-review-potm-reason,
+.ai-review-takeaways p,
+.ai-review-story-card p,
+.ai-review-moment-list p,
+.ai-review-insight-list p {
+  margin: 0;
+  color: #a9bfd5;
+  font-size: 0.71rem;
+  line-height: 1.48;
+  overflow-wrap: anywhere;
+}
+
+.ai-review-score-strip {
+  min-width: 0;
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: 8px;
+}
+
+.ai-review-score-strip article {
+  min-width: 0;
+  display: grid;
+  grid-template-columns: minmax(0, 1fr) auto;
+  align-items: center;
+  gap: 3px 10px;
+  padding: 10px 12px;
+  background: rgba(5, 27, 55, 0.76);
+  border: 1px solid rgba(84, 143, 205, 0.18);
+  border-radius: 12px;
+}
+
+.ai-review-score-strip span {
+  min-width: 0;
+  color: #91abc4;
+  font-size: 0.66rem;
+  font-weight: 800;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+.ai-review-score-strip strong {
+  grid-row: 1 / 3;
+  grid-column: 2;
+  color: #fff;
+  font-size: clamp(1rem, 2.6vw, 1.35rem);
+  font-weight: 950;
+  white-space: nowrap;
+}
+
+.ai-review-score-strip small {
+  color: #6f8ba8;
+  font-size: 0.59rem;
+  font-weight: 750;
+}
+
+.ai-review-potm-card {
+  padding: 12px 13px;
+  background:
+    radial-gradient(circle at 100% 0%, rgba(255, 188, 57, 0.12), transparent 38%),
+    linear-gradient(145deg, rgba(16, 49, 87, 0.9), rgba(8, 31, 61, 0.86));
+}
+
+.ai-review-potm-title {
+  min-width: 0;
+  display: grid;
+  grid-template-columns: 34px minmax(0, 1fr) auto;
+  align-items: center;
+  gap: 10px;
+}
+
+.ai-review-potm-title > span {
+  width: 34px;
+  height: 34px;
+  display: grid;
+  place-items: center;
+  background: rgba(205, 145, 22, 0.22);
+  border: 1px solid rgba(247, 191, 72, 0.24);
+  border-radius: 10px;
+}
+
+.ai-review-potm-title small {
+  display: block;
+  color: #e5b85a;
+  font-size: 0.57rem;
+  font-weight: 900;
+  letter-spacing: 0.055em;
+}
+
+.ai-review-potm-title h4 {
+  margin: 2px 0 0;
+  color: #fff;
+  font-size: 0.91rem;
+  font-weight: 900;
+  overflow-wrap: anywhere;
+}
+
+.ai-review-potm-title p {
+  margin: 1px 0 0;
+  color: #819db9;
+  font-size: 0.61rem;
+}
+
+.ai-review-potm-title > b {
+  align-self: start;
+  padding: 5px 7px;
+  color: #8fe6b8;
+  background: rgba(24, 128, 77, 0.22);
+  border-radius: 999px;
+  font-size: 0.61rem;
+  white-space: nowrap;
+}
+
+.ai-review-stat-chips {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 5px;
+  margin-top: 9px;
+}
+
+.ai-review-stat-chips span {
+  padding: 4px 7px;
+  color: #c6dbef;
+  background: rgba(45, 91, 139, 0.29);
+  border-radius: 999px;
+  font-size: 0.59rem;
+  font-weight: 850;
+  white-space: nowrap;
+}
+
+.ai-review-potm-reason {
+  margin-top: 8px;
+}
+
+.ai-review-takeaways {
+  min-width: 0;
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: 8px;
+}
+
+.ai-review-takeaways article {
+  padding: 10px 11px;
+}
+
+.ai-review-takeaways strong {
+  display: block;
+  margin-bottom: 4px;
+  color: #eaf5ff;
+  font-size: 0.7rem;
+  font-weight: 900;
+  overflow-wrap: anywhere;
+}
+
+.ai-review-section-heading {
+  min-width: 0;
+  display: flex;
+  align-items: end;
+  justify-content: space-between;
+  gap: 10px;
+  padding: 1px 2px;
+}
+
+.ai-review-section-heading h4 {
+  margin: 3px 0 0;
+  color: #fff;
+  font-size: 0.91rem;
+  font-weight: 900;
+}
+
+.ai-review-section-heading > small {
+  color: #718da9;
+  font-size: 0.58rem;
+  white-space: nowrap;
+}
+
+.ai-review-section-heading.compact {
+  margin-bottom: 8px;
+}
+
+.ai-review-moment-list,
+.ai-review-insight-list {
+  min-width: 0;
+  display: grid;
+  gap: 7px;
+}
+
+.ai-review-moment-list article {
+  min-width: 0;
+  display: grid;
+  grid-template-columns: 28px minmax(0, 1fr) auto;
+  align-items: start;
+  gap: 9px;
+  padding: 10px;
+  background: rgba(7, 30, 59, 0.72);
+  border: 1px solid rgba(81, 140, 202, 0.17);
+  border-radius: 12px;
+}
+
+.ai-review-moment-number {
+  width: 28px;
+  height: 28px;
+  display: grid;
+  place-items: center;
+  color: #9dd0ff;
+  background: rgba(36, 105, 179, 0.27);
+  border-radius: 9px;
+  font-size: 0.65rem;
+  font-weight: 950;
+}
+
+.ai-review-moment-list small {
+  color: #67b7ff;
+  font-size: 0.57rem;
+  font-weight: 900;
+}
+
+.ai-review-moment-list h5,
+.ai-review-insight-list h5 {
+  margin: 2px 0 3px;
+  color: #f3f8ff;
+  font-size: 0.73rem;
+  font-weight: 900;
+  overflow-wrap: anywhere;
+}
+
+.ai-review-moment-list article > b,
+.ai-review-insight-list article > b {
+  align-self: center;
+  max-width: 150px;
+  padding: 5px 7px;
+  color: #82e7b5;
+  background: rgba(25, 120, 74, 0.22);
+  border-radius: 8px;
+  font-size: 0.59rem;
+  line-height: 1.25;
+  text-align: right;
+  overflow-wrap: anywhere;
+}
+
+.ai-review-milestones {
+  padding: 11px 12px;
+}
+
+.ai-review-milestones > div {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: 6px;
+  margin-top: 8px;
+}
+
+.ai-review-milestones p {
+  margin: 0;
+  padding: 8px 9px;
+  color: #b2c7da;
+  background: rgba(5, 25, 51, 0.54);
+  border-radius: 9px;
+  font-size: 0.66rem;
+  line-height: 1.4;
+  overflow-wrap: anywhere;
+}
+
+.ai-review-empty {
+  padding: 16px;
+  color: #819bb6;
+  background: rgba(6, 27, 54, 0.62);
+  border: 1px dashed rgba(92, 151, 215, 0.22);
+  border-radius: 12px;
+  font-size: 0.69rem;
+  text-align: center;
+}
+
+.ai-review-insight-layout {
+  min-width: 0;
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: 10px;
+}
+
+.ai-review-insight-layout > section {
+  padding: 11px;
+}
+
+.ai-review-insight-list article {
+  min-width: 0;
+  display: grid;
+  grid-template-columns: minmax(0, 1fr) auto;
+  align-items: center;
+  gap: 9px;
+  padding: 9px;
+  background: rgba(5, 25, 51, 0.6);
+  border-radius: 10px;
+}
+
+.ai-review-story-card {
+  padding: clamp(15px, 3vw, 24px);
+}
+
+.ai-review-story-card p {
+  margin-top: 9px;
+  color: #c1d2e2;
+  font-size: clamp(0.75rem, 1.8vw, 0.86rem);
+  line-height: 1.68;
+}
+
+.ai-review-story-actions {
+  display: flex;
+  justify-content: flex-end;
+  gap: 7px;
+}
+
+.ai-review-story-actions button,
+.ai-review-share-grid header button,
+.ai-intelligence-footer button {
+  min-height: 35px;
+  padding: 0 11px;
+  color: #fff;
+  background: linear-gradient(135deg, #2788f7, #5757db);
+  border: 0;
+  border-radius: 9px;
+  font-family: inherit;
+  font-size: 0.67rem;
+  font-weight: 900;
+  cursor: pointer;
+  white-space: nowrap;
+}
+
+.ai-review-story-actions button.secondary {
+  color: #b9cee3;
+  background: rgba(23, 56, 91, 0.72);
+  border: 1px solid rgba(95, 151, 211, 0.22);
+}
+
+.ai-review-share-grid {
+  min-width: 0;
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: 10px;
+}
+
+.ai-review-share-grid > article {
+  min-width: 0;
+  padding: 11px;
+}
+
+.ai-review-share-grid header {
+  min-width: 0;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 10px;
+}
+
+.ai-review-share-grid header > div {
+  min-width: 0;
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+
+.ai-review-share-grid header > div > span {
+  width: 31px;
+  height: 31px;
+  min-width: 31px;
+  display: grid;
+  place-items: center;
+  background: rgba(37, 98, 162, 0.3);
+  border-radius: 9px;
+}
+
+.ai-review-share-grid small {
+  display: block;
+  color: #77bfff;
+  font-size: 0.56rem;
+  font-weight: 900;
+  letter-spacing: 0.06em;
+}
+
+.ai-review-share-grid h4 {
+  margin: 2px 0 0;
+  color: #fff;
+  font-size: 0.74rem;
+  font-weight: 900;
+}
+
+.ai-review-share-grid pre {
+  min-width: 0;
+  max-height: 250px;
+  margin: 10px 0 0;
+  padding: 10px;
+  overflow: auto;
+  color: #bdd0e3;
+  background: rgba(4, 21, 44, 0.68);
+  border: 1px solid rgba(77, 133, 194, 0.14);
+  border-radius: 10px;
+  font-family: inherit;
+  font-size: 0.68rem;
+  line-height: 1.52;
+  white-space: pre-wrap;
+  overflow-wrap: anywhere;
+}
+
+.ai-review-legacy {
+  margin: 0;
+}
+
+.ai-intelligence-footer {
+  min-width: 0;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 10px;
+  padding: 9px 12px;
+  background: rgba(3, 15, 32, 0.5);
+  border-top: 1px solid rgba(110, 169, 228, 0.12);
+}
+
+.ai-intelligence-footer span {
+  min-width: 0;
+  color: #66829f;
+  font-size: 0.58rem;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+@media (max-width: 700px) {
+  .ai-intelligence-backdrop {
+    align-items: stretch;
+    padding: 0;
+  }
+
+  .ai-intelligence-modal {
+    width: 100%;
+    height: 100dvh;
+    max-height: 100dvh;
+    border: 0;
+    border-radius: 0;
+  }
+
+  .ai-intelligence-header {
+    padding: calc(10px + env(safe-area-inset-top)) 11px 10px;
+  }
+
+  .ai-intelligence-heading {
+    gap: 8px;
+  }
+
+  .ai-intelligence-icon {
+    width: 35px;
+    height: 35px;
+    min-width: 35px;
+    border-radius: 10px;
+  }
+
+  .ai-intelligence-heading h3 {
+    font-size: 0.91rem;
+  }
+
+  .ai-intelligence-heading p {
+    max-width: 68vw;
+    font-size: 0.62rem;
+  }
+
+  .ai-intelligence-tabs {
+    gap: 4px;
+    padding: 7px 8px;
+  }
+
+  .ai-intelligence-tabs button {
+    flex: 0 0 auto;
+    min-width: 78px;
+    min-height: 36px;
+    padding-inline: 10px;
+    font-size: 0.68rem;
+  }
+
+  .ai-intelligence-body {
+    padding: 9px;
+  }
+
+  .ai-review-score-strip,
+  .ai-review-takeaways,
+  .ai-review-insight-layout,
+  .ai-review-share-grid {
+    grid-template-columns: minmax(0, 1fr);
+  }
+
+  .ai-review-score-strip {
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+  }
+
+  .ai-review-milestones > div {
+    grid-template-columns: minmax(0, 1fr);
+  }
+
+  .ai-review-moment-list article {
+    grid-template-columns: 26px minmax(0, 1fr);
+  }
+
+  .ai-review-moment-list article > b {
+    grid-column: 2;
+    justify-self: start;
+    max-width: 100%;
+    text-align: left;
+  }
+
+  .ai-review-section-heading > small {
+    display: none;
+  }
+
+  .ai-review-story-actions {
+    display: grid;
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+  }
+
+  .ai-review-story-actions button {
+    min-width: 0;
+    white-space: normal;
+  }
+
+  .ai-intelligence-footer {
+    padding-bottom: calc(9px + env(safe-area-inset-bottom));
+  }
+}
+
+@media (max-width: 390px) {
+  .ai-review-score-strip {
+    grid-template-columns: minmax(0, 1fr);
+  }
+
+  .ai-review-potm-title {
+    grid-template-columns: 32px minmax(0, 1fr);
+  }
+
+  .ai-review-potm-title > b {
+    grid-column: 2;
+    justify-self: start;
+  }
+
+  .ai-review-insight-list article {
+    grid-template-columns: minmax(0, 1fr);
+  }
+
+  .ai-review-insight-list article > b {
+    justify-self: start;
+    max-width: 100%;
+    text-align: left;
+  }
+}

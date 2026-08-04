@@ -412,6 +412,9 @@ const [statsSubTab, setStatsSubTab] = useState("BATTING");
 const [leagueStats, setLeagueStats] = useState(null);
 const [rankingType, setRankingType] = useState("topRunScorers");
 const [aiAnalysis, setAiAnalysis] = useState("");
+const [aiReview, setAiReview] = useState(null);
+const [aiReviewTab, setAiReviewTab] = useState("OVERVIEW");
+const [aiShareCopied, setAiShareCopied] = useState("");
 const [aiAnalysisLoading, setAiAnalysisLoading] = useState(false);
 const [showAiAnalysisModal, setShowAiAnalysisModal] = useState(false);
 const [showMatchCreatedModal, setShowMatchCreatedModal] = useState(false);
@@ -741,15 +744,61 @@ async function loadAuditLogs() {
 async function loadAiAnalysis(matchId) {
   try {
     setAiAnalysisLoading(true);
+    setAiShareCopied("");
 
-    const data = await api(`/api/matches/${matchId}/ai-analysis`);
+    const data = await api(
+      `/api/matches/${matchId}/ai-analysis`
+    );
 
-    setAiAnalysis(data.analysis || "");
+    setAiAnalysis(
+      data.analysis || ""
+    );
+
+    setAiReview(
+      data.review || null
+    );
+
+    setAiReviewTab("OVERVIEW");
     setShowAiAnalysisModal(true);
   } catch (err) {
-    setError(err.message);
+    setError(
+      err.message ||
+        "Unable to load AI Match Intelligence."
+    );
   } finally {
     setAiAnalysisLoading(false);
+  }
+}
+
+async function copyAiReviewText(
+  text,
+  label
+) {
+  const value =
+    String(text || "").trim();
+
+  if (!value) {
+    setError(
+      "There is no share text available yet."
+    );
+    return;
+  }
+
+  try {
+    await navigator.clipboard.writeText(
+      value
+    );
+
+    setAiShareCopied(label);
+
+    window.setTimeout(
+      () => setAiShareCopied(""),
+      1800
+    );
+  } catch {
+    setError(
+      "Copy failed. Please select and copy the text manually."
+    );
   }
 }
 async function loadSeries() {
@@ -16547,56 +16596,444 @@ KL Rahul`}
   </div>
 )}
 {showAiAnalysisModal && (
-  <div className="modal-backdrop">
-    <div className="ai-analysis-modal">
-      <div className="ai-analysis-modal-header">
-        <h3>🤖 AI Match Insights</h3>
+  <div
+    className="modal-backdrop ai-intelligence-backdrop"
+    role="presentation"
+    onMouseDown={(event) => {
+      if (
+        event.target ===
+        event.currentTarget
+      ) {
+        setShowAiAnalysisModal(false);
+      }
+    }}
+  >
+    <section
+      className="ai-intelligence-modal"
+      role="dialog"
+      aria-modal="true"
+      aria-labelledby="ai-intelligence-title"
+    >
+      <header className="ai-intelligence-header">
+        <div className="ai-intelligence-heading">
+          <span
+            className="ai-intelligence-icon"
+            aria-hidden="true"
+          >
+            ✨
+          </span>
+
+          <div>
+            <span className="ai-intelligence-kicker">
+              MATCH INTELLIGENCE
+            </span>
+
+            <h3 id="ai-intelligence-title">
+              {aiReview?.match
+                ? `${aiReview.match.teamA} vs ${aiReview.match.teamB}`
+                : "AI Match Review"}
+            </h3>
+
+            <p>
+              {aiReview?.executiveSummary?.result ||
+                "Verified post-match insights"}
+            </p>
+          </div>
+        </div>
 
         <button
           type="button"
-          className="icon-btn"
-          onClick={() => setShowAiAnalysisModal(false)}
+          className="ai-intelligence-close"
+          onClick={() =>
+            setShowAiAnalysisModal(false)
+          }
+          aria-label="Close AI Match Intelligence"
         >
           ✕
         </button>
-      </div>
+      </header>
 
-<div className="ai-analysis-content pretty-ai-analysis">
-  {aiAnalysis
-    .split("\n")
-    .filter((line) => line.trim())
-    .map((line, idx) => {
-      const isHeading =
-        line.startsWith("🏆") ||
-        line.startsWith("🔑") ||
-        line.startsWith("🏏") ||
-        line.startsWith("🎯") ||
-        line.startsWith("🤝") ||
-        line.startsWith("💥") ||
-        line.startsWith("📊");
+      {aiReview ? (
+        <>
+          <div
+            className="ai-intelligence-tabs"
+            role="tablist"
+            aria-label="AI review sections"
+          >
+            {[
+              ["OVERVIEW", "Overview"],
+              ["MOMENTS", "Moments"],
+              ["INSIGHTS", "Insights"],
+              ["STORY", "Story"],
+              ["SHARE", "Share"],
+            ].map(([key, label]) => (
+              <button
+                key={key}
+                type="button"
+                role="tab"
+                aria-selected={
+                  aiReviewTab === key
+                }
+                className={
+                  aiReviewTab === key
+                    ? "active"
+                    : ""
+                }
+                onClick={() =>
+                  setAiReviewTab(key)
+                }
+              >
+                {label}
+              </button>
+            ))}
+          </div>
 
-      return isHeading ? (
-        <h4 key={`ai-heading-${idx}`}>
-          {line}
-        </h4>
+          <div className="ai-intelligence-body">
+            {aiReviewTab === "OVERVIEW" && (
+              <div className="ai-review-overview">
+                <article className="ai-review-hero-card">
+                  <span>EXECUTIVE SUMMARY</span>
+
+                  <h4>
+                    {aiReview.executiveSummary
+                      ?.headline}
+                  </h4>
+
+                  <p>
+                    {aiReview.executiveSummary
+                      ?.summary}
+                  </p>
+                </article>
+
+                <div className="ai-review-score-strip">
+                  {(aiReview.scoreSummary || []).map(
+                    (innings) => (
+                      <article
+                        key={innings.inningsNo}
+                      >
+                        <span>
+                          {innings.teamName}
+                        </span>
+
+                        <strong>
+                          {innings.runs}/
+                          {innings.wickets}
+                        </strong>
+
+                        <small>
+                          {innings.overs} ov · RR {innings.runRate}
+                        </small>
+                      </article>
+                    )
+                  )}
+                </div>
+
+                <article className="ai-review-potm-card">
+                  <div className="ai-review-potm-title">
+                    <span aria-hidden="true">⭐</span>
+
+                    <div>
+                      <small>
+                        PLAYER OF THE MATCH
+                      </small>
+
+                      <h4>
+                        {aiReview.playerOfTheMatch
+                          ?.playerName}
+                      </h4>
+
+                      {aiReview.playerOfTheMatch
+                        ?.teamName && (
+                        <p>
+                          {aiReview.playerOfTheMatch
+                            .teamName}
+                        </p>
+                      )}
+                    </div>
+
+                    <b>
+                      {aiReview.playerOfTheMatch
+                        ?.confidence || 0}
+                      %
+                    </b>
+                  </div>
+
+                  <div className="ai-review-stat-chips">
+                    {(aiReview.playerOfTheMatch
+                      ?.statLines || []).map(
+                      (line) => (
+                        <span key={line}>
+                          {line}
+                        </span>
+                      )
+                    )}
+                  </div>
+
+                  <p className="ai-review-potm-reason">
+                    {aiReview.playerOfTheMatch
+                      ?.reason}
+                  </p>
+                </article>
+
+                <div className="ai-review-takeaways">
+                  {(aiReview.teamTakeaways || []).map(
+                    (item) => (
+                      <article key={item.teamName}>
+                        <strong>
+                          {item.teamName}
+                        </strong>
+
+                        <p>{item.takeaway}</p>
+                      </article>
+                    )
+                  )}
+                </div>
+              </div>
+            )}
+
+            {aiReviewTab === "MOMENTS" && (
+              <div className="ai-review-section-stack">
+                <div className="ai-review-section-heading">
+                  <div>
+                    <span>TURNING POINTS</span>
+                    <h4>Where momentum moved</h4>
+                  </div>
+
+                  <small>
+                    Verified from ball-by-ball data
+                  </small>
+                </div>
+
+                <div className="ai-review-moment-list">
+                  {(aiReview.turningPoints || []).length ? (
+                    aiReview.turningPoints.map(
+                      (item, index) => (
+                        <article
+                          key={`${item.over}-${index}`}
+                        >
+                          <span className="ai-review-moment-number">
+                            {index + 1}
+                          </span>
+
+                          <div>
+                            <small>{item.over}</small>
+                            <h5>{item.title}</h5>
+                            <p>{item.detail}</p>
+                          </div>
+
+                          <b>{item.impact}</b>
+                        </article>
+                      )
+                    )
+                  ) : (
+                    <div className="ai-review-empty">
+                      No single over met the turning-point threshold.
+                    </div>
+                  )}
+                </div>
+
+                {!!aiReview.recordsAndMilestones
+                  ?.length && (
+                  <div className="ai-review-milestones">
+                    <span>🏅 MATCH MILESTONES</span>
+
+                    <div>
+                      {aiReview.recordsAndMilestones.map(
+                        (item) => (
+                          <p key={item}>{item}</p>
+                        )
+                      )}
+                    </div>
+                  </div>
+                )}
+              </div>
+            )}
+
+            {aiReviewTab === "INSIGHTS" && (
+              <div className="ai-review-insight-layout">
+                <section>
+                  <div className="ai-review-section-heading compact">
+                    <div>
+                      <span>🏏 BATTING</span>
+                      <h4>Impact performances</h4>
+                    </div>
+                  </div>
+
+                  <div className="ai-review-insight-list">
+                    {(aiReview.battingInsights || []).map(
+                      (item) => (
+                        <article key={`${item.title}-${item.metric}`}>
+                          <div>
+                            <h5>{item.title}</h5>
+                            <p>{item.detail}</p>
+                          </div>
+
+                          <b>{item.metric}</b>
+                        </article>
+                      )
+                    )}
+                  </div>
+                </section>
+
+                <section>
+                  <div className="ai-review-section-heading compact">
+                    <div>
+                      <span>🎯 BOWLING</span>
+                      <h4>Pressure creators</h4>
+                    </div>
+                  </div>
+
+                  <div className="ai-review-insight-list">
+                    {(aiReview.bowlingInsights || []).map(
+                      (item) => (
+                        <article key={`${item.title}-${item.metric}`}>
+                          <div>
+                            <h5>{item.title}</h5>
+                            <p>{item.detail}</p>
+                          </div>
+
+                          <b>{item.metric}</b>
+                        </article>
+                      )
+                    )}
+                  </div>
+                </section>
+              </div>
+            )}
+
+            {aiReviewTab === "STORY" && (
+              <div className="ai-review-story-layout">
+                <article className="ai-review-story-card">
+                  <span>THE MATCH STORY</span>
+
+                  <p>{aiReview.matchStory}</p>
+                </article>
+
+                <div className="ai-review-story-actions">
+                  <button
+                    type="button"
+                    onClick={() =>
+                      copyAiReviewText(
+                        aiReview.matchStory,
+                        "story"
+                      )
+                    }
+                  >
+                    {aiShareCopied === "story"
+                      ? "✓ Story copied"
+                      : "Copy match story"}
+                  </button>
+
+                  <button
+                    type="button"
+                    className="secondary"
+                    onClick={() =>
+                      setAiReviewTab("SHARE")
+                    }
+                  >
+                    Open share pack
+                  </button>
+                </div>
+              </div>
+            )}
+
+            {aiReviewTab === "SHARE" && (
+              <div className="ai-review-share-grid">
+                <article>
+                  <header>
+                    <div>
+                      <span aria-hidden="true">💬</span>
+                      <div>
+                        <small>WHATSAPP</small>
+                        <h4>Match update</h4>
+                      </div>
+                    </div>
+
+                    <button
+                      type="button"
+                      onClick={() =>
+                        copyAiReviewText(
+                          aiReview.shareContent
+                            ?.whatsapp,
+                          "whatsapp"
+                        )
+                      }
+                    >
+                      {aiShareCopied === "whatsapp"
+                        ? "Copied"
+                        : "Copy"}
+                    </button>
+                  </header>
+
+                  <pre>
+                    {aiReview.shareContent
+                      ?.whatsapp}
+                  </pre>
+                </article>
+
+                <article>
+                  <header>
+                    <div>
+                      <span aria-hidden="true">📣</span>
+                      <div>
+                        <small>SOCIAL</small>
+                        <h4>Short caption</h4>
+                      </div>
+                    </div>
+
+                    <button
+                      type="button"
+                      onClick={() =>
+                        copyAiReviewText(
+                          aiReview.shareContent
+                            ?.social,
+                          "social"
+                        )
+                      }
+                    >
+                      {aiShareCopied === "social"
+                        ? "Copied"
+                        : "Copy"}
+                    </button>
+                  </header>
+
+                  <pre>
+                    {aiReview.shareContent
+                      ?.social}
+                  </pre>
+                </article>
+              </div>
+            )}
+          </div>
+        </>
       ) : (
-        <p key={`ai-line-${idx}`}>
-          {line.replace(/^[-*]\s*/, "")}
-        </p>
-      );
-    })}
-</div>
+        <div className="ai-analysis-content pretty-ai-analysis ai-review-legacy">
+          {aiAnalysis
+            .split("\n")
+            .filter((line) => line.trim())
+            .map((line, index) => (
+              <p key={`legacy-ai-${index}`}>
+                {line.replace(/^[-*]\s*/, "")}
+              </p>
+            ))}
+        </div>
+      )}
 
-      <div className="modal-actions">
+      <footer className="ai-intelligence-footer">
+        <span>
+          AI narrative · Verified Cric4All match data
+        </span>
+
         <button
           type="button"
-          className="btn"
-          onClick={() => setShowAiAnalysisModal(false)}
+          onClick={() =>
+            setShowAiAnalysisModal(false)
+          }
         >
-          Close
+          Done
         </button>
-      </div>
-    </div>
+      </footer>
+    </section>
   </div>
 )}
 {showMatchCreatedModal && createdMatchInfo && (
