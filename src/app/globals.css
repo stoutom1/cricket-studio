@@ -68130,3 +68130,124 @@ transform:translateX(28px);
     line-height: 1.25;
   }
 }
+
+
+/* =========================================================
+   MOBILE-ONLY LEAGUE UI MICRO-FIX
+   - Keep the active-league trophy fully inside its card
+   - Keep "Create Series" on one line
+   - No desktop behavior or JavaScript is changed
+   ========================================================= */
+
+@media (max-width: 700px) {
+  /*
+   * Other accumulated mobile rules must not pull the trophy outside
+   * the Active League workspace. These declarations intentionally
+   * reset only positioning/spacing, not functionality.
+   */
+  .mobile-league-command-center .mlcc-workspace {
+    position: relative;
+    overflow: hidden;
+    padding: 15px !important;
+  }
+
+  .mobile-league-command-center .mlcc-workspace-top {
+    width: 100%;
+    min-width: 0;
+    margin: 0;
+    padding-inline: 0;
+  }
+
+  .mobile-league-command-center .mlcc-active-identity {
+    min-width: 0;
+    max-width: calc(100% - 58px);
+    margin: 0;
+    padding: 0;
+  }
+
+  .mobile-league-command-center .mlcc-active-mark {
+    position: static !important;
+    inset: auto !important;
+    transform: none !important;
+
+    flex: 0 0 42px;
+    width: 42px !important;
+    height: 42px !important;
+
+    margin: 0 !important;
+
+    border-radius: 12px;
+
+    line-height: 1;
+  }
+
+  .mobile-league-command-center .mlcc-active-identity > div {
+    min-width: 0;
+    overflow: hidden;
+  }
+
+  .mobile-league-command-center .mlcc-new-league {
+    flex: 0 0 auto;
+    margin: 0;
+    white-space: nowrap;
+  }
+
+  /*
+   * The Create Series action gets a complete row on mobile.
+   * Edit/Delete, when present, remain on the row below.
+   */
+  .series-actions-row {
+    display: grid;
+    grid-template-columns:
+      repeat(2, minmax(0, 1fr));
+    gap: 8px;
+    width: 100%;
+  }
+
+  .series-actions-row > .mgmt-clean-btn:first-child {
+    grid-column: 1 / -1;
+
+    width: 100%;
+    min-width: 0;
+    min-height: 42px;
+
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+
+    padding-inline: 14px;
+
+    white-space: nowrap;
+    word-break: normal;
+    overflow-wrap: normal;
+
+    font-size: 0.76rem;
+    line-height: 1;
+  }
+
+  .series-actions-row > .mgmt-clean-danger {
+    grid-column: auto;
+  }
+}
+
+@media (max-width: 360px) {
+  .mobile-league-command-center .mlcc-workspace {
+    padding: 13px !important;
+  }
+
+  .mobile-league-command-center .mlcc-active-identity {
+    max-width: calc(100% - 54px);
+    gap: 8px;
+  }
+
+  .mobile-league-command-center .mlcc-active-mark {
+    flex-basis: 39px;
+    width: 39px !important;
+    height: 39px !important;
+  }
+
+  .series-actions-row > .mgmt-clean-btn:first-child {
+    padding-inline: 10px;
+    font-size: 0.73rem;
+  }
+}
