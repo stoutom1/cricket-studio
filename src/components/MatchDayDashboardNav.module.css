@@ -187,3 +187,120 @@
     white-space: normal;
   }
 }
+
+
+/* =========================================================
+   FINAL LAPTOP TAB LAYOUT
+   Every tab uses a separate icon and label. No overflow.
+   Mobile rules remain unchanged.
+   ========================================================= */
+
+@media (min-width: 769px) {
+  .matchDayTabsWrap {
+    width: 100%;
+    max-width: 100%;
+    min-width: 0;
+
+    overflow: hidden;
+  }
+
+  .matchDayTabsWrap :global(.dashboard-tabs) {
+    width: 100%;
+    max-width: 100%;
+    min-width: 0;
+
+    display: flex !important;
+    align-items: center !important;
+    gap: 10px !important;
+
+    padding: 8px !important;
+
+    overflow-x: auto !important;
+    overflow-y: hidden !important;
+
+    scroll-snap-type: x proximity;
+    scroll-padding-inline: 8px;
+
+    box-sizing: border-box;
+  }
+
+  .matchDayTabsWrap :global(.dashboard-tab) {
+    flex: 0 0 auto !important;
+
+    min-width: 92px !important;
+    max-width: none !important;
+    min-height: 46px !important;
+    height: 46px !important;
+
+    display: inline-flex !important;
+    align-items: center !important;
+    justify-content: center !important;
+    gap: 8px !important;
+
+    margin: 0 !important;
+    padding: 0 14px !important;
+
+    overflow: hidden !important;
+
+    box-sizing: border-box;
+
+    border-radius: 12px !important;
+
+    white-space: nowrap !important;
+    scroll-snap-align: start;
+  }
+
+  .matchDayTabsWrap
+    :global(.dashboard-tab:nth-child(3)) {
+    min-width: 116px !important;
+  }
+
+  .tabIcon {
+    flex: 0 0 20px !important;
+
+    width: 20px !important;
+    min-width: 20px !important;
+    max-width: 20px !important;
+
+    display: inline-grid !important;
+    place-items: center !important;
+
+    margin: 0 !important;
+
+    overflow: visible;
+
+    font-size: 0.9rem !important;
+    line-height: 1 !important;
+  }
+
+  .tabLabel {
+    flex: 0 0 auto !important;
+
+    display: inline-block !important;
+
+    margin: 0 !important;
+
+    overflow: visible !important;
+
+    font-size: 0.82rem !important;
+    font-weight: 850 !important;
+    line-height: 1 !important;
+    white-space: nowrap !important;
+  }
+}
+
+@media (min-width: 1180px) {
+  .matchDayTabsWrap :global(.dashboard-tabs) {
+    gap: 11px !important;
+  }
+
+  .matchDayTabsWrap :global(.dashboard-tab) {
+    min-width: 96px !important;
+    padding-inline: 15px !important;
+  }
+
+  .matchDayTabsWrap
+    :global(.dashboard-tab:nth-child(3)) {
+    min-width: 120px !important;
+  }
+}

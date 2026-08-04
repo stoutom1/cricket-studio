@@ -309,6 +309,39 @@ export default function DashboardClient() {
 
   const returningToMatchDay =
     returnTo.includes("/match-day");
+
+  const requestedDashboardTab =
+    String(
+      searchParams.get("tab") ||
+      ""
+    )
+      .trim()
+      .toLowerCase();
+
+  const requestedMatchesSubTab =
+    String(
+      searchParams.get(
+        "matchesSubTab"
+      ) ||
+      ""
+    )
+      .trim()
+      .toUpperCase();
+
+  const requestedLeagueId =
+    Number(
+      searchParams.get(
+        "leagueId"
+      )
+    );
+
+  const requestedMatchId =
+    Number(
+      searchParams.get(
+        "matchId"
+      )
+    );
+
   const [teams, setTeams] = useState([]);
   const [matches, setMatches] = useState([]);
   const [selectedMatchId, setSelectedMatchId] = useState("");
@@ -882,6 +915,105 @@ setSelectedMatchId("");
     loadUserPreferences();
   }, []);
 */
+  useEffect(() => {
+    const validTabs =
+      new Set([
+        "management",
+        "matches",
+        "scoring",
+        "points",
+        "stats",
+        "permissions",
+        "help",
+        "about",
+        "admin",
+      ]);
+
+    if (
+      validTabs.has(
+        requestedDashboardTab
+      )
+    ) {
+      setActiveTab(
+        requestedDashboardTab ===
+          "points"
+          ? "Points"
+          : requestedDashboardTab
+      );
+    }
+
+    if (
+      Number.isInteger(
+        requestedLeagueId
+      ) &&
+      requestedLeagueId > 0
+    ) {
+      setActiveLeagueId(
+        requestedLeagueId
+      );
+    }
+
+    if (
+      requestedMatchesSubTab
+    ) {
+      const validMatchTabs =
+        new Set([
+          "CREATE MATCH",
+          "ACTIVE",
+          "SCHEDULED",
+          "KIT",
+          "COMPLETED",
+        ]);
+
+      if (
+        validMatchTabs.has(
+          requestedMatchesSubTab
+        )
+      ) {
+        setActiveTab(
+          "matches"
+        );
+
+        setMatchesSubTab(
+          requestedMatchesSubTab
+        );
+      }
+    }
+  }, [
+    requestedDashboardTab,
+    requestedLeagueId,
+    requestedMatchesSubTab,
+  ]);
+
+  useEffect(() => {
+    if (
+      !Number.isInteger(
+        requestedMatchId
+      ) ||
+      requestedMatchId <= 0
+    ) {
+      return;
+    }
+
+    const exists =
+      matches.some(
+        (match) =>
+          Number(match.id) ===
+          requestedMatchId
+      );
+
+    if (exists) {
+      setSelectedMatchId(
+        String(
+          requestedMatchId
+        )
+      );
+    }
+  }, [
+    matches,
+    requestedMatchId,
+  ]);
+
   useEffect(() => {
   if (!preferencesLoaded) return;
 
@@ -6815,7 +6947,15 @@ return (
             setActiveTab("management")
           }
         >
-          ⚙️ Leagues
+          <span
+            className={matchDayNavStyles.tabIcon}
+            aria-hidden="true"
+          >
+            ⚙️
+          </span>
+          <span className={matchDayNavStyles.tabLabel}>
+            Leagues
+          </span>
         </button>
       )}
 
@@ -6909,7 +7049,15 @@ return (
             setActiveTab("Points")
           }
         >
-          🥇 Points
+          <span
+            className={matchDayNavStyles.tabIcon}
+            aria-hidden="true"
+          >
+            🥇
+          </span>
+          <span className={matchDayNavStyles.tabLabel}>
+            Points
+          </span>
         </button>
 
       {permissions?.canViewStats && (
@@ -6924,7 +7072,15 @@ onClick={() => {
   loadLeagueStats(activeLeagueId);
 }}
         >
-          📊 Stats
+          <span
+            className={matchDayNavStyles.tabIcon}
+            aria-hidden="true"
+          >
+            📊
+          </span>
+          <span className={matchDayNavStyles.tabLabel}>
+            Stats
+          </span>
         </button>
       )}
 
@@ -6939,7 +7095,15 @@ onClick={() => {
             setActiveTab("permissions")
           }
         >
-          🔐 Access
+          <span
+            className={matchDayNavStyles.tabIcon}
+            aria-hidden="true"
+          >
+            🔐
+          </span>
+          <span className={matchDayNavStyles.tabLabel}>
+            Access
+          </span>
         </button>
       )}
 
@@ -6953,7 +7117,15 @@ onClick={() => {
           setActiveTab("help")
         }
       >
-        ❓ Help
+        <span
+          className={matchDayNavStyles.tabIcon}
+          aria-hidden="true"
+        >
+          ❓
+        </span>
+        <span className={matchDayNavStyles.tabLabel}>
+          Help
+        </span>
       </button>
 
       <button
@@ -6966,7 +7138,15 @@ onClick={() => {
           setActiveTab("about")
         }
       >
-        ℹ️ About
+        <span
+          className={matchDayNavStyles.tabIcon}
+          aria-hidden="true"
+        >
+          ℹ️
+        </span>
+        <span className={matchDayNavStyles.tabLabel}>
+          About
+        </span>
       </button>
 {session?.user?.email === "surprisecricket11@gmail.com" && (
   <button

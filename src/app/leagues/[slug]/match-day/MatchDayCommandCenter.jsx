@@ -775,7 +775,7 @@ function MatchWorkspace({
 
   const kitHref =
     withReturnTo(
-      `/dashboard?tab=kit&leagueId=${leagueId}&matchId=${match.id}`
+      `/dashboard?tab=matches&matchesSubTab=KIT&leagueId=${leagueId}&matchId=${match.id}`
     );
 
   const resourcesHref =

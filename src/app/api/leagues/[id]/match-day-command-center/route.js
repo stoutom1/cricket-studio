@@ -265,87 +265,180 @@ function summarizeScore(match) {
   );
 }
 
-function summarizeKit(match) {
+function summarizeKit(
+  match,
+  teamKitStates = []
+) {
   const assignments =
     match.kitAssignments || [];
 
-  return {
-    total:
-      assignments.length,
-
-    confirmed:
-      assignments.filter(
+  const assignedTeamIds =
+    new Set(
+      assignments.map(
         (assignment) =>
-          normalizeStatus(
-            assignment.status
-          ) ===
-          "CONFIRMED"
-      ).length,
+          assignment.teamId
+      )
+    );
 
-    pending:
-      assignments.filter(
-        (assignment) =>
-          ![
-            "CONFIRMED",
-            "COMPLETED",
-            "CANCELLED",
-          ].includes(
-            normalizeStatus(
-              assignment.status
+  /*
+   * The Kit page stores its live/suggested carrier in TeamKitState
+   * before or independently of a formal KitAssignment row.
+   * Match Day must therefore show both sources.
+   */
+  const suggestions =
+    (teamKitStates || [])
+      .filter(
+        (state) =>
+          state.suggestedForMatchId ===
+            match.id &&
+          Boolean(
+            state.suggestedHolderName
+          ) &&
+          (
+            !state.teamId ||
+            !assignedTeamIds.has(
+              state.teamId
             )
           )
-      ).length,
-
-    assignments:
-      assignments.map(
-        (assignment) => ({
+      )
+      .map(
+        (state) => ({
           id:
-            assignment.id,
+            `suggestion-${state.id}`,
 
           teamId:
-            assignment.teamId,
+            state.teamId,
 
           teamName:
-            assignment.team?.name ||
-            "Team",
+            state.teamId ===
+            match.teamAId
+              ? match.teamA?.name ||
+                "Team A"
+              : state.teamId ===
+                  match.teamBId
+                ? match.teamB
+                    ?.name ||
+                  "Team B"
+                : "League Kit",
 
           status:
-            normalizeStatus(
-              assignment.status
-            ),
+            "SUGGESTED",
 
           pickupStatus:
-            normalizeStatus(
-              assignment.pickupStatus
-            ),
+            "PENDING",
 
           assignedName:
-            assignment
-              .rotationMember
-              ?.displayName ||
-            assignment
-              .rotationMember
-              ?.normalizedName ||
-            null,
+            state
+              .suggestedHolderName,
 
           actualName:
-            assignment
-              .actualDisplayName ||
-            assignment
-              .actualRotationMember
-              ?.displayName ||
-            assignment
-              .actualRotationMember
-              ?.normalizedName ||
             null,
 
           reminderStatus:
-            assignment
-              .reminderLogs?.[0]
-              ?.status ||
+            null,
+
+          source:
+            "TEAM_KIT_STATE",
+
+          suggestionNote:
+            state
+              .suggestionNote ||
             null,
         })
-      ),
+      );
+
+  const formalAssignments =
+    assignments.map(
+      (assignment) => ({
+        id:
+          assignment.id,
+
+        teamId:
+          assignment.teamId,
+
+        teamName:
+          assignment.team?.name ||
+          "Team",
+
+        status:
+          normalizeStatus(
+            assignment.status
+          ),
+
+        pickupStatus:
+          normalizeStatus(
+            assignment.pickupStatus
+          ),
+
+        assignedName:
+          assignment
+            .rotationMember
+            ?.displayName ||
+          assignment
+            .rotationMember
+            ?.normalizedName ||
+          null,
+
+        actualName:
+          assignment
+            .actualDisplayName ||
+          assignment
+            .actualRotationMember
+            ?.displayName ||
+          assignment
+            .actualRotationMember
+            ?.normalizedName ||
+          null,
+
+        reminderStatus:
+          assignment
+            .reminderLogs?.[0]
+            ?.status ||
+          null,
+
+        source:
+          "KIT_ASSIGNMENT",
+      })
+    );
+
+  const combined = [
+    ...formalAssignments,
+    ...suggestions,
+  ];
+
+  /*
+   * A named suggested carrier is considered match-day ready,
+   * while pickup/custody completion remains visible separately.
+   */
+  const readyCount =
+    combined.filter(
+      (assignment) =>
+        Boolean(
+          assignment.actualName ||
+          assignment.assignedName
+        ) &&
+        ![
+          "DECLINED",
+          "MISSED",
+          "CANCELLED",
+        ].includes(
+          assignment.status
+        )
+    ).length;
+
+  return {
+    total:
+      combined.length,
+
+    confirmed:
+      readyCount,
+
+    pending:
+      combined.length -
+      readyCount,
+
+    assignments:
+      combined,
   };
 }
 
@@ -648,6 +741,7 @@ export async function GET(
       matches,
       polls,
       manualStatuses,
+      teamKitStates,
     ] =
       await Promise.all([
         prisma.match.findMany({
@@ -825,6 +919,7 @@ export async function GET(
               },
             },
           }),
+    ,
 
         prisma
           .matchDayManualStatus
@@ -841,7 +936,45 @@ export async function GET(
               updatedAt: true,
             },
           }),
+
+        prisma
+          .teamKitState
+          .findMany({
+            where: {
+              leagueId,
+
+              suggestedForMatchId: {
+                not: null,
+              },
+            },
+
+            select: {
+              id: true,
+              teamId: true,
+              scopeKey: true,
+              currentHolderName: true,
+              suggestedHolderName: true,
+              suggestedForMatchId: true,
+              suggestionNote: true,
+              suggestedAt: true,
+            },
+          }),
       ]);
+
+    const safeManualStatuses =
+      Array.isArray(
+        manualStatuses
+      )
+        ? manualStatuses
+        : [];
+
+    const safeTeamKitStates =
+      Array.isArray(
+        teamKitStates
+      )
+        ? teamKitStates
+        : [];
+
 
     const commandMatches =
       matches.map(
@@ -863,8 +996,7 @@ export async function GET(
 
           const manualStatus =
             (
-              manualStatuses ||
-              []
+              safeManualStatuses
             ).find(
               (status) =>
                 status.matchId ===
@@ -874,7 +1006,8 @@ export async function GET(
 
           const kit =
             summarizeKit(
-              match
+              match,
+              safeTeamKitStates
             );
 
           return {
