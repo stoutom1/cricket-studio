@@ -13,6 +13,10 @@ import {
 } from "@/lib/auth";
 import prisma from "@/lib/prisma";
 import {
+  addResourcePersonalization,
+  getResourcePersonalization,
+} from "@/lib/resources/personalization";
+import {
   getLeagueResourceAccess,
 } from "@/lib/resources/access";
 import {
@@ -412,6 +416,7 @@ export async function GET(
   const [
     groupedCounts,
     userReactions,
+    personalization,
   ] =
     await Promise.all([
       prisma
@@ -456,6 +461,12 @@ export async function GET(
             reaction: true,
           },
         }),
+
+      getResourcePersonalization({
+        resourceIds: ids,
+        userId,
+        leagueId,
+      }),
     ]);
 
   return NextResponse.json({
@@ -465,10 +476,13 @@ export async function GET(
       ordered.length,
 
     resources:
-      addReactionSummary(
-        ordered,
-        groupedCounts,
-        userReactions
+      addResourcePersonalization(
+        addReactionSummary(
+          ordered,
+          groupedCounts,
+          userReactions
+        ),
+        personalization
       ),
   });
 }

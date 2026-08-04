@@ -4,10 +4,12 @@ import { upload } from "@vercel/blob/client";
 import Link from "next/link";
 import { useCallback, useEffect, useMemo, useRef, useState } from "react";
 
+import ResourceCollectionsModal from "./ResourceCollectionsModal";
 import styles from "./resources.module.css";
 
 const CATEGORIES = [
   ["ALL", "Everything", "✨"],
+  ["FAVORITES", "My Favorites", "⭐"],
   ["RULES", "Rules", "📘"],
   ["VENUES", "Venues", "📍"],
   ["RESTAURANTS", "Restaurants", "🍽️"],
@@ -106,6 +108,31 @@ export default function LeagueResourcesClient({ leagueId }) {
     canDelete,
     setCanDelete,
   ] = useState(false);
+
+  const [
+    collections,
+    setCollections,
+  ] = useState([]);
+
+  const [
+    activeCollectionId,
+    setActiveCollectionId,
+  ] = useState(null);
+
+  const [
+    collectionsModalResource,
+    setCollectionsModalResource,
+  ] = useState(null);
+
+  const [
+    collectionsManagerOpen,
+    setCollectionsManagerOpen,
+  ] = useState(false);
+
+  const [
+    favoriteBusyId,
+    setFavoriteBusyId,
+  ] = useState(null);
   const [loading, setLoading] = useState(true);
   const [busy, setBusy] = useState(false);
   const [reactionBusyId, setReactionBusyId] = useState(null);
@@ -134,6 +161,37 @@ export default function LeagueResourcesClient({ leagueId }) {
   ] = useState(0);
 
   const [category, setCategory] = useState("ALL");
+
+  const [
+    searchHealthOpen,
+    setSearchHealthOpen,
+  ] = useState(false);
+
+  const [
+    searchHealth,
+    setSearchHealth,
+  ] = useState(null);
+
+  const [
+    searchHealthLoading,
+    setSearchHealthLoading,
+  ] = useState(false);
+
+  const [
+    searchHealthError,
+    setSearchHealthError,
+  ] = useState("");
+
+  const [
+    reindexingResourceId,
+    setReindexingResourceId,
+  ] = useState(null);
+
+  const [
+    rebuildingSearch,
+    setRebuildingSearch,
+  ] = useState(false);
+
   const [showModal, setShowModal] = useState(false);
   const [mode, setMode] = useState("LINK");
   const [editing, setEditing] = useState(null);
@@ -162,6 +220,9 @@ export default function LeagueResourcesClient({ leagueId }) {
 
       setResources(result.resources || []);
       setLeague(result.league || null);
+      setCollections(
+        result.collections || []
+      );
       setCanAddEdit(
         result.canAddEdit === true ||
         result.canManage === true
@@ -285,6 +346,27 @@ export default function LeagueResourcesClient({ leagueId }) {
       return resources.filter(
         (resource) => {
           if (
+            activeCollectionId
+          ) {
+            return (
+              resource.collectionIds ||
+              []
+            ).includes(
+              activeCollectionId
+            );
+          }
+
+          if (
+            category ===
+            "FAVORITES"
+          ) {
+            return (
+              resource.isFavorite ===
+              true
+            );
+          }
+
+          if (
             category !== "ALL" &&
             resource.category !==
               category
@@ -317,10 +399,21 @@ export default function LeagueResourcesClient({ leagueId }) {
       normalizedSearch,
       serverSearchActive,
       category,
+      activeCollectionId,
     ]);
 
   const categoryCounts = useMemo(() => {
-    const counts = { ALL: resources.length };
+    const counts = {
+      ALL:
+        resources.length,
+
+      FAVORITES:
+        resources.filter(
+          (resource) =>
+            resource.isFavorite ===
+            true
+        ).length,
+    };
 
     for (const resource of resources) {
       counts[resource.category] = (counts[resource.category] || 0) + 1;
@@ -564,6 +657,534 @@ export default function LeagueResourcesClient({ leagueId }) {
     }
   }
 
+  function updateResourcePersonalState(
+    resourceId,
+    patch
+  ) {
+    setResources(
+      (current) =>
+        current.map(
+          (resource) =>
+            resource.id ===
+            resourceId
+              ? {
+                  ...resource,
+                  ...patch,
+                }
+              : resource
+        )
+    );
+
+    setSearchResults(
+      (current) =>
+        current.map(
+          (resource) =>
+            resource.id ===
+            resourceId
+              ? {
+                  ...resource,
+                  ...patch,
+                }
+              : resource
+        )
+    );
+  }
+
+  async function toggleFavorite(
+    resource
+  ) {
+    if (
+      favoriteBusyId ===
+      resource.id
+    ) {
+      return;
+    }
+
+    const nextValue =
+      resource.isFavorite !==
+      true;
+
+    setFavoriteBusyId(
+      resource.id
+    );
+
+    updateResourcePersonalState(
+      resource.id,
+      {
+        isFavorite:
+          nextValue,
+      }
+    );
+
+    try {
+      const response =
+        await fetch(
+          `/api/leagues/${leagueId}/resources/${resource.id}/favorite`,
+          {
+            method:
+              nextValue
+                ? "PUT"
+                : "DELETE",
+          }
+        );
+
+      const result =
+        await response.json();
+
+      if (!response.ok) {
+        throw new Error(
+          result?.error ||
+          "Unable to update your favorite."
+        );
+      }
+    } catch (favoriteFailure) {
+      updateResourcePersonalState(
+        resource.id,
+        {
+          isFavorite:
+            !nextValue,
+        }
+      );
+
+      setError(
+        favoriteFailure instanceof Error
+          ? favoriteFailure.message
+          : "Unable to update your favorite."
+      );
+    } finally {
+      setFavoriteBusyId(
+        null
+      );
+    }
+  }
+
+  async function createCollection(
+    name
+  ) {
+    const response =
+      await fetch(
+        `/api/leagues/${leagueId}/resources/collections`,
+        {
+          method: "POST",
+          headers: {
+            "Content-Type":
+              "application/json",
+          },
+          body:
+            JSON.stringify({
+              name,
+            }),
+        }
+      );
+
+    const result =
+      await response.json();
+
+    if (!response.ok) {
+      throw new Error(
+        result?.error ||
+        "Unable to create the collection."
+      );
+    }
+
+    setCollections(
+      (current) => [
+        result.collection,
+        ...current,
+      ]
+    );
+
+    return result.collection;
+  }
+
+  async function renameCollection(
+    collectionId,
+    name
+  ) {
+    const response =
+      await fetch(
+        `/api/leagues/${leagueId}/resources/collections/${collectionId}`,
+        {
+          method: "PATCH",
+          headers: {
+            "Content-Type":
+              "application/json",
+          },
+          body:
+            JSON.stringify({
+              name,
+            }),
+        }
+      );
+
+    const result =
+      await response.json();
+
+    if (!response.ok) {
+      throw new Error(
+        result?.error ||
+        "Unable to rename the collection."
+      );
+    }
+
+    setCollections(
+      (current) =>
+        current.map(
+          (collection) =>
+            collection.id ===
+            collectionId
+              ? result.collection
+              : collection
+        )
+    );
+
+    return result.collection;
+  }
+
+  async function deleteCollection(
+    collectionId
+  ) {
+    const response =
+      await fetch(
+        `/api/leagues/${leagueId}/resources/collections/${collectionId}`,
+        {
+          method: "DELETE",
+        }
+      );
+
+    const result =
+      await response.json();
+
+    if (!response.ok) {
+      throw new Error(
+        result?.error ||
+        "Unable to delete the collection."
+      );
+    }
+
+    setCollections(
+      (current) =>
+        current.filter(
+          (collection) =>
+            collection.id !==
+            collectionId
+        )
+    );
+
+    setResources(
+      (current) =>
+        current.map(
+          (resource) => ({
+            ...resource,
+            collectionIds:
+              (
+                resource
+                  .collectionIds ||
+                []
+              ).filter(
+                (id) =>
+                  id !==
+                  collectionId
+              ),
+          })
+        )
+    );
+
+    setSearchResults(
+      (current) =>
+        current.map(
+          (resource) => ({
+            ...resource,
+            collectionIds:
+              (
+                resource
+                  .collectionIds ||
+                []
+              ).filter(
+                (id) =>
+                  id !==
+                  collectionId
+              ),
+          })
+        )
+    );
+
+    if (
+      activeCollectionId ===
+      collectionId
+    ) {
+      setActiveCollectionId(
+        null
+      );
+    }
+  }
+
+  async function saveResourceCollections(
+    resourceId,
+    collectionIds
+  ) {
+    const response =
+      await fetch(
+        `/api/leagues/${leagueId}/resources/${resourceId}/collections`,
+        {
+          method: "PUT",
+          headers: {
+            "Content-Type":
+              "application/json",
+          },
+          body:
+            JSON.stringify({
+              collectionIds,
+            }),
+        }
+      );
+
+    const result =
+      await response.json();
+
+    if (!response.ok) {
+      throw new Error(
+        result?.error ||
+        "Unable to update the collections."
+      );
+    }
+
+    updateResourcePersonalState(
+      resourceId,
+      {
+        collectionIds:
+          result.collectionIds ||
+          [],
+      }
+    );
+
+    await loadResources();
+  }
+
+  const loadSearchHealth =
+    useCallback(async () => {
+      if (!canDelete) {
+        return;
+      }
+
+      setSearchHealthLoading(true);
+      setSearchHealthError("");
+
+      try {
+        const response =
+          await fetch(
+            `/api/leagues/${leagueId}/resources/search-health`,
+            {
+              cache: "no-store",
+            }
+          );
+
+        const result =
+          await response.json();
+
+        if (!response.ok) {
+          throw new Error(
+            result?.error ||
+            "Unable to load search health."
+          );
+        }
+
+        setSearchHealth(
+          result
+        );
+      } catch (healthFailure) {
+        setSearchHealthError(
+          healthFailure instanceof Error
+            ? healthFailure.message
+            : "Unable to load search health."
+        );
+      } finally {
+        setSearchHealthLoading(false);
+      }
+    }, [
+      canDelete,
+      leagueId,
+    ]);
+
+  useEffect(() => {
+    if (
+      searchHealthOpen &&
+      canDelete
+    ) {
+      loadSearchHealth();
+    }
+  }, [
+    searchHealthOpen,
+    canDelete,
+    loadSearchHealth,
+  ]);
+
+  async function reindexOneResource(
+    resourceId
+  ) {
+    setReindexingResourceId(
+      resourceId
+    );
+
+    setSearchHealthError("");
+    setMessage("");
+
+    try {
+      const response =
+        await fetch(
+          `/api/leagues/${leagueId}/resources/${resourceId}/index`,
+          {
+            method: "POST",
+          }
+        );
+
+      const rawText =
+        await response.text();
+
+      let result = null;
+
+      try {
+        result = rawText
+          ? JSON.parse(rawText)
+          : null;
+      } catch {
+        result = {
+          error:
+            rawText ||
+            "The server returned an invalid response.",
+        };
+      }
+
+      if (!response.ok) {
+        throw new Error(
+          result?.error ||
+          "Unable to reindex this resource."
+        );
+      }
+
+      setMessage(
+        "Search index updated successfully."
+      );
+
+      await Promise.all([
+        loadResources(),
+        loadSearchHealth(),
+      ]);
+    } catch (indexFailure) {
+      setSearchHealthError(
+        indexFailure instanceof Error
+          ? indexFailure.message
+          : "Unable to reindex this resource."
+      );
+    } finally {
+      setReindexingResourceId(
+        null
+      );
+    }
+  }
+
+  async function rebuildLeagueSearch() {
+    if (rebuildingSearch) {
+      return;
+    }
+
+    setRebuildingSearch(true);
+    setSearchHealthError("");
+    setMessage("");
+
+    try {
+      let afterId = 0;
+      let indexed = 0;
+      let metadataOnly = 0;
+      let failed = 0;
+      let hasMore = true;
+
+      while (hasMore) {
+        const response =
+          await fetch(
+            `/api/leagues/${leagueId}/resources/reindex?limit=20&afterId=${afterId}`,
+            {
+              method: "POST",
+            }
+          );
+
+        const rawText =
+          await response.text();
+
+        let result = null;
+
+        try {
+          result = rawText
+            ? JSON.parse(rawText)
+            : null;
+        } catch {
+          result = {
+            error:
+              rawText ||
+              "The server returned an invalid response.",
+          };
+        }
+
+        if (!response.ok) {
+          throw new Error(
+            result?.error ||
+            "Unable to rebuild the search index."
+          );
+        }
+
+        indexed +=
+          result?.summary?.indexed ||
+          0;
+
+        metadataOnly +=
+          result?.summary
+            ?.metadataOnly ||
+          0;
+
+        failed +=
+          result?.summary?.failed ||
+          0;
+
+        hasMore =
+          result?.pagination
+            ?.hasMore === true;
+
+        afterId =
+          Number(
+            result?.pagination
+              ?.nextAfterId ||
+            0
+          );
+
+        if (
+          hasMore &&
+          afterId <= 0
+        ) {
+          throw new Error(
+            "Search rebuild pagination could not continue."
+          );
+        }
+      }
+
+      setMessage(
+        `Search rebuild completed: ${indexed} indexed, ${metadataOnly} metadata-only, ${failed} failed.`
+      );
+
+      await Promise.all([
+        loadResources(),
+        loadSearchHealth(),
+      ]);
+    } catch (rebuildFailure) {
+      setSearchHealthError(
+        rebuildFailure instanceof Error
+          ? rebuildFailure.message
+          : "Unable to rebuild the search index."
+      );
+    } finally {
+      setRebuildingSearch(false);
+    }
+  }
+
   return (
     <div className={styles.resourcesApp}>
       <header className={styles.hero}>
@@ -696,8 +1317,389 @@ export default function LeagueResourcesClient({ leagueId }) {
               <span aria-hidden="true">⬆</span>
               <span>Upload file</span>
             </button>
+
+            {canDelete && (
+              <button
+                type="button"
+                className={styles.searchHealthButton}
+                aria-expanded={searchHealthOpen}
+                aria-controls="knowledge-search-health"
+                onClick={() =>
+                  setSearchHealthOpen(
+                    (current) =>
+                      !current
+                  )
+                }
+              >
+                <span aria-hidden="true">⌕</span>
+                <span>Search health</span>
+                <b aria-hidden="true">
+                  {searchHealthOpen
+                    ? "⌃"
+                    : "⌄"}
+                </b>
+              </button>
+            )}
           </div>
         )}
+      </section>
+
+      {canDelete &&
+        searchHealthOpen && (
+          <section
+            id="knowledge-search-health"
+            className={styles.searchHealthPanel}
+            aria-labelledby="knowledge-search-health-title"
+          >
+            <div className={styles.searchHealthHeader}>
+              <div>
+                <span className={styles.searchHealthEyebrow}>
+                  SEARCH OPERATIONS
+                </span>
+
+                <h2 id="knowledge-search-health-title">
+                  Search health
+                </h2>
+
+                <p>
+                  See which files are searchable, fix failed indexing, and rebuild the league search index without developer tools.
+                </p>
+              </div>
+
+              <div className={styles.searchHealthHeaderActions}>
+                <button
+                  type="button"
+                  className={styles.searchHealthRefreshButton}
+                  disabled={
+                    searchHealthLoading ||
+                    rebuildingSearch
+                  }
+                  onClick={
+                    loadSearchHealth
+                  }
+                >
+                  <span aria-hidden="true">↻</span>
+                  Refresh
+                </button>
+
+                <button
+                  type="button"
+                  className={styles.searchHealthRebuildButton}
+                  disabled={
+                    rebuildingSearch ||
+                    searchHealthLoading
+                  }
+                  onClick={
+                    rebuildLeagueSearch
+                  }
+                >
+                  <span aria-hidden="true">
+                    {rebuildingSearch
+                      ? "◌"
+                      : "⚡"}
+                  </span>
+
+                  {rebuildingSearch
+                    ? "Rebuilding…"
+                    : "Rebuild all"}
+                </button>
+              </div>
+            </div>
+
+            {searchHealthError && (
+              <div className={styles.searchHealthError}>
+                {searchHealthError}
+              </div>
+            )}
+
+            {searchHealthLoading &&
+            !searchHealth ? (
+              <div className={styles.searchHealthLoading}>
+                <span
+                  className={styles.searchSpinner}
+                  aria-hidden="true"
+                />
+                Checking search health…
+              </div>
+            ) : (
+              <>
+                <div className={styles.searchHealthStats}>
+                  <div>
+                    <span className={styles.searchHealthReadyDot} />
+                    <strong>
+                      {searchHealth?.summary?.ready || 0}
+                    </strong>
+                    <small>Ready</small>
+                  </div>
+
+                  <div>
+                    <span className={styles.searchHealthPendingDot} />
+                    <strong>
+                      {(searchHealth?.summary?.pending || 0) +
+                        (searchHealth?.summary?.indexing || 0)}
+                    </strong>
+                    <small>Pending</small>
+                  </div>
+
+                  <div>
+                    <span className={styles.searchHealthMetadataDot} />
+                    <strong>
+                      {searchHealth?.summary?.metadataOnly || 0}
+                    </strong>
+                    <small>Metadata only</small>
+                  </div>
+
+                  <div>
+                    <span className={styles.searchHealthFailedDot} />
+                    <strong>
+                      {searchHealth?.summary?.failed || 0}
+                    </strong>
+                    <small>Failed</small>
+                  </div>
+                </div>
+
+                {searchHealth?.resources?.length ? (
+                  <div className={styles.searchHealthList}>
+                    {searchHealth.resources.map(
+                      (item) => {
+                        const status =
+                          item.searchStatus ||
+                          "PENDING";
+
+                        const needsAttention =
+                          [
+                            "FAILED",
+                            "PENDING",
+                            "INDEXING",
+                            "METADATA_ONLY",
+                          ].includes(
+                            status
+                          );
+
+                        return (
+                          <article
+                            key={item.id}
+                            className={`${styles.searchHealthItem} ${
+                              needsAttention
+                                ? styles.searchHealthItemAttention
+                                : ""
+                            }`}
+                          >
+                            <span
+                              className={styles.searchHealthFileIcon}
+                              aria-hidden="true"
+                            >
+                              {item.resourceType === "FILE"
+                                ? "📄"
+                                : "🔗"}
+                            </span>
+
+                            <div className={styles.searchHealthItemCopy}>
+                              <div className={styles.searchHealthItemTitleRow}>
+                                <strong title={item.title}>
+                                  {item.title}
+                                </strong>
+
+                                <span
+                                  className={`${styles.searchHealthStatus} ${
+                                    styles[
+                                      `searchHealthStatus${status
+                                        .toLowerCase()
+                                        .replace(
+                                          /(^|_)([a-z])/g,
+                                          (_, __, letter) =>
+                                            letter.toUpperCase()
+                                        )}`
+                                    ] || ""
+                                  }`}
+                                >
+                                  {status.replaceAll(
+                                    "_",
+                                    " "
+                                  )}
+                                </span>
+                              </div>
+
+                              <span className={styles.searchHealthFileName}>
+                                {item.originalFileName ||
+                                  item.externalUrl ||
+                                  "Resource metadata"}
+                              </span>
+
+                              {item.searchError && (
+                                <p>
+                                  {item.searchError}
+                                </p>
+                              )}
+
+                              <small>
+                                {item.searchIndexedAt
+                                  ? `Last indexed ${new Date(
+                                      item.searchIndexedAt
+                                    ).toLocaleString()}`
+                                  : "Not indexed yet"}
+                              </small>
+                            </div>
+
+                            <button
+                              type="button"
+                              className={styles.searchHealthRetryButton}
+                              disabled={
+                                reindexingResourceId === item.id ||
+                                rebuildingSearch
+                              }
+                              onClick={() =>
+                                reindexOneResource(
+                                  item.id
+                                )
+                              }
+                            >
+                              {reindexingResourceId === item.id
+                                ? "Indexing…"
+                                : needsAttention
+                                  ? "Fix now"
+                                  : "Reindex"}
+                            </button>
+                          </article>
+                        );
+                      }
+                    )}
+                  </div>
+                ) : (
+                  <div className={styles.searchHealthEmpty}>
+                    No Knowledge Center resources have been added yet.
+                  </div>
+                )}
+
+                <div className={styles.searchHealthLegend}>
+                  <span>
+                    <i className={styles.searchHealthReadyDot} />
+                    Ready means searchable inside supported documents.
+                  </span>
+
+                  <span>
+                    <i className={styles.searchHealthMetadataDot} />
+                    Metadata-only means title, description, filename, and URL remain searchable.
+                  </span>
+                </div>
+              </>
+            )}
+          </section>
+        )}
+
+      <section
+        className={styles.personalShelf}
+        aria-label="Your private resource shortcuts"
+      >
+        <div className={styles.personalShelfHeader}>
+          <div>
+            <span aria-hidden="true">⭐</span>
+            <strong>My library</strong>
+            <small>Private to you</small>
+          </div>
+
+          <button
+            type="button"
+            className={styles.manageCollectionsButton}
+            onClick={() =>
+              setCollectionsManagerOpen(
+                true
+              )
+            }
+          >
+            ⚙ Manage collections
+          </button>
+        </div>
+
+        <div className={styles.personalShelfRail}>
+          <button
+            type="button"
+            className={
+              category ===
+                "FAVORITES" &&
+              !activeCollectionId
+                ? styles.personalShelfActive
+                : ""
+            }
+            onClick={() => {
+              setCategory(
+                "FAVORITES"
+              );
+              setActiveCollectionId(
+                null
+              );
+            }}
+          >
+            <span aria-hidden="true">
+              ★
+            </span>
+            <span>My Favorites</span>
+            <b>
+              {categoryCounts.FAVORITES ||
+                0}
+            </b>
+          </button>
+
+          {collections.map(
+            (collection) => (
+              <button
+                key={
+                  collection.id
+                }
+                type="button"
+                className={
+                  activeCollectionId ===
+                  collection.id
+                    ? styles.personalShelfActive
+                    : ""
+                }
+                title={
+                  collection.name
+                }
+                onClick={() => {
+                  setActiveCollectionId(
+                    collection.id
+                  );
+                  setCategory(
+                    "ALL"
+                  );
+                }}
+              >
+                <span aria-hidden="true">
+                  🗂️
+                </span>
+
+                <span>
+                  {collection.name}
+                </span>
+
+                <b>
+                  {collection.itemCount ||
+                    0}
+                </b>
+              </button>
+            )
+          )}
+
+          {(category ===
+            "FAVORITES" ||
+            activeCollectionId) && (
+            <button
+              type="button"
+              className={styles.personalShelfClear}
+              onClick={() => {
+                setCategory(
+                  "ALL"
+                );
+                setActiveCollectionId(
+                  null
+                );
+              }}
+            >
+              × Show everything
+            </button>
+          )}
+        </div>
       </section>
 
       <section
@@ -727,7 +1729,12 @@ export default function LeagueResourcesClient({ leagueId }) {
                     ? styles.categoryActive
                     : ""
                 }
-                onClick={() => setCategory(value)}
+                onClick={() => {
+                  setCategory(value);
+                  setActiveCollectionId(
+                    null
+                  );
+                }}
               >
                 <span aria-hidden="true">{icon}</span>
                 <span>{label}</span>
@@ -807,7 +1814,7 @@ export default function LeagueResourcesClient({ leagueId }) {
                           title="Pinned resource"
                           aria-label="Pinned resource"
                         >
-                          ★
+                          📌
                         </span>
                       )}
 
@@ -826,6 +1833,54 @@ export default function LeagueResourcesClient({ leagueId }) {
                       >
                         {resource.visibility === "PUBLIC" ? "🌍" : "👥"}
                       </span>
+
+                      <button
+                        type="button"
+                        className={`${styles.resourceFavoriteButton} ${
+                          resource.isFavorite
+                            ? styles.resourceFavoriteButtonActive
+                            : ""
+                        }`}
+                        title={
+                          resource.isFavorite
+                            ? "Remove from My Favorites"
+                            : "Add to My Favorites"
+                        }
+                        aria-label={
+                          resource.isFavorite
+                            ? `Remove ${resource.title} from My Favorites`
+                            : `Add ${resource.title} to My Favorites`
+                        }
+                        aria-pressed={
+                          resource.isFavorite === true
+                        }
+                        disabled={
+                          favoriteBusyId === resource.id
+                        }
+                        onClick={() =>
+                          toggleFavorite(
+                            resource
+                          )
+                        }
+                      >
+                        {resource.isFavorite
+                          ? "★"
+                          : "☆"}
+                      </button>
+
+                      <button
+                        type="button"
+                        className={styles.resourceCollectionButton}
+                        title="Save to personal collections"
+                        aria-label={`Save ${resource.title} to personal collections`}
+                        onClick={() =>
+                          setCollectionsModalResource(
+                            resource
+                          )
+                        }
+                      >
+                        🗂️
+                      </button>
                     </div>
 
                     <h2 title={resource.title}>
@@ -977,6 +2032,36 @@ export default function LeagueResourcesClient({ leagueId }) {
             );
           })}
         </section>
+      )}
+
+      {(collectionsModalResource ||
+        collectionsManagerOpen) && (
+        <ResourceCollectionsModal
+          collections={collections}
+          resource={
+            collectionsModalResource
+          }
+          onClose={() => {
+            setCollectionsModalResource(
+              null
+            );
+            setCollectionsManagerOpen(
+              false
+            );
+          }}
+          onCreate={
+            createCollection
+          }
+          onRename={
+            renameCollection
+          }
+          onDelete={
+            deleteCollection
+          }
+          onSaveMemberships={
+            saveResourceCollections
+          }
+        />
       )}
 
       {showModal && (

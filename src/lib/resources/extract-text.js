@@ -50,29 +50,44 @@ async function streamToBuffer(
   );
 }
 
+/*
+ * unpdf ships a serverless-compatible PDF.js build.
+ * It does not require a separate pdf.worker.mjs file,
+ * which avoids Next.js/Turbopack fake-worker failures.
+ */
 async function extractPdf(buffer) {
   const {
-    PDFParse,
+    extractText,
+    getDocumentProxy,
   } =
-    await import(
-      "pdf-parse"
-    );
+    await import("unpdf");
 
-  const parser =
-    new PDFParse({
-      data:
-        new Uint8Array(
-          buffer
-        ),
-    });
+  const pdf =
+    await getDocumentProxy(
+      new Uint8Array(buffer)
+    );
 
   try {
     const result =
-      await parser.getText();
+      await extractText(
+        pdf,
+        {
+          mergePages: true,
+        }
+      );
 
-    return result?.text || "";
+    return String(
+      result?.text || ""
+    );
   } finally {
-    await parser.destroy();
+    try {
+      await pdf.destroy();
+    } catch {
+      /*
+       * Text extraction succeeded. Failure to destroy the
+       * PDF proxy should not cause indexing to fail.
+       */
+    }
   }
 }
 
@@ -241,12 +256,32 @@ export async function extractLeagueResourceText(
       ).decode(buffer);
   }
 
+  const cleaned =
+    cleanExtractedText(
+      text
+    );
+
+  if (
+    type === "PDF" &&
+    !cleaned
+  ) {
+    return {
+      text: "",
+      status:
+        "METADATA_ONLY",
+      reason:
+        "No readable text was found in the PDF. It may be scanned, image-only, or encrypted.",
+    };
+  }
+
   return {
     text:
-      cleanExtractedText(
-        text
-      ),
-    status: "READY",
-    reason: null,
+      cleaned,
+
+    status:
+      "READY",
+
+    reason:
+      null,
   };
 }

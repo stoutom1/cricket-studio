@@ -3,6 +3,10 @@ import { NextResponse } from "next/server";
 
 import { authOptions } from "@/lib/auth";
 import prisma from "@/lib/prisma";
+import {
+  addResourcePersonalization,
+  getResourcePersonalization,
+} from "@/lib/resources/personalization";
 import { getLeagueResourceAccess } from "@/lib/resources/access";
 import {
   indexLeagueResource,
@@ -97,7 +101,11 @@ export async function GET(request, { params }) {
 
   const resourceIds = resources.map((resource) => resource.id);
 
-  const [groupedCounts, userReactions] = resourceIds.length
+  const [
+    groupedCounts,
+    userReactions,
+    personalization,
+  ] = resourceIds.length
     ? await Promise.all([
         prisma.leagueResourceReaction.groupBy({
           by: ["resourceId", "reaction"],
@@ -117,8 +125,28 @@ export async function GET(request, { params }) {
             reaction: true,
           },
         }),
+        getResourcePersonalization({
+          resourceIds,
+          userId,
+          leagueId,
+        }),
       ])
-    : [[], []];
+    : [
+        [],
+        [],
+        await getResourcePersonalization({
+          resourceIds: [],
+          userId,
+          leagueId,
+        }),
+      ];
+
+  const summarizedResources =
+    addReactionSummary(
+      resources,
+      groupedCounts,
+      userReactions
+    );
 
   return NextResponse.json({
     success: true,
@@ -134,11 +162,14 @@ export async function GET(request, { params }) {
     canManage:
       access.canAddEdit,
 
-    resources: addReactionSummary(
-      resources,
-      groupedCounts,
-      userReactions
-    ),
+    collections:
+      personalization.collections,
+
+    resources:
+      addResourcePersonalization(
+        summarizedResources,
+        personalization
+      ),
   });
 }
 

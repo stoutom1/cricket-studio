@@ -83,6 +83,13 @@ export async function POST(
       ) || 20
     );
 
+  const requestedAfterId =
+    Number(
+      url.searchParams.get(
+        "afterId"
+      ) || 0
+    );
+
   const limit =
     Number.isInteger(
       requestedLimit
@@ -96,19 +103,36 @@ export async function POST(
         )
       : 20;
 
+  const afterId =
+    Number.isInteger(
+      requestedAfterId
+    ) &&
+    requestedAfterId > 0
+      ? requestedAfterId
+      : 0;
+
   const resources =
     await prisma
       .leagueResource
       .findMany({
         where: {
           leagueId,
+
+          ...(afterId > 0
+            ? {
+                id: {
+                  gt: afterId,
+                },
+              }
+            : {}),
         },
 
         orderBy: {
           id: "asc",
         },
 
-        take: limit,
+        take:
+          limit + 1,
 
         select: {
           id: true,
@@ -116,9 +140,21 @@ export async function POST(
         },
       });
 
+  const hasMore =
+    resources.length >
+    limit;
+
+  const batch =
+    hasMore
+      ? resources.slice(
+          0,
+          limit
+        )
+      : resources;
+
   const summary = {
     checked:
-      resources.length,
+      batch.length,
     indexed: 0,
     metadataOnly: 0,
     failed: 0,
@@ -127,7 +163,7 @@ export async function POST(
 
   for (
     const resource of
-    resources
+    batch
   ) {
     try {
       const indexed =
@@ -175,9 +211,24 @@ export async function POST(
     }
   }
 
+  const nextAfterId =
+    batch.length
+      ? batch[
+          batch.length - 1
+        ].id
+      : afterId;
+
   return NextResponse.json({
     success:
       summary.failed === 0,
+
     summary,
+
+    pagination: {
+      limit,
+      afterId,
+      nextAfterId,
+      hasMore,
+    },
   });
 }

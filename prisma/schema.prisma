@@ -43,6 +43,8 @@ model User {
   smsConsentVersion            String?
   leagueResourcesCreated       LeagueResource[]
   leagueResourceReactions      LeagueResourceReaction[]
+  leagueResourceFavorites      LeagueResourceFavorite[]
+  leagueResourceCollections    LeagueResourceCollection[]
 }
 
 model Team {
@@ -205,6 +207,7 @@ model League {
   leagueKit                    LeagueKit?
   leagueKitEvents              LeagueKitEvent[]
   resources                    LeagueResource[]
+  resourceCollections          LeagueResourceCollection[]
 }
 
 model LeagueRegistration {
@@ -1190,9 +1193,11 @@ model LeagueResource {
   createdAt DateTime @default(now())
   updatedAt DateTime @updatedAt
 
-  league    League                   @relation(fields: [leagueId], references: [id], onDelete: Cascade)
-  createdBy User                     @relation(fields: [createdById], references: [id])
-  reactions LeagueResourceReaction[]
+  league          League                         @relation(fields: [leagueId], references: [id], onDelete: Cascade)
+  createdBy       User                           @relation(fields: [createdById], references: [id])
+  reactions       LeagueResourceReaction[]
+  favorites       LeagueResourceFavorite[]
+  collectionItems LeagueResourceCollectionItem[]
 
   @@index([leagueId, category])
   @@index([leagueId, isPinned, sortOrder])
@@ -1213,4 +1218,48 @@ model LeagueResourceReaction {
   @@unique([resourceId, userId])
   @@index([resourceId, reaction])
   @@index([userId])
+}
+
+model LeagueResourceFavorite {
+  id         Int      @id @default(autoincrement())
+  resourceId Int
+  userId     String
+  createdAt  DateTime @default(now())
+
+  resource LeagueResource @relation(fields: [resourceId], references: [id], onDelete: Cascade)
+  user     User           @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@unique([resourceId, userId])
+  @@index([userId, createdAt])
+  @@index([resourceId])
+}
+
+model LeagueResourceCollection {
+  id          Int      @id @default(autoincrement())
+  leagueId    Int
+  userId      String
+  name        String
+  description String?
+  createdAt   DateTime @default(now())
+  updatedAt   DateTime @updatedAt
+
+  league League                         @relation(fields: [leagueId], references: [id], onDelete: Cascade)
+  user   User                           @relation(fields: [userId], references: [id], onDelete: Cascade)
+  items  LeagueResourceCollectionItem[]
+
+  @@unique([leagueId, userId, name])
+  @@index([leagueId, userId, updatedAt])
+}
+
+model LeagueResourceCollectionItem {
+  id           Int      @id @default(autoincrement())
+  collectionId Int
+  resourceId   Int
+  createdAt    DateTime @default(now())
+
+  collection LeagueResourceCollection @relation(fields: [collectionId], references: [id], onDelete: Cascade)
+  resource   LeagueResource           @relation(fields: [resourceId], references: [id], onDelete: Cascade)
+
+  @@unique([collectionId, resourceId])
+  @@index([resourceId])
 }
