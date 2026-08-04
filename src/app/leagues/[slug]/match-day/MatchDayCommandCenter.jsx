@@ -150,6 +150,11 @@ export default function MatchDayCommandCenter({
   ] = useState("");
 
   const [
+    availabilitySavingId,
+    setAvailabilitySavingId,
+  ] = useState(null);
+
+  const [
     selectedMatchId,
     setSelectedMatchId,
   ] = useState(null);
@@ -597,6 +602,94 @@ export default function MatchDayCommandCenter({
                 permissions={
                   data.permissions
                 }
+
+                availabilitySavingId={
+                  availabilitySavingId
+                }
+
+                onSetAvailabilityComplete={
+                  async (
+                    match,
+                    complete
+                  ) => {
+                    setAvailabilitySavingId(
+                      match.id
+                    );
+
+                    setError("");
+
+                    try {
+                      let note =
+                        null;
+
+                      if (complete) {
+                        note =
+                          window.prompt(
+                            "Optional note about how availability was confirmed:",
+                            match.availability
+                              ?.manualNote ||
+                              "Confirmed outside Cric4All"
+                          );
+
+                        if (
+                          note ===
+                          null
+                        ) {
+                          return;
+                        }
+                      }
+
+                      const response =
+                        await fetch(
+                          `/api/leagues/${leagueId}/matches/${match.id}/availability-status`,
+                          {
+                            method:
+                              "PATCH",
+
+                            headers: {
+                              "Content-Type":
+                                "application/json",
+                            },
+
+                            body:
+                              JSON.stringify({
+                                availabilityComplete:
+                                  complete,
+
+                                availabilityNote:
+                                  note,
+                              }),
+                          }
+                        );
+
+                      const result =
+                        await response
+                          .json();
+
+                      if (!response.ok) {
+                        throw new Error(
+                          result?.error ||
+                          "Unable to update availability readiness."
+                        );
+                      }
+
+                      await loadCommandCenter({
+                        background:
+                          true,
+                      });
+                    } catch (failure) {
+                      setError(
+                        failure instanceof Error
+                          ? failure.message
+                          : "Unable to update availability readiness."
+                      );
+                    } finally {
+                      setAvailabilitySavingId(
+                        null
+                      );
+                    }
+                  }
+                }
               />
             )}
           </>
@@ -610,6 +703,8 @@ function MatchWorkspace({
   leagueId,
   match,
   permissions,
+  availabilitySavingId,
+  onSetAvailabilityComplete,
 }) {
   const action =
     nextAction({
@@ -691,7 +786,7 @@ function MatchWorkspace({
             %
           </strong>
           <span>
-            Match readiness
+            Ready
           </span>
         </div>
       </div>
@@ -753,11 +848,13 @@ function MatchWorkspace({
 
             <StatusBadge
               ready={
-                Boolean(
-                  match
-                    .availability
-                    ?.pollId
-                )
+                match.readiness
+                  ?.items?.find(
+                    (item) =>
+                      item.key ===
+                      "AVAILABILITY"
+                  )?.complete ===
+                true
               }
             />
           </header>
@@ -804,6 +901,25 @@ function MatchWorkspace({
             </div>
           </div>
 
+          {match.availability
+            ?.manuallyCompleted && (
+            <div className={styles.manualAvailabilityNote}>
+              <span aria-hidden="true">✓</span>
+
+              <div>
+                <strong>
+                  Confirmed outside Cric4All
+                </strong>
+
+                <small>
+                  {match.availability
+                    ?.manualNote ||
+                    "Availability was collected offline, by WhatsApp, or another method."}
+                </small>
+              </div>
+            </div>
+          )}
+
           <div className={styles.cardActions}>
             {match
               .availability
@@ -831,6 +947,41 @@ function MatchWorkspace({
             >
               Manage
             </Link>
+
+            {permissions
+              ?.canEditMatch ||
+            permissions
+              ?.canCreateMatch ||
+            permissions
+              ?.canManagePermissions ||
+            permissions
+              ?.isOwner ? (
+              <button
+                type="button"
+                className={styles.manualCompleteButton}
+                disabled={
+                  availabilitySavingId ===
+                  match.id
+                }
+                onClick={() =>
+                  onSetAvailabilityComplete(
+                    match,
+                    !match
+                      .availability
+                      ?.manuallyCompleted
+                  )
+                }
+              >
+                {availabilitySavingId ===
+                match.id
+                  ? "Saving…"
+                  : match
+                      .availability
+                      ?.manuallyCompleted
+                    ? "Use poll status"
+                    : "Mark complete"}
+              </button>
+            ) : null}
           </div>
         </article>
 

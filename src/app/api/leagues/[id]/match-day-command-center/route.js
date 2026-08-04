@@ -353,6 +353,7 @@ function readiness({
   match,
   availability,
   kit,
+  manualStatus,
 }) {
   const matchStatus =
     normalizeStatus(
@@ -366,9 +367,17 @@ function readiness({
       )
     );
 
+  const availabilityManuallyCompleted =
+    manualStatus?.availabilityComplete ===
+    true;
+
   const hasAvailability =
-    Boolean(
-      availability.pollId
+    availabilityManuallyCompleted ||
+    (
+      Boolean(
+        availability.pollId
+      ) &&
+      availability.responses > 0
     );
 
   const teamsReady =
@@ -398,37 +407,35 @@ function readiness({
     {
       key: "SCHEDULE",
       label:
-        "Match scheduled",
+        "Schedule",
       complete:
         hasSchedule,
     },
     {
       key: "AVAILABILITY",
       label:
-        "Availability collected",
+        "Availability",
       complete:
-        hasAvailability &&
-        availability.responses >
-          0,
+        hasAvailability,
     },
     {
       key: "TEAMS",
       label:
-        "Teams confirmed",
+        "Teams",
       complete:
         teamsReady,
     },
     {
       key: "KIT",
       label:
-        "Kit responsibility ready",
+        "Kit",
       complete:
         kitReady,
     },
     {
       key: "SCORING",
       label:
-        "Scoring setup ready",
+        "Scoring",
       complete:
         scoringReady,
     },
@@ -453,6 +460,13 @@ function readiness({
       ),
 
     items,
+
+    availabilitySource:
+      availabilityManuallyCompleted
+        ? "MANUAL"
+        : availability.pollId
+          ? "POLL"
+          : "NONE",
   };
 }
 
@@ -633,6 +647,7 @@ export async function GET(
     const [
       matches,
       polls,
+      manualStatuses,
     ] =
       await Promise.all([
         prisma.match.findMany({
@@ -810,6 +825,23 @@ export async function GET(
               },
             },
           }),
+    ,
+
+        prisma
+          .matchDayManualStatus
+          .findMany({
+            where: {
+              leagueId,
+            },
+
+            select: {
+              matchId: true,
+              availabilityComplete: true,
+              availabilityNote: true,
+              completedByUserId: true,
+              updatedAt: true,
+            },
+          }),
       ]);
 
     const commandMatches =
@@ -829,6 +861,14 @@ export async function GET(
             summarizeAvailability(
               poll
             );
+
+          const manualStatus =
+            manualStatuses.find(
+              (status) =>
+                status.matchId ===
+                match.id
+            ) ||
+            null;
 
           const kit =
             summarizeKit(
@@ -891,7 +931,24 @@ export async function GET(
                 match
               ),
 
-            availability,
+            availability: {
+              ...availability,
+
+              manuallyCompleted:
+                manualStatus
+                  ?.availabilityComplete ===
+                true,
+
+              manualNote:
+                manualStatus
+                  ?.availabilityNote ||
+                null,
+
+              manualUpdatedAt:
+                manualStatus
+                  ?.updatedAt ||
+                null,
+            },
 
             kit,
 
@@ -900,6 +957,7 @@ export async function GET(
                 match,
                 availability,
                 kit,
+                manualStatus,
               }),
           };
         }

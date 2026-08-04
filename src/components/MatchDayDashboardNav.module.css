@@ -1,0 +1,86 @@
+.matchDayTabsWrap {
+  min-width: 0;
+}
+
+.matchDayTabsWrap :global(.dashboard-tabs) {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+
+  padding: 7px;
+
+  overflow-x: auto;
+  overflow-y: hidden;
+
+  scroll-snap-type: x proximity;
+  scrollbar-width: thin;
+}
+
+.matchDayTabsWrap :global(.dashboard-tab) {
+  flex: 0 0 auto;
+
+  min-width: max-content;
+  min-height: 44px;
+
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 7px;
+
+  padding: 0 14px;
+
+  white-space: nowrap;
+  scroll-snap-align: start;
+}
+
+.tabIcon {
+  flex: 0 0 auto;
+
+  display: inline-grid;
+  place-items: center;
+
+  width: 19px;
+  min-width: 19px;
+
+  font-size: 0.92rem;
+  line-height: 1;
+}
+
+.tabLabel {
+  flex: 0 0 auto;
+
+  display: inline-block;
+
+  font-size: 0.84rem;
+  font-weight: 850;
+  line-height: 1;
+}
+
+@media (max-width: 768px) {
+  .matchDayTabsWrap :global(.dashboard-tabs) {
+    gap: 7px;
+    padding: 6px;
+  }
+
+  .matchDayTabsWrap :global(.dashboard-tab) {
+    min-height: 46px;
+
+    gap: 6px;
+
+    padding-inline: 13px;
+  }
+
+  .tabLabel {
+    font-size: 0.82rem;
+  }
+}
+
+@media (max-width: 390px) {
+  .matchDayTabsWrap :global(.dashboard-tab) {
+    padding-inline: 11px;
+  }
+
+  .tabLabel {
+    font-size: 0.78rem;
+  }
+}

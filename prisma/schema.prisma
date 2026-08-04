@@ -1263,3 +1263,17 @@ model LeagueResourceCollectionItem {
   @@unique([collectionId, resourceId])
   @@index([resourceId])
 }
+
+model MatchDayManualStatus {
+  id                   Int      @id @default(autoincrement())
+  leagueId             Int
+  matchId              Int      @unique
+  availabilityComplete Boolean  @default(false)
+  availabilityNote     String?
+  completedByUserId    String?
+  createdAt            DateTime @default(now())
+  updatedAt            DateTime @updatedAt
+
+  @@index([leagueId, updatedAt])
+  @@index([completedByUserId])
+}
