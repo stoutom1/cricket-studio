@@ -2650,3 +2650,161 @@
     gap: 4px;
   }
 }
+
+
+/* =========================================================
+   MATCH DAY PERMISSION-AWARE CONTROLS
+   ========================================================= */
+
+.permissionStrip {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 12px;
+
+  margin-bottom: 13px;
+  padding: 9px 11px;
+
+  background:
+    rgba(9, 32, 65, 0.72);
+
+  border:
+    1px solid rgba(
+      80,
+      140,
+      208,
+      0.2
+    );
+
+  border-radius: 12px;
+}
+
+.permissionStrip > div {
+  min-width: 0;
+
+  display: flex;
+  align-items: center;
+  gap: 9px;
+}
+
+.permissionStrip > div > span {
+  width: 31px;
+  height: 31px;
+  min-width: 31px;
+
+  display: grid;
+  place-items: center;
+
+  background:
+    rgba(37, 91, 155, 0.38);
+
+  border-radius: 9px;
+}
+
+.permissionStrip p {
+  min-width: 0;
+  margin: 0;
+}
+
+.permissionStrip strong,
+.permissionStrip small {
+  display: block;
+}
+
+.permissionStrip strong {
+  color: #f3f8ff;
+
+  font-size: 0.7rem;
+  font-weight: 900;
+}
+
+.permissionStrip small {
+  margin-top: 2px;
+
+  color: #86a2bf;
+
+  font-size: 0.62rem;
+  line-height: 1.25;
+}
+
+.readOnlyBadge {
+  flex: 0 0 auto;
+
+  padding: 5px 8px;
+
+  color: #ffd18d;
+
+  background:
+    rgba(131, 82, 17, 0.28);
+
+  border-radius: 999px;
+
+  font-size: 0.59rem;
+  font-weight: 900;
+  white-space: nowrap;
+}
+
+.lockedAction {
+  flex: 1 1 auto;
+
+  min-width: 0;
+  min-height: 38px;
+
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 7px;
+
+  padding: 0 11px;
+
+  color: #829bb7;
+
+  background:
+    rgba(24, 49, 79, 0.58);
+
+  border:
+    1px solid rgba(
+      82,
+      128,
+      179,
+      0.2
+    );
+
+  border-radius: 10px;
+
+  font-family: inherit;
+  font-size: 0.68rem;
+  font-weight: 850;
+  line-height: 1;
+  white-space: nowrap;
+
+  cursor: not-allowed;
+  opacity: 0.78;
+}
+
+.lockedAction > span:last-child {
+  min-width: 0;
+
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+.nextActionLocked {
+  min-width: 145px;
+}
+
+@media (max-width: 620px) {
+  .permissionStrip {
+    align-items: stretch;
+    flex-direction: column;
+  }
+
+  .readOnlyBadge {
+    align-self: flex-start;
+  }
+
+  .lockedAction {
+    width: 100%;
+    min-height: 43px;
+  }
+}

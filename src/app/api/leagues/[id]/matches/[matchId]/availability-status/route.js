@@ -155,6 +155,7 @@ export async function PATCH(
               },
 
               select: {
+                role: true,
                 canEditMatch:
                   true,
                 canCreateMatch:
@@ -164,8 +165,22 @@ export async function PATCH(
               },
             });
 
+    const normalizedRole =
+      String(
+        isOwner
+          ? "OWNER"
+          : member?.role ||
+            "MEMBER"
+      )
+        .trim()
+        .toUpperCase();
+
     const canManageMatchDay =
       isOwner ||
+      normalizedRole ===
+        "ADMIN" ||
+      normalizedRole ===
+        "CAPTAIN" ||
       member
         ?.canEditMatch ===
         true ||

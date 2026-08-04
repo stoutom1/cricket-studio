@@ -1146,6 +1146,8 @@ export async function GET(
                 role: true,
                 canViewMatches:
                   true,
+                canViewScoring:
+                  true,
                 canScoreMatch:
                   true,
                 canCreateMatch:
@@ -1188,6 +1190,82 @@ export async function GET(
         }
       );
     }
+
+    const normalizedRole =
+      String(
+        isOwner
+          ? "OWNER"
+          : member?.role ||
+            "MEMBER"
+      )
+        .trim()
+        .toUpperCase();
+
+    const isAdminRole =
+      normalizedRole ===
+      "ADMIN";
+
+    const isCaptainRole =
+      normalizedRole ===
+      "CAPTAIN";
+
+    /*
+     * Match Day uses existing LeagueMember permissions as the primary
+     * source of truth. ADMIN and CAPTAIN receive operational fallbacks
+     * appropriate to their role when older member records do not yet
+     * contain the newer granular flags.
+     */
+    const canManageAvailability =
+      isOwner ||
+      isAdminRole ||
+      isCaptainRole ||
+      member
+        ?.canCreateMatch ===
+        true ||
+      member
+        ?.canEditMatch ===
+        true ||
+      member
+        ?.canManagePermissions ===
+        true;
+
+    const canManageTeams =
+      isOwner ||
+      isAdminRole ||
+      isCaptainRole ||
+      member
+        ?.canCreateMatch ===
+        true ||
+      member
+        ?.canEditMatch ===
+        true ||
+      member
+        ?.canManagePermissions ===
+        true;
+
+    const canManageKit =
+      isOwner ||
+      isAdminRole ||
+      isCaptainRole ||
+      member
+        ?.canEditMatch ===
+        true ||
+      member
+        ?.canManagePermissions ===
+        true;
+
+    const canScoreMatch =
+      isOwner ||
+      member
+        ?.canScoreMatch ===
+        true;
+
+    const canViewScoring =
+      isOwner ||
+      member
+        ?.canViewScoring ===
+        true ||
+      canScoreMatch;
 
     const now =
       new Date();
@@ -1577,16 +1655,26 @@ export async function GET(
         isOwner,
 
         role:
-          isOwner
-            ? "OWNER"
-            : member?.role ||
-              "MEMBER",
+          normalizedRole,
 
-        canScoreMatch:
-          isOwner ||
-          member
-            ?.canScoreMatch ===
-            true,
+        canViewMatchDay:
+          true,
+
+        canManageAvailability,
+
+        canManageTeams,
+
+        canManageKit,
+
+        canViewScoring,
+
+        canScoreMatch,
+
+        canViewSpectator:
+          true,
+
+        canViewResources:
+          true,
 
         canCreateMatch:
           isOwner ||

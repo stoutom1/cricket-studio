@@ -1019,6 +1019,25 @@ export default function MatchDayCommandCenter({
   );
 }
 
+function LockedAction({
+  label,
+  reason,
+  className = "",
+}) {
+  return (
+    <button
+      type="button"
+      className={`${styles.lockedAction} ${className}`}
+      disabled
+      title={reason}
+      aria-label={`${label}. ${reason}`}
+    >
+      <span aria-hidden="true">🔒</span>
+      <span>{label}</span>
+    </button>
+  );
+}
+
 function MatchWorkspace({
   leagueId,
   match,
@@ -1077,6 +1096,34 @@ function MatchWorkspace({
 
   return (
     <section className={styles.workspace}>
+      <div className={styles.permissionStrip}>
+        <div>
+          <span aria-hidden="true">🛡️</span>
+
+          <p>
+            <strong>
+              {permissions?.role || "MEMBER"}
+            </strong>
+
+            <small>
+              {permissions?.canScoreMatch
+                ? "Match operations and scoring access"
+                : permissions?.canManageAvailability ||
+                    permissions?.canManageTeams ||
+                    permissions?.canManageKit
+                  ? "Match operations access"
+                  : "Read-only Match Day access"}
+            </small>
+          </p>
+        </div>
+
+        {!permissions?.canScoreMatch && (
+          <span className={styles.readOnlyBadge}>
+            Scoring read-only
+          </span>
+        )}
+      </div>
+
       <div className={styles.matchHero}>
         <div className={styles.matchIdentity}>
           <div className={styles.matchStatusRow}>
@@ -1267,69 +1314,70 @@ function MatchWorkspace({
           )}
 
           <div className={styles.cardActions}>
-            {match
-              .availability
-              ?.token ? (
-              <Link
-                href={withReturnTo(
-                  `/team-poll/${match.availability.token}`
-                )}
-              >
-                Open poll
-              </Link>
-            ) : (
-              <Link
-                href={
-                  teamBuilderHref
-                }
-              >
-                Create poll
-              </Link>
-            )}
-
-            <Link
-              href={
-                teamBuilderHref
-              }
-              className={styles.secondaryAction}
-            >
-              Manage
-            </Link>
-
             {permissions
-              ?.canEditMatch ||
-            permissions
-              ?.canCreateMatch ||
-            permissions
-              ?.canManagePermissions ||
-            permissions
-              ?.isOwner ? (
-              <button
-                type="button"
-                className={styles.manualCompleteButton}
-                disabled={
-                  availabilitySavingId ===
+              ?.canManageAvailability ? (
+              <>
+                {match
+                  .availability
+                  ?.token ? (
+                  <Link
+                    href={withReturnTo(
+                      `/team-poll/${match.availability.token}`
+                    )}
+                  >
+                    Open poll
+                  </Link>
+                ) : (
+                  <Link
+                    href={
+                      teamBuilderHref
+                    }
+                  >
+                    Create poll
+                  </Link>
+                )}
+
+                <Link
+                  href={
+                    teamBuilderHref
+                  }
+                  className={styles.secondaryAction}
+                >
+                  Manage
+                </Link>
+
+                <button
+                  type="button"
+                  className={styles.manualCompleteButton}
+                  disabled={
+                    availabilitySavingId ===
+                    match.id
+                  }
+                  onClick={() =>
+                    onSetAvailabilityComplete(
+                      match,
+                      !match
+                        .availability
+                        ?.manuallyCompleted
+                    )
+                  }
+                >
+                  {availabilitySavingId ===
                   match.id
-                }
-                onClick={() =>
-                  onSetAvailabilityComplete(
-                    match,
-                    !match
-                      .availability
-                      ?.manuallyCompleted
-                  )
-                }
-              >
-                {availabilitySavingId ===
-                match.id
-                  ? "Saving…"
-                  : match
-                      .availability
-                      ?.manuallyCompleted
-                    ? "Use poll status"
-                    : "Mark complete"}
-              </button>
-            ) : null}
+                    ? "Saving…"
+                    : match
+                        .availability
+                        ?.manuallyCompleted
+                      ? "Use poll status"
+                      : "Mark complete"}
+                </button>
+              </>
+            ) : (
+              <LockedAction
+                label="Availability management"
+                reason="Owner, Admin, Captain, or a member with match-management permission is required."
+              />
+            )}
           </div>
         </article>
 
@@ -1385,13 +1433,21 @@ function MatchWorkspace({
           </div>
 
           <div className={styles.cardActions}>
-            <Link
-              href={
-                teamBuilderHref
-              }
-            >
-              Open AI Team Builder
-            </Link>
+            {permissions
+              ?.canManageTeams ? (
+              <Link
+                href={
+                  teamBuilderHref
+                }
+              >
+                Open AI Team Builder
+              </Link>
+            ) : (
+              <LockedAction
+                label="AI Team Builder"
+                reason="Owner, Admin, Captain, or a member with match-management permission is required."
+              />
+            )}
           </div>
         </article>
 
@@ -1479,13 +1535,21 @@ function MatchWorkspace({
           </div>
 
           <div className={styles.cardActions}>
-            <Link
-              href={
-                kitHref
-              }
-            >
-              Open kit workflow
-            </Link>
+            {permissions
+              ?.canManageKit ? (
+              <Link
+                href={
+                  kitHref
+                }
+              >
+                Open kit workflow
+              </Link>
+            ) : (
+              <LockedAction
+                label="Kit workflow"
+                reason="Owner, Admin, Captain, or a member with kit-management permission is required."
+              />
+            )}
           </div>
         </article>
 
@@ -1552,23 +1616,23 @@ function MatchWorkspace({
                   : "Open scoring"}
               </Link>
             ) : (
+              <LockedAction
+                label="Scoring"
+                reason="The canScoreMatch permission is required."
+              />
+            )}
+
+            {permissions
+              ?.canViewSpectator ? (
               <Link
                 href={
                   spectatorHref
                 }
+                className={styles.secondaryAction}
               >
-                View score
+                Spectator
               </Link>
-            )}
-
-            <Link
-              href={
-                spectatorHref
-              }
-              className={styles.secondaryAction}
-            >
-              Spectator
-            </Link>
+            ) : null}
           </div>
         </article>
       </div>
@@ -1591,26 +1655,49 @@ function MatchWorkspace({
         </div>
 
         <div>
-          <Link
-            href={
-              withReturnTo(
-                action.href
-              )
-            }
-            className={styles.nextAction}
-          >
-            Continue
-            <span>→</span>
-          </Link>
+          {(
+            action.href.includes(
+              "scoring"
+            )
+              ? permissions
+                  ?.canScoreMatch
+              : action.href.includes(
+                    "ai-team-splitter"
+                  )
+                ? permissions
+                    ?.canManageTeams
+                : true
+          ) ? (
+            <Link
+              href={
+                withReturnTo(
+                  action.href
+                )
+              }
+              className={styles.nextAction}
+            >
+              Continue
+              <span>→</span>
+            </Link>
+          ) : (
+            <LockedAction
+              label="Next action locked"
+              reason="Your league permissions do not allow this operational action."
+              className={styles.nextActionLocked}
+            />
+          )}
 
-          <Link
-            href={
-              resourcesHref
-            }
-            className={styles.resourcesAction}
-          >
-            📚 League Resources
-          </Link>
+          {permissions
+            ?.canViewResources ? (
+            <Link
+              href={
+                resourcesHref
+              }
+              className={styles.resourcesAction}
+            >
+              📚 League Resources
+            </Link>
+          ) : null}
         </div>
       </section>
     </section>
