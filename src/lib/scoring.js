@@ -327,313 +327,679 @@ if (completedRuns % 2 === 1) {
   return { strikerId, nonStrikerId };
 }
 
-export function summarizeInningsDetailed(balls, playerMap, oversPerInnings) {
-  const sorted = [...balls].sort((a, b) => a.sequence - b.sequence);
-
-  const legalBalls = sorted.filter((b) => b.legalDelivery).length;
-  const runs = sorted.reduce((sum, b) => sum + b.totalRuns, 0);
-  const wickets = sorted.reduce((sum, b) =>sum +(b.isWicket && b.wicketType !== "RETIRED_HURT" ? 1 : 0),0);
-  const extrasTotal = sorted.reduce(
-  (sum, b) => sum + Number(b.extras || 0),
-  0
+export function summarizeInningsDetailed(
+  balls,
+  playerMap,
+  oversPerInnings
+) {
+  const sorted = [...balls].sort(
+    (a, b) =>
+      Number(a.sequence || 0) -
+        Number(b.sequence || 0) ||
+      Number(a.id || 0) -
+        Number(b.id || 0)
   );
+
+  const legalBalls = sorted.filter(
+    (ball) =>
+      Boolean(
+        ball.legalDelivery
+      )
+  ).length;
+
+  const runs = sorted.reduce(
+    (sum, ball) =>
+      sum +
+      Number(
+        ball.totalRuns || 0
+      ),
+    0
+  );
+
+  const wickets = sorted.reduce(
+    (sum, ball) =>
+      sum +
+      (
+        Boolean(
+          ball.isWicket
+        ) &&
+        ball.wicketType !==
+          "RETIRED_HURT"
+          ? 1
+          : 0
+      ),
+    0
+  );
+
+  const extrasTotal =
+    sorted.reduce(
+      (sum, ball) =>
+        sum +
+        Number(
+          ball.extras || 0
+        ),
+      0
+    );
 
   const wides = sorted.reduce(
-    (sum, b) => sum + (b.extraType === "WIDE" ? Number(b.extras || 0) : 0),
+    (sum, ball) =>
+      sum +
+      (
+        ball.extraType ===
+        "WIDE"
+          ? Number(
+              ball.extras || 0
+            )
+          : 0
+      ),
     0
   );
 
-  const noBalls = sorted.reduce(
-    (sum, b) => sum + (b.extraType === "NOBALL" ? Number(b.extras || 0) : 0),
-    0
-  );
+  const noBalls =
+    sorted.reduce(
+      (sum, ball) =>
+        sum +
+        (
+          ball.extraType ===
+          "NOBALL"
+            ? Number(
+                ball.extras || 0
+              )
+            : 0
+        ),
+      0
+    );
 
   const byes = sorted.reduce(
-    (sum, b) => sum + (b.extraType === "BYE" ? Number(b.extras || 0) : 0),
+    (sum, ball) =>
+      sum +
+      (
+        ball.extraType ===
+        "BYE"
+          ? Number(
+              ball.extras || 0
+            )
+          : 0
+      ),
     0
   );
 
-  const legByes = sorted.reduce(
-    (sum, b) => sum + (b.extraType === "LEGBYE" ? Number(b.extras || 0) : 0),
-    0
-  );
+  const legByes =
+    sorted.reduce(
+      (sum, ball) =>
+        sum +
+        (
+          ball.extraType ===
+          "LEGBYE"
+            ? Number(
+                ball.extras || 0
+              )
+            : 0
+        ),
+      0
+    );
 
-  const powerplayBalls = sorted.filter((b) => b.isPowerPlay);
-  const powerplayRuns = powerplayBalls.reduce((sum, b) => sum + b.totalRuns, 0);
-  const powerplayWickets = powerplayBalls.reduce((sum, b) => sum + (b.isWicket ? 1 : 0),0);
+  const powerplayBalls =
+    sorted.filter(
+      (ball) =>
+        ball.isPowerPlay
+    );
+
+  const powerplayRuns =
+    powerplayBalls.reduce(
+      (sum, ball) =>
+        sum +
+        Number(
+          ball.totalRuns || 0
+        ),
+      0
+    );
+
+  const powerplayWickets =
+    powerplayBalls.reduce(
+      (sum, ball) =>
+        sum +
+        (
+          Boolean(
+            ball.isWicket
+          ) &&
+          ball.wicketType !==
+            "RETIRED_HURT"
+            ? 1
+            : 0
+        ),
+      0
+    );
 
   const partnerships = [];
   const fallOfWickets = [];
 
+  let currentPair = null;
   let currentPartnershipRuns = 0;
   let currentPartnershipBalls = 0;
-  let currentPair = null;
 
   let cumulativeRuns = 0;
   let cumulativeWickets = 0;
   let cumulativeLegalBalls = 0;
 
-  for (const ball of sorted) {
-  if (!currentPair && ball.strikerId && ball.nonStrikerId) {
-    currentPair = {
-      strikerId: ball.strikerId,
-      nonStrikerId: ball.nonStrikerId
+  function normalizedPair(
+    strikerId,
+    nonStrikerId
+  ) {
+    const striker =
+      Number(strikerId || 0);
+
+    const nonStriker =
+      Number(
+        nonStrikerId || 0
+      );
+
+    if (
+      striker <= 0 ||
+      nonStriker <= 0
+    ) {
+      return null;
+    }
+
+    return {
+      strikerId:
+        striker,
+
+      nonStrikerId:
+        nonStriker,
     };
   }
 
-  cumulativeRuns += ball.totalRuns;
-  currentPartnershipRuns += ball.totalRuns;
+  function samePairMembers(
+    left,
+    right
+  ) {
+    if (
+      !left ||
+      !right
+    ) {
+      return false;
+    }
 
-  const isRetiredHurt =
-    ball.wicketType === "RETIRED_HURT";
+    return (
+      (
+        left.strikerId ===
+          right.strikerId &&
+        left.nonStrikerId ===
+          right.nonStrikerId
+      ) ||
+      (
+        left.strikerId ===
+          right.nonStrikerId &&
+        left.nonStrikerId ===
+          right.strikerId
+      )
+    );
+  }
+
+  function closePartnership({
+    wicketNumber = null,
+    ongoing = false,
+    reason = null,
+  } = {}) {
+    if (
+      !currentPair
+    ) {
+      return;
+    }
+
+    if (
+      currentPartnershipRuns <=
+        0 &&
+      currentPartnershipBalls <=
+        0
+    ) {
+      currentPair = null;
+      currentPartnershipRuns =
+        0;
+      currentPartnershipBalls =
+        0;
+      return;
+    }
+
+    partnerships.push({
+      wicketNumber,
+
+      runs:
+        currentPartnershipRuns,
+
+      balls:
+        currentPartnershipBalls,
+
+      batter1:
+        getPlayerName(
+          playerMap,
+          currentPair.strikerId
+        ),
+
+      batter2:
+        getPlayerName(
+          playerMap,
+          currentPair.nonStrikerId
+        ),
+
+      ongoing,
+      reason,
+    });
+
+    currentPair = null;
+    currentPartnershipRuns =
+      0;
+    currentPartnershipBalls =
+      0;
+  }
+
+  for (
+    const ball of
+    sorted
+  ) {
+    const recordedPair =
+      normalizedPair(
+        ball.strikerId,
+        ball.nonStrikerId
+      );
+
+    /*
+     * Historical score corrections can change the active pair without
+     * producing a wicket event. Always trust the pair stored on the
+     * current delivery and close the previous stand when the two pair
+     * members change.
+     */
+    if (
+      recordedPair &&
+      currentPair &&
+      !samePairMembers(
+        recordedPair,
+        currentPair
+      )
+    ) {
+      closePartnership({
+        reason:
+          "BATTER_CHANGE",
+      });
+    }
+
+    if (
+      !currentPair &&
+      recordedPair
+    ) {
+      currentPair =
+        recordedPair;
+    }
+
+    cumulativeRuns +=
+      Number(
+        ball.totalRuns || 0
+      );
+
+    currentPartnershipRuns +=
+      Number(
+        ball.totalRuns || 0
+      );
+
+    const isRetiredHurt =
+      ball.wicketType ===
+      "RETIRED_HURT";
+
+    if (
+      Boolean(
+        ball.legalDelivery
+      ) &&
+      !isRetiredHurt
+    ) {
+      cumulativeLegalBalls +=
+        1;
+      currentPartnershipBalls +=
+        1;
+    }
+
+    const countsAsWicket =
+      Boolean(
+        ball.isWicket
+      ) &&
+      !isRetiredHurt;
+
+    if (
+      isRetiredHurt
+    ) {
+      /*
+       * A retired-hurt replacement ends the current partnership even
+       * though it does not add a wicket.
+       */
+      closePartnership({
+        reason:
+          "RETIRED_HURT",
+      });
+
+      continue;
+    }
+
+    if (
+      countsAsWicket
+    ) {
+      cumulativeWickets +=
+        1;
+
+      fallOfWickets.push({
+        wicketNumber:
+          cumulativeWickets,
+
+        score:
+          `${cumulativeRuns}/${cumulativeWickets}`,
+
+        playerOut:
+          getPlayerName(
+            playerMap,
+            ball.dismissedPlayerId
+          ),
+
+        over:
+          formatOversFromBalls(
+            cumulativeLegalBalls
+          ),
+      });
+
+      closePartnership({
+        wicketNumber:
+          cumulativeWickets,
+
+        ongoing:
+          false,
+
+        reason:
+          "WICKET",
+      });
+    }
+  }
 
   if (
-    ball.legalDelivery &&
-    !isRetiredHurt &&
-    ball.extraType !== "WIDE" &&
-    ball.extraType !== "NOBALL" &&
-    ball.extraType !== "RETIRED_HURT"
+    currentPair &&
+    (
+      currentPartnershipRuns >
+        0 ||
+      currentPartnershipBalls >
+        0
+    )
   ) {
-    cumulativeLegalBalls += 1;
-    currentPartnershipBalls += 1;
-  }
-if (
-  ball.wicketType === "RETIRED_HURT"
-) {
-  currentPair = {
-    strikerId:
-      ball.dismissedPlayerId ===
-      currentPair?.strikerId
-        ? ball.newBatterId
-        : currentPair?.strikerId,
-
-    nonStrikerId:
-      ball.dismissedPlayerId ===
-      currentPair?.nonStrikerId
-        ? ball.newBatterId
-        : currentPair?.nonStrikerId
-  };
-
-  continue;
-}
-const nextPair = applyBallOutcome(ball);
-
-
-
-  const countsAsWicket =
-    Boolean(ball.isWicket) &&
-    ball.wicketType !== "RETIRED_HURT";
-
-  if (countsAsWicket) {
-    cumulativeWickets += 1;
-
-    fallOfWickets.push({
-      wicketNumber: cumulativeWickets,
-      score: `${cumulativeRuns}/${cumulativeWickets}`,
-      playerOut: getPlayerName(
-        playerMap,
-        ball.dismissedPlayerId
-      ),
-      over: formatOversFromBalls(
-        cumulativeLegalBalls
-      )
-    });
-
-    partnerships.push({
-      wicketNumber: cumulativeWickets,
-      runs: currentPartnershipRuns,
-      balls: currentPartnershipBalls,
-      batter1: getPlayerName(
-        playerMap,
-        currentPair?.strikerId
-      ),
-      batter2: getPlayerName(
-        playerMap,
-        currentPair?.nonStrikerId
-      ),
-      ongoing: false
-    });
-
-    currentPartnershipRuns = 0;
-    currentPartnershipBalls = 0;
-  }
-
-  currentPair = nextPair;
-
-}
-
-  if (sorted.length > 0 && currentPair && (currentPartnershipRuns > 0 || currentPartnershipBalls > 0)) {
-    partnerships.push({
-      wicketNumber: null,
-      runs: currentPartnershipRuns,
-      balls: currentPartnershipBalls,
-      batter1: getPlayerName(playerMap, currentPair.strikerId),
-      batter2: getPlayerName(playerMap, currentPair.nonStrikerId),
-      ongoing: true
+    closePartnership({
+      ongoing: true,
+      reason: "CURRENT",
     });
   }
-let currentState = null;
 
-const maxLegalBalls = oversPerInnings * 6;
+  let currentState = null;
 
-if (
-  sorted.length > 0 &&
-  legalBalls < maxLegalBalls
-) {
+  const maxLegalBalls =
+    Number(
+      oversPerInnings || 0
+    ) * 6;
 
-  const latestBowlerId =
-  sorted.length > 0
-    ? sorted[sorted.length - 1].bowlerId
-    : null;
+  if (
+    sorted.length > 0 &&
+    (
+      maxLegalBalls <= 0 ||
+      legalBalls <
+        maxLegalBalls
+    )
+  ) {
+    const lastBall =
+      sorted[
+        sorted.length - 1
+      ];
 
-function getBatterStats(playerId) {
-  let runs = 0;
-  let balls = 0;
+    /*
+     * Current state should follow the actual last stored delivery.
+     * applyBallOutcome remains useful for live transition behavior.
+     */
+    const nextPair =
+      applyBallOutcome(
+        lastBall
+      );
 
-  for (const ball of sorted) {
-    if (ball.strikerId === playerId) {
-      runs += ball.runsOffBat;
+    const latestBowlerId =
+      lastBall.bowlerId ||
+      null;
 
-      if (
-        ball.extraType !== "WIDE" &&
-        ball.extraType !== "NOBALL" &&
-        ball.wicketType !== "RETIRED_HURT"
+    function getBatterStats(
+      playerId
+    ) {
+      let batterRuns = 0;
+      let batterBalls = 0;
+
+      for (
+        const ball of
+        sorted
       ) {
-        balls += 1;
-      }
-    }
-  }
+        if (
+          Number(
+            ball.strikerId
+          ) !==
+          Number(
+            playerId
+          )
+        ) {
+          continue;
+        }
 
-  return { runs, balls };
-}
+        batterRuns +=
+          Number(
+            ball.runsOffBat || 0
+          );
 
-function getBowlerStats(playerId) {
-  let runs = 0;
-  let balls = 0;
-  let wickets = 0;
-
-  for (const ball of sorted) {
-    if (ball.bowlerId === playerId) {
-      runs += runsChargedToBowler(ball);
-
-      if (
-        ball.legalDelivery &&
-        ball.wicketType !== "RETIRED_HURT"
-      ) {
-        balls += 1;
+        if (
+          ball.extraType !==
+            "WIDE" &&
+          ball.extraType !==
+            "NOBALL" &&
+          ball.wicketType !==
+            "RETIRED_HURT"
+        ) {
+          batterBalls += 1;
+        }
       }
 
-      wickets += wicketsForBowler(ball);
+      return {
+        runs:
+          batterRuns,
+
+        balls:
+          batterBalls,
+      };
     }
+
+    function getBowlerStats(
+      playerId
+    ) {
+      let bowlerRuns = 0;
+      let bowlerBalls = 0;
+      let bowlerWickets = 0;
+
+      for (
+        const ball of
+        sorted
+      ) {
+        if (
+          Number(
+            ball.bowlerId
+          ) !==
+          Number(
+            playerId
+          )
+        ) {
+          continue;
+        }
+
+        bowlerRuns +=
+          runsChargedToBowler(
+            ball
+          );
+
+        if (
+          Boolean(
+            ball.legalDelivery
+          ) &&
+          ball.wicketType !==
+            "RETIRED_HURT"
+        ) {
+          bowlerBalls += 1;
+        }
+
+        bowlerWickets +=
+          wicketsForBowler(
+            ball
+          );
+      }
+
+      return {
+        runs:
+          bowlerRuns,
+
+        wickets:
+          bowlerWickets,
+
+        overs:
+          formatOversFromBalls(
+            bowlerBalls
+          ),
+      };
+    }
+
+    currentState = {
+      strikerId:
+        nextPair?.strikerId ||
+        null,
+
+      nonStrikerId:
+        nextPair
+          ?.nonStrikerId ||
+        null,
+
+      strikerName:
+        nextPair?.strikerId
+          ? getPlayerName(
+              playerMap,
+              nextPair.strikerId
+            )
+          : null,
+
+      nonStrikerName:
+        nextPair
+          ?.nonStrikerId
+          ? getPlayerName(
+              playerMap,
+              nextPair
+                .nonStrikerId
+            )
+          : null,
+
+      bowlerId:
+        latestBowlerId,
+
+      bowlerName:
+        latestBowlerId
+          ? getPlayerName(
+              playerMap,
+              latestBowlerId
+            )
+          : null,
+
+      nextOverNo:
+        Math.floor(
+          legalBalls / 6
+        ),
+
+      nextBallInOver:
+        (
+          legalBalls % 6
+        ) + 1,
+
+      strikerStats:
+        nextPair?.strikerId
+          ? getBatterStats(
+              nextPair.strikerId
+            )
+          : {
+              runs: 0,
+              balls: 0,
+            },
+
+      nonStrikerStats:
+        nextPair
+          ?.nonStrikerId
+          ? getBatterStats(
+              nextPair
+                .nonStrikerId
+            )
+          : {
+              runs: 0,
+              balls: 0,
+            },
+
+      bowlerStats:
+        latestBowlerId
+          ? getBowlerStats(
+              latestBowlerId
+            )
+          : {
+              runs: 0,
+              wickets: 0,
+              overs: "0.0",
+            },
+    };
   }
 
   return {
     runs,
     wickets,
-    overs: formatOversFromBalls(balls)
+
+    balls:
+      sorted.length,
+
+    legalBalls,
+
+    oversDisplay:
+      formatOversFromBalls(
+        legalBalls
+      ),
+
+    runRate:
+      legalBalls
+        ? (
+            (
+              runs /
+              legalBalls
+            ) *
+            6
+          ).toFixed(2)
+        : "0.00",
+
+    powerplay: {
+      runs:
+        powerplayRuns,
+
+      wickets:
+        powerplayWickets,
+    },
+
+    extras: {
+      total:
+        extrasTotal,
+
+      wides,
+      noBalls,
+      byes,
+      legByes,
+    },
+
+    partnerships,
+    fallOfWickets,
+    currentState,
   };
-}
-
-
-  currentState = {
-    strikerId: currentPair?.strikerId || null,
-
-    nonStrikerId:
-      currentPair?.nonStrikerId || null,
-
-    strikerName:
-      currentPair?.strikerId
-        ? getPlayerName(
-            playerMap,
-            currentPair.strikerId
-          )
-        : null,
-
-    nonStrikerName:
-      currentPair?.nonStrikerId
-        ? getPlayerName(
-            playerMap,
-            currentPair.nonStrikerId
-          )
-        : null,
-    bowlerId:
-      sorted.length > 0
-        ? sorted[sorted.length - 1].bowlerId
-        : null,
-
-    bowlerName:
-      sorted.length > 0
-        ? getPlayerName(
-            playerMap,
-            sorted[sorted.length - 1].bowlerId
-          )
-        : null,
-    nextOverNo: Math.floor(legalBalls / 6),
-
-    nextBallInOver:
-      (legalBalls % 6) + 1,
-
-        strikerStats:
-          currentPair?.strikerId
-            ? getBatterStats(currentPair.strikerId)
-            : { runs: 0, balls: 0 },
-
-        nonStrikerStats:
-          currentPair?.nonStrikerId
-            ? getBatterStats(currentPair.nonStrikerId)
-            : { runs: 0, balls: 0 },
-
-        bowlerStats:
-          latestBowlerId
-            ? getBowlerStats(latestBowlerId)
-            : { runs: 0, wickets: 0, overs: "0.0"}
-  };
-  if (currentState) {
-
-  currentState.strikerName =
-    getPlayerName(
-      playerMap,
-      currentState.strikerId
-    );
-
-  currentState.nonStrikerName =
-    getPlayerName(
-      playerMap,
-      currentState.nonStrikerId
-    );
-}
-}
-
-return {
-  runs,
-  wickets,
-  balls: sorted.length,
-  legalBalls,
-
-  oversDisplay:
-    formatOversFromBalls(legalBalls),
-
-  runRate: legalBalls
-    ? ((runs / legalBalls) * 6).toFixed(2)
-    : "0.00",
-
-  powerplay: {
-    runs: powerplayRuns,
-    wickets: powerplayWickets
-  },
-  extras: {
-    total: extrasTotal,
-    wides,
-    noBalls,
-    byes,
-    legByes
-  },
-  partnerships,
-
-  fallOfWickets,
-
-  currentState
-};
 }
 
 function wicketsForBowler(ball) {

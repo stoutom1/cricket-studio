@@ -1100,122 +1100,6 @@ function calculateBestPartnership(matches) {
   return best;
 }
 
-function calculateBestCatch(matches) {
-  let best =
-    null;
-
-  for (
-    const match of
-    matches
-  ) {
-    const playerMap =
-      buildPlayerMap(match);
-
-    for (
-      const ball of
-      match.balls || []
-    ) {
-      if (
-        normalizeStatus(
-          ball.wicketType
-        ) !==
-        "CAUGHT"
-      ) {
-        continue;
-      }
-
-      const fielder =
-        playerMap.get(
-          Number(
-            ball.fielderId
-          )
-        );
-
-      if (!fielder) {
-        continue;
-      }
-
-      const dismissed =
-        playerMap.get(
-          Number(
-            ball.dismissedPlayerId
-          )
-        );
-
-      const note =
-        String(
-          ball.wicketNote ||
-          ball.note ||
-          ""
-        ).trim();
-
-      /*
-       * There is no objective catch-quality field in the current schema.
-       * A descriptive scorer note receives priority; otherwise the latest
-       * recorded catch is used as a transparent data-based fallback.
-       */
-      const score =
-        (
-          note
-            ? 100
-            : 0
-        ) +
-        safeNumber(
-          ball.runsOffBat
-        ) +
-        safeNumber(
-          ball.sequence
-        ) /
-          10000;
-
-      if (
-        !best ||
-        score >
-          best.score
-      ) {
-        best = {
-          score,
-
-          matchId:
-            match.id,
-
-          matchDate:
-            matchDate(match),
-
-          playerId:
-            fielder.id,
-
-          playerName:
-            fielder.name,
-
-          teamId:
-            fielder.teamId,
-
-          teamName:
-            fielder.teamName,
-
-          dismissedPlayer:
-            dismissed?.name ||
-            "batter",
-
-          note:
-            note ||
-            "Recorded catch",
-
-          overLabel:
-            `${safeNumber(
-              ball.overNo
-            )}.${safeNumber(
-              ball.ballInOver
-            )}`,
-        };
-      }
-    }
-  }
-
-  return best;
-}
-
 function calculateMostImproved({
   currentPlayers,
   previousPlayers,
@@ -1756,6 +1640,15 @@ function calculateAwards({
   const previousWeekMatches =
     previousPeriodMatches;
 
+  const awardScopeTitle =
+    periodLabel ===
+    "selected series"
+      ? "Series"
+      : periodLabel ===
+          "month"
+        ? "Month"
+        : "Week";
+
   const weeklyPlayers =
     aggregatePlayers(
       weeklyMatches
@@ -1862,11 +1755,6 @@ function calculateAwards({
       weeklyMatches
     );
 
-  const bestCatch =
-    calculateBestCatch(
-      weeklyMatches
-    );
-
   /*
    * Fastest Fifty is a season-wide marquee award. It is deliberately
    * calculated from seasonMatches rather than weeklyMatches so the card
@@ -1956,7 +1844,7 @@ function calculateAwards({
 
       awardFromPlayer({
         key: "BATTER_OF_WEEK",
-        title: "Batter of the Week",
+        title: `Batter of the ${awardScopeTitle}`,
         icon: "🏏",
         player:
           weeklyBatter,
@@ -1973,7 +1861,7 @@ function calculateAwards({
 
       awardFromPlayer({
         key: "BOWLER_OF_WEEK",
-        title: "Bowler of the Week",
+        title: `Bowler of the ${awardScopeTitle}`,
         icon: "🎯",
         player:
           weeklyBowler,
@@ -1990,7 +1878,7 @@ function calculateAwards({
 
       awardFromPlayer({
         key: "FIELDER_OF_WEEK",
-        title: "Fielder of the Week",
+        title: `Fielder of the ${awardScopeTitle}`,
         icon: "🧤",
         player:
           weeklyFielder,
@@ -2004,56 +1892,6 @@ function calculateAwards({
         explanation: () =>
           "Selected from recorded catches, run outs, stumpings and assists.",
       }),
-
-      {
-        key:
-          "BEST_CATCH",
-
-        title:
-          "Best Catch",
-
-        icon:
-          "🙌",
-
-        available:
-          Boolean(
-            bestCatch
-          ),
-
-        playerId:
-          bestCatch?.playerId ||
-          null,
-
-        playerName:
-          bestCatch?.playerName ||
-          null,
-
-        teamId:
-          bestCatch?.teamId ||
-          null,
-
-        teamName:
-          bestCatch?.teamName ||
-          null,
-
-        value:
-          bestCatch
-            ? `Over ${bestCatch.overLabel}`
-            : "—",
-
-        subtitle:
-          bestCatch
-            ? `Dismissed ${bestCatch.dismissedPlayer}`
-            : "No recorded catch",
-
-        explanation:
-          bestCatch
-            ? bestCatch.note
-            : "Complete a match with a recorded caught dismissal.",
-
-        methodology:
-          "Uses scorer catch notes when available; otherwise uses a transparent recorded-catch fallback because the current schema has no catch-quality rating.",
-      },
 
       {
         key:
@@ -2882,9 +2720,6 @@ export async function GET(
               "MONTH"
             ? "Compares impact per match with the immediately preceding month."
             : "Compares impact per match with the immediately preceding week.",
-
-      bestCatch:
-        "Uses scorer catch notes when available. The current data model does not contain an objective catch-quality score.",
 
       teamOfWeek:
         period ===

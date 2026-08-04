@@ -11519,6 +11519,25 @@ const playerRoleBadge = (row) => {
                 </button>
               )}
 
+              {(
+                permissions?.canScoreMatch ||
+                permissions?.canEditMatch ||
+                permissions?.canManagePermissions
+              ) && (
+                <button
+                  type="button"
+                  className="completed-action-btn completed-repair-btn"
+                  onClick={() =>
+                    router.push(
+                      `/matches/${match.id}/repair`
+                    )
+                  }
+                >
+                  <span>🛠</span>
+                  <b>Repair</b>
+                </button>
+              )}
+
               {permissions?.canDeleteMatch && (
                 <button
                   type="button"
@@ -11851,6 +11870,23 @@ const playerRoleBadge = (row) => {
                           }
                         >
                           ✏️ Corrections
+                        </button>
+                      )}
+
+                      {(
+                        permissions?.canScoreMatch ||
+                        permissions?.canEditMatch ||
+                        permissions?.canManagePermissions
+                      ) && (
+                        <button
+                          type="button"
+                          onClick={() =>
+                            router.push(
+                              `/matches/${match.id}/repair`
+                            )
+                          }
+                        >
+                          🛠 Repair
                         </button>
                       )}
 
@@ -13800,7 +13836,12 @@ onClick={() => {
             )
           }
         >
-          👥 Team of Week
+          👥 {awardsSeriesMode
+            ? "Team of Series"
+            : awardsPeriodType ===
+                "MONTH"
+              ? "Team of Month"
+              : "Team of Week"}
         </button>
 
         <button

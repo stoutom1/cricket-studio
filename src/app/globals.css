@@ -68091,3 +68091,42 @@ transform:translateX(28px);
     font-size: 0.63rem;
   }
 }
+
+
+/* Match Repair entry point */
+.completed-action-btn.completed-repair-btn {
+  border-color:
+    rgba(84, 203, 151, 0.28);
+
+  background:
+    linear-gradient(
+      145deg,
+      rgba(17, 84, 67, 0.48),
+      rgba(13, 54, 88, 0.76)
+    );
+}
+
+.completed-action-btn.completed-repair-btn:hover {
+  border-color:
+    rgba(107, 231, 177, 0.5);
+}
+
+
+/* =========================================================
+   AWARDS — DYNAMIC WEEK / MONTH / SERIES TITLES
+   ========================================================= */
+
+.award-card-top small {
+  max-width: 100%;
+
+  white-space: normal;
+  overflow-wrap: anywhere;
+  text-wrap: balance;
+}
+
+@media (max-width: 620px) {
+  .award-card-top small {
+    font-size: 0.6rem;
+    line-height: 1.25;
+  }
+}
