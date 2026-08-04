@@ -4,7 +4,9 @@ import { DateTime } from "luxon";
 
 import prisma from "@/lib/prisma";
 import { authOptions } from "@/lib/auth";
-import { requireBirthdayManager } from "@/lib/leagueBirthdayAccess";
+import {
+  requireBirthdayViewer,
+} from "@/lib/leagueBirthdayAccess";
 import { birthdayWhereForDate } from "@/lib/birthdayDates";
 
 export const runtime = "nodejs";
@@ -69,8 +71,13 @@ export async function GET(request, { params }) {
     }
 
     const access =
-      await requireBirthdayManager({
-        userId: session.user.id,
+      await requireBirthdayViewer({
+        userId:
+          session.user.id,
+
+        email:
+          session.user.email,
+
         leagueId,
       });
 
@@ -173,6 +180,17 @@ export async function GET(request, { params }) {
       birthdays,
       date: localToday.toISODate(),
       timeZone,
+
+      access: {
+        role:
+          access.role,
+
+        readOnly:
+          access.isReadOnly,
+
+        canManage:
+          access.canManage,
+      },
     });
   } catch (error) {
     console.error(

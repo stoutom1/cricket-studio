@@ -25,7 +25,12 @@ export async function GET(request, { params }) {
     const leagueId = Number(rawLeagueId);
 
     const access = await requireBirthdayManager({
-      userId: session?.user?.id,
+      userId:
+        session?.user?.id,
+
+      email:
+        session?.user?.email,
+
       leagueId,
     });
 
@@ -69,7 +74,12 @@ export async function PATCH(request, { params }) {
     const leagueId = Number(rawLeagueId);
 
     const access = await requireBirthdayManager({
-      userId: session?.user?.id,
+      userId:
+        session?.user?.id,
+
+      email:
+        session?.user?.email,
+
       leagueId,
     });
 

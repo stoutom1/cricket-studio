@@ -3,6 +3,9 @@ import { getServerSession } from "next-auth";
 
 import prisma from "@/lib/prisma";
 import { authOptions } from "@/lib/auth";
+import {
+  requireBirthdayManager,
+} from "@/lib/leagueBirthdayAccess";
 
 import {
   sendTwilioWhatsAppBirthdayMessage,
@@ -69,72 +72,29 @@ export async function POST(
       );
     }
 
-    /*
-     * Replace leagueMember with your actual
-     * Prisma membership model if different.
-     */
-const leagueAccess =
-  await prisma.league.findUnique({
-    where: {
-      id: leagueId,
-    },
+    const access =
+      await requireBirthdayManager({
+        userId:
+          user.id,
 
-    select: {
-      id: true,
-      ownerId: true,
+        email:
+          session.user.email,
 
-      members: {
-        where: {
-          userId: user.id,
-          role: {
-            in: [
-              "OWNER",
-              "ADMIN",
-            ],
-          },
+        leagueId,
+      });
+
+    if (!access.allowed) {
+      return NextResponse.json(
+        {
+          error:
+            access.error,
         },
-
-        select: {
-          id: true,
-          role: true,
-        },
-
-        take: 1,
-      },
-    },
-  });
-
-if (!leagueAccess) {
-  return NextResponse.json(
-    {
-      error: "League not found.",
-    },
-    {
-      status: 404,
+        {
+          status:
+            access.status,
+        }
+      );
     }
-  );
-}
-
-const isDirectOwner =
-  leagueAccess.ownerId === user.id;
-
-const isOwnerOrAdminMember =
-  leagueAccess.members.length > 0;
-
-if (
-  !isDirectOwner &&
-  !isOwnerOrAdminMember
-) {
-  return NextResponse.json(
-    {
-      error:
-        "Only a league owner or administrator can update WhatsApp settings.",
-    },
-    {
-      status: 403,
-    }
-  );
-}
 
     const body =
       await request.json();
@@ -221,13 +181,18 @@ if (
       );
     }
 
-await sendTwilioWhatsAppBirthdayMessage({
-  recipientPhone,
-  playerName: birthday.name,
-  leagueName: birthday.league.name,
-  birthdayId: birthday.id,
-  leagueId: birthday.league.id,
-});
+const result =
+  await sendTwilioWhatsAppBirthdayMessage({
+    recipientPhone,
+    playerName:
+      birthday.name,
+    leagueName:
+      birthday.league.name,
+    birthdayId:
+      birthday.id,
+    leagueId:
+      birthday.league.id,
+  });
 
     return NextResponse.json({
       success: true,

@@ -68251,3 +68251,183 @@ transform:translateX(28px);
     font-size: 0.73rem;
   }
 }
+
+/* =========================================================
+   BIRTHDAY READ-ONLY ACCESS
+   Viewer and view-only users can see data but cannot mutate it.
+   ========================================================= */
+
+.birthday-readonly-shortcut {
+  display: grid;
+  grid-template-columns:
+    38px minmax(0, 1fr) auto;
+  align-items: center;
+  gap: 10px;
+
+  padding: 11px;
+
+  color: #dcecff;
+  background: rgba(12, 42, 78, 0.64);
+  border: 1px solid rgba(91, 153, 220, 0.2);
+  border-radius: 12px;
+}
+
+.birthday-readonly-shortcut > span {
+  width: 38px;
+  height: 38px;
+
+  display: grid;
+  place-items: center;
+
+  background: rgba(44, 97, 159, 0.38);
+  border-radius: 10px;
+}
+
+.birthday-readonly-shortcut > div {
+  min-width: 0;
+}
+
+.birthday-readonly-shortcut strong,
+.birthday-readonly-shortcut small {
+  display: block;
+}
+
+.birthday-readonly-shortcut strong {
+  font-size: 0.72rem;
+}
+
+.birthday-readonly-shortcut small {
+  margin-top: 3px;
+  color: #8ea8c2;
+  font-size: 0.62rem;
+  line-height: 1.35;
+}
+
+.birthday-readonly-shortcut-link {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+
+  min-height: 35px;
+  padding: 0 11px;
+
+  color: #ffffff;
+  background: linear-gradient(135deg, #2789f6, #4a5ee2);
+  border-radius: 9px;
+
+  font-size: 0.66rem;
+  font-weight: 900;
+  text-decoration: none;
+  white-space: nowrap;
+}
+
+.birthday-readonly-banner {
+  display: flex;
+  align-items: flex-start;
+  gap: 11px;
+
+  margin-bottom: 12px;
+  padding: 12px;
+
+  color: #dcecff;
+  background:
+    linear-gradient(
+      135deg,
+      rgba(29, 82, 143, 0.34),
+      rgba(58, 51, 132, 0.3)
+    );
+  border: 1px solid rgba(102, 166, 235, 0.24);
+  border-radius: 13px;
+}
+
+.birthday-readonly-banner > span {
+  width: 36px;
+  height: 36px;
+  min-width: 36px;
+
+  display: grid;
+  place-items: center;
+
+  background: rgba(43, 98, 161, 0.42);
+  border-radius: 10px;
+}
+
+.birthday-readonly-banner > div {
+  min-width: 0;
+}
+
+.birthday-readonly-banner strong,
+.birthday-readonly-banner p,
+.birthday-readonly-banner small {
+  display: block;
+}
+
+.birthday-readonly-banner strong {
+  color: #f0f7ff;
+  font-size: 0.78rem;
+}
+
+.birthday-readonly-banner p {
+  margin: 4px 0 0;
+  color: #9eb6ce;
+  font-size: 0.66rem;
+  line-height: 1.4;
+}
+
+.birthday-readonly-banner small {
+  margin-top: 5px;
+  color: #79a9d7;
+  font-size: 0.59rem;
+  font-weight: 800;
+}
+
+.birthday-view-only-pill {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+
+  min-height: 31px;
+  padding: 0 10px;
+
+  color: #9ccbf3;
+  background: rgba(30, 76, 128, 0.34);
+  border: 1px solid rgba(92, 156, 225, 0.19);
+  border-radius: 999px;
+
+  font-size: 0.63rem;
+  font-weight: 900;
+  white-space: nowrap;
+}
+
+.share-birthday-button:disabled {
+  cursor: not-allowed;
+  opacity: 0.58;
+  box-shadow: none;
+}
+
+@media (max-width: 700px) {
+  .birthday-readonly-shortcut {
+    grid-template-columns:
+      36px minmax(0, 1fr);
+  }
+
+  .birthday-readonly-shortcut-link {
+    grid-column: 1 / -1;
+    width: 100%;
+    min-height: 40px;
+  }
+
+  .birthday-readonly-banner {
+    margin-inline: 0;
+    padding: 11px;
+  }
+
+  .birthday-readonly-banner p {
+    font-size: 0.68rem;
+  }
+
+  .birthday-view-only-pill {
+    width: 100%;
+    min-height: 36px;
+  }
+}

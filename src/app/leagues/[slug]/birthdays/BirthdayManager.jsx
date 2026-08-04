@@ -339,6 +339,8 @@ export default function BirthdayManager({
   leagueName,
   initialOwnerWhatsAppNumber = "",
   initialWhatsAppNotificationsEnabled = false,
+  readOnly = false,
+  accessRole = null,
 }) {
   const numericLeagueId = Number(leagueId);
 
@@ -1501,6 +1503,36 @@ async function runBirthdayAction(birthdayId, actionName, callback) {
   </Link>
 </div>
       </section>
+
+      {readOnly && (
+        <section
+          className="birthday-readonly-banner"
+          role="status"
+        >
+          <span aria-hidden="true">
+            👁️
+          </span>
+
+          <div>
+            <strong>
+              View-only birthday access
+            </strong>
+
+            <p>
+              You can view league birthday records and today&apos;s birthday events. Adding, editing, deleting, enabling, disabling, importing, changing notification settings, testing messages, and sharing actions are disabled.
+            </p>
+
+            {accessRole && (
+              <small>
+                Current role: {accessRole}
+              </small>
+            )}
+          </div>
+        </section>
+      )}
+
+{!readOnly && (
+  <>
 <BirthdayCollapsibleSection
   icon="💬"
   title="Owner WhatsApp Notifications"
@@ -2147,11 +2179,18 @@ Rohit S - Feb 26`}</pre>
     )}
   </div>
 )}
-</BirthdayCollapsibleSection> 
+</BirthdayCollapsibleSection>
+  </>
+)}
+
 <BirthdayCollapsibleSection
   icon="📅"
   title="League Birthday List"
-  description="View, edit, share, enable, disable, or delete birthday records"
+  description={
+    readOnly
+      ? "View league birthday records"
+      : "View, edit, share, enable, disable, or delete birthday records"
+  }
   accent="list"
   badge={
     loading
@@ -2181,7 +2220,11 @@ Rohit S - Feb 26`}</pre>
                         <th>Name</th>
                         <th>Birthday</th>
                         <th>Status</th>
-                        <th className="birthday-actions-heading">Actions</th>
+                        <th className="birthday-actions-heading">
+                          {readOnly
+                            ? "Access"
+                            : "Actions"}
+                        </th>
                       </tr>
                     </thead>
 
@@ -2214,7 +2257,12 @@ Rohit S - Feb 26`}</pre>
                               </span>
                             </td>
 <td className="birthday-actions-cell">
-  <div className="birthday-actions">
+  {readOnly ? (
+    <span className="birthday-view-only-pill">
+      👁️ View only
+    </span>
+  ) : (
+    <div className="birthday-actions">
     <button
       type="button"
       className="birthday-action-btn birthday-edit-btn"
@@ -2353,6 +2401,7 @@ Rohit S - Feb 26`}</pre>
       <span>Delete</span>
     </button>
   </div>
+  )}
 </td>
                           </tr>
                         );

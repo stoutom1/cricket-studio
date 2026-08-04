@@ -7035,8 +7035,46 @@ const extrasModalCurrentOver = useMemo(() => {
   };
 }, [recentBalls, bowlerChangeScore?.overs]);
 
-const canManageBirthdays =
-    session?.user?.email === "surprisecricket11@gmail.com"
+const activeLeagueRole =
+  String(
+    permissions?.role ||
+    "VIEWER"
+  )
+    .trim()
+    .toUpperCase();
+
+const isBirthdayViewer =
+  activeLeagueRole ===
+  "VIEWER";
+
+const canViewBirthdayTools =
+  Boolean(
+    isSuperAdmin ||
+    permissions
+      ?.canManagePermissions ||
+    permissions
+      ?.canScoreMatch ||
+    isBirthdayViewer
+  );
+
+const canManageBirthdayTools =
+  Boolean(
+    !isBirthdayViewer &&
+    (
+      isSuperAdmin ||
+      permissions
+        ?.canManagePermissions
+    )
+  );
+
+const canViewLeagueKitShortcut =
+  Boolean(
+    isSuperAdmin ||
+    permissions
+      ?.canManagePermissions ||
+    permissions
+      ?.canScoreMatch
+  );
 
 function MobileMatchSetup({ match, includeTimeline = false }) {
   return (
@@ -12193,70 +12231,109 @@ const playerRoleBadge = (row) => {
         🌐 Discover Public Leagues
       </button>
     </div>
-{isSuperAdmin && permissions?.canManagePermissions && (
-  <>
-<div className="league-tools-shell">
-  <details className="league-tool-panel birthday-tool">
-    <summary className="league-tool-summary">
-      <div className="league-tool-summary-main">
-        <span className="league-tool-icon">
-          🎂
-        </span>
+{(
+  canViewBirthdayTools ||
+  canViewLeagueKitShortcut
+) && (
+  <div className="league-tools-shell">
+    {canViewBirthdayTools && (
+      <details className="league-tool-panel birthday-tool">
+        <summary className="league-tool-summary">
+          <div className="league-tool-summary-main">
+            <span className="league-tool-icon">
+              🎂
+            </span>
 
-        <div>
-          <strong>
-            League Birthday Reminders
-          </strong>
+            <div>
+              <strong>
+                League Birthday Reminders
+              </strong>
 
-          <small>
-            Manage birthday alerts and player birthday records.
-          </small>
+              <small>
+                {canManageBirthdayTools
+                  ? "Manage birthday alerts and player birthday records."
+                  : "View league birthday events and today’s celebrations."}
+              </small>
+            </div>
+          </div>
+
+          <span className="league-tool-action">
+            <span className="league-tool-action-collapsed">
+              Expand
+            </span>
+
+            <span className="league-tool-action-open">
+              Collapse
+            </span>
+
+            <span className="league-tool-chevron">
+              ⌄
+            </span>
+          </span>
+        </summary>
+
+        <div className="league-tool-content">
+          {canManageBirthdayTools ? (
+            <BirthdayPushSettings
+              leagueId={
+                activeLeagueId
+              }
+            />
+          ) : (
+            <div className="birthday-readonly-shortcut">
+              <span aria-hidden="true">
+                👁️
+              </span>
+
+              <div>
+                <strong>
+                  Birthday events — view only
+                </strong>
+
+                <small>
+                  You can view the Birthday Center and today’s birthdays. Add, edit, delete, notification, and sharing controls remain disabled.
+                </small>
+              </div>
+
+              <Link
+                href={`/leagues/${activeLeagueId}/birthdays`}
+                className="birthday-readonly-shortcut-link"
+              >
+                Open Birthday Center →
+              </Link>
+            </div>
+          )}
         </div>
-      </div>
+      </details>
+    )}
 
-      <span className="league-tool-action">
-        <span className="league-tool-action-collapsed">
-          Expand
-        </span>
-
-        <span className="league-tool-action-open">
-          Collapse
-        </span>
-
-        <span className="league-tool-chevron">
-         ⌄
-        </span>
-      </span>
-    </summary>
-
-    <div className="league-tool-content">
-      <BirthdayPushSettings
-        leagueId={activeLeagueId}
+    {canViewLeagueKitShortcut && (
+      <LeagueKitShortcut
+        leagueName={
+          activeLeague?.name ||
+          "Active league"
+        }
+        sharedKit={
+          String(
+            activeLeague
+              ?.kitRotationMode ||
+            ""
+          )
+            .trim()
+            .toUpperCase() ===
+          "LEAGUE_PLAYER"
+        }
+        onOpenKit={() => {
+          setActiveTab(
+            "matches"
+          );
+          setMatchesSubTab(
+            "KIT"
+          );
+        }}
       />
-    </div>
-  </details>
-
-  <LeagueKitShortcut
-    leagueName={
-      activeLeague?.name ||
-      "Active league"
-    }
-    sharedKit={
-      String(
-        activeLeague?.kitRotationMode ||
-        ""
-      )
-        .trim()
-        .toUpperCase() ===
-        "LEAGUE_PLAYER"
-    }
-    onOpenKit={() => {
-      setActiveTab("matches");
-      setMatchesSubTab("KIT");
-    }}
-  />
-</div>
-  </>
+    )}
+  </div>
 )}
 
   <LeagueResourcesShortcut
@@ -12609,13 +12686,16 @@ const playerRoleBadge = (row) => {
           compact
         />
 
-        {isSuperAdmin &&
-          permissions?.canManagePermissions && (
-            <div
-              className={
-                mobileKitStyles.mobileLeagueTools
-              }
-            >
+        {(
+          canViewBirthdayTools ||
+          canViewLeagueKitShortcut
+        ) && (
+          <div
+            className={
+              mobileKitStyles.mobileLeagueTools
+            }
+          >
+            {canViewBirthdayTools && (
               <details
                 className={
                   mobileKitStyles.mobileBirthdaySection
@@ -12646,8 +12726,9 @@ const playerRoleBadge = (row) => {
                       </strong>
 
                       <small>
-                        Manage birthday alerts and
-                        player records.
+                        {canManageBirthdayTools
+                          ? "Manage birthday alerts and player records."
+                          : "View birthdays and today’s celebrations."}
                       </small>
                     </span>
                   </span>
@@ -12683,12 +12764,41 @@ const playerRoleBadge = (row) => {
                     mobileKitStyles.mobileBirthdayContent
                   }
                 >
-                  <BirthdayPushSettings
-                    leagueId={activeLeagueId}
-                  />
+                  {canManageBirthdayTools ? (
+                    <BirthdayPushSettings
+                      leagueId={
+                        activeLeagueId
+                      }
+                    />
+                  ) : (
+                    <div className="birthday-readonly-shortcut mobile">
+                      <span aria-hidden="true">
+                        👁️
+                      </span>
+
+                      <div>
+                        <strong>
+                          View-only birthday access
+                        </strong>
+
+                        <small>
+                          Birthday records and today’s events are visible. All modifying actions are disabled.
+                        </small>
+                      </div>
+
+                      <Link
+                        href={`/leagues/${activeLeagueId}/birthdays`}
+                        className="birthday-readonly-shortcut-link"
+                      >
+                        Open Birthday Center →
+                      </Link>
+                    </div>
+                  )}
                 </div>
               </details>
+            )}
 
+            {canViewLeagueKitShortcut && (
               <div
                 className={
                   mobileKitStyles.mobileLeagueKitBelowBirthday
@@ -12701,7 +12811,8 @@ const playerRoleBadge = (row) => {
                   }
                   sharedKit={
                     String(
-                      activeLeague?.kitRotationMode ||
+                      activeLeague
+                        ?.kitRotationMode ||
                       ""
                     )
                       .trim()
@@ -12709,13 +12820,18 @@ const playerRoleBadge = (row) => {
                     "LEAGUE_PLAYER"
                   }
                   onOpenKit={() => {
-                    setActiveTab("matches");
-                    setMatchesSubTab("KIT");
+                    setActiveTab(
+                      "matches"
+                    );
+                    setMatchesSubTab(
+                      "KIT"
+                    );
                   }}
                 />
               </div>
-            </div>
-          )}
+            )}
+          </div>
+        )}
       </div>
 
       {selectedLeague && permissions?.canDeleteLeague && (

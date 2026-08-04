@@ -2,6 +2,10 @@ import { NextResponse } from "next/server";
 import { getServerSession } from "next-auth";
 import prisma from "@/lib/prisma";
 import { authOptions } from "@/lib/auth";
+import {
+  requireBirthdayManager,
+  requireBirthdayViewer,
+} from "@/lib/leagueBirthdayAccess";
 
 export const runtime = "nodejs";
 
@@ -36,6 +40,30 @@ export async function GET(request, { params }) {
       return NextResponse.json(
         { error: "Unauthorized." },
         { status: 401 }
+      );
+    }
+
+    const access =
+      await requireBirthdayViewer({
+        userId:
+          session.user.id,
+
+        email:
+          session.user.email,
+
+        leagueId,
+      });
+
+    if (!access.allowed) {
+      return NextResponse.json(
+        {
+          error:
+            access.error,
+        },
+        {
+          status:
+            access.status,
+        }
       );
     }
 
@@ -103,6 +131,20 @@ const birthdays =
     return NextResponse.json({
       league,
       birthdays,
+
+      access: {
+        role:
+          access.role,
+
+        readOnly:
+          access.isReadOnly,
+
+        canView:
+          access.canView,
+
+        canManage:
+          access.canManage,
+      },
     });
   } catch (error) {
     console.error("GET birthdays error:", error);
@@ -140,6 +182,30 @@ export async function POST(request, { params }) {
       return NextResponse.json(
         { error: "Unauthorized." },
         { status: 401 }
+      );
+    }
+
+    const access =
+      await requireBirthdayManager({
+        userId:
+          session.user.id,
+
+        email:
+          session.user.email,
+
+        leagueId,
+      });
+
+    if (!access.allowed) {
+      return NextResponse.json(
+        {
+          error:
+            access.error,
+        },
+        {
+          status:
+            access.status,
+        }
       );
     }
 

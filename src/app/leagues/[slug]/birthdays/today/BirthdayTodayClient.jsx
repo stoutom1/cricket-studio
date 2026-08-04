@@ -8,6 +8,7 @@ import { Share } from "@capacitor/share";
 export default function BirthdayTodayClient({
   leagueId,
   initialBirthdayId,
+  readOnly = false,
 }) {
   const router = useRouter();
   const [league, setLeague] = useState(null);
@@ -214,7 +215,10 @@ function goBackToBirthdayCenter() {
   }
 
   async function markShared() {
-    if (!selectedBirthday) {
+    if (
+      readOnly ||
+      !selectedBirthday
+    ) {
       return;
     }
 
@@ -234,7 +238,11 @@ function goBackToBirthdayCenter() {
   }
 
   async function shareBirthday() {
-    if (!selectedBirthday || sharing) {
+    if (
+      readOnly ||
+      !selectedBirthday ||
+      sharing
+    ) {
       return;
     }
 
@@ -367,6 +375,27 @@ return (
         </span>
       </button>
     </nav>
+
+    {readOnly && (
+      <section
+        className="birthday-readonly-banner birthday-today-readonly-banner"
+        role="status"
+      >
+        <span aria-hidden="true">
+          👁️
+        </span>
+
+        <div>
+          <strong>
+            Today&apos;s Birthdays — view only
+          </strong>
+
+          <p>
+            You can view today&apos;s birthday events. Sharing and all other modifying actions are disabled for your role.
+          </p>
+        </div>
+      </section>
+    )}
 
     <section className="birthday-hero">
         <div className="birthday-confetti birthday-confetti-one" />
@@ -554,7 +583,9 @@ return (
                 type="button"
                 onClick={shareBirthday}
                 disabled={
-                  !selectedBirthday || sharing
+                  readOnly ||
+                  !selectedBirthday ||
+                  sharing
                 }
                 className="share-birthday-button"
               >
@@ -563,9 +594,11 @@ return (
                 </span>
 
                 <span>
-                  {sharing
-                    ? "Opening Share..."
-                    : "Share to WhatsApp"}
+                  {readOnly
+                    ? "View only"
+                    : sharing
+                      ? "Opening Share..."
+                      : "Share to WhatsApp"}
                 </span>
 
                 <span aria-hidden="true">→</span>

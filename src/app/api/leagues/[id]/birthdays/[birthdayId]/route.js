@@ -97,6 +97,30 @@ export async function PATCH(request, { params }) {
       );
     }
 
+    const access =
+      await requireBirthdayManager({
+        userId:
+          session.user.id,
+
+        email:
+          session.user.email,
+
+        leagueId,
+      });
+
+    if (!access.allowed) {
+      return NextResponse.json(
+        {
+          error:
+            access.error,
+        },
+        {
+          status:
+            access.status,
+        }
+      );
+    }
+
     const existingBirthday =
       await prisma.leagueBirthday.findFirst({
         where: {
@@ -384,6 +408,30 @@ export async function DELETE(request, { params }) {
       return NextResponse.json(
         { error: "Unauthorized." },
         { status: 401 }
+      );
+    }
+
+    const access =
+      await requireBirthdayManager({
+        userId:
+          session.user.id,
+
+        email:
+          session.user.email,
+
+        leagueId,
+      });
+
+    if (!access.allowed) {
+      return NextResponse.json(
+        {
+          error:
+            access.error,
+        },
+        {
+          status:
+            access.status,
+        }
       );
     }
 
