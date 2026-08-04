@@ -66715,3 +66715,1379 @@ transform:translateX(28px);
     font-size: 0.62rem;
   }
 }
+
+
+/* =========================================================
+   CRIC4ALL AWARDS ENGINE
+   Compact responsive season engagement center
+   ========================================================= */
+
+.awards-engine {
+  min-width: 0;
+}
+
+.awards-toolbar {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 12px;
+
+  margin-bottom: 12px;
+}
+
+.awards-period {
+  min-width: 0;
+
+  display: grid;
+  grid-template-columns: 36px minmax(0, 1fr) 36px;
+  align-items: center;
+  gap: 8px;
+}
+
+.awards-period > button,
+.awards-toolbar-actions > button {
+  min-height: 36px;
+
+  border: 1px solid rgba(91, 149, 216, 0.24);
+  border-radius: 10px;
+
+  color: #dcecff;
+  background: rgba(12, 42, 79, 0.76);
+
+  font: inherit;
+  font-size: 0.69rem;
+  font-weight: 850;
+
+  cursor: pointer;
+}
+
+.awards-period > button {
+  width: 36px;
+  padding: 0;
+}
+
+.awards-period > button:disabled,
+.awards-toolbar-actions > button:disabled {
+  cursor: not-allowed;
+  opacity: 0.45;
+}
+
+.awards-period > div {
+  min-width: 0;
+
+  display: grid;
+  gap: 2px;
+}
+
+.awards-period small {
+  color: #7997b7;
+
+  font-size: 0.58rem;
+  font-weight: 900;
+  text-transform: uppercase;
+  letter-spacing: 0.04em;
+}
+
+.awards-period strong {
+  color: #f3f8ff;
+
+  font-size: 0.76rem;
+  line-height: 1.25;
+
+  white-space: normal;
+  overflow-wrap: anywhere;
+}
+
+.awards-toolbar-actions {
+  flex: 0 0 auto;
+
+  display: flex;
+  align-items: center;
+  gap: 7px;
+}
+
+.awards-toolbar-actions > button {
+  padding-inline: 11px;
+}
+
+.awards-toolbar-actions .awards-current-week {
+  color: #96d8ff;
+}
+
+.awards-toolbar-actions .awards-refresh {
+  color: #94ebbe;
+}
+
+.awards-view-tabs {
+  display: flex;
+  align-items: center;
+  gap: 7px;
+
+  margin-bottom: 12px;
+  padding: 4px;
+
+  background: rgba(7, 28, 56, 0.64);
+  border: 1px solid rgba(78, 137, 202, 0.18);
+  border-radius: 12px;
+
+  overflow-x: auto;
+}
+
+.awards-view-tabs button {
+  flex: 1 0 auto;
+
+  min-height: 38px;
+  padding: 0 12px;
+
+  border: 0;
+  border-radius: 9px;
+
+  color: #8ba7c3;
+  background: transparent;
+
+  font: inherit;
+  font-size: 0.7rem;
+  font-weight: 850;
+  white-space: nowrap;
+
+  cursor: pointer;
+}
+
+.awards-view-tabs button.active {
+  color: #ffffff;
+
+  background:
+    linear-gradient(
+      135deg,
+      rgba(38, 133, 241, 0.92),
+      rgba(76, 86, 220, 0.9)
+    );
+
+  box-shadow:
+    0 7px 20px rgba(35, 102, 211, 0.22);
+}
+
+.awards-summary-strip {
+  display: grid;
+  grid-template-columns: repeat(3, minmax(0, 1fr));
+  gap: 8px;
+
+  margin-bottom: 12px;
+}
+
+.awards-summary-strip > div {
+  min-width: 0;
+
+  display: flex;
+  align-items: baseline;
+  justify-content: center;
+  gap: 7px;
+
+  padding: 9px 10px;
+
+  background: rgba(8, 31, 62, 0.68);
+  border: 1px solid rgba(78, 138, 207, 0.18);
+  border-radius: 10px;
+}
+
+.awards-summary-strip strong {
+  color: #ffffff;
+  font-size: 0.9rem;
+  font-weight: 950;
+}
+
+.awards-summary-strip span {
+  color: #839fbc;
+  font-size: 0.61rem;
+  font-weight: 750;
+  line-height: 1.2;
+}
+
+.awards-grid {
+  display: grid;
+  grid-template-columns: repeat(3, minmax(0, 1fr));
+  gap: 9px;
+}
+
+.award-card {
+  min-width: 0;
+
+  display: grid;
+  align-content: start;
+  gap: 8px;
+
+  padding: 11px;
+
+  background:
+    radial-gradient(
+      circle at 100% 0%,
+      rgba(73, 126, 230, 0.16),
+      transparent 42%
+    ),
+    linear-gradient(
+      145deg,
+      rgba(8, 31, 62, 0.9),
+      rgba(11, 42, 79, 0.84)
+    );
+
+  border: 1px solid rgba(87, 150, 221, 0.22);
+  border-radius: 13px;
+
+  box-shadow:
+    0 10px 26px rgba(2, 14, 31, 0.18);
+}
+
+.award-card:first-child {
+  grid-column: span 2;
+
+  background:
+    radial-gradient(
+      circle at 100% 0%,
+      rgba(255, 185, 64, 0.2),
+      transparent 45%
+    ),
+    linear-gradient(
+      145deg,
+      rgba(41, 31, 16, 0.92),
+      rgba(17, 41, 75, 0.9)
+    );
+
+  border-color: rgba(242, 181, 78, 0.32);
+}
+
+.award-card.unavailable {
+  opacity: 0.66;
+}
+
+.award-card-top {
+  min-width: 0;
+
+  display: flex;
+  align-items: center;
+  gap: 9px;
+}
+
+.award-icon {
+  width: 38px;
+  height: 38px;
+  min-width: 38px;
+
+  display: grid;
+  place-items: center;
+
+  background: rgba(38, 91, 153, 0.4);
+  border: 1px solid rgba(99, 169, 242, 0.2);
+  border-radius: 11px;
+
+  font-size: 1rem;
+}
+
+.award-card-top > div {
+  min-width: 0;
+}
+
+.award-card-top small,
+.award-card-top strong,
+.award-card-top p {
+  display: block;
+}
+
+.award-card-top small {
+  color: #80a1c2;
+
+  font-size: 0.57rem;
+  font-weight: 900;
+  text-transform: uppercase;
+  letter-spacing: 0.04em;
+}
+
+.award-card-top strong {
+  margin-top: 2px;
+
+  color: #f6f9ff;
+
+  font-size: 0.8rem;
+  font-weight: 950;
+  line-height: 1.2;
+
+  white-space: normal;
+  overflow-wrap: anywhere;
+}
+
+.award-card-top p {
+  margin: 2px 0 0;
+
+  color: #829db9;
+
+  font-size: 0.62rem;
+  font-weight: 700;
+  line-height: 1.25;
+
+  white-space: normal;
+  overflow-wrap: anywhere;
+}
+
+.award-value {
+  color: #8fe5bb;
+
+  font-size: 0.82rem;
+  font-weight: 950;
+  line-height: 1.2;
+}
+
+.award-card:first-child .award-value {
+  color: #ffd585;
+}
+
+.award-statline {
+  color: #9db3ca;
+
+  font-size: 0.64rem;
+  font-weight: 750;
+  line-height: 1.35;
+
+  white-space: normal;
+  overflow-wrap: anywhere;
+}
+
+.award-method {
+  margin-top: auto;
+
+  border-top: 1px solid rgba(85, 139, 199, 0.14);
+}
+
+.award-method summary {
+  padding-top: 7px;
+
+  color: #7296ba;
+
+  font-size: 0.59rem;
+  font-weight: 850;
+
+  cursor: pointer;
+}
+
+.award-method p {
+  margin: 6px 0 0;
+
+  color: #8ca5bf;
+
+  font-size: 0.62rem;
+  line-height: 1.4;
+}
+
+.awards-no-week,
+.awards-loading,
+.awards-empty {
+  margin-bottom: 10px;
+  padding: 12px;
+
+  color: #8ca7c3;
+
+  background: rgba(8, 30, 60, 0.56);
+  border: 1px dashed rgba(87, 147, 214, 0.24);
+  border-radius: 11px;
+
+  font-size: 0.69rem;
+  line-height: 1.4;
+  text-align: center;
+}
+
+.awards-loading {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 8px;
+}
+
+.team-of-week-panel {
+  min-width: 0;
+
+  padding: 12px;
+
+  background:
+    linear-gradient(
+      145deg,
+      rgba(8, 31, 62, 0.88),
+      rgba(11, 42, 79, 0.82)
+    );
+
+  border: 1px solid rgba(84, 145, 215, 0.2);
+  border-radius: 13px;
+}
+
+.team-of-week-heading {
+  display: flex;
+  align-items: flex-start;
+  justify-content: space-between;
+  gap: 12px;
+
+  margin-bottom: 10px;
+}
+
+.team-of-week-heading > div {
+  min-width: 0;
+}
+
+.team-of-week-heading span {
+  color: #7ea7cf;
+
+  font-size: 0.57rem;
+  font-weight: 900;
+  letter-spacing: 0.05em;
+}
+
+.team-of-week-heading h3 {
+  margin: 3px 0 0;
+
+  color: #f5f9ff;
+
+  font-size: 1rem;
+}
+
+.team-of-week-heading p {
+  margin: 4px 0 0;
+
+  color: #829eb9;
+
+  font-size: 0.66rem;
+  line-height: 1.35;
+}
+
+.team-of-week-heading > strong {
+  flex: 0 0 auto;
+
+  padding: 6px 8px;
+
+  color: #95e7bd;
+
+  background: rgba(22, 111, 70, 0.26);
+  border-radius: 999px;
+
+  font-size: 0.67rem;
+}
+
+.team-of-week-list {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: 7px;
+}
+
+.team-of-week-list article {
+  min-width: 0;
+
+  display: grid;
+  grid-template-columns: 26px minmax(0, 1fr) auto;
+  align-items: center;
+  gap: 8px;
+
+  padding: 8px 9px;
+
+  background: rgba(5, 24, 49, 0.62);
+  border: 1px solid rgba(74, 128, 188, 0.16);
+  border-radius: 9px;
+}
+
+.team-week-number {
+  width: 25px;
+  height: 25px;
+
+  display: grid;
+  place-items: center;
+
+  color: #9dc9f2;
+  background: rgba(37, 91, 155, 0.35);
+  border-radius: 8px;
+
+  font-size: 0.62rem;
+  font-weight: 900;
+}
+
+.team-week-player {
+  min-width: 0;
+}
+
+.team-week-player strong,
+.team-week-player small {
+  display: block;
+
+  white-space: normal;
+  overflow-wrap: anywhere;
+}
+
+.team-week-player strong {
+  color: #f2f7ff;
+
+  font-size: 0.72rem;
+  line-height: 1.2;
+}
+
+.team-week-player small {
+  margin-top: 2px;
+
+  color: #7896b4;
+
+  font-size: 0.58rem;
+}
+
+.team-week-role {
+  color: #8de1b5;
+
+  font-size: 0.58rem;
+  font-weight: 850;
+  white-space: nowrap;
+}
+
+.team-week-stats {
+  grid-column: 2 / -1;
+
+  display: flex;
+  align-items: center;
+  gap: 5px;
+}
+
+.team-week-stats span {
+  padding: 3px 6px;
+
+  color: #91a9c1;
+  background: rgba(26, 61, 99, 0.46);
+  border-radius: 999px;
+
+  font-size: 0.56rem;
+  font-weight: 800;
+}
+
+.awards-leaders-grid {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: 9px;
+}
+
+.awards-leaders-grid > section {
+  min-width: 0;
+
+  padding: 10px;
+
+  background: rgba(8, 31, 62, 0.74);
+  border: 1px solid rgba(82, 142, 211, 0.18);
+  border-radius: 12px;
+}
+
+.awards-leaders-grid > section > header {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+
+  margin-bottom: 8px;
+}
+
+.awards-leaders-grid > section > header > span {
+  width: 31px;
+  height: 31px;
+
+  display: grid;
+  place-items: center;
+
+  background: rgba(38, 91, 154, 0.34);
+  border-radius: 9px;
+}
+
+.awards-leaders-grid header strong,
+.awards-leaders-grid header small {
+  display: block;
+}
+
+.awards-leaders-grid header strong {
+  color: #f0f6ff;
+
+  font-size: 0.72rem;
+}
+
+.awards-leaders-grid header small {
+  color: #7896b4;
+
+  font-size: 0.58rem;
+}
+
+.awards-leader-list {
+  display: grid;
+  gap: 5px;
+}
+
+.awards-leader-list > div {
+  min-width: 0;
+
+  display: grid;
+  grid-template-columns: 22px minmax(0, 1fr) auto;
+  align-items: center;
+  gap: 7px;
+
+  padding: 6px 7px;
+
+  background: rgba(5, 23, 47, 0.54);
+  border-radius: 8px;
+}
+
+.awards-leader-list b {
+  color: #75a7d5;
+
+  font-size: 0.59rem;
+}
+
+.awards-leader-list span {
+  min-width: 0;
+}
+
+.awards-leader-list span strong,
+.awards-leader-list span small {
+  display: block;
+
+  white-space: normal;
+  overflow-wrap: anywhere;
+}
+
+.awards-leader-list span strong {
+  color: #eaf3ff;
+
+  font-size: 0.66rem;
+}
+
+.awards-leader-list span small {
+  color: #718eaa;
+
+  font-size: 0.55rem;
+}
+
+.awards-leader-list em {
+  color: #8ce4b7;
+
+  font-size: 0.61rem;
+  font-style: normal;
+  font-weight: 900;
+  white-space: nowrap;
+}
+
+.season-cap-leaders {
+  grid-column: 1 / -1;
+}
+
+.season-cap-columns {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: 9px;
+}
+
+.season-cap-columns > div {
+  min-width: 0;
+
+  padding: 8px;
+
+  background: rgba(5, 23, 47, 0.54);
+  border-radius: 9px;
+}
+
+.season-cap-columns h4 {
+  margin: 0 0 7px;
+
+  color: #f0f5fd;
+
+  font-size: 0.7rem;
+}
+
+.season-cap-columns p {
+  min-width: 0;
+
+  display: grid;
+  grid-template-columns: 20px minmax(0, 1fr) auto;
+  align-items: center;
+  gap: 6px;
+
+  margin: 0;
+  padding: 5px 0;
+
+  border-bottom: 1px solid rgba(78, 128, 183, 0.11);
+}
+
+.season-cap-columns p:last-child {
+  border-bottom: 0;
+}
+
+.season-cap-columns p b {
+  color: #7399be;
+
+  font-size: 0.57rem;
+}
+
+.season-cap-columns p span {
+  min-width: 0;
+
+  color: #dfeaff;
+
+  font-size: 0.63rem;
+  font-weight: 750;
+
+  white-space: normal;
+  overflow-wrap: anywhere;
+}
+
+.season-cap-columns p strong {
+  color: #91e5b9;
+
+  font-size: 0.63rem;
+}
+
+@media (max-width: 900px) {
+  .awards-grid {
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+  }
+
+  .award-card:first-child {
+    grid-column: span 2;
+  }
+}
+
+@media (max-width: 620px) {
+  .awards-toolbar {
+    align-items: stretch;
+    flex-direction: column;
+  }
+
+  .awards-toolbar-actions {
+    width: 100%;
+  }
+
+  .awards-toolbar-actions > button {
+    flex: 1 1 0;
+  }
+
+  .awards-period {
+    width: 100%;
+  }
+
+  .awards-view-tabs {
+    margin-inline: -2px;
+  }
+
+  .awards-view-tabs button {
+    min-height: 42px;
+    font-size: 0.73rem;
+  }
+
+  .awards-summary-strip {
+    grid-template-columns: minmax(0, 1fr);
+    gap: 6px;
+  }
+
+  .awards-summary-strip > div {
+    justify-content: space-between;
+  }
+
+  .awards-grid {
+    grid-template-columns: minmax(0, 1fr);
+  }
+
+  .award-card:first-child {
+    grid-column: auto;
+  }
+
+  .award-card {
+    padding: 10px;
+  }
+
+  .award-card-top strong {
+    font-size: 0.82rem;
+  }
+
+  .team-of-week-list,
+  .awards-leaders-grid,
+  .season-cap-columns {
+    grid-template-columns: minmax(0, 1fr);
+  }
+
+  .team-of-week-list article {
+    grid-template-columns: 27px minmax(0, 1fr);
+  }
+
+  .team-week-role {
+    grid-column: 2;
+    justify-self: start;
+  }
+
+  .team-week-stats {
+    grid-column: 2;
+  }
+
+  .season-cap-leaders {
+    grid-column: auto;
+  }
+}
+
+@media (max-width: 390px) {
+  .awards-period {
+    grid-template-columns: 38px minmax(0, 1fr) 38px;
+  }
+
+  .awards-toolbar-actions {
+    flex-direction: column;
+  }
+
+  .awards-toolbar-actions > button {
+    width: 100%;
+  }
+
+  .team-week-stats {
+    flex-wrap: wrap;
+  }
+}
+
+
+/* =========================================================
+   FASTEST FIFTY — MARQUEE AWARD
+   Always visible, compact, responsive and high-impact
+   ========================================================= */
+
+.award-card-fastest-fifty {
+  position: relative;
+  isolation: isolate;
+  overflow: hidden;
+
+  grid-column: span 1;
+
+  background:
+    radial-gradient(
+      circle at 88% 15%,
+      rgba(255, 220, 78, 0.3),
+      transparent 31%
+    ),
+    radial-gradient(
+      circle at 6% 100%,
+      rgba(255, 103, 40, 0.22),
+      transparent 40%
+    ),
+    linear-gradient(
+      135deg,
+      rgba(47, 25, 11, 0.98),
+      rgba(18, 38, 76, 0.96) 58%,
+      rgba(39, 22, 64, 0.95)
+    );
+
+  border-color:
+    rgba(255, 194, 70, 0.52);
+
+  box-shadow:
+    0 15px 34px rgba(3, 12, 27, 0.28),
+    0 0 0 1px rgba(255, 215, 102, 0.08) inset;
+}
+
+.award-card-fastest-fifty::before {
+  content: "";
+
+  position: absolute;
+  z-index: -1;
+  top: -54px;
+  right: -35px;
+
+  width: 145px;
+  height: 145px;
+
+  background:
+    conic-gradient(
+      from 210deg,
+      transparent,
+      rgba(255, 225, 104, 0.17),
+      transparent 36%
+    );
+
+  border-radius: 50%;
+
+  animation:
+    fastestFiftyGlow 7s linear infinite;
+}
+
+.award-card-fastest-fifty::after {
+  content: "50";
+
+  position: absolute;
+  z-index: -1;
+  right: 9px;
+  bottom: -15px;
+
+  color:
+    rgba(255, 223, 122, 0.07);
+
+  font-size: 5.4rem;
+  font-weight: 1000;
+  line-height: 1;
+  letter-spacing: -0.08em;
+}
+
+.award-card-fastest-fifty .award-icon {
+  color: #231300;
+
+  background:
+    linear-gradient(
+      145deg,
+      #fff39a,
+      #ffb52e
+    );
+
+  border-color:
+    rgba(255, 240, 159, 0.72);
+
+  box-shadow:
+    0 7px 18px rgba(255, 168, 32, 0.22);
+}
+
+.award-card-fastest-fifty .award-card-top small {
+  color: #ffc761;
+}
+
+.award-card-fastest-fifty .award-card-top strong {
+  color: #fff7dd;
+
+  font-size: 0.88rem;
+}
+
+.award-card-fastest-fifty .award-card-top p {
+  color: #d8bb8b;
+}
+
+.award-card-fastest-fifty .award-value {
+  display: inline-flex;
+  align-items: baseline;
+  width: fit-content;
+
+  padding: 6px 10px;
+
+  color: #2a1600;
+
+  background:
+    linear-gradient(
+      135deg,
+      #fff08e,
+      #ffb832
+    );
+
+  border-radius: 9px;
+
+  box-shadow:
+    0 8px 20px rgba(255, 169, 31, 0.18);
+
+  font-size: 1rem;
+  font-weight: 1000;
+  letter-spacing: -0.025em;
+}
+
+.award-card-fastest-fifty .award-statline {
+  color: #e7cca0;
+}
+
+.award-card-fastest-fifty .award-method {
+  border-top-color:
+    rgba(255, 199, 93, 0.18);
+}
+
+.award-card-fastest-fifty .award-method summary {
+  color: #d5ab63;
+}
+
+.fastest-fifty-kicker {
+  display: inline-flex !important;
+  align-items: center;
+
+  width: fit-content;
+  min-height: 19px;
+  margin-bottom: 3px;
+  padding: 0 6px;
+
+  color: #2c1700 !important;
+
+  background:
+    linear-gradient(
+      135deg,
+      #ffe17b,
+      #ffae29
+    );
+
+  border-radius: 999px;
+
+  font-size: 0.5rem !important;
+  font-weight: 1000 !important;
+  line-height: 1;
+  letter-spacing: 0.055em !important;
+  white-space: nowrap;
+}
+
+.award-card-fastest-fifty.unavailable {
+  opacity: 1;
+}
+
+.award-card-fastest-fifty.unavailable .award-value {
+  color: #6e5228;
+
+  background:
+    linear-gradient(
+      135deg,
+      #f5dd9a,
+      #d7ad5d
+    );
+}
+
+@keyframes fastestFiftyGlow {
+  to {
+    transform:
+      rotate(360deg);
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .award-card-fastest-fifty::before {
+    animation: none;
+  }
+}
+
+@media (max-width: 900px) {
+  .award-card-fastest-fifty {
+    grid-column: span 1;
+  }
+}
+
+@media (max-width: 620px) {
+  .award-card-fastest-fifty {
+    min-height: 0;
+    padding: 11px;
+  }
+
+  .award-card-fastest-fifty::after {
+    right: 7px;
+    bottom: -10px;
+
+    font-size: 4.8rem;
+  }
+
+  .award-card-fastest-fifty .award-card-top strong {
+    font-size: 0.86rem;
+  }
+
+  .award-card-fastest-fifty .award-value {
+    padding: 7px 11px;
+
+    font-size: 1.02rem;
+  }
+
+  .fastest-fifty-kicker {
+    min-height: 20px;
+
+    font-size: 0.51rem !important;
+  }
+}
+
+@media (max-width: 390px) {
+  .award-card-fastest-fifty::after {
+    font-size: 4.2rem;
+  }
+
+  .award-card-fastest-fifty .award-card-top {
+    align-items: flex-start;
+  }
+}
+
+
+/* =========================================================
+   AWARDS ENGINE — PERIOD + SERIES FILTERS
+   ========================================================= */
+
+.awards-filter-bar {
+  display: grid;
+  grid-template-columns:
+    auto minmax(210px, 1fr);
+  align-items: end;
+  gap: 10px;
+
+  margin-bottom: 10px;
+}
+
+.awards-period-type {
+  display: inline-flex;
+  align-items: center;
+
+  padding: 4px;
+
+  background:
+    rgba(7, 28, 56, 0.68);
+
+  border:
+    1px solid rgba(
+      78,
+      137,
+      202,
+      0.2
+    );
+
+  border-radius: 11px;
+}
+
+.awards-period-type button {
+  min-width: 74px;
+  min-height: 35px;
+  padding: 0 12px;
+
+  color: #87a3c0;
+  background: transparent;
+
+  border: 0;
+  border-radius: 8px;
+
+  font: inherit;
+  font-size: 0.69rem;
+  font-weight: 900;
+
+  cursor: pointer;
+}
+
+.awards-period-type button.active {
+  color: #ffffff;
+
+  background:
+    linear-gradient(
+      135deg,
+      #2788f7,
+      #4c5ddf
+    );
+
+  box-shadow:
+    0 7px 18px
+      rgba(
+        36,
+        105,
+        215,
+        0.2
+      );
+}
+
+.awards-series-filter {
+  min-width: 0;
+
+  display: grid;
+  grid-template-columns:
+    auto minmax(0, 1fr);
+  align-items: center;
+  gap: 8px;
+
+  padding: 4px 5px 4px 10px;
+
+  background:
+    rgba(7, 28, 56, 0.68);
+
+  border:
+    1px solid rgba(
+      78,
+      137,
+      202,
+      0.2
+    );
+
+  border-radius: 11px;
+}
+
+.awards-series-filter > span {
+  color: #7898b8;
+
+  font-size: 0.59rem;
+  font-weight: 900;
+  text-transform: uppercase;
+  letter-spacing: 0.04em;
+  white-space: nowrap;
+}
+
+.awards-series-filter select {
+  width: 100%;
+  min-width: 0;
+  min-height: 35px;
+
+  padding: 0 34px 0 10px;
+
+  color: #eef6ff;
+  background:
+    rgba(15, 48, 87, 0.84);
+
+  border:
+    1px solid rgba(
+      83,
+      145,
+      213,
+      0.2
+    );
+
+  border-radius: 8px;
+
+  font: inherit;
+  font-size: 0.69rem;
+  font-weight: 800;
+
+  cursor: pointer;
+}
+
+.awards-series-filter option {
+  color: #101c2c;
+  background: #ffffff;
+}
+
+@media (max-width: 620px) {
+  .awards-filter-bar {
+    grid-template-columns:
+      minmax(0, 1fr);
+    gap: 7px;
+  }
+
+  .awards-period-type {
+    width: 100%;
+  }
+
+  .awards-period-type button {
+    flex: 1 1 0;
+    min-height: 40px;
+
+    font-size: 0.73rem;
+  }
+
+  .awards-series-filter {
+    grid-template-columns:
+      62px minmax(0, 1fr);
+  }
+
+  .awards-series-filter select {
+    min-height: 40px;
+    font-size: 0.73rem;
+  }
+}
+
+@media (max-width: 390px) {
+  .awards-series-filter {
+    grid-template-columns:
+      minmax(0, 1fr);
+    align-items: stretch;
+
+    padding: 8px;
+  }
+
+  .awards-series-filter > span {
+    padding-left: 2px;
+  }
+}
+
+
+/* =========================================================
+   AWARDS — SERIES MODE
+   ========================================================= */
+
+.awards-period-type button:disabled {
+  color: #5e7590;
+
+  background:
+    rgba(25, 48, 76, 0.42);
+
+  cursor: not-allowed;
+  opacity: 0.58;
+}
+
+.awards-period-type button.active:disabled {
+  color: #8ca5be;
+
+  background:
+    rgba(38, 68, 103, 0.56);
+
+  box-shadow: none;
+}
+
+.awards-series-mode-note {
+  display: flex;
+  align-items: center;
+  gap: 9px;
+
+  margin: -2px 0 10px;
+  padding: 9px 10px;
+
+  color: #cce7ff;
+
+  background:
+    linear-gradient(
+      135deg,
+      rgba(31, 82, 143, 0.35),
+      rgba(60, 54, 135, 0.3)
+    );
+
+  border:
+    1px solid rgba(
+      102,
+      166,
+      235,
+      0.24
+    );
+
+  border-radius: 10px;
+}
+
+.awards-series-mode-note > span {
+  width: 29px;
+  height: 29px;
+  min-width: 29px;
+
+  display: grid;
+  place-items: center;
+
+  background:
+    rgba(44, 103, 170, 0.42);
+
+  border-radius: 8px;
+
+  font-size: 0.78rem;
+}
+
+.awards-series-mode-note p {
+  min-width: 0;
+  margin: 0;
+}
+
+.awards-series-mode-note strong,
+.awards-series-mode-note small {
+  display: block;
+}
+
+.awards-series-mode-note strong {
+  color: #eef7ff;
+
+  font-size: 0.68rem;
+  font-weight: 900;
+}
+
+.awards-series-mode-note small {
+  margin-top: 2px;
+
+  color: #8faac5;
+
+  font-size: 0.6rem;
+  line-height: 1.3;
+
+  white-space: normal;
+  overflow-wrap: anywhere;
+}
+
+.awards-toolbar.series-mode .awards-period > button {
+  cursor: not-allowed;
+  opacity: 0.42;
+}
+
+.awards-toolbar.series-mode .awards-period > div {
+  padding-inline: 3px;
+}
+
+@media (max-width: 620px) {
+  .awards-series-mode-note {
+    align-items: flex-start;
+  }
+
+  .awards-series-mode-note small {
+    font-size: 0.63rem;
+  }
+}

@@ -410,6 +410,17 @@ const scheduledMatches = matches.filter((m) => normalizeStatus(m.status) === "SC
 const [scoringSubTab, setScoringSubTab] = useState("ADVANCED");
 const [statsSubTab, setStatsSubTab] = useState("BATTING");
 const [leagueStats, setLeagueStats] = useState(null);
+const [awardsData, setAwardsData] = useState(null);
+const [awardsLoading, setAwardsLoading] = useState(false);
+const [awardsWeekOffset, setAwardsWeekOffset] = useState(0);
+const [awardsMonthOffset, setAwardsMonthOffset] = useState(0);
+const [awardsPeriodType, setAwardsPeriodType] = useState("WEEK");
+const [awardsSeriesId, setAwardsSeriesId] = useState("ALL");
+const [awardsView, setAwardsView] = useState("AWARDS");
+
+const awardsSeriesMode =
+  awardsSeriesId !==
+  "ALL";
 const [rankingType, setRankingType] = useState("topRunScorers");
 const [aiAnalysis, setAiAnalysis] = useState("");
 const [aiReview, setAiReview] = useState(null);
@@ -1280,6 +1291,40 @@ useEffect(() => {
 }, [activeLeagueId]);
 
 useEffect(() => {
+  if (
+    statsSubTab !==
+      "AWARDS" ||
+    !activeLeagueId
+  ) {
+    return;
+  }
+
+  loadAwards(
+    activeLeagueId,
+    {
+      period:
+        awardsPeriodType,
+
+      weekOffset:
+        awardsWeekOffset,
+
+      monthOffset:
+        awardsMonthOffset,
+
+      seriesId:
+        awardsSeriesId,
+    }
+  );
+}, [
+  statsSubTab,
+  activeLeagueId,
+  awardsPeriodType,
+  awardsWeekOffset,
+  awardsMonthOffset,
+  awardsSeriesId,
+]);
+
+useEffect(() => {
   if (!isMobile || !scorerMode) {
     document.body.classList.remove("cric4all-scorer-open");
     return;
@@ -1322,6 +1367,120 @@ async function loadLeagueStats(leagueId = activeLeagueId) {
   } finally {
     setLeagueStatsLoading(false);
   }
+}
+
+async function loadAwards(
+  leagueId = activeLeagueId,
+  options = {}
+) {
+  const requestedSeriesId =
+    options.seriesId ??
+    awardsSeriesId;
+
+  const period =
+    requestedSeriesId &&
+    requestedSeriesId !==
+      "ALL"
+      ? "SERIES"
+      : options.period ||
+        awardsPeriodType;
+
+  const weekOffset =
+    options.weekOffset ??
+    awardsWeekOffset;
+
+  const monthOffset =
+    options.monthOffset ??
+    awardsMonthOffset;
+
+  const seriesId =
+    requestedSeriesId;
+  if (!leagueId) {
+    setAwardsData(null);
+    return;
+  }
+
+  try {
+    setAwardsLoading(true);
+
+    const query =
+      new URLSearchParams({
+        period,
+        weekOffset:
+          String(
+            weekOffset
+          ),
+        monthOffset:
+          String(
+            monthOffset
+          ),
+      });
+
+    if (
+      seriesId &&
+      seriesId !==
+      "ALL"
+    ) {
+      query.set(
+        "seriesId",
+        String(
+          seriesId
+        )
+      );
+    }
+
+    const data = await api(
+      `/api/leagues/${leagueId}/awards?${query.toString()}`
+    );
+
+    setAwardsData(data);
+  } catch (err) {
+    console.error(
+      "Load awards failed:",
+      err
+    );
+
+    setError(
+      err?.message ||
+      "Failed to load league awards."
+    );
+  } finally {
+    setAwardsLoading(false);
+  }
+}
+
+function formatAwardsPeriod(
+  start,
+  end
+) {
+  if (!start || !end) {
+    return "Selected week";
+  }
+
+  const startDate =
+    new Date(start);
+
+  const endDate =
+    new Date(end);
+
+  endDate.setDate(
+    endDate.getDate() - 1
+  );
+
+  return `${startDate.toLocaleDateString(
+    undefined,
+    {
+      month: "short",
+      day: "numeric",
+    }
+  )} – ${endDate.toLocaleDateString(
+    undefined,
+    {
+      month: "short",
+      day: "numeric",
+      year: "numeric",
+    }
+  )}`;
 }
 
 const captaincyRows =
@@ -13063,6 +13222,14 @@ onClick={() => {
         >
           🏆 Rankings
         </button>
+
+        <button
+          type="button"
+          className={statsSubTab === "AWARDS" ? "active" : ""}
+          onClick={() => setStatsSubTab("AWARDS")}
+        >
+          ✨ Awards
+        </button>
       </div>
     </Card>
     {!activeLeagueId ? (
@@ -13281,6 +13448,963 @@ onClick={() => {
     )}
   </Card>
 )}
+{statsSubTab === "AWARDS" && (
+  <div className="awards-engine">
+    <Card title="✨ League Awards Engine">
+      <div className="awards-filter-bar">
+        <div
+          className="awards-period-type"
+          role="group"
+          aria-label="Awards period"
+        >
+          <button
+            type="button"
+            disabled={
+              awardsSeriesMode
+            }
+            title={
+              awardsSeriesMode
+                ? "Week and Month filters are disabled when a Series is selected."
+                : "Show weekly awards"
+            }
+            className={
+              awardsPeriodType ===
+              "WEEK"
+                ? "active"
+                : ""
+            }
+            onClick={() => {
+              setAwardsPeriodType(
+                "WEEK"
+              );
+              setAwardsWeekOffset(
+                0
+              );
+            }}
+          >
+            Week
+          </button>
+
+          <button
+            type="button"
+            disabled={
+              awardsSeriesMode
+            }
+            title={
+              awardsSeriesMode
+                ? "Week and Month filters are disabled when a Series is selected."
+                : "Show monthly awards"
+            }
+            className={
+              awardsPeriodType ===
+              "MONTH"
+                ? "active"
+                : ""
+            }
+            onClick={() => {
+              setAwardsPeriodType(
+                "MONTH"
+              );
+              setAwardsMonthOffset(
+                0
+              );
+            }}
+          >
+            Month
+          </button>
+        </div>
+
+        <label className="awards-series-filter">
+          <span>
+            Series
+          </span>
+
+          <select
+            value={
+              awardsSeriesId
+            }
+            onChange={(event) => {
+              const nextValue =
+                event.target
+                  .value;
+
+              setAwardsSeriesId(
+                nextValue
+              );
+
+              /*
+               * Date selectors are irrelevant in Series mode.
+               */
+              setAwardsWeekOffset(
+                0
+              );
+              setAwardsMonthOffset(
+                0
+              );
+            }}
+          >
+            <option value="ALL">
+              All series
+            </option>
+
+            {(awardsData
+              ?.availableSeries ||
+              []).map(
+              (series) => (
+                <option
+                  key={
+                    series.id
+                  }
+                  value={
+                    series.id
+                  }
+                >
+                  {series.name}
+                  {series.year
+                    ? ` (${series.year})`
+                    : ""}
+                </option>
+              )
+            )}
+          </select>
+        </label>
+      </div>
+
+      {awardsSeriesMode && (
+        <div className="awards-series-mode-note">
+          <span aria-hidden="true">
+            🏆
+          </span>
+
+          <p>
+            <strong>
+              Series mode active
+            </strong>
+
+            <small>
+              Awards use every completed match in the selected Series. Week and Month filters are disabled.
+            </small>
+          </p>
+        </div>
+      )}
+
+      <div
+        className={`awards-toolbar ${
+          awardsSeriesMode
+            ? "series-mode"
+            : ""
+        }`}
+      >
+        <div className="awards-period">
+          <button
+            type="button"
+            aria-label="Previous award period"
+            disabled={
+              awardsSeriesMode
+            }
+            title={
+              awardsSeriesMode
+                ? "Date navigation is disabled for Series awards."
+                : "Previous award period"
+            }
+            onClick={() => {
+              if (
+                awardsPeriodType ===
+                "MONTH"
+              ) {
+                setAwardsMonthOffset(
+                  (current) =>
+                    current - 1
+                );
+              } else {
+                setAwardsWeekOffset(
+                  (current) =>
+                    current - 1
+                );
+              }
+            }}
+          >
+            ←
+          </button>
+
+          <div>
+            <small>
+              {awardsSeriesMode
+                ? "Series awards"
+                : awardsPeriodType ===
+                    "MONTH"
+                  ? "Awards month"
+                  : "Awards week"}
+            </small>
+
+            <strong>
+              {awardsSeriesMode
+                ? awardsData
+                    ?.selectedSeries
+                    ?.name ||
+                  "Selected series"
+                : formatAwardsPeriod(
+                    awardsData
+                      ?.period
+                      ?.start ||
+                      awardsData
+                        ?.period
+                        ?.weekStart,
+                    awardsData
+                      ?.period
+                      ?.end ||
+                      awardsData
+                        ?.period
+                        ?.weekEnd
+                  )}
+            </strong>
+          </div>
+
+          <button
+            type="button"
+            aria-label="Next week"
+            disabled={
+              awardsSeriesMode ||
+              (
+                awardsPeriodType ===
+                "MONTH"
+                  ? awardsMonthOffset >=
+                    0
+                  : awardsWeekOffset >=
+                    0
+              )
+            }
+            onClick={() => {
+              if (
+                awardsPeriodType ===
+                "MONTH"
+              ) {
+                setAwardsMonthOffset(
+                  (current) =>
+                    Math.min(
+                      0,
+                      current + 1
+                    )
+                );
+              } else {
+                setAwardsWeekOffset(
+                  (current) =>
+                    Math.min(
+                      0,
+                      current + 1
+                    )
+                );
+              }
+            }}
+          >
+            →
+          </button>
+        </div>
+
+        <div className="awards-toolbar-actions">
+          {!awardsSeriesMode &&
+          (
+            awardsPeriodType ===
+              "MONTH"
+              ? awardsMonthOffset !==
+                0
+              : awardsWeekOffset !==
+                0
+          ) && (
+            <button
+              type="button"
+              className="awards-current-week"
+              onClick={() => {
+                if (
+                  awardsPeriodType ===
+                  "MONTH"
+                ) {
+                  setAwardsMonthOffset(
+                    0
+                  );
+                } else {
+                  setAwardsWeekOffset(
+                    0
+                  );
+                }
+              }}
+            >
+              {awardsPeriodType ===
+                "MONTH"
+                ? "Current month"
+                : "Current week"}
+            </button>
+          )}
+
+          <button
+            type="button"
+            className="awards-refresh"
+            disabled={
+              awardsLoading
+            }
+            onClick={() =>
+              loadAwards(
+                activeLeagueId,
+                {
+                  period:
+                    awardsPeriodType,
+
+                  weekOffset:
+                    awardsWeekOffset,
+
+                  monthOffset:
+                    awardsMonthOffset,
+
+                  seriesId:
+                    awardsSeriesId,
+                }
+              )
+            }
+          >
+            {awardsLoading
+              ? "Refreshing…"
+              : "↻ Refresh"}
+          </button>
+        </div>
+      </div>
+
+      <div className="awards-view-tabs">
+        <button
+          type="button"
+          className={
+            awardsView ===
+              "AWARDS"
+              ? "active"
+              : ""
+          }
+          onClick={() =>
+            setAwardsView(
+              "AWARDS"
+            )
+          }
+        >
+          🏅 Awards
+        </button>
+
+        <button
+          type="button"
+          className={
+            awardsView ===
+              "TEAM"
+              ? "active"
+              : ""
+          }
+          onClick={() =>
+            setAwardsView(
+              "TEAM"
+            )
+          }
+        >
+          👥 Team of Week
+        </button>
+
+        <button
+          type="button"
+          className={
+            awardsView ===
+              "LEADERS"
+              ? "active"
+              : ""
+          }
+          onClick={() =>
+            setAwardsView(
+              "LEADERS"
+            )
+          }
+        >
+          📊 Leaders
+        </button>
+      </div>
+
+      {awardsLoading &&
+      !awardsData ? (
+        <div className="awards-loading">
+          <span>✨</span>
+          Calculating league awards…
+        </div>
+      ) : !awardsData ? (
+        <div className="awards-empty">
+          Awards are not available yet.
+        </div>
+      ) : (
+        <>
+          <div className="awards-summary-strip">
+            <div>
+              <strong>
+                {
+                  awardsData
+                    .counts
+                    .weeklyMatches
+                }
+              </strong>
+
+              <span>
+                {awardsSeriesMode
+                  ? "Series matches"
+                  : awardsPeriodType ===
+                      "MONTH"
+                    ? "Matches this month"
+                    : "Matches this week"}
+              </span>
+            </div>
+
+            <div>
+              <strong>
+                {
+                  awardsData
+                    .counts
+                    .seasonMatches
+                }
+              </strong>
+
+              <span>
+                Season matches
+              </span>
+            </div>
+
+            <div>
+              <strong>
+                {
+                  awardsData
+                    .period
+                    .seasonYear
+                }
+              </strong>
+
+              <span>
+                Cap season
+              </span>
+            </div>
+          </div>
+
+          {awardsView ===
+            "AWARDS" && (
+            <>
+              {!awardsData
+                .counts
+                .weeklyMatches && (
+                <div className="awards-no-week">
+                  No completed matches were found for the {awardsSeriesMode ? "selected series" : awardsPeriodType === "MONTH" ? "selected month" : "selected week"}.
+                </div>
+              )}
+
+              <div className="awards-grid">
+                {awardsData.awards.map(
+                  (
+                    award,
+                    index
+                  ) => (
+                    <article
+                      key={
+                        award.key
+                      }
+                      className={`award-card award-card-${index + 1} ${
+                        award.key ===
+                        "FASTEST_FIFTY"
+                          ? "award-card-fastest-fifty"
+                          : ""
+                      } ${
+                        award.available
+                          ? ""
+                          : "unavailable"
+                      }`}
+                    >
+                      <div className="award-card-top">
+                        <span className="award-icon">
+                          {
+                            award.icon
+                          }
+                        </span>
+
+                        <div>
+                          {award.key ===
+                            "FASTEST_FIFTY" && (
+                            <span className="fastest-fifty-kicker">
+                              SEASON SPEED RECORD
+                            </span>
+                          )}
+                          <small>
+                            {
+                              award.title
+                            }
+                          </small>
+
+                          <strong>
+                            {award.playerName ||
+                              "Awaiting data"}
+                          </strong>
+
+                          <p>
+                            {award.teamName ||
+                              award.subtitle}
+                          </p>
+                        </div>
+                      </div>
+
+                      <div className="award-value">
+                        {
+                          award.value
+                        }
+                      </div>
+
+                      {award.playerName &&
+                        award.subtitle && (
+                        <div className="award-statline">
+                          {
+                            award.subtitle
+                          }
+                        </div>
+                      )}
+
+                      <details className="award-method">
+                        <summary>
+                          How calculated
+                        </summary>
+
+                        <p>
+                          {
+                            award.explanation
+                          }
+                        </p>
+
+                        {award.methodology && (
+                          <p>
+                            {
+                              award.methodology
+                            }
+                          </p>
+                        )}
+                      </details>
+                    </article>
+                  )
+                )}
+              </div>
+            </>
+          )}
+
+          {awardsView ===
+            "TEAM" && (
+            <div className="team-of-week-panel">
+              <div className="team-of-week-heading">
+                <div>
+                  <span>
+                    ⭐ DATA-DRIVEN XI
+                  </span>
+
+                  <h3>
+                    {awardsSeriesMode
+                      ? "Team of the Series"
+                      : awardsPeriodType ===
+                          "MONTH"
+                        ? "Team of the Month"
+                        : "Team of the Week"}
+                  </h3>
+
+                  <p>
+                    A balanced {awardsSeriesMode ? "series" : awardsPeriodType === "MONTH" ? "monthly" : "weekly"} XI from recorded batting, bowling and fielding performances.
+                  </p>
+                </div>
+
+                <strong>
+                  {
+                    awardsData
+                      .teamOfWeek
+                      .length
+                  }
+                  /11
+                </strong>
+              </div>
+
+              {!awardsData
+                .teamOfWeek
+                .length ? (
+                <div className="awards-empty">
+                  Complete matches in the {awardsSeriesMode ? "selected series" : awardsPeriodType === "MONTH" ? "selected month" : "selected week"} to build the team award.
+                </div>
+              ) : (
+                <div className="team-of-week-list">
+                  {awardsData.teamOfWeek.map(
+                    (
+                      player,
+                      index
+                    ) => (
+                      <article
+                        key={`${player.playerId || player.playerName}-${index}`}
+                      >
+                        <span className="team-week-number">
+                          {index +
+                            1}
+                        </span>
+
+                        <div className="team-week-player">
+                          <strong>
+                            {
+                              player.playerName
+                            }
+                          </strong>
+
+                          <small>
+                            {
+                              player.teamName
+                            }
+                          </small>
+                        </div>
+
+                        <span className="team-week-role">
+                          {
+                            player.role
+                          }
+                        </span>
+
+                        <div className="team-week-stats">
+                          <span>
+                            {
+                              player.runs
+                            }{" "}
+                            R
+                          </span>
+
+                          <span>
+                            {
+                              player.wickets
+                            }{" "}
+                            W
+                          </span>
+
+                          <span>
+                            {
+                              player.fieldingTotal
+                            }{" "}
+                            F
+                          </span>
+                        </div>
+                      </article>
+                    )
+                  )}
+                </div>
+              )}
+            </div>
+          )}
+
+          {awardsView ===
+            "LEADERS" && (
+            <div className="awards-leaders-grid">
+              <section>
+                <header>
+                  <span>
+                    🏏
+                  </span>
+
+                  <div>
+                    <strong>
+                      {awardsSeriesMode
+                        ? "Series batting"
+                        : awardsPeriodType ===
+                            "MONTH"
+                          ? "Monthly batting"
+                          : "Weekly batting"}
+                    </strong>
+
+                    <small>
+                      Top five
+                    </small>
+                  </div>
+                </header>
+
+                {awardsData
+                  .weeklyLeaders
+                  .batting
+                  .length ? (
+                  <div className="awards-leader-list">
+                    {awardsData.weeklyLeaders.batting.map(
+                      (
+                        player,
+                        index
+                      ) => (
+                        <div
+                          key={`award-bat-${player.playerId || player.playerName}`}
+                        >
+                          <b>
+                            #
+                            {index +
+                              1}
+                          </b>
+
+                          <span>
+                            <strong>
+                              {
+                                player.playerName
+                              }
+                            </strong>
+
+                            <small>
+                              {
+                                player.teamName
+                              }
+                            </small>
+                          </span>
+
+                          <em>
+                            {
+                              player.runs
+                            }{" "}
+                            runs
+                          </em>
+                        </div>
+                      )
+                    )}
+                  </div>
+                ) : (
+                  <p className="muted">
+                    No weekly batting data.
+                  </p>
+                )}
+              </section>
+
+              <section>
+                <header>
+                  <span>
+                    🎯
+                  </span>
+
+                  <div>
+                    <strong>
+                      {awardsSeriesMode
+                        ? "Series bowling"
+                        : awardsPeriodType ===
+                            "MONTH"
+                          ? "Monthly bowling"
+                          : "Weekly bowling"}
+                    </strong>
+
+                    <small>
+                      Top five
+                    </small>
+                  </div>
+                </header>
+
+                {awardsData
+                  .weeklyLeaders
+                  .bowling
+                  .length ? (
+                  <div className="awards-leader-list">
+                    {awardsData.weeklyLeaders.bowling.map(
+                      (
+                        player,
+                        index
+                      ) => (
+                        <div
+                          key={`award-bowl-${player.playerId || player.playerName}`}
+                        >
+                          <b>
+                            #
+                            {index +
+                              1}
+                          </b>
+
+                          <span>
+                            <strong>
+                              {
+                                player.playerName
+                              }
+                            </strong>
+
+                            <small>
+                              {
+                                player.teamName
+                              }
+                            </small>
+                          </span>
+
+                          <em>
+                            {
+                              player.wickets
+                            }{" "}
+                            wkts
+                          </em>
+                        </div>
+                      )
+                    )}
+                  </div>
+                ) : (
+                  <p className="muted">
+                    No weekly bowling data.
+                  </p>
+                )}
+              </section>
+
+              <section>
+                <header>
+                  <span>
+                    🧤
+                  </span>
+
+                  <div>
+                    <strong>
+                      {awardsSeriesMode
+                        ? "Series fielding"
+                        : awardsPeriodType ===
+                            "MONTH"
+                          ? "Monthly fielding"
+                          : "Weekly fielding"}
+                    </strong>
+
+                    <small>
+                      Top five
+                    </small>
+                  </div>
+                </header>
+
+                {awardsData
+                  .weeklyLeaders
+                  .fielding
+                  .length ? (
+                  <div className="awards-leader-list">
+                    {awardsData.weeklyLeaders.fielding.map(
+                      (
+                        player,
+                        index
+                      ) => (
+                        <div
+                          key={`award-field-${player.playerId || player.playerName}`}
+                        >
+                          <b>
+                            #
+                            {index +
+                              1}
+                          </b>
+
+                          <span>
+                            <strong>
+                              {
+                                player.playerName
+                              }
+                            </strong>
+
+                            <small>
+                              {
+                                player.teamName
+                              }
+                            </small>
+                          </span>
+
+                          <em>
+                            {
+                              player.fieldingTotal
+                            }{" "}
+                            total
+                          </em>
+                        </div>
+                      )
+                    )}
+                  </div>
+                ) : (
+                  <p className="muted">
+                    No weekly fielding data.
+                  </p>
+                )}
+              </section>
+
+              <section className="season-cap-leaders">
+                <header>
+                  <span>
+                    👑
+                  </span>
+
+                  <div>
+                    <strong>
+                      Season cap race
+                    </strong>
+
+                    <small>
+                      Top ten
+                    </small>
+                  </div>
+                </header>
+
+                <div className="season-cap-columns">
+                  <div>
+                    <h4>
+                      🟠 Orange
+                    </h4>
+
+                    {awardsData.seasonLeaders.batting.map(
+                      (
+                        player,
+                        index
+                      ) => (
+                        <p
+                          key={`orange-${player.playerId || player.playerName}`}
+                        >
+                          <b>
+                            {index +
+                              1}
+                          </b>
+
+                          <span>
+                            {
+                              player.playerName
+                            }
+                          </span>
+
+                          <strong>
+                            {
+                              player.runs
+                            }
+                          </strong>
+                        </p>
+                      )
+                    )}
+                  </div>
+
+                  <div>
+                    <h4>
+                      🟣 Purple
+                    </h4>
+
+                    {awardsData.seasonLeaders.bowling.map(
+                      (
+                        player,
+                        index
+                      ) => (
+                        <p
+                          key={`purple-${player.playerId || player.playerName}`}
+                        >
+                          <b>
+                            {index +
+                              1}
+                          </b>
+
+                          <span>
+                            {
+                              player.playerName
+                            }
+                          </span>
+
+                          <strong>
+                            {
+                              player.wickets
+                            }
+                          </strong>
+                        </p>
+                      )
+                    )}
+                  </div>
+                </div>
+              </section>
+            </div>
+          )}
+        </>
+      )}
+    </Card>
+  </div>
+)}
+
 {statsSubTab === "CAPTAINCY" && (
   <Card title="🧢 Captaincy Records">
     {!filteredCaptaincy.length ? (
