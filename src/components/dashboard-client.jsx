@@ -7035,35 +7035,57 @@ const extrasModalCurrentOver = useMemo(() => {
   };
 }, [recentBalls, bowlerChangeScore?.overs]);
 
+/*
+ * Resolve the signed-in user's role for the active league.
+ *
+ * /permissions/me may return only Boolean permissions in some existing
+ * deployments. Defaulting a missing role to VIEWER incorrectly made
+ * Super Admins and permission managers appear read-only in the dashboard.
+ *
+ * Use only an explicitly supplied VIEWER role to activate Viewer lock-down.
+ */
 const activeLeagueRole =
   String(
     permissions?.role ||
-    "VIEWER"
+    activeLeague?.membershipRole ||
+    activeLeague?.role ||
+    selectedLeague?.membershipRole ||
+    selectedLeague?.role ||
+    ""
   )
     .trim()
     .toUpperCase();
 
-const isBirthdayViewer =
+const isExplicitBirthdayViewer =
+  !isSuperAdmin &&
   activeLeagueRole ===
-  "VIEWER";
+    "VIEWER";
 
 const canViewBirthdayTools =
   Boolean(
     isSuperAdmin ||
     permissions
-      ?.canManagePermissions ||
+      ?.canManagePermissions ===
+      true ||
     permissions
-      ?.canScoreMatch ||
-    isBirthdayViewer
+      ?.canScoreMatch ===
+      true ||
+    isExplicitBirthdayViewer
   );
 
+/*
+ * Privileged access takes precedence when role information is absent.
+ * An explicitly identified VIEWER remains read-only even if canScoreMatch
+ * is true, exactly as required.
+ */
 const canManageBirthdayTools =
   Boolean(
-    !isBirthdayViewer &&
+    isSuperAdmin ||
     (
-      isSuperAdmin ||
+      !isExplicitBirthdayViewer &&
       permissions
-        ?.canManagePermissions
+        ?.canManagePermissions ===
+        true
     )
   );
 
@@ -7071,9 +7093,11 @@ const canViewLeagueKitShortcut =
   Boolean(
     isSuperAdmin ||
     permissions
-      ?.canManagePermissions ||
+      ?.canManagePermissions ===
+      true ||
     permissions
-      ?.canScoreMatch
+      ?.canScoreMatch ===
+      true
   );
 
 function MobileMatchSetup({ match, includeTimeline = false }) {
