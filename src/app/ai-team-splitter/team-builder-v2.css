@@ -6391,3 +6391,24 @@
     width: 100%;
   }
 }
+
+
+/* Match Day return navigation */
+.c4tb-back {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 7px;
+
+  min-height: 38px;
+  padding: 0 13px;
+
+  white-space: nowrap;
+}
+
+@media (max-width: 620px) {
+  .c4tb-back {
+    min-height: 43px;
+    padding-inline: 14px;
+  }
+}

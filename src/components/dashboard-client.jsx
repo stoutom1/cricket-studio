@@ -3,7 +3,7 @@ import { useSession } from "next-auth/react";
 import React, { useEffect, useMemo, useState } from "react";
 import { EXTRA_TYPES, getPlayerName, WICKET_TYPES } from "@/lib/scoring";
 import "@/app/globals.css";
-import { useRouter } from "next/navigation";
+import { useRouter, useSearchParams } from "next/navigation";
 import {formatMatchDateTime,getMatchTimelineText,} from "@/lib/date";
 import { buildMatchInsights } from "@/lib/match-insights";
 import { createPortal } from "react-dom";
@@ -296,6 +296,19 @@ function isRecentBallLegal(ball) {
 export default function DashboardClient() {
   const { data: session } = useSession();
   const router = useRouter();
+  const searchParams = useSearchParams();
+
+  const returnToRaw =
+    searchParams.get("returnTo") || "";
+
+  const returnTo =
+    returnToRaw.startsWith("/") &&
+    !returnToRaw.startsWith("//")
+      ? returnToRaw
+      : "";
+
+  const returningToMatchDay =
+    returnTo.includes("/match-day");
   const [teams, setTeams] = useState([]);
   const [matches, setMatches] = useState([]);
   const [selectedMatchId, setSelectedMatchId] = useState("");
@@ -6745,6 +6758,32 @@ function ContextLens() {
 
 return (
   <>
+{Boolean(returnTo) && (
+  <div
+    className={matchDayNavStyles.returnBar}
+    role="navigation"
+    aria-label="Return navigation"
+  >
+    <Link
+      href={returnTo}
+      className={matchDayNavStyles.returnButton}
+    >
+      <span aria-hidden="true">←</span>
+      <span>
+        {returningToMatchDay
+          ? "Back to Match Day"
+          : "Back"}
+      </span>
+    </Link>
+
+    {returningToMatchDay && (
+      <span className={matchDayNavStyles.returnContext}>
+        Return to the selected match workflow
+      </span>
+    )}
+  </div>
+)}
+
 <div
   className={`dashboard-tabs-wrap ${
     tabsScrolled ? "scrolled" : ""

@@ -1635,3 +1635,16 @@
       repeat(2, minmax(0, 1fr));
   }
 }
+
+
+/* Preserve selected-match context when returning from a child workflow. */
+.matchRail button:focus-visible,
+.backLink:focus-visible,
+.cardActions a:focus-visible,
+.nextAction:focus-visible,
+.resourcesAction:focus-visible {
+  outline:
+    3px solid
+    rgba(77, 160, 255, 0.34);
+  outline-offset: 2px;
+}

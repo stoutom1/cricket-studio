@@ -1,8 +1,28 @@
 "use client";
 
-import { useEffect, useMemo, useState } from "react";
+import Link from "next/link";
+import {
+  useEffect,
+  useMemo,
+  useState,
+} from "react";
 
-export default function TeamPollClient({ token }) {
+import navStyles from "./team-poll-navigation.module.css";
+
+export default function TeamPollClient({
+  token,
+  returnTo: returnToProp = "",
+}) {
+  const returnTo =
+    returnToProp.startsWith("/") &&
+    !returnToProp.startsWith("//")
+      ? returnToProp
+      : "";
+
+  const returnLabel =
+    returnTo.includes("/match-day")
+      ? "Back to Match Day"
+      : "Back";
   const [poll, setPoll] = useState(null);
   const [players, setPlayers] = useState([]);
   const [search, setSearch] = useState("");
@@ -86,12 +106,75 @@ export default function TeamPollClient({ token }) {
     }
   }
 
-  if (loading) return <main className="team-poll-page"><section className="team-poll-card">Loading poll...</section></main>;
-  if (error && !poll) return <main className="team-poll-page"><section className="team-poll-card"><h1>Unable to open poll</h1><p>{error}</p></section></main>;
-  if (submitted) return <main className="team-poll-page"><section className="team-poll-card"><span className="team-poll-kicker">Cric4All Availability Poll</span><h1>✅ Response saved</h1><p>Thanks! Your availability has been submitted successfully.</p></section></main>;
+  const returnNavigation =
+    returnTo ? (
+      <div className={navStyles.returnBar}>
+        <Link
+          href={returnTo}
+          className={navStyles.returnButton}
+        >
+          <span aria-hidden="true">←</span>
+          <span>{returnLabel}</span>
+        </Link>
+
+        {returnTo.includes(
+          "/match-day"
+        ) && (
+          <small>
+            Return to the selected match workflow
+          </small>
+        )}
+      </div>
+    ) : null;
+
+  if (loading) return (
+    <main className="team-poll-page">
+      {returnNavigation}
+      <section className="team-poll-card">
+        Loading poll...
+      </section>
+    </main>
+  );
+  if (error && !poll) return (
+    <main className="team-poll-page">
+      {returnNavigation}
+      <section className="team-poll-card">
+        <h1>Unable to open poll</h1>
+        <p>{error}</p>
+      </section>
+    </main>
+  );
+  if (submitted) return (
+    <main className="team-poll-page">
+      {returnNavigation}
+      <section className="team-poll-card">
+        <span className="team-poll-kicker">
+          Cric4All Availability Poll
+        </span>
+
+        <h1>✅ Response saved</h1>
+
+        <p>
+          Thanks! Your availability has been submitted successfully.
+        </p>
+
+        {returnTo && (
+          <Link
+            href={returnTo}
+            className={navStyles.submittedReturnButton}
+          >
+            {returnLabel}
+            <span aria-hidden="true">→</span>
+          </Link>
+        )}
+      </section>
+    </main>
+  );
 
   return (
     <main className="team-poll-page">
+      {returnNavigation}
+
       <section className="team-poll-card">
         <span className="team-poll-kicker">Cric4All Availability Poll</span>
         <h1>🏏 {poll.title}</h1>

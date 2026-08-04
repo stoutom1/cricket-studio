@@ -2,6 +2,10 @@
 
 import Link from "next/link";
 import {
+  useRouter,
+  useSearchParams,
+} from "next/navigation";
+import {
   useCallback,
   useEffect,
   useMemo,
@@ -129,6 +133,14 @@ function ScoreLine({
 export default function MatchDayCommandCenter({
   leagueId,
 }) {
+  const router = useRouter();
+  const searchParams = useSearchParams();
+
+  const requestedMatchId =
+    Number(
+      searchParams.get("matchId")
+    );
+
   const [
     data,
     setData,
@@ -223,6 +235,18 @@ export default function MatchDayCommandCenter({
                 return current;
               }
 
+              const requested =
+                Number.isInteger(
+                  requestedMatchId
+                )
+                  ? result.matches
+                      ?.find(
+                        (match) =>
+                          match.id ===
+                          requestedMatchId
+                      )
+                  : null;
+
               const live =
                 result.matches
                   ?.find(
@@ -230,6 +254,7 @@ export default function MatchDayCommandCenter({
                   );
 
               return (
+                requested?.id ||
                 live?.id ||
                 result.matches?.[0]
                   ?.id ||
@@ -248,7 +273,10 @@ export default function MatchDayCommandCenter({
           setRefreshing(false);
         }
       },
-      [leagueId]
+      [
+        leagueId,
+        requestedMatchId,
+      ]
     );
 
   useEffect(() => {
@@ -549,11 +577,18 @@ export default function MatchDayCommandCenter({
                           ? styles.matchChipActive
                           : ""
                       }
-                      onClick={() =>
+                      onClick={() => {
                         setSelectedMatchId(
                           match.id
-                        )
-                      }
+                        );
+
+                        router.replace(
+                          `/leagues/${leagueId}/match-day?matchId=${match.id}`,
+                          {
+                            scroll: false,
+                          }
+                        );
+                      }}
                     >
                       <span
                         className={
@@ -706,6 +741,22 @@ function MatchWorkspace({
   availabilitySavingId,
   onSetAvailabilityComplete,
 }) {
+  const returnTo =
+    `/leagues/${leagueId}/match-day?matchId=${match.id}`;
+
+  function withReturnTo(
+    href
+  ) {
+    const separator =
+      href.includes("?")
+        ? "&"
+        : "?";
+
+    return `${href}${separator}returnTo=${encodeURIComponent(
+      returnTo
+    )}`;
+  }
+
   const action =
     nextAction({
       ...match,
@@ -713,21 +764,31 @@ function MatchWorkspace({
     });
 
   const teamBuilderHref =
-    `/ai-team-splitter?leagueId=${leagueId}&matchId=${match.id}`;
+    withReturnTo(
+      `/ai-team-splitter?leagueId=${leagueId}&matchId=${match.id}`
+    );
 
   const scoringHref =
-    `/dashboard?tab=scoring&matchId=${match.id}`;
+    withReturnTo(
+      `/dashboard?tab=scoring&matchId=${match.id}`
+    );
 
   const kitHref =
-    `/dashboard?tab=kit&leagueId=${leagueId}&matchId=${match.id}`;
+    withReturnTo(
+      `/dashboard?tab=kit&leagueId=${leagueId}&matchId=${match.id}`
+    );
 
   const resourcesHref =
-    `/leagues/${leagueId}/resources`;
+    withReturnTo(
+      `/leagues/${leagueId}/resources`
+    );
 
   const spectatorHref =
     match.shareCode
-      ? `/live/${match.shareCode}`
-      : `/dashboard?tab=scoring&matchId=${match.id}`;
+      ? withReturnTo(
+          `/live/${match.shareCode}`
+        )
+      : scoringHref;
 
   return (
     <section className={styles.workspace}>
@@ -925,7 +986,9 @@ function MatchWorkspace({
               .availability
               ?.token ? (
               <Link
-                href={`/team-poll/${match.availability.token}`}
+                href={withReturnTo(
+                  `/team-poll/${match.availability.token}`
+                )}
               >
                 Open poll
               </Link>
@@ -1225,7 +1288,9 @@ function MatchWorkspace({
         <div>
           <Link
             href={
-              action.href
+              withReturnTo(
+                action.href
+              )
             }
             className={styles.nextAction}
           >

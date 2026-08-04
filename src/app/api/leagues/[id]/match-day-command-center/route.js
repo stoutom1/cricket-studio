@@ -825,7 +825,6 @@ export async function GET(
               },
             },
           }),
-    ,
 
         prisma
           .matchDayManualStatus
@@ -863,7 +862,10 @@ export async function GET(
             );
 
           const manualStatus =
-            manualStatuses.find(
+            (
+              manualStatuses ||
+              []
+            ).find(
               (status) =>
                 status.matchId ===
                 match.id

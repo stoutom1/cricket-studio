@@ -107,7 +107,31 @@ export default function AITeamSplitterClient({
   allowAIStrategy = false,
 }) {
   const searchParams = useSearchParams();
-  const requestedLeagueId = Number(searchParams.get("leagueId"));
+
+  const requestedLeagueId =
+    Number(
+      searchParams.get("leagueId")
+    );
+
+  const requestedMatchId =
+    Number(
+      searchParams.get("matchId")
+    );
+
+  const returnToRaw =
+    searchParams.get("returnTo") ||
+    "";
+
+  const returnTo =
+    returnToRaw.startsWith("/") &&
+    !returnToRaw.startsWith("//")
+      ? returnToRaw
+      : "/dashboard";
+
+  const returnLabel =
+    returnTo.includes("/match-day")
+      ? "Back to Match Day"
+      : "Back to Dashboard";
   const uploadRef = useRef(null);
   const pollComboRef = useRef(null);
 
@@ -120,7 +144,19 @@ export default function AITeamSplitterClient({
   const [teams, setTeams] = useState([]);
   const [selectedTeamIds, setSelectedTeamIds] = useState([]);
   const [matches, setMatches] = useState([]);
-  const [selectedMatchId, setSelectedMatchId] = useState("");
+  const [
+    selectedMatchId,
+    setSelectedMatchId,
+  ] = useState(
+    Number.isInteger(
+      requestedMatchId
+    ) &&
+    requestedMatchId > 0
+      ? String(
+          requestedMatchId
+        )
+      : ""
+  );
   const [loading, setLoading] = useState(true);
   const [working, setWorking] = useState(false);
   const [message, setMessage] = useState("");
@@ -1044,7 +1080,13 @@ export default function AITeamSplitterClient({
     <main className="c4tb-page">
       <header className="c4tb-header">
         <div className="c4tb-header-top">
-          <Link href="/dashboard" className="c4tb-back">← Dashboard</Link>
+          <Link
+            href={returnTo}
+            className="c4tb-back"
+          >
+            <span aria-hidden="true">←</span>
+            <span>{returnLabel}</span>
+          </Link>
           <span className="c4tb-live-pill">Cric4All Smart Team Builder</span>
         </div>
         <div className="c4tb-title-row">
