@@ -4,6 +4,7 @@ import { NextResponse } from "next/server";
 
 import { authOptions } from "@/lib/auth";
 import prisma from "@/lib/prisma";
+import { indexLeagueResource } from "@/lib/resources/indexer";
 import { getLeagueResourceAccess } from "@/lib/resources/access";
 import {
   cleanText,
@@ -102,19 +103,36 @@ export async function PATCH(request, { params }) {
     data.externalUrl = externalUrl;
   }
 
-  const resource = await prisma.leagueResource.update({
+  await prisma.leagueResource.update({
     where: { id: resourceId },
     data,
-    include: {
-      createdBy: {
-        select: {
-          id: true,
-          name: true,
-          email: true,
-        },
-      },
-    },
   });
+
+  await indexLeagueResource(
+    resourceId,
+    {
+      extractFile: false,
+    }
+  );
+
+  const resource =
+    await prisma
+      .leagueResource
+      .findUnique({
+        where: {
+          id:
+            resourceId,
+        },
+        include: {
+          createdBy: {
+            select: {
+              id: true,
+              name: true,
+              email: true,
+            },
+          },
+        },
+      });
 
   return NextResponse.json({
     success: true,

@@ -1163,24 +1163,32 @@ model TeamKitUserAccess {
 }
 
 model LeagueResource {
-  id               Int      @id @default(autoincrement())
+  id               Int     @id @default(autoincrement())
   leagueId         Int
   createdById      String
   title            String
   description      String?
-  category         String   @default("OTHER")
-  resourceType     String   @default("LINK")
-  visibility       String   @default("LEAGUE")
+  category         String  @default("OTHER")
+  resourceType     String  @default("LINK")
+  visibility       String  @default("LEAGUE")
   externalUrl      String?
   blobUrl          String?
   blobPathname     String?
   originalFileName String?
   contentType      String?
   fileSize         Int?
-  isPinned         Boolean  @default(false)
-  sortOrder        Int      @default(0)
-  createdAt        DateTime @default(now())
-  updatedAt        DateTime @updatedAt
+
+  // Search/indexing fields used by the Knowledge Center.
+  extractedText   String?
+  searchText      String?
+  searchStatus    String    @default("PENDING")
+  searchError     String?
+  searchIndexedAt DateTime?
+
+  isPinned  Boolean  @default(false)
+  sortOrder Int      @default(0)
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
 
   league    League                   @relation(fields: [leagueId], references: [id], onDelete: Cascade)
   createdBy User                     @relation(fields: [createdById], references: [id])

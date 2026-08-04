@@ -5,6 +5,12 @@ import { authOptions } from "@/lib/auth";
 import prisma from "@/lib/prisma";
 import { getLeagueResourceAccess } from "@/lib/resources/access";
 import {
+  indexLeagueResource,
+} from "@/lib/resources/indexer";
+import {
+  resourceSearchText,
+} from "@/lib/resources/search";
+import {
   cleanText,
   normalizeCategory,
   normalizeHttpUrl,
@@ -210,7 +216,12 @@ export async function POST(request, { params }) {
       );
     }
 
-    data = { ...data, externalUrl };
+    data = {
+      ...data,
+      externalUrl,
+      searchStatus:
+        "READY",
+    };
   } else {
     const blobUrl = cleanText(body.blobUrl, 2000);
     const blobPathname = cleanText(body.blobPathname, 1000);
@@ -235,21 +246,78 @@ export async function POST(request, { params }) {
         Number.isFinite(fileSize) && fileSize >= 0
           ? Math.round(fileSize)
           : null,
+
+      searchStatus:
+        "PENDING",
     };
   }
 
-  const resource = await prisma.leagueResource.create({
-    data,
-    include: {
-      createdBy: {
-        select: {
-          id: true,
-          name: true,
-          email: true,
+  data.searchText =
+    resourceSearchText(
+      data,
+      ""
+    ) || null;
+
+  let resource =
+    await prisma
+      .leagueResource
+      .create({
+        data,
+        include: {
+          createdBy: {
+            select: {
+              id: true,
+              name: true,
+              email: true,
+            },
+          },
         },
-      },
-    },
-  });
+      });
+
+  try {
+    await indexLeagueResource(
+      resource.id,
+      {
+        extractFile:
+          resourceType ===
+          "FILE",
+      }
+    );
+
+    resource =
+      await prisma
+        .leagueResource
+        .findUnique({
+          where: {
+            id:
+              resource.id,
+          },
+          include: {
+            createdBy: {
+              select: {
+                id: true,
+                name: true,
+                email: true,
+              },
+            },
+          },
+        });
+  } catch (indexError) {
+    console.error(
+      "[LEAGUE_RESOURCE_INDEX_FAILED]",
+      {
+        resourceId:
+          resource.id,
+
+        error:
+          indexError instanceof Error
+            ? indexError.message
+            : String(
+                indexError
+              ),
+      }
+    );
+  }
 
   return NextResponse.json(
     {

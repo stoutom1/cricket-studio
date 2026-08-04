@@ -4274,3 +4274,163 @@
       translateX(3px);
   }
 }
+
+
+/* =========================================================
+   GOOGLE-STYLE KNOWLEDGE CENTER SEARCH
+   ========================================================= */
+
+.smartSearchShell {
+  min-width: 0;
+  flex: 1 1 420px;
+
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+}
+
+.smartSearchShell .searchBox {
+  position: relative;
+  width: 100%;
+}
+
+.smartSearchShell .searchBox input {
+  padding-right: 76px;
+}
+
+.searchClearButton {
+  position: absolute;
+  top: 50%;
+  right: 42px;
+
+  width: 30px;
+  height: 30px;
+
+  display: grid;
+  place-items: center;
+
+  transform: translateY(-50%);
+
+  color: #bcd0e8;
+  background: transparent;
+  border: 0;
+  border-radius: 999px;
+
+  font-size: 1.25rem;
+  line-height: 1;
+
+  cursor: pointer;
+}
+
+.searchClearButton:hover {
+  color: #ffffff;
+  background:
+    rgba(74, 124, 183, 0.24);
+}
+
+.searchClearButton:focus-visible {
+  outline:
+    3px solid
+    rgba(65, 151, 255, 0.32);
+  outline-offset: 1px;
+}
+
+.searchSpinner {
+  position: absolute;
+  top: 50%;
+  right: 14px;
+
+  width: 17px;
+  height: 17px;
+
+  transform: translateY(-50%);
+
+  border:
+    2px solid
+    rgba(133, 180, 232, 0.28);
+
+  border-top-color:
+    #54a8ff;
+
+  border-radius: 999px;
+
+  animation:
+    smartSearchSpin
+    700ms linear infinite;
+}
+
+.smartSearchStatus {
+  min-width: 0;
+
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 12px;
+
+  padding: 0 4px;
+
+  color: #acd0f7;
+
+  font-size: 0.76rem;
+  font-weight: 750;
+  line-height: 1.35;
+}
+
+.smartSearchStatus small {
+  color: #7f9ab9;
+  font-size: 0.69rem;
+  text-align: right;
+}
+
+.smartSearchError {
+  margin-top: 2px;
+  padding: 8px 10px;
+
+  color: #ffd3da;
+
+  background:
+    rgba(119, 27, 52, 0.36);
+
+  border:
+    1px solid
+    rgba(225, 82, 114, 0.28);
+
+  border-radius: 10px;
+
+  font-size: 0.76rem;
+  font-weight: 700;
+}
+
+@media (max-width: 680px) {
+  .smartSearchShell {
+    flex-basis: 100%;
+    width: 100%;
+  }
+
+  .smartSearchStatus {
+    align-items: flex-start;
+    flex-direction: column;
+    gap: 2px;
+
+    padding-inline: 3px;
+  }
+
+  .smartSearchStatus small {
+    text-align: left;
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .searchSpinner {
+    animation-duration:
+      1400ms;
+  }
+}
+
+@keyframes smartSearchSpin {
+  to {
+    transform:
+      translateY(-50%)
+      rotate(360deg);
+  }
+}

@@ -112,6 +112,27 @@ export default function LeagueResourcesClient({ leagueId }) {
   const [message, setMessage] = useState("");
   const [error, setError] = useState("");
   const [search, setSearch] = useState("");
+
+  const [
+    searchResults,
+    setSearchResults,
+  ] = useState([]);
+
+  const [
+    searchLoading,
+    setSearchLoading,
+  ] = useState(false);
+
+  const [
+    searchError,
+    setSearchError,
+  ] = useState("");
+
+  const [
+    searchRequestId,
+    setSearchRequestId,
+  ] = useState(0);
+
   const [category, setCategory] = useState("ALL");
   const [showModal, setShowModal] = useState(false);
   const [mode, setMode] = useState("LINK");
@@ -164,27 +185,139 @@ export default function LeagueResourcesClient({ leagueId }) {
     loadResources();
   }, [loadResources]);
 
-  const filteredResources = useMemo(() => {
-    const term = search.trim().toLowerCase();
+  const normalizedSearch =
+    search.trim();
 
-    return resources.filter((resource) => {
-      if (category !== "ALL" && resource.category !== category) {
-        return false;
+  const serverSearchActive =
+    normalizedSearch.length >= 2;
+
+  useEffect(() => {
+    if (!serverSearchActive) {
+      setSearchResults([]);
+      setSearchLoading(false);
+      setSearchError("");
+      return;
+    }
+
+    const requestId =
+      searchRequestId + 1;
+
+    setSearchRequestId(
+      requestId
+    );
+
+    const controller =
+      new AbortController();
+
+    const timer =
+      window.setTimeout(
+        async () => {
+          setSearchLoading(true);
+          setSearchError("");
+
+          try {
+            const response =
+              await fetch(
+                `/api/leagues/${leagueId}/resources/search?q=${encodeURIComponent(
+                  normalizedSearch
+                )}&limit=60`,
+                {
+                  cache: "no-store",
+                  signal:
+                    controller.signal,
+                }
+              );
+
+            const result =
+              await response.json();
+
+            if (!response.ok) {
+              throw new Error(
+                result?.error ||
+                "Unable to search league resources."
+              );
+            }
+
+            setSearchResults(
+              result.resources || []
+            );
+          } catch (searchFailure) {
+            if (
+              searchFailure?.name ===
+              "AbortError"
+            ) {
+              return;
+            }
+
+            setSearchResults([]);
+            setSearchError(
+              searchFailure instanceof Error
+                ? searchFailure.message
+                : "Unable to search league resources."
+            );
+          } finally {
+            setSearchLoading(false);
+          }
+        },
+        320
+      );
+
+    return () => {
+      window.clearTimeout(timer);
+      controller.abort();
+    };
+  }, [
+    leagueId,
+    normalizedSearch,
+    serverSearchActive,
+  ]);
+
+  const filteredResources =
+    useMemo(() => {
+      if (serverSearchActive) {
+        return searchResults;
       }
 
-      if (!term) return true;
+      const term =
+        normalizedSearch
+          .toLowerCase();
 
-      return [
-        resource.title,
-        resource.description,
-        resource.originalFileName,
-        resource.externalUrl,
-        resource.category,
-      ]
-        .filter(Boolean)
-        .some((value) => String(value).toLowerCase().includes(term));
-    });
-  }, [resources, search, category]);
+      return resources.filter(
+        (resource) => {
+          if (
+            category !== "ALL" &&
+            resource.category !==
+              category
+          ) {
+            return false;
+          }
+
+          if (!term) {
+            return true;
+          }
+
+          return [
+            resource.title,
+            resource.description,
+            resource.originalFileName,
+            resource.externalUrl,
+            resource.category,
+          ]
+            .filter(Boolean)
+            .some((value) =>
+              String(value)
+                .toLowerCase()
+                .includes(term)
+            );
+        }
+      );
+    }, [
+      resources,
+      searchResults,
+      normalizedSearch,
+      serverSearchActive,
+      category,
+    ]);
 
   const categoryCounts = useMemo(() => {
     const counts = { ALL: resources.length };
@@ -481,15 +614,68 @@ export default function LeagueResourcesClient({ leagueId }) {
       </header>
 
       <section className={styles.controlPanel}>
-        <label className={styles.searchBox}>
-          <span aria-hidden="true">⌕</span>
-          <input
-            value={search}
-            onChange={(event) => setSearch(event.target.value)}
-            placeholder="Search rules, venues, restaurants, hotels, forms..."
-            aria-label="Search the league knowledge center"
-          />
-        </label>
+        <div className={styles.smartSearchShell}>
+          <label className={styles.searchBox}>
+            <span aria-hidden="true">⌕</span>
+
+            <input
+              value={search}
+              onChange={(event) =>
+                setSearch(
+                  event.target.value
+                )
+              }
+              placeholder="Search titles, links and words inside documents..."
+              aria-label="Search all league resources and indexed document contents"
+              autoComplete="off"
+            />
+
+            {search && (
+              <button
+                type="button"
+                className={styles.searchClearButton}
+                aria-label="Clear search"
+                title="Clear search"
+                onClick={() =>
+                  setSearch("")
+                }
+              >
+                ×
+              </button>
+            )}
+
+            {searchLoading && (
+              <span
+                className={styles.searchSpinner}
+                aria-label="Searching"
+              />
+            )}
+          </label>
+
+          {serverSearchActive && (
+            <div className={styles.smartSearchStatus}>
+              <span>
+                {searchLoading
+                  ? "Searching all categories and indexed document contents…"
+                  : `${filteredResources.length} best ${
+                      filteredResources.length === 1
+                        ? "match"
+                        : "matches"
+                    } for “${normalizedSearch}”`}
+              </span>
+
+              <small>
+                Category filters are temporarily ignored while searching.
+              </small>
+            </div>
+          )}
+
+          {searchError && (
+            <div className={styles.smartSearchError}>
+              {searchError}
+            </div>
+          )}
+        </div>
 
         {canAddEdit && (
           <div className={styles.primaryActions}>
@@ -573,7 +759,9 @@ export default function LeagueResourcesClient({ leagueId }) {
           <h2>{resources.length ? "No matching resources" : "Build your league knowledge center"}</h2>
           <p>
             {resources.length
-              ? "Try another search or category."
+              ? serverSearchActive
+                ? "Try fewer words, a different spelling, or rebuild the document search index."
+                : "Try another search or category."
               : "Upload league rules, add venue, restaurant or hotel links, and keep important forms and contacts easy to find."}
           </p>
           {canAddEdit && !resources.length && (
@@ -648,10 +836,13 @@ export default function LeagueResourcesClient({ leagueId }) {
 
                 <div className={styles.resourceCardV3Body}>
                   <p className={styles.resourceCardV3Description}>
-                    {resource.description ||
-                      (resource.resourceType === "FILE"
-                        ? "Open this stored league document."
-                        : "Open this useful league link.")}
+                    {serverSearchActive &&
+                    resource.searchSnippet
+                      ? resource.searchSnippet
+                      : resource.description ||
+                        (resource.resourceType === "FILE"
+                          ? "Open this stored league document."
+                          : "Open this useful league link.")}
                   </p>
 
                   <div className={styles.resourceCardV3Meta}>
