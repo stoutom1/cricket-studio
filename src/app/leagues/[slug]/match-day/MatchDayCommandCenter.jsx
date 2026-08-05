@@ -184,6 +184,918 @@ function nextAction(match) {
   };
 }
 
+
+function ScoreLine({
+  innings,
+}) {
+  if (!innings) {
+    return (
+      <span className={styles.scoreEmpty}>
+        Not started
+      </span>
+    );
+  }
+
+  return (
+    <strong className={styles.scoreValue}>
+      {innings.runs}/
+      {innings.wickets}
+      <small>
+        {innings.overs} ov
+      </small>
+    </strong>
+  );
+}
+
+export default function MatchDayCommandCenter({
+  leagueId,
+}) {
+  const router = useRouter();
+  const searchParams = useSearchParams();
+
+  const requestedMatchId =
+    Number(
+      searchParams.get("matchId")
+    );
+
+  const [
+    data,
+    setData,
+  ] = useState(null);
+
+  const [
+    loading,
+    setLoading,
+  ] = useState(true);
+
+  const [
+    refreshing,
+    setRefreshing,
+  ] = useState(false);
+
+  const [
+    error,
+    setError,
+  ] = useState("");
+
+  const [
+    availabilitySavingId,
+    setAvailabilitySavingId,
+  ] = useState(null);
+
+  const [
+    selectedMatchId,
+    setSelectedMatchId,
+  ] = useState(null);
+
+  const [
+    queueFilter,
+    setQueueFilter,
+  ] = useState("ALL");
+
+  const loadCommandCenter =
+    useCallback(
+      async ({
+        background = false,
+      } = {}) => {
+        if (
+          !Number.isInteger(
+            Number(leagueId)
+          ) ||
+          Number(leagueId) <= 0
+        ) {
+          setError(
+            "Invalid league ID."
+          );
+          setLoading(false);
+          return;
+        }
+
+        if (background) {
+          setRefreshing(true);
+        } else {
+          setLoading(true);
+        }
+
+        setError("");
+
+        try {
+          const response =
+            await fetch(
+              `/api/leagues/${leagueId}/match-day-command-center`,
+              {
+                cache:
+                  "no-store",
+              }
+            );
+
+          const result =
+            await response.json();
+
+          if (!response.ok) {
+            throw new Error(
+              result?.error ||
+              "Unable to load Match Day."
+            );
+          }
+
+          setData(
+            result
+          );
+
+          setSelectedMatchId(
+            (current) => {
+              if (
+                current &&
+                result.matches
+                  ?.some(
+                    (match) =>
+                      match.id ===
+                      current
+                  )
+              ) {
+                return current;
+              }
+
+              const requested =
+                Number.isInteger(
+                  requestedMatchId
+                )
+                  ? result.matches
+                      ?.find(
+                        (match) =>
+                          match.id ===
+                          requestedMatchId
+                      )
+                  : null;
+
+              const live =
+                result.matches
+                  ?.find(
+                    matchIsLive
+                  );
+
+              return (
+                requested?.id ||
+                live?.id ||
+                result.matches?.[0]
+                  ?.id ||
+                null
+              );
+            }
+          );
+        } catch (failure) {
+          setError(
+            failure instanceof Error
+              ? failure.message
+              : "Unable to load Match Day."
+          );
+        } finally {
+          setLoading(false);
+          setRefreshing(false);
+        }
+      },
+      [
+        leagueId,
+        requestedMatchId,
+      ]
+    );
+
+  useEffect(() => {
+    loadCommandCenter();
+  }, [
+    loadCommandCenter,
+  ]);
+
+  useEffect(() => {
+    const timer =
+      window.setInterval(
+        () => {
+          loadCommandCenter({
+            background: true,
+          });
+        },
+        60000
+      );
+
+    return () =>
+      window.clearInterval(
+        timer
+      );
+  }, [
+    loadCommandCenter,
+  ]);
+
+  const selectedMatch =
+    useMemo(
+      () =>
+        data?.matches?.find(
+          (match) =>
+            match.id ===
+            selectedMatchId
+        ) ||
+        data?.matches?.[0] ||
+        null,
+      [
+        data,
+        selectedMatchId,
+      ]
+    );
+
+  const filteredMatches =
+    useMemo(
+      () => {
+        const matches =
+          data?.matches || [];
+
+        if (
+          queueFilter ===
+          "IN_PROGRESS"
+        ) {
+          return matches.filter(
+            (match) =>
+              matchIsLive(
+                match
+              )
+          );
+        }
+
+        if (
+          queueFilter ===
+          "SCHEDULED"
+        ) {
+          return matches.filter(
+            (match) =>
+              !matchIsLive(
+                match
+              )
+          );
+        }
+
+        return matches;
+      },
+      [
+        data,
+        queueFilter,
+      ]
+    );
+
+  const summary =
+    useMemo(() => {
+      const matches =
+        data?.matches || [];
+
+      return {
+        live:
+          matches.filter(
+            matchIsLive
+          ).length,
+
+        upcoming:
+          matches.filter(
+            (match) =>
+              !matchIsLive(
+                match
+              ) &&
+              ![
+                "COMPLETED",
+                "FINISHED",
+              ].includes(
+                match.status
+              )
+          ).length,
+
+        ready:
+          matches.filter(
+            (match) =>
+              match.readiness
+                ?.percentage >=
+              80
+          ).length,
+
+        attention:
+          matches.filter(
+            (match) =>
+              match.readiness
+                ?.percentage <
+              80
+          ).length,
+      };
+    }, [data]);
+
+  if (loading) {
+    return (
+      <main className={styles.page}>
+        <section className={styles.loadingCard}>
+          <span
+            className={styles.spinner}
+            aria-hidden="true"
+          />
+
+          <strong>
+            Preparing Match Day…
+          </strong>
+
+          <p>
+            Loading schedules, availability, kit responsibility, and scoring status.
+          </p>
+        </section>
+      </main>
+    );
+  }
+
+  return (
+    <main className={styles.page}>
+      <div className={styles.shell}>
+        <header className={styles.hero}>
+          <div className={styles.heroTop}>
+            <Link
+              href="/dashboard"
+              className={styles.backLink}
+            >
+              ← Dashboard
+            </Link>
+
+            <div className={styles.heroBadge}>
+              <span
+                aria-hidden="true"
+              >
+                🎛️
+              </span>
+              Match operations
+            </div>
+          </div>
+
+          <div className={styles.heroMain}>
+            <div>
+              <span className={styles.eyebrow}>
+                CRIC4ALL MATCH DAY
+              </span>
+
+              <h1>
+                {data?.league
+                  ?.name ||
+                  "Match Day Command Center"}
+              </h1>
+
+              <p>
+                One place to coordinate availability, balanced teams, kit responsibility, scoring, spectator sharing, and post-match follow-up.
+              </p>
+            </div>
+
+            <button
+              type="button"
+              className={styles.refreshButton}
+              disabled={
+                refreshing
+              }
+              onClick={() =>
+                loadCommandCenter({
+                  background:
+                    true,
+                })
+              }
+            >
+              <span
+                className={
+                  refreshing
+                    ? styles.refreshing
+                    : ""
+                }
+                aria-hidden="true"
+              >
+                ↻
+              </span>
+
+              {refreshing
+                ? "Refreshing…"
+                : "Refresh"}
+            </button>
+          </div>
+
+          <div className={styles.kpis}>
+            <article>
+              <span>🔴</span>
+              <div>
+                <strong>
+                  {summary.live}
+                </strong>
+                <small>Live now</small>
+              </div>
+            </article>
+
+            <article>
+              <span>📅</span>
+              <div>
+                <strong>
+                  {summary.upcoming}
+                </strong>
+                <small>Upcoming</small>
+              </div>
+            </article>
+
+            <article>
+              <span>✅</span>
+              <div>
+                <strong>
+                  {summary.ready}
+                </strong>
+                <small>Match-ready</small>
+              </div>
+            </article>
+
+            <article>
+              <span>⚠️</span>
+              <div>
+                <strong>
+                  {summary.attention}
+                </strong>
+                <small>Need attention</small>
+              </div>
+            </article>
+          </div>
+        </header>
+
+        {error && (
+          <div
+            className={styles.error}
+            role="alert"
+          >
+            <strong>
+              Match Day could not load
+            </strong>
+            <span>{error}</span>
+
+            <button
+              type="button"
+              onClick={() =>
+                loadCommandCenter()
+              }
+            >
+              Try again
+            </button>
+          </div>
+        )}
+
+        {!error &&
+        !data?.matches
+          ?.length ? (
+          <section className={styles.empty}>
+            <span
+              aria-hidden="true"
+            >
+              🗓️
+            </span>
+
+            <h2>
+              No upcoming matches
+            </h2>
+
+            <p>
+              Schedule a match first, then return here to coordinate the full match-day workflow.
+            </p>
+
+            <Link
+              href="/dashboard?tab=matches"
+            >
+              Create or schedule match
+            </Link>
+          </section>
+        ) : null}
+
+        {data?.matches
+          ?.length ? (
+          <>
+            <section className={styles.matchRailSection}>
+              <div className={styles.sectionHeading}>
+                <div>
+                  <span>
+                    MATCH QUEUE
+                  </span>
+                  <h2>
+                    Choose a match
+                  </h2>
+                </div>
+
+                <small>
+                  Scheduled and in-progress only
+                </small>
+              </div>
+
+              <div
+                className={styles.queueFilters}
+                role="group"
+                aria-label="Filter match queue"
+              >
+                <button
+                  type="button"
+                  className={
+                    queueFilter ===
+                    "ALL"
+                      ? styles.queueFilterActive
+                      : ""
+                  }
+                  onClick={() =>
+                    setQueueFilter(
+                      "ALL"
+                    )
+                  }
+                >
+                  All
+                  <b>
+                    {data.matches.length}
+                  </b>
+                </button>
+
+                <button
+                  type="button"
+                  className={
+                    queueFilter ===
+                    "IN_PROGRESS"
+                      ? styles.queueFilterActive
+                      : ""
+                  }
+                  onClick={() =>
+                    setQueueFilter(
+                      "IN_PROGRESS"
+                    )
+                  }
+                >
+                  In progress
+                  <b>
+                    {summary.live}
+                  </b>
+                </button>
+
+                <button
+                  type="button"
+                  className={
+                    queueFilter ===
+                    "SCHEDULED"
+                      ? styles.queueFilterActive
+                      : ""
+                  }
+                  onClick={() =>
+                    setQueueFilter(
+                      "SCHEDULED"
+                    )
+                  }
+                >
+                  Scheduled
+                  <b>
+                    {summary.upcoming}
+                  </b>
+                </button>
+              </div>
+
+              <div className={styles.matchRail}>
+                {filteredMatches.map(
+                  (match) => (
+                    <button
+                      key={
+                        match.id
+                      }
+                      type="button"
+                      className={
+                        selectedMatch
+                          ?.id ===
+                        match.id
+                          ? styles.matchChipActive
+                          : ""
+                      }
+                      onClick={() => {
+                        setSelectedMatchId(
+                          match.id
+                        );
+
+                        router.replace(
+                          `/leagues/${leagueId}/match-day?matchId=${match.id}`,
+                          {
+                            scroll: false,
+                          }
+                        );
+                      }}
+                    >
+                      <span
+                        className={
+                          matchIsLive(
+                            match
+                          )
+                            ? styles.liveDot
+                            : styles.scheduleDot
+                        }
+                      />
+
+                      <div>
+                        <strong>
+                          {match.teamAName}
+                          <em>vs</em>
+                          {match.teamBName}
+                        </strong>
+
+                        <small>
+                          {formatDate(
+                            match.scheduledAt
+                          )}
+                        </small>
+                      </div>
+
+                      <b>
+                        {match.readiness
+                          ?.percentage ||
+                          0}
+                        %
+                      </b>
+                    </button>
+                  )
+                )}
+
+                {!filteredMatches.length && (
+                  <div className={styles.queueEmpty}>
+                    No matches in this filter.
+                  </div>
+                )}
+              </div>
+            </section>
+
+            {selectedMatch && (
+              <MatchWorkspace
+                leagueId={
+                  leagueId
+                }
+                match={
+                  selectedMatch
+                }
+                permissions={
+                  data.permissions
+                }
+
+                availabilitySavingId={
+                  availabilitySavingId
+                }
+
+                onSetAvailabilityComplete={
+                  async (
+                    match,
+                    complete
+                  ) => {
+                    let note =
+                      null;
+
+                    if (complete) {
+                      note =
+                        window.prompt(
+                          "Optional note about how availability was confirmed:",
+                          match.availability
+                            ?.manualNote ||
+                            "Confirmed outside Cric4All"
+                        );
+
+                      if (
+                        note ===
+                        null
+                      ) {
+                        return;
+                      }
+                    }
+
+                    setAvailabilitySavingId(
+                      match.id
+                    );
+
+                    setError("");
+
+                    const controller =
+                      new AbortController();
+
+                    const timeoutId =
+                      window.setTimeout(
+                        () =>
+                          controller.abort(),
+                        15000
+                      );
+
+                    try {
+                      const response =
+                        await fetch(
+                          `/api/leagues/${leagueId}/matches/${match.id}/availability-status`,
+                          {
+                            method:
+                              "PATCH",
+
+                            headers: {
+                              "Content-Type":
+                                "application/json",
+                            },
+
+                            body:
+                              JSON.stringify({
+                                availabilityComplete:
+                                  complete,
+
+                                availabilityNote:
+                                  note,
+                              }),
+
+                            signal:
+                              controller.signal,
+                          }
+                        );
+
+                      const rawText =
+                        await response.text();
+
+                      let result =
+                        null;
+
+                      try {
+                        result =
+                          rawText
+                            ? JSON.parse(
+                                rawText
+                              )
+                            : null;
+                      } catch {
+                        result = {
+                          error:
+                            rawText ||
+                            "The server returned an invalid response.",
+                        };
+                      }
+
+                      if (!response.ok) {
+                        throw new Error(
+                          result?.error ||
+                          "Unable to update availability readiness."
+                        );
+                      }
+
+                      /*
+                       * Update Match Day immediately instead of waiting
+                       * for a second API request before changing the UI.
+                       */
+                      setData(
+                        (current) => {
+                          if (
+                            !current
+                              ?.matches
+                          ) {
+                            return current;
+                          }
+
+                          return {
+                            ...current,
+
+                            matches:
+                              current.matches.map(
+                                (
+                                  currentMatch
+                                ) => {
+                                  if (
+                                    currentMatch.id !==
+                                    match.id
+                                  ) {
+                                    return currentMatch;
+                                  }
+
+                                  const readinessItems =
+                                    (
+                                      currentMatch
+                                        .readiness
+                                        ?.items ||
+                                      []
+                                    ).map(
+                                      (
+                                        item
+                                      ) =>
+                                        item.key ===
+                                        "AVAILABILITY"
+                                          ? {
+                                              ...item,
+                                              complete,
+                                            }
+                                          : item
+                                    );
+
+                                  const completed =
+                                    readinessItems.filter(
+                                      (
+                                        item
+                                      ) =>
+                                        item.complete
+                                    ).length;
+
+                                  const total =
+                                    readinessItems.length ||
+                                    currentMatch
+                                      .readiness
+                                      ?.total ||
+                                    5;
+
+                                  return {
+                                    ...currentMatch,
+
+                                    availability: {
+                                      ...currentMatch
+                                        .availability,
+
+                                      manuallyCompleted:
+                                        complete,
+
+                                      manualNote:
+                                        complete
+                                          ? result
+                                              ?.status
+                                              ?.availabilityNote ||
+                                            note ||
+                                            "Confirmed outside Cric4All"
+                                          : null,
+
+                                      manualUpdatedAt:
+                                        result
+                                          ?.status
+                                          ?.updatedAt ||
+                                        new Date()
+                                          .toISOString(),
+                                    },
+
+                                    readiness: {
+                                      ...currentMatch
+                                        .readiness,
+
+                                      completed,
+                                      total,
+
+                                      percentage:
+                                        Math.round(
+                                          (
+                                            completed /
+                                            Math.max(
+                                              total,
+                                              1
+                                            )
+                                          ) *
+                                            100
+                                        ),
+
+                                      items:
+                                        readinessItems,
+
+                                      availabilitySource:
+                                        complete
+                                          ? "MANUAL"
+                                          : currentMatch
+                                              .availability
+                                              ?.pollId
+                                            ? "POLL"
+                                            : "NONE",
+                                    },
+                                  };
+                                }
+                              ),
+                          };
+                        }
+                      );
+
+                      /*
+                       * Refresh in the background for authoritative
+                       * server values, but do not leave the button stuck.
+                       */
+                      loadCommandCenter({
+                        background:
+                          true,
+                      }).catch(
+                        () => {}
+                      );
+                    } catch (failure) {
+                      setError(
+                        failure?.name ===
+                        "AbortError"
+                          ? "Saving availability took too long. Please try again."
+                          : failure instanceof Error
+                            ? failure.message
+                            : "Unable to update availability readiness."
+                      );
+                    } finally {
+                      window.clearTimeout(
+                        timeoutId
+                      );
+
+                      setAvailabilitySavingId(
+                        null
+                      );
+                    }
+                  }
+                }
+              />
+            )}
+          </>
+        ) : null}
+      </div>
+    </main>
+  );
+}
+
 function LockedAction({
   label,
   reason,
