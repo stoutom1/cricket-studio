@@ -7276,3 +7276,164 @@
     font-size: 0.76rem;
   }
 }
+
+
+/* =========================================================
+   MATCH DAY MOBILE — ONE-LINE MATCH TITLE + COMPACT READINESS
+   MOBILE ONLY
+   ========================================================= */
+
+@media (max-width: 620px) {
+  /*
+   * The selected match title gets the full card width.
+   * The readiness percentage becomes a compact status control in the
+   * upper-right corner instead of consuming a large title column.
+   */
+  .matchHero {
+    position: relative;
+
+    display: block;
+
+    min-width: 0;
+    padding-top: 1px;
+  }
+
+  .matchIdentity {
+    width: 100%;
+    min-width: 0;
+  }
+
+  /*
+   * Reserve only the status-row corner for the compact readiness indicator.
+   * The match title below can use the complete width.
+   */
+  .matchStatusRow {
+    min-height: 48px;
+    padding-right: 58px;
+  }
+
+  .matchIdentity h2 {
+    width: 100%;
+    max-width: 100%;
+
+    margin: 7px 0 4px;
+
+    color: #f6f8fb;
+
+    font-size: clamp(
+      1rem,
+      4.8vw,
+      1.22rem
+    );
+    font-weight: 950;
+    line-height: 1.15;
+    letter-spacing: -0.018em;
+
+    white-space: nowrap;
+    word-break: normal;
+    overflow: hidden;
+    text-overflow: ellipsis;
+  }
+
+  .matchIdentity h2 span {
+    display: inline;
+
+    margin-inline: 5px;
+
+    color: #9db0c5;
+
+    font-size: 0.72em;
+    font-weight: 850;
+    white-space: nowrap;
+  }
+
+  .matchIdentity p {
+    padding-right: 0;
+
+    font-size: 0.75rem;
+    line-height: 1.35;
+  }
+
+  /*
+   * Compact readiness indicator moved into the top-right of the match card.
+   */
+  .readinessDial {
+    position: absolute;
+    top: 0;
+    right: 0;
+
+    width: 48px;
+    height: 48px;
+    min-width: 48px;
+    padding: 6px;
+
+    display: grid;
+    place-content: center;
+
+    background:
+      radial-gradient(
+        circle,
+        #14283f 56%,
+        transparent 58%
+      ),
+      conic-gradient(
+        #7188a5,
+        #9baabd,
+        #5d718a,
+        #7188a5
+      );
+
+    border:
+      1px solid rgba(183, 198, 218, 0.16);
+    border-radius: 999px;
+
+    box-shadow:
+      0 6px 14px rgba(0, 0, 0, 0.2),
+      inset 0 1px 0 rgba(255, 255, 255, 0.08);
+  }
+
+  .readinessDial strong {
+    font-size: 0.76rem;
+    line-height: 1;
+  }
+
+  .readinessDial span {
+    display: none;
+  }
+
+  /*
+   * Keep the progress bar visually associated with the smaller readiness
+   * indicator without adding height.
+   */
+  .progressTrack {
+    margin-top: 9px;
+  }
+}
+
+@media (max-width: 380px) {
+  .matchStatusRow {
+    padding-right: 54px;
+  }
+
+  .matchIdentity h2 {
+    font-size: clamp(
+      0.94rem,
+      4.65vw,
+      1.1rem
+    );
+  }
+
+  .matchIdentity h2 span {
+    margin-inline: 4px;
+  }
+
+  .readinessDial {
+    width: 45px;
+    height: 45px;
+    min-width: 45px;
+  }
+
+  .readinessDial strong {
+    font-size: 0.72rem;
+  }
+}
