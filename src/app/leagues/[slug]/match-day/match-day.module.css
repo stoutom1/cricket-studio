@@ -6729,3 +6729,276 @@
     font-size: 0.96rem;
   }
 }
+
+
+/* =========================================================
+   MATCH DAY MOBILE — APP-CONSISTENT BUTTONS + KIT READABILITY
+   MOBILE ONLY
+   ========================================================= */
+
+@media (max-width: 620px) {
+  /*
+   * Primary actions now match the broader Cric4All visual language:
+   * clear app-blue buttons with restrained depth and strong contrast.
+   */
+  .mobilePrimaryGlanceAction,
+  .cardActions a:first-child,
+  .cardActions button.manualCompleteButton,
+  .nextAction {
+    color: #ffffff !important;
+
+    background:
+      linear-gradient(
+        180deg,
+        #3f8ff4,
+        #346fd2
+      ) !important;
+
+    border:
+      1px solid rgba(146, 196, 255, 0.45) !important;
+
+    border-radius: 11px !important;
+
+    box-shadow:
+      inset 0 1px 0 rgba(255, 255, 255, 0.14),
+      0 7px 16px rgba(15, 55, 116, 0.3) !important;
+
+    text-shadow: none !important;
+  }
+
+  .mobilePrimaryGlanceAction:hover,
+  .cardActions a:first-child:hover,
+  .cardActions button.manualCompleteButton:hover,
+  .nextAction:hover {
+    background:
+      linear-gradient(
+        180deg,
+        #4a9cff,
+        #3a78dd
+      ) !important;
+  }
+
+  .mobilePrimaryGlanceAction:active,
+  .cardActions a:first-child:active,
+  .cardActions button.manualCompleteButton:active,
+  .nextAction:active {
+    transform: translateY(1px);
+
+    background:
+      linear-gradient(
+        180deg,
+        #377fdc,
+        #2c61bb
+      ) !important;
+
+    box-shadow:
+      inset 0 1px 0 rgba(255, 255, 255, 0.1),
+      0 4px 10px rgba(15, 55, 116, 0.24) !important;
+  }
+
+  /*
+   * Secondary actions use a deeper blue-gray instead of flat gray.
+   * They remain visibly button-like but do not compete with primary actions.
+   */
+  .cardActions a:nth-child(n + 2),
+  .resourcesAction,
+  .lockedAction {
+    color: #eef5ff !important;
+
+    background:
+      linear-gradient(
+        180deg,
+        #35506f,
+        #293e58
+      ) !important;
+
+    border:
+      1px solid rgba(130, 166, 205, 0.34) !important;
+
+    border-radius: 11px !important;
+
+    box-shadow:
+      inset 0 1px 0 rgba(255, 255, 255, 0.07),
+      0 5px 12px rgba(3, 12, 28, 0.24) !important;
+  }
+
+  .cardActions a:nth-child(n + 2):hover,
+  .resourcesAction:hover,
+  .lockedAction:hover {
+    background:
+      linear-gradient(
+        180deg,
+        #3d5b7e,
+        #304862
+      ) !important;
+  }
+
+  /*
+   * Keep the refresh control aligned with the same app color system.
+   */
+  .refreshButton {
+    color: #ffffff !important;
+
+    background:
+      linear-gradient(
+        180deg,
+        #5079aa,
+        #3b5f88
+      ) !important;
+
+    border:
+      1px solid rgba(155, 190, 228, 0.34) !important;
+
+    box-shadow:
+      inset 0 1px 0 rgba(255, 255, 255, 0.1),
+      0 6px 14px rgba(5, 19, 42, 0.25) !important;
+  }
+
+  /*
+   * KIT RESPONSIBILITY — make all labels and names comfortably readable.
+   */
+  .kitTableWrap {
+    margin-top: 10px;
+  }
+
+  .kitTable tbody {
+    gap: 10px;
+  }
+
+  .kitTable tr {
+    padding: 12px 13px;
+
+    background:
+      linear-gradient(
+        145deg,
+        rgba(18, 48, 84, 0.96),
+        rgba(12, 34, 64, 0.96)
+      ) !important;
+
+    border:
+      1px solid rgba(87, 142, 204, 0.26) !important;
+
+    border-radius: 13px;
+
+    box-shadow:
+      inset 0 1px 0 rgba(255, 255, 255, 0.035),
+      0 6px 14px rgba(0, 7, 18, 0.16);
+  }
+
+  .kitTable td {
+    grid-template-columns:
+      138px minmax(0, 1fr);
+
+    gap: 12px;
+
+    padding: 9px 0;
+
+    color: #f5f8fc;
+
+    border-bottom:
+      1px solid rgba(98, 145, 197, 0.17) !important;
+
+    font-size: 0.9rem;
+    font-weight: 850;
+    line-height: 1.3;
+
+    white-space: nowrap;
+  }
+
+  .kitTable td::before {
+    color: #9eb9d6;
+
+    font-size: 0.69rem;
+    font-weight: 950;
+    line-height: 1.15;
+    letter-spacing: 0.035em;
+
+    white-space: nowrap;
+  }
+
+  .kitTable td:first-child {
+    color: #ffffff;
+
+    font-size: 0.94rem;
+    font-weight: 950;
+  }
+
+  .kitTable td:last-child {
+    color: #9fe5be;
+
+    font-size: 0.92rem;
+    font-weight: 950;
+  }
+
+  /*
+   * Preserve no-wrap behavior. On unusually narrow phones, allow the card
+   * itself to scroll horizontally instead of breaking labels or names.
+   */
+  .kitTable tr {
+    overflow-x: auto;
+    scrollbar-width: thin;
+  }
+
+  .kitTable tr::-webkit-scrollbar {
+    height: 4px;
+  }
+
+  .kitTable tr::-webkit-scrollbar-thumb {
+    background:
+      rgba(125, 157, 193, 0.38);
+
+    border-radius: 999px;
+  }
+
+  /*
+   * Make the Kit card heading easier to scan.
+   */
+  .operationCard header small {
+    font-size: 0.69rem;
+  }
+
+  .operationCard h3 {
+    font-size: 1.02rem;
+  }
+
+  /*
+   * Keep all action labels on a single line.
+   */
+  .cardActions a,
+  .cardActions button,
+  .mobilePrimaryGlanceAction,
+  .nextAction,
+  .resourcesAction,
+  .lockedAction {
+    white-space: nowrap;
+    word-break: normal;
+    overflow-wrap: normal;
+  }
+}
+
+@media (max-width: 390px) {
+  /*
+   * Keep labels and values in one row even on narrow phones.
+   * The card can scroll horizontally rather than wrapping text.
+   */
+  .kitTable td {
+    grid-template-columns:
+      130px minmax(120px, 1fr);
+
+    gap: 10px;
+
+    font-size: 0.86rem;
+  }
+
+  .kitTable td::before {
+    font-size: 0.66rem;
+  }
+
+  .kitTable td:first-child {
+    font-size: 0.9rem;
+  }
+
+  .kitTable td:last-child {
+    font-size: 0.88rem;
+  }
+}
