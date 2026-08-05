@@ -6179,3 +6179,553 @@
     border-radius: 11px !important;
   }
 }
+
+
+/* =========================================================
+   MATCH DAY MOBILE — PROFESSIONAL POLISH PASS
+   MOBILE ONLY
+   Improves hierarchy, spacing, cards, buttons, badges and icons
+   without changing the restrained neutral color direction.
+   ========================================================= */
+
+@media (max-width: 620px) {
+  /* ---------- Consistent design tokens ---------- */
+
+  .page {
+    --md-surface-1: #111e31;
+    --md-surface-2: #15253a;
+    --md-surface-3: #1a2b40;
+    --md-border: rgba(151, 174, 202, 0.19);
+    --md-border-strong: rgba(169, 190, 215, 0.3);
+    --md-text: #f6f8fb;
+    --md-muted: #9eb0c4;
+    --md-subtle: #788ba1;
+    --md-primary-top: #60758e;
+    --md-primary-bottom: #4b6078;
+    --md-secondary-top: #303c4b;
+    --md-secondary-bottom: #252f3b;
+    --md-attention: #cdbb91;
+  }
+
+  /* ---------- Overall spacing ---------- */
+
+  .hero,
+  .workspace {
+    border-radius: 18px;
+  }
+
+  .workspace {
+    padding: 14px;
+  }
+
+  /* ---------- Hero hierarchy ---------- */
+
+  .eyebrow {
+    color: #a9bad0;
+
+    font-size: 0.72rem;
+    font-weight: 900;
+  }
+
+  .hero h1 {
+    color: var(--md-text);
+
+    font-weight: 950;
+    letter-spacing: -0.025em;
+  }
+
+  .heroMain p {
+    color: var(--md-muted);
+  }
+
+  /* ---------- KPI cards ---------- */
+
+  .kpis {
+    gap: 8px;
+  }
+
+  .kpis article {
+    min-height: 68px;
+    padding: 10px 5px;
+
+    border-radius: 12px;
+
+    box-shadow:
+      inset 0 1px 0 rgba(255, 255, 255, 0.035),
+      0 5px 12px rgba(0, 0, 0, 0.12);
+  }
+
+  .kpis article > span {
+    width: 33px;
+    height: 33px;
+
+    border-radius: 10px;
+
+    box-shadow:
+      inset 0 1px 0 rgba(255, 255, 255, 0.07);
+  }
+
+  .kpis strong {
+    color: var(--md-text);
+
+    font-size: 1.04rem;
+    font-weight: 950;
+  }
+
+  .kpis small {
+    color: #a3b3c6;
+
+    font-size: 0.63rem;
+    font-weight: 700;
+  }
+
+  /* ---------- Queue filters ---------- */
+
+  .queueFilters {
+    gap: 7px;
+  }
+
+  .queueFilters button {
+    min-height: 40px;
+    padding-inline: 13px;
+
+    border-radius: 10px !important;
+
+    font-size: 0.76rem;
+    font-weight: 850;
+  }
+
+  .queueFilters button[class*="active"] {
+    box-shadow:
+      inset 0 1px 0 rgba(255, 255, 255, 0.08),
+      0 6px 14px rgba(0, 0, 0, 0.18);
+  }
+
+  /* ---------- Match rail ---------- */
+
+  .matchRail button {
+    border-radius: 14px;
+
+    box-shadow:
+      inset 0 1px 0 rgba(255, 255, 255, 0.025);
+  }
+
+  .matchRail button[class*="active"] {
+    box-shadow:
+      inset 3px 0 0 #8fa6c0,
+      inset 0 1px 0 rgba(255, 255, 255, 0.05),
+      0 9px 20px rgba(0, 0, 0, 0.2);
+  }
+
+  .matchRail strong {
+    color: var(--md-text);
+
+    font-weight: 900;
+  }
+
+  .matchRail small {
+    color: var(--md-muted);
+  }
+
+  /* ---------- Selected match ---------- */
+
+  .matchIdentity h2 {
+    color: var(--md-text);
+
+    font-weight: 950;
+    letter-spacing: -0.03em;
+  }
+
+  .matchIdentity p {
+    color: #a6b6c8;
+  }
+
+  .readinessDial {
+    border:
+      1px solid rgba(183, 198, 218, 0.14);
+
+    box-shadow:
+      0 10px 22px rgba(0, 0, 0, 0.22),
+      inset 0 1px 0 rgba(255, 255, 255, 0.08);
+  }
+
+  .readinessDial strong {
+    color: #ffffff;
+
+    font-weight: 950;
+  }
+
+  .progressTrack {
+    background:
+      rgba(94, 116, 143, 0.24);
+  }
+
+  /* ---------- Readiness stage chips ---------- */
+
+  .readinessSteps div {
+    min-height: 42px;
+
+    border-radius: 10px;
+
+    box-shadow:
+      inset 0 1px 0 rgba(255, 255, 255, 0.025);
+  }
+
+  .readinessSteps small {
+    color: #b3c0ce;
+
+    font-weight: 800;
+  }
+
+  /* ---------- One-glance cards ---------- */
+
+  .mobileGlanceBar > div {
+    min-height: 58px;
+
+    border-radius: 11px;
+
+    box-shadow:
+      inset 0 1px 0 rgba(255, 255, 255, 0.025);
+  }
+
+  .mobileGlanceBar strong {
+    color: var(--md-text);
+
+    font-size: 0.98rem;
+    font-weight: 950;
+  }
+
+  .mobileGlanceBar small {
+    color: #93a5b9;
+
+    font-weight: 750;
+  }
+
+  /* ---------- Accordion hierarchy ---------- */
+
+  .mobileAccordion {
+    border-radius: 16px;
+  }
+
+  .mobileAccordionSummary {
+    min-height: 82px;
+    padding: 12px 13px;
+
+    grid-template-columns:
+      46px minmax(0, 1fr) auto auto;
+  }
+
+  .mobileAccordionIcon {
+    width: 46px;
+    height: 46px;
+
+    border-radius: 12px;
+
+    font-size: 1.08rem;
+
+    box-shadow:
+      inset 0 1px 0 rgba(255, 255, 255, 0.07),
+      0 5px 12px rgba(0, 0, 0, 0.16);
+  }
+
+  .mobileAccordionCopy small {
+    font-size: 0.66rem;
+    font-weight: 950;
+    letter-spacing: 0.08em;
+  }
+
+  .mobileAccordionCopy strong {
+    margin-top: 4px;
+
+    color: var(--md-text);
+
+    font-size: 0.96rem;
+    font-weight: 950;
+    line-height: 1.25;
+  }
+
+  .mobileAccordionCopy em {
+    margin-top: 4px;
+
+    color: #91a4b9;
+
+    font-size: 0.69rem;
+    line-height: 1.3;
+  }
+
+  .mobileAccordionState {
+    min-width: 40px;
+    min-height: 32px;
+    padding-inline: 7px;
+
+    border-radius: 999px;
+
+    font-size: 0.7rem;
+    font-weight: 950;
+  }
+
+  .mobileAccordionChevron {
+    width: 25px;
+    height: 25px;
+
+    display: grid;
+    place-items: center;
+
+    border-radius: 999px;
+
+    background:
+      rgba(85, 106, 131, 0.22);
+
+    font-size: 0.9rem;
+  }
+
+  .mobileAccordionContent {
+    padding: 0 10px 10px;
+  }
+
+  /* ---------- Inner cards ---------- */
+
+  .operationCard {
+    padding: 13px;
+
+    border-radius: 13px;
+
+    box-shadow:
+      inset 0 1px 0 rgba(255, 255, 255, 0.025),
+      0 6px 14px rgba(0, 0, 0, 0.13);
+  }
+
+  .operationCard header {
+    grid-template-columns:
+      43px minmax(0, 1fr) auto;
+  }
+
+  .operationIcon {
+    width: 43px;
+    height: 43px;
+
+    border-radius: 11px;
+
+    box-shadow:
+      inset 0 1px 0 rgba(255, 255, 255, 0.07);
+  }
+
+  .operationCard header small {
+    color: #9db0c6;
+
+    font-size: 0.66rem;
+    font-weight: 950;
+    letter-spacing: 0.065em;
+  }
+
+  .operationCard h3 {
+    color: var(--md-text);
+
+    font-size: 1rem;
+    font-weight: 950;
+  }
+
+  /* ---------- Availability ---------- */
+
+  .availabilityGrid {
+    gap: 8px;
+  }
+
+  .availabilityGrid div {
+    min-height: 61px;
+
+    border:
+      1px solid rgba(118, 143, 172, 0.13);
+
+    border-radius: 10px;
+  }
+
+  .availabilityGrid strong {
+    color: var(--md-text);
+
+    font-size: 1.05rem;
+    font-weight: 950;
+  }
+
+  .availabilityGrid small {
+    color: #96a7ba;
+
+    font-size: 0.6rem;
+    font-weight: 750;
+  }
+
+  .manualAvailabilityNote {
+    border-radius: 10px;
+  }
+
+  .manualAvailabilityNote strong {
+    color: #e7edf4;
+
+    font-weight: 900;
+  }
+
+  .manualAvailabilityNote small {
+    color: #a5b5c6;
+  }
+
+  /* ---------- Team card ---------- */
+
+  .teamVersus {
+    padding: 2px 0;
+  }
+
+  .teamVersus strong {
+    color: #edf2f7;
+
+    font-size: 0.79rem;
+    font-weight: 900;
+  }
+
+  .teamVersus div > span {
+    box-shadow:
+      inset 0 1px 0 rgba(255, 255, 255, 0.08);
+  }
+
+  /* ---------- Status badges ---------- */
+
+  .readyBadge,
+  .attentionBadge {
+    min-height: 28px;
+    padding: 0 9px;
+
+    display: inline-flex;
+    align-items: center;
+
+    border-radius: 999px;
+
+    font-size: 0.66rem;
+    font-weight: 950;
+  }
+
+  .attentionBadge {
+    color: #e7dcc3;
+
+    background:
+      rgba(109, 93, 67, 0.38);
+
+    border-color:
+      rgba(181, 160, 121, 0.22);
+  }
+
+  /* ---------- Button hierarchy ---------- */
+
+  .mobilePrimaryGlanceAction,
+  .cardActions a,
+  .cardActions button.manualCompleteButton,
+  .nextAction,
+  .resourcesAction,
+  .lockedAction {
+    min-height: 46px;
+
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+
+    border-radius: 11px !important;
+
+    font-size: 0.8rem;
+    font-weight: 950;
+    letter-spacing: 0.005em;
+  }
+
+  /*
+   * Primary buttons have stronger contrast and elevation.
+   */
+  .mobilePrimaryGlanceAction,
+  .cardActions a:first-child,
+  .nextAction {
+    color: #ffffff;
+
+    background:
+      linear-gradient(
+        180deg,
+        var(--md-primary-top),
+        var(--md-primary-bottom)
+      );
+
+    border-color:
+      rgba(185, 203, 225, 0.31);
+
+    box-shadow:
+      inset 0 1px 0 rgba(255, 255, 255, 0.09),
+      0 7px 16px rgba(0, 0, 0, 0.24);
+  }
+
+  /*
+   * Secondary actions are quieter and flatter.
+   */
+  .cardActions a:nth-child(n + 2),
+  .resourcesAction,
+  .lockedAction {
+    color: #dce5ef;
+
+    background:
+      linear-gradient(
+        180deg,
+        var(--md-secondary-top),
+        var(--md-secondary-bottom)
+      );
+
+    border-color:
+      rgba(137, 159, 184, 0.22);
+
+    box-shadow:
+      inset 0 1px 0 rgba(255, 255, 255, 0.035),
+      0 4px 10px rgba(0, 0, 0, 0.16);
+  }
+
+  /*
+   * Full-width workflow buttons remain visually dominant.
+   */
+  .cardActions > :only-child,
+  .cardActions > a:first-child:last-child,
+  .mobilePrimaryGlanceAction {
+    width: 100%;
+  }
+
+  /* ---------- Quick/next action ---------- */
+
+  .quickActions {
+    padding: 13px;
+
+    border-radius: 0 0 15px 15px;
+  }
+
+  .quickActions h3 {
+    color: var(--md-text);
+
+    font-size: 1rem;
+    font-weight: 950;
+  }
+
+  .quickActions p {
+    color: #a2b2c4;
+
+    font-size: 0.72rem;
+  }
+}
+
+@media (max-width: 380px) {
+  .mobileAccordionSummary {
+    grid-template-columns:
+      44px minmax(0, 1fr) auto;
+  }
+
+  .mobileAccordionIcon {
+    width: 44px;
+    height: 44px;
+  }
+
+  .mobileAccordionCopy strong {
+    font-size: 0.91rem;
+  }
+
+  .operationCard h3 {
+    font-size: 0.96rem;
+  }
+}
