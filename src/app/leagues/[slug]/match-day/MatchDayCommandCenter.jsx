@@ -1045,6 +1045,28 @@ function MatchWorkspace({
   availabilitySavingId,
   onSetAvailabilityComplete,
 }) {
+  const [
+    mobileOpenSection,
+    setMobileOpenSection,
+  ] = useState("PLAYERS");
+
+  useEffect(() => {
+    setMobileOpenSection(
+      "PLAYERS"
+    );
+  }, [match.id]);
+
+  function toggleMobileSection(
+    section
+  ) {
+    setMobileOpenSection(
+      (current) =>
+        current === section
+          ? null
+          : section
+    );
+  }
+
   const returnTo =
     `/leagues/${leagueId}/match-day?matchId=${match.id}`;
 
@@ -1230,8 +1252,147 @@ function MatchWorkspace({
           )}
       </div>
 
+      <div className={styles.mobileGlanceBar}>
+        <div>
+          <span>
+            📲
+          </span>
+
+          <strong>
+            {match.availability
+              ?.responses ||
+              0}
+          </strong>
+
+          <small>
+            Responses
+          </small>
+        </div>
+
+        <div>
+          <span>
+            🎒
+          </span>
+
+          <strong>
+            {match.kit
+              ?.assignments
+              ?.length ||
+              0}
+          </strong>
+
+          <small>
+            Kit rows
+          </small>
+        </div>
+
+        <div>
+          <span>
+            🏏
+          </span>
+
+          <strong>
+            {match.score
+              ?.length ||
+              0}
+          </strong>
+
+          <small>
+            Innings
+          </small>
+        </div>
+
+        <Link
+          href={
+            permissions
+              ?.canScoreMatch
+              ? scoringHref
+              : spectatorHref
+          }
+          className={styles.mobilePrimaryGlanceAction}
+        >
+          {permissions
+            ?.canScoreMatch
+            ? matchIsLive(
+                match
+              )
+              ? "Continue scoring"
+              : "Open scoring"
+            : "Spectator"}
+          <span>→</span>
+        </Link>
+      </div>
+
       <div className={styles.operationsGrid}>
-        <article className={styles.operationCard}>
+        <section
+          className={`${styles.mobileAccordion} ${
+            mobileOpenSection ===
+            "PLAYERS"
+              ? styles.mobileAccordionOpen
+              : ""
+          }`}
+        >
+          <button
+            type="button"
+            className={styles.mobileAccordionSummary}
+            aria-expanded={
+              mobileOpenSection ===
+              "PLAYERS"
+            }
+            onClick={() =>
+              toggleMobileSection(
+                "PLAYERS"
+              )
+            }
+          >
+            <span className={styles.mobileAccordionIcon}>
+              👥
+            </span>
+
+            <span className={styles.mobileAccordionCopy}>
+              <small>
+                PLAYERS & TEAMS
+              </small>
+
+              <strong>
+                Availability and team preparation
+              </strong>
+
+              <em>
+                {match.availability
+                  ?.responses ||
+                  0}{" "}
+                responses ·{" "}
+                {match.teamAName} vs{" "}
+                {match.teamBName}
+              </em>
+            </span>
+
+            <span className={styles.mobileAccordionState}>
+              {
+                match.readiness
+                  ?.items?.filter(
+                    (item) =>
+                      [
+                        "AVAILABILITY",
+                        "TEAMS",
+                      ].includes(
+                        item.key
+                      ) &&
+                      item.complete
+                  ).length ||
+                0
+              }
+              /2
+            </span>
+
+            <span className={styles.mobileAccordionChevron}>
+              ⌄
+            </span>
+          </button>
+
+          <div className={styles.mobileAccordionContent}>
+            <article className={styles.operationCard}>
           <header>
             <span className={styles.operationIcon}>
               📲
@@ -1458,7 +1619,80 @@ function MatchWorkspace({
           </div>
         </article>
 
-        <article className={styles.operationCard}>
+          </div>
+        </section>
+
+        <section
+          className={`${styles.mobileAccordion} ${
+            mobileOpenSection ===
+            "OPERATIONS"
+              ? styles.mobileAccordionOpen
+              : ""
+          }`}
+        >
+          <button
+            type="button"
+            className={styles.mobileAccordionSummary}
+            aria-expanded={
+              mobileOpenSection ===
+              "OPERATIONS"
+            }
+            onClick={() =>
+              toggleMobileSection(
+                "OPERATIONS"
+              )
+            }
+          >
+            <span className={styles.mobileAccordionIcon}>
+              🎒
+            </span>
+
+            <span className={styles.mobileAccordionCopy}>
+              <small>
+                MATCH OPERATIONS
+              </small>
+
+              <strong>
+                Kit responsibility and scoring
+              </strong>
+
+              <em>
+                {match.kit
+                  ?.assignments
+                  ?.length ||
+                  0}{" "}
+                kit row(s) ·{" "}
+                {matchIsLive(match)
+                  ? "Match live"
+                  : "Scoring ready"}
+              </em>
+            </span>
+
+            <span className={styles.mobileAccordionState}>
+              {
+                match.readiness
+                  ?.items?.filter(
+                    (item) =>
+                      [
+                        "KIT",
+                        "SCORING",
+                      ].includes(
+                        item.key
+                      ) &&
+                      item.complete
+                  ).length ||
+                0
+              }
+              /2
+            </span>
+
+            <span className={styles.mobileAccordionChevron}>
+              ⌄
+            </span>
+          </button>
+
+          <div className={styles.mobileAccordionContent}>
+            <article className={styles.operationCard}>
           <header>
             <span className={styles.operationIcon}>
               🎒
@@ -1642,8 +1876,55 @@ function MatchWorkspace({
             ) : null}
           </div>
         </article>
+          </div>
+        </section>
       </div>
 
+      <section
+        className={`${styles.mobileAccordion} ${styles.mobileNextAccordion} ${
+          mobileOpenSection ===
+          "NEXT"
+            ? styles.mobileAccordionOpen
+            : ""
+        }`}
+      >
+        <button
+          type="button"
+          className={styles.mobileAccordionSummary}
+          aria-expanded={
+            mobileOpenSection ===
+            "NEXT"
+          }
+          onClick={() =>
+            toggleMobileSection(
+              "NEXT"
+            )
+          }
+        >
+          <span className={styles.mobileAccordionIcon}>
+            ⚡
+          </span>
+
+          <span className={styles.mobileAccordionCopy}>
+            <small>
+              NEXT BEST ACTION
+            </small>
+
+            <strong>
+              {action.label}
+            </strong>
+
+            <em>
+              Recommended from match readiness
+            </em>
+          </span>
+
+          <span className={styles.mobileAccordionChevron}>
+            ⌄
+          </span>
+        </button>
+
+        <div className={styles.mobileAccordionContent}>
       <section className={styles.quickActions}>
         <div>
           <span>
@@ -1705,6 +1986,8 @@ function MatchWorkspace({
               📚 League Resources
             </Link>
           ) : null}
+        </div>
+      </section>
         </div>
       </section>
     </section>

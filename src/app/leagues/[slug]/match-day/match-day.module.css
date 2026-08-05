@@ -2808,3 +2808,939 @@
     min-height: 43px;
   }
 }
+
+
+/* =========================================================
+   MATCH DAY MOBILE WOW — MOBILE ONLY
+   Desktop/laptop layout and behavior remain unchanged.
+   ========================================================= */
+
+.mobileAccordion,
+.mobileAccordionContent {
+  display: contents;
+}
+
+.mobileAccordionSummary,
+.mobileGlanceBar {
+  display: none;
+}
+
+@media (max-width: 620px) {
+  .page {
+    padding:
+      8px 8px calc(78px + env(safe-area-inset-bottom));
+  }
+
+  .shell {
+    width: 100%;
+  }
+
+  /* Compact app-style hero */
+  .hero {
+    position: relative;
+    overflow: hidden;
+
+    padding: 12px;
+
+    border-radius: 17px;
+
+    background:
+      radial-gradient(
+        circle at 96% 0%,
+        rgba(114, 84, 245, 0.28),
+        transparent 42%
+      ),
+      radial-gradient(
+        circle at 0% 100%,
+        rgba(33, 147, 255, 0.18),
+        transparent 45%
+      ),
+      linear-gradient(
+        145deg,
+        #123968,
+        #091f42
+      );
+
+    box-shadow:
+      0 15px 34px rgba(0, 7, 24, 0.34),
+      inset 0 1px 0 rgba(255, 255, 255, 0.07);
+  }
+
+  .heroTop {
+    align-items: center;
+    flex-direction: row;
+    gap: 7px;
+  }
+
+  .backLink,
+  .heroBadge {
+    min-height: 32px;
+    padding: 0 10px;
+
+    font-size: 0.69rem;
+  }
+
+  .heroBadge {
+    margin-left: auto;
+  }
+
+  .heroMain {
+    display: grid;
+    grid-template-columns:
+      minmax(0, 1fr) auto;
+    align-items: end;
+    gap: 9px;
+
+    margin-top: 11px;
+  }
+
+  .heroMain > div {
+    min-width: 0;
+  }
+
+  .eyebrow {
+    font-size: 0.62rem;
+    letter-spacing: 0.08em;
+  }
+
+  .hero h1 {
+    margin: 4px 0 3px;
+
+    font-size: clamp(1.28rem, 6.2vw, 1.68rem);
+    line-height: 1.08;
+
+    overflow-wrap: anywhere;
+  }
+
+  .heroMain p {
+    display: -webkit-box;
+    max-width: 100%;
+    margin: 0;
+
+    overflow: hidden;
+    -webkit-box-orient: vertical;
+    -webkit-line-clamp: 2;
+
+    font-size: 0.72rem;
+    line-height: 1.35;
+  }
+
+  .refreshButton {
+    width: 42px;
+    min-width: 42px;
+    height: 42px;
+    min-height: 42px;
+    padding: 0;
+
+    justify-content: center;
+
+    border-radius: 12px;
+
+    font-size: 0;
+  }
+
+  .refreshButton > span {
+    font-size: 1rem;
+  }
+
+  .kpis {
+    grid-template-columns:
+      repeat(4, minmax(0, 1fr));
+    gap: 5px;
+
+    margin-top: 11px;
+  }
+
+  .kpis article {
+    min-width: 0;
+    display: grid;
+    justify-items: center;
+    gap: 3px;
+
+    padding: 7px 3px;
+
+    text-align: center;
+    border-radius: 10px;
+  }
+
+  .kpis article > span {
+    width: 27px;
+    height: 27px;
+
+    font-size: 0.72rem;
+    border-radius: 8px;
+  }
+
+  .kpis strong {
+    font-size: 0.84rem;
+    line-height: 1;
+  }
+
+  .kpis small {
+    display: block;
+
+    overflow: hidden;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+
+    font-size: 0.53rem;
+  }
+
+  /* Compact match queue */
+  .matchRailSection {
+    margin-top: 10px;
+  }
+
+  .sectionHeading {
+    align-items: end;
+    gap: 8px;
+  }
+
+  .sectionHeading span {
+    font-size: 0.58rem;
+  }
+
+  .sectionHeading h2 {
+    margin: 2px 0 0;
+    font-size: 0.92rem;
+  }
+
+  .sectionHeading > small {
+    display: none;
+  }
+
+  .queueFilters {
+    gap: 5px;
+    margin-top: 7px;
+  }
+
+  .queueFilters button {
+    min-height: 34px;
+    padding: 0 9px;
+
+    font-size: 0.65rem;
+  }
+
+  .queueFilters button b {
+    min-width: 19px;
+    height: 19px;
+
+    font-size: 0.55rem;
+  }
+
+  .matchRail {
+    gap: 7px;
+    margin-top: 7px;
+    padding-bottom: 5px;
+
+    scroll-snap-type: x mandatory;
+  }
+
+  .matchRail button {
+    flex-basis:
+      min(84vw, 310px);
+    min-height: 61px;
+    padding: 8px 9px;
+
+    border-radius: 13px;
+    scroll-snap-align: start;
+  }
+
+  .matchRail strong {
+    font-size: 0.75rem;
+  }
+
+  .matchRail small {
+    font-size: 0.61rem;
+  }
+
+  .matchRail button > b {
+    width: 35px;
+    height: 35px;
+
+    font-size: 0.64rem;
+  }
+
+  /* Main match glance card */
+  .workspace {
+    margin-top: 9px;
+    padding: 11px;
+
+    border-radius: 18px;
+
+    background:
+      radial-gradient(
+        circle at 100% 0%,
+        rgba(78, 87, 229, 0.13),
+        transparent 35%
+      ),
+      linear-gradient(
+        155deg,
+        rgba(8, 31, 63, 0.99),
+        rgba(5, 20, 43, 0.99)
+      );
+
+    box-shadow:
+      0 15px 34px rgba(0, 7, 23, 0.3);
+  }
+
+  .permissionStrip {
+    margin-bottom: 8px;
+    padding: 8px 9px;
+
+    border-radius: 11px;
+  }
+
+  .permissionStrip > div > span {
+    width: 29px;
+    height: 29px;
+  }
+
+  .permissionStrip strong {
+    font-size: 0.66rem;
+  }
+
+  .permissionStrip small {
+    font-size: 0.58rem;
+  }
+
+  .readOnlyBadge {
+    font-size: 0.53rem;
+  }
+
+  .matchHero {
+    display: grid;
+    grid-template-columns:
+      minmax(0, 1fr) 75px;
+    align-items: center;
+    gap: 10px;
+  }
+
+  .matchIdentity {
+    min-width: 0;
+  }
+
+  .matchStatusRow {
+    gap: 5px;
+    flex-wrap: wrap;
+  }
+
+  .statusPill,
+  .seriesPill {
+    padding: 4px 7px;
+
+    font-size: 0.58rem;
+  }
+
+  .matchIdentity h2 {
+    margin: 7px 0 3px;
+
+    font-size: clamp(1.2rem, 6.2vw, 1.58rem);
+    line-height: 1.1;
+    letter-spacing: -0.025em;
+
+    overflow-wrap: anywhere;
+  }
+
+  .matchIdentity h2 span {
+    margin: 0 5px;
+    font-size: 0.64em;
+  }
+
+  .matchIdentity p {
+    font-size: 0.68rem;
+    line-height: 1.35;
+  }
+
+  .readinessDial {
+    width: 75px;
+    height: 75px;
+    min-width: 75px;
+    padding: 11px;
+
+    background:
+      radial-gradient(
+        circle,
+        #123e74 56%,
+        transparent 58%
+      ),
+      conic-gradient(
+        #2d98ff,
+        #775df2,
+        #2d98ff
+      );
+
+    border-radius: 999px;
+  }
+
+  .readinessDial strong {
+    font-size: 1.05rem;
+  }
+
+  .readinessDial span {
+    margin-top: 3px;
+    font-size: 0.54rem;
+  }
+
+  .progressTrack {
+    height: 6px;
+    margin-top: 10px;
+  }
+
+  .readinessSteps {
+    display: flex;
+    gap: 5px;
+
+    margin-top: 7px;
+    padding-bottom: 2px;
+
+    overflow-x: auto;
+    scrollbar-width: none;
+  }
+
+  .readinessSteps::-webkit-scrollbar {
+    display: none;
+  }
+
+  .readinessSteps div {
+    flex: 1 0 auto;
+    min-width: 70px;
+
+    justify-content: center;
+    gap: 4px;
+
+    padding: 6px 7px;
+
+    border-radius: 9px;
+  }
+
+  .readinessSteps span {
+    width: 18px;
+    height: 18px;
+
+    font-size: 0.64rem;
+  }
+
+  .readinessSteps small {
+    font-size: 0.58rem;
+    white-space: nowrap;
+  }
+
+  /* One-glance metrics and primary action */
+  .mobileGlanceBar {
+    display: grid;
+    grid-template-columns:
+      repeat(3, minmax(0, 1fr));
+    gap: 5px;
+
+    margin-top: 9px;
+  }
+
+  .mobileGlanceBar > div {
+    min-width: 0;
+
+    display: grid;
+    grid-template-columns:
+      auto minmax(0, 1fr);
+    align-items: center;
+    column-gap: 5px;
+
+    padding: 7px;
+
+    background: rgba(9, 38, 75, 0.72);
+    border: 1px solid rgba(78, 139, 208, 0.16);
+    border-radius: 10px;
+  }
+
+  .mobileGlanceBar > div > span {
+    grid-row: 1 / 3;
+
+    font-size: 0.73rem;
+  }
+
+  .mobileGlanceBar strong {
+    color: #ffffff;
+    font-size: 0.76rem;
+    line-height: 1;
+  }
+
+  .mobileGlanceBar small {
+    min-width: 0;
+
+    overflow: hidden;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+
+    color: #7896b4;
+    font-size: 0.5rem;
+  }
+
+  .mobilePrimaryGlanceAction {
+    grid-column: 1 / -1;
+
+    min-height: 42px;
+
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    gap: 8px;
+
+    color: #ffffff;
+    background:
+      linear-gradient(
+        135deg,
+        #258fff,
+        #4e61e6
+      );
+
+    border: 1px solid rgba(121, 193, 255, 0.43);
+    border-radius: 11px;
+
+    box-shadow:
+      0 9px 20px rgba(32, 102, 220, 0.22);
+
+    font-size: 0.76rem;
+    font-weight: 900;
+    text-decoration: none;
+  }
+
+  /* Three mobile accordion sections */
+  .operationsGrid {
+    display: block;
+    margin-top: 9px;
+  }
+
+  .mobileAccordion {
+    display: block;
+
+    margin-top: 7px;
+
+    overflow: hidden;
+
+    background:
+      linear-gradient(
+        145deg,
+        rgba(11, 41, 79, 0.92),
+        rgba(7, 29, 58, 0.94)
+      );
+
+    border: 1px solid rgba(82, 145, 215, 0.21);
+    border-radius: 14px;
+
+    transition:
+      border-color 180ms ease,
+      box-shadow 180ms ease;
+  }
+
+  .mobileAccordionOpen {
+    border-color: rgba(88, 164, 246, 0.4);
+
+    box-shadow:
+      0 10px 24px rgba(0, 10, 31, 0.22);
+  }
+
+  .mobileAccordionSummary {
+    width: 100%;
+    min-height: 67px;
+    padding: 9px 10px;
+
+    display: grid;
+    grid-template-columns:
+      39px minmax(0, 1fr) auto auto;
+    align-items: center;
+    gap: 8px;
+
+    color: inherit;
+    background: transparent;
+    border: 0;
+
+    font-family: inherit;
+    text-align: left;
+
+    cursor: pointer;
+  }
+
+  .mobileAccordionIcon {
+    width: 39px;
+    height: 39px;
+
+    display: grid;
+    place-items: center;
+
+    background:
+      linear-gradient(
+        145deg,
+        rgba(40, 105, 180, 0.54),
+        rgba(53, 69, 158, 0.48)
+      );
+
+    border: 1px solid rgba(100, 173, 246, 0.2);
+    border-radius: 11px;
+
+    font-size: 0.9rem;
+  }
+
+  .mobileAccordionCopy {
+    min-width: 0;
+  }
+
+  .mobileAccordionCopy small,
+  .mobileAccordionCopy strong,
+  .mobileAccordionCopy em {
+    display: block;
+  }
+
+  .mobileAccordionCopy small {
+    color: #70b7ff;
+
+    font-size: 0.55rem;
+    font-weight: 950;
+    letter-spacing: 0.07em;
+  }
+
+  .mobileAccordionCopy strong {
+    margin-top: 2px;
+
+    color: #f5f9ff;
+
+    font-size: 0.78rem;
+    line-height: 1.2;
+
+    white-space: normal;
+    overflow-wrap: anywhere;
+  }
+
+  .mobileAccordionCopy em {
+    margin-top: 2px;
+
+    overflow: hidden;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+
+    color: #7f9ab6;
+
+    font-size: 0.58rem;
+    font-style: normal;
+  }
+
+  .mobileAccordionState {
+    min-width: 33px;
+    min-height: 27px;
+
+    display: grid;
+    place-items: center;
+
+    color: #93e8bd;
+    background: rgba(20, 111, 71, 0.28);
+    border-radius: 999px;
+
+    font-size: 0.61rem;
+    font-weight: 950;
+  }
+
+  .mobileAccordionChevron {
+    color: #80a8ce;
+
+    font-size: 0.85rem;
+
+    transition:
+      transform 180ms ease;
+  }
+
+  .mobileAccordionOpen
+    .mobileAccordionChevron {
+    transform: rotate(180deg);
+  }
+
+  .mobileAccordionContent {
+    display: none;
+
+    padding: 0 8px 8px;
+  }
+
+  .mobileAccordionOpen
+    .mobileAccordionContent {
+    display: grid;
+    gap: 7px;
+
+    animation:
+      matchDayMobileReveal 190ms ease both;
+  }
+
+  .operationCard {
+    padding: 10px;
+
+    border-radius: 12px;
+  }
+
+  .operationCard header {
+    display: grid;
+    grid-template-columns:
+      36px minmax(0, 1fr) auto;
+    align-items: center;
+    gap: 8px;
+  }
+
+  .operationIcon {
+    width: 36px;
+    height: 36px;
+
+    border-radius: 10px;
+  }
+
+  .operationCard header small {
+    font-size: 0.55rem;
+  }
+
+  .operationCard h3 {
+    margin-top: 2px;
+    font-size: 0.84rem;
+  }
+
+  .readyBadge,
+  .attentionBadge {
+    padding: 5px 7px;
+
+    font-size: 0.57rem;
+  }
+
+  .availabilityGrid {
+    grid-template-columns:
+      repeat(4, minmax(0, 1fr));
+    gap: 5px;
+
+    margin-top: 9px;
+  }
+
+  .availabilityGrid div {
+    padding: 7px 3px;
+
+    border-radius: 9px;
+  }
+
+  .availabilityGrid strong {
+    font-size: 0.84rem;
+  }
+
+  .availabilityGrid small {
+    font-size: 0.49rem;
+  }
+
+  .manualAvailabilityNote {
+    margin-top: 8px;
+    padding: 7px;
+  }
+
+  .manualAvailabilityNote strong {
+    font-size: 0.64rem;
+  }
+
+  .manualAvailabilityNote small {
+    font-size: 0.58rem;
+  }
+
+  .teamVersus {
+    grid-template-columns:
+      minmax(0, 1fr) auto minmax(0, 1fr);
+    gap: 6px;
+
+    margin-top: 9px;
+  }
+
+  .teamVersus > b {
+    display: block;
+  }
+
+  .teamVersus div:last-child {
+    justify-content: flex-end;
+    text-align: right;
+  }
+
+  .teamVersus div > span {
+    width: 30px;
+    height: 30px;
+    min-width: 30px;
+
+    font-size: 0.68rem;
+  }
+
+  .teamVersus strong {
+    font-size: 0.65rem;
+  }
+
+  .kitTableWrap {
+    margin-top: 8px;
+  }
+
+  .kitTable {
+    font-size: 0.61rem;
+  }
+
+  .kitTable th,
+  .kitTable td {
+    padding: 7px 6px;
+  }
+
+  .scoreboardMini {
+    margin-top: 8px;
+    gap: 5px;
+  }
+
+  .scoreboardMini > div {
+    padding: 8px;
+  }
+
+  .scoreboardMini > div > span {
+    font-size: 0.66rem;
+  }
+
+  .scoreValue {
+    font-size: 0.76rem;
+  }
+
+  .cardActions {
+    gap: 6px;
+    margin-top: 9px;
+    padding-top: 0;
+  }
+
+  .cardActions a,
+  .cardActions button.manualCompleteButton,
+  .lockedAction {
+    min-width: 0;
+    min-height: 39px;
+
+    font-size: 0.66rem;
+  }
+
+  .mobileNextAccordion {
+    margin-top: 7px;
+  }
+
+  .mobileNextAccordion
+    .mobileAccordionContent {
+    padding: 0;
+  }
+
+  .quickActions {
+    margin: 0;
+    padding: 10px;
+
+    border: 0;
+    border-radius: 0 0 13px 13px;
+
+    background:
+      linear-gradient(
+        135deg,
+        rgba(35, 89, 158, 0.68),
+        rgba(61, 56, 151, 0.5)
+      );
+  }
+
+  .quickActions h3 {
+    margin: 3px 0 2px;
+    font-size: 0.84rem;
+  }
+
+  .quickActions p {
+    font-size: 0.61rem;
+    line-height: 1.35;
+  }
+
+  .quickActions > div:last-child {
+    display: grid;
+    grid-template-columns:
+      minmax(0, 1fr)
+      minmax(0, 1fr);
+    gap: 6px;
+
+    margin-top: 8px;
+  }
+
+  .nextAction,
+  .resourcesAction {
+    min-height: 40px;
+    padding: 0 8px;
+
+    font-size: 0.65rem;
+  }
+}
+
+@media (max-width: 380px) {
+  .page {
+    padding-inline: 6px;
+  }
+
+  .hero {
+    padding: 10px;
+  }
+
+  .heroMain {
+    grid-template-columns:
+      minmax(0, 1fr) 40px;
+  }
+
+  .refreshButton {
+    width: 40px;
+    min-width: 40px;
+    height: 40px;
+  }
+
+  .kpis small {
+    font-size: 0.48rem;
+  }
+
+  .workspace {
+    padding: 9px;
+  }
+
+  .matchHero {
+    grid-template-columns:
+      minmax(0, 1fr) 69px;
+  }
+
+  .readinessDial {
+    width: 69px;
+    height: 69px;
+    min-width: 69px;
+  }
+
+  .mobileAccordionSummary {
+    grid-template-columns:
+      37px minmax(0, 1fr) auto;
+  }
+
+  .mobileAccordionState {
+    display: none;
+  }
+
+  .mobileAccordionIcon {
+    width: 37px;
+    height: 37px;
+  }
+
+  .quickActions > div:last-child {
+    grid-template-columns:
+      minmax(0, 1fr);
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .mobileAccordionContent,
+  .mobileAccordionChevron {
+    animation: none;
+    transition: none;
+  }
+}
+
+@keyframes matchDayMobileReveal {
+  from {
+    opacity: 0;
+    transform: translateY(-4px);
+  }
+
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
