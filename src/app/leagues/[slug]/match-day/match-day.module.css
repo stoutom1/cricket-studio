@@ -3744,3 +3744,14 @@
     transform: translateY(0);
   }
 }
+
+
+/* =========================================================
+   MATCH DAY MOBILE — SINGLE SCORING ENTRY POINT
+   ========================================================= */
+
+@media (max-width: 620px) {
+  .mobileSecondaryScoringCard {
+    display: none !important;
+  }
+}
