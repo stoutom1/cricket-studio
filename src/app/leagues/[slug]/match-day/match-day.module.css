@@ -4556,3 +4556,546 @@
     font-size: 0.75rem;
   }
 }
+
+
+/* =========================================================
+   MATCH DAY MOBILE — BALANCED AURORA COLOR SYSTEM
+   MOBILE ONLY
+   Replaces the overly green treatment with a balanced mix of:
+   - Midnight navy
+   - Electric indigo
+   - Cool cyan
+   - Warm coral
+   - Amber highlights
+   ========================================================= */
+
+@media (max-width: 620px) {
+  /*
+   * Core surfaces
+   */
+  .hero {
+    background:
+      radial-gradient(
+        circle at 92% 4%,
+        rgba(128, 90, 255, 0.28),
+        transparent 34%
+      ),
+      radial-gradient(
+        circle at 8% 96%,
+        rgba(35, 177, 219, 0.18),
+        transparent 40%
+      ),
+      linear-gradient(
+        145deg,
+        #172f5f,
+        #0b1d3d 58%,
+        #121a36
+      );
+
+    border-color:
+      rgba(118, 149, 255, 0.28);
+
+    box-shadow:
+      0 18px 38px rgba(3, 9, 27, 0.34),
+      inset 0 1px 0 rgba(255, 255, 255, 0.06);
+  }
+
+  .workspace {
+    background:
+      radial-gradient(
+        circle at 100% 0%,
+        rgba(115, 82, 224, 0.16),
+        transparent 34%
+      ),
+      linear-gradient(
+        155deg,
+        rgba(11, 28, 57, 0.99),
+        rgba(7, 18, 39, 0.99)
+      );
+
+    border-color:
+      rgba(99, 137, 204, 0.24);
+  }
+
+  /*
+   * Primary actions: indigo/cyan, not green.
+   */
+  .mobilePrimaryGlanceAction,
+  .cardActions a,
+  .cardActions button.manualCompleteButton,
+  .lockedAction,
+  .nextAction {
+    color: #ffffff;
+
+    background:
+      linear-gradient(
+        135deg,
+        #5168e8,
+        #2f8fc7
+      );
+
+    border:
+      1px solid rgba(145, 185, 255, 0.35);
+
+    box-shadow:
+      0 10px 24px rgba(43, 92, 200, 0.24);
+  }
+
+  .mobilePrimaryGlanceAction:hover,
+  .cardActions a:hover,
+  .cardActions button.manualCompleteButton:hover,
+  .nextAction:hover {
+    background:
+      linear-gradient(
+        135deg,
+        #5e73f1,
+        #36a0d5
+      );
+  }
+
+  .mobilePrimaryGlanceAction:active,
+  .cardActions a:active,
+  .cardActions button.manualCompleteButton:active,
+  .nextAction:active {
+    background:
+      linear-gradient(
+        135deg,
+        #465dcc,
+        #287caf
+      );
+  }
+
+  /*
+   * Secondary actions: muted navy glass.
+   */
+  .cardActions a:nth-child(n + 2),
+  .resourcesAction {
+    color: #dbe8ff;
+
+    background:
+      linear-gradient(
+        145deg,
+        rgba(28, 49, 86, 0.96),
+        rgba(17, 35, 67, 0.96)
+      );
+
+    border-color:
+      rgba(107, 142, 201, 0.3);
+
+    box-shadow: none;
+  }
+
+  /*
+   * Refresh button: warm coral accent.
+   */
+  .refreshButton {
+    background:
+      linear-gradient(
+        145deg,
+        #f26d6d,
+        #bd4f83
+      );
+
+    border-color:
+      rgba(255, 168, 190, 0.38);
+
+    box-shadow:
+      0 9px 22px rgba(196, 71, 112, 0.24);
+  }
+
+  /*
+   * KPIs: each card gets a distinct, subtle accent.
+   */
+  .kpis article {
+    background:
+      linear-gradient(
+        145deg,
+        rgba(15, 39, 73, 0.95),
+        rgba(17, 48, 86, 0.88)
+      );
+
+    border-color:
+      rgba(104, 147, 214, 0.2);
+  }
+
+  .kpis article:nth-child(1) > span {
+    background:
+      linear-gradient(
+        145deg,
+        #4f67dc,
+        #334ca6
+      );
+  }
+
+  .kpis article:nth-child(2) > span {
+    background:
+      linear-gradient(
+        145deg,
+        #db6176,
+        #a74465
+      );
+  }
+
+  .kpis article:nth-child(3) > span {
+    background:
+      linear-gradient(
+        145deg,
+        #3c97c8,
+        #2a6e9d
+      );
+  }
+
+  .kpis article:nth-child(4) > span {
+    background:
+      linear-gradient(
+        145deg,
+        #e1a64a,
+        #b4752c
+      );
+  }
+
+  /*
+   * Queue filters and selected match
+   */
+  .queueFilters button {
+    color: #d7e4f7;
+
+    background:
+      linear-gradient(
+        145deg,
+        rgba(21, 44, 79, 0.96),
+        rgba(15, 33, 62, 0.96)
+      );
+
+    border-color:
+      rgba(94, 132, 193, 0.28);
+  }
+
+  .queueFilters button[class*="active"],
+  .queueFilters button:active {
+    color: #ffffff;
+
+    background:
+      linear-gradient(
+        135deg,
+        #586be5,
+        #8b5fc8
+      );
+
+    border-color:
+      rgba(175, 152, 255, 0.42);
+
+    box-shadow:
+      0 8px 20px rgba(91, 86, 208, 0.2);
+  }
+
+  .matchRail button {
+    background:
+      linear-gradient(
+        145deg,
+        rgba(18, 44, 79, 0.98),
+        rgba(12, 31, 59, 0.98)
+      );
+
+    border-color:
+      rgba(96, 137, 203, 0.24);
+  }
+
+  .matchRail button[class*="active"] {
+    background:
+      linear-gradient(
+        145deg,
+        rgba(68, 78, 164, 0.96),
+        rgba(39, 80, 130, 0.96)
+      );
+
+    border-color:
+      rgba(148, 166, 255, 0.45);
+
+    box-shadow:
+      0 11px 25px rgba(42, 55, 145, 0.24);
+  }
+
+  .matchRail button > b {
+    background:
+      linear-gradient(
+        145deg,
+        #6b5de0,
+        #3491c4
+      );
+  }
+
+  /*
+   * Readiness visual
+   */
+  .readinessDial {
+    background:
+      radial-gradient(
+        circle,
+        #143054 55%,
+        transparent 57%
+      ),
+      conic-gradient(
+        #6b5de0,
+        #35a4d2,
+        #f1a24d,
+        #6b5de0
+      );
+
+    box-shadow:
+      0 9px 24px rgba(80, 81, 180, 0.24);
+  }
+
+  .progressTrack > span {
+    background:
+      linear-gradient(
+        90deg,
+        #5a6de4,
+        #39a0cf,
+        #f0a34d
+      );
+  }
+
+  .readyBadge,
+  .mobileAccordionState {
+    color: #d8f4ff;
+
+    background:
+      rgba(41, 118, 161, 0.28);
+
+    border:
+      1px solid rgba(94, 180, 225, 0.18);
+  }
+
+  .attentionBadge {
+    color: #ffe0ad;
+
+    background:
+      rgba(168, 104, 25, 0.3);
+
+    border:
+      1px solid rgba(236, 164, 73, 0.18);
+  }
+
+  /*
+   * Readiness stage pills
+   */
+  .readinessSteps div {
+    background:
+      linear-gradient(
+        145deg,
+        rgba(21, 45, 79, 0.9),
+        rgba(16, 34, 64, 0.92)
+      );
+
+    border-color:
+      rgba(99, 137, 195, 0.2);
+  }
+
+  .readinessSteps div[class*="complete"] {
+    background:
+      linear-gradient(
+        145deg,
+        rgba(49, 81, 149, 0.92),
+        rgba(43, 91, 128, 0.9)
+      );
+
+    border-color:
+      rgba(110, 166, 227, 0.28);
+  }
+
+  /*
+   * Glance metrics
+   */
+  .mobileGlanceBar > div {
+    background:
+      linear-gradient(
+        145deg,
+        rgba(18, 44, 78, 0.95),
+        rgba(13, 32, 61, 0.95)
+      );
+
+    border-color:
+      rgba(94, 136, 201, 0.22);
+  }
+
+  .mobileGlanceBar > div:nth-child(1) > span {
+    color: #75a7ff;
+  }
+
+  .mobileGlanceBar > div:nth-child(2) > span {
+    color: #f0a36c;
+  }
+
+  .mobileGlanceBar > div:nth-child(3) > span {
+    color: #c18ef0;
+  }
+
+  /*
+   * Accordion surfaces and icons
+   */
+  .mobileAccordion {
+    background:
+      linear-gradient(
+        145deg,
+        rgba(16, 38, 71, 0.98),
+        rgba(10, 26, 51, 0.98)
+      );
+
+    border-color:
+      rgba(97, 137, 201, 0.24);
+  }
+
+  .mobileAccordionOpen {
+    border-color:
+      rgba(121, 151, 255, 0.42);
+
+    box-shadow:
+      0 13px 28px rgba(3, 10, 29, 0.3),
+      0 0 0 1px rgba(95, 114, 211, 0.08) inset;
+  }
+
+  .mobileAccordionIcon {
+    background:
+      linear-gradient(
+        145deg,
+        #5865d8,
+        #397cae
+      );
+
+    border-color:
+      rgba(143, 176, 255, 0.28);
+  }
+
+  .mobileAccordion:nth-of-type(2)
+    .mobileAccordionIcon {
+    background:
+      linear-gradient(
+        145deg,
+        #d06a67,
+        #9a4f80
+      );
+  }
+
+  .mobileNextAccordion
+    .mobileAccordionIcon {
+    background:
+      linear-gradient(
+        145deg,
+        #e1a449,
+        #b86b37
+      );
+  }
+
+  .mobileAccordionCopy small {
+    color: #92a8ff;
+  }
+
+  .mobileAccordion:nth-of-type(2)
+    .mobileAccordionCopy small {
+    color: #f0a0a0;
+  }
+
+  .mobileNextAccordion
+    .mobileAccordionCopy small {
+    color: #f5bd72;
+  }
+
+  /*
+   * Detail cards
+   */
+  .operationCard {
+    background:
+      linear-gradient(
+        145deg,
+        rgba(18, 45, 80, 0.95),
+        rgba(12, 31, 60, 0.95)
+      );
+
+    border-color:
+      rgba(95, 137, 202, 0.22);
+  }
+
+  .operationIcon {
+    background:
+      linear-gradient(
+        145deg,
+        #4f62cf,
+        #327cae
+      );
+
+    border-color:
+      rgba(132, 167, 238, 0.24);
+  }
+
+  /*
+   * Availability confirmation
+   */
+  .manualAvailabilityNote {
+    background:
+      linear-gradient(
+        145deg,
+        rgba(48, 80, 143, 0.36),
+        rgba(34, 70, 103, 0.32)
+      );
+
+    border-color:
+      rgba(104, 156, 220, 0.25);
+  }
+
+  /*
+   * Team avatars
+   */
+  .teamVersus div > span {
+    background:
+      linear-gradient(
+        145deg,
+        #5e69d8,
+        #8a5fc1
+      );
+  }
+
+  /*
+   * Next-action block: subtle indigo/amber blend.
+   */
+  .quickActions {
+    background:
+      linear-gradient(
+        135deg,
+        rgba(51, 67, 145, 0.72),
+        rgba(98, 62, 121, 0.52)
+      );
+  }
+
+  .mobileNextAccordion {
+    border-color:
+      rgba(218, 153, 72, 0.26);
+  }
+
+  /*
+   * Text emphasis
+   */
+  .mobileAccordionCopy strong,
+  .operationCard h3,
+  .matchIdentity h2,
+  .hero h1 {
+    color: #f6f8ff;
+  }
+
+  .mobileAccordionCopy em,
+  .operationCard p,
+  .matchIdentity p,
+  .heroMain p {
+    color: #9fb0c9;
+  }
+}
+
+@media (max-width: 380px) {
+  .mobilePrimaryGlanceAction,
+  .cardActions a,
+  .cardActions button.manualCompleteButton,
+  .nextAction,
+  .resourcesAction {
+    border-radius: 10px;
+  }
+}
