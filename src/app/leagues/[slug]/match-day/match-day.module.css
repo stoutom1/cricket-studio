@@ -5686,3 +5686,496 @@
     border-radius: 999px !important;
   }
 }
+
+
+/* =========================================================
+   MATCH DAY MOBILE — PROFESSIONAL NEUTRAL THEME
+   MOBILE ONLY
+   Calm, high-contrast, restrained and business-like.
+   ========================================================= */
+
+@media (max-width: 620px) {
+  /*
+   * Page and primary surfaces
+   */
+  .page {
+    background:
+      linear-gradient(
+        180deg,
+        #08111f,
+        #0a1423 55%,
+        #08101c
+      );
+  }
+
+  .hero {
+    background:
+      linear-gradient(
+        145deg,
+        #172943,
+        #101d31 58%,
+        #0d1727
+      );
+
+    border-color:
+      rgba(126, 153, 188, 0.22);
+
+    box-shadow:
+      0 18px 38px rgba(2, 7, 18, 0.34),
+      inset 0 1px 0 rgba(255, 255, 255, 0.045);
+  }
+
+  .workspace {
+    background:
+      linear-gradient(
+        155deg,
+        rgba(12, 25, 44, 0.99),
+        rgba(8, 17, 31, 0.99)
+      );
+
+    border-color:
+      rgba(115, 141, 174, 0.2);
+
+    box-shadow:
+      0 16px 34px rgba(2, 7, 18, 0.3);
+  }
+
+  /*
+   * Buttons: professional, clear, restrained.
+   * Primary = cool neutral slate.
+   * Secondary = dark charcoal.
+   */
+  .mobilePrimaryGlanceAction,
+  .cardActions a,
+  .cardActions button.manualCompleteButton,
+  .nextAction {
+    color: #f5f8fc;
+
+    background:
+      linear-gradient(
+        180deg,
+        #536a86,
+        #42566f
+      );
+
+    border:
+      1px solid rgba(173, 194, 218, 0.28);
+
+    border-radius: 12px !important;
+
+    box-shadow:
+      0 7px 16px rgba(3, 11, 24, 0.28);
+
+    text-shadow: none;
+  }
+
+  .mobilePrimaryGlanceAction:hover,
+  .cardActions a:hover,
+  .cardActions button.manualCompleteButton:hover,
+  .nextAction:hover {
+    background:
+      linear-gradient(
+        180deg,
+        #5e7591,
+        #485e78
+      );
+  }
+
+  .mobilePrimaryGlanceAction:active,
+  .cardActions a:active,
+  .cardActions button.manualCompleteButton:active,
+  .nextAction:active {
+    transform: translateY(1px);
+
+    box-shadow:
+      0 4px 10px rgba(3, 11, 24, 0.24);
+  }
+
+  .cardActions a:nth-child(n + 2),
+  .resourcesAction,
+  .lockedAction {
+    color: #dce5ef;
+
+    background:
+      linear-gradient(
+        180deg,
+        #283443,
+        #202a36
+      );
+
+    border:
+      1px solid rgba(133, 154, 179, 0.24);
+
+    border-radius: 12px !important;
+
+    box-shadow:
+      0 5px 12px rgba(0, 0, 0, 0.2);
+
+    text-shadow: none;
+  }
+
+  .cardActions a:nth-child(n + 2):hover,
+  .resourcesAction:hover,
+  .lockedAction:hover {
+    background:
+      linear-gradient(
+        180deg,
+        #303e4f,
+        #25313f
+      );
+  }
+
+  .refreshButton {
+    color: #f3f6fa;
+
+    background:
+      linear-gradient(
+        180deg,
+        #4a6079,
+        #394d64
+      );
+
+    border:
+      1px solid rgba(164, 184, 207, 0.28);
+
+    border-radius: 12px !important;
+
+    box-shadow:
+      0 6px 14px rgba(3, 10, 23, 0.26);
+  }
+
+  .refreshButton:active {
+    transform: translateY(1px);
+  }
+
+  /*
+   * KPI strip
+   */
+  .kpis article {
+    background:
+      linear-gradient(
+        145deg,
+        rgba(19, 35, 56, 0.96),
+        rgba(14, 27, 45, 0.94)
+      );
+
+    border-color:
+      rgba(118, 145, 180, 0.18);
+  }
+
+  .kpis article > span,
+  .kpis article:nth-child(1) > span,
+  .kpis article:nth-child(2) > span,
+  .kpis article:nth-child(3) > span,
+  .kpis article:nth-child(4) > span {
+    background:
+      linear-gradient(
+        145deg,
+        #40566f,
+        #31445a
+      );
+  }
+
+  /*
+   * Queue filters and match cards
+   */
+  .queueFilters button {
+    color: #d7e0ea;
+
+    background:
+      linear-gradient(
+        180deg,
+        #283443,
+        #202a36
+      );
+
+    border:
+      1px solid rgba(131, 153, 179, 0.24);
+
+    border-radius: 999px !important;
+
+    box-shadow:
+      0 4px 10px rgba(1, 7, 16, 0.2);
+  }
+
+  .queueFilters button[class*="active"],
+  .queueFilters button:active {
+    color: #ffffff;
+
+    background:
+      linear-gradient(
+        180deg,
+        #566d87,
+        #435872
+      );
+
+    border-color:
+      rgba(177, 197, 220, 0.34);
+
+    box-shadow:
+      0 6px 14px rgba(4, 13, 29, 0.24);
+  }
+
+  .matchRail button {
+    background:
+      linear-gradient(
+        145deg,
+        rgba(18, 34, 54, 0.98),
+        rgba(12, 25, 42, 0.98)
+      );
+
+    border-color:
+      rgba(111, 138, 172, 0.2);
+  }
+
+  .matchRail button[class*="active"] {
+    background:
+      linear-gradient(
+        145deg,
+        rgba(48, 66, 88, 0.98),
+        rgba(32, 47, 66, 0.98)
+      );
+
+    border-color:
+      rgba(155, 179, 207, 0.34);
+
+    box-shadow:
+      0 10px 24px rgba(2, 8, 18, 0.24);
+  }
+
+  .matchRail button > b {
+    background:
+      linear-gradient(
+        145deg,
+        #536b87,
+        #3f556f
+      );
+  }
+
+  /*
+   * Readiness visuals
+   */
+  .readinessDial {
+    background:
+      radial-gradient(
+        circle,
+        #14283f 55%,
+        transparent 57%
+      ),
+      conic-gradient(
+        #7188a5,
+        #9baabd,
+        #5d718a,
+        #7188a5
+      );
+
+    box-shadow:
+      0 9px 22px rgba(6, 16, 32, 0.24);
+  }
+
+  .progressTrack > span {
+    background:
+      linear-gradient(
+        90deg,
+        #637b98,
+        #8ea0b5,
+        #657a93
+      );
+  }
+
+  .readyBadge,
+  .mobileAccordionState {
+    color: #dfe8f2;
+
+    background:
+      rgba(71, 93, 118, 0.34);
+
+    border:
+      1px solid rgba(134, 157, 184, 0.2);
+  }
+
+  .attentionBadge {
+    color: #efe4cf;
+
+    background:
+      rgba(105, 88, 63, 0.32);
+
+    border:
+      1px solid rgba(170, 148, 111, 0.18);
+  }
+
+  /*
+   * Readiness stages and glance cards
+   */
+  .readinessSteps div,
+  .mobileGlanceBar > div {
+    background:
+      linear-gradient(
+        145deg,
+        rgba(20, 36, 56, 0.94),
+        rgba(14, 27, 44, 0.94)
+      );
+
+    border-color:
+      rgba(114, 141, 174, 0.17);
+  }
+
+  .readinessSteps div[class*="complete"] {
+    background:
+      linear-gradient(
+        145deg,
+        rgba(53, 70, 91, 0.9),
+        rgba(38, 52, 69, 0.94)
+      );
+
+    border-color:
+      rgba(149, 171, 198, 0.24);
+  }
+
+  .mobileGlanceBar > div:nth-child(1) > span,
+  .mobileGlanceBar > div:nth-child(2) > span,
+  .mobileGlanceBar > div:nth-child(3) > span {
+    color: #aebccd;
+  }
+
+  /*
+   * Accordion and card system
+   */
+  .mobileAccordion {
+    background:
+      linear-gradient(
+        145deg,
+        rgba(17, 32, 51, 0.98),
+        rgba(11, 24, 40, 0.98)
+      );
+
+    border-color:
+      rgba(113, 139, 172, 0.2);
+  }
+
+  .mobileAccordionOpen {
+    border-color:
+      rgba(153, 177, 205, 0.32);
+
+    box-shadow:
+      0 12px 28px rgba(2, 8, 19, 0.3),
+      0 0 0 1px rgba(148, 168, 192, 0.05) inset;
+  }
+
+  .mobileAccordionIcon,
+  .mobileAccordion:nth-of-type(2)
+    .mobileAccordionIcon,
+  .mobileNextAccordion
+    .mobileAccordionIcon,
+  .operationIcon {
+    background:
+      linear-gradient(
+        145deg,
+        #465c74,
+        #354a61
+      );
+
+    border-color:
+      rgba(146, 171, 199, 0.22);
+  }
+
+  .mobileAccordionCopy small,
+  .mobileAccordion:nth-of-type(2)
+    .mobileAccordionCopy small,
+  .mobileNextAccordion
+    .mobileAccordionCopy small {
+    color: #93a9c1;
+  }
+
+  .operationCard {
+    background:
+      linear-gradient(
+        145deg,
+        rgba(19, 35, 55, 0.96),
+        rgba(13, 27, 44, 0.96)
+      );
+
+    border-color:
+      rgba(113, 140, 173, 0.18);
+  }
+
+  /*
+   * Supporting panels
+   */
+  .manualAvailabilityNote {
+    background:
+      linear-gradient(
+        145deg,
+        rgba(48, 61, 77, 0.34),
+        rgba(34, 46, 60, 0.34)
+      );
+
+    border-color:
+      rgba(136, 157, 180, 0.2);
+  }
+
+  .teamVersus div > span {
+    background:
+      linear-gradient(
+        145deg,
+        #506983,
+        #3d536b
+      );
+  }
+
+  .quickActions {
+    background:
+      linear-gradient(
+        135deg,
+        rgba(44, 59, 78, 0.74),
+        rgba(29, 40, 55, 0.62)
+      );
+  }
+
+  .mobileNextAccordion {
+    border-color:
+      rgba(126, 151, 181, 0.22);
+  }
+
+  /*
+   * Pills and labels
+   */
+  .seriesPill,
+  .statusPill {
+    color: #dde6ef;
+
+    background:
+      rgba(62, 78, 98, 0.34);
+
+    border-color:
+      rgba(137, 159, 183, 0.18);
+  }
+
+  /*
+   * Text
+   */
+  .hero h1,
+  .matchIdentity h2,
+  .mobileAccordionCopy strong,
+  .operationCard h3 {
+    color: #f5f7fa;
+  }
+
+  .heroMain p,
+  .matchIdentity p,
+  .mobileAccordionCopy em,
+  .operationCard p {
+    color: #9eafc1;
+  }
+}
+
+@media (max-width: 380px) {
+  .mobilePrimaryGlanceAction,
+  .cardActions a,
+  .cardActions button.manualCompleteButton,
+  .lockedAction,
+  .nextAction,
+  .resourcesAction {
+    border-radius: 11px !important;
+  }
+}
