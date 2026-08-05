@@ -15,7 +15,7 @@ function configureWebPush() {
 
   const subject =
     process.env.VAPID_SUBJECT ||
-    "mailto:support@cric4all.app";
+    "mailto:surprisecricket11@gmail.com";
 
   if (!publicKey) {
     throw new Error(

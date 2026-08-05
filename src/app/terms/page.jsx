@@ -167,8 +167,8 @@ export default function TermsPage() {
           </p>
 
           <p>
-            <a href="mailto:support@cric4all.app">
-              support@cric4all.app
+            <a href="mailto:surprisecricket11@gmail.com">
+              surprisecricket11@gmail.com
             </a>
           </p>
         </section>
@@ -316,8 +316,8 @@ export default function TermsPage() {
 
           <p>
             Email:{" "}
-            <a href="mailto:support@cric4all.app">
-              support@cric4all.app
+            <a href="mailto:surprisecricket11@gmail.com">
+              surprisecricket11@gmail.com
             </a>
           </p>
         </section>
