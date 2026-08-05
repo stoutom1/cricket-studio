@@ -3755,3 +3755,804 @@
     display: none !important;
   }
 }
+
+
+/* =========================================================
+   MATCH DAY MOBILE — READABILITY + PREMIUM COLOR REFRESH
+   MOBILE ONLY. Desktop and laptop are untouched.
+   ========================================================= */
+
+@media (max-width: 620px) {
+  /*
+   * Global mobile readability baseline for this CSS module.
+   * Keep body copy at or above roughly 13px and action text at 14px+.
+   */
+  .page {
+    font-size: 15px;
+  }
+
+  /* ---------- Top hero ---------- */
+
+  .backLink,
+  .heroBadge {
+    min-height: 38px;
+    padding-inline: 12px;
+
+    font-size: 0.78rem;
+    line-height: 1;
+  }
+
+  .eyebrow {
+    font-size: 0.72rem;
+    line-height: 1.15;
+    letter-spacing: 0.075em;
+  }
+
+  .hero h1 {
+    font-size: clamp(1.55rem, 7vw, 1.95rem);
+    line-height: 1.08;
+  }
+
+  .heroMain p {
+    font-size: 0.84rem;
+    line-height: 1.45;
+  }
+
+  .refreshButton {
+    width: 46px;
+    min-width: 46px;
+    height: 46px;
+    min-height: 46px;
+
+    background:
+      linear-gradient(
+        145deg,
+        #19a887,
+        #237f99
+      );
+
+    border-color:
+      rgba(128, 255, 222, 0.38);
+
+    box-shadow:
+      0 8px 22px rgba(12, 151, 126, 0.28);
+  }
+
+  .refreshButton > span {
+    font-size: 1.12rem;
+  }
+
+  /* ---------- KPI strip ---------- */
+
+  .kpis {
+    gap: 7px;
+  }
+
+  .kpis article {
+    min-height: 64px;
+    padding: 9px 4px;
+
+    background:
+      linear-gradient(
+        145deg,
+        rgba(10, 45, 77, 0.94),
+        rgba(14, 56, 92, 0.82)
+      );
+
+    border-color:
+      rgba(94, 174, 209, 0.22);
+  }
+
+  .kpis article > span {
+    width: 31px;
+    height: 31px;
+
+    font-size: 0.86rem;
+  }
+
+  .kpis strong {
+    font-size: 1rem;
+  }
+
+  .kpis small {
+    font-size: 0.62rem;
+    line-height: 1.15;
+  }
+
+  /* ---------- Queue ---------- */
+
+  .sectionHeading span {
+    font-size: 0.69rem;
+  }
+
+  .sectionHeading h2 {
+    font-size: 1.08rem;
+    line-height: 1.2;
+  }
+
+  .queueFilters button {
+    min-height: 40px;
+    padding-inline: 12px;
+
+    font-size: 0.76rem;
+
+    color: #d8e8f6;
+    background:
+      linear-gradient(
+        145deg,
+        rgba(15, 54, 89, 0.95),
+        rgba(11, 40, 71, 0.95)
+      );
+
+    border-color:
+      rgba(91, 161, 203, 0.26);
+  }
+
+  .queueFilters button[class*="active"],
+  .queueFilters button:active {
+    color: #f8ffff;
+
+    background:
+      linear-gradient(
+        135deg,
+        #148f78,
+        #336aa8
+      );
+
+    border-color:
+      rgba(131, 255, 221, 0.36);
+  }
+
+  .queueFilters button b {
+    min-width: 22px;
+    height: 22px;
+
+    font-size: 0.64rem;
+  }
+
+  .matchRail button {
+    min-height: 72px;
+    padding: 10px 11px;
+
+    background:
+      linear-gradient(
+        145deg,
+        rgba(14, 53, 91, 0.98),
+        rgba(9, 35, 65, 0.98)
+      );
+
+    border-color:
+      rgba(91, 169, 219, 0.26);
+  }
+
+  .matchRail button[class*="active"] {
+    background:
+      linear-gradient(
+        145deg,
+        rgba(21, 111, 104, 0.96),
+        rgba(37, 75, 135, 0.96)
+      );
+
+    border-color:
+      rgba(105, 236, 205, 0.42);
+
+    box-shadow:
+      0 10px 25px rgba(8, 117, 102, 0.22);
+  }
+
+  .matchRail strong {
+    font-size: 0.86rem;
+    line-height: 1.25;
+  }
+
+  .matchRail small {
+    margin-top: 3px;
+
+    font-size: 0.7rem;
+    line-height: 1.25;
+  }
+
+  .matchRail button > b {
+    width: 40px;
+    height: 40px;
+
+    font-size: 0.72rem;
+
+    background:
+      linear-gradient(
+        145deg,
+        rgba(24, 154, 130, 0.8),
+        rgba(65, 96, 177, 0.82)
+      );
+  }
+
+  /* ---------- Main selected-match overview ---------- */
+
+  .workspace {
+    padding: 13px;
+
+    border-color:
+      rgba(90, 170, 211, 0.25);
+  }
+
+  .permissionStrip strong {
+    font-size: 0.76rem;
+    line-height: 1.25;
+  }
+
+  .permissionStrip small {
+    font-size: 0.68rem;
+    line-height: 1.35;
+  }
+
+  .readOnlyBadge {
+    font-size: 0.62rem;
+  }
+
+  .statusPill,
+  .seriesPill {
+    padding: 5px 8px;
+
+    font-size: 0.67rem;
+    line-height: 1;
+  }
+
+  .matchIdentity h2 {
+    font-size: clamp(1.45rem, 7vw, 1.85rem);
+    line-height: 1.1;
+  }
+
+  .matchIdentity p {
+    font-size: 0.79rem;
+    line-height: 1.4;
+  }
+
+  .readinessDial {
+    width: 82px;
+    height: 82px;
+    min-width: 82px;
+
+    background:
+      radial-gradient(
+        circle,
+        #10385f 55%,
+        transparent 57%
+      ),
+      conic-gradient(
+        #16b990,
+        #6658d8,
+        #16b990
+      );
+
+    box-shadow:
+      0 8px 22px rgba(35, 144, 132, 0.24);
+  }
+
+  .readinessDial strong {
+    font-size: 1.22rem;
+  }
+
+  .readinessDial span {
+    font-size: 0.62rem;
+  }
+
+  .progressTrack > span {
+    background:
+      linear-gradient(
+        90deg,
+        #13b88c,
+        #6670dc
+      );
+  }
+
+  .readinessSteps div {
+    min-width: 82px;
+    min-height: 39px;
+    padding: 7px 9px;
+  }
+
+  .readinessSteps span {
+    width: 21px;
+    height: 21px;
+
+    font-size: 0.72rem;
+  }
+
+  .readinessSteps small {
+    font-size: 0.67rem;
+    line-height: 1;
+  }
+
+  /* ---------- One-glance metrics ---------- */
+
+  .mobileGlanceBar {
+    gap: 7px;
+  }
+
+  .mobileGlanceBar > div {
+    min-height: 56px;
+    padding: 9px;
+
+    background:
+      linear-gradient(
+        145deg,
+        rgba(11, 48, 82, 0.94),
+        rgba(12, 39, 72, 0.94)
+      );
+
+    border-color:
+      rgba(89, 164, 209, 0.23);
+  }
+
+  .mobileGlanceBar > div > span {
+    font-size: 0.88rem;
+  }
+
+  .mobileGlanceBar strong {
+    font-size: 0.94rem;
+  }
+
+  .mobileGlanceBar small {
+    font-size: 0.61rem;
+    line-height: 1.15;
+  }
+
+  .mobilePrimaryGlanceAction {
+    min-height: 48px;
+
+    color: #f8ffff;
+
+    background:
+      linear-gradient(
+        135deg,
+        #12a681,
+        #3b6caf
+      );
+
+    border-color:
+      rgba(142, 255, 222, 0.38);
+
+    box-shadow:
+      0 11px 25px rgba(13, 145, 119, 0.24);
+
+    font-size: 0.88rem;
+    letter-spacing: 0.005em;
+  }
+
+  .mobilePrimaryGlanceAction:active {
+    transform: translateY(1px);
+
+    background:
+      linear-gradient(
+        135deg,
+        #0e9070,
+        #315e9b
+      );
+  }
+
+  /* ---------- Accordion headers ---------- */
+
+  .mobileAccordion {
+    border-color:
+      rgba(91, 164, 208, 0.25);
+
+    background:
+      linear-gradient(
+        145deg,
+        rgba(10, 42, 76, 0.98),
+        rgba(8, 31, 61, 0.98)
+      );
+  }
+
+  .mobileAccordionOpen {
+    border-color:
+      rgba(92, 220, 187, 0.42);
+
+    box-shadow:
+      0 12px 29px rgba(0, 12, 33, 0.3),
+      inset 0 1px 0 rgba(255, 255, 255, 0.035);
+  }
+
+  .mobileAccordionSummary {
+    min-height: 78px;
+    padding: 11px 12px;
+
+    grid-template-columns:
+      44px minmax(0, 1fr) auto auto;
+    gap: 10px;
+  }
+
+  .mobileAccordionIcon {
+    width: 44px;
+    height: 44px;
+
+    background:
+      linear-gradient(
+        145deg,
+        #167f78,
+        #3d5d9f
+      );
+
+    border-color:
+      rgba(132, 238, 211, 0.28);
+
+    font-size: 1.02rem;
+  }
+
+  .mobileAccordionCopy small {
+    font-size: 0.65rem;
+    line-height: 1.1;
+  }
+
+  .mobileAccordionCopy strong {
+    margin-top: 4px;
+
+    font-size: 0.91rem;
+    line-height: 1.3;
+  }
+
+  .mobileAccordionCopy em {
+    margin-top: 4px;
+
+    font-size: 0.68rem;
+    line-height: 1.25;
+  }
+
+  .mobileAccordionState {
+    min-width: 39px;
+    min-height: 31px;
+
+    color: #adf3d6;
+    background:
+      rgba(16, 128, 91, 0.3);
+
+    font-size: 0.7rem;
+  }
+
+  .mobileAccordionChevron {
+    font-size: 1.02rem;
+  }
+
+  .mobileAccordionContent {
+    padding: 0 9px 9px;
+  }
+
+  /* ---------- Detail cards ---------- */
+
+  .operationCard {
+    padding: 12px;
+
+    background:
+      linear-gradient(
+        145deg,
+        rgba(12, 48, 84, 0.94),
+        rgba(9, 35, 67, 0.94)
+      );
+
+    border-color:
+      rgba(89, 162, 207, 0.22);
+  }
+
+  .operationCard header {
+    grid-template-columns:
+      41px minmax(0, 1fr) auto;
+    gap: 10px;
+  }
+
+  .operationIcon {
+    width: 41px;
+    height: 41px;
+
+    background:
+      linear-gradient(
+        145deg,
+        rgba(18, 137, 116, 0.64),
+        rgba(55, 83, 157, 0.7)
+      );
+
+    border-color:
+      rgba(114, 223, 198, 0.24);
+  }
+
+  .operationCard header small {
+    font-size: 0.65rem;
+    line-height: 1.15;
+  }
+
+  .operationCard h3 {
+    margin-top: 4px;
+
+    font-size: 0.96rem;
+    line-height: 1.3;
+  }
+
+  .readyBadge,
+  .attentionBadge {
+    padding: 6px 8px;
+
+    font-size: 0.65rem;
+  }
+
+  .readyBadge {
+    color: #b2f5da;
+    background: rgba(16, 131, 91, 0.28);
+  }
+
+  .attentionBadge {
+    color: #ffe1a5;
+    background: rgba(169, 104, 19, 0.3);
+  }
+
+  /* ---------- Availability ---------- */
+
+  .availabilityGrid {
+    gap: 7px;
+  }
+
+  .availabilityGrid div {
+    min-height: 58px;
+    padding: 9px 4px;
+
+    background:
+      rgba(5, 28, 56, 0.72);
+  }
+
+  .availabilityGrid strong {
+    font-size: 1rem;
+  }
+
+  .availabilityGrid small {
+    font-size: 0.6rem;
+    line-height: 1.15;
+  }
+
+  .manualAvailabilityNote {
+    padding: 9px;
+
+    background:
+      linear-gradient(
+        145deg,
+        rgba(15, 109, 88, 0.33),
+        rgba(15, 74, 91, 0.3)
+      );
+
+    border-color:
+      rgba(74, 218, 176, 0.24);
+  }
+
+  .manualAvailabilityNote strong {
+    font-size: 0.76rem;
+    line-height: 1.25;
+  }
+
+  .manualAvailabilityNote small {
+    margin-top: 3px;
+
+    font-size: 0.67rem;
+    line-height: 1.35;
+  }
+
+  /* ---------- Teams ---------- */
+
+  .teamVersus strong {
+    font-size: 0.76rem;
+    line-height: 1.25;
+  }
+
+  .teamVersus > b {
+    font-size: 0.72rem;
+  }
+
+  .teamVersus div > span {
+    width: 34px;
+    height: 34px;
+    min-width: 34px;
+
+    font-size: 0.76rem;
+
+    background:
+      linear-gradient(
+        145deg,
+        #177e78,
+        #5865cd
+      );
+  }
+
+  /* ---------- Kit table ---------- */
+
+  .kitTable {
+    font-size: 0.73rem;
+    line-height: 1.3;
+  }
+
+  .kitTable th {
+    color: #8fc8c4;
+
+    font-size: 0.62rem;
+    letter-spacing: 0.035em;
+  }
+
+  .kitTable th,
+  .kitTable td {
+    padding: 9px 7px;
+  }
+
+  /* ---------- Buttons: replace bright blue with premium teal/slate ---------- */
+
+  .cardActions {
+    gap: 8px;
+  }
+
+  .cardActions a,
+  .cardActions button.manualCompleteButton,
+  .lockedAction,
+  .nextAction,
+  .resourcesAction {
+    min-height: 46px;
+    padding: 0 12px;
+
+    color: #f4fffd;
+
+    background:
+      linear-gradient(
+        135deg,
+        #128b78,
+        #365f99
+      );
+
+    border:
+      1px solid rgba(116, 227, 202, 0.28);
+
+    border-radius: 11px;
+
+    box-shadow:
+      0 8px 20px rgba(8, 111, 94, 0.18);
+
+    font-size: 0.78rem;
+    line-height: 1.2;
+    font-weight: 900;
+  }
+
+  .cardActions a:hover,
+  .cardActions button.manualCompleteButton:hover,
+  .nextAction:hover,
+  .resourcesAction:hover {
+    background:
+      linear-gradient(
+        135deg,
+        #109a7e,
+        #406eaa
+      );
+  }
+
+  .cardActions a:active,
+  .cardActions button.manualCompleteButton:active,
+  .nextAction:active,
+  .resourcesAction:active {
+    transform: translateY(1px);
+  }
+
+  /*
+   * Secondary actions use a darker glass treatment instead of competing
+   * with the primary teal action.
+   */
+  .cardActions a:nth-child(n + 2),
+  .resourcesAction {
+    color: #dbeaf5;
+
+    background:
+      linear-gradient(
+        145deg,
+        rgba(18, 57, 92, 0.95),
+        rgba(12, 43, 76, 0.95)
+      );
+
+    border-color:
+      rgba(92, 162, 205, 0.26);
+
+    box-shadow: none;
+  }
+
+  /* ---------- Score rows ---------- */
+
+  .scoreboardMini > div {
+    min-height: 42px;
+    padding: 10px;
+  }
+
+  .scoreboardMini > div > span {
+    font-size: 0.76rem;
+  }
+
+  .scoreValue {
+    font-size: 0.87rem;
+  }
+
+  /* ---------- Next Action ---------- */
+
+  .quickActions {
+    padding: 12px;
+  }
+
+  .quickActions > div:first-child > span {
+    font-size: 0.67rem;
+  }
+
+  .quickActions h3 {
+    font-size: 0.96rem;
+    line-height: 1.25;
+  }
+
+  .quickActions p {
+    font-size: 0.71rem;
+    line-height: 1.4;
+  }
+
+  .nextAction,
+  .resourcesAction {
+    min-height: 46px;
+    font-size: 0.77rem;
+  }
+}
+
+@media (max-width: 380px) {
+  .hero h1 {
+    font-size: 1.48rem;
+  }
+
+  .heroMain p {
+    font-size: 0.8rem;
+  }
+
+  .kpis article {
+    min-height: 61px;
+  }
+
+  .kpis small {
+    font-size: 0.58rem;
+  }
+
+  .matchHero {
+    grid-template-columns:
+      minmax(0, 1fr) 76px;
+  }
+
+  .readinessDial {
+    width: 76px;
+    height: 76px;
+    min-width: 76px;
+  }
+
+  .mobileAccordionSummary {
+    grid-template-columns:
+      42px minmax(0, 1fr) auto;
+  }
+
+  .mobileAccordionIcon {
+    width: 42px;
+    height: 42px;
+  }
+
+  .mobileAccordionCopy strong {
+    font-size: 0.87rem;
+  }
+
+  .mobileAccordionCopy em {
+    font-size: 0.65rem;
+  }
+
+  .operationCard h3 {
+    font-size: 0.91rem;
+  }
+
+  .availabilityGrid small {
+    font-size: 0.56rem;
+  }
+
+  .cardActions a,
+  .cardActions button.manualCompleteButton,
+  .nextAction,
+  .resourcesAction {
+    font-size: 0.75rem;
+  }
+}
