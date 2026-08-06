@@ -284,7 +284,14 @@ if (isCountingWicket && dismissedThisBallId) {
 
   const isNewOver = legalBallsCount > 0 && legalBallsCount % 6 === 0;
 
-  if (isNewOver) {
+  /*
+   * Retired Hurt is a non-delivery event. It must not be blocked by
+   * consecutive-over bowler validation at an over boundary.
+   */
+  if (
+    isNewOver &&
+    !isRetiredHurt
+  ) {
     const previousOverBowler = await prisma.ball.findFirst({
       where: {
         matchId: payload.matchId,
@@ -316,13 +323,26 @@ if (isCountingWicket && dismissedThisBallId) {
 
   const legalBalls = bowlerBalls.length;
 
-  if (match.maxOversPerBowler) {
-    const maxBallsPerBowler = match.maxOversPerBowler * 6;
+  /*
+   * Retired Hurt does not consume a delivery and therefore must not be
+   * rejected because the selected bowler has completed their quota.
+   */
+  if (
+    match.maxOversPerBowler &&
+    !isRetiredHurt
+  ) {
+    const maxBallsPerBowler =
+      match.maxOversPerBowler *
+      6;
 
-    if (legalBalls >= maxBallsPerBowler) {
+    if (
+      legalBalls >=
+      maxBallsPerBowler
+    ) {
       return NextResponse.json(
         {
-          error: `Bowler exceeded max overs limit of ${match.maxOversPerBowler}`,
+          error:
+            `Bowler exceeded max overs limit of ${match.maxOversPerBowler}`,
         },
         { status: 400 }
       );

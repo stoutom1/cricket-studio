@@ -114,15 +114,71 @@ export function validateBallInput(payload) {
     }
   }
   if (
-    payload.wicketType === "RETIRED_HURT" &&
-    !payload.newBatterId
+    payload.wicketType ===
+    "RETIRED_HURT"
+  ) {
+    if (
+      Number(
+        payload.isWicket
+      )
+    ) {
+      errors.push(
+        "Retired hurt must not count as a wicket"
+      );
+    }
+
+    if (
+      !payload.dismissedPlayerId
+    ) {
+      errors.push(
+        "Retired player is required for retired hurt"
+      );
+    }
+
+    if (
+      !payload.newBatterId
+    ) {
+      errors.push(
+        "Replacement batter required for retired hurt"
+      );
+    }
+
+    if (
+      Number(
+        payload.dismissedPlayerId
+      ) ===
+      Number(
+        payload.newBatterId
+      )
+    ) {
+      errors.push(
+        "Replacement batter must be different from the retired player"
+      );
+    }
+  }
+  /*
+   * RETIRED_HURT is a non-wicket event:
+   *
+   * isWicket = 0
+   * wicketType = "RETIRED_HURT"
+   *
+   * It still needs dismissedPlayerId and newBatterId so the match state can
+   * replace the retired batter without adding a wicket. Do not reject this
+   * valid special event as an ordinary non-wicket delivery.
+   */
+  if (
+    !Number(payload.isWicket) &&
+    payload.wicketType &&
+    ![
+      "NONE",
+      "RETIRED_HURT",
+    ].includes(
+      payload.wicketType
+    )
   ) {
     errors.push(
-      "Replacement batter required for retired hurt"
+      "Wicket type must be NONE when no wicket is selected"
     );
-  }
-  if (!Number(payload.isWicket) && payload.wicketType && payload.wicketType !== "NONE") {
-    errors.push("Wicket type must be NONE when no wicket is selected");
   }
 
   if (payload.extraType === "NOBALL" && Number(payload.isWicket) && payload.wicketType !== "RUN_OUT") {

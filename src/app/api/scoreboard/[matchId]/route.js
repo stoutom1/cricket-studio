@@ -568,7 +568,39 @@ const currentState = {
 
   bowlerId:
     matchState?.bowlerId ??
-    baseState?.bowlerId
+    baseState?.bowlerId,
+
+  /*
+   * Explicit transition fields keep the client from deriving workflow
+   * state from an older scoreboard snapshot.
+   */
+  legalBalls:
+    Number(
+      baseState?.legalBalls ||
+      0
+    ),
+
+  nextBallInOver:
+    (
+      Number(
+        baseState?.legalBalls ||
+        0
+      ) %
+      6
+    ) +
+    1,
+
+  isOverBoundary:
+    Number(
+      baseState?.legalBalls ||
+      0
+    ) > 0 &&
+    Number(
+      baseState?.legalBalls ||
+      0
+    ) %
+      6 ===
+      0,
 };
 
 currentState.strikerName =

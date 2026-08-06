@@ -495,6 +495,18 @@ function buildDesiredMilestones({
             balls: 0,
             fours: 0,
             sixes: 0,
+
+            /*
+             * Capture the career best before this innings started.
+             * A new personal-best event is announced once when this
+             * innings first crosses that value.
+             */
+            previousBestAtStart:
+              previousBestScore,
+
+            personalBestAnnounced:
+              false,
+
             firstBall:
               ball,
             lastBall:
@@ -722,13 +734,15 @@ function buildDesiredMilestones({
 
       if (
         innings.runs >
-          previousBestScore &&
+          innings.previousBestAtStart &&
         innings.runs >=
           25
       ) {
-        previousBestScore =
-          innings.runs;
-
+        /*
+         * One stable key per innings prevents 36, 37, 38... from
+         * becoming separate milestone records. Reconciliation updates
+         * the same record to the final best reached in the innings.
+         */
         desired.push(
           createMilestone({
             identity,
@@ -739,7 +753,13 @@ function buildDesiredMilestones({
             milestoneType:
               "PERSONAL_BEST_SCORE",
             milestoneValue:
-              innings.runs,
+              number(
+                ball.matchId
+              ) *
+                10 +
+              number(
+                ball.inningsNo
+              ),
             title:
               `New Personal Best: ${innings.runs}`,
             description:
@@ -747,7 +767,10 @@ function buildDesiredMilestones({
             icon:
               "📈",
             achievedAt:
-              ball.createdAt,
+              innings.personalBestAnnounced
+                ? innings.firstBall
+                    .createdAt
+                : ball.createdAt,
             metadata: {
               inningsRuns:
                 innings.runs,
@@ -755,6 +778,8 @@ function buildDesiredMilestones({
                 ball.inningsNo,
               balls:
                 innings.balls,
+              previousBest:
+                innings.previousBestAtStart,
               matchLabel:
                 matchLabel(
                   ball
@@ -762,7 +787,16 @@ function buildDesiredMilestones({
             },
           })
         );
+
+        innings.personalBestAnnounced =
+          true;
       }
+
+      previousBestScore =
+        Math.max(
+          previousBestScore,
+          innings.runs
+        );
     }
 
     if (isBowling) {
@@ -894,9 +928,6 @@ function buildDesiredMilestones({
           spell.wickets >=
             2
         ) {
-          previousBestWickets =
-            spell.wickets;
-
           desired.push(
             createMilestone({
               identity,
@@ -907,7 +938,9 @@ function buildDesiredMilestones({
               milestoneType:
                 "PERSONAL_BEST_WICKETS",
               milestoneValue:
-                spell.wickets,
+                number(
+                  ball.matchId
+                ),
               title:
                 `New Bowling Best: ${spell.wickets} Wickets`,
               description:
@@ -919,6 +952,8 @@ function buildDesiredMilestones({
               metadata: {
                 wickets:
                   spell.wickets,
+                previousBest:
+                  previousBestWickets,
                 matchLabel:
                   matchLabel(
                     ball
@@ -926,6 +961,12 @@ function buildDesiredMilestones({
               },
             })
           );
+
+          previousBestWickets =
+            Math.max(
+              previousBestWickets,
+              spell.wickets
+            );
         }
       }
     }
@@ -1898,8 +1939,21 @@ export async function detectLiveMilestonesForBall({
               ball.id,
             milestoneType:
               "PERSONAL_BEST_SCORE",
+
+            /*
+             * Stable one-per-innings value. Later runs update this same
+             * record but persistLiveMilestone() reports isNew=false, so
+             * the scorer sees the popup only on the first crossing.
+             */
             milestoneValue:
-              snapshot.currentInningsRuns,
+              number(
+                ball.matchId
+              ) *
+                10 +
+              number(
+                ball.inningsNo
+              ),
+
             title:
               `New Personal Best: ${snapshot.currentInningsRuns}`,
             description:
@@ -2023,8 +2077,16 @@ export async function detectLiveMilestonesForBall({
               ball.id,
             milestoneType:
               "PERSONAL_BEST_WICKETS",
+
+            /*
+             * Stable one-per-match value prevents a new popup at the
+             * third, fourth and fifth wicket in the same record spell.
+             */
             milestoneValue:
-              snapshot.currentMatchWickets,
+              number(
+                ball.matchId
+              ),
+
             title:
               `New Bowling Best: ${snapshot.currentMatchWickets} Wickets`,
             description:

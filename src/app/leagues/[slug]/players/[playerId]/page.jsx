@@ -3,7 +3,13 @@ import {
   notFound,
 } from "next/navigation";
 import Link from "next/link";
+import {
+  getServerSession,
+} from "next-auth";
 
+import {
+  authOptions,
+} from "@/lib/auth";
 import PlayerCardActions from "./PlayerCardActions";
 import "@/app/spectator-player-final.css";
 import "@/app/player-milestones-final.css";
@@ -30,6 +36,135 @@ function number(value) {
   )
     ? parsed
     : 0;
+}
+
+
+function buildLeagueRouteWhere(
+  routeValue
+) {
+  const normalizedValue =
+    String(
+      routeValue ||
+        ""
+    ).trim();
+
+  const numericLeagueId =
+    Number(
+      normalizedValue
+    );
+
+  const isNumericLeagueId =
+    Number.isInteger(
+      numericLeagueId
+    ) &&
+    numericLeagueId > 0;
+
+  return isNumericLeagueId
+    ? {
+        OR: [
+          {
+            slug:
+              normalizedValue,
+          },
+          {
+            id:
+              numericLeagueId,
+          },
+        ],
+      }
+    : {
+        slug:
+          normalizedValue,
+      };
+}
+
+async function getSessionUserId(
+  session
+) {
+  const directUserId =
+    String(
+      session?.user?.id ||
+        ""
+    ).trim();
+
+  if (directUserId) {
+    return directUserId;
+  }
+
+  const email =
+    String(
+      session?.user?.email ||
+        ""
+    )
+      .trim()
+      .toLowerCase();
+
+  if (!email) {
+    return "";
+  }
+
+  const user =
+    await prisma.user.findUnique({
+      where: {
+        email,
+      },
+
+      select: {
+        id: true,
+      },
+    });
+
+  return user?.id || "";
+}
+
+async function canOpenPlayerCard({
+  league,
+  session,
+}) {
+  if (!league) {
+    return false;
+  }
+
+  if (
+    [
+      "PUBLIC",
+      "UNLISTED",
+    ].includes(
+      String(
+        league.visibility ||
+          ""
+      ).toUpperCase()
+    )
+  ) {
+    return true;
+  }
+
+  const userId =
+    await getSessionUserId(
+      session
+    );
+
+  if (!userId) {
+    return false;
+  }
+
+  if (
+    String(
+      league.ownerId ||
+        ""
+    ) === userId
+  ) {
+    return true;
+  }
+
+  return Boolean(
+    league.members?.some(
+      (member) =>
+        String(
+          member.userId
+        ) === userId
+    )
+  );
 }
 
 function safeDivide(
@@ -1063,18 +1198,18 @@ export async function generateMetadata({
   const league =
     await prisma.league
       .findFirst({
-        where: {
-          slug,
-
-          visibility: {
-            in: [
-              "PUBLIC",
-              "UNLISTED",
-            ],
-          },
-        },
+        where:
+          buildLeagueRouteWhere(
+            slug
+          ),
 
         include: {
+          members: {
+            select: {
+              userId: true,
+            },
+          },
+
           teams: {
             include: {
               players: true,
@@ -1082,6 +1217,28 @@ export async function generateMetadata({
           },
         },
       });
+
+  const metadataSession =
+    await getServerSession(
+      authOptions
+    );
+
+  const canViewMetadata =
+    await canOpenPlayerCard({
+      league,
+      session:
+        metadataSession,
+    });
+
+  if (
+    !league ||
+    !canViewMetadata
+  ) {
+    return {
+      title:
+        "Player Not Found | Cric4All",
+    };
+  }
 
   const metadataRosterPlayers =
     league?.teams
@@ -1179,18 +1336,18 @@ export default async function PublicPlayerPage({
   const league =
     await prisma.league
       .findFirst({
-        where: {
-          slug,
-
-          visibility: {
-            in: [
-              "PUBLIC",
-              "UNLISTED",
-            ],
-          },
-        },
+        where:
+          buildLeagueRouteWhere(
+            slug
+          ),
 
         include: {
+          members: {
+            select: {
+              userId: true,
+            },
+          },
+
           teams: {
             include: {
               players: true,
@@ -1214,7 +1371,21 @@ export default async function PublicPlayerPage({
         },
       });
 
-  if (!league) {
+  const session =
+    await getServerSession(
+      authOptions
+    );
+
+  const canViewLeague =
+    await canOpenPlayerCard({
+      league,
+      session,
+    });
+
+  if (
+    !league ||
+    !canViewLeague
+  ) {
     notFound();
   }
 

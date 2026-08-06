@@ -372,6 +372,10 @@ export default function DashboardClient() {
   const [selectedPlayerId, setSelectedPlayerId] = useState("");
   const [leagueName, setLeagueName] = useState("");
   const [showWicketModal, setShowWicketModal] = useState(false);
+  const [
+    wicketSubmissionInFlight,
+    setWicketSubmissionInFlight,
+  ] = useState(false);
   const [selectedWicketType, setSelectedWicketType] = useState("BOWLED");
   const [selectedNewBatter, setSelectedNewBatter] = useState("");
   const [showExtrasModal, setShowExtrasModal] = useState(false);
@@ -487,6 +491,8 @@ const [correctionForm, setCorrectionForm] = useState({
 const [lastCorrectionId, setLastCorrectionId] = useState(null);
 const [showKeeperChangeModal, setShowKeeperChangeModal] = useState(false);
 const [keeperChangeForm, setKeeperChangeForm] = useState({newKeeperId: "",note: "",});
+const [keeperChangeSaving, setKeeperChangeSaving] = useState(false);
+const [undoSaving, setUndoSaving] = useState(false);
 const [showEditMatchModal, setShowEditMatchModal] = useState(false);
 const [editingMatch, setEditingMatch] = useState(null);
 const [editMatchForm, setEditMatchForm] = useState({
@@ -2967,6 +2973,66 @@ async function handleDeleteLeague(
     return battingTeam.id === matchDetail.teamA.id ? matchDetail.teamB : matchDetail.teamA;
   }, [matchDetail, battingTeam]);
 
+
+  const currentWicketKeeperId =
+    Number(
+      bowlingTeam?.id
+    ) ===
+    Number(
+      matchDetail?.teamAId
+    )
+      ? Number(
+          matchDetail
+            ?.teamAWicketKeeperId
+        )
+      : Number(
+          matchDetail
+            ?.teamBWicketKeeperId
+        );
+
+  const currentWicketKeeperName =
+    (
+      bowlingTeam
+        ?.players ||
+      []
+    ).find(
+      (player) =>
+        Number(
+          player.id
+        ) ===
+        Number(
+          currentWicketKeeperId
+        )
+    )?.name ||
+    (
+      Number(
+        bowlingTeam?.id
+      ) ===
+      Number(
+        matchDetail?.teamAId
+      )
+        ? matchDetail
+            ?.teamAWicketKeeperName
+        : matchDetail
+            ?.teamBWicketKeeperName
+    ) ||
+    "Not selected";
+
+  const wicketKeeperReplacementOptions =
+    (
+      bowlingTeam
+        ?.players ||
+      []
+    ).filter(
+      (player) =>
+        Number(
+          player.id
+        ) !==
+        Number(
+          currentWicketKeeperId
+        )
+    );
+
 useEffect(() => {
   if (showDeliverySetupModal) return;
   if (!battingTeam || !bowlingTeam) return;
@@ -3344,6 +3410,10 @@ const isMatchAbandoned = scoreboard?.match?.status ===  "ABANDONED";
   }
 
   async function handleUndoBall() {
+    if (undoSaving) {
+      return;
+    }
+
     setMessage("");
     setError("");
 
@@ -3352,12 +3422,173 @@ const isMatchAbandoned = scoreboard?.match?.status ===  "ABANDONED";
       return;
     }
 
-    try {
-      await api(`/api/matches/${selectedMatchId}/undo`, {
-        method: "POST"
-      });
+    setUndoSaving(true);
 
-      await api(
+    try {
+      const undoResult =
+        await api(
+          `/api/matches/${selectedMatchId}/undo`,
+          {
+            method:
+              "POST",
+          }
+        );
+
+      const updatedBoard =
+        await api(
+          `/api/scoreboard/${selectedMatchId}`
+        );
+
+      setScoreboard(
+        updatedBoard
+      );
+
+      const restoredState =
+        undoResult?.restoredState ||
+        updatedBoard?.currentState ||
+        {};
+
+      setBallForm(
+        (
+          previous
+        ) => ({
+          ...previous,
+
+          inningsNo:
+            restoredState.inningsNo ??
+            updatedBoard
+              ?.currentState
+              ?.inningsNo ??
+            previous.inningsNo,
+
+          strikerId:
+            restoredState.strikerId ??
+            updatedBoard
+              ?.currentState
+              ?.strikerId ??
+            previous.strikerId,
+
+          nonStrikerId:
+            restoredState.nonStrikerId ??
+            updatedBoard
+              ?.currentState
+              ?.nonStrikerId ??
+            previous.nonStrikerId,
+
+          /*
+           * When the undone delivery was 4.1, this is the bowler that
+           * had already been selected for over 4.
+           */
+          bowlerId:
+            restoredState.bowlerId ??
+            updatedBoard
+              ?.currentState
+              ?.bowlerId ??
+            previous.bowlerId,
+
+          runsOffBat:
+            "0",
+
+          extras:
+            "0",
+
+          extraType:
+            "NONE",
+
+          isWicket:
+            false,
+
+          wicketType:
+            "NONE",
+
+          dismissedPlayerId:
+            "",
+
+          newBatterId:
+            "",
+
+          fielderId:
+            "",
+
+          assistantFielderId:
+            "",
+
+          wicketNote:
+            "",
+        })
+      );
+
+      /*
+       * Undo is a rewind operation. Any delivery-specific modal state
+       * from the removed ball must be discarded.
+       */
+      setShowWicketModal(
+        false
+      );
+
+      setShowRetiredHurtModal(
+        false
+      );
+
+      setRunOutRuns(
+        null
+      );
+
+      setEndInningsAfterWicket(
+        false
+      );
+
+      setPendingBallData(
+        null
+      );
+
+      setWicketSubmissionInFlight(
+        false
+      );
+
+      if (
+        undoResult
+          ?.preserveBowlerSelection
+      ) {
+        /*
+         * The first ball of a new over was removed. Keep the selected
+         * new-over bowler and do not request Change Bowler again.
+         */
+        setMustChangeBowler(
+          false
+        );
+
+        setShowBowlerModal(
+          false
+        );
+
+        setMessage(
+          "↩️ First ball of the over removed. The selected bowler has been preserved."
+        );
+      } else {
+        /*
+         * If the removed ball was the last ball of an over, the match is
+         * now back before over completion. Do not show Change Bowler until
+         * that final ball is scored again.
+         */
+        setMustChangeBowler(
+          false
+        );
+
+        setShowBowlerModal(
+          false
+        );
+
+        setMessage(
+          "↩️ Last ball removed"
+        );
+      }
+
+      setOptimisticScoreboard(
+        null
+      );
+
+      void api(
         "/api/milestones/reconcile",
         {
           method:
@@ -3371,19 +3602,27 @@ const isMatchAbandoned = scoreboard?.match?.status ===  "ABANDONED";
                 ),
             }),
         }
+      ).catch(
+        (
+          milestoneError
+        ) => {
+          console.error(
+            "[UNDO_MILESTONE_RECONCILE_FAILED]",
+            milestoneError
+          );
+        }
       );
-
-      await Promise.all([
-        loadSelectedMatch(selectedMatchId),
-        loadMatches()
-      ]);
-      
-      setMessage("↩️ Last ball removed");
     } catch (err) {
-      setError(err.message);
+      setError(
+        err.message
+      );
+    } finally {
+      setUndoSaving(
+        false
+      );
     }
   }
-  
+
   const battingByTeam = stats?.batting.reduce((acc, row) => {
     if (!acc[row.teamName]) acc[row.teamName] = [];
     acc[row.teamName].push(row);
@@ -3510,16 +3749,18 @@ async function submitBall(data) {
   setError("");
 setOverCompleteNotice("");
 
-  if (ballSaveInFlight) return;
+  if (ballSaveInFlight) {
+    return false;
+  }
 
   if (scoreboard?.match?.status === "COMPLETED") {
     setError("Match has already ended");
-    return;
+    return false;
   }
 
   if (!selectedMatchId) {
     setError("Please select a match");
-    return;
+    return false;
   }
 const safeInningsNo =
   pendingSecondInningsSetup || Number(ballForm?.inningsNo) === 2
@@ -3539,10 +3780,12 @@ data = {
       "Please select striker, non-striker, and bowler before scoring this ball."
     );
     setShowDeliverySetupModal(true);
-    return;
+    return false;
   }
 
-  if (isSavingBall) return;
+  if (isSavingBall) {
+    return false;
+  }
 
   setIsSavingBall(true);
   setOptimisticScoreboard(previewScoreboardAfterBall(scoreboard, data));
@@ -3708,9 +3951,12 @@ if (
 }
 
 const overJustCompleted =
-  data.extraType !== "WIDE" &&
-  data.extraType !== "NOBALL" &&
-  Number(scoreboard?.currentState?.nextBallInOver) === 6;
+  Boolean(
+    savedBall?.legalDelivery
+  ) &&
+  Number(
+    savedBall?.ballInOver
+  ) === 6;
 
 //const legalBalls =
 //  scoreboard.currentState.legalBalls + 1;
@@ -3777,7 +4023,7 @@ if (scoreboard?.currentState && !showDeliverySetupModal) {
     setShowDeliverySetupModal(true);
   }, 200);
 
-  return;
+  return true;
 }
 if (scoreboard?.currentState && !showDeliverySetupModal) { 
     setBallForm((prev) => ({
@@ -3808,23 +4054,100 @@ if (scoreboard?.currentState && !showDeliverySetupModal) {
 
       //await loadMatches();
       //await loadLeagueStats(activeLeagueId);
-      return;
+      return true;
     }
 
     const wasLegalLastBallOfOver =
-      data.extraType !== "WIDE" &&
-      data.extraType !== "NOBALL" &&
-      Number(scoreboard?.currentState?.nextBallInOver) === 6;
+      Boolean(
+        savedBall?.legalDelivery
+      ) &&
+      Number(
+        savedBall?.ballInOver
+      ) === 6;
 
     if (wasLegalLastBallOfOver) {
-      setPendingBallData(null);
-      setMustChangeBowler(true);
-      setBowlerSearchText("");
-      setShowBowlerModal(true);
-      return;
+      /*
+       * The delivery has already been saved and confirmed by the updated
+       * scoreboard. Clear wicket state before opening Change Bowler so the
+       * Wicket Details dialog cannot race and reopen over it.
+       */
+      setShowWicketModal(
+        false
+      );
+
+      setWicketSubmissionInFlight(
+        false
+      );
+
+      setBallForm(
+        (
+          previous
+        ) => ({
+          ...previous,
+
+          isWicket:
+            false,
+
+          wicketType:
+            "NONE",
+
+          dismissedPlayerId:
+            "",
+
+          newBatterId:
+            "",
+
+          fielderId:
+            "",
+
+          assistantFielderId:
+            "",
+
+          wicketNote:
+            "",
+
+          runsOffBat:
+            "0",
+
+          extras:
+            "0",
+
+          extraType:
+            "NONE",
+        })
+      );
+
+      setPendingBallData(
+        null
+      );
+
+      setMustChangeBowler(
+        true
+      );
+
+      setBowlerSearchText(
+        ""
+      );
+
+      /*
+       * Open on the next task after React receives the wicket cleanup.
+       * This keeps the transition deterministic:
+       * Wicket saved -> Wicket closed -> Change Bowler opened.
+       */
+      window.setTimeout(
+        () => {
+          setShowBowlerModal(
+            true
+          );
+        },
+        0
+      );
+
+      return true;
     }
 
     setMessage(instantMessage);
+    return true;
   } catch (err) {
     setOptimisticScoreboard(null);
     setInstantDeliveryStatus("");
@@ -3856,11 +4179,12 @@ if (scoreboard?.currentState && !showDeliverySetupModal) {
       });
       setBowlerSearchText("");
       setShowBowlerModal(true);
-      return;
+      return false;
     }
 
     setError(err.message);
     showToast("error", err.message);
+    return false;
   } finally {
     setIsSavingBall(false);
     setInstantDeliveryStatus("");
@@ -3915,104 +4239,238 @@ function quickExtra(type) {
 }
 
 async function confirmExtra(extraRuns) {
-  try {
-    let runsOffBat = Number(ballForm.runsOffBat || 0);
-    let extras = Number(ballForm.extras || 0);
-    let displayLabel = String(extraRuns);
-setSelectedExtraOption(String(extraRuns));
-    // Handles WD, WD+1, WD+2...
-    if (typeof extraRuns === "string" && extraRuns.startsWith("WD")) {
-      const additionalRuns = extraRuns.includes("+")
-        ? Number(extraRuns.split("+")[1])
-        : 0;
+  if (isSavingBall) {
+    return;
+  }
 
-      runsOffBat = 0;
-      extras = 1 + additionalRuns; // WD+1 = 2 extras
-    }
+  const modalSnapshot = {
+    selectedExtraType,
+    selectedExtraOption,
+    ballForm: {
+      ...ballForm,
+    },
+  };
 
-    // Handles NB, NB+1, NB+2...
-    else if (typeof extraRuns === "string" && extraRuns.startsWith("NB")) {
-      const batRuns = extraRuns.includes("+")
-        ? Number(extraRuns.split("+")[1])
-        : 0;
+  let runsOffBat =
+    Number(
+      ballForm.runsOffBat ||
+        0
+    );
 
-      runsOffBat = batRuns; // NB+1 = 1 to striker
-      extras = 1;           // only no-ball penalty as extra
-    }
+  let extras =
+    Number(
+      ballForm.extras ||
+        0
+    );
 
-    // Bye / Leg bye
-    else {
-      runsOffBat = 0;
-      extras = Number(extraRuns);
-    }
+  const displayLabel =
+    String(
+      extraRuns
+    );
 
-    await submitBall({
-      matchId: Number(selectedMatchId),
-      inningsNo: Number(ballForm.inningsNo),
-      strikerId: Number(ballForm.strikerId),
-      nonStrikerId: Number(ballForm.nonStrikerId),
-      bowlerId: Number(ballForm.bowlerId),
-      extraType: ballForm.extraType,
-      runsOffBat,
-      extras,
+  setSelectedExtraOption(
+    displayLabel
+  );
 
-      isWicket:
-        ballForm.isWicket &&
-        ballForm.wicketType !== "RETIRED_HURT"
-          ? 1
-          : 0,
-
-      wicketType: ballForm.isWicket
-        ? ballForm.wicketType
-        : "NONE",
-
-      dismissedPlayerId: ballForm.isWicket
+  if (
+    typeof extraRuns ===
+      "string" &&
+    extraRuns.startsWith(
+      "WD"
+    )
+  ) {
+    const additionalRuns =
+      extraRuns.includes(
+        "+"
+      )
         ? Number(
-            ballForm.dismissedPlayerId ||
-              ballForm.strikerId
+            extraRuns.split(
+              "+"
+            )[1]
           )
-        : null,
+        : 0;
 
-      newBatterId:
-        ballForm.isWicket && ballForm.newBatterId
-          ? Number(ballForm.newBatterId)
-          : null,
+    runsOffBat = 0;
+    extras =
+      1 +
+      additionalRuns;
+  } else if (
+    typeof extraRuns ===
+      "string" &&
+    extraRuns.startsWith(
+      "NB"
+    )
+  ) {
+    const batRuns =
+      extraRuns.includes(
+        "+"
+      )
+        ? Number(
+            extraRuns.split(
+              "+"
+            )[1]
+          )
+        : 0;
 
-      note: ballForm.note,
-      matchStatus: scoreboard?.match?.status
-    });
-if (
-  ballForm.extraType === "NOBALL" &&
-  runsOffBat % 2 === 1
-) {
-  setBallForm((prev) => ({
-    ...prev,
-    strikerId: prev.nonStrikerId,
-    nonStrikerId: prev.strikerId
-  }));
-}
+    runsOffBat =
+      batRuns;
+
+    extras = 1;
+  } else {
+    runsOffBat = 0;
+    extras =
+      Number(
+        extraRuns
+      );
+  }
+
+  /*
+   * Close immediately after a valid selection. The optimistic scoreboard in
+   * submitBall() gives instant feedback while the request is saved.
+   */
+  setShowExtrasModal(
+    false
+  );
+
+  try {
+    const saved =
+      await submitBall({
+        matchId:
+          Number(
+            selectedMatchId
+          ),
+
+        inningsNo:
+          Number(
+            ballForm.inningsNo
+          ),
+
+        strikerId:
+          Number(
+            ballForm.strikerId
+          ),
+
+        nonStrikerId:
+          Number(
+            ballForm.nonStrikerId
+          ),
+
+        bowlerId:
+          Number(
+            ballForm.bowlerId
+          ),
+
+        extraType:
+          ballForm.extraType,
+
+        runsOffBat,
+        extras,
+
+        isWicket:
+          ballForm.isWicket &&
+          ballForm.wicketType !==
+            "RETIRED_HURT"
+            ? 1
+            : 0,
+
+        wicketType:
+          ballForm.isWicket
+            ? ballForm.wicketType
+            : "NONE",
+
+        dismissedPlayerId:
+          ballForm.isWicket
+            ? Number(
+                ballForm.dismissedPlayerId ||
+                  ballForm.strikerId
+              )
+            : null,
+
+        newBatterId:
+          ballForm.isWicket &&
+          ballForm.newBatterId
+            ? Number(
+                ballForm.newBatterId
+              )
+            : null,
+
+        note:
+          ballForm.note,
+
+        matchStatus:
+          scoreboard?.match
+            ?.status,
+      });
+
+    if (!saved) {
+      setSelectedExtraType(
+        modalSnapshot.selectedExtraType
+      );
+
+      setSelectedExtraOption(
+        modalSnapshot.selectedExtraOption
+      );
+
+      setBallForm(
+        modalSnapshot.ballForm
+      );
+
+      setShowExtrasModal(
+        true
+      );
+
+      return;
+    }
+
     const extraLabels = {
-      WIDE: "Wide",
-      NOBALL: "No Ball",
-      BYE: "Bye",
-      LEGBYE: "Leg Bye",
-      NONE: "Extra"
+      WIDE:
+        "Wide",
+      NOBALL:
+        "No Ball",
+      BYE:
+        "Bye",
+      LEGBYE:
+        "Leg Bye",
+      NONE:
+        "Extra",
     };
 
     const extraLabel =
-      extraLabels[ballForm.extraType] ||
+      extraLabels[
+        ballForm.extraType
+      ] ||
       ballForm.extraType;
 
     setMessage(
       `✅ ${displayLabel} added as ${extraLabel}.`
     );
 
-    setShowExtrasModal(false);
-    setSelectedExtraOption("");
+    setSelectedExtraOption(
+      ""
+    );
   } catch (err) {
-    setError(err.message);
+    setSelectedExtraType(
+      modalSnapshot.selectedExtraType
+    );
+
+    setSelectedExtraOption(
+      modalSnapshot.selectedExtraOption
+    );
+
+    setBallForm(
+      modalSnapshot.ballForm
+    );
+
+    setShowExtrasModal(
+      true
+    );
+
+    setError(
+      err.message
+    );
   }
 }
+
 async function quickWicket(type = "BOWLED") {
   setRunOutRuns(null);
   setEndInningsAfterWicket(false);
@@ -4030,197 +4488,430 @@ async function quickWicket(type = "BOWLED") {
   setShowWicketModal(true);
 }
 async function confirmWicket() {
+  if (
+    isSavingBall ||
+    wicketSubmissionInFlight
+  ) {
+    return;
+  }
+
+  setWicketSubmissionInFlight(
+    true
+  );
 
   try {
     if (mustChangeBowler) {
-      setError("Please select a new bowler before scoring the next ball.");
-      setShowWicketModal(false);
-      setShowRetiredHurtModal(false);
-      setBowlerSearchText("");
-      setShowBowlerModal(true);
+      setError(
+        "Please select a new bowler before scoring the next ball."
+      );
+
+      setShowWicketModal(
+        false
+      );
+
+      setShowRetiredHurtModal(
+        false
+      );
+
+      setBowlerSearchText(
+        ""
+      );
+
+      setShowBowlerModal(
+        true
+      );
+
+      setWicketSubmissionInFlight(
+        false
+      );
+
       return;
     }
 
-    const isRunOut = ballForm.wicketType === "RUN_OUT";
+    const isRunOut =
+      ballForm.wicketType ===
+      "RUN_OUT";
 
-    if (isRunOut && runOutRuns === null) {
-      setError("Please select runs completed before the run out.");
+    if (
+      isRunOut &&
+      runOutRuns ===
+        null
+    ) {
+      setError(
+        "Please select runs completed before the run out."
+      );
+
+      setWicketSubmissionInFlight(
+        false
+      );
+
       return;
     }
 
-    const dismissedPlayerId = isRunOut
-      ? Number(ballForm.dismissedPlayerId)
-      : Number(ballForm.dismissedPlayerId || ballForm.strikerId);
+    const dismissedPlayerId =
+      isRunOut
+        ? Number(
+            ballForm.dismissedPlayerId
+          )
+        : Number(
+            ballForm.dismissedPlayerId ||
+              ballForm.strikerId
+          );
 
-    if (!dismissedPlayerId) {
-      setError("Please select who is out.");
+    if (
+      !dismissedPlayerId
+    ) {
+      setError(
+        "Please select who is out."
+      );
+
+      setWicketSubmissionInFlight(
+        false
+      );
+
       return;
     }
 
-const noMoreBattersAvailable =
-  Array.isArray(wicketNewBatterOptions) &&
-  wicketNewBatterOptions.length === 0;
+    const noMoreBattersAvailable =
+      Array.isArray(
+        wicketNewBatterOptions
+      ) &&
+      wicketNewBatterOptions.length ===
+        0;
 
-if (
-  !endInningsAfterWicket &&
-  !ballForm.newBatterId &&
-  !noMoreBattersAvailable
-) {
-  setError("Please select a new batter or choose end innings.");
-  return;
-}
+    if (
+      !endInningsAfterWicket &&
+      !ballForm.newBatterId &&
+      !noMoreBattersAvailable
+    ) {
+      setError(
+        "Please select a new batter or choose end innings."
+      );
 
-const selectedNewBatterIsValid =
-  endInningsAfterWicket ||
-  noMoreBattersAvailable ||
-  wicketNewBatterOptions.some(
-    (player) => String(player.id) === String(ballForm.newBatterId)
-  );
+      setWicketSubmissionInFlight(
+        false
+      );
 
-if (!selectedNewBatterIsValid) {
-  setError("Invalid new batter selected. Please select a valid replacement batter or choose end innings.");
-  setBallForm((prev) => ({
-    ...prev,
-    newBatterId: "",
-  }));
-  return;
-}
-if (
-  isRunOut &&
-  runOutRuns === null
-) {
-  setError(
-    "Please select the runs completed before the run out."
-  );
-  return;
-}
-    const runsOffBat = isRunOut
-      ? Number(runOutRuns)
-      : Number(ballForm.runsOffBat || 0);
+      return;
+    }
 
-    const dismissedPlayer = battingTeam?.players?.find(
-      (p) => Number(p.id) === dismissedPlayerId
+    const selectedNewBatterIsValid =
+      endInningsAfterWicket ||
+      noMoreBattersAvailable ||
+      wicketNewBatterOptions.some(
+        (player) =>
+          String(
+            player.id
+          ) ===
+          String(
+            ballForm.newBatterId
+          )
+      );
+
+    if (
+      !selectedNewBatterIsValid
+    ) {
+      setError(
+        "Invalid new batter selected. Please select a valid replacement batter or choose end innings."
+      );
+
+      setBallForm(
+        (
+          previous
+        ) => ({
+          ...previous,
+          newBatterId:
+            "",
+        })
+      );
+
+      setWicketSubmissionInFlight(
+        false
+      );
+
+      return;
+    }
+
+    const runsOffBat =
+      isRunOut
+        ? Number(
+            runOutRuns
+          )
+        : Number(
+            ballForm.runsOffBat ||
+              0
+          );
+
+    const dismissedPlayer =
+      battingTeam?.players?.find(
+        (player) =>
+          Number(
+            player.id
+          ) ===
+          dismissedPlayerId
+      );
+
+    const newBatter =
+      noMoreBattersAvailable
+        ? null
+        : battingTeam?.players?.find(
+            (player) =>
+              Number(
+                player.id
+              ) ===
+              Number(
+                ballForm.newBatterId
+              )
+          );
+
+    const modalSnapshot = {
+      ballForm: {
+        ...ballForm,
+      },
+      runOutRuns,
+      endInningsAfterWicket,
+    };
+
+    /*
+     * Hide the modal as soon as validation succeeds. submitBall() applies the
+     * optimistic scoreboard immediately, so the scorer is not left staring at
+     * a frozen Submit button.
+     */
+    setShowWicketModal(
+      false
     );
 
-    const newBatter = noMoreBattersAvailable
-      ? null
-      : battingTeam?.players?.find(
-          (p) => Number(p.id) === Number(ballForm.newBatterId)
+    const saved =
+      await submitBall({
+        matchId:
+          Number(
+            selectedMatchId
+          ),
+
+        inningsNo:
+          Number(
+            ballForm.inningsNo
+          ),
+
+        strikerId:
+          Number(
+            ballForm.strikerId
+          ),
+
+        nonStrikerId:
+          Number(
+            ballForm.nonStrikerId
+          ),
+
+        bowlerId:
+          Number(
+            ballForm.bowlerId
+          ),
+
+        extraType:
+          "NONE",
+
+        runsOffBat,
+        extras:
+          0,
+
+        isWicket:
+          ballForm.isWicket &&
+          ballForm.wicketType !==
+            "RETIRED_HURT"
+            ? 1
+            : 0,
+
+        wicketType:
+          ballForm.isWicket
+            ? ballForm.wicketType
+            : "NONE",
+
+        dismissedPlayerId,
+
+        newBatterId:
+          endInningsAfterWicket ||
+          noMoreBattersAvailable
+            ? null
+            : Number(
+                ballForm.newBatterId
+              ),
+
+        endInningsAfterWicket:
+          Boolean(
+            endInningsAfterWicket
+          ),
+
+        note:
+          ballForm.note,
+
+        matchStatus:
+          scoreboard?.match
+            ?.status,
+
+        fielderId:
+          ballForm.fielderId
+            ? Number(
+                ballForm.fielderId
+              )
+            : null,
+
+        assistantFielderId:
+          ballForm.assistantFielderId
+            ? Number(
+                ballForm.assistantFielderId
+              )
+            : null,
+
+        wicketNote:
+          ballForm.wicketNote ||
+          null,
+      });
+
+    if (!saved) {
+      setBallForm(
+        modalSnapshot.ballForm
+      );
+
+      setRunOutRuns(
+        modalSnapshot.runOutRuns
+      );
+
+      setEndInningsAfterWicket(
+        modalSnapshot.endInningsAfterWicket
+      );
+
+      setWicketSubmissionInFlight(
+        false
+      );
+
+      /*
+       * Do not put Wicket Details back on top of a required Change
+       * Bowler or Delivery Setup workflow.
+       */
+      if (
+        !mustChangeBowler &&
+        !showBowlerModal &&
+        !showDeliverySetupModal
+      ) {
+        setShowWicketModal(
+          true
         );
+      }
 
-    await submitBall({
-      matchId: Number(selectedMatchId),
-      inningsNo: Number(ballForm.inningsNo),
-      strikerId: Number(ballForm.strikerId),
-      nonStrikerId: Number(ballForm.nonStrikerId),
-      bowlerId: Number(ballForm.bowlerId),
-      extraType: "NONE",
-      runsOffBat,
-      extras: 0,
+      return;
+    }
 
-      isWicket:
-        ballForm.isWicket && ballForm.wicketType !== "RETIRED_HURT" ? 1 : 0,
+    const wicketText =
+      ballForm.wicketType
+        ?.replaceAll(
+          "_",
+          " "
+        )
+        ?.toLowerCase();
 
-      wicketType: ballForm.isWicket ? ballForm.wicketType : "NONE",
+    if (
+      noMoreBattersAvailable ||
+      endInningsAfterWicket
+    ) {
+      setMessage(
+        `🚨 ${dismissedPlayer?.name || "Batter"} is out (${wicketText}). ${runsOffBat} ${
+          runsOffBat === 1
+            ? "run"
+            : "runs"
+        } awarded. Innings ended.`
+      );
+    } else {
+      setMessage(
+        `🚨 ${dismissedPlayer?.name || "Batter"} is out (${wicketText}). ${runsOffBat} ${
+          runsOffBat === 1
+            ? "run"
+            : "runs"
+        } awarded. ${newBatter?.name || "New batter"} comes in.`
+      );
+    }
 
-      dismissedPlayerId,
-      /* newBatterId: noMoreBattersAvailable
-        ? null
-        : Number(ballForm.newBatterId),
-      */
-newBatterId:
-  endInningsAfterWicket || noMoreBattersAvailable
-    ? null
-    : Number(ballForm.newBatterId),
+    /*
+     * submitBall() already:
+     * - saves the wicket
+     * - fetches the updated scoreboard once
+     * - applies striker/non-striker/bowler state
+     * - opens second-innings setup when needed
+     * - handles over completion and bowler change
+     *
+     * Do not call loadSelectedMatch() or loadMatches() again here.
+     */
+    setRunOutRuns(
+      null
+    );
 
-endInningsAfterWicket: Boolean(endInningsAfterWicket),
+    setEndInningsAfterWicket(
+      false
+    );
 
-      note: ballForm.note,
-      matchStatus: scoreboard?.match?.status,
+    setWicketSubmissionInFlight(
+      false
+    );
 
-      fielderId: ballForm.fielderId ? Number(ballForm.fielderId) : null,
+    setShowWicketModal(
+      false
+    );
 
-      assistantFielderId: ballForm.assistantFielderId
-        ? Number(ballForm.assistantFielderId)
-        : null,
+    setBallForm(
+      (
+        previous
+      ) => ({
+        ...previous,
 
-      wicketNote: ballForm.wicketNote || null,
-    });
+        isWicket:
+          false,
 
-    const wicketText = ballForm.wicketType
-      ?.replaceAll("_", " ")
-      ?.toLowerCase();
-const shouldOpenSecondInningsSetup =
-  Boolean(endInningsAfterWicket) &&
-  Number(ballForm.inningsNo) === 1;
+        wicketType:
+          "NONE",
 
- if (noMoreBattersAvailable) {
-  setMessage(
-    `🚨 ${dismissedPlayer?.name || "Batter"} is out (${wicketText}). ${
-      runsOffBat
-    } ${runsOffBat === 1 ? "run" : "runs"} awarded. Innings ended.`
-  );
-} else {
-  setMessage(
-    `🚨 ${dismissedPlayer?.name || "Batter"} is out (${wicketText}). ${
-      runsOffBat
-    } ${runsOffBat === 1 ? "run" : "runs"} awarded. ${
-      newBatter?.name || "New batter"
-    } comes in.`
-  );
-}
+        dismissedPlayerId:
+          "",
 
-/* CRITICAL FIX: refresh after every wicket */
-await loadSelectedMatch(selectedMatchId, {
-  loadDetail: true,
-  loadStatsData: true,
-  syncBallForm: !shouldOpenSecondInningsSetup,
-});
+        newBatterId:
+          "",
 
-if (shouldOpenSecondInningsSetup) {
-  setBallForm((prev) => ({
-    ...prev,
-    inningsNo: "2",
-    strikerId: "",
-    nonStrikerId: "",
-    bowlerId: "",
-    isWicket: false,
-    wicketType: "NONE",
-    dismissedPlayerId: "",
-    newBatterId: "",
-    runsOffBat: "0",
-    extras: "0",
-    extraType: "NONE",
-  }));
+        fielderId:
+          "",
 
-  setDeliverySetupReason(
-    "1st innings ended. Select opening striker, non-striker, and bowler for the 2nd innings."
-  );
+        assistantFielderId:
+          "",
 
-  setShowWicketModal(false);
-  setPendingDeliverySetupAfterStart(true);
-  setShowDeliverySetupModal(true);
-}
+        wicketNote:
+          "",
 
-await loadMatches(activeLeagueId);
+        runsOffBat:
+          "0",
 
-    setShowWicketModal(false);
-    setRunOutRuns(null);
-setBallForm((prev) => ({
-  ...prev,
-  isWicket: false,
-  wicketType: "NONE",
-  dismissedPlayerId: "",
-  newBatterId: "",
-  fielderId: "",
-  assistantFielderId: "",
-  wicketNote: "",
-  runsOffBat: "0",
-  extras: "0",
-  extraType: "NONE",
-}));
+        extras:
+          "0",
+
+        extraType:
+          "NONE",
+      })
+    );
   } catch (err) {
-    setError(err.message);
+    setWicketSubmissionInFlight(
+      false
+    );
+
+    if (
+      !mustChangeBowler &&
+      !showBowlerModal &&
+      !showDeliverySetupModal
+    ) {
+      setShowWicketModal(
+        true
+      );
+    }
+
+    setError(
+      err.message
+    );
   }
 }
 
@@ -4409,63 +5100,250 @@ const availableNewBatters = useMemo(() => {
   scoreboard?.currentInnings,
 ]);
 const wicketNewBatterOptions = useMemo(() => {
-  if (!battingTeam?.players?.length) return [];
+  if (
+    !battingTeam?.players?.length
+  ) {
+    return [];
+  }
 
-  const inningsNo = Number(ballForm.inningsNo || scoreboard?.currentInnings || 1);
+  const inningsNo =
+    Number(
+      ballForm.inningsNo ||
+      scoreboard?.currentInnings ||
+      1
+    );
+
+  /*
+   * Use both ball history and scorecard rows.
+   *
+   * Ball history is the authoritative source for dismissedPlayerId.
+   * Scorecard rows provide a fallback when the lightweight scoreboard
+   * response does not include every raw ball.
+   */
+  const allBalls =
+    getUniqueBalls(
+      matchDetail?.balls ||
+        [],
+      scoreboard?.balls ||
+        [],
+      scoreboard?.match
+        ?.balls ||
+        []
+    ).filter(
+      (ball) =>
+        Number(
+          ball.inningsNo ||
+          inningsNo
+        ) ===
+        inningsNo
+    );
+
+  const alreadyOutIds =
+    new Set();
+
+  for (
+    const ball of
+    allBalls
+  ) {
+    const dismissedPlayerId =
+      Number(
+        ball.dismissedPlayerId
+      );
+
+    if (
+      !dismissedPlayerId
+    ) {
+      continue;
+    }
+
+    const wicketType =
+      String(
+        ball.wicketType ||
+        ""
+      )
+        .trim()
+        .toUpperCase();
+
+    const countedAsWicket =
+      Boolean(
+        Number(
+          ball.isWicket
+        )
+      ) ||
+      Boolean(
+        ball.isWicket
+      );
+
+    if (
+      countedAsWicket &&
+      ![
+        "RETIRED_HURT",
+        "NONE",
+        "",
+      ].includes(
+        wicketType
+      )
+    ) {
+      alreadyOutIds.add(
+        dismissedPlayerId
+      );
+    }
+  }
 
   const activeInnings =
-    scoreboard?.innings?.find((inn) => Number(inn.number) === inningsNo) ||
-    scoreboard?.innings?.[inningsNo - 1];
+    scoreboard?.innings?.find(
+      (innings) =>
+        Number(
+          innings.number ??
+          innings.inningsNo
+        ) ===
+        inningsNo
+    ) ||
+    scoreboard?.innings?.[
+      inningsNo -
+      1
+    ];
 
   const scorecardRows =
-    activeInnings?.battingRows ||
-    activeInnings?.batting ||
-    activeInnings?.battingStats ||
+    activeInnings
+      ?.battingRows ||
+    activeInnings
+      ?.batting ||
+    activeInnings
+      ?.battingStats ||
     [];
 
-  const alreadyOutIds = new Set();
+  for (
+    const row of
+    scorecardRows
+  ) {
+    const playerId =
+      Number(
+        row.playerId ??
+        row.batterId ??
+        row.batsmanId ??
+        row.id
+      );
 
-  scorecardRows.forEach((row) => {
-    const dismissal = String(row.dismissal || "").trim().toLowerCase();
+    if (!playerId) {
+      continue;
+    }
 
-if (
-  dismissal &&
-  dismissal !== "not out" &&
-  dismissal !== "-" &&
-  !dismissal.includes("retired hurt")
-) {
-  alreadyOutIds.add(Number(row.playerId));
-}
-  });
+    const dismissalText =
+      String(
+        row.dismissal ??
+        row.dismissalText ??
+        row.status ??
+        row.howOut ??
+        ""
+      )
+        .trim()
+        .toLowerCase();
 
-  const currentStrikerId = Number(ballForm.strikerId || 0);
-  const currentNonStrikerId = Number(ballForm.nonStrikerId || 0);
-  const currentDismissedId = Number(
-    ballForm.wicketType === "RUN_OUT"
-      ? ballForm.dismissedPlayerId
-      : ballForm.dismissedPlayerId || ballForm.strikerId
+    const isExplicitlyOut =
+      row.isOut ===
+        true ||
+      Number(
+        row.isOut
+      ) ===
+        1 ||
+      (
+        dismissalText &&
+        dismissalText !==
+          "not out" &&
+        dismissalText !==
+          "notout" &&
+        dismissalText !==
+          "-" &&
+        dismissalText !==
+          "batting" &&
+        !dismissalText.includes(
+          "retired hurt"
+        )
+      );
+
+    if (
+      isExplicitlyOut
+    ) {
+      alreadyOutIds.add(
+        playerId
+      );
+    }
+  }
+
+  const currentStrikerId =
+    Number(
+      ballForm.strikerId ||
+      0
+    );
+
+  const currentNonStrikerId =
+    Number(
+      ballForm.nonStrikerId ||
+      0
+    );
+
+  const currentDismissedId =
+    getWicketDismissedPlayerId(
+      ballForm
+    );
+
+  return battingTeam.players.filter(
+    (player) => {
+      const playerId =
+        Number(
+          player.id
+        );
+
+      if (!playerId) {
+        return false;
+      }
+
+      if (
+        alreadyOutIds.has(
+          playerId
+        )
+      ) {
+        return false;
+      }
+
+      if (
+        playerId ===
+        currentStrikerId
+      ) {
+        return false;
+      }
+
+      if (
+        playerId ===
+        currentNonStrikerId
+      ) {
+        return false;
+      }
+
+      if (
+        currentDismissedId &&
+        playerId ===
+          currentDismissedId
+      ) {
+        return false;
+      }
+
+      return true;
+    }
   );
-
-  return battingTeam.players.filter((player) => {
-    const playerId = Number(player.id);
-
-    if (!playerId) return false;
-    if (alreadyOutIds.has(playerId)) return false;
-    if (playerId === currentStrikerId) return false;
-    if (playerId === currentNonStrikerId) return false;
-    if (currentDismissedId && playerId === currentDismissedId) return false;
-
-    return true;
-  });
 }, [
   battingTeam?.players,
-  scoreboard?.innings,
-  scoreboard?.currentInnings,
   ballForm.inningsNo,
   ballForm.strikerId,
   ballForm.nonStrikerId,
   ballForm.dismissedPlayerId,
   ballForm.wicketType,
+  matchDetail?.balls,
+  scoreboard?.balls,
+  scoreboard?.match?.balls,
+  scoreboard?.innings,
+  scoreboard?.currentInnings,
 ]);
 useEffect(() => {
   if (!ballForm.isWicket) return;
@@ -4484,7 +5362,7 @@ useEffect(() => {
 }, [
   ballForm.isWicket,
   ballForm.newBatterId,
-  availableNewBatters,
+  wicketNewBatterOptions,
 ]);
 
 const availableReplacementBatters = useMemo(() => {
@@ -4556,76 +5434,218 @@ function getNextAvailableBatter(players, strikerId, nonStrikerId, balls = []) {
 }
 
 async function handleRetiredHurtSubmit() {
-  if (mustChangeBowler) {
-  setError("Please select a new bowler before scoring the next ball.");
-  setShowRetiredHurtModal(false);
-  setShowWicketModal(false);
-  setBowlerSearchText("");
-  setShowBowlerModal(true);
-  return;
-}
+  if (isSavingBall) {
+    return;
+  }
 
-  if (!replacementPlayerId) {
-    setError("Select replacement batter");
+  if (mustChangeBowler) {
+    setError(
+      "Please select a new bowler before scoring the next ball."
+    );
+
+    setShowRetiredHurtModal(
+      false
+    );
+
+    setShowWicketModal(
+      false
+    );
+
+    setBowlerSearchText(
+      ""
+    );
+
+    setShowBowlerModal(
+      true
+    );
+
+    return;
+  }
+
+  if (
+    !replacementPlayerId
+  ) {
+    setError(
+      "Select replacement batter"
+    );
+
     return;
   }
 
   const dismissedPlayerId =
-    retiredPlayerType === "STRIKER"
-      ? Number(ballForm.strikerId)
-      : Number(ballForm.nonStrikerId);
-
-  const retiredPlayer =
-    retiredPlayerType === "STRIKER"
-      ? battingTeam?.players?.find(
-          p => p.id === Number(ballForm.strikerId)
+    retiredPlayerType ===
+    "STRIKER"
+      ? Number(
+          ballForm.strikerId
         )
-      : battingTeam?.players?.find(
-          p => p.id === Number(ballForm.nonStrikerId)
+      : Number(
+          ballForm.nonStrikerId
         );
 
-  const retiredPlayerName = retiredPlayer?.name;
+  const retiredPlayer =
+    retiredPlayerType ===
+    "STRIKER"
+      ? battingTeam?.players?.find(
+          (player) =>
+            Number(
+              player.id
+            ) ===
+            Number(
+              ballForm.strikerId
+            )
+        )
+      : battingTeam?.players?.find(
+          (player) =>
+            Number(
+              player.id
+            ) ===
+            Number(
+              ballForm.nonStrikerId
+            )
+        );
+
   const replacementPlayer =
     battingTeam?.players?.find(
-      p => p.id === Number(replacementPlayerId)
+      (player) =>
+        Number(
+          player.id
+        ) ===
+        Number(
+          replacementPlayerId
+        )
     );
 
-  const replacementPlayerName =
-    replacementPlayer?.name;      
-
-  const retiredHurtBall = {
-    ...ballForm,
-
-    matchId: selectedMatchId,
-    isWicket: true,
-    wicketType: "RETIRED_HURT",
-
-    dismissedPlayerId,
-    newBatterId: Number(replacementPlayerId),
-
-    runsOffBat: 0,
-    extras: 0,
-    totalRuns: 0,
-
-    legalDelivery: false
+  const modalSnapshot = {
+    replacementPlayerId,
+    retiredPlayerType,
+    ballForm: {
+      ...ballForm,
+    },
   };
 
-try {  
-await api("/api/balls", {
-  method: "POST",
-  body: JSON.stringify(retiredHurtBall)
-});
+  /*
+   * Retired Hurt is a non-legal event but can still use submitBall() so the
+   * optimized single-scoreboard-refresh path is shared with every other
+   * scoring action.
+   */
+  setShowRetiredHurtModal(
+    false
+  );
 
-  await loadSelectedMatch(selectedMatchId);
-  setMessage("✅ "+retiredPlayerName +" is retired hurt and replaced by "+ replacementPlayerName);
-  setShowRetiredHurtModal(false);
+  try {
+    const saved =
+      await submitBall({
+        ...ballForm,
+
+        matchId:
+          Number(
+            selectedMatchId
+          ),
+
+        inningsNo:
+          Number(
+            ballForm.inningsNo
+          ),
+
+        strikerId:
+          Number(
+            ballForm.strikerId
+          ),
+
+        nonStrikerId:
+          Number(
+            ballForm.nonStrikerId
+          ),
+
+        bowlerId:
+          Number(
+            ballForm.bowlerId
+          ),
+
+        isWicket:
+          0,
+
+        wicketType:
+          "RETIRED_HURT",
+
+        dismissedPlayerId,
+
+        newBatterId:
+          Number(
+            replacementPlayerId
+          ),
+
+        runsOffBat:
+          0,
+
+        extras:
+          0,
+
+        extraType:
+          "NONE",
+
+        legalDelivery:
+          false,
+
+        note:
+          `Retired hurt: ${retiredPlayer?.name || "Batter"} replaced by ${replacementPlayer?.name || "replacement batter"}.`,
+
+        matchStatus:
+          scoreboard?.match
+            ?.status,
+      });
+
+    if (!saved) {
+      setReplacementPlayerId(
+        modalSnapshot.replacementPlayerId
+      );
+
+      setRetiredPlayerType(
+        modalSnapshot.retiredPlayerType
+      );
+
+      setBallForm(
+        modalSnapshot.ballForm
+      );
+
+      setShowRetiredHurtModal(
+        true
+      );
+
+      return;
+    }
+
+    setMessage(
+      `✅ ${retiredPlayer?.name || "Batter"} is retired hurt and replaced by ${replacementPlayer?.name || "replacement batter"}.`
+    );
+
+    setReplacementPlayerId(
+      ""
+    );
   } catch (err) {
+    setReplacementPlayerId(
+      modalSnapshot.replacementPlayerId
+    );
+
+    setRetiredPlayerType(
+      modalSnapshot.retiredPlayerType
+    );
+
+    setBallForm(
+      modalSnapshot.ballForm
+    );
+
+    setShowRetiredHurtModal(
+      true
+    );
+
     setError(
       err.message ||
-      "Failed to retired hurt a player"
+        "Failed to retire hurt a player"
     );
-  }  
+  }
 }
+
 async function loadMyLeaguePermissions(leagueId) {
   if (!leagueId) return;
 
@@ -4873,67 +5893,137 @@ async function handleAbandonMatch() {
 }
 async function confirmBowlerChange() {
   try {
-    const newBowlerId = Number(ballForm.bowlerId);
+    const newBowlerId =
+      Number(
+        ballForm.bowlerId
+      );
 
     if (!newBowlerId) {
-      setError("Please select a new bowler.");
+      setError(
+        "Please select a new bowler."
+      );
+
       return;
     }
 
-    const selectedBowler = bowlingTeam?.players?.find(
-      (p) => Number(p.id) === newBowlerId
+    const selectedBowler =
+      bowlingTeam
+        ?.players
+        ?.find(
+          (player) =>
+            Number(
+              player.id
+            ) ===
+            newBowlerId
+        );
+
+    await api(
+      `/api/matches/${selectedMatchId}/change-bowler`,
+      {
+        method:
+          "POST",
+
+        body:
+          JSON.stringify({
+            bowlerId:
+              newBowlerId,
+
+            inningsNo:
+              Number(
+                ballForm.inningsNo
+              ),
+
+            strikerId:
+              Number(
+                ballForm.strikerId
+              ),
+
+            nonStrikerId:
+              Number(
+                ballForm.nonStrikerId
+              ),
+          }),
+      }
     );
 
-    await api(`/api/matches/${selectedMatchId}/change-bowler`, {
-      method: "POST",
-      body: JSON.stringify({
-          bowlerId: newBowlerId,
-          inningsNo: Number(ballForm.inningsNo),
-          strikerId: Number(ballForm.strikerId),
-          nonStrikerId: Number(ballForm.nonStrikerId),
+    /*
+     * Fetch only the scoreboard. A full match + match-list reload can
+     * overwrite the just-confirmed wicket/replacement state.
+     */
+    const updatedBoard =
+      await api(
+        `/api/scoreboard/${selectedMatchId}`
+      );
+
+    setScoreboard(
+      updatedBoard
+    );
+
+    setBallForm(
+      (
+        previous
+      ) => ({
+        ...previous,
+
+        strikerId:
+          updatedBoard
+            ?.currentState
+            ?.strikerId ??
+          previous.strikerId,
+
+        nonStrikerId:
+          updatedBoard
+            ?.currentState
+            ?.nonStrikerId ??
+          previous.nonStrikerId,
+
+        bowlerId:
+          newBowlerId,
+
+        isWicket:
+          false,
+
+        wicketType:
+          "NONE",
+
+        dismissedPlayerId:
+          "",
+
+        newBatterId:
+          "",
       })
-    });
+    );
 
-    setBallForm((prev) => ({
-      ...prev,
-      bowlerId: newBowlerId
-    }));
+    setMustChangeBowler(
+      false
+    );
 
-    setMustChangeBowler(false);
-    setShowBowlerModal(false);
-    setPendingBallData(null);
+    setShowBowlerModal(
+      false
+    );
 
-    await loadSelectedMatch(selectedMatchId);
-    await loadMatches();
+    setShowWicketModal(
+      false
+    );
 
-    // IMPORTANT: do this AFTER loadSelectedMatch
-    const selectedBowlerStats = stats?.bowling?.find(
-  (row) => Number(row.playerId) === newBowlerId
-  );
+    setWicketSubmissionInFlight(
+      false
+    );
 
- setScoreboard((prev) => ({
-  ...prev,
-  currentState: {
-    ...prev?.currentState,
-    bowlerId: newBowlerId,
-    bowlerName: selectedBowler?.name || "Selected Bowler",
-    bowlerStats: selectedBowlerStats
-      ? {
-          runs: selectedBowlerStats.runs || 0,
-          wickets: selectedBowlerStats.wickets || 0,
-          overs: selectedBowlerStats.overs || "0.0"
-        }
-      : {
-          runs: 0,
-          wickets: 0,
-          overs: "0.0"
-        }
-  }
-}));
+    setPendingBallData(
+      null
+    );
 
-    setMessage("✅ Bowler change successful");
+    setMessage(
+      `✅ Bowler changed to ${
+        selectedBowler?.name ||
+        "selected bowler"
+      }.`
+    );
   } catch (err) {
-    setError(err.message);
+    setError(
+      err.message
+    );
   }
 }
 
@@ -6072,39 +7162,204 @@ const filteredMatchesForContextLens = uniqueMatchesForFilter
   }
 }
 async function handleLiveWicketKeeperChange() {
+  if (
+    keeperChangeSaving
+  ) {
+    return;
+  }
+
+  const snapshot = {
+    ...keeperChangeForm,
+  };
+
   try {
     if (!selectedMatchId) {
-      setError("Please select a match first.");
+      setError(
+        "Please select a match first."
+      );
+
       return;
     }
 
-    if (!keeperChangeForm.newKeeperId) {
-      setError("Please select the new wicketkeeper.");
+    if (
+      !keeperChangeForm.newKeeperId
+    ) {
+      setError(
+        "Please select the new wicketkeeper."
+      );
+
       return;
     }
+
+    const newKeeperId =
+      Number(
+        keeperChangeForm
+          .newKeeperId
+      );
+
+    const newKeeper =
+      bowlingTeam
+        ?.players
+        ?.find(
+          (player) =>
+            Number(
+              player.id
+            ) ===
+            newKeeperId
+        );
+
+    setKeeperChangeSaving(
+      true
+    );
+
+    setShowKeeperChangeModal(
+      false
+    );
 
     await api(`/api/matches/${selectedMatchId}/wicketkeeper-change`, {
       method: "POST",
       body: JSON.stringify({
-        inningsNo: ballForm.inningsNo,
-        newKeeperId: keeperChangeForm.newKeeperId,
-        note: keeperChangeForm.note,
+        inningsNo:
+          ballForm.inningsNo,
+
+        newKeeperId,
+
+        note:
+          keeperChangeForm.note,
       }),
     });
 
-    await loadSelectedMatch(selectedMatchId);
-    await loadMatches();
-    await loadLeagueStats(activeLeagueId);
+    setMatchDetail(
+      (
+        previous
+      ) => {
+        if (!previous) {
+          return previous;
+        }
 
-    setShowKeeperChangeModal(false);
+        const isTeamA =
+          Number(
+            bowlingTeam?.id
+          ) ===
+          Number(
+            previous.teamAId
+          );
+
+        return {
+          ...previous,
+
+          ...(isTeamA
+            ? {
+                teamAWicketKeeperId:
+                  newKeeperId,
+
+                teamAWicketKeeperName:
+                  newKeeper?.name ||
+                  previous
+                    .teamAWicketKeeperName,
+              }
+            : {
+                teamBWicketKeeperId:
+                  newKeeperId,
+
+                teamBWicketKeeperName:
+                  newKeeper?.name ||
+                  previous
+                    .teamBWicketKeeperName,
+              }),
+        };
+      }
+    );
+
+    /*
+     * Dashboard does not have a setSelectedMatch state setter.
+     * Keep the already-loaded match list synchronized instead.
+     */
+    setMatches(
+      (
+        previousMatches
+      ) =>
+        (
+          previousMatches ||
+          []
+        ).map(
+          (match) => {
+            if (
+              Number(
+                match.id
+              ) !==
+              Number(
+                selectedMatchId
+              )
+            ) {
+              return match;
+            }
+
+            const isTeamA =
+              Number(
+                bowlingTeam?.id
+              ) ===
+              Number(
+                match.teamAId
+              );
+
+            return {
+              ...match,
+
+              ...(isTeamA
+                ? {
+                    teamAWicketKeeperId:
+                      newKeeperId,
+
+                    teamAWicketKeeperName:
+                      newKeeper?.name ||
+                      match
+                        .teamAWicketKeeperName,
+                  }
+                : {
+                    teamBWicketKeeperId:
+                      newKeeperId,
+
+                    teamBWicketKeeperName:
+                      newKeeper?.name ||
+                      match
+                        .teamBWicketKeeperName,
+                  }),
+            };
+          }
+        )
+    );
+
     setKeeperChangeForm({
-      newKeeperId: "",
-      note: "",
+      newKeeperId:
+        "",
+
+      note:
+        "",
     });
 
-    setMessage("✅ Wicketkeeper changed from this point onward.");
+    setMessage(
+      `✅ Wicketkeeper changed to ${
+        newKeeper?.name ||
+        "the selected player"
+      } from this point onward.`
+    );
   } catch (err) {
-    setError(err.message);
+    setKeeperChangeForm(
+      snapshot
+    );
+
+    setShowKeeperChangeModal(
+      true
+    );
+
+    setError(
+      err.message
+    );
+  } finally {
+    setKeeperChangeSaving(
+      false
+    );
   }
 }
 
@@ -9856,10 +11111,15 @@ const playerRoleBadge = (row) => {
   <button
     type="button"
     className="chip score-chip score-wide score-undo"
-    disabled={isMatchLocked}
+    disabled={
+      isMatchLocked ||
+      undoSaving
+    }
     onClick={handleUndoBall}
   >
-    ↩ Undo
+    {undoSaving
+      ? "Undoing..."
+      : "↩ Undo"}
   </button>
 </div>
 
@@ -19518,7 +20778,7 @@ onClick={() => {
           disabled={!ballForm.isWicket || endInningsAfterWicket}
         >
           <option value="">Select New Batter</option>
-          {availableNewBatters.map((p) => (
+          {wicketNewBatterOptions.map((p) => (
             <option key={p.id} value={p.id}>
               {p.name}
             </option>
@@ -20426,6 +21686,25 @@ onClick={() => {
         </button>
       </div>
 
+      <div className="current-wicketkeeper-callout">
+        <div
+          className="current-wicketkeeper-icon"
+          aria-hidden="true"
+        >
+          🧤
+        </div>
+
+        <div className="current-wicketkeeper-copy">
+          <span>
+            Current wicketkeeper
+          </span>
+
+          <strong>
+            {currentWicketKeeperName}
+          </strong>
+        </div>
+      </div>
+
       <div className="form-grid">
         <label>
           <span>New Wicketkeeper</span>
@@ -20439,7 +21718,7 @@ onClick={() => {
             }
           >
             <option value="">Select wicketkeeper</option>
-            {(bowlingTeam?.players || []).map((p) => (
+            {wicketKeeperReplacementOptions.map((p) => (
               <option key={p.id} value={p.id}>
                 {p.name}
               </option>
@@ -20473,10 +21752,20 @@ onClick={() => {
 
         <button
           type="button"
-          className="btn btn-primary"
+          className={`btn btn-primary ${
+            keeperChangeSaving
+              ? "btn-loading"
+              : ""
+          }`}
+          disabled={
+            keeperChangeSaving ||
+            !keeperChangeForm.newKeeperId
+          }
           onClick={handleLiveWicketKeeperChange}
         >
-          Save WK Change
+          {keeperChangeSaving
+            ? "Saving..."
+            : "Save WK Change"}
         </button>
       </div>
     </div>
@@ -22058,19 +23347,9 @@ setBallForm((previous) => ({
         )}
 
         <div className="milestone-celebration-actions">
-          <Link
-            href={`/leagues/${activeLeagueSlug}/players/${milestoneCelebration.primary.playerId}`}
-            onClick={() =>
-              setMilestoneCelebration(
-                null
-              )
-            }
-          >
-            View player card
-          </Link>
-
           <button
             type="button"
+            className="milestone-continue-button"
             onClick={() =>
               setMilestoneCelebration(
                 null
@@ -22079,6 +23358,30 @@ setBallForm((previous) => ({
           >
             Continue scoring
           </button>
+
+          <Link
+            className="milestone-player-card-link"
+            href={`/leagues/${encodeURIComponent(
+              String(
+                selectedLeague?.slug ||
+                activeLeague?.slug ||
+                activeLeagueId
+              )
+            )}/players/${encodeURIComponent(
+              String(
+                milestoneCelebration
+                  .primary
+                  .playerId
+              )
+            )}`}
+            onClick={() =>
+              setMilestoneCelebration(
+                null
+              )
+            }
+          >
+            View player card
+          </Link>
         </div>
       </section>
     </div>,
