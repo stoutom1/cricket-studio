@@ -42,25 +42,24 @@ function safeDivide(
 }
 
 /*
- * SPECIAL SHARED PLAYER IDENTITIES
+ * SHARED SURPRISE 1 / SURPRISE 2 PLAYER IDENTITIES
  *
- * Sachin exists as two Player rows because Surprise 1 and Surprise 2 each
- * keep their own roster. Both rows represent the same real person, so the
- * public player card combines their match data into one profile.
+ * Surprise 1 and Surprise 2 keep separate roster rows, but a player with the
+ * same normalized name in those two teams represents one real player profile.
  *
- * This rule is deliberately narrow. Other players with the same name are
- * not merged unless they are explicitly added here.
+ * The identity is resolved from the roster, not from match participation.
+ * Therefore, opening Trinadh from Surprise 1 still combines his Surprise 2
+ * statistics even when the Surprise 1 Player row has never appeared in a
+ * scored match.
+ *
+ * The merge is intentionally limited to Surprise 1 and Surprise 2. Players
+ * with the same name in unrelated teams remain separate profiles.
  */
-const SHARED_PLAYER_IDENTITIES = [
-  {
-    key: "SACHIN_SURPRISE_1_2",
-    playerName: "sachin",
-    teamNames: [
-      "surprise1",
-      "surprise2",
-    ],
-  },
-];
+const SHARED_ROSTER_TEAM_TOKENS =
+  new Set([
+    "surprise1",
+    "surprise2",
+  ]);
 
 function identityToken(value) {
   return String(value || "")
@@ -69,25 +68,30 @@ function identityToken(value) {
     .replace(/[^a-z0-9]/g, "");
 }
 
-function getSharedIdentityRule(player) {
-  const playerToken = identityToken(player?.name);
-  const teamToken = identityToken(player?.teamName);
-
-  return (
-    SHARED_PLAYER_IDENTITIES.find(
-      (rule) =>
-        identityToken(rule.playerName) === playerToken &&
-        rule.teamNames.includes(teamToken)
-    ) || null
+function isSharedRosterTeam(player) {
+  return SHARED_ROSTER_TEAM_TOKENS.has(
+    identityToken(
+      player?.teamName
+    )
   );
 }
 
 function getPlayerIdentityKey(player) {
-  const rule = getSharedIdentityRule(player);
+  const playerNameToken =
+    identityToken(
+      player?.name
+    );
 
-  return rule
-    ? `shared:${rule.key}`
-    : `player:${number(player?.id)}`;
+  if (
+    isSharedRosterTeam(player) &&
+    playerNameToken
+  ) {
+    return `shared:surprise-1-2:${playerNameToken}`;
+  }
+
+  return `player:${number(
+    player?.id
+  )}`;
 }
 
 function buildPlayerIdentityGroups(rosterPlayers) {
@@ -1206,8 +1210,9 @@ export default async function PublicPlayerPage({
   }
 
   /*
-   * Rankings also use identity groups. This prevents Sachin from appearing
-   * twice or having his two roster records compete against each other.
+   * Rankings also use identity groups. This prevents players shared by
+   * Surprise 1 and Surprise 2 from appearing twice or having their separate
+   * roster rows compete against each other.
    */
   const allProfiles =
     identityGroups.map(
