@@ -15,6 +15,7 @@ import mobileKitStyles from "./DashboardKitMobile.module.css";
 import KitPostMatchPrompt from "@/components/kit/KitPostMatchPrompt";
 import LeagueResourcesShortcut from "@/components/resources/LeagueResourcesShortcut";
 import matchDayNavStyles from "./MatchDayDashboardNav.module.css";
+import playerCardStyles from "./DashboardPlayerCard.module.css";
 
 function Card({
   title,
@@ -1671,8 +1672,20 @@ async function loadTeams() {
 const handleAddPlayers = async (e) => {
  //alert(JSON.stringify(playerForm));
 
-
   e.preventDefault();
+
+  /*
+   * UI permission checks are repeated here so the action cannot be
+   * triggered through a stale/open modal or a synthetic submit event.
+   * The API route must continue enforcing the same rule server-side.
+   */
+  if (!canAddPlayers) {
+    setShowPlayerModal(false);
+    setError(
+      "Only the league owner, an admin, a captain, or a permission manager can add players."
+    );
+    return;
+  }
 
   try {
 
@@ -7055,6 +7068,37 @@ const activeLeagueRole =
   )
     .trim()
     .toUpperCase();
+
+/*
+ * Add Players access is intentionally narrower than canCreatePlayer.
+ * It is available only to Super Admin, OWNER, ADMIN, CAPTAIN, or a
+ * member explicitly granted canManagePermissions.
+ */
+const canAddPlayers = Boolean(
+  isSuperAdmin ||
+    permissions?.canManagePermissions === true ||
+    ["OWNER", "ADMIN", "CAPTAIN"].includes(activeLeagueRole)
+);
+
+const activeLeagueSlug = String(
+  activeLeague?.slug ||
+    selectedLeague?.slug ||
+    ""
+).trim();
+
+function getPlayerCardHref(playerId) {
+  if (!activeLeagueSlug || !playerId) return "";
+
+  return `/leagues/${encodeURIComponent(
+    activeLeagueSlug
+  )}/players/${encodeURIComponent(String(playerId))}`;
+}
+
+useEffect(() => {
+  if (!canAddPlayers && showPlayerModal) {
+    setShowPlayerModal(false);
+  }
+}, [canAddPlayers, showPlayerModal]);
 
 const isExplicitBirthdayViewer =
   !isSuperAdmin &&
@@ -13118,19 +13162,34 @@ onClick={() => {
         <button
           type="button"
           className="player-add-btn"
+          disabled={!canAddPlayers}
+          aria-disabled={!canAddPlayers}
+          title={
+            canAddPlayers
+              ? "Add players to this team"
+              : "Only an owner, admin, captain, or permission manager can add players"
+          }
           onClick={() => {
-            setPlayerLeagueId(activeLeagueId);
+            if (!canAddPlayers) {
+              setError(
+                "Only the league owner, an admin, a captain, or a permission manager can add players."
+              );
+              return;
+            }
+
+            setPlayerLeagueId(Number(activeLeagueId));
+            setSelectedPlayerTeamId(Number(selectedTeamId));
 
             setPlayerForm({
               names: "",
-              leagueId: activeLeagueId,
-              teamId: selectedTeamId,
+              leagueId: Number(activeLeagueId),
+              teamId: Number(selectedTeamId),
             });
 
             setShowPlayerModal(true);
           }}
         >
-          ➕ Add Players
+          {canAddPlayers ? "➕ Add Players" : "🔒 Add Players"}
         </button>
       </div>
 
@@ -13156,11 +13215,36 @@ onClick={() => {
       </div>
 
       <div className="player-info">
-        <strong>{player.name}</strong>
+        {getPlayerCardHref(player.id) ? (
+          <Link
+            href={getPlayerCardHref(player.id)}
+            className={playerCardStyles.playerNameLink}
+            title={`Open ${player.name}'s Cric4All player card`}
+            aria-label={`Open ${player.name}'s player card`}
+          >
+            <strong>{player.name}</strong>
+            <span className={playerCardStyles.playerCardArrow} aria-hidden="true">
+              ↗
+            </span>
+          </Link>
+        ) : (
+          <strong>{player.name}</strong>
+        )}
         <span>Player #{index + 1}</span>
       </div>
 
       <div className="player-row-actions desktop-player-actions">
+        {getPlayerCardHref(player.id) && (
+          <Link
+            href={getPlayerCardHref(player.id)}
+            className={`${playerCardStyles.playerCardAction} mini-action-btn`}
+            title={`View ${player.name}'s Player Card`}
+            aria-label={`View ${player.name}'s Player Card`}
+          >
+            👤
+          </Link>
+        )}
+
         {permissions?.canEditPlayer && (
           <button
             type="button"
@@ -13209,6 +13293,17 @@ onClick={() => {
   <summary>⚙️</summary>
 
         <div className="mobile-player-actions-menu">
+          {getPlayerCardHref(player.id) && (
+            <Link
+              href={getPlayerCardHref(player.id)}
+              className={playerCardStyles.mobilePlayerCardAction}
+              onClick={() => setOpenPlayerActionId(null)}
+            >
+              <span>👤</span>
+              <span>View Player Card</span>
+            </Link>
+          )}
+
           {permissions?.canEditPlayer && (
             <button type="button"   onClick={() => {
     setOpenPlayerActionId(null);
@@ -17526,7 +17621,7 @@ onClick={() => {
     </div>
   </div>
 )}
-{showPlayerModal && (
+{showPlayerModal && canAddPlayers && (
   <div className="modal-backdrop">
     <div className="add-player-pro-modal">
       <div className="add-player-pro-hero">
@@ -17651,7 +17746,7 @@ KL Rahul`}
           <button
             type="submit"
             className="add-player-pro-save"
-            disabled={!playerLeagueId || !selectedPlayerTeamId}
+            disabled={!canAddPlayers || !playerLeagueId || !selectedPlayerTeamId}
           >
             ✅ Save Players
           </button>
