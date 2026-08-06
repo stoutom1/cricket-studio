@@ -1193,3 +1193,936 @@ export async function reconcileMilestonesForMatch({
     playerIds,
   });
 }
+
+function crossedThreshold({
+  before,
+  after,
+  threshold,
+}) {
+  return (
+    number(before) <
+      number(threshold) &&
+    number(after) >=
+      number(threshold)
+  );
+}
+
+async function getIdentityCareerSnapshot({
+  identity,
+  matchId,
+  inningsNo,
+  currentBallId,
+}) {
+  const ids =
+    identity.playerIds;
+
+  const wicketWhere = {
+    match: {
+      leagueId:
+        identity.leagueId,
+    },
+
+    bowlerId: {
+      in: ids,
+    },
+
+    isWicket: 1,
+
+    wicketType: {
+      notIn:
+        Array.from(
+          BOWLER_WICKET_EXCLUSIONS
+        ),
+    },
+
+    extraType: {
+      not:
+        "NOBALL",
+    },
+  };
+
+  const [
+    battingCareer,
+    battingInnings,
+    bowlingCareerWickets,
+    bowlingMatchWickets,
+    battingGroups,
+    bowlingGroups,
+    priorMatchInvolvement,
+    appearanceRows,
+  ] =
+    await Promise.all([
+      prisma.ball.aggregate({
+        where: {
+          match: {
+            leagueId:
+              identity.leagueId,
+          },
+
+          strikerId: {
+            in: ids,
+          },
+        },
+
+        _sum: {
+          runsOffBat:
+            true,
+        },
+
+        _count: {
+          id:
+            true,
+        },
+      }),
+
+      prisma.ball.aggregate({
+        where: {
+          matchId:
+            number(
+              matchId
+            ),
+
+          inningsNo:
+            number(
+              inningsNo
+            ),
+
+          strikerId: {
+            in: ids,
+          },
+        },
+
+        _sum: {
+          runsOffBat:
+            true,
+        },
+
+        _count: {
+          id:
+            true,
+        },
+      }),
+
+      prisma.ball.count({
+        where:
+          wicketWhere,
+      }),
+
+      prisma.ball.count({
+        where: {
+          ...wicketWhere,
+
+          matchId:
+            number(
+              matchId
+            ),
+        },
+      }),
+
+      prisma.ball.groupBy({
+        by: [
+          "matchId",
+          "inningsNo",
+        ],
+
+        where: {
+          match: {
+            leagueId:
+              identity.leagueId,
+          },
+
+          strikerId: {
+            in: ids,
+          },
+        },
+
+        _sum: {
+          runsOffBat:
+            true,
+        },
+      }),
+
+      prisma.ball.groupBy({
+        by: [
+          "matchId",
+        ],
+
+        where:
+          wicketWhere,
+
+        _count: {
+          id:
+            true,
+        },
+      }),
+
+      prisma.ball.count({
+        where: {
+          id: {
+            not:
+              number(
+                currentBallId
+              ),
+          },
+
+          matchId:
+            number(
+              matchId
+            ),
+
+          OR: [
+            {
+              strikerId: {
+                in: ids,
+              },
+            },
+            {
+              bowlerId: {
+                in: ids,
+              },
+            },
+            {
+              dismissedPlayerId: {
+                in: ids,
+              },
+            },
+          ],
+        },
+      }),
+
+      prisma.ball.findMany({
+        where: {
+          match: {
+            leagueId:
+              identity.leagueId,
+          },
+
+          OR: [
+            {
+              strikerId: {
+                in: ids,
+              },
+            },
+            {
+              bowlerId: {
+                in: ids,
+              },
+            },
+            {
+              dismissedPlayerId: {
+                in: ids,
+              },
+            },
+          ],
+        },
+
+        distinct: [
+          "matchId",
+        ],
+
+        select: {
+          matchId: true,
+        },
+      }),
+    ]);
+
+  const currentInningsRuns =
+    number(
+      battingInnings
+        ._sum
+        .runsOffBat
+    );
+
+  const previousBestScore =
+    battingGroups.reduce(
+      (
+        highest,
+        group
+      ) => {
+        if (
+          number(
+            group.matchId
+          ) ===
+            number(
+              matchId
+            ) &&
+          number(
+            group.inningsNo
+          ) ===
+            number(
+              inningsNo
+            )
+        ) {
+          return highest;
+        }
+
+        return Math.max(
+          highest,
+          number(
+            group._sum
+              .runsOffBat
+          )
+        );
+      },
+      0
+    );
+
+  const previousBestWickets =
+    bowlingGroups.reduce(
+      (
+        highest,
+        group
+      ) => {
+        if (
+          number(
+            group.matchId
+          ) ===
+          number(
+            matchId
+          )
+        ) {
+          return highest;
+        }
+
+        return Math.max(
+          highest,
+          number(
+            group._count
+              .id
+          )
+        );
+      },
+      0
+    );
+
+  return {
+    careerRuns:
+      number(
+        battingCareer
+          ._sum
+          .runsOffBat
+      ),
+
+    currentInningsRuns,
+
+    careerWickets:
+      number(
+        bowlingCareerWickets
+      ),
+
+    currentMatchWickets:
+      number(
+        bowlingMatchWickets
+      ),
+
+    previousBestScore,
+    previousBestWickets,
+
+    isFirstAppearanceBall:
+      number(
+        priorMatchInvolvement
+      ) === 0,
+
+    appearances:
+      appearanceRows.length,
+  };
+}
+
+async function persistLiveMilestone(
+  milestone
+) {
+  const existing =
+    await prisma.playerMilestone.findUnique({
+      where: {
+        dedupeKey:
+          milestone.dedupeKey,
+      },
+    });
+
+  const row =
+    await prisma.playerMilestone.upsert({
+      where: {
+        dedupeKey:
+          milestone.dedupeKey,
+      },
+
+      update: {
+        matchId:
+          milestone.matchId,
+
+        ballId:
+          milestone.ballId,
+
+        representativePlayerId:
+          milestone.representativePlayerId,
+
+        playerName:
+          milestone.playerName,
+
+        playerIds:
+          milestone.playerIds,
+
+        title:
+          milestone.title,
+
+        description:
+          milestone.description,
+
+        icon:
+          milestone.icon,
+
+        achievedAt:
+          milestone.achievedAt,
+
+        isActive:
+          true,
+
+        metadata:
+          milestone.metadata,
+      },
+
+      create: {
+        ...milestone,
+
+        isActive:
+          true,
+      },
+    });
+
+  return {
+    row,
+
+    isNew:
+      !existing ||
+      !existing.isActive,
+  };
+}
+
+/*
+ * FAST PATH FOR NORMAL SCORING
+ *
+ * This function does not load every historical delivery and does not rewrite
+ * every old milestone. It asks PostgreSQL for compact aggregates, detects only
+ * thresholds crossed by the newly saved ball, and upserts only those events.
+ *
+ * Full reconcileMilestonesForPlayers remains available for Undo Ball,
+ * corrections, rollback and historical backfill.
+ */
+export async function detectLiveMilestonesForBall({
+  leagueId,
+  ball,
+}) {
+  if (
+    !leagueId ||
+    !ball?.id
+  ) {
+    return {
+      milestones: [],
+      newMilestones: [],
+    };
+  }
+
+  const participantIds =
+    [
+      ball.strikerId,
+      ball.bowlerId,
+    ]
+      .map(number)
+      .filter(Boolean);
+
+  const identities =
+    new Map();
+
+  for (
+    const playerId of
+    participantIds
+  ) {
+    const identity =
+      await resolvePlayerIdentity({
+        leagueId,
+        playerId,
+      });
+
+    if (identity) {
+      identities.set(
+        identity.identityKey,
+        identity
+      );
+    }
+  }
+
+  const desired = [];
+
+  for (
+    const identity of
+    identities.values()
+  ) {
+    const snapshot =
+      await getIdentityCareerSnapshot({
+        identity,
+        matchId:
+          ball.matchId,
+        inningsNo:
+          ball.inningsNo,
+        currentBallId:
+          ball.id,
+      });
+
+    const isStriker =
+      identity.playerIds.includes(
+        number(
+          ball.strikerId
+        )
+      );
+
+    const isBowler =
+      identity.playerIds.includes(
+        number(
+          ball.bowlerId
+        )
+      );
+
+    const matchLabel =
+      ball.matchLabel ||
+      `Match #${ball.matchId}`;
+
+    if (isStriker) {
+      const ballRuns =
+        number(
+          ball.runsOffBat
+        );
+
+      const beforeCareerRuns =
+        snapshot.careerRuns -
+        ballRuns;
+
+      for (
+        const threshold of
+        RUN_THRESHOLDS
+      ) {
+        if (
+          crossedThreshold({
+            before:
+              beforeCareerRuns,
+            after:
+              snapshot.careerRuns,
+            threshold,
+          })
+        ) {
+          desired.push(
+            createMilestone({
+              identity,
+              matchId:
+                ball.matchId,
+              ballId:
+                ball.id,
+              milestoneType:
+                "CAREER_RUNS",
+              milestoneValue:
+                threshold,
+              title:
+                `${threshold.toLocaleString()} Career Runs`,
+              description:
+                `${identity.playerName} reached ${threshold.toLocaleString()} career runs.`,
+              icon:
+                "🏏",
+              achievedAt:
+                ball.createdAt,
+              metadata: {
+                careerRuns:
+                  snapshot.careerRuns,
+                matchLabel,
+              },
+            })
+          );
+        }
+      }
+
+      if (
+        number(
+          ball.runsOffBat
+        ) === 6
+      ) {
+        const careerSixes =
+          await prisma.ball.count({
+            where: {
+              match: {
+                leagueId:
+                  identity.leagueId,
+              },
+
+              strikerId: {
+                in:
+                  identity.playerIds,
+              },
+
+              runsOffBat:
+                6,
+            },
+          });
+
+        const beforeSixes =
+          careerSixes -
+          1;
+
+        for (
+          const threshold of
+          SIX_THRESHOLDS
+        ) {
+          if (
+            crossedThreshold({
+              before:
+                beforeSixes,
+              after:
+                careerSixes,
+              threshold,
+            })
+          ) {
+            desired.push(
+              createMilestone({
+                identity,
+                matchId:
+                  ball.matchId,
+                ballId:
+                  ball.id,
+                milestoneType:
+                  "CAREER_SIXES",
+                milestoneValue:
+                  threshold,
+                title:
+                  `${threshold} Career Sixes`,
+                description:
+                  `${identity.playerName} launched career six number ${threshold}.`,
+                icon:
+                  "💥",
+                achievedAt:
+                  ball.createdAt,
+                metadata: {
+                  careerSixes,
+                  matchLabel,
+                },
+              })
+            );
+          }
+        }
+      }
+
+      const beforeInningsRuns =
+        snapshot.currentInningsRuns -
+        ballRuns;
+
+      for (
+        const milestone of
+        [
+          {
+            threshold:
+              50,
+            type:
+              "INNINGS_FIFTY",
+            title:
+              "Half Century",
+            icon:
+              "⚡",
+          },
+          {
+            threshold:
+              100,
+            type:
+              "INNINGS_HUNDRED",
+            title:
+              "Century",
+            icon:
+              "💯",
+          },
+        ]
+      ) {
+        if (
+          crossedThreshold({
+            before:
+              beforeInningsRuns,
+            after:
+              snapshot.currentInningsRuns,
+            threshold:
+              milestone.threshold,
+          })
+        ) {
+          desired.push(
+            createMilestone({
+              identity,
+              matchId:
+                ball.matchId,
+              ballId:
+                ball.id,
+              milestoneType:
+                milestone.type,
+              milestoneValue:
+                number(
+                  ball.matchId
+                ) *
+                  10 +
+                number(
+                  ball.inningsNo
+                ),
+              title:
+                milestone.title,
+              description:
+                `${identity.playerName} completed a ${milestone.title.toLowerCase()} in ${matchLabel}.`,
+              icon:
+                milestone.icon,
+              achievedAt:
+                ball.createdAt,
+              metadata: {
+                inningsRuns:
+                  snapshot.currentInningsRuns,
+                inningsNo:
+                  ball.inningsNo,
+                matchLabel,
+              },
+            })
+          );
+        }
+      }
+
+      if (
+        snapshot.currentInningsRuns >=
+          25 &&
+        snapshot.currentInningsRuns >
+          snapshot.previousBestScore
+      ) {
+        desired.push(
+          createMilestone({
+            identity,
+            matchId:
+              ball.matchId,
+            ballId:
+              ball.id,
+            milestoneType:
+              "PERSONAL_BEST_SCORE",
+            milestoneValue:
+              snapshot.currentInningsRuns,
+            title:
+              `New Personal Best: ${snapshot.currentInningsRuns}`,
+            description:
+              `${identity.playerName} set a new highest score of ${snapshot.currentInningsRuns}.`,
+            icon:
+              "📈",
+            achievedAt:
+              ball.createdAt,
+            metadata: {
+              inningsRuns:
+                snapshot.currentInningsRuns,
+              inningsNo:
+                ball.inningsNo,
+              previousBest:
+                snapshot.previousBestScore,
+              matchLabel,
+            },
+          })
+        );
+      }
+    }
+
+    if (
+      isBowler &&
+      isBowlerWicket(
+        ball
+      )
+    ) {
+      const beforeCareerWickets =
+        snapshot.careerWickets -
+        1;
+
+      for (
+        const threshold of
+        WICKET_THRESHOLDS
+      ) {
+        if (
+          crossedThreshold({
+            before:
+              beforeCareerWickets,
+            after:
+              snapshot.careerWickets,
+            threshold,
+          })
+        ) {
+          desired.push(
+            createMilestone({
+              identity,
+              matchId:
+                ball.matchId,
+              ballId:
+                ball.id,
+              milestoneType:
+                "CAREER_WICKETS",
+              milestoneValue:
+                threshold,
+              title:
+                `${threshold} Career Wickets`,
+              description:
+                `${identity.playerName} claimed career wicket number ${threshold}.`,
+              icon:
+                "🎯",
+              achievedAt:
+                ball.createdAt,
+              metadata: {
+                careerWickets:
+                  snapshot.careerWickets,
+                matchLabel,
+              },
+            })
+          );
+        }
+      }
+
+      if (
+        snapshot.currentMatchWickets ===
+        5
+      ) {
+        desired.push(
+          createMilestone({
+            identity,
+            matchId:
+              ball.matchId,
+            ballId:
+              ball.id,
+            milestoneType:
+              "FIVE_WICKET_HAUL",
+            milestoneValue:
+              number(
+                ball.matchId
+              ),
+            title:
+              "Five-Wicket Haul",
+            description:
+              `${identity.playerName} completed a five-wicket haul.`,
+            icon:
+              "🔥",
+            achievedAt:
+              ball.createdAt,
+            metadata: {
+              wickets:
+                snapshot.currentMatchWickets,
+              matchLabel,
+            },
+          })
+        );
+      }
+
+      if (
+        snapshot.currentMatchWickets >=
+          2 &&
+        snapshot.currentMatchWickets >
+          snapshot.previousBestWickets
+      ) {
+        desired.push(
+          createMilestone({
+            identity,
+            matchId:
+              ball.matchId,
+            ballId:
+              ball.id,
+            milestoneType:
+              "PERSONAL_BEST_WICKETS",
+            milestoneValue:
+              snapshot.currentMatchWickets,
+            title:
+              `New Bowling Best: ${snapshot.currentMatchWickets} Wickets`,
+            description:
+              `${identity.playerName} set a new personal bowling best of ${snapshot.currentMatchWickets} wickets in a match.`,
+            icon:
+              "🚀",
+            achievedAt:
+              ball.createdAt,
+            metadata: {
+              wickets:
+                snapshot.currentMatchWickets,
+              previousBest:
+                snapshot.previousBestWickets,
+              matchLabel,
+            },
+          })
+        );
+      }
+    }
+
+    if (
+      snapshot.isFirstAppearanceBall
+    ) {
+      const beforeAppearances =
+        snapshot.appearances -
+        1;
+
+      for (
+        const threshold of
+        APPEARANCE_THRESHOLDS
+      ) {
+        if (
+          crossedThreshold({
+            before:
+              beforeAppearances,
+            after:
+              snapshot.appearances,
+            threshold,
+          })
+        ) {
+          desired.push(
+            createMilestone({
+              identity,
+              matchId:
+                ball.matchId,
+              ballId:
+                ball.id,
+              milestoneType:
+                "CAREER_APPEARANCES",
+              milestoneValue:
+                threshold,
+              title:
+                `${threshold} Appearances`,
+              description:
+                `${identity.playerName} reached ${threshold} scored match appearances.`,
+              icon:
+                "🛡️",
+              achievedAt:
+                ball.createdAt,
+              metadata: {
+                matchLabel,
+              },
+            })
+          );
+        }
+      }
+    }
+  }
+
+  const saved = [];
+  const newMilestones = [];
+
+  for (
+    const milestone of
+    desired
+  ) {
+    const result =
+      await persistLiveMilestone(
+        milestone
+      );
+
+    saved.push(
+      result.row
+    );
+
+    if (
+      result.isNew
+    ) {
+      newMilestones.push(
+        result.row
+      );
+    }
+  }
+
+  return {
+    milestones:
+      saved,
+    newMilestones,
+  };
+}
+

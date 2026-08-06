@@ -3576,6 +3576,43 @@ data = {
           savedBall.milestones,
       });
     }
+
+    /*
+     * A full historical reconcile is useful for correction safety, but it is
+     * intentionally not awaited by the scoring controls. It only runs after
+     * an actual milestone ball instead of after every tap.
+     */
+    if (
+      Array.isArray(
+        savedBall?.milestones
+      ) &&
+      savedBall.milestones.length
+    ) {
+      void api(
+        "/api/milestones/reconcile",
+        {
+          method:
+            "POST",
+
+          body:
+            JSON.stringify({
+              matchId:
+                Number(
+                  selectedMatchId
+                ),
+            }),
+        }
+      ).catch(
+        (
+          milestoneError
+        ) => {
+          console.error(
+            "[MILESTONE_BACKGROUND_RECONCILE_FAILED]",
+            milestoneError
+          );
+        }
+      );
+    }
 if (scoreboard?.currentState && !showDeliverySetupModal) {  
 setBallForm((prev) => ({
   ...prev,
@@ -3628,9 +3665,47 @@ setBallForm((prev) => ({
   Number(savedBall?.nextInningsNo) === 2 &&
   ["OVERS_COMPLETED", "ALL_OUT"].includes(savedBall?.inningsEndedReason);
 
-await loadSelectedMatch(selectedMatchId, {
-  syncBallForm: true,
-});
+/*
+ * FAST SCORING PATH
+ *
+ * updatedBoard was already fetched immediately above. Reuse it instead of
+ * calling loadSelectedMatch(), which would make a second identical scoreboard
+ * request after every delivery.
+ */
+setScoreboard(
+  updatedBoard
+);
+
+if (
+  updatedBoard?.currentState &&
+  !showDeliverySetupModal
+) {
+  setBallForm(
+    (
+      previous
+    ) => ({
+      ...previous,
+
+      strikerId:
+        updatedBoard
+          .currentState
+          .strikerId ??
+        previous.strikerId,
+
+      nonStrikerId:
+        updatedBoard
+          .currentState
+          .nonStrikerId ??
+        previous.nonStrikerId,
+
+      bowlerId:
+        updatedBoard
+          .currentState
+          .bowlerId ??
+        previous.bowlerId,
+    })
+  );
+}
 
 const overJustCompleted =
   data.extraType !== "WIDE" &&

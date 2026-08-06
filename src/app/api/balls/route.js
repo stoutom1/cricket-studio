@@ -10,7 +10,7 @@ import {
   applyBallOutcome,
 } from "@/lib/scoring";
 import {
-  reconcileMilestonesForPlayers,
+  detectLiveMilestonesForBall,
 } from "@/lib/player-milestones";
 
 export const runtime = "nodejs";
@@ -532,19 +532,24 @@ let milestoneResult = {
 if (match.leagueId) {
   try {
     milestoneResult =
-      await reconcileMilestonesForPlayers({
+      await detectLiveMilestonesForBall({
         leagueId:
           match.leagueId,
 
-        playerIds: [
-          payload.strikerId,
-          payload.bowlerId,
-          dismissedPlayerId,
-        ],
+        ball: {
+          ...ball,
+
+          matchLabel:
+            `Match #${payload.matchId}`,
+        },
       });
   } catch (milestoneError) {
+    /*
+     * Milestones are noncritical to saving the delivery. A milestone failure
+     * is logged, but the scoring response still returns successfully.
+     */
     console.error(
-      "[MILESTONE_RECONCILE_FAILED]",
+      "[LIVE_MILESTONE_DETECTION_FAILED]",
       milestoneError
     );
   }
