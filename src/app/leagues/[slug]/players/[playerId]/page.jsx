@@ -1801,6 +1801,9 @@ export default async function PublicPlayerPage({
               shareText={
                 shareText
               }
+              compareHref={
+                `/leagues/${league.slug}/compare?playerA=${player.id}`
+              }
             />
           </div>
 

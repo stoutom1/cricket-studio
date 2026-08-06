@@ -7,6 +7,7 @@ import {
 export default function PlayerCardActions({
   playerName,
   shareText,
+  compareHref,
 }) {
   const [
     message,
@@ -83,6 +84,15 @@ export default function PlayerCardActions({
         </span>
         Share player card
       </button>
+
+      {compareHref && (
+        <a
+          className="spf-compare-button"
+          href={compareHref}
+        >
+          ⚔ Compare players
+        </a>
+      )}
 
       <button
         type="button"

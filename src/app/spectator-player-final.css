@@ -1776,3 +1776,187 @@
     white-space: nowrap;
   }
 }
+
+
+/* =========================================================
+   PLAYER CARD — COMPARE PLAYERS ACTION
+   ========================================================= */
+
+.spf-card-actions {
+  grid-template-columns:
+    minmax(0, 1fr)
+    auto
+    auto;
+}
+
+.spf-compare-button {
+  min-height: 100%;
+
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+
+  padding: 0 14px;
+
+  border: 1px solid rgba(139, 114, 232, 0.62);
+  border-radius: 11px;
+
+  color: #f0ebff;
+
+  background:
+    linear-gradient(
+      145deg,
+      #5d4cb5,
+      #3f347c
+    );
+
+  font-size: 11px;
+  font-weight: 900;
+  white-space: nowrap;
+}
+
+.spf-compare-button:hover {
+  background:
+    linear-gradient(
+      145deg,
+      #6958c6,
+      #493b8e
+    );
+}
+
+@media (max-width: 760px) {
+  .spf-card-actions {
+    grid-template-columns:
+      1fr
+      1fr;
+  }
+
+  .spf-share-button {
+    grid-column: 1 / -1;
+  }
+
+  .spf-compare-button,
+  .spf-copy-button {
+    min-height: 43px;
+  }
+}
+
+@media (max-width: 390px) {
+  .spf-card-actions {
+    grid-template-columns:
+      1fr;
+  }
+
+  .spf-share-button,
+  .spf-compare-button,
+  .spf-copy-button {
+    grid-column: auto;
+    min-height: 44px;
+  }
+}
+
+
+/* =========================================================
+   PLAYER CARD ACTION BAR — OVERLAP / HIDDEN SHARE FIX
+   Keeps Share Player Card, Compare Players and Copy Link
+   fully visible without covering one another.
+   ========================================================= */
+
+/*
+ * The four summary metrics stay on the first row.
+ * The action group receives its own full-width row beneath them.
+ */
+.spf-hero-dashboard {
+  grid-template-columns:
+    repeat(4, minmax(0, 1fr));
+}
+
+.spf-card-actions {
+  grid-column: 1 / -1;
+
+  width: 100%;
+  min-width: 0;
+  min-height: 48px;
+
+  display: grid;
+  grid-template-columns:
+    minmax(190px, 1.4fr)
+    minmax(170px, 1fr)
+    minmax(100px, auto);
+  gap: 9px;
+}
+
+/*
+ * Apply the same control sizing to buttons and the Compare link.
+ */
+.spf-card-actions
+  .spf-share-button,
+.spf-card-actions
+  .spf-compare-button,
+.spf-card-actions
+  .spf-copy-button {
+  width: 100%;
+  min-width: 0;
+  min-height: 48px;
+
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 7px;
+
+  padding: 0 15px;
+
+  overflow: visible;
+
+  line-height: 1.1;
+  text-align: center;
+  white-space: nowrap;
+}
+
+/*
+ * Ensure the status message does not cover any action.
+ */
+.spf-action-message {
+  top: calc(100% + 6px);
+  right: 0;
+  bottom: auto;
+}
+
+/*
+ * Tablet: keep Share prominent and place the two supporting actions below.
+ */
+@media (max-width: 900px) {
+  .spf-card-actions {
+    grid-template-columns:
+      minmax(0, 1fr)
+      minmax(0, 1fr);
+  }
+
+  .spf-card-actions
+    .spf-share-button {
+    grid-column: 1 / -1;
+  }
+}
+
+/*
+ * Mobile: all actions are full width and clearly separated.
+ */
+@media (max-width: 560px) {
+  .spf-card-actions {
+    grid-template-columns:
+      1fr;
+  }
+
+  .spf-card-actions
+    .spf-share-button,
+  .spf-card-actions
+    .spf-compare-button,
+  .spf-card-actions
+    .spf-copy-button {
+    grid-column: auto;
+
+    min-height: 46px;
+
+    font-size: 11px;
+  }
+}
