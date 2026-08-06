@@ -1277,3 +1277,27 @@ model MatchDayManualStatus {
   @@index([leagueId, updatedAt])
   @@index([completedByUserId])
 }
+
+model PlayerMilestone {
+  id                     Int      @id @default(autoincrement())
+  leagueId               Int
+  matchId                Int?
+  ballId                 Int?
+  representativePlayerId Int
+  identityKey            String
+  playerName             String
+  playerIds              Int[]
+  milestoneType          String
+  milestoneValue         Int
+  title                  String
+  description            String?
+  icon                   String   @default("🏆")
+  achievedAt             DateTime @default(now())
+  isActive               Boolean  @default(true)
+  dedupeKey              String   @unique
+  metadata               Json?
+
+  @@index([leagueId, identityKey, isActive, achievedAt])
+  @@index([matchId])
+  @@index([representativePlayerId])
+}

@@ -552,6 +552,10 @@ const [
   postMatchKitPrompt,
   setPostMatchKitPrompt,
 ] = useState(null);
+const [
+  milestoneCelebration,
+  setMilestoneCelebration,
+] = useState(null);
 const isSuperAdmin =
   session?.user?.email ===
   "surprisecricket11@gmail.com";
@@ -2594,6 +2598,22 @@ setTimeout(() => {
   setShowCorrectionModal(false);
 }, 1500);
 setLastCorrectionId(result.correctionId);
+
+await api(
+  "/api/milestones/reconcile",
+  {
+    method:
+      "POST",
+
+    body:
+      JSON.stringify({
+        matchId:
+          Number(
+            selectedMatchId
+          ),
+      }),
+  }
+);
     await loadSelectedMatch(selectedMatchId);
     await loadMatches();
     await loadLeagueStats(activeLeagueId);
@@ -3337,6 +3357,22 @@ const isMatchAbandoned = scoreboard?.match?.status ===  "ABANDONED";
         method: "POST"
       });
 
+      await api(
+        "/api/milestones/reconcile",
+        {
+          method:
+            "POST",
+
+          body:
+            JSON.stringify({
+              matchId:
+                Number(
+                  selectedMatchId
+                ),
+            }),
+        }
+      );
+
       await Promise.all([
         loadSelectedMatch(selectedMatchId),
         loadMatches()
@@ -3525,6 +3561,21 @@ data = {
       method: "POST",
       body: JSON.stringify(data),
     });
+
+    if (
+      Array.isArray(
+        savedBall?.milestones
+      ) &&
+      savedBall.milestones.length
+    ) {
+      setMilestoneCelebration({
+        primary:
+          savedBall.milestones[0],
+
+        all:
+          savedBall.milestones,
+      });
+    }
 if (scoreboard?.currentState && !showDeliverySetupModal) {  
 setBallForm((prev) => ({
   ...prev,
@@ -6588,6 +6639,22 @@ setCorrectionError("");
     setCorrectionReason("");
     setCorrectionForm({});
 
+    await api(
+      "/api/milestones/reconcile",
+      {
+        method:
+          "POST",
+
+        body:
+          JSON.stringify({
+            matchId:
+              Number(
+                selectedMatchId
+              ),
+          }),
+      }
+    );
+
     showToast("success", "✅ Scorecard correction applied.");
   } catch (err) {
   const message = err.message || "Correction failed.";
@@ -6607,6 +6674,22 @@ async function rollbackCorrection(correctionId) {
     await api(`/api/matches/${selectedMatchId}/corrections/${correctionId}/rollback`, {
       method: "POST",
     });
+
+    await api(
+      "/api/milestones/reconcile",
+      {
+        method:
+          "POST",
+
+        body:
+          JSON.stringify({
+            matchId:
+              Number(
+                selectedMatchId
+              ),
+          }),
+      }
+    );
 
     await loadSelectedMatch(selectedMatchId, {
       loadDetail: true,
@@ -21823,6 +21906,110 @@ setBallForm((previous) => ({
   </div>,
   document.body
 )}
+
+{milestoneCelebration &&
+  typeof document !==
+    "undefined" &&
+  createPortal(
+    <div
+      className="milestone-celebration-overlay"
+      role="dialog"
+      aria-modal="true"
+      aria-label="Milestone unlocked"
+    >
+      <section className="milestone-celebration-card">
+        <button
+          type="button"
+          className="milestone-celebration-close"
+          onClick={() =>
+            setMilestoneCelebration(
+              null
+            )
+          }
+          aria-label="Close milestone celebration"
+        >
+          ×
+        </button>
+
+        <div
+          className="milestone-celebration-icon"
+          aria-hidden="true"
+        >
+          {milestoneCelebration
+            .primary
+            ?.icon ||
+            "🏆"}
+        </div>
+
+        <p>
+          MILESTONE UNLOCKED
+        </p>
+
+        <h2>
+          {milestoneCelebration
+            .primary
+            ?.playerName}
+        </h2>
+
+        <h3>
+          {milestoneCelebration
+            .primary
+            ?.title}
+        </h3>
+
+        <span>
+          {milestoneCelebration
+            .primary
+            ?.description}
+        </span>
+
+        {milestoneCelebration
+          .all.length >
+          1 && (
+          <small>
+            +
+            {milestoneCelebration
+              .all.length -
+              1}{" "}
+            more milestone
+            {milestoneCelebration
+              .all.length -
+              1 ===
+            1
+              ? ""
+              : "s"}{" "}
+            unlocked on this delivery
+          </small>
+        )}
+
+        <div className="milestone-celebration-actions">
+          <Link
+            href={`/leagues/${activeLeagueSlug}/players/${milestoneCelebration.primary.playerId}`}
+            onClick={() =>
+              setMilestoneCelebration(
+                null
+              )
+            }
+          >
+            View player card
+          </Link>
+
+          <button
+            type="button"
+            onClick={() =>
+              setMilestoneCelebration(
+                null
+              )
+            }
+          >
+            Continue scoring
+          </button>
+        </div>
+      </section>
+    </div>,
+    document.body
+  )}
+
 {correctionSaving && (
   <div className="correction-overlay">
     <div className="correction-card">

@@ -6,6 +6,7 @@ import Link from "next/link";
 
 import PlayerCardActions from "./PlayerCardActions";
 import "@/app/spectator-player-final.css";
+import "@/app/player-milestones-final.css";
 
 const COMPLETED_STATUSES = new Set([
   "COMPLETED",
@@ -1285,6 +1286,33 @@ export default async function PublicPlayerPage({
   const stats =
     profile.stats;
 
+  const milestoneTimeline =
+    await prisma.playerMilestone.findMany({
+      where: {
+        leagueId:
+          league.id,
+
+        identityKey:
+          selectedIdentityGroup.key,
+
+        isActive:
+          true,
+      },
+
+      orderBy: [
+        {
+          achievedAt:
+            "desc",
+        },
+        {
+          id:
+            "desc",
+        },
+      ],
+
+      take: 20,
+    });
+
   const battingScores =
     allProfiles.map(
       ({ stats: item }) =>
@@ -2422,6 +2450,113 @@ export default async function PublicPlayerPage({
                 )
               )}
             </div>
+          </section>
+
+
+          <section className="spf-earned-milestones-section">
+            <div className="spf-section-heading">
+              <div>
+                <p>
+                  Career moments
+                </p>
+
+                <h2>
+                  Milestone timeline
+                </h2>
+              </div>
+
+              <span>
+                {milestoneTimeline.length} recorded
+              </span>
+            </div>
+
+            {milestoneTimeline.length ? (
+              <div className="spf-earned-milestone-list">
+                {milestoneTimeline.map(
+                  (milestone) => {
+                    const metadata =
+                      milestone.metadata &&
+                      typeof milestone.metadata ===
+                        "object"
+                        ? milestone.metadata
+                        : {};
+
+                    return (
+                      <article
+                        key={
+                          milestone.id
+                        }
+                        className="spf-earned-milestone"
+                      >
+                        <div
+                          className="spf-earned-milestone-icon"
+                          aria-hidden="true"
+                        >
+                          {milestone.icon ||
+                            "🏆"}
+                        </div>
+
+                        <div className="spf-earned-milestone-copy">
+                          <small>
+                            {new Intl.DateTimeFormat(
+                              "en-US",
+                              {
+                                month:
+                                  "short",
+                                day:
+                                  "numeric",
+                                year:
+                                  "numeric",
+                              }
+                            ).format(
+                              new Date(
+                                milestone.achievedAt
+                              )
+                            )}
+                          </small>
+
+                          <h3>
+                            {milestone.title}
+                          </h3>
+
+                          <p>
+                            {milestone.description}
+                          </p>
+
+                          {metadata.matchLabel && (
+                            <span>
+                              {metadata.matchLabel}
+                            </span>
+                          )}
+                        </div>
+
+                        {milestone.matchId && (
+                          <strong>
+                            Match #{milestone.matchId}
+                          </strong>
+                        )}
+                      </article>
+                    );
+                  }
+                )}
+              </div>
+            ) : (
+              <div className="spf-empty-state">
+                <span aria-hidden="true">
+                  🏆
+                </span>
+
+                <div>
+                  <strong>
+                    Milestones will appear here
+                  </strong>
+
+                  <p>
+                    Career milestones are recorded automatically as new deliveries are scored.
+                  </p>
+                </div>
+              </div>
+            )}
           </section>
 
           <section className="spf-history-section">

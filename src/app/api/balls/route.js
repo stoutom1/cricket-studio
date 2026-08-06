@@ -9,6 +9,9 @@ import {
   validateBallInput,
   applyBallOutcome,
 } from "@/lib/scoring";
+import {
+  reconcileMilestonesForPlayers,
+} from "@/lib/player-milestones";
 
 export const runtime = "nodejs";
 
@@ -522,12 +525,66 @@ console.log("BALL SAVE RESULT", {
 });
 */
 
+let milestoneResult = {
+  newMilestones: [],
+};
+
+if (match.leagueId) {
+  try {
+    milestoneResult =
+      await reconcileMilestonesForPlayers({
+        leagueId:
+          match.leagueId,
+
+        playerIds: [
+          payload.strikerId,
+          payload.bowlerId,
+          dismissedPlayerId,
+        ],
+      });
+  } catch (milestoneError) {
+    console.error(
+      "[MILESTONE_RECONCILE_FAILED]",
+      milestoneError
+    );
+  }
+}
+
 return NextResponse.json(
   {
     ...ball,
     inningsEnded,
     inningsEndedReason,
     nextInningsNo,
+
+    milestones:
+      milestoneResult.newMilestones.map(
+        (milestone) => ({
+          id:
+            milestone.id,
+
+          playerId:
+            milestone.representativePlayerId,
+
+          playerName:
+            milestone.playerName,
+
+          title:
+            milestone.title,
+
+          description:
+            milestone.description,
+
+          icon:
+            milestone.icon,
+
+          matchId:
+            milestone.matchId,
+
+          achievedAt:
+            milestone.achievedAt,
+        })
+      ),
   },
   { status: 201 }
 );
