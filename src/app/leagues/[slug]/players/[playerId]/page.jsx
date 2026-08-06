@@ -1130,11 +1130,50 @@ export async function generateMetadata({
 
 export default async function PublicPlayerPage({
   params,
+  searchParams,
 }) {
   const {
     slug,
     playerId,
   } = await params;
+
+  const resolvedSearchParams =
+    await searchParams;
+
+  const returnToRaw =
+    String(
+      resolvedSearchParams
+        ?.returnTo ||
+        ""
+    );
+
+  const returnTo =
+    returnToRaw.startsWith(
+      "/"
+    ) &&
+    !returnToRaw.startsWith(
+      "//"
+    )
+      ? returnToRaw
+      : "";
+
+  const launchedFromPlayers =
+    resolvedSearchParams
+      ?.from ===
+      "players" &&
+    returnTo.includes(
+      "section=players"
+    );
+
+  const backHref =
+    launchedFromPlayers
+      ? returnTo
+      : "/explore";
+
+  const backLabel =
+    launchedFromPlayers
+      ? "Back to Players"
+      : "Explore";
 
   const league =
     await prisma.league
@@ -1587,13 +1626,16 @@ export default async function PublicPlayerPage({
               aria-label="Player navigation"
             >
               <Link
-                href="/explore"
+                href={
+                  backHref
+                }
                 className="spf-back-button"
               >
                 <span aria-hidden="true">
                   ←
                 </span>
-                Explore
+
+                {backLabel}
               </Link>
 
               <Link

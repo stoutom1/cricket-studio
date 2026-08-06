@@ -336,6 +336,23 @@ export default function DashboardClient() {
       )
     );
 
+  const requestedTeamId =
+    Number(
+      searchParams.get(
+        "teamId"
+      )
+    );
+
+  const requestedDashboardSection =
+    String(
+      searchParams.get(
+        "section"
+      ) ||
+      ""
+    )
+      .trim()
+      .toLowerCase();
+
   const requestedMatchId =
     Number(
       searchParams.get(
@@ -1021,6 +1038,86 @@ setSelectedMatchId("");
     loadUserPreferences();
   }, []);
 */
+  useEffect(() => {
+    if (
+      !Number.isInteger(
+        requestedTeamId
+      ) ||
+      requestedTeamId <= 0 ||
+      !teams.length
+    ) {
+      return;
+    }
+
+    const requestedTeam =
+      teams.find(
+        (team) =>
+          Number(
+            team.id
+          ) ===
+            requestedTeamId &&
+          (
+            !requestedLeagueId ||
+            Number(
+              team.leagueId
+            ) ===
+              requestedLeagueId
+          )
+      );
+
+    if (!requestedTeam) {
+      return;
+    }
+
+    setSelectedTeamId(
+      String(
+        requestedTeam.id
+      )
+    );
+  }, [
+    requestedLeagueId,
+    requestedTeamId,
+    teams,
+  ]);
+
+  useEffect(() => {
+    if (
+      requestedDashboardSection !==
+        "players" ||
+      activeTab !==
+        "management" ||
+      !selectedTeamId
+    ) {
+      return;
+    }
+
+    const timer =
+      window.setTimeout(
+        () => {
+          document
+            .getElementById(
+              "players-section"
+            )
+            ?.scrollIntoView({
+              behavior:
+                "smooth",
+              block:
+                "start",
+            });
+        },
+        120
+      );
+
+    return () =>
+      window.clearTimeout(
+        timer
+      );
+  }, [
+    activeTab,
+    requestedDashboardSection,
+    selectedTeamId,
+  ]);
+
   useEffect(() => {
     const validTabs =
       new Set([
@@ -7087,11 +7184,40 @@ const activeLeagueSlug = String(
 ).trim();
 
 function getPlayerCardHref(playerId) {
-  if (!activeLeagueSlug || !playerId) return "";
+  if (!activeLeagueSlug || !playerId) {
+    return "";
+  }
 
-  return `/leagues/${encodeURIComponent(
-    activeLeagueSlug
-  )}/players/${encodeURIComponent(String(playerId))}`;
+  const returnTo =
+    `/dashboard?tab=management` +
+    `&leagueId=${encodeURIComponent(
+      String(
+        activeLeagueId ||
+          ""
+      )
+    )}` +
+    `&teamId=${encodeURIComponent(
+      String(
+        selectedTeamId ||
+          ""
+      )
+    )}` +
+    `&section=players`;
+
+  return (
+    `/leagues/${encodeURIComponent(
+      activeLeagueSlug
+    )}` +
+    `/players/${encodeURIComponent(
+      String(
+        playerId
+      )
+    )}` +
+    `?returnTo=${encodeURIComponent(
+      returnTo
+    )}` +
+    `&from=players`
+  );
 }
 
 useEffect(() => {
@@ -13127,7 +13253,10 @@ onClick={() => {
 )}
         </section>
  {/* PLAYERS */}
-<section className="mgmt-clean-card player-manager-card">
+<section
+  id="players-section"
+  className="mgmt-clean-card player-manager-card"
+>
   <div className="player-manager-head">
     <div>
       <h3>🏏 Players</h3>
