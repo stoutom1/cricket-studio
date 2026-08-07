@@ -13961,83 +13961,80 @@ const playerRoleBadge = (row) => {
         </div>
       </details>
     </div>
-{(
-  canViewBirthdayTools ||
-  canViewLeagueKitShortcut
-) && (
-  <div className="league-tools-shell">
-    {canViewBirthdayTools && (
-      <details className="league-tool-panel birthday-tool">
-        <summary className="league-tool-summary">
-          <div className="league-tool-summary-main">
-            <span className="league-tool-icon">
-              🎂
+<div className="league-tools-shell">
+  {canViewBirthdayTools && (
+    <details className="league-tool-panel birthday-tool">
+      <summary className="league-tool-summary">
+        <div className="league-tool-summary-main">
+          <span className="league-tool-icon">
+            🎂
+          </span>
+
+          <div>
+            <strong>
+              Birthdays
+            </strong>
+
+            <small>
+              {canManageBirthdayTools
+                ? "Dates & reminders"
+                : "Events & celebrations"}
+            </small>
+          </div>
+        </div>
+
+        <span className="league-tool-action">
+          <span className="league-tool-action-collapsed">
+            Open
+          </span>
+
+          <span className="league-tool-action-open">
+            Close
+          </span>
+
+          <span className="league-tool-chevron">
+            ⌄
+          </span>
+        </span>
+      </summary>
+
+      <div className="league-tool-content">
+        {canManageBirthdayTools ? (
+          <BirthdayPushSettings
+            leagueId={
+              activeLeagueId
+            }
+          />
+        ) : (
+          <div className="birthday-readonly-shortcut">
+            <span aria-hidden="true">
+              👁️
             </span>
 
             <div>
               <strong>
-                League Birthday Reminders
+                Birthday events — view only
               </strong>
 
               <small>
-                {canManageBirthdayTools
-                  ? "Manage birthday alerts and player birthday records."
-                  : "View league birthday events and today’s celebrations."}
+                You can view the Birthday Center and today’s birthdays. Add, edit, delete, notification, and sharing controls remain disabled.
               </small>
             </div>
+
+            <Link
+              href={`/leagues/${activeLeagueId}/birthdays`}
+              className="birthday-readonly-shortcut-link"
+            >
+              Open Birthday Center →
+            </Link>
           </div>
+        )}
+      </div>
+    </details>
+  )}
 
-          <span className="league-tool-action">
-            <span className="league-tool-action-collapsed">
-              Expand
-            </span>
-
-            <span className="league-tool-action-open">
-              Collapse
-            </span>
-
-            <span className="league-tool-chevron">
-              ⌄
-            </span>
-          </span>
-        </summary>
-
-        <div className="league-tool-content">
-          {canManageBirthdayTools ? (
-            <BirthdayPushSettings
-              leagueId={
-                activeLeagueId
-              }
-            />
-          ) : (
-            <div className="birthday-readonly-shortcut">
-              <span aria-hidden="true">
-                👁️
-              </span>
-
-              <div>
-                <strong>
-                  Birthday events — view only
-                </strong>
-
-                <small>
-                  You can view the Birthday Center and today’s birthdays. Add, edit, delete, notification, and sharing controls remain disabled.
-                </small>
-              </div>
-
-              <Link
-                href={`/leagues/${activeLeagueId}/birthdays`}
-                className="birthday-readonly-shortcut-link"
-              >
-                Open Birthday Center →
-              </Link>
-            </div>
-          )}
-        </div>
-      </details>
-    )}
-
-    {canViewLeagueKitShortcut && (
+  {canViewLeagueKitShortcut && (
+    <div className="dashboard-tool-card-shell dashboard-tool-kit-shell">
       <LeagueKitShortcut
         leagueName={
           activeLeague?.name ||
@@ -14062,17 +14059,53 @@ const playerRoleBadge = (row) => {
           );
         }}
       />
-    )}
-  </div>
-)}
 
-  <LeagueResourcesShortcut
-    leagueId={activeLeagueId}
-    leagueName={
-      activeLeague?.name ||
-      "Active league"
-    }
-  />
+      <div
+        className="dashboard-tool-card-overlay"
+        aria-hidden="true"
+      >
+        <span className="dashboard-tool-card-overlay-icon">
+          🏏
+        </span>
+
+        <strong>
+          Kit Tracking
+        </strong>
+
+        <span className="dashboard-tool-card-overlay-action">
+          Open
+        </span>
+      </div>
+    </div>
+  )}
+
+  <div className="league-resource-tool-slot dashboard-tool-card-shell dashboard-tool-resource-shell">
+    <LeagueResourcesShortcut
+      leagueId={activeLeagueId}
+      leagueName={
+        activeLeague?.name ||
+        "Active league"
+      }
+    />
+
+    <div
+      className="dashboard-tool-card-overlay"
+      aria-hidden="true"
+    >
+      <span className="dashboard-tool-card-overlay-icon">
+        📚
+      </span>
+
+      <strong>
+        Resources
+      </strong>
+
+      <span className="dashboard-tool-card-overlay-action">
+        Open
+      </span>
+    </div>
+  </div>
+</div>
   </div>
 
   {/* Mobile-only state-aware experience */}
@@ -14407,14 +14440,33 @@ const playerRoleBadge = (row) => {
           </span>
         </button>
 
-        <LeagueResourcesShortcut
-          leagueId={activeLeagueId}
-          leagueName={
-            activeLeague?.name ||
-            "Active league"
-          }
-          compact
-        />
+        <div className="mobile-dashboard-tool-shell mobile-dashboard-resource-shell">
+          <LeagueResourcesShortcut
+            leagueId={activeLeagueId}
+            leagueName={
+              activeLeague?.name ||
+              "Active league"
+            }
+            compact
+          />
+
+          <div
+            className="mobile-dashboard-tool-overlay"
+            aria-hidden="true"
+          >
+            <span className="mobile-dashboard-tool-icon">
+              📚
+            </span>
+
+            <strong>
+              Resources
+            </strong>
+
+            <span className="mobile-dashboard-tool-action">
+              Open
+            </span>
+          </div>
+        </div>
 
         {(
           canViewBirthdayTools ||
@@ -14534,30 +14586,49 @@ const playerRoleBadge = (row) => {
                   mobileKitStyles.mobileLeagueKitBelowBirthday
                 }
               >
-                <LeagueKitShortcut
-                  leagueName={
-                    activeLeague?.name ||
-                    "Active league"
-                  }
-                  sharedKit={
-                    String(
-                      activeLeague
-                        ?.kitRotationMode ||
-                      ""
-                    )
-                      .trim()
-                      .toUpperCase() ===
-                    "LEAGUE_PLAYER"
-                  }
-                  onOpenKit={() => {
-                    setActiveTab(
-                      "matches"
-                    );
-                    setMatchesSubTab(
-                      "KIT"
-                    );
-                  }}
-                />
+                <div className="mobile-dashboard-tool-shell mobile-dashboard-kit-shell">
+                  <LeagueKitShortcut
+                    leagueName={
+                      activeLeague?.name ||
+                      "Active league"
+                    }
+                    sharedKit={
+                      String(
+                        activeLeague
+                          ?.kitRotationMode ||
+                        ""
+                      )
+                        .trim()
+                        .toUpperCase() ===
+                      "LEAGUE_PLAYER"
+                    }
+                    onOpenKit={() => {
+                      setActiveTab(
+                        "matches"
+                      );
+                      setMatchesSubTab(
+                        "KIT"
+                      );
+                    }}
+                  />
+
+                  <div
+                    className="mobile-dashboard-tool-overlay"
+                    aria-hidden="true"
+                  >
+                    <span className="mobile-dashboard-tool-icon">
+                      🏏
+                    </span>
+
+                    <strong>
+                      Kit Tracking
+                    </strong>
+
+                    <span className="mobile-dashboard-tool-action">
+                      Open
+                    </span>
+                  </div>
+                </div>
               </div>
             )}
           </div>

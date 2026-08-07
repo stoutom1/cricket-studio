@@ -70112,3 +70112,912 @@ body:has(.milestone-celebration-overlay)
     font-size: 10px;
   }
 }
+
+
+/* =========================================================
+   DASHBOARD — BIRTHDAYS / KIT / RESOURCES: ONE EQUAL ROW
+   ========================================================= */
+
+/*
+ * All three tools now share one layout container.
+ * Existing tool behavior remains unchanged.
+ */
+.management-page .league-tools-shell {
+  display: grid !important;
+  grid-template-columns:
+    repeat(3, minmax(0, 1fr)) !important;
+  align-items: stretch !important;
+  gap: 9px !important;
+
+  width: 100%;
+  margin-top: 10px;
+}
+
+.management-page .league-tools-shell > * {
+  min-width: 0 !important;
+  width: 100% !important;
+  margin: 0 !important;
+}
+
+.management-page .league-tool-panel,
+.management-page .league-resource-tool-slot,
+.management-page .league-resource-tool-slot > * {
+  min-height: 68px !important;
+  height: 68px !important;
+}
+
+.management-page .league-tool-panel {
+  overflow: hidden;
+
+  border-radius: 11px !important;
+}
+
+.management-page .league-tool-summary {
+  min-height: 68px !important;
+  height: 68px !important;
+
+  display: grid !important;
+  grid-template-columns:
+    minmax(0, 1fr)
+    auto !important;
+  align-items: center !important;
+  gap: 8px !important;
+
+  padding: 9px 10px !important;
+}
+
+.management-page .league-tool-summary-main {
+  min-width: 0 !important;
+
+  display: grid !important;
+  grid-template-columns:
+    36px
+    minmax(0, 1fr) !important;
+  align-items: center !important;
+  gap: 8px !important;
+}
+
+.management-page .league-tool-icon {
+  width: 36px !important;
+  height: 36px !important;
+
+  display: grid !important;
+  place-items: center !important;
+
+  border-radius: 9px !important;
+
+  font-size: 16px !important;
+}
+
+.management-page .league-tool-summary-main > div {
+  min-width: 0 !important;
+}
+
+.management-page .league-tool-summary-main strong {
+  display: block !important;
+
+  overflow: visible !important;
+
+  font-size: 12.5px !important;
+  font-weight: 900 !important;
+  line-height: 1.1 !important;
+  white-space: nowrap !important;
+  text-overflow: clip !important;
+}
+
+.management-page .league-tool-summary-main small {
+  display: block !important;
+
+  margin-top: 3px !important;
+
+  overflow: visible !important;
+
+  color: #94a8bb !important;
+
+  font-size: 10.5px !important;
+  line-height: 1.1 !important;
+  white-space: nowrap !important;
+  text-overflow: clip !important;
+}
+
+.management-page .league-tool-action {
+  min-width: 56px !important;
+  min-height: 32px !important;
+
+  display: inline-flex !important;
+  align-items: center !important;
+  justify-content: center !important;
+
+  padding: 0 7px !important;
+
+  border-radius: 8px !important;
+
+  font-size: 10.5px !important;
+  white-space: nowrap !important;
+}
+
+/*
+ * KIT:
+ * LeagueKitShortcut is a separate existing component, so preserve its
+ * functionality and only shorten the visible title/description here.
+ */
+.management-page .league-tools-shell .kit-tool strong {
+  font-size: 0 !important;
+  white-space: nowrap !important;
+}
+
+.management-page .league-tools-shell .kit-tool strong::after {
+  content: "Kit Tracking";
+
+  font-size: 12.5px;
+  font-weight: 900;
+  line-height: 1.1;
+}
+
+.management-page .league-tools-shell .kit-tool small {
+  font-size: 0 !important;
+  white-space: nowrap !important;
+}
+
+.management-page .league-tools-shell .kit-tool small::after {
+  content: "Holders & handoffs";
+
+  color: #94a8bb;
+
+  font-size: 10.5px;
+  line-height: 1.1;
+}
+
+/*
+ * RESOURCES:
+ * LeagueResourcesShortcut remains the same component. The wrapper forces it
+ * into the same card footprint as Birthdays and Kit.
+ */
+.management-page .league-resource-tool-slot {
+  min-width: 0 !important;
+  overflow: hidden !important;
+
+  border-radius: 11px !important;
+}
+
+.management-page .league-resource-tool-slot > * {
+  width: 100% !important;
+  min-width: 0 !important;
+  margin: 0 !important;
+}
+
+/*
+ * Keep resource text short and meaningful without ellipsis.
+ * This is scoped only to the desktop Dashboard league-tools row.
+ */
+.management-page .league-resource-tool-slot strong {
+  font-size: 0 !important;
+  white-space: nowrap !important;
+}
+
+.management-page .league-resource-tool-slot strong::after {
+  content: "Resources";
+
+  font-size: 12.5px;
+  font-weight: 900;
+  line-height: 1.1;
+}
+
+.management-page .league-resource-tool-slot small {
+  font-size: 0 !important;
+  white-space: nowrap !important;
+}
+
+.management-page .league-resource-tool-slot small::after {
+  content: "Rules · files · contacts";
+
+  color: #94a8bb;
+
+  font-size: 10.5px;
+  line-height: 1.1;
+}
+
+/* ---------------------------------------------------------
+   MOBILE
+   Keep all three on one line without tiny fonts or wrapping.
+   On very narrow phones the row scrolls horizontally.
+   --------------------------------------------------------- */
+
+@media (max-width: 768px) {
+  .management-page .league-tools-shell {
+    grid-template-columns:
+      repeat(3, minmax(144px, 1fr)) !important;
+    gap: 7px !important;
+
+    overflow-x: auto !important;
+    overscroll-behavior-x: contain;
+
+    padding-bottom: 3px;
+  }
+
+  .management-page .league-tools-shell > * {
+    min-width: 144px !important;
+  }
+
+  .management-page .league-tool-panel,
+  .management-page .league-resource-tool-slot,
+  .management-page .league-resource-tool-slot > * {
+    min-height: 70px !important;
+    height: 70px !important;
+  }
+
+  .management-page .league-tool-summary {
+    min-height: 70px !important;
+    height: 70px !important;
+
+    grid-template-columns:
+      minmax(0, 1fr)
+      auto !important;
+
+    gap: 6px !important;
+
+    padding: 8px !important;
+  }
+
+  .management-page .league-tool-summary-main {
+    grid-template-columns:
+      31px
+      minmax(0, 1fr) !important;
+    gap: 6px !important;
+  }
+
+  .management-page .league-tool-icon {
+    width: 31px !important;
+    height: 31px !important;
+
+    font-size: 14px !important;
+  }
+
+  .management-page .league-tool-summary-main strong,
+  .management-page .league-tools-shell .kit-tool strong::after,
+  .management-page .league-resource-tool-slot strong::after {
+    font-size: 12px !important;
+  }
+
+  .management-page .league-tool-summary-main small,
+  .management-page .league-tools-shell .kit-tool small::after,
+  .management-page .league-resource-tool-slot small::after {
+    font-size: 10.5px !important;
+  }
+
+  .management-page .league-tool-action {
+    min-width: 48px !important;
+    min-height: 32px !important;
+
+    padding: 0 6px !important;
+
+    font-size: 10px !important;
+  }
+
+  .management-page .league-resource-tool-slot small::after {
+    content: "Rules · files";
+  }
+}
+
+@media (max-width: 430px) {
+  .management-page .league-tools-shell {
+    grid-template-columns:
+      repeat(3, 146px) !important;
+  }
+
+  .management-page .league-tools-shell > * {
+    min-width: 146px !important;
+  }
+}
+
+
+/* =========================================================
+   CRIC4ALL DASHBOARD — FINAL THREE-TOOL COMPACT ALIGNMENT
+   Birthdays | Kit Tracking | Resources
+   ========================================================= */
+
+/* ---------------------------------------------------------
+   DESKTOP / LAPTOP
+   Three equal cards. No description under Kit or Resources.
+   --------------------------------------------------------- */
+
+@media (min-width: 769px) {
+  .management-page .league-tools-shell {
+    display: grid !important;
+    grid-template-columns:
+      repeat(3, minmax(0, 1fr)) !important;
+    align-items: stretch !important;
+    gap: 9px !important;
+
+    width: 100% !important;
+    margin-top: 10px !important;
+  }
+
+  .management-page .league-tools-shell > * {
+    min-width: 0 !important;
+    width: 100% !important;
+    min-height: 64px !important;
+    height: 64px !important;
+    margin: 0 !important;
+
+    align-self: stretch !important;
+  }
+
+  .management-page .league-tool-panel,
+  .management-page .league-resource-tool-slot,
+  .management-page .league-resource-tool-slot > * {
+    min-width: 0 !important;
+    width: 100% !important;
+    min-height: 64px !important;
+    height: 64px !important;
+
+    border-radius: 11px !important;
+  }
+
+  .management-page .league-tool-summary {
+    min-height: 64px !important;
+    height: 64px !important;
+
+    display: grid !important;
+    grid-template-columns:
+      minmax(0, 1fr)
+      58px !important;
+    align-items: center !important;
+    gap: 8px !important;
+
+    padding: 8px 9px !important;
+  }
+
+  .management-page .league-tool-summary-main {
+    min-width: 0 !important;
+
+    display: grid !important;
+    grid-template-columns:
+      34px
+      minmax(0, 1fr) !important;
+    align-items: center !important;
+    gap: 8px !important;
+  }
+
+  .management-page .league-tool-icon {
+    width: 34px !important;
+    height: 34px !important;
+
+    display: grid !important;
+    place-items: center !important;
+
+    border-radius: 9px !important;
+
+    font-size: 15px !important;
+  }
+
+  .management-page .league-tool-summary-main > div {
+    min-width: 0 !important;
+  }
+
+  .management-page .league-tool-summary-main strong {
+    display: block !important;
+
+    overflow: visible !important;
+
+    font-size: 12.5px !important;
+    font-weight: 900 !important;
+    line-height: 1.1 !important;
+    white-space: nowrap !important;
+    text-overflow: clip !important;
+  }
+
+  .management-page .birthday-tool
+    .league-tool-summary-main small {
+    display: block !important;
+
+    margin-top: 3px !important;
+
+    overflow: visible !important;
+
+    color: #94a8bb !important;
+
+    font-size: 10px !important;
+    line-height: 1.1 !important;
+    white-space: nowrap !important;
+    text-overflow: clip !important;
+  }
+
+  .management-page .league-tool-action {
+    width: 58px !important;
+    min-width: 58px !important;
+    min-height: 32px !important;
+
+    display: inline-flex !important;
+    align-items: center !important;
+    justify-content: center !important;
+
+    padding: 0 6px !important;
+
+    border-radius: 8px !important;
+
+    font-size: 10.5px !important;
+    white-space: nowrap !important;
+  }
+
+  /* KIT: exact label, no description, action = Open */
+  .management-page .league-tools-shell .kit-tool strong {
+    font-size: 0 !important;
+    white-space: nowrap !important;
+  }
+
+  .management-page .league-tools-shell .kit-tool strong::after {
+    content: "Kit Tracking";
+
+    font-size: 12.5px !important;
+    font-weight: 900 !important;
+    line-height: 1.1 !important;
+  }
+
+  .management-page .league-tools-shell .kit-tool small {
+    display: none !important;
+  }
+
+  .management-page .league-tools-shell .kit-tool
+    .league-tool-action {
+    font-size: 0 !important;
+  }
+
+  .management-page .league-tools-shell .kit-tool
+    .league-tool-action::after {
+    content: "Open";
+
+    font-size: 10.5px !important;
+    font-weight: 850 !important;
+  }
+
+  /* RESOURCES: exact label, no description, action = Open */
+  .management-page .league-resource-tool-slot {
+    min-width: 0 !important;
+    overflow: hidden !important;
+  }
+
+  .management-page .league-resource-tool-slot > * {
+    grid-column: auto !important;
+    margin: 0 !important;
+  }
+
+  .management-page .league-resource-tool-slot strong {
+    font-size: 0 !important;
+    white-space: nowrap !important;
+  }
+
+  .management-page .league-resource-tool-slot strong::after {
+    content: "Resources";
+
+    font-size: 12.5px !important;
+    font-weight: 900 !important;
+    line-height: 1.1 !important;
+  }
+
+  .management-page .league-resource-tool-slot small {
+    display: none !important;
+  }
+
+  /*
+   * Existing resource shortcut may render its action as a button, anchor,
+   * b, or final span depending on the component version. Normalize all
+   * common action forms without touching the click handler.
+   */
+  .management-page .league-resource-tool-slot
+    :is(button, a) {
+    min-height: 64px !important;
+  }
+
+  .management-page .league-resource-tool-slot
+    :is(button, a)
+    > :last-child:not(:first-child) {
+    white-space: nowrap !important;
+  }
+
+  .management-page .league-resource-tool-slot
+    :is(button, a)
+    > b {
+    font-size: 0 !important;
+  }
+
+  .management-page .league-resource-tool-slot
+    :is(button, a)
+    > b::after {
+    content: "Open";
+
+    font-size: 10.5px !important;
+    font-weight: 850 !important;
+  }
+}
+
+/* ---------------------------------------------------------
+   MOBILE ONLY
+   Resources becomes a full-width tool row like Birthdays.
+   Do not shrink text or leave a small "Explore" tile.
+   --------------------------------------------------------- */
+
+@media (max-width: 768px) {
+  /*
+   * Inside League tools:
+   * 1 Followed
+   * 2 Discover
+   * 3 Resources
+   * 4 Birthday + Kit tools
+   *
+   * Make Resources full width instead of the small Explore tile.
+   */
+  .management-page .mlcc-more-grid
+    > :nth-child(3) {
+    grid-column: 1 / -1 !important;
+
+    width: 100% !important;
+    min-width: 0 !important;
+    min-height: 56px !important;
+
+    margin: 0 !important;
+  }
+
+  .management-page .mlcc-more-grid
+    > :nth-child(3)
+    :is(button, a),
+  .management-page .mlcc-more-grid
+    > :nth-child(3):is(button, a) {
+    width: 100% !important;
+    min-width: 0 !important;
+    min-height: 56px !important;
+
+    display: flex !important;
+    align-items: center !important;
+
+    padding: 9px 11px !important;
+
+    border-radius: 10px !important;
+  }
+
+  /*
+   * Hide old compact "Explore" wording and replace it with Resources.
+   * Preserve icon and click behavior.
+   */
+  .management-page .mlcc-more-grid
+    > :nth-child(3)
+    strong {
+    font-size: 0 !important;
+  }
+
+  .management-page .mlcc-more-grid
+    > :nth-child(3)
+    strong::after {
+    content: "Resources";
+
+    font-size: 14px !important;
+    font-weight: 900 !important;
+  }
+
+  .management-page .mlcc-more-grid
+    > :nth-child(3)
+    small {
+    display: none !important;
+  }
+
+  .management-page .mlcc-more-grid
+    > :nth-child(3)
+    :is(b, em) {
+    font-size: 0 !important;
+  }
+
+  .management-page .mlcc-more-grid
+    > :nth-child(3)
+    :is(b, em)::after {
+    content: "Resources";
+
+    font-size: 14px !important;
+    font-style: normal !important;
+    font-weight: 900 !important;
+  }
+
+  /*
+   * If the component renders "Explore" as a plain final span, suppress the
+   * old text visually and add the requested label.
+   */
+  .management-page .mlcc-more-grid
+    > :nth-child(3)
+    :is(button, a)
+    > span:nth-last-child(2) {
+    font-size: 0 !important;
+  }
+
+  .management-page .mlcc-more-grid
+    > :nth-child(3)
+    :is(button, a)
+    > span:nth-last-child(2)::after {
+    content: "Resources";
+
+    font-size: 14px !important;
+    font-weight: 900 !important;
+  }
+
+  /*
+   * Birthday / Kit container also gets full width directly below Resources.
+   */
+  .management-page .mlcc-more-grid
+    > :nth-child(4) {
+    grid-column: 1 / -1 !important;
+
+    width: 100% !important;
+    min-width: 0 !important;
+  }
+
+  /*
+   * Birthday summary is the visual sizing reference requested by user.
+   */
+  .management-page .mlcc-more-grid
+    > :nth-child(4)
+    details > summary {
+    min-height: 56px !important;
+
+    padding: 9px 11px !important;
+
+    border-radius: 10px !important;
+  }
+
+  /*
+   * Mobile Kit: exact title and no description.
+   * It remains the existing LeagueKitShortcut with unchanged click handler.
+   */
+  .management-page .mlcc-more-grid
+    > :nth-child(4)
+    .kit-tool strong {
+    font-size: 0 !important;
+  }
+
+  .management-page .mlcc-more-grid
+    > :nth-child(4)
+    .kit-tool strong::after {
+    content: "Kit Tracking";
+
+    font-size: 14px !important;
+    font-weight: 900 !important;
+  }
+
+  .management-page .mlcc-more-grid
+    > :nth-child(4)
+    .kit-tool small {
+    display: none !important;
+  }
+
+  .management-page .mlcc-more-grid
+    > :nth-child(4)
+    .kit-tool
+    .league-tool-action {
+    font-size: 0 !important;
+
+    min-width: 54px !important;
+  }
+
+  .management-page .mlcc-more-grid
+    > :nth-child(4)
+    .kit-tool
+    .league-tool-action::after {
+    content: "Open";
+
+    font-size: 12px !important;
+    font-weight: 850 !important;
+  }
+}
+
+@media (max-width: 430px) {
+  .management-page .mlcc-more-grid
+    > :nth-child(3),
+  .management-page .mlcc-more-grid
+    > :nth-child(4) {
+    grid-column: 1 / -1 !important;
+  }
+}
+
+
+/* =========================================================
+   DASHBOARD TOOL LABELS — EXACT VISUAL FIX
+   Does not depend on internal markup of imported shortcuts.
+   ========================================================= */
+
+@media (min-width: 769px) {
+  .management-page .dashboard-tool-card-shell {
+    position: relative;
+
+    min-width: 0 !important;
+    width: 100% !important;
+    min-height: 64px !important;
+    height: 64px !important;
+
+    overflow: hidden;
+
+    border: 1px solid rgba(65, 99, 135, 0.5);
+    border-radius: 11px;
+
+    background: rgba(9, 31, 52, 0.72);
+  }
+
+  .management-page .dashboard-tool-card-shell > :first-child {
+    position: absolute !important;
+    inset: 0 !important;
+    z-index: 2 !important;
+
+    width: 100% !important;
+    height: 100% !important;
+    min-height: 64px !important;
+
+    opacity: 0 !important;
+
+    cursor: pointer;
+  }
+
+  .management-page .dashboard-tool-card-overlay {
+    position: absolute;
+    inset: 0;
+    z-index: 1;
+
+    display: grid;
+    grid-template-columns:
+      36px minmax(0, 1fr) 58px;
+    align-items: center;
+    gap: 8px;
+
+    padding: 8px 9px;
+
+    pointer-events: none;
+  }
+
+  .management-page .dashboard-tool-card-overlay-icon {
+    width: 36px;
+    height: 36px;
+
+    display: grid;
+    place-items: center;
+
+    border-radius: 9px;
+
+    background: rgba(39, 82, 122, 0.42);
+
+    font-size: 16px;
+  }
+
+  .management-page .dashboard-tool-card-overlay strong {
+    font-size: 12.5px;
+    font-weight: 900;
+    line-height: 1.1;
+    white-space: nowrap;
+  }
+
+  .management-page .dashboard-tool-card-overlay-action {
+    width: 58px;
+    min-height: 32px;
+
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+
+    border: 1px solid rgba(75, 123, 171, 0.52);
+    border-radius: 8px;
+
+    background: rgba(21, 59, 94, 0.64);
+
+    font-size: 10.5px;
+    font-weight: 850;
+    white-space: nowrap;
+  }
+
+  .management-page .league-tools-shell {
+    grid-template-columns:
+      repeat(3, minmax(0, 1fr)) !important;
+    align-items: stretch !important;
+  }
+
+  .management-page .league-tools-shell > * {
+    min-height: 64px !important;
+    height: 64px !important;
+  }
+
+  .management-page .birthday-tool,
+  .management-page .birthday-tool > summary {
+    min-height: 64px !important;
+    height: 64px !important;
+  }
+}
+
+@media (max-width: 768px) {
+  .management-page .mobile-dashboard-tool-shell {
+    position: relative;
+
+    width: 100% !important;
+    min-width: 0 !important;
+    min-height: 56px !important;
+    height: 56px !important;
+
+    overflow: hidden;
+
+    border: 1px solid rgba(69, 104, 140, 0.48);
+    border-radius: 10px;
+
+    background: rgba(10, 30, 50, 0.74);
+  }
+
+  .management-page .mobile-dashboard-tool-shell > :first-child {
+    position: absolute !important;
+    inset: 0 !important;
+    z-index: 2 !important;
+
+    width: 100% !important;
+    height: 100% !important;
+    min-height: 56px !important;
+
+    opacity: 0 !important;
+
+    cursor: pointer;
+  }
+
+  .management-page .mobile-dashboard-tool-overlay {
+    position: absolute;
+    inset: 0;
+    z-index: 1;
+
+    display: grid;
+    grid-template-columns:
+      36px minmax(0, 1fr) 54px;
+    align-items: center;
+    gap: 9px;
+
+    padding: 9px 10px;
+
+    pointer-events: none;
+  }
+
+  .management-page .mobile-dashboard-tool-icon {
+    width: 36px;
+    height: 36px;
+
+    display: grid;
+    place-items: center;
+
+    border-radius: 9px;
+
+    background: rgba(34, 78, 118, 0.42);
+
+    font-size: 17px;
+  }
+
+  .management-page .mobile-dashboard-tool-overlay strong {
+    font-size: 14px;
+    font-weight: 900;
+    line-height: 1.15;
+    white-space: nowrap;
+  }
+
+  .management-page .mobile-dashboard-tool-action {
+    min-width: 54px;
+    min-height: 34px;
+
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+
+    border: 1px solid rgba(74, 121, 168, 0.5);
+    border-radius: 8px;
+
+    background: rgba(19, 57, 91, 0.62);
+
+    font-size: 12px;
+    font-weight: 850;
+    white-space: nowrap;
+  }
+
+  .management-page .mobile-dashboard-resource-shell {
+    grid-column: 1 / -1 !important;
+
+    width: 100% !important;
+  }
+
+  .management-page .mobile-dashboard-kit-shell {
+    width: 100% !important;
+  }
+}
