@@ -1131,3 +1131,28 @@
       22px minmax(0, 1fr) 96px;
   }
 }
+/* =========================================================
+   MOBILE ONLY — LARGER COMPARE PLAYER DROPDOWNS
+   ========================================================= */
+
+@media (max-width: 620px) {
+  .pcp-field select {
+    width: 100%;
+    min-height: 52px;
+    height: 52px;
+
+    padding: 0 42px 0 14px;
+
+    border-radius: 10px;
+
+    font-size: 15px;
+    font-weight: 700;
+    line-height: 1.2;
+  }
+
+  .pcp-field label {
+    margin-bottom: 7px;
+
+    font-size: 12px;
+  }
+}

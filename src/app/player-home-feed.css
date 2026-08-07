@@ -196,63 +196,12 @@
   text-align: center;
 }
 
-.phf-purpose-strip {
-  display: grid;
-  grid-template-columns: repeat(3, minmax(0, 1fr));
-  gap: 8px;
-
-  margin-top: 23px;
-}
-
-.phf-purpose-strip > article,
-.phf-purpose-strip > a {
-  min-width: 0;
-  min-height: 62px;
-
-  display: flex;
-  justify-content: center;
-  flex-direction: column;
-
-  padding: 10px 13px;
-
-  border: 1px solid rgba(67, 101, 137, 0.45);
-  border-radius: 11px;
-
-  background: rgba(8, 27, 46, 0.66);
-}
-
-.phf-purpose-strip > .is-active {
-  border-color: rgba(89, 161, 219, 0.66);
-
-  background: rgba(30, 84, 128, 0.4);
-}
-
-.phf-purpose-strip b,
-.phf-purpose-strip span {
-  overflow: hidden;
-
-  white-space: nowrap;
-  text-overflow: ellipsis;
-}
-
-.phf-purpose-strip b {
-  font-size: 14px;
-}
-
-.phf-purpose-strip span {
-  margin-top: 3px;
-
-  color: #8fa4b8;
-
-  font-size: 11px;
-}
-
 .phf-now-grid {
   display: grid;
   grid-template-columns: repeat(3, minmax(0, 1fr));
   gap: 9px;
 
-  margin-top: 11px;
+  margin-top: 18px;
 }
 
 .phf-now-card {
@@ -677,25 +626,6 @@
   }
 
   .phf-share span {
-    font-size: 13px;
-  }
-
-  .phf-purpose-strip {
-    grid-template-columns: 1fr;
-  }
-
-  .phf-purpose-strip > article,
-  .phf-purpose-strip > a {
-    min-height: 62px;
-
-    padding: 11px 13px;
-  }
-
-  .phf-purpose-strip b {
-    font-size: 15px;
-  }
-
-  .phf-purpose-strip span {
     font-size: 13px;
   }
 

@@ -1468,39 +1468,6 @@ export default async function PlayerHomeFeedPage({
             />
           </div>
 
-          <div className="phf-purpose-strip">
-            <article className="is-active">
-              <b>
-                My Feed
-              </b>
-              <span>
-                New & next
-              </span>
-            </article>
-
-            <Link
-              href={`/leagues/${league.slug}/players/${identity.representativePlayerId}/journey`}
-            >
-              <b>
-                Player Journey
-              </b>
-              <span>
-                Career story
-              </span>
-            </Link>
-
-            <Link
-              href={`/leagues/${league.slug}/compare?playerA=${identity.representativePlayerId}`}
-            >
-              <b>
-                Compare Players
-              </b>
-              <span>
-                Head-to-head
-              </span>
-            </Link>
-          </div>
-
           <div className="phf-now-grid">
             <NowCard
               eyebrow="Form now"
