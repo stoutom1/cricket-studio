@@ -1070,3 +1070,59 @@
     grid-column: 2;
   }
 }
+
+
+/* =========================================================
+   PLAYER JOURNEY — PURPOSE CLARITY
+   ========================================================= */
+
+.pj-purpose-note {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 14px;
+
+  margin-top: 20px;
+  padding: 12px 14px;
+
+  border: 1px solid rgba(143, 121, 232, 0.38);
+  border-radius: 12px;
+
+  background: rgba(72, 56, 127, 0.18);
+}
+
+.pj-purpose-note strong {
+  color: #e6e0ff;
+
+  font-size: 12px;
+}
+
+.pj-purpose-note span {
+  max-width: 600px;
+
+  color: #a79dbc;
+
+  font-size: 11px;
+  line-height: 1.45;
+  text-align: right;
+}
+
+@media (max-width: 620px) {
+  .pj-purpose-note {
+    align-items: flex-start;
+    flex-direction: column;
+  }
+
+  .pj-purpose-note strong {
+    font-size: 15px;
+    line-height: 1.4;
+  }
+
+  .pj-purpose-note span {
+    max-width: none;
+
+    font-size: 14px;
+    line-height: 1.5;
+    text-align: left;
+  }
+}

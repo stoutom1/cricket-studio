@@ -2026,3 +2026,306 @@
     grid-template-columns: 1fr;
   }
 }
+
+
+/* =========================================================
+   PLAYER CARD — PERSONALIZED FEED ACTION
+   ========================================================= */
+
+.spf-card-actions {
+  grid-template-columns:
+    repeat(2, minmax(0, 1fr));
+}
+
+.spf-feed-button {
+  width: 100%;
+  min-width: 0;
+  min-height: 45px;
+
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+
+  padding: 0 11px;
+
+  border: 1px solid rgba(81, 201, 154, 0.48);
+  border-radius: 11px;
+
+  overflow: hidden;
+
+  color: #d7f8ea;
+
+  background:
+    linear-gradient(
+      145deg,
+      #216d55,
+      #164837
+    );
+
+  font-size: 11px;
+  font-weight: 900;
+  white-space: nowrap;
+  text-overflow: ellipsis;
+}
+
+.spf-feed-button:hover {
+  background:
+    linear-gradient(
+      145deg,
+      #287d63,
+      #19523f
+    );
+}
+
+@media (max-width: 1120px) {
+  .spf-card-actions {
+    grid-template-columns:
+      repeat(5, minmax(0, 1fr));
+  }
+}
+
+@media (max-width: 900px) {
+  .spf-card-actions {
+    grid-template-columns:
+      repeat(2, minmax(0, 1fr));
+  }
+}
+
+@media (max-width: 560px) {
+  .spf-card-actions {
+    grid-template-columns: 1fr;
+  }
+
+  .spf-card-actions
+    .spf-feed-button,
+  .spf-card-actions
+    .spf-share-button,
+  .spf-card-actions
+    .spf-journey-button,
+  .spf-card-actions
+    .spf-compare-button,
+  .spf-card-actions
+    .spf-copy-button {
+    grid-column: auto;
+    width: 100%;
+    min-height: 48px;
+
+    font-size: 14px;
+  }
+}
+
+
+/* =========================================================
+   PLAYER CARD HERO — COMPACT STATS + SINGLE-LINE ACTION ROW
+   Desktop/laptop only. Mobile remains readability-first.
+   ========================================================= */
+
+@media (min-width: 901px) {
+  /*
+   * Row 1: four compact stat cards.
+   * Row 2: all five actions across the full card width.
+   */
+  .spf-hero-dashboard {
+    display: grid;
+    grid-template-columns:
+      repeat(4, minmax(0, 1fr));
+    gap: 8px;
+
+    margin-top: 20px;
+  }
+
+  .spf-hero-dashboard
+    > div:not(.spf-card-actions) {
+    min-width: 0;
+    min-height: 72px;
+
+    display: flex;
+    justify-content: center;
+    flex-direction: column;
+
+    padding: 9px 11px;
+
+    border-radius: 10px;
+  }
+
+  .spf-hero-dashboard
+    > div
+    > span {
+    font-size: 9px;
+    line-height: 1.15;
+  }
+
+  .spf-hero-dashboard
+    > div
+    > strong {
+    margin-top: 5px;
+
+    font-size: 18px;
+    line-height: 1;
+  }
+
+  .spf-card-actions {
+    grid-column: 1 / -1;
+
+    min-width: 0;
+
+    display: grid;
+    grid-template-columns:
+      repeat(5, minmax(0, 1fr));
+    grid-auto-rows: 46px;
+    gap: 8px;
+
+    margin-top: 2px;
+  }
+
+  .spf-card-actions
+    .spf-share-button,
+  .spf-card-actions
+    .spf-feed-button,
+  .spf-card-actions
+    .spf-journey-button,
+  .spf-card-actions
+    .spf-compare-button,
+  .spf-card-actions
+    .spf-copy-button {
+    grid-column: auto;
+
+    width: 100%;
+    min-width: 0;
+    min-height: 46px;
+    height: 46px;
+
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+
+    padding: 0 10px;
+
+    overflow: hidden;
+
+    border-radius: 10px;
+
+    font-size: 11px;
+    line-height: 1;
+    white-space: nowrap;
+    text-overflow: ellipsis;
+  }
+}
+
+/*
+ * Tablet: keep stats compact, but use a 3 + 2 action layout so labels
+ * remain readable rather than squeezing five buttons into a phone-width row.
+ */
+@media (min-width: 621px) and (max-width: 900px) {
+  .spf-hero-dashboard {
+    grid-template-columns:
+      repeat(4, minmax(0, 1fr));
+    gap: 8px;
+  }
+
+  .spf-hero-dashboard
+    > div:not(.spf-card-actions) {
+    min-height: 70px;
+
+    padding: 9px 10px;
+  }
+
+  .spf-card-actions {
+    grid-column: 1 / -1;
+
+    display: grid;
+    grid-template-columns:
+      repeat(3, minmax(0, 1fr));
+    gap: 8px;
+  }
+
+  .spf-card-actions
+    .spf-share-button,
+  .spf-card-actions
+    .spf-feed-button,
+  .spf-card-actions
+    .spf-journey-button,
+  .spf-card-actions
+    .spf-compare-button,
+  .spf-card-actions
+    .spf-copy-button {
+    grid-column: auto;
+
+    width: 100%;
+    min-width: 0;
+    min-height: 46px;
+
+    padding-inline: 9px;
+
+    font-size: 11px;
+    white-space: nowrap;
+  }
+}
+
+/*
+ * Mobile remains intentionally larger and easier to tap/read.
+ * Do NOT force five controls onto one tiny row.
+ */
+@media (max-width: 620px) {
+  .spf-hero-dashboard {
+    grid-template-columns:
+      repeat(2, minmax(0, 1fr));
+    gap: 8px;
+  }
+
+  .spf-hero-dashboard
+    > div:not(.spf-card-actions) {
+    min-height: 72px;
+
+    padding: 10px;
+  }
+
+  .spf-hero-dashboard
+    > div
+    > span {
+    font-size: 10px;
+  }
+
+  .spf-hero-dashboard
+    > div
+    > strong {
+    font-size: 18px;
+  }
+
+  .spf-card-actions {
+    grid-column: 1 / -1;
+
+    display: grid;
+    grid-template-columns:
+      repeat(2, minmax(0, 1fr));
+    gap: 8px;
+  }
+
+  .spf-card-actions
+    .spf-share-button,
+  .spf-card-actions
+    .spf-feed-button,
+  .spf-card-actions
+    .spf-journey-button,
+  .spf-card-actions
+    .spf-compare-button,
+  .spf-card-actions
+    .spf-copy-button {
+    grid-column: auto;
+
+    width: 100%;
+    min-width: 0;
+    min-height: 48px;
+
+    padding: 0 9px;
+
+    font-size: 13px;
+    line-height: 1.15;
+    white-space: nowrap;
+  }
+
+  .spf-card-actions
+    .spf-copy-button:last-child {
+    grid-column: 1 / -1;
+  }
+}

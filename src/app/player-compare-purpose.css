@@ -1,0 +1,54 @@
+/* =========================================================
+   COMPARE PLAYERS — PURPOSE CLARITY
+   ========================================================= */
+
+.pcp-purpose-note {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 14px;
+
+  margin-top: 18px;
+  padding: 12px 14px;
+
+  border: 1px solid rgba(101, 127, 178, 0.38);
+  border-radius: 12px;
+
+  background: rgba(43, 66, 106, 0.2);
+}
+
+.pcp-purpose-note strong {
+  color: #e1e9f5;
+
+  font-size: 12px;
+}
+
+.pcp-purpose-note span {
+  max-width: 610px;
+
+  color: #9baabd;
+
+  font-size: 11px;
+  line-height: 1.45;
+  text-align: right;
+}
+
+@media (max-width: 620px) {
+  .pcp-purpose-note {
+    align-items: flex-start;
+    flex-direction: column;
+  }
+
+  .pcp-purpose-note strong {
+    font-size: 15px;
+    line-height: 1.4;
+  }
+
+  .pcp-purpose-note span {
+    max-width: none;
+
+    font-size: 14px;
+    line-height: 1.5;
+    text-align: left;
+  }
+}

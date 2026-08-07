@@ -2006,6 +2006,9 @@ export default async function PublicPlayerPage({
               journeyHref={
                 `/leagues/${league.slug}/players/${player.id}/journey`
               }
+              feedHref={
+                `/leagues/${league.slug}/players/${player.id}/feed`
+              }
             />
           </div>
 

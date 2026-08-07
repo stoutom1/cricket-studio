@@ -7,6 +7,7 @@ import {
 
 import CompareShareButton from "./CompareShareButton";
 import "@/app/player-compare-final.css";
+import "@/app/player-compare-purpose.css";
 
 const SHARED_TEAM_TOKENS =
   new Set([
@@ -1786,15 +1787,21 @@ export default async function ComparePlayersPage({
       <section className="pcp-shell">
         <header className="pcp-hero">
           <div className="pcp-topbar">
-            <Link
-              href={`/leagues/${league.slug}`}
-              className="pcp-back"
-            >
-              ← Back to league
-            </Link>
+<Link
+  href={
+    playerA?.canonicalId
+      ? `/leagues/${league.slug}/players/${playerA.canonicalId}`
+      : `/leagues/${league.slug}`
+  }
+  className="pcp-back"
+>
+  ← {playerA?.canonicalId
+    ? "Back to Player Card"
+    : "Back to League"}
+</Link>
 
             <span className="pcp-badge">
-              ⚔ Player rivalry center
+              ⚔ Compare Players · ANALYSIS
             </span>
           </div>
 
@@ -1806,7 +1813,16 @@ export default async function ComparePlayersPage({
               Player vs Player
             </h1>
             <span>
-              Compare career production, ratings, form and direct head-to-head matchups.
+              Two-player analysis only: career comparison, direct matchup evidence and rivalry history. This is not your personal activity feed or career timeline.
+            </span>
+          </div>
+
+          <div className="pcp-purpose-note">
+            <strong>
+              This page answers: “How do these two players compare?”
+            </strong>
+            <span>
+              Choose two players below. Use My Feed for what changed recently and Player Journey for one player’s career story.
             </span>
           </div>
 

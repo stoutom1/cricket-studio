@@ -961,12 +961,19 @@ function buildJourney({
             row.encounters.size;
 
           /*
-           * Prevent one-ball contacts from being promoted as a rivalry.
-           * A player qualifies only after:
-           * - two matches plus six direct legal balls, OR
-           * - two direct bowler-attributed dismissals.
+           * Player Journey uses "Biggest rival", so this must represent
+           * an ESTABLISHED rivalry — not merely the largest tiny sample.
+           *
+           * Qualification:
+           * 1. At least 2 direct matches AND at least 6 legal balls faced,
+           *    OR
+           * 2. At least 2 direct bowler-attributed dismissals.
+           *
+           * A one-ball / one-match contact can still appear as a notable
+           * matchup in Compare Players or My Feed, but it is not promoted
+           * to a permanent "Biggest rival" in the career story.
            */
-          const isQualified =
+          const isEstablished =
             (
               encounters >=
                 2 &&
@@ -976,19 +983,37 @@ function buildJourney({
             row.wickets >=
               2;
 
-          const confidence =
+          const evidenceConfidence =
             Math.min(
               1,
               (
-                row.balls /
-                  18 +
-                encounters /
-                  4 +
-                row.wickets /
-                  3
-              ) /
-                3
+                Math.min(
+                  row.balls /
+                    18,
+                  1
+                ) *
+                  0.5 +
+                Math.min(
+                  encounters /
+                    4,
+                  1
+                ) *
+                  0.3 +
+                Math.min(
+                  row.wickets /
+                    3,
+                  1
+                ) *
+                  0.2
+              )
             );
+
+          const baseScore =
+            row.balls +
+            row.wickets *
+              22 +
+            encounters *
+              6;
 
           return {
             ...row,
@@ -997,20 +1022,14 @@ function buildJourney({
               rosterLookup.get(
                 row.playerId
               ),
-            isQualified,
-            confidence,
+            isEstablished,
+            evidenceConfidence,
             rivalryScore:
+              baseScore *
               (
-                row.balls +
-                row.wickets *
-                  18 +
-                encounters *
-                  5
-              ) *
-              (
-                0.45 +
-                confidence *
-                  0.55
+                0.55 +
+                evidenceConfidence *
+                  0.45
               ),
           };
         }
@@ -1018,7 +1037,7 @@ function buildJourney({
       .filter(
         (row) =>
           row.player &&
-          row.isQualified
+          row.isEstablished
       )
       .sort(
         (left, right) =>
@@ -1026,6 +1045,8 @@ function buildJourney({
             left.rivalryScore ||
           right.encounters -
             left.encounters ||
+          right.wickets -
+            left.wickets ||
           right.balls -
             left.balls
       )[0] ||
@@ -1436,7 +1457,7 @@ export default async function PlayerJourneyPage({
             </Link>
 
             <span className="pj-eyebrow">
-              ✦ Player journey
+              ✦ Player Journey · HISTORY
             </span>
           </div>
 
@@ -1449,7 +1470,7 @@ export default async function PlayerJourneyPage({
 
             <div className="pj-name-block">
               <p>
-                Cricket story
+                Permanent career story
               </p>
               <h1>
                 {identity.name}
@@ -1470,6 +1491,15 @@ export default async function PlayerJourneyPage({
                 /10
               </span>
             </div>
+          </div>
+
+          <div className="pj-purpose-note">
+            <strong>
+              This page answers: “How did my cricket career evolve?”
+            </strong>
+            <span>
+              Seasons, milestones, peaks and progression live here. For recent changes and what comes next, use My Feed.
+            </span>
           </div>
 
           <div className="pj-hero-grid">
@@ -1765,7 +1795,7 @@ export default async function PlayerJourneyPage({
 
               <StoryCard
                 icon="⚔"
-                label="Biggest rival"
+                label="Biggest established rival"
                 title={
                   journey.biggestRival
                     ?.player
@@ -1774,11 +1804,11 @@ export default async function PlayerJourneyPage({
                 }
                 description={
                   journey.biggestRival
-                    ? `${journey.biggestRival.encounters} direct matches · ${journey.biggestRival.balls} legal balls · ${journey.biggestRival.wickets} dismissals · ${Math.round(
-                        journey.biggestRival.confidence *
+                    ? `${journey.biggestRival.encounters} direct ${journey.biggestRival.encounters === 1 ? "match" : "matches"} · ${journey.biggestRival.balls} legal balls faced · ${journey.biggestRival.wickets} direct ${journey.biggestRival.wickets === 1 ? "dismissal" : "dismissals"} · ${Math.round(
+                        journey.biggestRival.evidenceConfidence *
                           100
-                      )}% confidence`
-                    : "A rivalry appears after repeated direct interaction: at least two matches and six legal balls, or two direct dismissals."
+                      )}% evidence`
+                    : "A career rival appears only after repeated evidence: at least 2 direct matches and 6 legal balls, or 2 direct dismissals."
                 }
                 href={
                   journey.biggestRival

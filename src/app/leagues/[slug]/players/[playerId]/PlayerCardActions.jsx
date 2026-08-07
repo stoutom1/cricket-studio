@@ -9,6 +9,7 @@ export default function PlayerCardActions({
   shareText,
   compareHref,
   journeyHref,
+  feedHref,
 }) {
   const [
     message,
@@ -85,6 +86,15 @@ export default function PlayerCardActions({
         </span>
         Share player card
       </button>
+
+      {feedHref && (
+        <a
+          className="spf-feed-button"
+          href={feedHref}
+        >
+          ✦ My feed
+        </a>
+      )}
 
       {journeyHref && (
         <a
