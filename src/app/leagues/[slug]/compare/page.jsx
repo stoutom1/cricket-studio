@@ -5,6 +5,12 @@ import {
   redirect,
 } from "next/navigation";
 
+import {
+  isEstablishedDirectRivalry,
+  isEstablishedRivalry,
+  isNotableBattingMatchup,
+} from "@/lib/player-rivalry";
+
 import CompareShareButton from "./CompareShareButton";
 import "@/app/player-compare-final.css";
 import "@/app/player-compare-purpose.css";
@@ -934,19 +940,29 @@ function buildMatchups({
            * A single match can still be meaningful if the batter clearly
            * dominated that bowler (for example, 24 runs from 9 balls).
            */
+          const isEstablished =
+            isEstablishedRivalry({
+              matches,
+              balls:
+                row.balls,
+              dismissals:
+                row.dismissals,
+            });
+
+          const isNotable =
+            isNotableBattingMatchup({
+              matches,
+              balls:
+                row.balls,
+              runs:
+                row.runs,
+              dismissals:
+                row.dismissals,
+            });
+
           const isQualified =
-            (
-              matches >=
-                2 &&
-              row.balls >=
-                6
-            ) ||
-            row.balls >=
-              8 ||
-            row.runs >=
-              20 ||
-            row.dismissals >=
-              2;
+            isEstablished ||
+            isNotable;
 
           const confidence =
             Math.min(
@@ -972,10 +988,7 @@ function buildMatchups({
               12;
 
           const matchupCategory =
-            matches >=
-              2 ||
-            row.dismissals >=
-              2
+            isEstablished
               ? "ESTABLISHED_RIVALRY"
               : "NOTABLE_MATCHUP";
 
@@ -1031,14 +1044,13 @@ function buildMatchups({
             row.matchIds.size;
 
           const isQualified =
-            (
-              matches >=
-                2 &&
-              row.balls >=
-                6
-            ) ||
-            row.wickets >=
-              2;
+            isEstablishedRivalry({
+              matches,
+              balls:
+                row.balls,
+              dismissals:
+                row.wickets,
+            });
 
           const confidence =
             Math.min(
@@ -1311,15 +1323,20 @@ function rivalryBetween({
     );
 
   const isEstablished =
-    (
-      sharedMatchCount >=
-        2 &&
-      totalBalls >=
-        12
-    ) ||
-    totalDismissals >=
-      2 ||
+    isEstablishedDirectRivalry({
+      matches:
+        sharedMatchCount,
+      totalBalls,
+      totalDismissals,
+    });
+
+  const isNotable =
+    !isEstablished &&
     hasStrongSingleMatchBattingEvidence;
+
+  const hasMeaningfulMatchup =
+    isEstablished ||
+    isNotable;
 
   const confidence =
     Math.min(
@@ -1353,6 +1370,8 @@ function rivalryBetween({
       sharedMatchCount,
     totalBalls,
     isEstablished,
+    isNotable,
+    hasMeaningfulMatchup,
     confidence,
     aRuns,
     aBalls,
@@ -1377,7 +1396,7 @@ function rivalryBetween({
           ).toFixed(1)
         : "0.0",
     leader:
-      !isEstablished
+      !hasMeaningfulMatchup
         ? "Not enough history"
         : aScore ===
             bScore
@@ -2076,11 +2095,10 @@ export default async function ComparePlayersPage({
               <div className="pcp-rivalry-winner">
                 <span>
                   {directRivalry.isEstablished
-                    ? directRivalry.matches ===
-                        1
+                    ? "Rivalry leader"
+                    : directRivalry.isNotable
                       ? "Notable matchup leader"
-                      : "Rivalry leader"
-                    : "Matchup status"}
+                      : "Matchup status"}
                 </span>
                 <strong>
                   {directRivalry.matches
@@ -2089,11 +2107,10 @@ export default async function ComparePlayersPage({
                 </strong>
                 <small>
                   {directRivalry.isEstablished
-                    ? directRivalry.matches ===
-                        1
+                    ? `${directRivalry.confidence}% evidence confidence`
+                    : directRivalry.isNotable
                       ? `${directRivalry.confidence}% confidence · strong single-match batting evidence`
-                      : `${directRivalry.confidence}% evidence confidence`
-                    : `Needs repeated interaction — currently ${directRivalry.confidence}% confidence`}
+                      : `Needs repeated interaction — currently ${directRivalry.confidence}% confidence`}
                 </small>
               </div>
 

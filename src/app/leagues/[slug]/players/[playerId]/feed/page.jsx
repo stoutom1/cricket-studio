@@ -11,6 +11,10 @@ import {
   authOptions,
 } from "@/lib/auth";
 
+import {
+  selectTopEstablishedRival,
+} from "@/lib/player-rivalry";
+
 import FeedShareButton from "./FeedShareButton";
 import "@/app/player-home-feed.css";
 
@@ -869,61 +873,37 @@ function buildFeed({
     }
   }
 
+  /*
+   * Established Rivalry is now sourced from the same canonical engine as
+   * Player Journey. Strong one-match batting spells remain Compare-only
+   * Notable Matchups and cannot replace the career rival in My Feed.
+   */
   const topRival =
-    Array.from(
-      rivalryMap.values()
-    )
-      .map(
-        (row) => {
-          const matchCount =
-            row.matches.size;
-
-          const qualified =
-            (
-              matchCount >=
-                2 &&
-              row.balls >=
-                6
-            ) ||
-            row.balls >=
-              8 ||
-            row.runs >=
-              20 ||
-            row.dismissals >=
-              2;
-
-          const score =
-            row.balls +
-            row.runs *
-              0.8 +
-            row.dismissals *
-              22 +
-            matchCount *
-              5;
-
-          return {
-            ...row,
-            matchCount,
+    selectTopEstablishedRival({
+      candidates:
+        Array.from(
+          rivalryMap.values()
+        ).map(
+          (row) => ({
+            playerId:
+              row.playerId,
             player:
               playerLookup.get(
                 row.playerId
               ),
-            qualified,
-            score,
-          };
-        }
-      )
-      .filter(
-        (row) =>
-          row.qualified &&
-          row.player
-      )
-      .sort(
-        (left, right) =>
-          right.score -
-          left.score
-      )[0] ||
-    null;
+            matchIds:
+              row.matches,
+            balls:
+              row.balls,
+            runs:
+              row.runs,
+            dismissals:
+              row.dismissals,
+          })
+        ),
+      getIdentityKey:
+        identityKey,
+    });
 
   const nextMatch =
     [...upcoming].sort(
@@ -1084,10 +1064,7 @@ function buildFeed({
       icon:
         "⚔",
       kicker:
-        topRival.matchCount >=
-          2
-          ? "Established rivalry"
-          : "Notable matchup",
+        "Established rivalry",
       title:
         topRival.player
           .name,

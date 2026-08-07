@@ -11,6 +11,10 @@ import {
   authOptions,
 } from "@/lib/auth";
 
+import {
+  selectTopEstablishedRival,
+} from "@/lib/player-rivalry";
+
 import JourneyShareButton from "./JourneyShareButton";
 import "@/app/player-journey-final.css";
 
@@ -951,106 +955,37 @@ function buildJourney({
     }
   }
 
+  /*
+   * Player Journey and My Feed now share one canonical established-rival
+   * engine. This prevents the two pages from naming different career rivals.
+   * Surprise 1 + Surprise 2 opponent identities are merged by identityKey.
+   */
   const biggestRival =
-    Array.from(
-      rivalryMap.values()
-    )
-      .map(
-        (row) => {
-          const encounters =
-            row.encounters.size;
-
-          /*
-           * Player Journey uses "Biggest rival", so this must represent
-           * an ESTABLISHED rivalry — not merely the largest tiny sample.
-           *
-           * Qualification:
-           * 1. At least 2 direct matches AND at least 6 legal balls faced,
-           *    OR
-           * 2. At least 2 direct bowler-attributed dismissals.
-           *
-           * A one-ball / one-match contact can still appear as a notable
-           * matchup in Compare Players or My Feed, but it is not promoted
-           * to a permanent "Biggest rival" in the career story.
-           */
-          const isEstablished =
-            (
-              encounters >=
-                2 &&
-              row.balls >=
-                6
-            ) ||
-            row.wickets >=
-              2;
-
-          const evidenceConfidence =
-            Math.min(
-              1,
-              (
-                Math.min(
-                  row.balls /
-                    18,
-                  1
-                ) *
-                  0.5 +
-                Math.min(
-                  encounters /
-                    4,
-                  1
-                ) *
-                  0.3 +
-                Math.min(
-                  row.wickets /
-                    3,
-                  1
-                ) *
-                  0.2
-              )
-            );
-
-          const baseScore =
-            row.balls +
-            row.wickets *
-              22 +
-            encounters *
-              6;
-
-          return {
-            ...row,
-            encounters,
+    selectTopEstablishedRival({
+      candidates:
+        Array.from(
+          rivalryMap.values()
+        ).map(
+          (row) => ({
+            playerId:
+              row.playerId,
             player:
               rosterLookup.get(
                 row.playerId
               ),
-            isEstablished,
-            evidenceConfidence,
-            rivalryScore:
-              baseScore *
-              (
-                0.55 +
-                evidenceConfidence *
-                  0.45
-              ),
-          };
-        }
-      )
-      .filter(
-        (row) =>
-          row.player &&
-          row.isEstablished
-      )
-      .sort(
-        (left, right) =>
-          right.rivalryScore -
-            left.rivalryScore ||
-          right.encounters -
-            left.encounters ||
-          right.wickets -
-            left.wickets ||
-          right.balls -
-            left.balls
-      )[0] ||
-    null;
+            matchIds:
+              row.encounters,
+            balls:
+              row.balls,
+            runs:
+              row.runs,
+            dismissals:
+              row.wickets,
+          })
+        ),
+      getIdentityKey:
+        identityKey,
+    });
 
   const timeline =
     [
