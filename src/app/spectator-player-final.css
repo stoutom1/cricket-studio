@@ -1857,79 +1857,57 @@
 
 
 /* =========================================================
-   PLAYER CARD ACTION BAR — OVERLAP / HIDDEN SHARE FIX
-   Keeps Share Player Card, Compare Players and Copy Link
-   fully visible without covering one another.
+   PLAYER CARD — PLAYER JOURNEY ACTION
    ========================================================= */
 
-/*
- * The four summary metrics stay on the first row.
- * The action group receives its own full-width row beneath them.
- */
-.spf-hero-dashboard {
-  grid-template-columns:
-    repeat(4, minmax(0, 1fr));
-}
-
 .spf-card-actions {
-  grid-column: 1 / -1;
-
-  width: 100%;
-  min-width: 0;
-  min-height: 48px;
-
-  display: grid;
   grid-template-columns:
-    minmax(190px, 1.4fr)
-    minmax(170px, 1fr)
-    minmax(100px, auto);
-  gap: 9px;
+    minmax(175px, 1.2fr)
+    minmax(155px, 1fr)
+    minmax(155px, 1fr)
+    minmax(90px, auto);
 }
 
-/*
- * Apply the same control sizing to buttons and the Compare link.
- */
-.spf-card-actions
-  .spf-share-button,
-.spf-card-actions
-  .spf-compare-button,
-.spf-card-actions
-  .spf-copy-button {
-  width: 100%;
-  min-width: 0;
+.spf-journey-button {
   min-height: 48px;
 
   display: inline-flex;
   align-items: center;
   justify-content: center;
-  gap: 7px;
 
-  padding: 0 15px;
+  padding: 0 14px;
 
-  overflow: visible;
+  border: 1px solid rgba(239, 189, 88, 0.56);
+  border-radius: 11px;
 
-  line-height: 1.1;
-  text-align: center;
+  color: #fff2cf;
+
+  background:
+    linear-gradient(
+      145deg,
+      #77591f,
+      #4e3a17
+    );
+
+  font-size: 11px;
+  font-weight: 900;
   white-space: nowrap;
 }
 
-/*
- * Ensure the status message does not cover any action.
- */
-.spf-action-message {
-  top: calc(100% + 6px);
-  right: 0;
-  bottom: auto;
+.spf-journey-button:hover {
+  background:
+    linear-gradient(
+      145deg,
+      #876725,
+      #5a431a
+    );
 }
 
-/*
- * Tablet: keep Share prominent and place the two supporting actions below.
- */
 @media (max-width: 900px) {
   .spf-card-actions {
     grid-template-columns:
-      minmax(0, 1fr)
-      minmax(0, 1fr);
+      1fr
+      1fr;
   }
 
   .spf-card-actions
@@ -1938,25 +1916,113 @@
   }
 }
 
-/*
- * Mobile: all actions are full width and clearly separated.
- */
 @media (max-width: 560px) {
   .spf-card-actions {
-    grid-template-columns:
-      1fr;
+    grid-template-columns: 1fr;
   }
 
   .spf-card-actions
     .spf-share-button,
   .spf-card-actions
+    .spf-journey-button,
+  .spf-card-actions
     .spf-compare-button,
   .spf-card-actions
     .spf-copy-button {
     grid-column: auto;
-
     min-height: 46px;
+  }
+}
 
-    font-size: 11px;
+
+/* =========================================================
+   PLAYER CARD ACTIONS — DESKTOP OVERFLOW FIX
+   Keep Share, Journey, Compare and Copy inside the hero.
+   ========================================================= */
+
+.spf-hero-dashboard {
+  /*
+   * The action area contains four controls. Give it enough room without
+   * forcing the whole player-card hero outside its container.
+   */
+  grid-template-columns:
+    repeat(4, minmax(0, 1fr))
+    minmax(300px, 1.55fr);
+}
+
+.spf-card-actions {
+  min-width: 0;
+  align-self: stretch;
+
+  display: grid;
+  grid-template-columns:
+    repeat(2, minmax(0, 1fr));
+  grid-auto-rows:
+    minmax(45px, 1fr);
+  gap: 8px;
+
+  overflow: visible;
+}
+
+.spf-card-actions
+  .spf-share-button,
+.spf-card-actions
+  .spf-journey-button,
+.spf-card-actions
+  .spf-compare-button,
+.spf-card-actions
+  .spf-copy-button {
+  width: 100%;
+  min-width: 0;
+  min-height: 45px;
+
+  padding-inline: 11px;
+
+  overflow: hidden;
+
+  white-space: nowrap;
+  text-overflow: ellipsis;
+}
+
+.spf-card-actions
+  .spf-share-button {
+  grid-column: auto;
+}
+
+/*
+ * At medium laptop widths, place all actions on their own full-width row.
+ * This prevents clipping while keeping the statistics row readable.
+ */
+@media (max-width: 1120px) {
+  .spf-hero-dashboard {
+    grid-template-columns:
+      repeat(4, minmax(0, 1fr));
+  }
+
+  .spf-card-actions {
+    grid-column: 1 / -1;
+
+    grid-template-columns:
+      repeat(4, minmax(0, 1fr));
+    grid-auto-rows:
+      minmax(47px, auto);
+  }
+}
+
+@media (max-width: 760px) {
+  .spf-card-actions {
+    grid-template-columns:
+      repeat(2, minmax(0, 1fr));
+  }
+
+  .spf-card-actions
+    .spf-share-button {
+    grid-column: auto;
+  }
+}
+
+@media (max-width: 430px) {
+  .spf-card-actions {
+    grid-template-columns: 1fr;
   }
 }

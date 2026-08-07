@@ -8,6 +8,7 @@ export default function PlayerCardActions({
   playerName,
   shareText,
   compareHref,
+  journeyHref,
 }) {
   const [
     message,
@@ -84,6 +85,15 @@ export default function PlayerCardActions({
         </span>
         Share player card
       </button>
+
+      {journeyHref && (
+        <a
+          className="spf-journey-button"
+          href={journeyHref}
+        >
+          ✦ Player journey
+        </a>
+      )}
 
       {compareHref && (
         <a

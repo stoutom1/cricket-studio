@@ -2003,6 +2003,9 @@ export default async function PublicPlayerPage({
               compareHref={
                 `/leagues/${league.slug}/compare?playerA=${player.id}`
               }
+              journeyHref={
+                `/leagues/${league.slug}/players/${player.id}/journey`
+              }
             />
           </div>
 
