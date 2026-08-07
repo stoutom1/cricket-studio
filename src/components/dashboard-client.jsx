@@ -13678,13 +13678,109 @@ const playerRoleBadge = (row) => {
     <Card title="🏏 League Management">
       <div className="mgmt-clean-shell">
 
+        <nav
+          className="mgmt-command-nav"
+          aria-label="League management sections"
+        >
+          <a
+            href="#management-league"
+            className="mgmt-command-nav-item is-primary"
+          >
+            <span className="mgmt-command-nav-icon" aria-hidden="true">
+              🏆
+            </span>
+
+            <span className="mgmt-command-nav-copy">
+              <small>1 · League</small>
+              <strong>
+                {activeLeague?.name || "Choose league"}
+              </strong>
+            </span>
+
+            <b aria-hidden="true">→</b>
+          </a>
+
+          <a
+            href="#management-teams"
+            className={
+              `mgmt-command-nav-item ${
+                minimumTeamsReady
+                  ? "is-complete"
+                  : "needs-action"
+              }`
+            }
+          >
+            <span className="mgmt-command-nav-icon" aria-hidden="true">
+              👥
+            </span>
+
+            <span className="mgmt-command-nav-copy">
+              <small>2 · Teams</small>
+              <strong>
+                {selectedLeague
+                  ? `${selectedLeague.teams?.length || 0} ready`
+                  : "Choose league"}
+              </strong>
+            </span>
+
+            <b aria-hidden="true">→</b>
+          </a>
+
+          <a
+            href="#players-section"
+            className={
+              `mgmt-command-nav-item ${
+                leagueReadyForMatches
+                  ? "is-complete"
+                  : "needs-action"
+              }`
+            }
+          >
+            <span className="mgmt-command-nav-icon" aria-hidden="true">
+              🏏
+            </span>
+
+            <span className="mgmt-command-nav-copy">
+              <small>3 · Players</small>
+              <strong>
+                {selectedTeam
+                  ? `${selectedTeam.players?.length || 0} in ${selectedTeam.name}`
+                  : "Choose team"}
+              </strong>
+            </span>
+
+            <b aria-hidden="true">→</b>
+          </a>
+
+          <a
+            href="#management-series"
+            className="mgmt-command-nav-item is-optional"
+          >
+            <span className="mgmt-command-nav-icon" aria-hidden="true">
+              📅
+            </span>
+
+            <span className="mgmt-command-nav-copy">
+              <small>Optional · Series</small>
+              <strong>
+                {selectedSeries?.name || "No series required"}
+              </strong>
+            </span>
+
+            <b aria-hidden="true">→</b>
+          </a>
+        </nav>
+
 {/* LEAGUE */}
 {/* =========================================================
     MOBILE-ONLY LEAGUE COMMAND CENTER
     Replace the complete League section with this block.
 ========================================================= */}
 
-<section className="mgmt-clean-card league-mobile-wow-card">
+<section
+  id="management-league"
+  className="mgmt-clean-card league-mobile-wow-card management-league-card"
+>
   {/* Existing desktop experience remains unchanged */}
   <div className="league-desktop-experience">
     <div className="mgmt-clean-head">
@@ -13770,38 +13866,24 @@ const playerRoleBadge = (row) => {
       </button>
     </div>
 
-    <div className="mgmt-clean-actions league-actions-desktop">
+    <div className="league-action-bar league-actions-desktop">
       <button
         type="button"
-        className="mgmt-clean-btn"
+        className="league-action-primary"
         onClick={() => setShowLeagueModal(true)}
       >
-        ➕ Create League
+        <span aria-hidden="true">＋</span>
+        <strong>Create League</strong>
       </button>
-
-      {selectedLeague && permissions?.canDeleteLeague && (
-        <button
-          type="button"
-          className="mgmt-clean-danger"
-          title={`Delete ${selectedLeague.name}`}
-          onClick={() =>
-            handleDeleteLeague(
-              selectedLeague.id,
-              selectedLeague.name
-            )
-          }
-        >
-          🗑️
-        </button>
-      )}
 
       {activeLeague && (
         <button
           type="button"
-          className="mgmt-clean-btn"
+          className="league-action-secondary"
           onClick={() => generateInviteLink(activeLeague.id)}
         >
-          🔗 Copy Invite Link
+          <span aria-hidden="true">🔗</span>
+          <strong>Invite</strong>
         </button>
       )}
 
@@ -13810,7 +13892,7 @@ const playerRoleBadge = (row) => {
         activeLeague.slug && (
           <button
             type="button"
-            className="mgmt-clean-btn"
+            className="league-action-secondary"
             onClick={() => {
               const url =
                 `${window.location.origin}/leagues/${activeLeague.slug}`;
@@ -13823,25 +13905,61 @@ const playerRoleBadge = (row) => {
               );
             }}
           >
-            🌐 Copy Public View Link
+            <span aria-hidden="true">🌐</span>
+            <strong>Public Link</strong>
           </button>
         )}
 
-      <button
-        type="button"
-        className="mgmt-clean-btn"
-        onClick={() => setShowFollowedLeaguesDrawer(true)}
-      >
-        ⭐ Followed Leagues
-      </button>
+      <details className="league-action-more">
+        <summary>
+          <span aria-hidden="true">⋯</span>
+          <strong>More</strong>
+          <b aria-hidden="true">⌄</b>
+        </summary>
 
-      <button
-        type="button"
-        className="mgmt-clean-btn public-discover-btn"
-        onClick={() => setShowPublicLeagueDrawer(true)}
-      >
-        🌐 Discover Public Leagues
-      </button>
+        <div className="league-action-menu">
+          <button
+            type="button"
+            onClick={() => setShowFollowedLeaguesDrawer(true)}
+          >
+            <span aria-hidden="true">⭐</span>
+            <span>
+              <strong>Followed Leagues</strong>
+              <small>Open leagues you follow</small>
+            </span>
+          </button>
+
+          <button
+            type="button"
+            onClick={() => setShowPublicLeagueDrawer(true)}
+          >
+            <span aria-hidden="true">🧭</span>
+            <span>
+              <strong>Discover Leagues</strong>
+              <small>Browse public leagues</small>
+            </span>
+          </button>
+
+          {selectedLeague && permissions?.canDeleteLeague && (
+            <button
+              type="button"
+              className="is-danger"
+              onClick={() =>
+                handleDeleteLeague(
+                  selectedLeague.id,
+                  selectedLeague.name
+                )
+              }
+            >
+              <span aria-hidden="true">🗑️</span>
+              <span>
+                <strong>Delete League</strong>
+                <small>Permanently delete this league</small>
+              </span>
+            </button>
+          )}
+        </div>
+      </details>
     </div>
 {(
   canViewBirthdayTools ||
@@ -14252,9 +14370,9 @@ const playerRoleBadge = (row) => {
           </span>
 
           <span>
-            <strong>Explore &amp; manage</strong>
+            <strong>League tools</strong>
             <small>
-              Followed leagues, discovery, and league settings
+              Resources · birthdays · kit · discovery
             </small>
           </span>
         </span>
@@ -14473,14 +14591,49 @@ const playerRoleBadge = (row) => {
 </section>
 
         {/* SERIES */}
-        <section className="mgmt-clean-card">
-          <div className="mgmt-clean-head">
-            <div>
-              <h3>📅 Series / Season</h3>
-              <p>Optional. Group matches into tournaments, cups, seasons, or years.</p>
-            </div>
-          </div>
+        <details
+          id="management-series"
+          className="mgmt-clean-card mgmt-series-collapsible"
+        >
+          <summary className="mgmt-section-summary">
+            <span className="mgmt-section-summary-icon" aria-hidden="true">
+              📅
+            </span>
 
+            <span className="mgmt-section-summary-copy">
+              <small>Optional organization</small>
+
+              <strong>
+                Series / Season
+              </strong>
+
+              <span>
+                {selectedSeries
+                  ? `${selectedSeries.name} • ${selectedSeries.year}`
+                  : "No series selected — matches can still be created normally."}
+              </span>
+            </span>
+
+            <span
+              className={
+                `mgmt-section-status ${
+                  selectedSeries
+                    ? "has-value"
+                    : "optional"
+                }`
+              }
+            >
+              {selectedSeries
+                ? "Selected"
+                : "Optional"}
+            </span>
+
+            <span className="mgmt-section-chevron" aria-hidden="true">
+              ⌄
+            </span>
+          </summary>
+
+          <div className="mgmt-series-body">
 <label className="mgmt-field mgmt-select-field">
             <span>👇 Choose a series or leave optional</span>
             <div className="select-action-hint">
@@ -14572,14 +14725,21 @@ const playerRoleBadge = (row) => {
     </>
   )}
 </div>
-        </section>
+          </div>
+        </details>
 
         {/* TEAMS */}
-        <section className="mgmt-clean-card">
+        <section
+          id="management-teams"
+          className="mgmt-clean-card management-teams-card"
+        >
           <div className="mgmt-clean-head">
             <div>
               <h3>👥 Teams</h3>
-              <p>Select or add teams under the active league.</p>
+              <p>
+                Choose a team here. Its player roster appears immediately beside
+                or below this section.
+              </p>
             </div>
           </div>
 
@@ -14655,16 +14815,16 @@ onClick={() => {
   window.location.href = `/ai-team-splitter?leagueId=${activeLeagueId}`;
 }}
 >
-  <span>⚖️</span>
+  <span aria-hidden="true">⚖️</span>
 
   <div>
-    <strong>Availability & Team Builder</strong>
+    <strong>Availability &amp; Team Builder</strong>
     <small>
-      Create Poll • Split Teams • Captain Suggestions
+      Poll · Split teams · Captains
     </small>
   </div>
 
-  <div className="team-builder-arrow">
+  <div className="team-builder-arrow" aria-hidden="true">
     →
   </div>
 </button>
@@ -14673,7 +14833,7 @@ onClick={() => {
  {/* PLAYERS */}
 <section
   id="players-section"
-  className="mgmt-clean-card player-manager-card"
+  className="mgmt-clean-card player-manager-card management-players-card"
 >
   <div className="player-manager-head">
     <div>
@@ -14901,7 +15061,7 @@ onClick={() => {
 
         {/* NEXT STEP */}
         {canCreateMatch && (
-          <section className="mgmt-clean-ready">
+          <section className="mgmt-clean-ready management-bottom-match-cta">
             <div>
               <strong>✅ League setup complete</strong>
               <p>You can now schedule matches from the Matches tab.</p>
