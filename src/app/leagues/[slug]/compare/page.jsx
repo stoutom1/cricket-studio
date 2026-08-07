@@ -788,7 +788,13 @@ function buildMatchups({
               dismissals: 0,
               fours: 0,
               sixes: 0,
+              matchIds:
+                new Set(),
             };
+
+          row.matchIds.add(
+            match.id
+          );
 
           row.runs +=
             number(
@@ -864,7 +870,13 @@ function buildMatchups({
               runs: 0,
               balls: 0,
               wickets: 0,
+              matchIds:
+                new Set(),
             };
+
+          row.matchIds.add(
+            match.id
+          );
 
           row.runs +=
             runsChargedToBowler(
@@ -906,24 +918,86 @@ function buildMatchups({
       battingMap.values()
     )
       .map(
-        (row) => ({
-          ...row,
-          strikeRate:
-            row.balls
-              ? (
-                  row.runs /
-                  row.balls *
-                  100
-                ).toFixed(1)
-              : "0.0",
-        })
+        (row) => {
+          const matches =
+            row.matchIds.size;
+
+          /*
+           * A genuine rivalry needs repeated interaction.
+           * One accidental delivery must never become a "top rivalry".
+           */
+          const isQualified =
+            (
+              matches >=
+                2 &&
+              row.balls >=
+                6
+            ) ||
+            row.dismissals >=
+              2;
+
+          const confidence =
+            Math.min(
+              1,
+              (
+                row.balls /
+                  18 +
+                matches /
+                  4 +
+                row.dismissals /
+                  3
+              ) /
+                3
+            );
+
+          const impact =
+            row.runs +
+            row.fours *
+              1.5 +
+            row.sixes *
+              3 -
+            row.dismissals *
+              12;
+
+          return {
+            ...row,
+            matches,
+            isQualified,
+            confidence,
+            rivalryScore:
+              impact *
+                (
+                  0.45 +
+                  confidence *
+                    0.55
+                ) +
+              row.balls *
+                0.55 +
+              matches *
+                4,
+            strikeRate:
+              row.balls
+                ? (
+                    row.runs /
+                    row.balls *
+                    100
+                  ).toFixed(1)
+                : "0.0",
+          };
+        }
+      )
+      .filter(
+        (row) =>
+          row.isQualified
       )
       .sort(
         (left, right) =>
+          right.rivalryScore -
+            left.rivalryScore ||
+          right.matches -
+            left.matches ||
           right.balls -
-          left.balls ||
-          right.runs -
-          left.runs
+            left.balls
       );
 
   const bowling =
@@ -931,29 +1005,87 @@ function buildMatchups({
       bowlingMap.values()
     )
       .map(
-        (row) => ({
-          ...row,
-          overs:
-            `${Math.floor(
-              row.balls /
+        (row) => {
+          const matches =
+            row.matchIds.size;
+
+          const isQualified =
+            (
+              matches >=
+                2 &&
+              row.balls >=
                 6
-            )}.${row.balls % 6}`,
-          economy:
+            ) ||
+            row.wickets >=
+              2;
+
+          const confidence =
+            Math.min(
+              1,
+              (
+                row.balls /
+                  18 +
+                matches /
+                  4 +
+                row.wickets /
+                  3
+              ) /
+                3
+            );
+
+          const economy =
             row.balls
-              ? (
-                  row.runs /
-                  row.balls *
+              ? row.runs /
+                row.balls *
+                6
+              : 0;
+
+          const impact =
+            row.wickets *
+              22 -
+            row.runs *
+              0.35 +
+            row.balls *
+              0.35;
+
+          return {
+            ...row,
+            matches,
+            isQualified,
+            confidence,
+            rivalryScore:
+              impact *
+                (
+                  0.45 +
+                  confidence *
+                    0.55
+                ) +
+              matches *
+                4,
+            overs:
+              `${Math.floor(
+                row.balls /
                   6
-                ).toFixed(1)
-              : "0.0",
-        })
+              )}.${row.balls % 6}`,
+            economy:
+              economy.toFixed(
+                1
+              ),
+          };
+        }
+      )
+      .filter(
+        (row) =>
+          row.isQualified
       )
       .sort(
         (left, right) =>
-          right.balls -
-          left.balls ||
+          right.rivalryScore -
+            left.rivalryScore ||
           right.wickets -
-          left.wickets
+            left.wickets ||
+          right.matches -
+            left.matches
       );
 
   return {
@@ -1118,9 +1250,65 @@ function rivalryBetween({
         : 0
     );
 
+  const matches =
+    matchIds.size;
+
+  const totalBalls =
+    aBalls +
+    bBalls;
+
+  const totalDismissals =
+    aDismissals +
+    bDismissals;
+
+  /*
+   * Direct rivalry is shown as established only after repeat evidence.
+   * Qualification:
+   * - at least two shared matches and twelve legal head-to-head balls, OR
+   * - at least two direct bowler-attributed dismissals.
+   */
+  const isEstablished =
+    (
+      matches >=
+        2 &&
+      totalBalls >=
+        12
+    ) ||
+    totalDismissals >=
+      2;
+
+  const confidence =
+    Math.min(
+      100,
+      Math.round(
+        (
+          Math.min(
+            totalBalls /
+              24,
+            1
+          ) *
+            55 +
+          Math.min(
+            matches /
+              4,
+            1
+          ) *
+            30 +
+          Math.min(
+            totalDismissals /
+              3,
+            1
+          ) *
+            15
+        )
+      )
+    );
+
   return {
-    matches:
-      matchIds.size,
+    matches,
+    totalBalls,
+    isEstablished,
+    confidence,
     aRuns,
     aBalls,
     aDismissals,
@@ -1144,13 +1332,15 @@ function rivalryBetween({
           ).toFixed(1)
         : "0.0",
     leader:
-      aScore ===
-        bScore
-        ? "Tied rivalry"
-        : aScore >
+      !isEstablished
+        ? "Not enough history"
+        : aScore ===
             bScore
-          ? playerA.name
-          : playerB.name,
+          ? "Tied rivalry"
+          : aScore >
+              bScore
+            ? playerA.name
+            : playerB.name,
   };
 }
 
@@ -1803,7 +1993,7 @@ export default async function ComparePlayersPage({
                 </h2>
               </div>
               <span>
-                {directRivalry.matches} shared matchup {directRivalry.matches === 1 ? "match" : "matches"}
+                {directRivalry.matches} shared {directRivalry.matches === 1 ? "match" : "matches"} · {directRivalry.totalBalls} legal balls
               </span>
             </div>
 
@@ -1825,13 +2015,20 @@ export default async function ComparePlayersPage({
 
               <div className="pcp-rivalry-winner">
                 <span>
-                  Rivalry leader
+                  {directRivalry.isEstablished
+                    ? "Rivalry leader"
+                    : "Matchup status"}
                 </span>
                 <strong>
                   {directRivalry.matches
                     ? directRivalry.leader
                     : "No direct matchup yet"}
                 </strong>
+                <small>
+                  {directRivalry.isEstablished
+                    ? `${directRivalry.confidence}% evidence confidence`
+                    : `Needs repeated interaction — currently ${directRivalry.confidence}% confidence`}
+                </small>
               </div>
 
               <div>
@@ -1862,7 +2059,7 @@ export default async function ComparePlayersPage({
                 </h2>
               </div>
               <span>
-                Most frequent recorded opponents
+                Qualified repeated opponents only
               </span>
             </div>
 

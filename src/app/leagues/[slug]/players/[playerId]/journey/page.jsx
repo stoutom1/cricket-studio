@@ -956,30 +956,78 @@ function buildJourney({
       rivalryMap.values()
     )
       .map(
-        (row) => ({
-          ...row,
-          encounters:
-            row.encounters.size,
-          player:
-            rosterLookup.get(
-              row.playerId
-            ),
-          rivalryScore:
-            row.balls +
-            row.wickets *
-              18 +
-            row.encounters *
-              5,
-        })
+        (row) => {
+          const encounters =
+            row.encounters.size;
+
+          /*
+           * Prevent one-ball contacts from being promoted as a rivalry.
+           * A player qualifies only after:
+           * - two matches plus six direct legal balls, OR
+           * - two direct bowler-attributed dismissals.
+           */
+          const isQualified =
+            (
+              encounters >=
+                2 &&
+              row.balls >=
+                6
+            ) ||
+            row.wickets >=
+              2;
+
+          const confidence =
+            Math.min(
+              1,
+              (
+                row.balls /
+                  18 +
+                encounters /
+                  4 +
+                row.wickets /
+                  3
+              ) /
+                3
+            );
+
+          return {
+            ...row,
+            encounters,
+            player:
+              rosterLookup.get(
+                row.playerId
+              ),
+            isQualified,
+            confidence,
+            rivalryScore:
+              (
+                row.balls +
+                row.wickets *
+                  18 +
+                encounters *
+                  5
+              ) *
+              (
+                0.45 +
+                confidence *
+                  0.55
+              ),
+          };
+        }
       )
       .filter(
         (row) =>
-          row.player
+          row.player &&
+          row.isQualified
       )
       .sort(
         (left, right) =>
           right.rivalryScore -
-          left.rivalryScore
+            left.rivalryScore ||
+          right.encounters -
+            left.encounters ||
+          right.balls -
+            left.balls
       )[0] ||
     null;
 
@@ -1722,12 +1770,15 @@ export default async function PlayerJourneyPage({
                   journey.biggestRival
                     ?.player
                     ?.name ||
-                  "Rivalry loading"
+                  "No established rival yet"
                 }
                 description={
                   journey.biggestRival
-                    ? `${journey.biggestRival.encounters} direct matches · ${journey.biggestRival.balls} balls faced · ${journey.biggestRival.wickets} wickets`
-                    : "Direct batter-versus-bowler history will identify the biggest rival."
+                    ? `${journey.biggestRival.encounters} direct matches · ${journey.biggestRival.balls} legal balls · ${journey.biggestRival.wickets} dismissals · ${Math.round(
+                        journey.biggestRival.confidence *
+                          100
+                      )}% confidence`
+                    : "A rivalry appears after repeated direct interaction: at least two matches and six legal balls, or two direct dismissals."
                 }
                 href={
                   journey.biggestRival
