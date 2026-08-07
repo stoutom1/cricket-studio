@@ -71021,3 +71021,219 @@ body:has(.milestone-celebration-overlay)
     width: 100% !important;
   }
 }
+
+
+/* =========================================================
+   DASHBOARD — MORE MENU + BIRTHDAY EXPANSION RESTORE
+   2026-08-07
+   ========================================================= */
+
+/* ---------------------------------------------------------
+   1. "More" menu must be allowed to escape the League card.
+   Previous compact-card rules introduced clipping/overflow constraints.
+   --------------------------------------------------------- */
+
+.management-page .management-league-card,
+.management-page .management-league-card .league-action-bar,
+.management-page .league-action-more {
+  overflow: visible !important;
+}
+
+.management-page .management-league-card {
+  position: relative;
+  z-index: 20;
+}
+
+.management-page .league-action-bar {
+  position: relative;
+  z-index: 30;
+}
+
+.management-page .league-action-more {
+  position: relative;
+  z-index: 40;
+}
+
+.management-page .league-action-menu {
+  position: absolute !important;
+  z-index: 9999 !important;
+
+  top: calc(100% + 7px) !important;
+  right: 0 !important;
+
+  width: 270px !important;
+  max-height: none !important;
+  height: auto !important;
+
+  overflow: visible !important;
+
+  padding: 7px !important;
+
+  border-radius: 12px !important;
+
+  background: #0b1c30 !important;
+
+  box-shadow:
+    0 22px 54px rgba(0, 0, 0, 0.52) !important;
+}
+
+.management-page .league-action-menu button {
+  display: grid !important;
+  visibility: visible !important;
+
+  width: 100% !important;
+  min-height: 54px !important;
+
+  opacity: 1 !important;
+}
+
+/*
+ * Ensure all action-menu children are visible even if older rules attempted
+ * to limit the final/danger item.
+ */
+.management-page .league-action-menu > * {
+  position: relative !important;
+  display: grid !important;
+  visibility: visible !important;
+
+  opacity: 1 !important;
+}
+
+/* ---------------------------------------------------------
+   2. Birthday tool:
+   Keep the collapsed summary exactly 64px, but when opened the DETAILS
+   element must grow naturally so Notification + Birthday Center content
+   becomes visible again.
+   --------------------------------------------------------- */
+
+.management-page .birthday-tool {
+  min-height: 64px !important;
+  height: auto !important;
+
+  overflow: visible !important;
+}
+
+.management-page .birthday-tool > summary {
+  min-height: 64px !important;
+  height: 64px !important;
+}
+
+/*
+ * Closed state stays visually identical to the three-card row.
+ */
+.management-page .birthday-tool:not([open]) {
+  height: 64px !important;
+  overflow: hidden !important;
+}
+
+/*
+ * Open state is allowed to expand below the tool row.
+ */
+.management-page .birthday-tool[open] {
+  position: relative;
+  z-index: 15;
+
+  height: auto !important;
+  min-height: 64px !important;
+
+  overflow: visible !important;
+}
+
+/*
+ * The existing BirthdayPushSettings / readonly Birthday Center shortcut
+ * remain untouched and become visible below the summary.
+ */
+.management-page .birthday-tool[open]
+  .league-tool-content {
+  display: block !important;
+  visibility: visible !important;
+
+  width: 100% !important;
+  height: auto !important;
+  max-height: none !important;
+
+  overflow: visible !important;
+
+  margin: 0 !important;
+  padding: 12px !important;
+
+  opacity: 1 !important;
+
+  border-top:
+    1px solid rgba(71, 104, 139, 0.32);
+}
+
+/*
+ * When Birthday is open, let it span the full three-tool row so its settings
+ * have usable room and do not squeeze underneath Kit/Resources.
+ */
+.management-page .league-tools-shell
+  > .birthday-tool[open] {
+  grid-column: 1 / -1 !important;
+}
+
+/*
+ * Keep Kit and Resources on the next row while Birthday settings are open.
+ * They remain unchanged and fully functional.
+ */
+.management-page .league-tools-shell:has(.birthday-tool[open]) {
+  align-items: start !important;
+}
+
+/* ---------------------------------------------------------
+   MOBILE
+   Birthday already lives in League tools. Restore its expandable body there
+   too, without changing the compact summary.
+   --------------------------------------------------------- */
+
+@media (max-width: 768px) {
+  .management-page .birthday-tool {
+    height: auto !important;
+    min-height: 56px !important;
+
+    overflow: visible !important;
+  }
+
+  .management-page .birthday-tool:not([open]) {
+    height: 56px !important;
+    overflow: hidden !important;
+  }
+
+  .management-page .birthday-tool > summary {
+    min-height: 56px !important;
+    height: 56px !important;
+  }
+
+  .management-page .birthday-tool[open] {
+    grid-column: 1 / -1 !important;
+
+    width: 100% !important;
+    height: auto !important;
+
+    overflow: visible !important;
+  }
+
+  .management-page .birthday-tool[open]
+    .league-tool-content {
+    display: block !important;
+    visibility: visible !important;
+
+    height: auto !important;
+    max-height: none !important;
+
+    overflow: visible !important;
+
+    padding: 11px !important;
+
+    opacity: 1 !important;
+  }
+
+  /*
+   * The More menu is desktop-only today, but keep overflow behavior safe
+   * if the responsive breakpoint changes later.
+   */
+  .management-page .management-league-card,
+  .management-page .league-action-bar {
+    overflow: visible !important;
+  }
+}
