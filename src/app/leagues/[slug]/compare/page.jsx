@@ -1250,7 +1250,11 @@ function rivalryBetween({
         : 0
     );
 
-  const matches =
+  /*
+   * `matches` is already the function parameter containing all league
+   * matches. Use a distinct name for the number of direct shared matches.
+   */
+  const sharedMatchCount =
     matchIds.size;
 
   const totalBalls =
@@ -1269,7 +1273,7 @@ function rivalryBetween({
    */
   const isEstablished =
     (
-      matches >=
+      sharedMatchCount >=
         2 &&
       totalBalls >=
         12
@@ -1289,7 +1293,7 @@ function rivalryBetween({
           ) *
             55 +
           Math.min(
-            matches /
+            sharedMatchCount /
               4,
             1
           ) *
@@ -1305,7 +1309,8 @@ function rivalryBetween({
     );
 
   return {
-    matches,
+    matches:
+      sharedMatchCount,
     totalBalls,
     isEstablished,
     confidence,
