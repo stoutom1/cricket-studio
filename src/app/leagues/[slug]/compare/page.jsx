@@ -926,6 +926,13 @@ function buildMatchups({
            * A genuine rivalry needs repeated interaction.
            * One accidental delivery must never become a "top rivalry".
            */
+          /*
+           * Batting matchup qualification is intentionally more flexible
+           * than bowling rivalry qualification.
+           *
+           * A single match can still be meaningful if the batter clearly
+           * dominated that bowler (for example, 24 runs from 9 balls).
+           */
           const isQualified =
             (
               matches >=
@@ -933,6 +940,10 @@ function buildMatchups({
               row.balls >=
                 6
             ) ||
+            row.balls >=
+              8 ||
+            row.runs >=
+              20 ||
             row.dismissals >=
               2;
 
@@ -959,10 +970,19 @@ function buildMatchups({
             row.dismissals *
               12;
 
+          const matchupCategory =
+            matches >=
+              2 ||
+            row.dismissals >=
+              2
+              ? "ESTABLISHED_RIVALRY"
+              : "NOTABLE_MATCHUP";
+
           return {
             ...row,
             matches,
             isQualified,
+            matchupCategory,
             confidence,
             rivalryScore:
               impact *
@@ -1271,6 +1291,24 @@ function rivalryBetween({
    * - at least two shared matches and twelve legal head-to-head balls, OR
    * - at least two direct bowler-attributed dismissals.
    */
+  const hasStrongSingleMatchBattingEvidence =
+    sharedMatchCount ===
+      1 &&
+    (
+      (
+        aBalls >=
+          8 &&
+        aRuns >=
+          20
+      ) ||
+      (
+        bBalls >=
+          8 &&
+        bRuns >=
+          20
+      )
+    );
+
   const isEstablished =
     (
       sharedMatchCount >=
@@ -1279,7 +1317,8 @@ function rivalryBetween({
         12
     ) ||
     totalDismissals >=
-      2;
+      2 ||
+    hasStrongSingleMatchBattingEvidence;
 
   const confidence =
     Math.min(
@@ -2021,7 +2060,10 @@ export default async function ComparePlayersPage({
               <div className="pcp-rivalry-winner">
                 <span>
                   {directRivalry.isEstablished
-                    ? "Rivalry leader"
+                    ? directRivalry.matches ===
+                        1
+                      ? "Notable matchup leader"
+                      : "Rivalry leader"
                     : "Matchup status"}
                 </span>
                 <strong>
@@ -2031,7 +2073,10 @@ export default async function ComparePlayersPage({
                 </strong>
                 <small>
                   {directRivalry.isEstablished
-                    ? `${directRivalry.confidence}% evidence confidence`
+                    ? directRivalry.matches ===
+                        1
+                      ? `${directRivalry.confidence}% confidence · strong single-match batting evidence`
+                      : `${directRivalry.confidence}% evidence confidence`
                     : `Needs repeated interaction — currently ${directRivalry.confidence}% confidence`}
                 </small>
               </div>
@@ -2064,7 +2109,7 @@ export default async function ComparePlayersPage({
                 </h2>
               </div>
               <span>
-                Qualified repeated opponents only
+                Established rivalries + notable batting matchups
               </span>
             </div>
 
@@ -2198,6 +2243,12 @@ function MatchupPanel({
                       <small>
                         {row.balls} balls · {row.dismissals} outs
                       </small>
+                      <small>
+                        {row.matchupCategory ===
+                        "ESTABLISHED_RIVALRY"
+                          ? "⚔ Established rivalry"
+                          : "🔥 Notable batting matchup"}
+                      </small>
                     </b>
                   ) : (
                     <b>
@@ -2213,7 +2264,9 @@ function MatchupPanel({
         </div>
       ) : (
         <p className="pcp-no-data">
-          No recorded matchup data yet.
+          {type === "batting"
+            ? "No qualifying batting matchup yet."
+            : "No qualifying bowling rivalry yet."}
         </p>
       )}
     </article>
