@@ -1,4 +1,8 @@
 import prisma from "@/lib/prisma";
+import {
+  isMatchEligibleForStats,
+  filterMilestonesForEligibleMatches,
+} from "@/lib/stat-match";
 import Link from "next/link";
 import {
   getServerSession,
@@ -557,6 +561,16 @@ function buildFeed({
               identity.teamIds,
           }),
       });
+    }
+
+    // Abandoned matches may remain visible in match history, but they must
+    // never contribute to player stats, form, momentum, milestones, or rivalry.
+    if (
+      !isMatchEligibleForStats(
+        match
+      )
+    ) {
+      continue;
     }
 
     if (
@@ -1370,7 +1384,7 @@ export default async function PlayerHomeFeedPage({
     notFound();
   }
 
-  const milestones =
+  const milestoneRows =
     await prisma.playerMilestone.findMany({
       where: {
         leagueId:
@@ -1388,8 +1402,21 @@ export default async function PlayerHomeFeedPage({
         },
       ],
 
-      take: 10,
+      /*
+       * Fetch a little extra before filtering because abandoned-match
+       * milestone rows may occupy the newest slots.
+       */
+      take: 30,
     });
+
+  const milestones =
+    filterMilestonesForEligibleMatches(
+      milestoneRows,
+      league.matches
+    ).slice(
+      0,
+      10
+    );
 
   const feed =
     buildFeed({

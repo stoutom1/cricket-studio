@@ -1,5 +1,9 @@
 import prisma from "@/lib/prisma";
 import {
+  isMatchEligibleForStats,
+  filterMilestonesForEligibleMatches,
+} from "@/lib/stat-match";
+import {
   notFound,
 } from "next/navigation";
 import Link from "next/link";
@@ -700,6 +704,9 @@ function aggregatePlayer({
 }) {
   const performances =
     matches
+      .filter(
+        isMatchEligibleForStats
+      )
       .map(
         (match) =>
           buildPlayerMatch({
@@ -1457,7 +1464,7 @@ export default async function PublicPlayerPage({
   const stats =
     profile.stats;
 
-  const milestoneTimeline =
+  const milestoneRows =
     await prisma.playerMilestone.findMany({
       where: {
         leagueId:
@@ -1481,8 +1488,21 @@ export default async function PublicPlayerPage({
         },
       ],
 
-      take: 20,
+      /*
+       * Fetch extra rows first because abandoned-match milestones must be
+       * removed before enforcing the visible 20-item limit.
+       */
+      take: 60,
     });
+
+  const milestoneTimeline =
+    filterMilestonesForEligibleMatches(
+      milestoneRows,
+      league.matches
+    ).slice(
+      0,
+      20
+    );
 
   const battingScores =
     allProfiles.map(

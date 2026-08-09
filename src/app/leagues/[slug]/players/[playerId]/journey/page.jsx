@@ -1,4 +1,8 @@
 import prisma from "@/lib/prisma";
+import {
+  isMatchEligibleForStats,
+  filterMilestonesForEligibleMatches,
+} from "@/lib/stat-match";
 import Link from "next/link";
 import {
   getServerSession,
@@ -445,6 +449,14 @@ function buildJourney({
         matchDate(right)
     )
   ) {
+    if (
+      !isMatchEligibleForStats(
+        match
+      )
+    ) {
+      continue;
+    }
+
     const balls =
       match.balls ||
       [];
@@ -1349,7 +1361,7 @@ export default async function PlayerJourneyPage({
     notFound();
   }
 
-  const milestones =
+  const milestoneRows =
     await prisma.playerMilestone.findMany({
       where: {
         leagueId:
@@ -1367,6 +1379,12 @@ export default async function PlayerJourneyPage({
         },
       ],
     });
+
+  const milestones =
+    filterMilestonesForEligibleMatches(
+      milestoneRows,
+      league.matches
+    );
 
   const journey =
     buildJourney({

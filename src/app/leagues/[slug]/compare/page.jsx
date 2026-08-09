@@ -1,4 +1,5 @@
 import prisma from "@/lib/prisma";
+import { isMatchEligibleForStats } from "@/lib/stat-match";
 import Link from "next/link";
 import {
   notFound,
@@ -294,6 +295,13 @@ function aggregateCareer(
     const match of
     matches
   ) {
+    if (
+      !isMatchEligibleForStats(
+        match
+      )
+    ) {
+      continue;
+    }
     const matchBalls =
       match.balls ||
       [];
@@ -753,6 +761,13 @@ function buildMatchups({
     const match of
     matches
   ) {
+    if (
+      !isMatchEligibleForStats(
+        match
+      )
+    ) {
+      continue;
+    }
     for (
       const ball of
       match.balls ||
@@ -1159,6 +1174,13 @@ function rivalryBetween({
     const match of
     matches
   ) {
+    if (
+      !isMatchEligibleForStats(
+        match
+      )
+    ) {
+      continue;
+    }
     let involved =
       false;
 
