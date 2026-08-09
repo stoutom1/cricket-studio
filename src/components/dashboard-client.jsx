@@ -393,6 +393,17 @@ export default function DashboardClient() {
   const [showControls, setShowControls] = useState(false);
   const [matchDetail, setMatchDetail] = useState(null);
   const [scoreboard, setScoreboard] = useState(null);
+  const [showDlsModal, setShowDlsModal] = useState(false);
+  const [dlsBusy, setDlsBusy] = useState(false);
+  const [dlsError, setDlsError] = useState("");
+  const [dlsState, setDlsState] = useState(null);
+  const [dlsForm, setDlsForm] = useState({
+    mode: "STANDARD",
+    revisedOvers: "",
+    target: "",
+    par: "",
+    note: "",
+  });
   const [stats, setStats] = useState({ batting: [], bowling: [] });
   const [runOutRuns, setRunOutRuns] = useState(null);
   const [message, setMessage] = useState("");
@@ -5786,6 +5797,293 @@ function openKitFromPostMatchPrompt() {
   setPostMatchKitPrompt(null);
 }
 
+
+async function openDlsModal() {
+  if (!selectedMatchId || !scoreboard) return;
+
+  const currentInnings = Number(
+    scoreboard.currentInnings ||
+    ballForm.inningsNo ||
+    1
+  );
+
+  try {
+    setDlsBusy(true);
+    setError("");
+
+    const state = await api(
+      `/api/matches/${selectedMatchId}/dls`
+    );
+
+    setDlsState(state);
+
+    const allocation =
+      currentInnings === 1
+        ? state.innings1Allocation
+        : state.innings2Allocation;
+
+    setDlsError("");
+
+    setDlsForm((prev) => ({
+      ...prev,
+      mode: "STANDARD",
+
+      /*
+       * Do NOT pre-fill the current allocation.
+       * A DLS revision must reduce the available overs, so pre-filling "20"
+       * when the current allocation is already 20 looks actionable but is
+       * actually invalid.
+       */
+      revisedOvers: "",
+
+      target:
+        state.latest?.target != null
+          ? String(state.latest.target)
+          : "",
+      par:
+        state.latest?.par != null
+          ? String(state.latest.par)
+          : "",
+      note: "",
+    }));
+
+    setShowDlsModal(true);
+  } catch (err) {
+    setError(
+      err.message ||
+      "Unable to load DLS."
+    );
+  } finally {
+    setDlsBusy(false);
+  }
+}
+
+async function handleApplyDls() {
+  if (!selectedMatchId || !scoreboard) return;
+
+  const inningsNo = Number(
+    scoreboard.currentInnings ||
+    ballForm.inningsNo ||
+    1
+  );
+
+  const currentAllocation =
+    inningsNo === 1
+      ? Number(dlsState?.innings1Allocation || 0)
+      : Number(dlsState?.innings2Allocation || 0);
+
+  const revisedOvers =
+    Number(dlsForm.revisedOvers);
+
+  setDlsError("");
+
+  if (
+    !Number.isFinite(revisedOvers) ||
+    revisedOvers <= 0
+  ) {
+    setDlsError(
+      "Enter the new reduced total overs before applying the revision."
+    );
+    return;
+  }
+
+  if (
+    dlsForm.mode === "STANDARD" &&
+    currentAllocation > 0 &&
+    revisedOvers >= currentAllocation
+  ) {
+    setDlsError(
+      `Revised total overs must be lower than the current allocation of ${currentAllocation} overs.`
+    );
+    return;
+  }
+
+  if (
+    dlsForm.mode === "OFFICIAL_OVERRIDE" &&
+    (
+      !Number.isInteger(
+        Number(dlsForm.target)
+      ) ||
+      Number(dlsForm.target) <= 0
+    )
+  ) {
+    setDlsError(
+      "Enter the official DLS target before applying the override."
+    );
+    return;
+  }
+
+  try {
+    setDlsBusy(true);
+    setError("");
+    setDlsError("");
+
+    const action =
+      dlsForm.mode ===
+      "OFFICIAL_OVERRIDE"
+        ? "OFFICIAL_OVERRIDE"
+        : "STANDARD_INTERRUPTION";
+
+    const result = await api(
+      `/api/matches/${selectedMatchId}/dls`,
+      {
+        method: "POST",
+        body: JSON.stringify({
+          action,
+          inningsNo,
+          revisedOvers,
+          target:
+            dlsForm.target,
+          par:
+            dlsForm.par,
+          note:
+            dlsForm.note,
+        }),
+      }
+    );
+
+    setDlsState(
+      result.state
+    );
+
+    await loadSelectedMatch(
+      selectedMatchId
+    );
+
+    setShowDlsModal(false);
+
+    setMessage(
+      action ===
+        "OFFICIAL_OVERRIDE"
+        ? "Official DLS target applied."
+        : inningsNo === 2
+          ? `D/L Standard target revised to ${result.event.target}.`
+          : "First-innings rain interruption recorded."
+    );
+  } catch (err) {
+    const message =
+      err.message ||
+      "Unable to apply DLS.";
+
+    /*
+     * DLS errors must be visible INSIDE the modal. The global scorer error
+     * sits behind this fixed dialog and previously made the button look dead.
+     */
+    setDlsError(message);
+  } finally {
+    setDlsBusy(false);
+  }
+}
+
+async function handleEndByDls() {
+  if (!selectedMatchId) return;
+
+  setDlsError("");
+
+  const latestMode =
+    String(
+      dlsState?.latest?.mode ||
+      ""
+    ).toUpperCase();
+
+  const legalBalls =
+    Number(
+      dlsState?.innings2?.legalBalls ||
+      0
+    );
+
+  /*
+   * The built-in public Standard table is over-by-over.
+   * At a mid-over termination (for example 4.5 ov), do not silently call
+   * the API and fail behind the modal. Tell the scorer exactly what to do.
+   */
+  if (
+    latestMode !==
+      "OFFICIAL_OVERRIDE" &&
+    legalBalls % 6 !== 0
+  ) {
+    setDlsError(
+      `The innings is currently at ${Math.floor(
+        legalBalls / 6
+      )}.${legalBalls % 6} overs. Cric4All Standard can end a match only at a completed-over boundary. Switch to Official DLS, enter the official target/par, Apply Revision, then End by DLS.`
+    );
+    return;
+  }
+
+  const confirmed =
+    window.confirm(
+      "End this match now using the current DLS par score?"
+    );
+
+  if (!confirmed) return;
+
+  try {
+    setDlsBusy(true);
+    setError("");
+    setDlsError("");
+
+    const dlsResult =
+      await api(
+        `/api/matches/${selectedMatchId}/dls`,
+        {
+          method: "POST",
+          body:
+            JSON.stringify({
+              action:
+                "TERMINATE",
+              inningsNo: 2,
+            }),
+        }
+      );
+
+    const resultText =
+      dlsResult?.event
+        ?.resultText;
+
+    if (!resultText) {
+      throw new Error(
+        "Unable to determine the DLS result."
+      );
+    }
+
+    const endResult =
+      await api(
+        `/api/matches/${selectedMatchId}/end`,
+        {
+          method: "POST",
+          body:
+            JSON.stringify({
+              matchEndType:
+                "DLS",
+              statusText:
+                resultText,
+            }),
+        }
+      );
+
+    setShowDlsModal(false);
+
+    await loadMatches();
+    await loadSelectedMatch(
+      selectedMatchId
+    );
+
+    setMessage(resultText);
+
+    showPostMatchKitPrompt(
+      endResult
+    );
+  } catch (err) {
+    const message =
+      err.message ||
+      "Unable to end match by DLS.";
+
+    setDlsError(message);
+  } finally {
+    setDlsBusy(false);
+  }
+}
+
 async function handleEndMatch() {
   const confirmed = window.confirm(
     "End this match? No more scoring will be allowed."
@@ -10262,6 +10560,18 @@ const playerRoleBadge = (row) => {
       ? "desktop-scorer-modal-shell"
       : ""
   }`}
+  style={
+    scorerMode && !isMobile
+      ? {
+          maxHeight: "100dvh",
+          overflowY: "auto",
+          overflowX: "hidden",
+          overscrollBehavior: "contain",
+          WebkitOverflowScrolling: "touch",
+          scrollbarGutter: "stable",
+        }
+      : undefined
+  }
 >
 {scorerMode && !isMobile && (
   <div className="scorer-mode-banner mobile-scorer-mode-banner">
@@ -11786,6 +12096,18 @@ const playerRoleBadge = (row) => {
 {(!isMatchAbandoned && !isMatchCompleted && !isMatchLocked) && (
     <button
       type="button"
+      className="match-control-btn dls"
+      disabled={dlsBusy}
+      onClick={openDlsModal}
+      title="Rain interruption / DLS"
+    >
+      <span>🌧️</span>
+      <label>DLS</label>
+    </button>
+)}
+{(!isMatchAbandoned && !isMatchCompleted && !isMatchLocked) && (
+    <button
+      type="button"
       className="match-control-btn abandon"
       disabled={isMatchLocked || isMatchCompleted}
       onClick={handleAbandonMatch}
@@ -11814,6 +12136,388 @@ const playerRoleBadge = (row) => {
 )}</Card>
     </div>    
 )}
+
+{showDlsModal && scoreboard && (
+  <div
+    className="dls-modal-backdrop"
+    role="presentation"
+    onMouseDown={(event) => {
+      if (
+        event.target ===
+        event.currentTarget
+      ) {
+        setShowDlsModal(false);
+      }
+    }}
+  >
+    <section
+      className="dls-modal"
+      role="dialog"
+      aria-modal="true"
+      aria-label="Rain and DLS"
+    >
+      <div className="dls-modal-head">
+        <div>
+          <span className="dls-kicker">
+            🌧️ Rain / DLS
+          </span>
+          <h3>
+            Revised Match Target
+          </h3>
+        </div>
+
+        <button
+          type="button"
+          className="dls-close"
+          onClick={() =>
+            setShowDlsModal(false)
+          }
+          aria-label="Close DLS"
+        >
+          ×
+        </button>
+      </div>
+
+      <div className="dls-current-grid">
+        <div>
+          <span>Innings</span>
+          <strong>
+            {scoreboard.currentInnings || 1}
+          </strong>
+        </div>
+
+        <div>
+          <span>Score</span>
+          <strong>
+            {(
+              scoreboard.innings?.[
+                Number(
+                  scoreboard.currentInnings ||
+                  1
+                ) - 1
+              ]?.runs || 0
+            )}
+            /
+            {(
+              scoreboard.innings?.[
+                Number(
+                  scoreboard.currentInnings ||
+                  1
+                ) - 1
+              ]?.wickets || 0
+            )}
+          </strong>
+        </div>
+
+        <div>
+          <span>Current allocation</span>
+          <strong>
+            {Number(
+              scoreboard.currentInnings ||
+              1
+            ) === 1
+              ? dlsState?.innings1Allocation
+              : dlsState?.innings2Allocation}
+            {" "}overs
+          </strong>
+        </div>
+
+        {scoreboard.summary?.dls?.active && (
+          <div>
+            <span>Current target</span>
+            <strong>
+              {scoreboard.summary.dls.target || "—"}
+            </strong>
+          </div>
+        )}
+      </div>
+
+      <div className="dls-mode-tabs">
+        <button
+          type="button"
+          className={
+            dlsForm.mode === "STANDARD"
+              ? "active"
+              : ""
+          }
+          onClick={() => {
+            setDlsError("");
+            setDlsForm((prev) => ({
+              ...prev,
+              mode: "STANDARD",
+            }));
+          }}
+        >
+          Cric4All Standard
+        </button>
+
+        <button
+          type="button"
+          className={
+            dlsForm.mode ===
+            "OFFICIAL_OVERRIDE"
+              ? "active"
+              : ""
+          }
+          onClick={() => {
+            setDlsError("");
+            setDlsForm((prev) => ({
+              ...prev,
+              mode:
+                "OFFICIAL_OVERRIDE",
+            }));
+          }}
+        >
+          Official DLS
+        </button>
+      </div>
+
+      {dlsForm.mode === "STANDARD" ? (
+        <div className="dls-form">
+          <label>
+            <span>
+              Revised total overs
+            </span>
+            <input
+              type="number"
+              min="1"
+              max={
+                Math.max(
+                  1,
+                  Number(
+                    Number(
+                      scoreboard.currentInnings ||
+                      1
+                    ) === 1
+                      ? dlsState?.innings1Allocation
+                      : dlsState?.innings2Allocation
+                  ) - 1
+                )
+              }
+              step="1"
+              placeholder={
+                `Less than ${
+                  Number(
+                    scoreboard.currentInnings ||
+                    1
+                  ) === 1
+                    ? dlsState?.innings1Allocation
+                    : dlsState?.innings2Allocation
+                }`
+              }
+              value={
+                dlsForm.revisedOvers
+              }
+              onChange={(event) => {
+                setDlsError("");
+                setDlsForm((prev) => ({
+                  ...prev,
+                  revisedOvers:
+                    event.target.value,
+                }));
+              }}
+            />
+          </label>
+
+          <p className="dls-help">
+            Uses the ICC-published D/L Standard Edition resource table.
+            Automatic Standard calculation is available at a completed-over
+            boundary. For an interruption during an over, use Official DLS.
+          </p>
+        </div>
+      ) : (
+        <div className="dls-form dls-official-grid">
+          <label>
+            <span>
+              Revised total overs
+            </span>
+            <input
+              type="number"
+              min="1"
+              step="0.1"
+              value={
+                dlsForm.revisedOvers
+              }
+              onChange={(event) =>
+                setDlsForm((prev) => ({
+                  ...prev,
+                  revisedOvers:
+                    event.target.value,
+                }))
+              }
+            />
+          </label>
+
+          <label>
+            <span>
+              Official target
+            </span>
+            <input
+              type="number"
+              min="1"
+              step="1"
+              value={
+                dlsForm.target
+              }
+              onChange={(event) =>
+                setDlsForm((prev) => ({
+                  ...prev,
+                  target:
+                    event.target.value,
+                  par:
+                    event.target.value
+                      ? String(
+                          Math.max(
+                            Number(
+                              event.target.value
+                            ) - 1,
+                            0
+                          )
+                        )
+                      : "",
+                }))
+              }
+            />
+          </label>
+
+          <label>
+            <span>
+              Official par
+            </span>
+            <input
+              type="number"
+              min="0"
+              step="1"
+              value={
+                dlsForm.par
+              }
+              onChange={(event) =>
+                setDlsForm((prev) => ({
+                  ...prev,
+                  par:
+                    event.target.value,
+                }))
+              }
+            />
+          </label>
+
+          <label className="dls-full">
+            <span>
+              Note
+            </span>
+            <input
+              type="text"
+              value={
+                dlsForm.note
+              }
+              onChange={(event) =>
+                setDlsForm((prev) => ({
+                  ...prev,
+                  note:
+                    event.target.value,
+                }))
+              }
+              placeholder="Optional source / umpire note"
+            />
+          </label>
+
+          <p className="dls-help dls-full">
+            Enter the target/par produced by the official or licensed
+            DLS calculator. Cric4All will use it for the live chase.
+          </p>
+        </div>
+      )}
+
+      {dlsError && (
+        <div
+          className="dls-inline-error"
+          role="alert"
+        >
+          <strong>
+            Unable to continue
+          </strong>
+
+          <span>
+            {dlsError}
+          </span>
+        </div>
+      )}
+
+      {dlsState?.latest && (
+        <div className="dls-result-card">
+          <span>
+            Active adjustment
+          </span>
+
+          <strong>
+            {dlsState.latest.mode ===
+            "OFFICIAL_OVERRIDE"
+              ? "Official DLS"
+              : "D/L Standard"}
+          </strong>
+
+          {dlsState.latest.target ? (
+            <b>
+              Target{" "}
+              {dlsState.latest.target}
+              {dlsState.latest.par != null
+                ? ` · Par ${dlsState.latest.par}`
+                : ""}
+            </b>
+          ) : (
+            <b>
+              Resource adjustment saved
+            </b>
+          )}
+        </div>
+      )}
+
+      <div className="dls-actions">
+        <button
+          type="button"
+          className="secondary"
+          onClick={() =>
+            setShowDlsModal(false)
+          }
+          disabled={dlsBusy}
+        >
+          Cancel
+        </button>
+
+        <button
+          type="button"
+          className="primary"
+          onClick={handleApplyDls}
+          disabled={dlsBusy}
+        >
+          {dlsBusy
+            ? "Applying…"
+            : dlsForm.mode ===
+              "OFFICIAL_OVERRIDE"
+              ? "Apply Official DLS"
+              : "Apply Reduced Overs"}
+        </button>
+
+        {Number(
+          scoreboard.currentInnings ||
+          1
+        ) === 2 && (
+          <button
+            type="button"
+            className="danger"
+            onClick={
+              handleEndByDls
+            }
+            disabled={dlsBusy}
+          >
+            End by DLS
+          </button>
+        )}
+      </div>
+    </section>
+  </div>
+)}
+
 {activeTab === "matches" && (
   <div className="matches-page">
     {(message || error) && (
@@ -13056,6 +13760,24 @@ const playerRoleBadge = (row) => {
             .replace(/[\s-]+/g, "_")
             .toUpperCase();
 
+          const isDlsMatch =
+            Boolean(match.isDlsResult) ||
+            String(
+              match.statusText || ""
+            )
+              .toUpperCase()
+              .includes("DLS") ||
+            String(
+              match.statusText || ""
+            )
+              .toUpperCase()
+              .includes("D/L STANDARD") ||
+            String(
+              match.statusText || ""
+            )
+              .toUpperCase()
+              .includes("DUCKWORTH");
+
           const firstTeamName =
             match.battingFirstTeamName ||
             match.firstInningsTeamName ||
@@ -13336,8 +14058,18 @@ const playerRoleBadge = (row) => {
                         Match #{matchNumber}
                       </span>
 
-                      <span className="completed-status-chip">
-                        {match.status}
+                      <span
+                        className={
+                          `completed-status-chip ${
+                            isDlsMatch
+                              ? "completed-status-chip-dls"
+                              : ""
+                          }`
+                        }
+                      >
+                        {isDlsMatch
+                          ? "COMPLETED · DLS"
+                          : match.status}
                       </span>
                     </div>
 
@@ -13413,11 +14145,25 @@ const playerRoleBadge = (row) => {
                         Match #{matchNumber}
                       </span>
 
-                      <span className="mobile-completed-status">
-                        ✓{" "}
-                        {String(match.status || "")
-                          .replaceAll("_", " ")
-                          .trim()}
+                      <span
+                        className={
+                          `mobile-completed-status ${
+                            isDlsMatch
+                              ? "is-dls"
+                              : ""
+                          }`
+                        }
+                      >
+                        {isDlsMatch
+                          ? "🌧 COMPLETED · DLS"
+                          : (
+                              <>
+                                ✓{" "}
+                                {String(match.status || "")
+                                  .replaceAll("_", " ")
+                                  .trim()}
+                              </>
+                            )}
                       </span>
                     </div>
 

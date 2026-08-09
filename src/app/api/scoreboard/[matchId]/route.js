@@ -10,6 +10,10 @@ import {
   buildMatchStats,
   getPlayerName
 } from "@/lib/scoring";
+import {
+  currentAllocation,
+  latestDlsState,
+} from "@/lib/dls-standard";
 
 export const runtime = "nodejs";
 
@@ -473,9 +477,26 @@ const innings2 = summarizeInningsDetailed(
 
   const innings1Complete = innings2Started;
 
-  const target = innings1Complete ? innings1.runs + 1 : null;
+  const dlsState = latestDlsState(match);
+
+  const target =
+    innings1Complete
+      ? (
+          Number(dlsState?.target) > 0
+            ? Number(dlsState.target)
+            : innings1.runs + 1
+        )
+      : null;
+
+  const innings2Allocation =
+    currentAllocation(match, 2);
+
   const remainingBalls = innings2Started
-    ? Math.max(maxLegalBalls - innings2.legalBalls, 0)
+    ? Math.max(
+        innings2Allocation * 6 -
+          innings2.legalBalls,
+        0
+      )
     : null;
 function getBatterStats(playerId, balls) {
   let runs = 0;
@@ -676,6 +697,13 @@ const response = {
     maxWicketsPerInnings: match.maxWicketsPerInnings,
     maxOversPerBowler: match.maxOversPerBowler,
     shareCode: match.shareCode,
+    dlsActive: Boolean(dlsState),
+    dlsMode: dlsState?.mode || null,
+    dlsTarget: dlsState?.target || null,
+    dlsPar: dlsState?.par ?? null,
+    revisedOvers:
+      dlsState?.revisedOvers ||
+      innings2Allocation,
   },
 innings: [
   {
@@ -719,7 +747,21 @@ innings: [
   summary: {
     target,
     remainingBalls,
-    statusText
+    statusText,
+    dls: dlsState
+      ? {
+          active: true,
+          mode: dlsState.mode,
+          target: dlsState.target || null,
+          par: dlsState.par ?? null,
+          revisedOvers:
+            dlsState.revisedOvers || null,
+          resultText:
+            dlsState.resultText || null,
+        }
+      : {
+          active: false,
+        }
   },
   recentBalls,
   commentary: buildCommentary(match)

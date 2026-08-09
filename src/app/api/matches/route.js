@@ -61,6 +61,29 @@ function buildResultText(match, innings1, innings2) {
     return match.statusText || "Match abandoned";
   }
 
+  /*
+   * A DLS-completed match has an authoritative persisted resultText in
+   * Match.statusText, written by the DLS end route.
+   *
+   * Do NOT recalculate the winner from raw innings totals here. In a DLS
+   * match the revised target/par, not the original first-innings total,
+   * determines the result.
+   */
+  const persistedResult =
+    String(match.statusText || "").trim();
+
+  const normalizedPersistedResult =
+    persistedResult.toUpperCase();
+
+  const isDlsResult =
+    normalizedPersistedResult.includes("DLS") ||
+    normalizedPersistedResult.includes("D/L STANDARD") ||
+    normalizedPersistedResult.includes("DUCKWORTH");
+
+  if (isDlsResult) {
+    return persistedResult;
+  }
+
   const firstTeamName =
     match.battingFirstTeamId === match.teamAId
       ? match.teamA.name
@@ -323,6 +346,16 @@ teamB: {
 
       status: m.status,
       statusText: m.statusText,
+      isDlsResult:
+        String(m.statusText || "")
+          .toUpperCase()
+          .includes("DLS") ||
+        String(m.statusText || "")
+          .toUpperCase()
+          .includes("D/L STANDARD") ||
+        String(m.statusText || "")
+          .toUpperCase()
+          .includes("DUCKWORTH"),
       createdAt: m.createdAt,
       scheduledAt: m.scheduledAt,
 

@@ -71237,3 +71237,1552 @@ body:has(.milestone-celebration-overlay)
     overflow: visible !important;
   }
 }
+
+/* ===== Cric4All Rain / DLS ===== */
+.match-control-btn.dls {
+  border-color: rgba(56, 189, 248, 0.5);
+  background: linear-gradient(180deg, rgba(14, 116, 144, 0.28), rgba(8, 47, 73, 0.38));
+}
+
+.dls-modal-backdrop {
+  position: fixed;
+  inset: 0;
+  z-index: 10050;
+  display: grid;
+  place-items: center;
+  padding: 18px;
+  background: rgba(2, 8, 23, 0.78);
+  backdrop-filter: blur(7px);
+}
+
+.dls-modal {
+  width: min(720px, 100%);
+  max-height: min(88vh, 820px);
+  overflow-y: auto;
+  border: 1px solid rgba(125, 211, 252, 0.24);
+  border-radius: 18px;
+  padding: 18px;
+  background: #071827;
+  box-shadow: 0 28px 80px rgba(0, 0, 0, 0.5);
+  color: #f8fafc;
+}
+
+.dls-modal-head {
+  display: flex;
+  align-items: flex-start;
+  justify-content: space-between;
+  gap: 14px;
+  margin-bottom: 14px;
+}
+
+.dls-modal-head h3 {
+  margin: 3px 0 0;
+  font-size: 22px;
+  line-height: 1.15;
+}
+
+.dls-kicker {
+  color: #7dd3fc;
+  font-size: 12px;
+  font-weight: 900;
+  letter-spacing: .08em;
+  text-transform: uppercase;
+}
+
+.dls-close {
+  width: 42px;
+  height: 42px;
+  flex: 0 0 42px;
+  border: 1px solid rgba(148, 163, 184, .28);
+  border-radius: 12px;
+  background: rgba(15, 23, 42, .78);
+  color: #fff;
+  font-size: 25px;
+  cursor: pointer;
+}
+
+.dls-current-grid {
+  display: grid;
+  grid-template-columns: repeat(4, minmax(0, 1fr));
+  gap: 9px;
+  margin-bottom: 14px;
+}
+
+.dls-current-grid > div,
+.dls-result-card {
+  min-width: 0;
+  border: 1px solid rgba(71, 85, 105, .48);
+  border-radius: 12px;
+  padding: 10px;
+  background: rgba(15, 23, 42, .62);
+}
+
+.dls-current-grid span,
+.dls-result-card > span {
+  display: block;
+  margin-bottom: 4px;
+  color: #94a3b8;
+  font-size: 11px;
+  font-weight: 800;
+}
+
+.dls-current-grid strong {
+  font-size: 15px;
+  white-space: nowrap;
+}
+
+.dls-mode-tabs {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 8px;
+  margin: 10px 0 14px;
+}
+
+.dls-mode-tabs button {
+  min-height: 44px;
+  border: 1px solid rgba(71, 85, 105, .52);
+  border-radius: 11px;
+  background: rgba(15, 23, 42, .65);
+  color: #cbd5e1;
+  font-weight: 850;
+  cursor: pointer;
+}
+
+.dls-mode-tabs button.active {
+  border-color: rgba(56, 189, 248, .72);
+  background: rgba(14, 116, 144, .28);
+  color: #e0f2fe;
+}
+
+.dls-form {
+  display: grid;
+  grid-template-columns: 1fr;
+  gap: 10px;
+}
+
+.dls-official-grid {
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+}
+
+.dls-form label {
+  display: grid;
+  gap: 6px;
+}
+
+.dls-form label > span {
+  font-size: 12px;
+  font-weight: 850;
+  color: #cbd5e1;
+}
+
+.dls-form input {
+  width: 100%;
+  min-height: 46px;
+  border: 1px solid rgba(100, 116, 139, .55);
+  border-radius: 10px;
+  padding: 0 12px;
+  background: #0b2034;
+  color: #fff;
+  font-size: 16px;
+}
+
+.dls-full {
+  grid-column: 1 / -1;
+}
+
+.dls-help {
+  margin: 0;
+  color: #94a3b8;
+  font-size: 12px;
+  line-height: 1.45;
+}
+
+.dls-result-card {
+  display: grid;
+  grid-template-columns: 1fr auto;
+  align-items: center;
+  gap: 4px 12px;
+  margin-top: 14px;
+}
+
+.dls-result-card > span {
+  grid-column: 1 / -1;
+  margin: 0;
+}
+
+.dls-result-card strong {
+  color: #7dd3fc;
+}
+
+.dls-result-card b {
+  white-space: nowrap;
+}
+
+.dls-actions {
+  display: flex;
+  justify-content: flex-end;
+  flex-wrap: wrap;
+  gap: 8px;
+  margin-top: 16px;
+}
+
+.dls-actions button {
+  min-height: 44px;
+  border-radius: 10px;
+  padding: 0 15px;
+  font-size: 13px;
+  font-weight: 900;
+  cursor: pointer;
+}
+
+.dls-actions .secondary {
+  border: 1px solid rgba(100, 116, 139, .5);
+  background: rgba(15, 23, 42, .75);
+  color: #e2e8f0;
+}
+
+.dls-actions .primary {
+  border: 1px solid rgba(56, 189, 248, .55);
+  background: #0e7490;
+  color: white;
+}
+
+.dls-actions .danger {
+  border: 1px solid rgba(248, 113, 113, .55);
+  background: rgba(153, 27, 27, .72);
+  color: white;
+}
+
+@media (max-width: 640px) {
+  .dls-modal-backdrop {
+    padding: 8px;
+    align-items: end;
+  }
+
+  .dls-modal {
+    width: 100%;
+    max-height: 92vh;
+    border-radius: 18px 18px 0 0;
+    padding: 15px;
+  }
+
+  .dls-modal-head h3 {
+    font-size: 20px;
+  }
+
+  .dls-current-grid {
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+  }
+
+  .dls-official-grid {
+    grid-template-columns: 1fr;
+  }
+
+  .dls-full {
+    grid-column: auto;
+  }
+
+  .dls-mode-tabs button,
+  .dls-actions button {
+    min-height: 48px;
+    font-size: 14px;
+  }
+
+  .dls-actions {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+  }
+
+  .dls-actions .danger {
+    grid-column: 1 / -1;
+  }
+}
+
+/* ===== Cric4All Rain / DLS ===== */
+.match-control-btn.dls {
+  border-color: rgba(56, 189, 248, 0.5);
+  background: linear-gradient(180deg, rgba(14, 116, 144, 0.28), rgba(8, 47, 73, 0.38));
+}
+
+.dls-modal-backdrop {
+  position: fixed;
+  inset: 0;
+  z-index: 10050;
+  display: grid;
+  place-items: center;
+  padding: 18px;
+  background: rgba(2, 8, 23, 0.78);
+  backdrop-filter: blur(7px);
+}
+
+.dls-modal {
+  width: min(720px, 100%);
+  max-height: min(88vh, 820px);
+  overflow-y: auto;
+  border: 1px solid rgba(125, 211, 252, 0.24);
+  border-radius: 18px;
+  padding: 18px;
+  background: #071827;
+  box-shadow: 0 28px 80px rgba(0, 0, 0, 0.5);
+  color: #f8fafc;
+}
+
+.dls-modal-head {
+  display: flex;
+  align-items: flex-start;
+  justify-content: space-between;
+  gap: 14px;
+  margin-bottom: 14px;
+}
+
+.dls-modal-head h3 {
+  margin: 3px 0 0;
+  font-size: 22px;
+  line-height: 1.15;
+}
+
+.dls-kicker {
+  color: #7dd3fc;
+  font-size: 12px;
+  font-weight: 900;
+  letter-spacing: .08em;
+  text-transform: uppercase;
+}
+
+.dls-close {
+  width: 42px;
+  height: 42px;
+  flex: 0 0 42px;
+  border: 1px solid rgba(148, 163, 184, .28);
+  border-radius: 12px;
+  background: rgba(15, 23, 42, .78);
+  color: #fff;
+  font-size: 25px;
+  cursor: pointer;
+}
+
+.dls-current-grid {
+  display: grid;
+  grid-template-columns: repeat(4, minmax(0, 1fr));
+  gap: 9px;
+  margin-bottom: 14px;
+}
+
+.dls-current-grid > div,
+.dls-result-card {
+  min-width: 0;
+  border: 1px solid rgba(71, 85, 105, .48);
+  border-radius: 12px;
+  padding: 10px;
+  background: rgba(15, 23, 42, .62);
+}
+
+.dls-current-grid span,
+.dls-result-card > span {
+  display: block;
+  margin-bottom: 4px;
+  color: #94a3b8;
+  font-size: 11px;
+  font-weight: 800;
+}
+
+.dls-current-grid strong {
+  font-size: 15px;
+  white-space: nowrap;
+}
+
+.dls-mode-tabs {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 8px;
+  margin: 10px 0 14px;
+}
+
+.dls-mode-tabs button {
+  min-height: 44px;
+  border: 1px solid rgba(71, 85, 105, .52);
+  border-radius: 11px;
+  background: rgba(15, 23, 42, .65);
+  color: #cbd5e1;
+  font-weight: 850;
+  cursor: pointer;
+}
+
+.dls-mode-tabs button.active {
+  border-color: rgba(56, 189, 248, .72);
+  background: rgba(14, 116, 144, .28);
+  color: #e0f2fe;
+}
+
+.dls-form {
+  display: grid;
+  grid-template-columns: 1fr;
+  gap: 10px;
+}
+
+.dls-official-grid {
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+}
+
+.dls-form label {
+  display: grid;
+  gap: 6px;
+}
+
+.dls-form label > span {
+  font-size: 12px;
+  font-weight: 850;
+  color: #cbd5e1;
+}
+
+.dls-form input {
+  width: 100%;
+  min-height: 46px;
+  border: 1px solid rgba(100, 116, 139, .55);
+  border-radius: 10px;
+  padding: 0 12px;
+  background: #0b2034;
+  color: #fff;
+  font-size: 16px;
+}
+
+.dls-full {
+  grid-column: 1 / -1;
+}
+
+.dls-help {
+  margin: 0;
+  color: #94a3b8;
+  font-size: 12px;
+  line-height: 1.45;
+}
+
+.dls-result-card {
+  display: grid;
+  grid-template-columns: 1fr auto;
+  align-items: center;
+  gap: 4px 12px;
+  margin-top: 14px;
+}
+
+.dls-result-card > span {
+  grid-column: 1 / -1;
+  margin: 0;
+}
+
+.dls-result-card strong {
+  color: #7dd3fc;
+}
+
+.dls-result-card b {
+  white-space: nowrap;
+}
+
+.dls-actions {
+  display: flex;
+  justify-content: flex-end;
+  flex-wrap: wrap;
+  gap: 8px;
+  margin-top: 16px;
+}
+
+.dls-actions button {
+  min-height: 44px;
+  border-radius: 10px;
+  padding: 0 15px;
+  font-size: 13px;
+  font-weight: 900;
+  cursor: pointer;
+}
+
+.dls-actions .secondary {
+  border: 1px solid rgba(100, 116, 139, .5);
+  background: rgba(15, 23, 42, .75);
+  color: #e2e8f0;
+}
+
+.dls-actions .primary {
+  border: 1px solid rgba(56, 189, 248, .55);
+  background: #0e7490;
+  color: white;
+}
+
+.dls-actions .danger {
+  border: 1px solid rgba(248, 113, 113, .55);
+  background: rgba(153, 27, 27, .72);
+  color: white;
+}
+
+@media (max-width: 640px) {
+  .dls-modal-backdrop {
+    padding: 8px;
+    align-items: end;
+  }
+
+  .dls-modal {
+    width: 100%;
+    max-height: 92vh;
+    border-radius: 18px 18px 0 0;
+    padding: 15px;
+  }
+
+  .dls-modal-head h3 {
+    font-size: 20px;
+  }
+
+  .dls-current-grid {
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+  }
+
+  .dls-official-grid {
+    grid-template-columns: 1fr;
+  }
+
+  .dls-full {
+    grid-column: auto;
+  }
+
+  .dls-mode-tabs button,
+  .dls-actions button {
+    min-height: 48px;
+    font-size: 14px;
+  }
+
+  .dls-actions {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+  }
+
+  .dls-actions .danger {
+    grid-column: 1 / -1;
+  }
+}
+
+
+/* =========================================================
+   DLS / SCORER MODE — DESKTOP SCROLL RESTORE
+   The scorer-mode window itself must own vertical scrolling.
+   This prevents the bottom controls from becoming unreachable after
+   applying a DLS revision.
+   ========================================================= */
+
+@media (min-width: 769px) {
+  .desktop-scorer-modal-shell {
+    max-height: 100dvh !important;
+    height: 100dvh !important;
+
+    overflow-y: auto !important;
+    overflow-x: hidden !important;
+
+    overscroll-behavior: contain !important;
+    -webkit-overflow-scrolling: touch;
+
+    scrollbar-gutter: stable;
+
+    padding-bottom:
+      max(
+        28px,
+        env(safe-area-inset-bottom)
+      ) !important;
+  }
+
+  /*
+   * Allow the content inside Scorer Mode to extend naturally.
+   * Do not clip it at a fixed panel height.
+   */
+  .desktop-scorer-modal-shell
+    > * {
+    flex-shrink: 0;
+  }
+
+  /*
+   * Keep the Scorer Mode header accessible while the scoring controls scroll.
+   */
+  .desktop-scorer-modal-shell
+    > .scorer-mode-banner {
+    position: sticky !important;
+    top: 0 !important;
+    z-index: 60 !important;
+  }
+}
+
+/* ===== Cric4All Rain / DLS ===== */
+.match-control-btn.dls {
+  border-color: rgba(56, 189, 248, 0.5);
+  background: linear-gradient(180deg, rgba(14, 116, 144, 0.28), rgba(8, 47, 73, 0.38));
+}
+
+.dls-modal-backdrop {
+  position: fixed;
+  inset: 0;
+  z-index: 10050;
+  display: grid;
+  place-items: center;
+  padding: 18px;
+  background: rgba(2, 8, 23, 0.78);
+  backdrop-filter: blur(7px);
+}
+
+.dls-modal {
+  width: min(720px, 100%);
+  max-height: min(88vh, 820px);
+  overflow-y: auto;
+  border: 1px solid rgba(125, 211, 252, 0.24);
+  border-radius: 18px;
+  padding: 18px;
+  background: #071827;
+  box-shadow: 0 28px 80px rgba(0, 0, 0, 0.5);
+  color: #f8fafc;
+}
+
+.dls-modal-head {
+  display: flex;
+  align-items: flex-start;
+  justify-content: space-between;
+  gap: 14px;
+  margin-bottom: 14px;
+}
+
+.dls-modal-head h3 {
+  margin: 3px 0 0;
+  font-size: 22px;
+  line-height: 1.15;
+}
+
+.dls-kicker {
+  color: #7dd3fc;
+  font-size: 12px;
+  font-weight: 900;
+  letter-spacing: .08em;
+  text-transform: uppercase;
+}
+
+.dls-close {
+  width: 42px;
+  height: 42px;
+  flex: 0 0 42px;
+  border: 1px solid rgba(148, 163, 184, .28);
+  border-radius: 12px;
+  background: rgba(15, 23, 42, .78);
+  color: #fff;
+  font-size: 25px;
+  cursor: pointer;
+}
+
+.dls-current-grid {
+  display: grid;
+  grid-template-columns: repeat(4, minmax(0, 1fr));
+  gap: 9px;
+  margin-bottom: 14px;
+}
+
+.dls-current-grid > div,
+.dls-result-card {
+  min-width: 0;
+  border: 1px solid rgba(71, 85, 105, .48);
+  border-radius: 12px;
+  padding: 10px;
+  background: rgba(15, 23, 42, .62);
+}
+
+.dls-current-grid span,
+.dls-result-card > span {
+  display: block;
+  margin-bottom: 4px;
+  color: #94a3b8;
+  font-size: 11px;
+  font-weight: 800;
+}
+
+.dls-current-grid strong {
+  font-size: 15px;
+  white-space: nowrap;
+}
+
+.dls-mode-tabs {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 8px;
+  margin: 10px 0 14px;
+}
+
+.dls-mode-tabs button {
+  min-height: 44px;
+  border: 1px solid rgba(71, 85, 105, .52);
+  border-radius: 11px;
+  background: rgba(15, 23, 42, .65);
+  color: #cbd5e1;
+  font-weight: 850;
+  cursor: pointer;
+}
+
+.dls-mode-tabs button.active {
+  border-color: rgba(56, 189, 248, .72);
+  background: rgba(14, 116, 144, .28);
+  color: #e0f2fe;
+}
+
+.dls-form {
+  display: grid;
+  grid-template-columns: 1fr;
+  gap: 10px;
+}
+
+.dls-official-grid {
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+}
+
+.dls-form label {
+  display: grid;
+  gap: 6px;
+}
+
+.dls-form label > span {
+  font-size: 12px;
+  font-weight: 850;
+  color: #cbd5e1;
+}
+
+.dls-form input {
+  width: 100%;
+  min-height: 46px;
+  border: 1px solid rgba(100, 116, 139, .55);
+  border-radius: 10px;
+  padding: 0 12px;
+  background: #0b2034;
+  color: #fff;
+  font-size: 16px;
+}
+
+.dls-full {
+  grid-column: 1 / -1;
+}
+
+.dls-help {
+  margin: 0;
+  color: #94a3b8;
+  font-size: 12px;
+  line-height: 1.45;
+}
+
+.dls-result-card {
+  display: grid;
+  grid-template-columns: 1fr auto;
+  align-items: center;
+  gap: 4px 12px;
+  margin-top: 14px;
+}
+
+.dls-result-card > span {
+  grid-column: 1 / -1;
+  margin: 0;
+}
+
+.dls-result-card strong {
+  color: #7dd3fc;
+}
+
+.dls-result-card b {
+  white-space: nowrap;
+}
+
+.dls-actions {
+  display: flex;
+  justify-content: flex-end;
+  flex-wrap: wrap;
+  gap: 8px;
+  margin-top: 16px;
+}
+
+.dls-actions button {
+  min-height: 44px;
+  border-radius: 10px;
+  padding: 0 15px;
+  font-size: 13px;
+  font-weight: 900;
+  cursor: pointer;
+}
+
+.dls-actions .secondary {
+  border: 1px solid rgba(100, 116, 139, .5);
+  background: rgba(15, 23, 42, .75);
+  color: #e2e8f0;
+}
+
+.dls-actions .primary {
+  border: 1px solid rgba(56, 189, 248, .55);
+  background: #0e7490;
+  color: white;
+}
+
+.dls-actions .danger {
+  border: 1px solid rgba(248, 113, 113, .55);
+  background: rgba(153, 27, 27, .72);
+  color: white;
+}
+
+@media (max-width: 640px) {
+  .dls-modal-backdrop {
+    padding: 8px;
+    align-items: end;
+  }
+
+  .dls-modal {
+    width: 100%;
+    max-height: 92vh;
+    border-radius: 18px 18px 0 0;
+    padding: 15px;
+  }
+
+  .dls-modal-head h3 {
+    font-size: 20px;
+  }
+
+  .dls-current-grid {
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+  }
+
+  .dls-official-grid {
+    grid-template-columns: 1fr;
+  }
+
+  .dls-full {
+    grid-column: auto;
+  }
+
+  .dls-mode-tabs button,
+  .dls-actions button {
+    min-height: 48px;
+    font-size: 14px;
+  }
+
+  .dls-actions {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+  }
+
+  .dls-actions .danger {
+    grid-column: 1 / -1;
+  }
+}
+
+
+/* =========================================================
+   DLS / SCORER MODE — DESKTOP SCROLL RESTORE
+   The scorer-mode window itself must own vertical scrolling.
+   This prevents the bottom controls from becoming unreachable after
+   applying a DLS revision.
+   ========================================================= */
+
+@media (min-width: 769px) {
+  .desktop-scorer-modal-shell {
+    max-height: 100dvh !important;
+    height: 100dvh !important;
+
+    overflow-y: auto !important;
+    overflow-x: hidden !important;
+
+    overscroll-behavior: contain !important;
+    -webkit-overflow-scrolling: touch;
+
+    scrollbar-gutter: stable;
+
+    padding-bottom:
+      max(
+        28px,
+        env(safe-area-inset-bottom)
+      ) !important;
+  }
+
+  /*
+   * Allow the content inside Scorer Mode to extend naturally.
+   * Do not clip it at a fixed panel height.
+   */
+  .desktop-scorer-modal-shell
+    > * {
+    flex-shrink: 0;
+  }
+
+  /*
+   * Keep the Scorer Mode header accessible while the scoring controls scroll.
+   */
+  .desktop-scorer-modal-shell
+    > .scorer-mode-banner {
+    position: sticky !important;
+    top: 0 !important;
+    z-index: 60 !important;
+  }
+}
+
+
+/* =========================================================
+   DLS / SCORER MODE — SCROLL FIX V2
+   Root cause:
+   The outer Scorer Mode shell was scrollable, but the inner scorer console
+   still had fixed/max viewport sizing and clipping from the existing scorer
+   CSS. That meant the outer shell never saw the content below the console's
+   clipped height.
+   ========================================================= */
+
+@media (min-width: 769px) {
+  /*
+   * Full-screen desktop scorer owns the viewport and the scrollbar.
+   */
+  .desktop-scorer-modal-shell {
+    position: fixed !important;
+    inset: 0 !important;
+    z-index: 10000 !important;
+
+    width: 100vw !important;
+    height: 100dvh !important;
+    max-height: 100dvh !important;
+    min-height: 0 !important;
+
+    display: block !important;
+
+    overflow-y: auto !important;
+    overflow-x: hidden !important;
+
+    overscroll-behavior-y: contain !important;
+    -webkit-overflow-scrolling: touch;
+
+    padding: 0 0 40px !important;
+
+    background: #020817;
+  }
+
+  /*
+   * THIS is the critical correction:
+   * existing scorer-mode CSS can make the console itself viewport-height
+   * and clipped. Let it grow to the real content height instead.
+   */
+  .desktop-scorer-modal-shell
+    .scorer-wow-console,
+  .desktop-scorer-modal-shell
+    .scorer-mode-flat,
+  .desktop-scorer-modal-shell
+    .mobile-original-scorer-console {
+    position: relative !important;
+
+    width: 100% !important;
+
+    height: auto !important;
+    max-height: none !important;
+    min-height: 0 !important;
+
+    overflow: visible !important;
+
+    flex: none !important;
+  }
+
+  /*
+   * Also remove clipping from the immediate scorer content wrappers.
+   * Do not touch popups/modals — only descendants of desktop Scorer Mode.
+   */
+  .desktop-scorer-modal-shell
+    .scorer-mode-flat
+    > section,
+  .desktop-scorer-modal-shell
+    .scorer-mode-flat
+    > div:not(.modal-backdrop),
+  .desktop-scorer-modal-shell
+    .mobile-original-scorer-console
+    > section,
+  .desktop-scorer-modal-shell
+    .mobile-original-scorer-console
+    > div:not(.modal-backdrop) {
+    max-height: none !important;
+
+    overflow: visible;
+  }
+
+  /*
+   * Header remains visible while the CONTENT beneath it scrolls.
+   */
+  .desktop-scorer-modal-shell
+    > .scorer-mode-banner {
+    position: sticky !important;
+    top: 0 !important;
+    z-index: 80 !important;
+
+    width: 100% !important;
+  }
+
+  /*
+   * Give the last scorer controls real bottom clearance so they are not
+   * sitting flush against / under the viewport edge.
+   */
+  .desktop-scorer-modal-shell
+    .scorer-mode-flat {
+    padding-bottom:
+      max(
+        72px,
+        env(safe-area-inset-bottom)
+      ) !important;
+  }
+
+  /*
+   * Prevent a horizontal scrollbar from stealing the bottom edge.
+   */
+  .desktop-scorer-modal-shell,
+  .desktop-scorer-modal-shell
+    .scorer-mode-flat,
+  .desktop-scorer-modal-shell
+    .mobile-original-scorer-console {
+    max-width: 100vw !important;
+    box-sizing: border-box !important;
+  }
+
+  .desktop-scorer-modal-shell * {
+    box-sizing: border-box;
+  }
+}
+/* Add this block at the VERY BOTTOM of src/app/globals.css */
+
+@media (min-width: 769px) {
+  .desktop-scorer-modal-shell {
+    position: fixed !important;
+    inset: 0 !important;
+    z-index: 10000 !important;
+    width: 100vw !important;
+    height: 100dvh !important;
+    max-height: 100dvh !important;
+    min-height: 0 !important;
+    display: block !important;
+    overflow-y: auto !important;
+    overflow-x: hidden !important;
+    overscroll-behavior-y: contain !important;
+    -webkit-overflow-scrolling: touch;
+    padding: 0 0 40px !important;
+    background: #020817;
+  }
+
+  .desktop-scorer-modal-shell .scorer-wow-console,
+  .desktop-scorer-modal-shell .scorer-mode-flat,
+  .desktop-scorer-modal-shell .mobile-original-scorer-console {
+    position: relative !important;
+    width: 100% !important;
+    height: auto !important;
+    max-height: none !important;
+    min-height: 0 !important;
+    overflow: visible !important;
+    flex: none !important;
+  }
+
+  .desktop-scorer-modal-shell .scorer-mode-flat > section,
+  .desktop-scorer-modal-shell .scorer-mode-flat > div:not(.modal-backdrop),
+  .desktop-scorer-modal-shell .mobile-original-scorer-console > section,
+  .desktop-scorer-modal-shell .mobile-original-scorer-console > div:not(.modal-backdrop) {
+    max-height: none !important;
+    overflow: visible;
+  }
+
+  .desktop-scorer-modal-shell > .scorer-mode-banner {
+    position: sticky !important;
+    top: 0 !important;
+    z-index: 80 !important;
+    width: 100% !important;
+  }
+
+  .desktop-scorer-modal-shell .scorer-mode-flat {
+    padding-bottom: max(72px, env(safe-area-inset-bottom)) !important;
+  }
+
+  .desktop-scorer-modal-shell,
+  .desktop-scorer-modal-shell .scorer-mode-flat,
+  .desktop-scorer-modal-shell .mobile-original-scorer-console {
+    max-width: 100vw !important;
+    box-sizing: border-box !important;
+  }
+
+  .desktop-scorer-modal-shell * {
+    box-sizing: border-box;
+  }
+}
+
+/* ===== Cric4All Rain / DLS ===== */
+.match-control-btn.dls {
+  border-color: rgba(56, 189, 248, 0.5);
+  background: linear-gradient(180deg, rgba(14, 116, 144, 0.28), rgba(8, 47, 73, 0.38));
+}
+
+.dls-modal-backdrop {
+  position: fixed;
+  inset: 0;
+  z-index: 10050;
+  display: grid;
+  place-items: center;
+  padding: 18px;
+  background: rgba(2, 8, 23, 0.78);
+  backdrop-filter: blur(7px);
+}
+
+.dls-modal {
+  width: min(720px, 100%);
+  max-height: min(88vh, 820px);
+  overflow-y: auto;
+  border: 1px solid rgba(125, 211, 252, 0.24);
+  border-radius: 18px;
+  padding: 18px;
+  background: #071827;
+  box-shadow: 0 28px 80px rgba(0, 0, 0, 0.5);
+  color: #f8fafc;
+}
+
+.dls-modal-head {
+  display: flex;
+  align-items: flex-start;
+  justify-content: space-between;
+  gap: 14px;
+  margin-bottom: 14px;
+}
+
+.dls-modal-head h3 {
+  margin: 3px 0 0;
+  font-size: 22px;
+  line-height: 1.15;
+}
+
+.dls-kicker {
+  color: #7dd3fc;
+  font-size: 12px;
+  font-weight: 900;
+  letter-spacing: .08em;
+  text-transform: uppercase;
+}
+
+.dls-close {
+  width: 42px;
+  height: 42px;
+  flex: 0 0 42px;
+  border: 1px solid rgba(148, 163, 184, .28);
+  border-radius: 12px;
+  background: rgba(15, 23, 42, .78);
+  color: #fff;
+  font-size: 25px;
+  cursor: pointer;
+}
+
+.dls-current-grid {
+  display: grid;
+  grid-template-columns: repeat(4, minmax(0, 1fr));
+  gap: 9px;
+  margin-bottom: 14px;
+}
+
+.dls-current-grid > div,
+.dls-result-card {
+  min-width: 0;
+  border: 1px solid rgba(71, 85, 105, .48);
+  border-radius: 12px;
+  padding: 10px;
+  background: rgba(15, 23, 42, .62);
+}
+
+.dls-current-grid span,
+.dls-result-card > span {
+  display: block;
+  margin-bottom: 4px;
+  color: #94a3b8;
+  font-size: 11px;
+  font-weight: 800;
+}
+
+.dls-current-grid strong {
+  font-size: 15px;
+  white-space: nowrap;
+}
+
+.dls-mode-tabs {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 8px;
+  margin: 10px 0 14px;
+}
+
+.dls-mode-tabs button {
+  min-height: 44px;
+  border: 1px solid rgba(71, 85, 105, .52);
+  border-radius: 11px;
+  background: rgba(15, 23, 42, .65);
+  color: #cbd5e1;
+  font-weight: 850;
+  cursor: pointer;
+}
+
+.dls-mode-tabs button.active {
+  border-color: rgba(56, 189, 248, .72);
+  background: rgba(14, 116, 144, .28);
+  color: #e0f2fe;
+}
+
+.dls-form {
+  display: grid;
+  grid-template-columns: 1fr;
+  gap: 10px;
+}
+
+.dls-official-grid {
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+}
+
+.dls-form label {
+  display: grid;
+  gap: 6px;
+}
+
+.dls-form label > span {
+  font-size: 12px;
+  font-weight: 850;
+  color: #cbd5e1;
+}
+
+.dls-form input {
+  width: 100%;
+  min-height: 46px;
+  border: 1px solid rgba(100, 116, 139, .55);
+  border-radius: 10px;
+  padding: 0 12px;
+  background: #0b2034;
+  color: #fff;
+  font-size: 16px;
+}
+
+.dls-full {
+  grid-column: 1 / -1;
+}
+
+.dls-help {
+  margin: 0;
+  color: #94a3b8;
+  font-size: 12px;
+  line-height: 1.45;
+}
+
+.dls-result-card {
+  display: grid;
+  grid-template-columns: 1fr auto;
+  align-items: center;
+  gap: 4px 12px;
+  margin-top: 14px;
+}
+
+.dls-result-card > span {
+  grid-column: 1 / -1;
+  margin: 0;
+}
+
+.dls-result-card strong {
+  color: #7dd3fc;
+}
+
+.dls-result-card b {
+  white-space: nowrap;
+}
+
+.dls-actions {
+  display: flex;
+  justify-content: flex-end;
+  flex-wrap: wrap;
+  gap: 8px;
+  margin-top: 16px;
+}
+
+.dls-actions button {
+  min-height: 44px;
+  border-radius: 10px;
+  padding: 0 15px;
+  font-size: 13px;
+  font-weight: 900;
+  cursor: pointer;
+}
+
+.dls-actions .secondary {
+  border: 1px solid rgba(100, 116, 139, .5);
+  background: rgba(15, 23, 42, .75);
+  color: #e2e8f0;
+}
+
+.dls-actions .primary {
+  border: 1px solid rgba(56, 189, 248, .55);
+  background: #0e7490;
+  color: white;
+}
+
+.dls-actions .danger {
+  border: 1px solid rgba(248, 113, 113, .55);
+  background: rgba(153, 27, 27, .72);
+  color: white;
+}
+
+@media (max-width: 640px) {
+  .dls-modal-backdrop {
+    padding: 8px;
+    align-items: end;
+  }
+
+  .dls-modal {
+    width: 100%;
+    max-height: 92vh;
+    border-radius: 18px 18px 0 0;
+    padding: 15px;
+  }
+
+  .dls-modal-head h3 {
+    font-size: 20px;
+  }
+
+  .dls-current-grid {
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+  }
+
+  .dls-official-grid {
+    grid-template-columns: 1fr;
+  }
+
+  .dls-full {
+    grid-column: auto;
+  }
+
+  .dls-mode-tabs button,
+  .dls-actions button {
+    min-height: 48px;
+    font-size: 14px;
+  }
+
+  .dls-actions {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+  }
+
+  .dls-actions .danger {
+    grid-column: 1 / -1;
+  }
+}
+
+
+/* =========================================================
+   DLS / SCORER MODE — DESKTOP SCROLL RESTORE
+   The scorer-mode window itself must own vertical scrolling.
+   This prevents the bottom controls from becoming unreachable after
+   applying a DLS revision.
+   ========================================================= */
+
+@media (min-width: 769px) {
+  .desktop-scorer-modal-shell {
+    max-height: 100dvh !important;
+    height: 100dvh !important;
+
+    overflow-y: auto !important;
+    overflow-x: hidden !important;
+
+    overscroll-behavior: contain !important;
+    -webkit-overflow-scrolling: touch;
+
+    scrollbar-gutter: stable;
+
+    padding-bottom:
+      max(
+        28px,
+        env(safe-area-inset-bottom)
+      ) !important;
+  }
+
+  /*
+   * Allow the content inside Scorer Mode to extend naturally.
+   * Do not clip it at a fixed panel height.
+   */
+  .desktop-scorer-modal-shell
+    > * {
+    flex-shrink: 0;
+  }
+
+  /*
+   * Keep the Scorer Mode header accessible while the scoring controls scroll.
+   */
+  .desktop-scorer-modal-shell
+    > .scorer-mode-banner {
+    position: sticky !important;
+    top: 0 !important;
+    z-index: 60 !important;
+  }
+}
+
+
+/* =========================================================
+   DLS / SCORER MODE — SCROLL FIX V2
+   Root cause:
+   The outer Scorer Mode shell was scrollable, but the inner scorer console
+   still had fixed/max viewport sizing and clipping from the existing scorer
+   CSS. That meant the outer shell never saw the content below the console's
+   clipped height.
+   ========================================================= */
+
+@media (min-width: 769px) {
+  /*
+   * Full-screen desktop scorer owns the viewport and the scrollbar.
+   */
+  .desktop-scorer-modal-shell {
+    position: fixed !important;
+    inset: 0 !important;
+    z-index: 10000 !important;
+
+    width: 100vw !important;
+    height: 100dvh !important;
+    max-height: 100dvh !important;
+    min-height: 0 !important;
+
+    display: block !important;
+
+    overflow-y: auto !important;
+    overflow-x: hidden !important;
+
+    overscroll-behavior-y: contain !important;
+    -webkit-overflow-scrolling: touch;
+
+    padding: 0 0 40px !important;
+
+    background: #020817;
+  }
+
+  /*
+   * THIS is the critical correction:
+   * existing scorer-mode CSS can make the console itself viewport-height
+   * and clipped. Let it grow to the real content height instead.
+   */
+  .desktop-scorer-modal-shell
+    .scorer-wow-console,
+  .desktop-scorer-modal-shell
+    .scorer-mode-flat,
+  .desktop-scorer-modal-shell
+    .mobile-original-scorer-console {
+    position: relative !important;
+
+    width: 100% !important;
+
+    height: auto !important;
+    max-height: none !important;
+    min-height: 0 !important;
+
+    overflow: visible !important;
+
+    flex: none !important;
+  }
+
+  /*
+   * Also remove clipping from the immediate scorer content wrappers.
+   * Do not touch popups/modals — only descendants of desktop Scorer Mode.
+   */
+  .desktop-scorer-modal-shell
+    .scorer-mode-flat
+    > section,
+  .desktop-scorer-modal-shell
+    .scorer-mode-flat
+    > div:not(.modal-backdrop),
+  .desktop-scorer-modal-shell
+    .mobile-original-scorer-console
+    > section,
+  .desktop-scorer-modal-shell
+    .mobile-original-scorer-console
+    > div:not(.modal-backdrop) {
+    max-height: none !important;
+
+    overflow: visible;
+  }
+
+  /*
+   * Header remains visible while the CONTENT beneath it scrolls.
+   */
+  .desktop-scorer-modal-shell
+    > .scorer-mode-banner {
+    position: sticky !important;
+    top: 0 !important;
+    z-index: 80 !important;
+
+    width: 100% !important;
+  }
+
+  /*
+   * Give the last scorer controls real bottom clearance so they are not
+   * sitting flush against / under the viewport edge.
+   */
+  .desktop-scorer-modal-shell
+    .scorer-mode-flat {
+    padding-bottom:
+      max(
+        72px,
+        env(safe-area-inset-bottom)
+      ) !important;
+  }
+
+  /*
+   * Prevent a horizontal scrollbar from stealing the bottom edge.
+   */
+  .desktop-scorer-modal-shell,
+  .desktop-scorer-modal-shell
+    .scorer-mode-flat,
+  .desktop-scorer-modal-shell
+    .mobile-original-scorer-console {
+    max-width: 100vw !important;
+    box-sizing: border-box !important;
+  }
+
+  .desktop-scorer-modal-shell * {
+    box-sizing: border-box;
+  }
+}
+
+
+/* =========================================================
+   DLS ACTION FEEDBACK
+   Errors must appear inside the DLS dialog instead of behind it.
+   ========================================================= */
+
+.dls-inline-error {
+  display: grid;
+  gap: 4px;
+
+  margin-top: 12px;
+  padding: 11px 12px;
+
+  border: 1px solid rgba(248, 113, 113, 0.55);
+  border-radius: 11px;
+
+  background: rgba(127, 29, 29, 0.28);
+}
+
+.dls-inline-error strong {
+  color: #fecaca;
+
+  font-size: 13px;
+  line-height: 1.2;
+}
+
+.dls-inline-error span {
+  color: #fca5a5;
+
+  font-size: 12px;
+  line-height: 1.45;
+}
+
+@media (max-width: 640px) {
+  .dls-inline-error strong {
+    font-size: 14px;
+  }
+
+  .dls-inline-error span {
+    font-size: 13px;
+  }
+}
+
+
+/* =========================================================
+   COMPLETED MATCH — DLS RESULT BADGE
+   ========================================================= */
+
+.completed-status-chip.completed-status-chip-dls,
+.mobile-completed-status.is-dls {
+  border-color: rgba(56, 189, 248, 0.48) !important;
+  color: #bae6fd !important;
+  background: rgba(14, 116, 144, 0.22) !important;
+}

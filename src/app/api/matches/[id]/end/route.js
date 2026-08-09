@@ -93,7 +93,30 @@ export async function POST(
     let auditAction;
     let auditDescription;
 
-    if (matchEndType === "Lock") {
+    if (matchEndType === "DLS") {
+      const requestedStatusText = String(
+        body?.statusText || ""
+      ).trim();
+
+      if (!requestedStatusText) {
+        return NextResponse.json(
+          {
+            error:
+              "A DLS result description is required.",
+          },
+          {
+            status: 400,
+          }
+        );
+      }
+
+      status = "COMPLETED";
+      statusText = requestedStatusText;
+      endedAt = new Date();
+      auditAction = "MATCH_ENDED_DLS";
+      auditDescription =
+        `Match "${matchLabel(beforeMatch)}" was completed using DLS: ${requestedStatusText}`;
+    } else if (matchEndType === "Lock") {
       status = "COMPLETED_LOCKED";
       statusText = "COMPLETED_LOCKED";
       lockedAt = new Date();
