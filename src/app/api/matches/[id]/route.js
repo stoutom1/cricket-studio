@@ -204,6 +204,14 @@ const teamBCaptainId = body.teamBCaptainId
   ? Number(body.teamBCaptainId)
   : null;
 
+const teamAViceCaptainId = body.teamAViceCaptainId
+  ? Number(body.teamAViceCaptainId)
+  : null;
+
+const teamBViceCaptainId = body.teamBViceCaptainId
+  ? Number(body.teamBViceCaptainId)
+  : null;
+
 const teamAWicketKeeperId =
   body.teamAWicketKeeperId
     ? Number(body.teamAWicketKeeperId)
@@ -240,6 +248,20 @@ if (
   );
 }
 
+if (teamAViceCaptainId && !teamAPlayerIds.has(teamAViceCaptainId)) {
+  return NextResponse.json(
+    { error: "Team A vice-captain must belong to the selected Team A." },
+    { status: 400 }
+  );
+}
+
+if (teamACaptainId && teamAViceCaptainId && teamACaptainId === teamAViceCaptainId) {
+  return NextResponse.json(
+    { error: "Team A captain and vice-captain must be different players." },
+    { status: 400 }
+  );
+}
+
 if (
   teamAWicketKeeperId &&
   !teamAPlayerIds.has(teamAWicketKeeperId)
@@ -262,6 +284,20 @@ if (
       error:
         "Team B captain must belong to the selected Team B.",
     },
+    { status: 400 }
+  );
+}
+
+if (teamBViceCaptainId && !teamBPlayerIds.has(teamBViceCaptainId)) {
+  return NextResponse.json(
+    { error: "Team B vice-captain must belong to the selected Team B." },
+    { status: 400 }
+  );
+}
+
+if (teamBCaptainId && teamBViceCaptainId && teamBCaptainId === teamBViceCaptainId) {
+  return NextResponse.json(
+    { error: "Team B captain and vice-captain must be different players." },
     { status: 400 }
   );
 }
@@ -299,10 +335,12 @@ const battingFirstTeamId = [
 teamAId: requestedTeamAId,
 teamBId: requestedTeamBId,
 battingFirstTeamId,
-      teamACaptainId: body.teamACaptainId ?? null,
-      teamBCaptainId: body.teamBCaptainId ?? null,
-      teamAWicketKeeperId: body.teamAWicketKeeperId ?? null,
-      teamBWicketKeeperId: body.teamBWicketKeeperId ?? null,
+      teamACaptainId,
+      teamBCaptainId,
+      teamAViceCaptainId,
+      teamBViceCaptainId,
+      teamAWicketKeeperId,
+      teamBWicketKeeperId,
     },
   });
 

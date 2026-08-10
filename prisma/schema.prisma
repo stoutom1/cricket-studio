@@ -48,45 +48,54 @@ model User {
 }
 
 model Team {
-  id                  Int                 @id @default(autoincrement())
-  name                String
-  createdAt           DateTime            @default(now())
-  battingFirstMatches Match[]             @relation("BattingFirstTeam")
-  matchesA            Match[]             @relation("TeamA")
-  matchesB            Match[]             @relation("TeamB")
-  players             Player[]
-  leagueId            Int
-  league              League              @relation(fields: [leagueId], references: [id])
-  matchKitPlayers     MatchKitPlayer[]
-  kitRotationMembers  KitRotationMember[]
-  kitAssignments      KitAssignment[]
-  kitReminderLogs     KitReminderLog[]
+  id                    Int                 @id @default(autoincrement())
+  name                  String
+  createdAt             DateTime            @default(now())
+  battingFirstMatches   Match[]             @relation("BattingFirstTeam")
+  matchesA              Match[]             @relation("TeamA")
+  matchesB              Match[]             @relation("TeamB")
+  players               Player[]
+  leagueId              Int
+  league                League              @relation(fields: [leagueId], references: [id])
+  matchKitPlayers       MatchKitPlayer[]
+  kitRotationMembers    KitRotationMember[]
+  kitAssignments        KitAssignment[]
+  kitReminderLogs       KitReminderLog[]
+  defaultCaptainId      Int?
+  defaultViceCaptainId  Int?
+  defaultWicketKeeperId Int?
+  defaultCaptain        Player?             @relation("TeamDefaultCaptain", fields: [defaultCaptainId], references: [id], onDelete: SetNull)
+  defaultViceCaptain    Player?             @relation("TeamDefaultViceCaptain", fields: [defaultViceCaptainId], references: [id], onDelete: SetNull)
+  defaultWicketKeeper   Player?             @relation("TeamDefaultWicketKeeper", fields: [defaultWicketKeeperId], references: [id], onDelete: SetNull)
 
   @@unique([leagueId, name])
 }
 
 model Player {
-  id                 Int                 @id @default(autoincrement())
-  name               String
-  teamId             Int
-  createdAt          DateTime            @default(now())
-  bowlerBalls        Ball[]              @relation("Bowler")
-  dismissedBalls     Ball[]              @relation("DismissedPlayer")
-  newBatterBalls     Ball[]              @relation("NewBatter")
-  nonStrikerBalls    Ball[]              @relation("NonStriker")
-  strikerBalls       Ball[]              @relation("Striker")
-  team               Team                @relation(fields: [teamId], references: [id], onDelete: Cascade)
-  leagueBirthdays    LeagueBirthday[]
-  whatsappNumber     String?
-  whatsappOptIn      Boolean             @default(false)
-  smsOptIn           Boolean             @default(false)
-  smsOptInAt         DateTime?
-  smsOptOutAt        DateTime?
-  smsOptInSource     String?
-  smsOptInIpAddress  String?
-  smsOptInUserAgent  String?
-  matchKitPlayers    MatchKitPlayer[]
-  kitRotationMembers KitRotationMember[]
+  id                          Int                 @id @default(autoincrement())
+  name                        String
+  teamId                      Int
+  createdAt                   DateTime            @default(now())
+  bowlerBalls                 Ball[]              @relation("Bowler")
+  dismissedBalls              Ball[]              @relation("DismissedPlayer")
+  newBatterBalls              Ball[]              @relation("NewBatter")
+  nonStrikerBalls             Ball[]              @relation("NonStriker")
+  strikerBalls                Ball[]              @relation("Striker")
+  team                        Team                @relation(fields: [teamId], references: [id], onDelete: Cascade)
+  leagueBirthdays             LeagueBirthday[]
+  whatsappNumber              String?
+  whatsappOptIn               Boolean             @default(false)
+  smsOptIn                    Boolean             @default(false)
+  smsOptInAt                  DateTime?
+  smsOptOutAt                 DateTime?
+  smsOptInSource              String?
+  smsOptInIpAddress           String?
+  smsOptInUserAgent           String?
+  matchKitPlayers             MatchKitPlayer[]
+  kitRotationMembers          KitRotationMember[]
+  defaultCaptainForTeams      Team[]              @relation("TeamDefaultCaptain")
+  defaultViceCaptainForTeams  Team[]              @relation("TeamDefaultViceCaptain")
+  defaultWicketKeeperForTeams Team[]              @relation("TeamDefaultWicketKeeper")
 
   @@unique([teamId, name])
   @@index([teamId])
@@ -121,6 +130,8 @@ model Match {
   innings1EndedManually Boolean              @default(false)
   teamACaptainId        Int?
   teamBCaptainId        Int?
+  teamAViceCaptainId    Int?
+  teamBViceCaptainId    Int?
   teamAWicketKeeperId   Int?
   teamBWicketKeeperId   Int?
   wicketKeeperChanges   WicketKeeperChange[]

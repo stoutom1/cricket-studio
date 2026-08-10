@@ -311,6 +311,16 @@ const teamBCaptainName = findPlayerName(
   m.teamBCaptainId
 );
 
+const teamAViceCaptainName = findPlayerName(
+  m.teamA?.players,
+  m.teamAViceCaptainId
+);
+
+const teamBViceCaptainName = findPlayerName(
+  m.teamB?.players,
+  m.teamBViceCaptainId
+);
+
     const firstInningsScore =
       `${firstInningsTeamName}: ${innings1.runs}/${innings1.wickets} (${innings1.overs})`;
 
@@ -343,11 +353,15 @@ teamB: {
       teamBWicketKeeperId: m.teamBWicketKeeperId,
       teamACaptainId: m.teamACaptainId,
       teamBCaptainId: m.teamBCaptainId,
+      teamAViceCaptainId: m.teamAViceCaptainId,
+      teamBViceCaptainId: m.teamBViceCaptainId,
 
       teamAWicketKeeperName,
       teamBWicketKeeperName,
       teamACaptainName,
       teamBCaptainName,
+      teamAViceCaptainName,
+      teamBViceCaptainName,
 
       battingFirstTeamId: m.battingFirstTeamId,
       battingFirstTeamName:
@@ -526,17 +540,6 @@ const teams = await prisma.team.findMany({
   }
 });
 
-if (teams[0].leagueId !== teams[1].leagueId) {
-  return NextResponse.json(
-    {
-      error: "Teams must belong to the same league"
-    },
-    {
-      status: 400
-    }
-  );
-}
-
 if (teams.length !== 2) {
   return NextResponse.json(
     {
@@ -549,7 +552,12 @@ if (teams.length !== 2) {
   );
 }
 
-
+if (teams[0].leagueId !== teams[1].leagueId) {
+  return NextResponse.json(
+    { error: "Teams must belong to the same league" },
+    { status: 400 }
+  );
+}
 
   for (const team of teams) {
     if (team.players.length === 0) {
@@ -593,6 +601,39 @@ if (teams[0].leagueId !== activeLeagueId) {
 }
 
 const leagueId = activeLeagueId;
+
+const teamA = teams.find((t) => Number(t.id) === teamAId);
+const teamB = teams.find((t) => Number(t.id) === teamBId);
+
+const roleValue = (bodyValue, fallbackValue) => {
+  if (bodyValue === null || bodyValue === "") return null;
+  if (bodyValue !== undefined) return Number(bodyValue);
+  return fallbackValue ? Number(fallbackValue) : null;
+};
+
+const teamACaptainId = roleValue(body.teamACaptainId, teamA?.defaultCaptainId);
+const teamAViceCaptainId = roleValue(body.teamAViceCaptainId, teamA?.defaultViceCaptainId);
+const teamAWicketKeeperId = roleValue(body.teamAWicketKeeperId, teamA?.defaultWicketKeeperId);
+const teamBCaptainId = roleValue(body.teamBCaptainId, teamB?.defaultCaptainId);
+const teamBViceCaptainId = roleValue(body.teamBViceCaptainId, teamB?.defaultViceCaptainId);
+const teamBWicketKeeperId = roleValue(body.teamBWicketKeeperId, teamB?.defaultWicketKeeperId);
+
+const validateTeamRoles = (team, captainId, viceCaptainId, wicketKeeperId, label) => {
+  const ids = new Set((team?.players || []).map((p) => Number(p.id)));
+  for (const [role, id] of [["captain", captainId], ["vice-captain", viceCaptainId], ["wicketkeeper", wicketKeeperId]]) {
+    if (id && !ids.has(Number(id))) return `${label} ${role} must belong to ${team?.name || label}.`;
+  }
+  if (captainId && viceCaptainId && Number(captainId) === Number(viceCaptainId)) {
+    return `${label} captain and vice-captain must be different players.`;
+  }
+  return "";
+};
+
+const roleError =
+  validateTeamRoles(teamA, teamACaptainId, teamAViceCaptainId, teamAWicketKeeperId, "Team A") ||
+  validateTeamRoles(teamB, teamBCaptainId, teamBViceCaptainId, teamBWicketKeeperId, "Team B");
+if (roleError) return NextResponse.json({ error: roleError }, { status: 400 });
+
 const shareCode =
   crypto.randomBytes(5).toString("base64url");  
 const match = await prisma.match.create({
@@ -623,10 +664,12 @@ const match = await prisma.match.create({
       scheduledAt: scheduledAt
         ? new Date(scheduledAt)
         : null,
-      teamACaptainId: body.teamACaptainId ? Number(body.teamACaptainId) : null,
-      teamBCaptainId: body.teamBCaptainId ? Number(body.teamBCaptainId) : null,
-      teamAWicketKeeperId: body.teamAWicketKeeperId ? Number(body.teamAWicketKeeperId) : null,
-      teamBWicketKeeperId: body.teamBWicketKeeperId ? Number(body.teamBWicketKeeperId) : null,  
+      teamACaptainId,
+      teamBCaptainId,
+      teamAViceCaptainId,
+      teamBViceCaptainId,
+      teamAWicketKeeperId,
+      teamBWicketKeeperId,  
       shareCode
     }
   });

@@ -676,6 +676,8 @@ const [editMatchForm, setEditMatchForm] = useState({
   teamBId: "",
   teamACaptainId: "",
   teamBCaptainId: "",
+  teamAViceCaptainId: "",
+  teamBViceCaptainId: "",
   teamAWicketKeeperId: "",
   teamBWicketKeeperId: "",
 });
@@ -701,6 +703,11 @@ const [editPlayerName, setEditPlayerName] = useState("");
 const [editPlayerWhatsappNumber, setEditPlayerWhatsappNumber] = useState("");
 const [editPlayerWhatsappOptIn, setEditPlayerWhatsappOptIn] = useState(false);
 const [teamEditName, setTeamEditName] = useState("");
+const [teamRoleForm, setTeamRoleForm] = useState({
+  defaultCaptainId: "",
+  defaultViceCaptainId: "",
+  defaultWicketKeeperId: "",
+});
 const [showTransferPlayerModal, setShowTransferPlayerModal] = useState(false);
 const [transferPlayer, setTransferPlayer] = useState(null);
 const [transferTeamId, setTransferTeamId] = useState("");
@@ -732,8 +739,15 @@ const [
   milestoneCelebration,
   setMilestoneCelebration,
 ] = useState(null);
+
+const normalizedSessionEmail = String(
+  session?.user?.email || ""
+)
+  .trim()
+  .toLowerCase();
+
 const isSuperAdmin =
-  session?.user?.email ===
+  normalizedSessionEmail ===
   "surprisecricket11@gmail.com";
 
   
@@ -1072,10 +1086,53 @@ async function loadPermissions(member) {
     setPermissionsLoading(false);
   }
 }
-const selectedTeam =
-  selectedLeague?.teams?.find(
-    (t) => String(t.id) === String(selectedTeamId)
+const teamsForSelectedLeague = useMemo(() => {
+  if (!activeLeagueId) {
+    return [];
+  }
+
+  const leagueId = String(activeLeagueId);
+
+  // Prefer the complete /api/teams response. It contains the full Team
+  // record (including players and permanent role fields).
+  const loadedTeamsForLeague = (teams || []).filter(
+    (team) => String(team.leagueId) === leagueId
   );
+
+  if (loadedTeamsForLeague.length > 0) {
+    return loadedTeamsForLeague;
+  }
+
+  // Fallback while /api/teams is loading or if a league payload is the only
+  // team source available.
+  return selectedLeague?.teams || [];
+}, [teams, activeLeagueId, selectedLeague]);
+
+const selectedTeam = useMemo(() => {
+  if (!selectedTeamId) {
+    return null;
+  }
+
+  const wantedTeamId = String(selectedTeamId);
+
+  return (
+    teamsForSelectedLeague.find(
+      (team) => String(team.id) === wantedTeamId
+    ) || null
+  );
+}, [selectedTeamId, teamsForSelectedLeague]);
+
+const canEditSelectedTeam = Boolean(
+  selectedTeamId &&
+  selectedTeam &&
+  (isSuperAdmin || permissions?.canEditTeam === true)
+);
+
+const canDeleteSelectedTeam = Boolean(
+  selectedTeamId &&
+  selectedTeam &&
+  (isSuperAdmin || permissions?.canDeleteTeam === true)
+);
 
 const filteredMembers =
   activeLeague?.members?.filter(
@@ -1805,6 +1862,8 @@ const teamsForMatch =
   status: "SCHEDULED",
   teamACaptainId: "",
   teamBCaptainId: "",
+  teamAViceCaptainId: "",
+  teamBViceCaptainId: "",
   teamAWicketKeeperId: "",
   teamBWicketKeeperId: ""
 });
@@ -1911,25 +1970,34 @@ async function loadMatches(leagueId = activeLeagueId) {
 async function loadTeams() {
   try {
     const data = await api("/api/teams");
+    const loadedTeams = Array.isArray(data) ? data : [];
 
-    setTeams(data || []);
+    setTeams(loadedTeams);
 
-    // Keep selected team valid
-    if (!selectedTeamId && data?.length > 0) {
-      setSelectedTeamId(String(data[0].id));
-    } else if (
-      selectedTeamId &&
-      !data.some(
-        (t) =>
-          String(t.id) ===
-          String(selectedTeamId)
-      )
-    ) {
-      setSelectedTeamId(
-        data[0]
-          ? String(data[0].id)
-          : ""
+    // Keep the selected team valid for the CURRENT league only.
+    // The old logic used the first team from the global /api/teams response,
+    // which could leave a team from another league selected after switching
+    // leagues. That made selectedTeam null and hid Edit Team.
+    if (activeLeagueId) {
+      const leagueId = String(activeLeagueId);
+      const leagueTeams = loadedTeams.filter(
+        (team) => String(team.leagueId) === leagueId
       );
+
+      setSelectedTeamId((currentTeamId) => {
+        if (
+          currentTeamId &&
+          leagueTeams.some(
+            (team) => String(team.id) === String(currentTeamId)
+          )
+        ) {
+          return currentTeamId;
+        }
+
+        return leagueTeams[0] ? String(leagueTeams[0].id) : "";
+      });
+    } else {
+      setSelectedTeamId("");
     }
 
   } catch (error) {
@@ -2238,6 +2306,12 @@ async function openEditMatchModal(match) {
       teamBCaptainId: fullMatch.teamBCaptainId
         ? String(fullMatch.teamBCaptainId)
         : "",
+      teamAViceCaptainId: fullMatch.teamAViceCaptainId
+        ? String(fullMatch.teamAViceCaptainId)
+        : "",
+      teamBViceCaptainId: fullMatch.teamBViceCaptainId
+        ? String(fullMatch.teamBViceCaptainId)
+        : "",
       teamAWicketKeeperId: fullMatch.teamAWicketKeeperId
         ? String(fullMatch.teamAWicketKeeperId)
         : "",
@@ -2299,6 +2373,12 @@ if (teamAId === teamBId) {
           : null,
         teamBCaptainId: editMatchForm.teamBCaptainId
           ? Number(editMatchForm.teamBCaptainId)
+          : null,
+        teamAViceCaptainId: editMatchForm.teamAViceCaptainId
+          ? Number(editMatchForm.teamAViceCaptainId)
+          : null,
+        teamBViceCaptainId: editMatchForm.teamBViceCaptainId
+          ? Number(editMatchForm.teamBViceCaptainId)
           : null,
         teamAWicketKeeperId: editMatchForm.teamAWicketKeeperId
           ? Number(editMatchForm.teamAWicketKeeperId)
@@ -3458,6 +3538,14 @@ teamBCaptainId: matchForm.teamBCaptainId
   ? Number(matchForm.teamBCaptainId)
   : null,
 
+teamAViceCaptainId: matchForm.teamAViceCaptainId
+  ? Number(matchForm.teamAViceCaptainId)
+  : null,
+
+teamBViceCaptainId: matchForm.teamBViceCaptainId
+  ? Number(matchForm.teamBViceCaptainId)
+  : null,
+
 teamAWicketKeeperId: matchForm.teamAWicketKeeperId
   ? Number(matchForm.teamAWicketKeeperId)
   : null,
@@ -3481,6 +3569,8 @@ setMatchForm({
   seriesId: "",
   teamACaptainId: "",
   teamBCaptainId: "",
+  teamAViceCaptainId: "",
+  teamBViceCaptainId: "",
   teamAWicketKeeperId: "",
   teamBWicketKeeperId: "",
 });
@@ -13903,12 +13993,17 @@ const playerRoleBadge = (row) => {
           <span>Team A</span>
           <select
             value={matchForm.teamAId || ""}
-            onChange={(e) =>
+            onChange={(e) => {
+              const teamId = e.target.value;
+              const team = teamsForMatch.find((t) => Number(t.id) === Number(teamId));
               setMatchForm((prev) => ({
                 ...prev,
-                teamAId: e.target.value,
-              }))
-            }
+                teamAId: teamId,
+                teamACaptainId: team?.defaultCaptainId ? String(team.defaultCaptainId) : "",
+                teamAViceCaptainId: team?.defaultViceCaptainId ? String(team.defaultViceCaptainId) : "",
+                teamAWicketKeeperId: team?.defaultWicketKeeperId ? String(team.defaultWicketKeeperId) : "",
+              }));
+            }}
             required
           >
             <option value="">Select Team A</option>
@@ -13924,12 +14019,17 @@ const playerRoleBadge = (row) => {
           <span>Team B</span>
           <select
             value={matchForm.teamBId || ""}
-            onChange={(e) =>
+            onChange={(e) => {
+              const teamId = e.target.value;
+              const team = teamsForMatch.find((t) => Number(t.id) === Number(teamId));
               setMatchForm((prev) => ({
                 ...prev,
-                teamBId: e.target.value,
-              }))
-            }
+                teamBId: teamId,
+                teamBCaptainId: team?.defaultCaptainId ? String(team.defaultCaptainId) : "",
+                teamBViceCaptainId: team?.defaultViceCaptainId ? String(team.defaultViceCaptainId) : "",
+                teamBWicketKeeperId: team?.defaultWicketKeeperId ? String(team.defaultWicketKeeperId) : "",
+              }));
+            }}
             required
           >
             <option value="">Select Team B</option>
@@ -13984,7 +14084,7 @@ const playerRoleBadge = (row) => {
     </section>
 
     <section className="create-match-section">
-      <h3>👥 Captains & Wicketkeepers</h3>
+      <h3>👥 Captains, Vice-Captains & Wicketkeepers</h3>
 
       <div className="form-two-col">
         <label>
@@ -14028,6 +14128,36 @@ const playerRoleBadge = (row) => {
                   {player.name}
                 </option>
               ))}
+          </select>
+        </label>
+
+        <label>
+          <span>Team A Vice-Captain</span>
+          <select
+            value={matchForm.teamAViceCaptainId || ""}
+            onChange={(e) => setMatchForm((prev) => ({ ...prev, teamAViceCaptainId: e.target.value }))}
+          >
+            <option value="">Optional</option>
+            {teams.find((t) => Number(t.id) === Number(matchForm.teamAId))?.players?.map((player) => (
+              <option key={player.id} value={player.id} disabled={String(player.id) === String(matchForm.teamACaptainId)}>
+                {player.name}
+              </option>
+            ))}
+          </select>
+        </label>
+
+        <label>
+          <span>Team B Vice-Captain</span>
+          <select
+            value={matchForm.teamBViceCaptainId || ""}
+            onChange={(e) => setMatchForm((prev) => ({ ...prev, teamBViceCaptainId: e.target.value }))}
+          >
+            <option value="">Optional</option>
+            {teams.find((t) => Number(t.id) === Number(matchForm.teamBId))?.players?.map((player) => (
+              <option key={player.id} value={player.id} disabled={String(player.id) === String(matchForm.teamBCaptainId)}>
+                {player.name}
+              </option>
+            ))}
           </select>
         </label>
 
@@ -16973,8 +17103,8 @@ const playerRoleBadge = (row) => {
                 {selectedLeague ? "Select Team" : "Select league first"}
               </option>
 
-              {selectedLeague?.teams?.map((team) => (
-                <option key={team.id} value={team.id}>
+              {teamsForSelectedLeague.map((team) => (
+                <option key={team.id} value={String(team.id)}>
                   {team.name}
                 </option>
               ))}
@@ -16997,20 +17127,25 @@ const playerRoleBadge = (row) => {
             >
               ➕ Add Team
             </button>
-{selectedTeamId && permissions?.canEditTeam && selectedTeam && (
+{canEditSelectedTeam && (
   <button
     type="button"
     className="mgmt-clean-btn"
     onClick={() => {
       setEditingTeam(selectedTeam);
       setTeamEditName(selectedTeam.name || "");
+      setTeamRoleForm({
+        defaultCaptainId: selectedTeam.defaultCaptainId ? String(selectedTeam.defaultCaptainId) : "",
+        defaultViceCaptainId: selectedTeam.defaultViceCaptainId ? String(selectedTeam.defaultViceCaptainId) : "",
+        defaultWicketKeeperId: selectedTeam.defaultWicketKeeperId ? String(selectedTeam.defaultWicketKeeperId) : "",
+      });
       setShowEditTeamModal(true);
     }}
   >
     ✏️ Edit Team
   </button>
 )}
-            {selectedTeam && permissions?.canDeleteTeam && (
+            {canDeleteSelectedTeam && (
               <button
                 type="button"
                 className="mgmt-clean-danger"
@@ -23538,10 +23673,9 @@ onClick={() => {
             ...previous,
             teamAId: nextTeamAId,
 
-            // Clear old Team A player roles because
-            // they may not belong to the newly selected team.
-            teamACaptainId: "",
-            teamAWicketKeeperId: "",
+            teamACaptainId: editMatchLeagueTeams.find((t) => Number(t.id) === Number(nextTeamAId))?.defaultCaptainId ? String(editMatchLeagueTeams.find((t) => Number(t.id) === Number(nextTeamAId)).defaultCaptainId) : "",
+            teamAViceCaptainId: editMatchLeagueTeams.find((t) => Number(t.id) === Number(nextTeamAId))?.defaultViceCaptainId ? String(editMatchLeagueTeams.find((t) => Number(t.id) === Number(nextTeamAId)).defaultViceCaptainId) : "",
+            teamAWicketKeeperId: editMatchLeagueTeams.find((t) => Number(t.id) === Number(nextTeamAId))?.defaultWicketKeeperId ? String(editMatchLeagueTeams.find((t) => Number(t.id) === Number(nextTeamAId)).defaultWicketKeeperId) : "",
           }));
         }}
         required
@@ -23578,10 +23712,9 @@ onClick={() => {
             ...previous,
             teamBId: nextTeamBId,
 
-            // Clear old Team B player roles because
-            // they may not belong to the newly selected team.
-            teamBCaptainId: "",
-            teamBWicketKeeperId: "",
+            teamBCaptainId: editMatchLeagueTeams.find((t) => Number(t.id) === Number(nextTeamBId))?.defaultCaptainId ? String(editMatchLeagueTeams.find((t) => Number(t.id) === Number(nextTeamBId)).defaultCaptainId) : "",
+            teamBViceCaptainId: editMatchLeagueTeams.find((t) => Number(t.id) === Number(nextTeamBId))?.defaultViceCaptainId ? String(editMatchLeagueTeams.find((t) => Number(t.id) === Number(nextTeamBId)).defaultViceCaptainId) : "",
+            teamBWicketKeeperId: editMatchLeagueTeams.find((t) => Number(t.id) === Number(nextTeamBId))?.defaultWicketKeeperId ? String(editMatchLeagueTeams.find((t) => Number(t.id) === Number(nextTeamBId)).defaultWicketKeeperId) : "",
           }));
         }}
         required
@@ -23723,8 +23856,8 @@ onClick={() => {
 
         <section className="edit-panel-v3">
           <div className="edit-panel-title-v3">
-            <strong>🧢 Captains & Wicketkeepers</strong>
-            <span>Select optional officials for each team.</span>
+            <strong>🧢 Captains, Vice-Captains & Wicketkeepers</strong>
+            <span>Permanent team defaults are pre-filled; change them here for this match only.</span>
           </div>
 
           <div className="edit-role-grid-v3">
@@ -23773,6 +23906,14 @@ onClick={() => {
             {player.name}
           </option>
         ))}
+    </select>
+  </label>
+
+  <label className="edit-field-v3">
+    <span>⭐ Vice-Captain</span>
+    <select value={editMatchForm.teamAViceCaptainId || ""} disabled={!editTeamA} onChange={(event) => setEditMatchForm((previous) => ({ ...previous, teamAViceCaptainId: event.target.value }))}>
+      <option value="">{editTeamA ? "Select Vice-Captain" : "Select Team A first"}</option>
+      {(editTeamA?.players || []).map((player) => <option key={player.id} value={player.id} disabled={String(player.id) === String(editMatchForm.teamACaptainId)}>{player.name}</option>)}
     </select>
   </label>
 
@@ -23861,6 +24002,14 @@ onClick={() => {
             {player.name}
           </option>
         ))}
+    </select>
+  </label>
+
+  <label className="edit-field-v3">
+    <span>⭐ Vice-Captain</span>
+    <select value={editMatchForm.teamBViceCaptainId || ""} disabled={!editTeamB} onChange={(event) => setEditMatchForm((previous) => ({ ...previous, teamBViceCaptainId: event.target.value }))}>
+      <option value="">{editTeamB ? "Select Vice-Captain" : "Select Team B first"}</option>
+      {(editTeamB?.players || []).map((player) => <option key={player.id} value={player.id} disabled={String(player.id) === String(editMatchForm.teamBCaptainId)}>{player.name}</option>)}
     </select>
   </label>
 
@@ -24199,96 +24348,72 @@ onClick={() => {
 )}
 {showEditTeamModal && editingTeam && (
 <div className="modal-backdrop">
+  <div className="rename-modal">
+    <button className="rename-close" onClick={() => { setShowEditTeamModal(false); setEditingTeam(null); }}>✕</button>
+    <div className="rename-icon">🏏</div>
+    <h2>Edit Team</h2>
+    <p>Update the team name and permanent match-role defaults. These defaults pre-populate new matches but can still be changed for an individual match.</p>
 
-<div className="rename-modal">
+    <label>
+      <span>TEAM NAME</span>
+      <input value={teamEditName} placeholder="Enter team name" onChange={(e) => setTeamEditName(e.target.value)} />
+    </label>
 
-<button
-className="rename-close"
-onClick={()=>{
-setShowEditTeamModal(false);
-setEditingTeam(null);
-}}
->
-✕
-</button>
+    <div style={{ display: "grid", gap: 12, marginTop: 16 }}>
+      <label>
+        <span>🧢 PERMANENT CAPTAIN</span>
+        <select value={teamRoleForm.defaultCaptainId} onChange={(e) => setTeamRoleForm((prev) => ({ ...prev, defaultCaptainId: e.target.value }))}>
+          <option value="">No permanent captain</option>
+          {(editingTeam.players || []).map((player) => <option key={player.id} value={player.id}>{player.name}</option>)}
+        </select>
+      </label>
 
-<div className="rename-icon">
-🏏
-</div>
+      <label>
+        <span>⭐ PERMANENT VICE-CAPTAIN</span>
+        <select value={teamRoleForm.defaultViceCaptainId} onChange={(e) => setTeamRoleForm((prev) => ({ ...prev, defaultViceCaptainId: e.target.value }))}>
+          <option value="">No permanent vice-captain</option>
+          {(editingTeam.players || []).map((player) => (
+            <option key={player.id} value={player.id} disabled={String(player.id) === String(teamRoleForm.defaultCaptainId)}>{player.name}</option>
+          ))}
+        </select>
+      </label>
 
-<h2>Rename Team</h2>
+      <label>
+        <span>🧤 PERMANENT WICKETKEEPER</span>
+        <select value={teamRoleForm.defaultWicketKeeperId} onChange={(e) => setTeamRoleForm((prev) => ({ ...prev, defaultWicketKeeperId: e.target.value }))}>
+          <option value="">No permanent wicketkeeper</option>
+          {(editingTeam.players || []).map((player) => <option key={player.id} value={player.id}>{player.name}</option>)}
+        </select>
+      </label>
+    </div>
 
-<p>
-Update your team name.
-This will be visible everywhere in the league.
-</p>
+    <div className="rename-note">💡 Wicketkeeper may also be captain or vice-captain. Captain and vice-captain must be different players.</div>
 
-<label>
-
-<span>TEAM NAME</span>
-
-<input
-value={teamEditName}
-placeholder="Enter team name"
-onChange={(e)=>setTeamEditName(e.target.value)}
-/>
-
-</label>
-
-<div className="rename-note">
-💡 Team names must be unique within a league.
-</div>
-
-<div className="rename-actions">
-
-<button
-className="btn btn-outline"
-onClick={()=>{
-setShowEditTeamModal(false);
-setEditingTeam(null);
-}}
->
-Cancel
-</button>
-
-<button
-className="btn btn-primary"
-onClick={async()=>{
-
-try{
-
-await api(`/api/teams/${editingTeam.id}`,{
-method:"PATCH",
-body:JSON.stringify({
-name:teamEditName.trim()
-})
-});
-
-await loadTeams();
-await loadLeagues();
-
-setShowEditTeamModal(false);
-setEditingTeam(null);
-
-showToast("success","✅ Team renamed.");
-
-}
-catch(err){
-
-setError(err.message);
-showToast("error",err.message);
-
-}
-
-}}
->
-💾 Save Changes
-</button>
-
-</div>
-
-</div>
-
+    <div className="rename-actions">
+      <button className="btn btn-outline" onClick={() => { setShowEditTeamModal(false); setEditingTeam(null); }}>Cancel</button>
+      <button className="btn btn-primary" onClick={async () => {
+        try {
+          await api(`/api/teams/${editingTeam.id}`, {
+            method: "PATCH",
+            body: JSON.stringify({
+              name: teamEditName.trim(),
+              defaultCaptainId: teamRoleForm.defaultCaptainId ? Number(teamRoleForm.defaultCaptainId) : null,
+              defaultViceCaptainId: teamRoleForm.defaultViceCaptainId ? Number(teamRoleForm.defaultViceCaptainId) : null,
+              defaultWicketKeeperId: teamRoleForm.defaultWicketKeeperId ? Number(teamRoleForm.defaultWicketKeeperId) : null,
+            }),
+          });
+          await loadTeams();
+          await loadLeagues();
+          setShowEditTeamModal(false);
+          setEditingTeam(null);
+          showToast("success", "✅ Team and permanent roles updated.");
+        } catch (err) {
+          setError(err.message);
+          showToast("error", err.message);
+        }
+      }}>💾 Save Changes</button>
+    </div>
+  </div>
 </div>
 )}
 {showEditPlayerModal && editingPlayer && (
