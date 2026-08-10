@@ -3,6 +3,7 @@ import { useSession } from "next-auth/react";
 import React, { useEffect, useMemo, useRef, useState } from "react";
 import { EXTRA_TYPES, getPlayerName, WICKET_TYPES } from "@/lib/scoring";
 import "@/app/globals.css";
+import "@/app/super-over-scorecard-mobile.css";
 import { useRouter, useSearchParams } from "next/navigation";
 import {formatMatchDateTime,getMatchTimelineText,} from "@/lib/date";
 import { buildMatchInsights } from "@/lib/match-insights";
@@ -22,24 +23,10 @@ function SuperOverScorecard({ superOver }) {
 
   return (
     <section
-      style={{
-        marginTop: 16,
-        padding: 16,
-        border: "1px solid rgba(245, 158, 11, 0.45)",
-        borderRadius: 14,
-        background: "rgba(120, 53, 15, 0.16)",
-      }}
+      className="super-over-scorecard-panel"
       aria-label="Super Over scorecard"
     >
-      <div
-        style={{
-          display: "flex",
-          justifyContent: "space-between",
-          gap: 12,
-          flexWrap: "wrap",
-          alignItems: "center",
-        }}
-      >
+      <div className="super-over-scorecard-heading">
         <strong>⚡ Super Over</strong>
         <span>
           {superOver.resultText ||
@@ -52,113 +39,111 @@ function SuperOverScorecard({ superOver }) {
       {(superOver.history || []).map((round) => (
         <div
           key={`scoreboard-super-over-${round.round}`}
-          style={{
-            marginTop: 14,
-            paddingTop: 14,
-            borderTop: "1px solid rgba(255,255,255,0.12)",
-          }}
+          className="super-over-scorecard-round"
         >
-          <strong>Round {round.round}</strong>
+          <strong className="super-over-round-title">
+            Round {round.round}
+          </strong>
 
           {[round.first, round.second].map((innings, inningsIndex) => (
             <details
               key={`super-over-${round.round}-${inningsIndex + 1}`}
               open
-              style={{
-                marginTop: 12,
-                border: "1px solid rgba(255,255,255,0.10)",
-                borderRadius: 12,
-                padding: 12,
-              }}
+              className="super-over-innings-details"
             >
-              <summary style={{ cursor: "pointer", fontWeight: 700 }}>
-                {innings.teamName} — {innings.runs}/{innings.wickets} ({innings.overs} ov)
+              <summary className="super-over-innings-summary">
+                <span className="super-over-team-name">
+                  {innings.teamName}
+                </span>
+                <span className="super-over-team-score">
+                  {innings.runs}/{innings.wickets} ({innings.overs} ov)
+                </span>
               </summary>
 
-              <div style={{ marginTop: 12, overflowX: "auto" }}>
-                <strong>🏏 Batting</strong>
-                <table className="score-table" style={{ marginTop: 8, width: "100%" }}>
-                  <thead>
-                    <tr>
-                      <th>Batter</th>
-                      <th>R</th>
-                      <th>B</th>
-                      <th>4s</th>
-                      <th>6s</th>
-                      <th>SR</th>
-                      <th>Status</th>
-                    </tr>
-                  </thead>
-                  <tbody>
-                    {(innings.batting || []).map((batter) => (
-                      <tr key={`so-bat-${round.round}-${inningsIndex}-${batter.playerId}`}>
-                        <td>{batter.playerName}</td>
-                        <td>{batter.runs}</td>
-                        <td>{batter.balls}</td>
-                        <td>{batter.fours}</td>
-                        <td>{batter.sixes}</td>
-                        <td>{batter.strikeRate}</td>
-                        <td>{batter.dismissal}</td>
-                      </tr>
-                    ))}
-                  </tbody>
-                </table>
-              </div>
+              <div className="super-over-stat-section">
+                <strong className="super-over-section-label">
+                  🏏 Batting
+                </strong>
 
-              {(innings.bowling || []).length > 0 && (
-                <div style={{ marginTop: 14, overflowX: "auto" }}>
-                  <strong>🎯 Bowling</strong>
-                  <table className="score-table" style={{ marginTop: 8, width: "100%" }}>
+                <div className="super-over-table-wrap">
+                  <table className="score-table super-over-table super-over-batting-table">
                     <thead>
                       <tr>
-                        <th>Bowler</th>
-                        <th>O</th>
+                        <th>Batter</th>
                         <th>R</th>
-                        <th>W</th>
-                        <th>Econ</th>
+                        <th>B</th>
+                        <th>4s</th>
+                        <th>6s</th>
+                        <th>SR</th>
+                        <th>Status</th>
                       </tr>
                     </thead>
                     <tbody>
-                      {(innings.bowling || []).map((bowler) => (
-                        <tr key={`so-bowl-${round.round}-${inningsIndex}-${bowler.playerId}`}>
-                          <td>{bowler.playerName}</td>
-                          <td>{bowler.overs}</td>
-                          <td>{bowler.runs}</td>
-                          <td>{bowler.wickets}</td>
-                          <td>{bowler.economy}</td>
+                      {(innings.batting || []).map((batter) => (
+                        <tr
+                          key={`so-bat-${round.round}-${inningsIndex}-${batter.playerId}`}
+                        >
+                          <td data-label="Batter">{batter.playerName}</td>
+                          <td data-label="Runs">{batter.runs}</td>
+                          <td data-label="Balls">{batter.balls}</td>
+                          <td data-label="4s">{batter.fours}</td>
+                          <td data-label="6s">{batter.sixes}</td>
+                          <td data-label="SR">{batter.strikeRate}</td>
+                          <td data-label="Status">{batter.dismissal}</td>
                         </tr>
                       ))}
                     </tbody>
                   </table>
                 </div>
+              </div>
+
+              {(innings.bowling || []).length > 0 && (
+                <div className="super-over-stat-section">
+                  <strong className="super-over-section-label">
+                    🎯 Bowling
+                  </strong>
+
+                  <div className="super-over-table-wrap">
+                    <table className="score-table super-over-table super-over-bowling-table">
+                      <thead>
+                        <tr>
+                          <th>Bowler</th>
+                          <th>O</th>
+                          <th>R</th>
+                          <th>W</th>
+                          <th>Econ</th>
+                        </tr>
+                      </thead>
+                      <tbody>
+                        {(innings.bowling || []).map((bowler) => (
+                          <tr
+                            key={`so-bowl-${round.round}-${inningsIndex}-${bowler.playerId}`}
+                          >
+                            <td data-label="Bowler">{bowler.playerName}</td>
+                            <td data-label="Overs">{bowler.overs}</td>
+                            <td data-label="Runs">{bowler.runs}</td>
+                            <td data-label="Wickets">{bowler.wickets}</td>
+                            <td data-label="Econ">{bowler.economy}</td>
+                          </tr>
+                        ))}
+                      </tbody>
+                    </table>
+                  </div>
+                </div>
               )}
 
               {(innings.commentary || []).length > 0 && (
-                <div style={{ marginTop: 14 }}>
-                  <strong>📝 Ball by ball</strong>
-                  <div
-                    style={{
-                      display: "flex",
-                      flexWrap: "wrap",
-                      gap: 8,
-                      marginTop: 8,
-                    }}
-                  >
+                <div className="super-over-ball-section">
+                  <strong className="super-over-section-label">
+                    📝 Ball by ball
+                  </strong>
+
+                  <div className="super-over-ball-list">
                     {innings.commentary.map((ball) => (
                       <span
                         key={`so-ball-${round.round}-${inningsIndex}-${ball.id}`}
                         title={`${ball.over} ${ball.text} • ${ball.score}`}
-                        style={{
-                          display: "inline-flex",
-                          alignItems: "center",
-                          justifyContent: "center",
-                          minWidth: 34,
-                          minHeight: 34,
-                          padding: "4px 8px",
-                          borderRadius: 8,
-                          border: "1px solid rgba(255,255,255,0.14)",
-                          fontWeight: 700,
-                        }}
+                        className="super-over-ball-badge"
                       >
                         {ball.badge}
                       </span>
@@ -170,7 +155,7 @@ function SuperOverScorecard({ superOver }) {
           ))}
 
           {round.resultText && (
-            <small style={{ display: "block", marginTop: 10 }}>
+            <small className="super-over-round-result">
               {round.resultText}
             </small>
           )}
