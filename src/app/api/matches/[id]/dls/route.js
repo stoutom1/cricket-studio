@@ -182,14 +182,36 @@ export async function POST(request, { params }) {
         resultText = `${names.first} won by ${par - score} runs (DLS)`;
       }
 
+      const difference = score - par;
+
       payload = {
         ...latest,
         mode: "OFFICIAL_OVERRIDE",
+        methodLabel: "Official DLS",
         inningsNo: 2,
         terminated: true,
+
+        /*
+         * Persist the evidence used for the DLS decision. This is deliberately
+         * stored in MatchEvent so Match History can explain the result later
+         * without trying to reconstruct it from the final raw innings totals.
+         */
         score,
+        scoreAtTermination: score,
+        wicketsAtTermination: second.wickets,
+        legalBallsAtTermination: second.legalBalls,
+        oversAtTermination:
+          `${Math.floor(second.legalBalls / 6)}.${second.legalBalls % 6}`,
         par,
+        parScore: par,
         target: par + 1,
+        difference,
+        decision:
+          difference > 0
+            ? "SECOND_TEAM_AHEAD_OF_PAR"
+            : difference < 0
+              ? "FIRST_TEAM_AHEAD_OF_PAR"
+              : "TIED_ON_PAR",
         resultText,
       };
     } else {
@@ -205,11 +227,28 @@ export async function POST(request, { params }) {
         resultText = `${names.first} won by ${calc.par - calc.score} runs (D/L Standard)`;
       }
 
+      const difference =
+        Number(calc.score) - Number(calc.par);
+
       payload = {
         ...calc,
         mode: "STANDARD",
+        methodLabel: "D/L Standard",
         inningsNo: 2,
         terminated: true,
+        scoreAtTermination: calc.score,
+        wicketsAtTermination: calc.wickets,
+        legalBallsAtTermination: calc.legalBalls,
+        oversAtTermination:
+          `${Math.floor(Number(calc.legalBalls || 0) / 6)}.${Number(calc.legalBalls || 0) % 6}`,
+        parScore: calc.par,
+        difference,
+        decision:
+          difference > 0
+            ? "SECOND_TEAM_AHEAD_OF_PAR"
+            : difference < 0
+              ? "FIRST_TEAM_AHEAD_OF_PAR"
+              : "TIED_ON_PAR",
         resultText,
       };
     }

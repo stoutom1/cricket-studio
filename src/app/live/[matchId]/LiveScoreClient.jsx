@@ -607,6 +607,165 @@ function getRunRateTrend(
   };
 }
 
+function SuperOverLiveDetails({ superOver, compact = false }) {
+  if (!superOver?.exists) return null;
+
+  return (
+    <section
+      className="live-innings-card"
+      style={{
+        marginTop: 16,
+        borderColor: "rgba(245, 158, 11, 0.45)",
+        background: "rgba(120, 53, 15, 0.12)",
+      }}
+      aria-label="Super Over scorecard"
+    >
+      <div className="live-innings-header" style={{ cursor: "default" }}>
+        <div>
+          <span>⚡ Tie-breaker</span>
+          <strong>Super Over</strong>
+        </div>
+        <b>
+          {superOver.completed
+            ? "Final"
+            : superOver.active
+              ? `Round ${superOver.round} live`
+              : `Round ${superOver.round}`}
+        </b>
+      </div>
+
+      <div style={{ padding: compact ? 12 : 16 }}>
+        {(superOver.history || []).map((round) => (
+          <div
+            key={`live-super-over-details-${round.round}`}
+            style={{
+              marginTop: 10,
+              paddingTop: 10,
+              borderTop: "1px solid rgba(255,255,255,0.10)",
+            }}
+          >
+            <strong>Round {round.round}</strong>
+
+            {[round.first, round.second].map((innings, inningsIndex) => (
+              <details
+                key={`live-so-innings-${round.round}-${inningsIndex}`}
+                open={!compact}
+                style={{
+                  marginTop: 10,
+                  padding: 10,
+                  border: "1px solid rgba(255,255,255,0.10)",
+                  borderRadius: 10,
+                }}
+              >
+                <summary style={{ cursor: "pointer", fontWeight: 700 }}>
+                  {innings.teamName}: {innings.runs}/{innings.wickets} ({innings.overs} ov)
+                </summary>
+
+                <div style={{ marginTop: 10, overflowX: "auto" }}>
+                  <strong>🏏 Batting</strong>
+                  <table className="live-pro-table" style={{ marginTop: 8, width: "100%" }}>
+                    <thead>
+                      <tr>
+                        <th>Batter</th>
+                        <th>R</th>
+                        <th>B</th>
+                        <th>4s</th>
+                        <th>6s</th>
+                        <th>SR</th>
+                        <th>Status</th>
+                      </tr>
+                    </thead>
+                    <tbody>
+                      {(innings.batting || []).map((batter) => (
+                        <tr key={`live-so-bat-${round.round}-${inningsIndex}-${batter.playerId}`}>
+                          <td>{batter.playerName}</td>
+                          <td>{batter.runs}</td>
+                          <td>{batter.balls}</td>
+                          <td>{batter.fours}</td>
+                          <td>{batter.sixes}</td>
+                          <td>{batter.strikeRate}</td>
+                          <td>{batter.dismissal}</td>
+                        </tr>
+                      ))}
+                    </tbody>
+                  </table>
+                </div>
+
+                {(innings.bowling || []).length > 0 ? (
+                  <div style={{ marginTop: 12, overflowX: "auto" }}>
+                    <strong>🎯 Bowling</strong>
+                    <table className="live-pro-table" style={{ marginTop: 8, width: "100%" }}>
+                      <thead>
+                        <tr>
+                          <th>Bowler</th>
+                          <th>O</th>
+                          <th>R</th>
+                          <th>W</th>
+                          <th>Econ</th>
+                        </tr>
+                      </thead>
+                      <tbody>
+                        {(innings.bowling || []).map((bowler) => (
+                          <tr key={`live-so-bowl-${round.round}-${inningsIndex}-${bowler.playerId}`}>
+                            <td>{bowler.playerName}</td>
+                            <td>{bowler.overs}</td>
+                            <td>{bowler.runs}</td>
+                            <td>{bowler.wickets}</td>
+                            <td>{bowler.economy}</td>
+                          </tr>
+                        ))}
+                      </tbody>
+                    </table>
+                  </div>
+                ) : null}
+
+                {(innings.commentary || []).length > 0 ? (
+                  <div style={{ marginTop: 12 }}>
+                    <strong>📝 Ball by ball</strong>
+                    <div className="live-recent-strip" style={{ marginTop: 8 }}>
+                      {innings.commentary.map((ball) => (
+                        <b
+                          key={`live-so-ball-${round.round}-${inningsIndex}-${ball.id}`}
+                          className={`live-ball ${
+                            ball.isWicket
+                              ? "live-ball-wicket"
+                              : ball.extraType === "WIDE" || ball.extraType === "NOBALL"
+                                ? "live-ball-extra"
+                                : ball.runsOffBat === 4
+                                  ? "live-ball-four"
+                                  : ball.runsOffBat === 6
+                                    ? "live-ball-six"
+                                    : "live-ball-normal"
+                          }`}
+                          title={`${ball.over} ${ball.text} • ${ball.score}`}
+                        >
+                          {ball.badge}
+                        </b>
+                      ))}
+                    </div>
+                  </div>
+                ) : null}
+              </details>
+            ))}
+
+            {round.resultText ? (
+              <small style={{ display: "block", marginTop: 8 }}>
+                {round.resultText}
+              </small>
+            ) : null}
+          </div>
+        ))}
+
+        {superOver.resultText ? (
+          <strong style={{ display: "block", marginTop: 12 }}>
+            🏆 {superOver.resultText}
+          </strong>
+        ) : null}
+      </div>
+    </section>
+  );
+}
+
 export default function LiveScoreClient({
   matchId,
 }) {
@@ -679,16 +838,38 @@ const loadedRawStatus =
   data?.summary?.status ??
   "";
 
+const loadedSuperOver = data?.superOver || null;
+
 const loadedHasFinalResult =
   Boolean(
+    loadedSuperOver?.completed ||
     data?.summary?.resultText ||
     data?.resultText ||
     data?.match?.resultText
   );
 
+const loadedStatusText = String(
+  data?.summary?.statusText ||
+  data?.match?.statusText ||
+  ""
+).toLowerCase();
+
+const loadedTieStillNeedsResolution =
+  normalizeMatchStatus(loadedRawStatus) === "COMPLETED" &&
+  !loadedSuperOver?.completed &&
+  (
+    loadedSuperOver?.active ||
+    loadedSuperOver?.tied ||
+    loadedStatusText.includes("tied") ||
+    loadedStatusText.includes("super over")
+  );
+
 const loadedMatchIsFinal =
-  isFinalMatchStatus(loadedRawStatus) ||
-  loadedHasFinalResult;
+  Boolean(loadedSuperOver?.completed) ||
+  (
+    (isFinalMatchStatus(loadedRawStatus) || loadedHasFinalResult) &&
+    !loadedTieStillNeedsResolution
+  );
 
 if (
   loadedMatchIsFinal &&
@@ -840,16 +1021,36 @@ const rawMatchStatus =
 const matchStatus =
   normalizeMatchStatus(rawMatchStatus);
 
+const superOver = scoreboard?.superOver || null;
+
 const hasRecordedFinalResult =
   Boolean(
+    superOver?.completed ||
     scoreboard?.summary?.resultText ||
     scoreboard?.resultText ||
     scoreboard?.match?.resultText
   );
 
+const regulationTieStillNeedsResolution =
+  matchStatus === "COMPLETED" &&
+  !superOver?.completed &&
+  (
+    superOver?.active ||
+    superOver?.tied ||
+    String(scoreboard?.summary?.statusText || "")
+      .toLowerCase()
+      .includes("tied") ||
+    String(scoreboard?.summary?.statusText || "")
+      .toLowerCase()
+      .includes("super over")
+  );
+
 const isMatchFinished =
-  isFinalMatchStatus(matchStatus) ||
-  hasRecordedFinalResult;
+  Boolean(superOver?.completed) ||
+  (
+    (isFinalMatchStatus(matchStatus) || hasRecordedFinalResult) &&
+    !regulationTieStillNeedsResolution
+  );
   
   const finalInnings = [...(scoreboard?.innings || [])]
   .sort(
@@ -868,6 +1069,7 @@ const finalMatchHeading =
         : "Match Completed";
 
 const finalResultText =
+  superOver?.resultText ||
   scoreboard?.summary?.resultText ||
   scoreboard?.resultText ||
   scoreboard?.match?.resultText ||
@@ -1189,6 +1391,35 @@ const finalResultText =
             "Match in progress"}
         </p>
 
+        {superOver?.exists && !isMatchFinished ? (
+          <div
+            className="live-chase-card"
+            style={{ borderColor: "rgba(245, 158, 11, 0.55)" }}
+          >
+            <span>⚡ SUPER OVER {superOver.round}</span>
+            {(superOver.history || []).slice(-1).map((round) => (
+              <div key={`active-super-over-${round.round}`}>
+                <strong>
+                  {round.first.teamName} {round.first.runs}/{round.first.wickets}
+                  {" • "}
+                  {round.second.teamName} {round.second.runs}/{round.second.wickets}
+                </strong>
+                <small>
+                  {superOver.active
+                    ? (superOver.currentSuperInnings === 2 && superOver.target
+                        ? `Target ${superOver.target}`
+                        : "Tie-breaker in progress")
+                    : (superOver.resultText || "Super Over round complete")}
+                </small>
+              </div>
+            ))}
+          </div>
+        ) : null}
+
+        {superOver?.exists && !isMatchFinished ? (
+          <SuperOverLiveDetails superOver={superOver} compact />
+        ) : null}
+
         {scoreboard?.currentInnings ===
           2 &&
         chaseRunsNeeded !== null &&
@@ -1436,6 +1667,8 @@ const finalResultText =
       </div>
     )}
 
+    <SuperOverLiveDetails superOver={superOver} />
+
     <div className="final-match-next-step">
       <span>👇</span>
 
@@ -1470,16 +1703,14 @@ const finalResultText =
             )
           }
         >
-          {matchInsights?.resultText ? (
+          {(superOver?.completed ? finalResultText : matchInsights?.resultText) ? (
             <div className="insight-result">
               <span>
                 🏆 Match Result
               </span>
 
               <strong>
-                {
-                  matchInsights.resultText
-                }
+                {superOver?.completed ? finalResultText : matchInsights.resultText}
               </strong>
             </div>
           ) : null}
@@ -1648,6 +1879,8 @@ const finalResultText =
           }
         >
           <div className="live-innings-list">
+            <SuperOverLiveDetails superOver={superOver} />
+
             {scoreboard?.innings?.map(
               (innings) => {
                 const isCollapsed =

@@ -14,6 +14,7 @@ import {
   currentAllocation,
   latestDlsState,
 } from "@/lib/dls-standard";
+import { buildSuperOverView } from "@/lib/super-over-view";
 
 export const runtime = "nodejs";
 
@@ -478,6 +479,7 @@ const innings2 = summarizeInningsDetailed(
   const innings1Complete = innings2Started;
 
   const dlsState = latestDlsState(match);
+  const superOver = buildSuperOverView(match);
 
   const target =
     innings1Complete
@@ -544,6 +546,14 @@ function getBatterStats(playerId, balls) {
     }
   } else if (target && !innings2Started) {
     statusText = `${innings2TeamName} need ${target} runs to win`;
+  }
+
+  if (superOver.completed) {
+    statusText = superOver.resultText || match.statusText || "Match completed via Super Over";
+  } else if (superOver.active) {
+    statusText = `Super Over ${superOver.round} in progress`;
+  } else if (superOver.tied) {
+    statusText = `Super Over ${superOver.round} tied — another Super Over required`;
   }
 
   const recentBalls = match.balls
@@ -694,6 +704,9 @@ const response = {
     oversPerInnings: match.oversPerInnings,
     powerplayOversInnings: match.powerplayOversInnings,
     status: match.status,
+    statusText: superOver.completed
+      ? (superOver.resultText || match.statusText || statusText)
+      : statusText,
     maxWicketsPerInnings: match.maxWicketsPerInnings,
     maxOversPerBowler: match.maxOversPerBowler,
     shareCode: match.shareCode,
@@ -705,6 +718,7 @@ const response = {
       dlsState?.revisedOvers ||
       innings2Allocation,
   },
+  superOver,
 innings: [
   {
     ...innings1,
@@ -745,9 +759,12 @@ innings: [
   currentInnings,
   currentState,
   summary: {
-    target,
-    remainingBalls,
+    target: superOver.exists ? null : target,
+    remainingBalls: superOver.exists ? null : remainingBalls,
     statusText,
+    resultText: superOver.completed
+      ? (superOver.resultText || match.statusText || statusText)
+      : null,
     dls: dlsState
       ? {
           active: true,

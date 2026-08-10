@@ -5,6 +5,7 @@ import { authOptions } from "@/lib/auth";
 import { isSuperAdmin } from "@/lib/superAdmin";
 export const runtime = "nodejs";
 import crypto from "crypto";
+import { buildSuperOverState } from "@/lib/super-over";
 
 /*function formatOvers(legalBalls) {
   return `${Math.floor(legalBalls / 6)}.${legalBalls % 6}`;
@@ -80,7 +81,13 @@ function buildResultText(match, innings1, innings2) {
     normalizedPersistedResult.includes("D/L STANDARD") ||
     normalizedPersistedResult.includes("DUCKWORTH");
 
-  if (isDlsResult) {
+  const isSuperOverResult =
+    normalizedPersistedResult.includes("SUPER OVER");
+
+  if (
+    isDlsResult ||
+    isSuperOverResult
+  ) {
     return persistedResult;
   }
 
@@ -202,6 +209,12 @@ export async function GET(request) {
   },
     battingFirstTeam: true,
     series: true,
+
+    events: {
+      orderBy: {
+        id: "asc",
+      },
+    },
   },
   orderBy: {
     createdAt: "desc",
@@ -269,6 +282,7 @@ if (canAutoComplete && shouldComplete) {
           : "Not decided yet";
 
     const resultText = buildResultText(m, innings1, innings2);
+    const superOver = buildSuperOverState(m);
 
     const findPlayerName = (players, playerId) => {
   if (!playerId) return "";
@@ -375,6 +389,60 @@ teamB: {
       scoreSummary: `${firstInningsScore} • ${secondInningsScore}`,
       finalScore: `${firstInningsScore} • ${secondInningsScore}`,
       resultText,
+
+      mainMatchTied:
+        innings1.legalBalls > 0 &&
+        innings2.legalBalls > 0 &&
+        innings1.runs === innings2.runs,
+
+      superOver: {
+        exists:
+          Boolean(superOver.exists),
+        active:
+          Boolean(superOver.active),
+        completed:
+          Boolean(superOver.completed),
+        tied:
+          Boolean(superOver.tied),
+        round:
+          Number(superOver.round || 0),
+        resultText:
+          superOver.resultText || null,
+        winnerTeamId:
+          superOver.winnerTeamId || null,
+        history:
+          (superOver.history || []).map(
+            (round) => ({
+              round:
+                round.round,
+              firstBattingTeamId:
+                round.firstBattingTeamId,
+              secondBattingTeamId:
+                round.secondBattingTeamId,
+              firstRuns:
+                round.first?.runs || 0,
+              firstWickets:
+                round.first?.wickets || 0,
+              firstOvers:
+                round.first?.overs || "0.0",
+              secondRuns:
+                round.second?.runs || 0,
+              secondWickets:
+                round.second?.wickets || 0,
+              secondOvers:
+                round.second?.overs || "0.0",
+              tied:
+                Boolean(round.tied),
+              completed:
+                Boolean(round.completed),
+              resultText:
+                round.result?.resultText ||
+                round.result?.roundResult ||
+                null,
+            })
+          ),
+      },
+
       seriesId: m.seriesId,
       seriesName: m.series?.name || "",
       seriesYear: m.series?.year || null,

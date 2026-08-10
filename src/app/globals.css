@@ -72786,3 +72786,1472 @@ body:has(.milestone-celebration-overlay)
   color: #bae6fd !important;
   background: rgba(14, 116, 144, 0.22) !important;
 }
+
+/* =========================================================
+   COMPLETED MATCH — DLS AUDIT DETAILS
+   Append to the VERY BOTTOM of src/app/globals.css
+   ========================================================= */
+
+.completed-dls-audit,
+.mobile-completed-dls-audit {
+  margin: 14px 0;
+  border: 1px solid rgba(56, 189, 248, 0.28);
+  border-radius: 14px;
+  background: rgba(8, 47, 73, 0.22);
+  overflow: hidden;
+}
+
+.completed-dls-audit > summary,
+.mobile-completed-dls-audit > summary {
+  cursor: pointer;
+  list-style: none;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 12px;
+  min-height: 48px;
+  padding: 12px 14px;
+  color: #e0f2fe;
+  font-weight: 800;
+}
+
+.completed-dls-audit > summary::-webkit-details-marker,
+.mobile-completed-dls-audit > summary::-webkit-details-marker {
+  display: none;
+}
+
+.completed-dls-audit > summary::after,
+.mobile-completed-dls-audit > summary::after {
+  content: "⌄";
+  flex: 0 0 auto;
+  color: #7dd3fc;
+}
+
+.completed-dls-audit[open] > summary::after,
+.mobile-completed-dls-audit[open] > summary::after {
+  transform: rotate(180deg);
+}
+
+.completed-dls-audit > summary small {
+  margin-left: auto;
+  color: #94a3b8;
+  font-size: 12px;
+  font-weight: 700;
+}
+
+.completed-dls-audit-grid {
+  display: grid;
+  grid-template-columns: repeat(3, minmax(0, 1fr));
+  gap: 10px;
+  padding: 0 14px 12px;
+}
+
+.completed-dls-audit-grid > div {
+  min-width: 0;
+  padding: 10px 12px;
+  border: 1px solid rgba(148, 163, 184, 0.16);
+  border-radius: 10px;
+  background: rgba(2, 8, 23, 0.34);
+}
+
+.completed-dls-audit-grid span,
+.mobile-completed-dls-audit-grid small {
+  display: block;
+  color: #94a3b8;
+  font-size: 12px;
+  font-weight: 700;
+}
+
+.completed-dls-audit-grid strong {
+  display: block;
+  margin-top: 3px;
+  color: #f8fafc;
+  font-size: 14px;
+  overflow-wrap: anywhere;
+}
+
+.completed-dls-explanation {
+  margin: 0 14px 14px;
+  padding-top: 10px;
+  border-top: 1px solid rgba(148, 163, 184, 0.14);
+  color: #bae6fd;
+  font-size: 13px;
+  line-height: 1.45;
+}
+
+.mobile-completed-dls-audit {
+  margin: 12px 0;
+}
+
+.mobile-completed-dls-audit > summary {
+  min-height: 46px;
+  font-size: 14px;
+}
+
+.mobile-completed-dls-audit-grid {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: 8px;
+  padding: 0 12px 10px;
+}
+
+.mobile-completed-dls-audit-grid > span {
+  min-width: 0;
+  padding: 9px 10px;
+  border-radius: 9px;
+  background: rgba(2, 8, 23, 0.34);
+}
+
+.mobile-completed-dls-audit-grid strong {
+  display: block;
+  margin-top: 3px;
+  color: #f8fafc;
+  font-size: 14px;
+}
+
+.mobile-completed-dls-audit > p {
+  margin: 0 12px 12px;
+  color: #bae6fd;
+  font-size: 12px;
+  line-height: 1.4;
+}
+
+@media (max-width: 900px) {
+  .completed-dls-audit-grid {
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+  }
+}
+/* =========================================================
+   CRIC4ALL — SUPER OVER
+   Append this file to the VERY BOTTOM of src/app/globals.css
+   ========================================================= */
+
+.completed-super-over-btn,
+.mobile-completed-super-over-btn {
+  border-color: rgba(250, 204, 21, 0.42) !important;
+  background: linear-gradient(
+    145deg,
+    rgba(120, 53, 15, 0.42),
+    rgba(67, 34, 9, 0.64)
+  ) !important;
+}
+
+.completed-super-over-summary {
+  margin: 14px 0;
+  overflow: hidden;
+  border: 1px solid rgba(250, 204, 21, 0.24);
+  border-radius: 13px;
+  background: rgba(66, 32, 6, 0.16);
+}
+
+.completed-super-over-summary > summary {
+  min-height: 48px;
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  padding: 10px 13px;
+  list-style: none;
+  cursor: pointer;
+}
+
+.completed-super-over-summary > summary::-webkit-details-marker {
+  display: none;
+}
+
+.completed-super-over-summary > summary span {
+  color: #fde68a;
+  font-size: 12px;
+  font-weight: 900;
+}
+
+.completed-super-over-summary > summary strong {
+  margin-left: auto;
+  color: #f8fafc;
+  font-size: 12px;
+}
+
+.completed-super-over-rounds {
+  display: grid;
+  gap: 8px;
+  padding: 0 12px 12px;
+}
+
+.completed-super-over-round {
+  display: grid;
+  grid-template-columns: auto 1fr 1fr;
+  align-items: center;
+  gap: 10px;
+  padding: 9px 10px;
+  border-radius: 9px;
+  background: rgba(2, 8, 23, 0.34);
+}
+
+.completed-super-over-round b {
+  color: #fde68a;
+  font-size: 12px;
+}
+
+.completed-super-over-round span,
+.completed-super-over-round small {
+  color: #cbd5e1;
+  font-size: 11px;
+}
+
+.mobile-completed-super-over-btn {
+  width: 100%;
+  min-height: 48px;
+  margin: 10px 0;
+  border: 1px solid rgba(250, 204, 21, 0.44);
+  border-radius: 10px;
+  color: #fff7d6;
+  font-size: 14px;
+  font-weight: 900;
+}
+
+.mobile-super-over-result {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 10px;
+  margin: 10px 0;
+  padding: 10px 11px;
+  border: 1px solid rgba(250, 204, 21, 0.22);
+  border-radius: 10px;
+  background: rgba(66, 32, 6, 0.18);
+}
+
+.mobile-super-over-result span {
+  color: #fde68a;
+  font-size: 12px;
+  font-weight: 900;
+}
+
+.mobile-super-over-result strong {
+  color: #f8fafc;
+  font-size: 12px;
+  text-align: right;
+}
+
+.super-over-backdrop {
+  position: fixed;
+  inset: 0;
+  z-index: 11000;
+  display: grid;
+  place-items: center;
+  padding: 18px;
+  background: rgba(2, 8, 23, 0.82);
+  backdrop-filter: blur(8px);
+}
+
+.super-over-modal {
+  width: min(760px, 100%);
+  max-height: 92dvh;
+  overflow-y: auto;
+  border: 1px solid rgba(250, 204, 21, 0.26);
+  border-radius: 18px;
+  padding: 18px;
+  color: #f8fafc;
+  background:
+    radial-gradient(
+      circle at top right,
+      rgba(234, 179, 8, 0.10),
+      transparent 34%
+    ),
+    #071827;
+  box-shadow: 0 30px 90px rgba(0, 0, 0, 0.55);
+}
+
+.super-over-head {
+  display: flex;
+  align-items: flex-start;
+  justify-content: space-between;
+  gap: 14px;
+}
+
+.super-over-head > div > span {
+  color: #facc15;
+  font-size: 11px;
+  font-weight: 950;
+  letter-spacing: .08em;
+}
+
+.super-over-head h3 {
+  margin: 5px 0 0;
+  font-size: 24px;
+  line-height: 1.12;
+}
+
+.super-over-head p {
+  margin: 6px 0 0;
+  color: #94a3b8;
+  font-size: 12px;
+}
+
+.super-over-head > button {
+  width: 42px;
+  height: 42px;
+  flex: 0 0 42px;
+  border: 1px solid rgba(148, 163, 184, .3);
+  border-radius: 11px;
+  color: #fff;
+  background: rgba(15, 23, 42, .74);
+  font-size: 24px;
+  cursor: pointer;
+}
+
+.super-over-error {
+  margin-top: 12px;
+  padding: 10px 12px;
+  border: 1px solid rgba(248, 113, 113, .5);
+  border-radius: 10px;
+  color: #fecaca;
+  background: rgba(127, 29, 29, .28);
+  font-size: 12px;
+  line-height: 1.45;
+}
+
+.super-over-start-card,
+.super-over-tied-card,
+.super-over-winner-card {
+  display: grid;
+  gap: 8px;
+  margin-top: 16px;
+  padding: 16px;
+  border: 1px solid rgba(250, 204, 21, .26);
+  border-radius: 13px;
+  background: rgba(66, 32, 6, .18);
+}
+
+.super-over-start-card span,
+.super-over-tied-card span,
+.super-over-winner-card span {
+  color: #facc15;
+  font-size: 11px;
+  font-weight: 950;
+  letter-spacing: .06em;
+}
+
+.super-over-start-card strong,
+.super-over-tied-card strong,
+.super-over-winner-card strong {
+  font-size: 20px;
+}
+
+.super-over-start-card p,
+.super-over-tied-card p {
+  margin: 0;
+  color: #a7b5c6;
+  font-size: 12px;
+  line-height: 1.45;
+}
+
+.super-over-start-card button,
+.super-over-tied-card button,
+.super-over-winner-card button,
+.super-over-primary {
+  min-height: 46px;
+  justify-self: start;
+  border: 1px solid rgba(250, 204, 21, .48);
+  border-radius: 10px;
+  padding: 0 15px;
+  color: #fff9db;
+  background: rgba(161, 98, 7, .68);
+  font-size: 13px;
+  font-weight: 900;
+  cursor: pointer;
+}
+
+.super-over-score-grid {
+  display: grid;
+  grid-template-columns: repeat(4, minmax(0, 1fr));
+  gap: 8px;
+  margin-top: 16px;
+}
+
+.super-over-score-grid article {
+  min-width: 0;
+  display: grid;
+  gap: 3px;
+  padding: 10px;
+  border: 1px solid rgba(71, 85, 105, .42);
+  border-radius: 11px;
+  background: rgba(15, 23, 42, .64);
+}
+
+.super-over-score-grid span,
+.super-over-score-grid small {
+  overflow: hidden;
+  color: #94a3b8;
+  font-size: 10px;
+  white-space: nowrap;
+  text-overflow: ellipsis;
+}
+
+.super-over-score-grid strong {
+  font-size: 18px;
+}
+
+.super-over-setup,
+.super-over-live {
+  margin-top: 15px;
+  padding: 14px;
+  border: 1px solid rgba(71, 85, 105, .42);
+  border-radius: 13px;
+  background: rgba(15, 23, 42, .46);
+}
+
+.super-over-section-title {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  margin-bottom: 12px;
+}
+
+.super-over-section-title span {
+  color: #facc15;
+  font-size: 11px;
+  font-weight: 900;
+}
+
+.super-over-section-title strong {
+  font-size: 15px;
+}
+
+.super-over-setup-grid {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: 10px;
+}
+
+.super-over-setup-grid label {
+  display: grid;
+  gap: 6px;
+}
+
+.super-over-setup-grid label > span {
+  color: #cbd5e1;
+  font-size: 11px;
+  font-weight: 850;
+}
+
+.super-over-setup-grid select {
+  width: 100%;
+  min-height: 46px;
+  border: 1px solid rgba(100, 116, 139, .5);
+  border-radius: 10px;
+  padding: 0 38px 0 11px;
+  color: #fff;
+  background: #0b2034;
+  font-size: 14px;
+}
+
+.super-over-primary {
+  margin-top: 12px;
+}
+
+.super-over-live-head {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 12px;
+}
+
+.super-over-live-head > div {
+  display: grid;
+  gap: 3px;
+}
+
+.super-over-live-head small {
+  color: #94a3b8;
+  font-size: 10px;
+  font-weight: 900;
+}
+
+.super-over-live-head strong {
+  font-size: 18px;
+}
+
+.super-over-players {
+  display: grid;
+  grid-template-columns: repeat(3, minmax(0, 1fr));
+  gap: 8px;
+  margin-top: 12px;
+}
+
+.super-over-players article {
+  min-width: 0;
+  padding: 9px 10px;
+  border-radius: 10px;
+  background: rgba(2, 8, 23, .34);
+}
+
+.super-over-players span {
+  display: block;
+  color: #94a3b8;
+  font-size: 10px;
+}
+
+.super-over-players strong {
+  display: block;
+  margin-top: 3px;
+  overflow: hidden;
+  font-size: 13px;
+  white-space: nowrap;
+  text-overflow: ellipsis;
+}
+
+.super-over-chase {
+  margin-top: 10px;
+  padding: 9px 10px;
+  border-radius: 9px;
+  color: #fde68a;
+  background: rgba(113, 63, 18, .32);
+  font-size: 12px;
+  font-weight: 800;
+}
+
+.super-over-run-buttons {
+  display: grid;
+  grid-template-columns: repeat(9, minmax(0, 1fr));
+  gap: 7px;
+  margin-top: 12px;
+}
+
+.super-over-run-buttons button {
+  min-width: 0;
+  min-height: 46px;
+  border: 1px solid rgba(71, 85, 105, .5);
+  border-radius: 9px;
+  color: #f8fafc;
+  background: rgba(15, 23, 42, .82);
+  font-size: 13px;
+  font-weight: 900;
+  cursor: pointer;
+}
+
+.super-over-run-buttons button.wicket {
+  border-color: rgba(248, 113, 113, .5);
+  background: rgba(127, 29, 29, .4);
+}
+
+.super-over-secondary-actions {
+  display: flex;
+  justify-content: flex-end;
+  margin-top: 9px;
+}
+
+.super-over-secondary-actions button {
+  min-height: 40px;
+  border: 1px solid rgba(248, 113, 113, .4);
+  border-radius: 9px;
+  padding: 0 13px;
+  color: #fecaca;
+  background: rgba(127, 29, 29, .26);
+  font-size: 12px;
+  font-weight: 850;
+}
+
+.super-over-history {
+  margin-top: 14px;
+  border-top: 1px solid rgba(148, 163, 184, .16);
+  padding-top: 11px;
+}
+
+.super-over-history > summary {
+  cursor: pointer;
+  color: #94a3b8;
+  font-size: 12px;
+  font-weight: 800;
+}
+
+.super-over-history > div {
+  display: grid;
+  gap: 7px;
+  margin-top: 9px;
+}
+
+.super-over-history article {
+  display: grid;
+  grid-template-columns: auto 1fr 1fr;
+  gap: 8px;
+  padding: 8px 9px;
+  border-radius: 9px;
+  background: rgba(2, 8, 23, .34);
+}
+
+.super-over-history b {
+  color: #fde68a;
+  font-size: 11px;
+}
+
+.super-over-history span {
+  color: #cbd5e1;
+  font-size: 11px;
+}
+
+@media (max-width: 700px) {
+  .super-over-backdrop {
+    align-items: end;
+    padding: 7px;
+  }
+
+  .super-over-modal {
+    width: 100%;
+    max-height: 94dvh;
+    border-radius: 18px 18px 0 0;
+    padding: 14px;
+  }
+
+  .super-over-head h3 {
+    font-size: 20px;
+  }
+
+  .super-over-head p {
+    font-size: 13px;
+    line-height: 1.4;
+  }
+
+  .super-over-score-grid {
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+  }
+
+  .super-over-score-grid article {
+    min-height: 72px;
+  }
+
+  .super-over-score-grid span,
+  .super-over-score-grid small {
+    font-size: 11px;
+  }
+
+  .super-over-score-grid strong {
+    font-size: 19px;
+  }
+
+  .super-over-setup-grid {
+    grid-template-columns: 1fr;
+  }
+
+  .super-over-setup-grid label > span {
+    font-size: 13px;
+  }
+
+  .super-over-setup-grid select {
+    min-height: 52px;
+    font-size: 15px;
+  }
+
+  .super-over-primary {
+    width: 100%;
+    min-height: 50px;
+    font-size: 14px;
+  }
+
+  .super-over-players {
+    grid-template-columns: 1fr;
+  }
+
+  .super-over-players article {
+    min-height: 54px;
+  }
+
+  .super-over-players span {
+    font-size: 11px;
+  }
+
+  .super-over-players strong {
+    font-size: 15px;
+  }
+
+  .super-over-run-buttons {
+    grid-template-columns: repeat(3, minmax(0, 1fr));
+  }
+
+  .super-over-run-buttons button {
+    min-height: 50px;
+    font-size: 15px;
+  }
+
+  .super-over-secondary-actions button {
+    min-height: 48px;
+    font-size: 14px;
+  }
+
+  .super-over-start-card button,
+  .super-over-tied-card button,
+  .super-over-winner-card button {
+    width: 100%;
+    min-height: 50px;
+    font-size: 14px;
+  }
+
+  .completed-super-over-round {
+    grid-template-columns: 1fr;
+  }
+}
+/* Append this block to the VERY BOTTOM of src/app/globals.css */
+
+.scorer-tie-super-over-panel {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 16px;
+  width: 100%;
+  margin-top: 12px;
+  padding: 13px 15px;
+  border: 1px solid rgba(250, 204, 21, 0.42);
+  border-radius: 13px;
+  background: linear-gradient(
+    135deg,
+    rgba(113, 63, 18, 0.32),
+    rgba(66, 32, 6, 0.42)
+  );
+}
+
+.scorer-tie-super-over-panel > div {
+  min-width: 0;
+  display: grid;
+  gap: 3px;
+}
+
+.scorer-tie-super-over-panel span {
+  color: #facc15;
+  font-size: 11px;
+  font-weight: 950;
+  letter-spacing: 0.06em;
+}
+
+.scorer-tie-super-over-panel strong {
+  color: #fff7d6;
+  font-size: 18px;
+  line-height: 1.15;
+}
+
+.scorer-tie-super-over-panel small {
+  color: #cbd5e1;
+  font-size: 12px;
+  line-height: 1.35;
+}
+
+.scorer-start-super-over-btn {
+  flex: 0 0 auto;
+  min-width: 180px;
+  min-height: 50px !important;
+  border-color: rgba(250, 204, 21, 0.58) !important;
+  background: linear-gradient(
+    135deg,
+    #ca8a04,
+    #a16207
+  ) !important;
+  color: #fff !important;
+}
+
+.scorer-super-over-readonly {
+  flex: 0 0 auto;
+  padding: 8px 10px;
+  border-radius: 9px;
+  color: #fde68a !important;
+  background: rgba(113, 63, 18, 0.34);
+  font-size: 12px !important;
+  font-weight: 800 !important;
+  letter-spacing: normal !important;
+}
+
+@media (max-width: 700px) {
+  .scorer-tie-super-over-panel {
+    display: grid;
+    grid-template-columns: 1fr;
+    gap: 10px;
+    padding: 12px;
+  }
+
+  .scorer-tie-super-over-panel small {
+    font-size: 13px;
+  }
+
+  .scorer-start-super-over-btn {
+    width: 100%;
+    min-width: 0;
+    min-height: 52px !important;
+    font-size: 15px !important;
+  }
+}
+/* =========================================================
+   CRIC4ALL — SUPER OVER
+   Append this file to the VERY BOTTOM of src/app/globals.css
+   ========================================================= */
+
+.completed-super-over-btn,
+.mobile-completed-super-over-btn {
+  border-color: rgba(250, 204, 21, 0.42) !important;
+  background: linear-gradient(
+    145deg,
+    rgba(120, 53, 15, 0.42),
+    rgba(67, 34, 9, 0.64)
+  ) !important;
+}
+
+.completed-super-over-summary {
+  margin: 14px 0;
+  overflow: hidden;
+  border: 1px solid rgba(250, 204, 21, 0.24);
+  border-radius: 13px;
+  background: rgba(66, 32, 6, 0.16);
+}
+
+.completed-super-over-summary > summary {
+  min-height: 48px;
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  padding: 10px 13px;
+  list-style: none;
+  cursor: pointer;
+}
+
+.completed-super-over-summary > summary::-webkit-details-marker {
+  display: none;
+}
+
+.completed-super-over-summary > summary span {
+  color: #fde68a;
+  font-size: 12px;
+  font-weight: 900;
+}
+
+.completed-super-over-summary > summary strong {
+  margin-left: auto;
+  color: #f8fafc;
+  font-size: 12px;
+}
+
+.completed-super-over-rounds {
+  display: grid;
+  gap: 8px;
+  padding: 0 12px 12px;
+}
+
+.completed-super-over-round {
+  display: grid;
+  grid-template-columns: auto 1fr 1fr;
+  align-items: center;
+  gap: 10px;
+  padding: 9px 10px;
+  border-radius: 9px;
+  background: rgba(2, 8, 23, 0.34);
+}
+
+.completed-super-over-round b {
+  color: #fde68a;
+  font-size: 12px;
+}
+
+.completed-super-over-round span,
+.completed-super-over-round small {
+  color: #cbd5e1;
+  font-size: 11px;
+}
+
+.mobile-completed-super-over-btn {
+  width: 100%;
+  min-height: 48px;
+  margin: 10px 0;
+  border: 1px solid rgba(250, 204, 21, 0.44);
+  border-radius: 10px;
+  color: #fff7d6;
+  font-size: 14px;
+  font-weight: 900;
+}
+
+.mobile-super-over-result {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 10px;
+  margin: 10px 0;
+  padding: 10px 11px;
+  border: 1px solid rgba(250, 204, 21, 0.22);
+  border-radius: 10px;
+  background: rgba(66, 32, 6, 0.18);
+}
+
+.mobile-super-over-result span {
+  color: #fde68a;
+  font-size: 12px;
+  font-weight: 900;
+}
+
+.mobile-super-over-result strong {
+  color: #f8fafc;
+  font-size: 12px;
+  text-align: right;
+}
+
+.super-over-backdrop {
+  position: fixed;
+  inset: 0;
+  z-index: 11000;
+  display: grid;
+  place-items: center;
+  padding: 18px;
+  background: rgba(2, 8, 23, 0.82);
+  backdrop-filter: blur(8px);
+}
+
+.super-over-modal {
+  width: min(760px, 100%);
+  max-height: 92dvh;
+  overflow-y: auto;
+  border: 1px solid rgba(250, 204, 21, 0.26);
+  border-radius: 18px;
+  padding: 18px;
+  color: #f8fafc;
+  background:
+    radial-gradient(
+      circle at top right,
+      rgba(234, 179, 8, 0.10),
+      transparent 34%
+    ),
+    #071827;
+  box-shadow: 0 30px 90px rgba(0, 0, 0, 0.55);
+}
+
+.super-over-head {
+  display: flex;
+  align-items: flex-start;
+  justify-content: space-between;
+  gap: 14px;
+}
+
+.super-over-head > div > span {
+  color: #facc15;
+  font-size: 11px;
+  font-weight: 950;
+  letter-spacing: .08em;
+}
+
+.super-over-head h3 {
+  margin: 5px 0 0;
+  font-size: 24px;
+  line-height: 1.12;
+}
+
+.super-over-head p {
+  margin: 6px 0 0;
+  color: #94a3b8;
+  font-size: 12px;
+}
+
+.super-over-head > button {
+  width: 42px;
+  height: 42px;
+  flex: 0 0 42px;
+  border: 1px solid rgba(148, 163, 184, .3);
+  border-radius: 11px;
+  color: #fff;
+  background: rgba(15, 23, 42, .74);
+  font-size: 24px;
+  cursor: pointer;
+}
+
+.super-over-error {
+  margin-top: 12px;
+  padding: 10px 12px;
+  border: 1px solid rgba(248, 113, 113, .5);
+  border-radius: 10px;
+  color: #fecaca;
+  background: rgba(127, 29, 29, .28);
+  font-size: 12px;
+  line-height: 1.45;
+}
+
+.super-over-start-card,
+.super-over-tied-card,
+.super-over-winner-card {
+  display: grid;
+  gap: 8px;
+  margin-top: 16px;
+  padding: 16px;
+  border: 1px solid rgba(250, 204, 21, .26);
+  border-radius: 13px;
+  background: rgba(66, 32, 6, .18);
+}
+
+.super-over-start-card span,
+.super-over-tied-card span,
+.super-over-winner-card span {
+  color: #facc15;
+  font-size: 11px;
+  font-weight: 950;
+  letter-spacing: .06em;
+}
+
+.super-over-start-card strong,
+.super-over-tied-card strong,
+.super-over-winner-card strong {
+  font-size: 20px;
+}
+
+.super-over-start-card p,
+.super-over-tied-card p {
+  margin: 0;
+  color: #a7b5c6;
+  font-size: 12px;
+  line-height: 1.45;
+}
+
+.super-over-start-card button,
+.super-over-tied-card button,
+.super-over-winner-card button,
+.super-over-primary {
+  min-height: 46px;
+  justify-self: start;
+  border: 1px solid rgba(250, 204, 21, .48);
+  border-radius: 10px;
+  padding: 0 15px;
+  color: #fff9db;
+  background: rgba(161, 98, 7, .68);
+  font-size: 13px;
+  font-weight: 900;
+  cursor: pointer;
+}
+
+.super-over-score-grid {
+  display: grid;
+  grid-template-columns: repeat(4, minmax(0, 1fr));
+  gap: 8px;
+  margin-top: 16px;
+}
+
+.super-over-score-grid article {
+  min-width: 0;
+  display: grid;
+  gap: 3px;
+  padding: 10px;
+  border: 1px solid rgba(71, 85, 105, .42);
+  border-radius: 11px;
+  background: rgba(15, 23, 42, .64);
+}
+
+.super-over-score-grid span,
+.super-over-score-grid small {
+  overflow: hidden;
+  color: #94a3b8;
+  font-size: 10px;
+  white-space: nowrap;
+  text-overflow: ellipsis;
+}
+
+.super-over-score-grid strong {
+  font-size: 18px;
+}
+
+.super-over-setup,
+.super-over-live {
+  margin-top: 15px;
+  padding: 14px;
+  border: 1px solid rgba(71, 85, 105, .42);
+  border-radius: 13px;
+  background: rgba(15, 23, 42, .46);
+}
+
+.super-over-section-title {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  margin-bottom: 12px;
+}
+
+.super-over-section-title span {
+  color: #facc15;
+  font-size: 11px;
+  font-weight: 900;
+}
+
+.super-over-section-title strong {
+  font-size: 15px;
+}
+
+.super-over-setup-grid {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: 10px;
+}
+
+.super-over-setup-grid label {
+  display: grid;
+  gap: 6px;
+}
+
+.super-over-setup-grid label > span {
+  color: #cbd5e1;
+  font-size: 11px;
+  font-weight: 850;
+}
+
+.super-over-setup-grid select {
+  width: 100%;
+  min-height: 46px;
+  border: 1px solid rgba(100, 116, 139, .5);
+  border-radius: 10px;
+  padding: 0 38px 0 11px;
+  color: #fff;
+  background: #0b2034;
+  font-size: 14px;
+}
+
+.super-over-primary {
+  margin-top: 12px;
+}
+
+.super-over-live-head {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 12px;
+}
+
+.super-over-live-head > div {
+  display: grid;
+  gap: 3px;
+}
+
+.super-over-live-head small {
+  color: #94a3b8;
+  font-size: 10px;
+  font-weight: 900;
+}
+
+.super-over-live-head strong {
+  font-size: 18px;
+}
+
+.super-over-players {
+  display: grid;
+  grid-template-columns: repeat(3, minmax(0, 1fr));
+  gap: 8px;
+  margin-top: 12px;
+}
+
+.super-over-players article {
+  min-width: 0;
+  padding: 9px 10px;
+  border-radius: 10px;
+  background: rgba(2, 8, 23, .34);
+}
+
+.super-over-players span {
+  display: block;
+  color: #94a3b8;
+  font-size: 10px;
+}
+
+.super-over-players strong {
+  display: block;
+  margin-top: 3px;
+  overflow: hidden;
+  font-size: 13px;
+  white-space: nowrap;
+  text-overflow: ellipsis;
+}
+
+.super-over-chase {
+  margin-top: 10px;
+  padding: 9px 10px;
+  border-radius: 9px;
+  color: #fde68a;
+  background: rgba(113, 63, 18, .32);
+  font-size: 12px;
+  font-weight: 800;
+}
+
+.super-over-run-buttons {
+  display: grid;
+  grid-template-columns: repeat(9, minmax(0, 1fr));
+  gap: 7px;
+  margin-top: 12px;
+}
+
+.super-over-run-buttons button {
+  min-width: 0;
+  min-height: 46px;
+  border: 1px solid rgba(71, 85, 105, .5);
+  border-radius: 9px;
+  color: #f8fafc;
+  background: rgba(15, 23, 42, .82);
+  font-size: 13px;
+  font-weight: 900;
+  cursor: pointer;
+}
+
+.super-over-run-buttons button.wicket {
+  border-color: rgba(248, 113, 113, .5);
+  background: rgba(127, 29, 29, .4);
+}
+
+.super-over-secondary-actions {
+  display: flex;
+  justify-content: flex-end;
+  margin-top: 9px;
+}
+
+.super-over-secondary-actions button {
+  min-height: 40px;
+  border: 1px solid rgba(248, 113, 113, .4);
+  border-radius: 9px;
+  padding: 0 13px;
+  color: #fecaca;
+  background: rgba(127, 29, 29, .26);
+  font-size: 12px;
+  font-weight: 850;
+}
+
+.super-over-history {
+  margin-top: 14px;
+  border-top: 1px solid rgba(148, 163, 184, .16);
+  padding-top: 11px;
+}
+
+.super-over-history > summary {
+  cursor: pointer;
+  color: #94a3b8;
+  font-size: 12px;
+  font-weight: 800;
+}
+
+.super-over-history > div {
+  display: grid;
+  gap: 7px;
+  margin-top: 9px;
+}
+
+.super-over-history article {
+  display: grid;
+  grid-template-columns: auto 1fr 1fr;
+  gap: 8px;
+  padding: 8px 9px;
+  border-radius: 9px;
+  background: rgba(2, 8, 23, .34);
+}
+
+.super-over-history b {
+  color: #fde68a;
+  font-size: 11px;
+}
+
+.super-over-history span {
+  color: #cbd5e1;
+  font-size: 11px;
+}
+
+@media (max-width: 700px) {
+  .super-over-backdrop {
+    align-items: end;
+    padding: 7px;
+  }
+
+  .super-over-modal {
+    width: 100%;
+    max-height: 94dvh;
+    border-radius: 18px 18px 0 0;
+    padding: 14px;
+  }
+
+  .super-over-head h3 {
+    font-size: 20px;
+  }
+
+  .super-over-head p {
+    font-size: 13px;
+    line-height: 1.4;
+  }
+
+  .super-over-score-grid {
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+  }
+
+  .super-over-score-grid article {
+    min-height: 72px;
+  }
+
+  .super-over-score-grid span,
+  .super-over-score-grid small {
+    font-size: 11px;
+  }
+
+  .super-over-score-grid strong {
+    font-size: 19px;
+  }
+
+  .super-over-setup-grid {
+    grid-template-columns: 1fr;
+  }
+
+  .super-over-setup-grid label > span {
+    font-size: 13px;
+  }
+
+  .super-over-setup-grid select {
+    min-height: 52px;
+    font-size: 15px;
+  }
+
+  .super-over-primary {
+    width: 100%;
+    min-height: 50px;
+    font-size: 14px;
+  }
+
+  .super-over-players {
+    grid-template-columns: 1fr;
+  }
+
+  .super-over-players article {
+    min-height: 54px;
+  }
+
+  .super-over-players span {
+    font-size: 11px;
+  }
+
+  .super-over-players strong {
+    font-size: 15px;
+  }
+
+  .super-over-run-buttons {
+    grid-template-columns: repeat(3, minmax(0, 1fr));
+  }
+
+  .super-over-run-buttons button {
+    min-height: 50px;
+    font-size: 15px;
+  }
+
+  .super-over-secondary-actions button {
+    min-height: 48px;
+    font-size: 14px;
+  }
+
+  .super-over-start-card button,
+  .super-over-tied-card button,
+  .super-over-winner-card button {
+    width: 100%;
+    min-height: 50px;
+    font-size: 14px;
+  }
+
+  .completed-super-over-round {
+    grid-template-columns: 1fr;
+  }
+}
+
+
+/* =========================================================
+   SUPER OVER — LIVE SCORER TIE HANDOFF
+   The regulation scorer ends, but a tied match must visibly hand the scorer
+   into the Super Over workflow instead of looking fully finished.
+   ========================================================= */
+
+.scorer-tie-super-over-panel {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 16px;
+
+  width: 100%;
+  margin-top: 12px;
+  padding: 13px 15px;
+
+  border: 1px solid rgba(250, 204, 21, 0.42);
+  border-radius: 13px;
+
+  background:
+    linear-gradient(
+      135deg,
+      rgba(113, 63, 18, 0.32),
+      rgba(66, 32, 6, 0.42)
+    );
+}
+
+.scorer-tie-super-over-panel > div {
+  min-width: 0;
+  display: grid;
+  gap: 3px;
+}
+
+.scorer-tie-super-over-panel span {
+  color: #facc15;
+  font-size: 11px;
+  font-weight: 950;
+  letter-spacing: 0.06em;
+}
+
+.scorer-tie-super-over-panel strong {
+  color: #fff7d6;
+  font-size: 18px;
+  line-height: 1.15;
+}
+
+.scorer-tie-super-over-panel small {
+  color: #cbd5e1;
+  font-size: 12px;
+  line-height: 1.35;
+}
+
+.scorer-start-super-over-btn {
+  flex: 0 0 auto;
+  min-width: 180px;
+  min-height: 50px !important;
+
+  border-color: rgba(250, 204, 21, 0.58) !important;
+
+  background:
+    linear-gradient(
+      135deg,
+      #ca8a04,
+      #a16207
+    ) !important;
+
+  color: #fff !important;
+}
+
+.scorer-super-over-readonly {
+  flex: 0 0 auto;
+  padding: 8px 10px;
+
+  border-radius: 9px;
+
+  color: #fde68a !important;
+  background: rgba(113, 63, 18, 0.34);
+
+  font-size: 12px !important;
+  font-weight: 800 !important;
+  letter-spacing: normal !important;
+}
+
+@media (max-width: 700px) {
+  .scorer-tie-super-over-panel {
+    display: grid;
+    grid-template-columns: 1fr;
+
+    gap: 10px;
+
+    padding: 12px;
+  }
+
+  .scorer-tie-super-over-panel strong {
+    font-size: 18px;
+  }
+
+  .scorer-tie-super-over-panel small {
+    font-size: 13px;
+  }
+
+  .scorer-start-super-over-btn {
+    width: 100%;
+    min-width: 0;
+    min-height: 52px !important;
+
+    font-size: 15px !important;
+  }
+}

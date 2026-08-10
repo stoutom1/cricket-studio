@@ -17,6 +17,169 @@ import LeagueResourcesShortcut from "@/components/resources/LeagueResourcesShort
 import matchDayNavStyles from "./MatchDayDashboardNav.module.css";
 import playerCardStyles from "./DashboardPlayerCard.module.css";
 
+function SuperOverScorecard({ superOver }) {
+  if (!superOver?.exists) return null;
+
+  return (
+    <section
+      style={{
+        marginTop: 16,
+        padding: 16,
+        border: "1px solid rgba(245, 158, 11, 0.45)",
+        borderRadius: 14,
+        background: "rgba(120, 53, 15, 0.16)",
+      }}
+      aria-label="Super Over scorecard"
+    >
+      <div
+        style={{
+          display: "flex",
+          justifyContent: "space-between",
+          gap: 12,
+          flexWrap: "wrap",
+          alignItems: "center",
+        }}
+      >
+        <strong>⚡ Super Over</strong>
+        <span>
+          {superOver.resultText ||
+            (superOver.active
+              ? `Super Over ${superOver.round} in progress`
+              : "Tie-breaker")}
+        </span>
+      </div>
+
+      {(superOver.history || []).map((round) => (
+        <div
+          key={`scoreboard-super-over-${round.round}`}
+          style={{
+            marginTop: 14,
+            paddingTop: 14,
+            borderTop: "1px solid rgba(255,255,255,0.12)",
+          }}
+        >
+          <strong>Round {round.round}</strong>
+
+          {[round.first, round.second].map((innings, inningsIndex) => (
+            <details
+              key={`super-over-${round.round}-${inningsIndex + 1}`}
+              open
+              style={{
+                marginTop: 12,
+                border: "1px solid rgba(255,255,255,0.10)",
+                borderRadius: 12,
+                padding: 12,
+              }}
+            >
+              <summary style={{ cursor: "pointer", fontWeight: 700 }}>
+                {innings.teamName} — {innings.runs}/{innings.wickets} ({innings.overs} ov)
+              </summary>
+
+              <div style={{ marginTop: 12, overflowX: "auto" }}>
+                <strong>🏏 Batting</strong>
+                <table className="score-table" style={{ marginTop: 8, width: "100%" }}>
+                  <thead>
+                    <tr>
+                      <th>Batter</th>
+                      <th>R</th>
+                      <th>B</th>
+                      <th>4s</th>
+                      <th>6s</th>
+                      <th>SR</th>
+                      <th>Status</th>
+                    </tr>
+                  </thead>
+                  <tbody>
+                    {(innings.batting || []).map((batter) => (
+                      <tr key={`so-bat-${round.round}-${inningsIndex}-${batter.playerId}`}>
+                        <td>{batter.playerName}</td>
+                        <td>{batter.runs}</td>
+                        <td>{batter.balls}</td>
+                        <td>{batter.fours}</td>
+                        <td>{batter.sixes}</td>
+                        <td>{batter.strikeRate}</td>
+                        <td>{batter.dismissal}</td>
+                      </tr>
+                    ))}
+                  </tbody>
+                </table>
+              </div>
+
+              {(innings.bowling || []).length > 0 && (
+                <div style={{ marginTop: 14, overflowX: "auto" }}>
+                  <strong>🎯 Bowling</strong>
+                  <table className="score-table" style={{ marginTop: 8, width: "100%" }}>
+                    <thead>
+                      <tr>
+                        <th>Bowler</th>
+                        <th>O</th>
+                        <th>R</th>
+                        <th>W</th>
+                        <th>Econ</th>
+                      </tr>
+                    </thead>
+                    <tbody>
+                      {(innings.bowling || []).map((bowler) => (
+                        <tr key={`so-bowl-${round.round}-${inningsIndex}-${bowler.playerId}`}>
+                          <td>{bowler.playerName}</td>
+                          <td>{bowler.overs}</td>
+                          <td>{bowler.runs}</td>
+                          <td>{bowler.wickets}</td>
+                          <td>{bowler.economy}</td>
+                        </tr>
+                      ))}
+                    </tbody>
+                  </table>
+                </div>
+              )}
+
+              {(innings.commentary || []).length > 0 && (
+                <div style={{ marginTop: 14 }}>
+                  <strong>📝 Ball by ball</strong>
+                  <div
+                    style={{
+                      display: "flex",
+                      flexWrap: "wrap",
+                      gap: 8,
+                      marginTop: 8,
+                    }}
+                  >
+                    {innings.commentary.map((ball) => (
+                      <span
+                        key={`so-ball-${round.round}-${inningsIndex}-${ball.id}`}
+                        title={`${ball.over} ${ball.text} • ${ball.score}`}
+                        style={{
+                          display: "inline-flex",
+                          alignItems: "center",
+                          justifyContent: "center",
+                          minWidth: 34,
+                          minHeight: 34,
+                          padding: "4px 8px",
+                          borderRadius: 8,
+                          border: "1px solid rgba(255,255,255,0.14)",
+                          fontWeight: 700,
+                        }}
+                      >
+                        {ball.badge}
+                      </span>
+                    ))}
+                  </div>
+                </div>
+              )}
+            </details>
+          ))}
+
+          {round.resultText && (
+            <small style={{ display: "block", marginTop: 10 }}>
+              {round.resultText}
+            </small>
+          )}
+        </div>
+      ))}
+    </section>
+  );
+}
+
 function Card({
   title,
   children,
@@ -397,6 +560,17 @@ export default function DashboardClient() {
   const [dlsBusy, setDlsBusy] = useState(false);
   const [dlsError, setDlsError] = useState("");
   const [dlsState, setDlsState] = useState(null);
+  const [showSuperOverModal, setShowSuperOverModal] = useState(false);
+  const [superOverBusy, setSuperOverBusy] = useState(false);
+  const [superOverError, setSuperOverError] = useState("");
+  const [superOverState, setSuperOverState] = useState(null);
+  const [superOverMatch, setSuperOverMatch] = useState(null);
+  const [superOverSetup, setSuperOverSetup] = useState({
+    batter1Id: "",
+    batter2Id: "",
+    batter3Id: "",
+    bowlerId: "",
+  });
   const [dlsForm, setDlsForm] = useState({
     mode: "STANDARD",
     revisedOvers: "",
@@ -5798,6 +5972,354 @@ function openKitFromPostMatchPrompt() {
 }
 
 
+
+function getSuperOverTeam(
+  state,
+  teamId
+) {
+  if (!state?.teams) return null;
+
+  if (
+    Number(state.teams.teamA?.id) ===
+    Number(teamId)
+  ) {
+    return state.teams.teamA;
+  }
+
+  if (
+    Number(state.teams.teamB?.id) ===
+    Number(teamId)
+  ) {
+    return state.teams.teamB;
+  }
+
+  return null;
+}
+
+function superOverPlayerName(
+  state,
+  playerId
+) {
+  if (!playerId) return "—";
+
+  const players = [
+    ...(state?.teams?.teamA?.players || []),
+    ...(state?.teams?.teamB?.players || []),
+  ];
+
+  return (
+    players.find(
+      (player) =>
+        Number(player.id) ===
+        Number(playerId)
+    )?.name ||
+    "Player"
+  );
+}
+
+async function fetchSuperOverState(
+  matchId
+) {
+  return api(
+    `/api/matches/${matchId}/super-over`
+  );
+}
+
+async function openSuperOver(
+  matchOrId
+) {
+  const matchId =
+    Number(
+      typeof matchOrId === "object"
+        ? matchOrId?.id
+        : matchOrId
+    );
+
+  if (
+    !Number.isInteger(matchId) ||
+    matchId <= 0
+  ) {
+    setError(
+      "Unable to identify the tied match for Super Over."
+    );
+    return;
+  }
+
+  try {
+    setSuperOverBusy(true);
+    setSuperOverError("");
+
+    const state =
+      await fetchSuperOverState(
+        matchId
+      );
+
+    if (
+      !state.eligible &&
+      !state.exists
+    ) {
+      throw new Error(
+        "Super Over is available only after a tied match."
+      );
+    }
+
+    /*
+     * Match History passes its formatted match object.
+     * Scorer Mode only needs the match id, so build the small display object
+     * from the API response there. This keeps one modal/flow for both places.
+     */
+    setSuperOverMatch({
+      id: matchId,
+      teamAId:
+        state.teams?.teamA?.id ||
+        matchOrId?.teamAId,
+      teamBId:
+        state.teams?.teamB?.id ||
+        matchOrId?.teamBId,
+      teamAName:
+        state.teams?.teamA?.name ||
+        matchOrId?.teamAName ||
+        "Team A",
+      teamBName:
+        state.teams?.teamB?.name ||
+        matchOrId?.teamBName ||
+        "Team B",
+    });
+
+    setSuperOverState(state);
+
+    setSuperOverSetup({
+      batter1Id: "",
+      batter2Id: "",
+      batter3Id: "",
+      bowlerId: "",
+    });
+
+    setShowSuperOverModal(true);
+  } catch (err) {
+    const message =
+      err.message ||
+      "Unable to open Super Over.";
+
+    /*
+     * When opened from Scorer Mode, keep the error visible in the scorer.
+     * When opened from Match History, the existing global error area still
+     * receives the same message.
+     */
+    setSuperOverError(message);
+    setError(message);
+  } finally {
+    setSuperOverBusy(false);
+  }
+}
+
+async function startSuperOverRound() {
+  if (!superOverMatch?.id) return;
+
+  try {
+    setSuperOverBusy(true);
+    setSuperOverError("");
+
+    const result = await api(
+      `/api/matches/${superOverMatch.id}/super-over`,
+      {
+        method: "POST",
+        body: JSON.stringify({
+          action:
+            "START_ROUND",
+        }),
+      }
+    );
+
+    setSuperOverState(
+      result.state
+    );
+
+    setSuperOverSetup({
+      batter1Id: "",
+      batter2Id: "",
+      batter3Id: "",
+      bowlerId: "",
+    });
+
+    await loadMatches();
+  } catch (err) {
+    setSuperOverError(
+      err.message ||
+      "Unable to start Super Over."
+    );
+  } finally {
+    setSuperOverBusy(false);
+  }
+}
+
+async function setupSuperOverInnings() {
+  if (
+    !superOverMatch?.id ||
+    !superOverState?.currentSuperInnings
+  ) {
+    return;
+  }
+
+  try {
+    setSuperOverBusy(true);
+    setSuperOverError("");
+
+    const result = await api(
+      `/api/matches/${superOverMatch.id}/super-over`,
+      {
+        method: "POST",
+        body: JSON.stringify({
+          action: "SETUP",
+          superInnings:
+            superOverState.currentSuperInnings,
+          batter1Id:
+            Number(
+              superOverSetup.batter1Id
+            ),
+          batter2Id:
+            Number(
+              superOverSetup.batter2Id
+            ),
+          batter3Id:
+            superOverSetup.batter3Id
+              ? Number(
+                  superOverSetup.batter3Id
+                )
+              : null,
+          bowlerId:
+            Number(
+              superOverSetup.bowlerId
+            ),
+        }),
+      }
+    );
+
+    setSuperOverState(
+      result.state
+    );
+  } catch (err) {
+    setSuperOverError(
+      err.message ||
+      "Unable to set Super Over players."
+    );
+  } finally {
+    setSuperOverBusy(false);
+  }
+}
+
+async function scoreSuperOverBall({
+  runsOffBat = 0,
+  extras = 0,
+  extraType = "NONE",
+  isWicket = false,
+}) {
+  if (!superOverMatch?.id) return;
+
+  try {
+    setSuperOverBusy(true);
+    setSuperOverError("");
+
+    const result = await api(
+      `/api/matches/${superOverMatch.id}/super-over`,
+      {
+        method: "POST",
+        body: JSON.stringify({
+          action: "BALL",
+          runsOffBat,
+          extras,
+          extraType,
+          isWicket,
+        }),
+      }
+    );
+
+    setSuperOverState(
+      result.state
+    );
+
+    // Keep the main scorer/scoreboard in sync with MatchEvent-based
+    // Super Over state. This is essential because Match.status remains
+    // COMPLETED throughout the tie-breaker flow.
+    await loadSelectedMatch(superOverMatch.id, {
+      loadDetail: true,
+      loadStatsData: false,
+      syncBallForm: false,
+    });
+
+    if (result.state?.completed) {
+      setScorerMode(false);
+      setScorerDrawer(null);
+      setScoringSubTab("SCOREBOARD");
+    }
+
+    if (
+      result.state?.currentSuperInnings &&
+      (
+        (
+          result.state.currentSuperInnings === 2 &&
+          !result.state.second?.setup
+        ) ||
+        (
+          result.state.currentSuperInnings === 1 &&
+          !result.state.first?.setup
+        )
+      )
+    ) {
+      setSuperOverSetup({
+        batter1Id: "",
+        batter2Id: "",
+        batter3Id: "",
+        bowlerId: "",
+      });
+    }
+
+    if (
+      result.state?.completed ||
+      result.state?.tied
+    ) {
+      await loadMatches();
+    }
+  } catch (err) {
+    setSuperOverError(
+      err.message ||
+      "Unable to save Super Over delivery."
+    );
+  } finally {
+    setSuperOverBusy(false);
+  }
+}
+
+async function undoSuperOverBall() {
+  if (!superOverMatch?.id) return;
+
+  try {
+    setSuperOverBusy(true);
+    setSuperOverError("");
+
+    const result = await api(
+      `/api/matches/${superOverMatch.id}/super-over`,
+      {
+        method: "POST",
+        body: JSON.stringify({
+          action: "UNDO",
+        }),
+      }
+    );
+
+    setSuperOverState(
+      result.state
+    );
+  } catch (err) {
+    setSuperOverError(
+      err.message ||
+      "Unable to undo Super Over delivery."
+    );
+  } finally {
+    setSuperOverBusy(false);
+  }
+}
+
 async function openDlsModal() {
   if (!selectedMatchId || !scoreboard) return;
 
@@ -6562,6 +7084,15 @@ const editTeamB = useMemo(
 const displayScoreboard = optimisticScoreboard || scoreboard;
 
 const matchInsights = buildMatchInsights(displayScoreboard);
+const dashboardResultText =
+  displayScoreboard?.superOver?.completed
+    ? (displayScoreboard.superOver.resultText || "Match completed via Super Over")
+    : matchInsights?.resultText;
+
+const combinedCommentary = [
+  ...(scoreboard?.commentary || []),
+  ...(scoreboard?.superOver?.commentary || []),
+];
 
 const liveMatchCenter =
   buildLiveMatchCenter(displayScoreboard || scoreboard);
@@ -6648,9 +7179,37 @@ const selectedMatchStatus = String(selectedMatch?.status || "")
   .replace(/[\s-]+/g, "_")
   .toUpperCase();
 
+const selectedSuperOverState =
+  displayScoreboard?.superOver ||
+  scoreboard?.superOver ||
+  null;
+
+const selectedStatusText = String(
+  selectedSuperOverState?.resultText ||
+  displayScoreboard?.summary?.statusText ||
+  scoreboard?.summary?.statusText ||
+  selectedMatch?.statusText ||
+  ""
+).toLowerCase();
+
+const selectedRegulationTiePending =
+  selectedMatchStatus === "COMPLETED" &&
+  !selectedSuperOverState?.completed &&
+  (
+    selectedSuperOverState?.active ||
+    selectedSuperOverState?.tied ||
+    selectedStatusText.includes("tied") ||
+    selectedStatusText.includes("super over")
+  );
+
 const isSelectedMatchCompleted =
-  //selectedMatchStatus === "COMPLETED" ||
-  selectedMatchStatus === "COMPLETED_LOCKED";
+  selectedMatchStatus === "COMPLETED_LOCKED" ||
+  selectedMatchStatus === "COMPLETED_CORRECTED" ||
+  (
+    selectedMatchStatus === "COMPLETED" &&
+    !selectedRegulationTiePending
+  ) ||
+  Boolean(selectedSuperOverState?.completed);
 
 const effectiveScoringSubTab =
   isSelectedMatchCompleted && scoringSubTab === "ADVANCED"
@@ -8213,6 +8772,60 @@ const matchEnded =
     String(scoreboard?.match?.status || "").toUpperCase()
   );
 
+const regulationMatchTied = (() => {
+  const innings =
+    displayScoreboard?.innings ||
+    scoreboard?.innings ||
+    [];
+
+  const first =
+    innings?.[0];
+
+  const second =
+    innings?.[1];
+
+  const statusText =
+    String(
+      displayScoreboard?.summary?.statusText ||
+      scoreboard?.summary?.statusText ||
+      scoreboard?.match?.statusText ||
+      ""
+    )
+      .trim()
+      .toLowerCase();
+
+  const sameScore =
+    first &&
+    second &&
+    Number(first.runs) ===
+      Number(second.runs);
+
+  return Boolean(
+    matchEnded &&
+    (
+      sameScore ||
+      statusText.includes("match tied") ||
+      statusText === "tied" ||
+      statusText.includes(" tied")
+    )
+  );
+})();
+
+const scorerStatusText =
+  selectedSuperOverState?.completed
+    ? (selectedSuperOverState.resultText || "Match completed via Super Over")
+    : selectedSuperOverState?.active
+      ? `Super Over ${selectedSuperOverState.round || 1} in progress`
+      : selectedSuperOverState?.tied
+        ? `Super Over ${selectedSuperOverState.round || 1} tied — another Super Over required`
+        : regulationMatchTied
+          ? "Match tied — Super Over required"
+          : (
+              displayScoreboard?.summary?.statusText ||
+              scoreboard?.summary?.statusText ||
+              "Ready for next ball"
+            );
+
 const teamsInLeague =
   teams.filter(
     (t) => String(t.leagueId) === String(activeLeagueId)
@@ -9610,28 +10223,30 @@ onClick={() => {
     )}
 
 <div className="score-hub-tabs wow-main-tabs">
-  <button
-    type="button"
-    className={`wow-score-tab ${
-      effectiveScoringSubTab === "ADVANCED"
-        ? "active"
-        : ""
-    }`}
-    onClick={() => {
-      setScorerMode(false);
-      setScorerDrawer(null);
-      setScoringSubTab("ADVANCED");
-    }}
-    aria-label="Open Scoring"
-    title="Scoring"
-  >
-    <span className="wow-tab-icon">🎯</span>
+  {!isSelectedMatchCompleted && (
+    <button
+      type="button"
+      className={`wow-score-tab ${
+        effectiveScoringSubTab === "ADVANCED"
+          ? "active"
+          : ""
+      }`}
+      onClick={() => {
+        setScorerMode(false);
+        setScorerDrawer(null);
+        setScoringSubTab("ADVANCED");
+      }}
+      aria-label="Open Scoring"
+      title="Scoring"
+    >
+      <span className="wow-tab-icon">🎯</span>
 
-    <span className="wow-tab-copy">
-      <strong>Scoring</strong>
-      <small>Ball-by-ball scoring</small>
-    </span>
-  </button>
+      <span className="wow-tab-copy">
+        <strong>Scoring</strong>
+        <small>Ball-by-ball scoring</small>
+      </span>
+    </button>
+  )}
 
   <button
     type="button"
@@ -9702,10 +10317,10 @@ onClick={() => {
               </div>
       {matchInsights && (
         <div className="match-insights-card">
-          {matchInsights.resultText && (
+          {dashboardResultText && (
             <div className="insight-result">
               <span>🏆 Match Result</span>
-              <strong>{matchInsights.resultText}</strong>
+              <strong>{dashboardResultText}</strong>
             </div>
           )}
 
@@ -9882,6 +10497,8 @@ const playerRoleBadge = (row) => {
     );
   })}
 </div>
+
+<SuperOverScorecard superOver={scoreboard?.superOver} />
 
               {scoreboard.currentState &&
                 !(
@@ -10350,7 +10967,7 @@ const playerRoleBadge = (row) => {
   <Card title="🎙️ Commentary" defaultCollapsed={false}>
     {!scoreboard ? (
       <p className="muted">Select a match to view commentary.</p>
-    ) : !scoreboard.commentary?.length ? (
+    ) : !combinedCommentary.length ? (
       <div className="commentary-empty">
         📝 No commentary yet. Start scoring to build the live timeline.
       </div>
@@ -10358,10 +10975,10 @@ const playerRoleBadge = (row) => {
       <>
         {matchInsights && (
           <div className="match-insights-card">
-            {matchInsights.resultText && (
+            {dashboardResultText && (
               <div className="insight-result">
                 <span>🏆 Match Result</span>
-                <strong>{matchInsights.resultText}</strong>
+                <strong>{dashboardResultText}</strong>
               </div>
             )}
 
@@ -10399,7 +11016,7 @@ const playerRoleBadge = (row) => {
           </div>
         )}
         <div className="commentary-feed pretty-commentary">
-          {scoreboard.commentary.map((section, sectionIndex) => (
+          {combinedCommentary.map((section, sectionIndex) => (
 <details
   key={`innings-${section.inningsNo}-${sectionIndex}`}
   className="innings-wow-collapse"
@@ -10652,7 +11269,7 @@ const playerRoleBadge = (row) => {
           instantDeliveryStatus ||
           message ||
           overCompleteNotice ||
-          displayScoreboard?.summary?.statusText ||
+          scorerStatusText ||
           "Ready for next delivery"}
       </div>
 
@@ -11125,10 +11742,10 @@ const playerRoleBadge = (row) => {
       scorerMode ? "desktop-scorer-insights" : ""
     }`}
   >
-          {matchInsights.resultText && (
+          {dashboardResultText && (
             <div className="insight-result">
               <span>🏆 Match Result</span>
-              <strong>{matchInsights.resultText}</strong>
+              <strong>{dashboardResultText}</strong>
             </div>
           )}
 
@@ -11164,7 +11781,7 @@ const playerRoleBadge = (row) => {
           </div>
 
           <div className="scorer-hud-status">
-            {displayScoreboard?.summary?.statusText || "Ready for next ball"}
+            {scorerStatusText}
           </div>
         </div>
           {!matchEnded && scoreboard?.currentState && (
@@ -11456,9 +12073,57 @@ const playerRoleBadge = (row) => {
   </div>
 )}
     {(isMatchCompleted || isMatchLocked || isMatchCorrected) && (
-      <button type="submit" form="add-ball-form" className="btn scoring-btn scoring-btn-primary" disabled>
-        ✅ Match Ended
-      </button>
+      regulationMatchTied && !selectedSuperOverState?.completed ? (
+        <div className="scorer-tie-super-over-panel">
+          <div>
+            <span>
+              ⚡ MATCH TIED
+            </span>
+
+            <strong>
+              Super Over required
+            </strong>
+
+            <small>
+              Regulation scoring is complete. Start the tie-breaker now.
+            </small>
+          </div>
+
+          {permissions?.canScoreMatch ? (
+            <button
+              type="button"
+              className="btn scoring-btn scoring-btn-primary scorer-start-super-over-btn"
+              disabled={superOverBusy}
+              onClick={() =>
+                openSuperOver(
+                  selectedMatchId
+                )
+              }
+            >
+              {superOverBusy
+                ? "Opening…"
+                : selectedSuperOverState?.active
+                  ? "⚡ Continue Super Over"
+                  : selectedSuperOverState?.tied
+                    ? `⚡ Start Super Over ${Number(selectedSuperOverState.round || 1) + 1}`
+                    : "⚡ Start Super Over"}
+            </button>
+          ) : (
+            <span className="scorer-super-over-readonly">
+              Waiting for an authorized scorer
+            </span>
+          )}
+        </div>
+      ) : (
+        <button
+          type="submit"
+          form="add-ball-form"
+          className="btn scoring-btn scoring-btn-primary"
+          disabled
+        >
+          ✅ Match Ended
+        </button>
+      )
     )}
 
     {isMatchAbandoned && (
@@ -12136,6 +12801,622 @@ const playerRoleBadge = (row) => {
 )}</Card>
     </div>    
 )}
+
+
+{showSuperOverModal &&
+  superOverMatch &&
+  superOverState &&
+  typeof document !== "undefined" &&
+  createPortal(
+    <div
+      className="super-over-backdrop"
+      role="presentation"
+      onMouseDown={(event) => {
+        if (
+          event.currentTarget ===
+          event.target
+        ) {
+          setShowSuperOverModal(false);
+        }
+      }}
+    >
+      <section
+        className="super-over-modal"
+        role="dialog"
+        aria-modal="true"
+        aria-label="Super Over scorer"
+      >
+        <header className="super-over-head">
+          <div>
+            <span>
+              ⚡ SUPER OVER
+            </span>
+
+            <h3>
+              {superOverMatch.teamAName}
+              {" vs "}
+              {superOverMatch.teamBName}
+            </h3>
+
+            <p>
+              One over · two wickets · repeated until there is a winner
+            </p>
+          </div>
+
+          <button
+            type="button"
+            onClick={() =>
+              setShowSuperOverModal(false)
+            }
+            aria-label="Close Super Over"
+          >
+            ×
+          </button>
+        </header>
+
+        {superOverError && (
+          <div className="super-over-error">
+            {superOverError}
+          </div>
+        )}
+
+        {!superOverState.exists && (
+          <div className="super-over-start-card">
+            <span>
+              Main match tied
+            </span>
+
+            <strong>
+              Start the deciding Super Over
+            </strong>
+
+            <p>
+              The team that batted second in the match will bat first.
+              Super Over deliveries are kept separate from normal player
+              career statistics.
+            </p>
+
+            <button
+              type="button"
+              disabled={superOverBusy}
+              onClick={
+                startSuperOverRound
+              }
+            >
+              ⚡ Start Super Over
+            </button>
+          </div>
+        )}
+
+        {superOverState.exists && (
+          <>
+            <div className="super-over-score-grid">
+              <article>
+                <span>
+                  Super Over
+                </span>
+                <strong>
+                  #{superOverState.round}
+                </strong>
+              </article>
+
+              <article>
+                <span>
+                  {
+                    getSuperOverTeam(
+                      superOverState,
+                      superOverState.firstBattingTeamId
+                    )?.name ||
+                    "Team 1"
+                  }
+                </span>
+                <strong>
+                  {superOverState.first?.runs || 0}/
+                  {superOverState.first?.wickets || 0}
+                </strong>
+                <small>
+                  {superOverState.first?.overs || "0.0"} ov
+                </small>
+              </article>
+
+              <article>
+                <span>
+                  {
+                    getSuperOverTeam(
+                      superOverState,
+                      superOverState.secondBattingTeamId
+                    )?.name ||
+                    "Team 2"
+                  }
+                </span>
+                <strong>
+                  {superOverState.second?.runs || 0}/
+                  {superOverState.second?.wickets || 0}
+                </strong>
+                <small>
+                  {superOverState.second?.overs || "0.0"} ov
+                </small>
+              </article>
+
+              {superOverState.target && (
+                <article>
+                  <span>
+                    Target
+                  </span>
+                  <strong>
+                    {superOverState.target}
+                  </strong>
+                </article>
+              )}
+            </div>
+
+            {superOverState.active &&
+              superOverState.currentSuperInnings > 0 &&
+              (() => {
+                const superInnings =
+                  Number(
+                    superOverState.currentSuperInnings
+                  );
+
+                const innings =
+                  superInnings === 1
+                    ? superOverState.first
+                    : superOverState.second;
+
+                const battingTeamId =
+                  superInnings === 1
+                    ? superOverState.firstBattingTeamId
+                    : superOverState.secondBattingTeamId;
+
+                const bowlingTeamId =
+                  superInnings === 1
+                    ? superOverState.secondBattingTeamId
+                    : superOverState.firstBattingTeamId;
+
+                const battingTeam =
+                  getSuperOverTeam(
+                    superOverState,
+                    battingTeamId
+                  );
+
+                const bowlingTeam =
+                  getSuperOverTeam(
+                    superOverState,
+                    bowlingTeamId
+                  );
+
+                if (!innings?.setup) {
+                  return (
+                    <div className="super-over-setup">
+                      <div className="super-over-section-title">
+                        <span>
+                          Innings {superInnings}
+                        </span>
+
+                        <strong>
+                          {battingTeam?.name || "Batting team"} batting
+                        </strong>
+                      </div>
+
+                      <div className="super-over-setup-grid">
+                        <label>
+                          <span>
+                            Striker
+                          </span>
+
+                          <select
+                            value={
+                              superOverSetup.batter1Id
+                            }
+                            onChange={(event) =>
+                              setSuperOverSetup((prev) => ({
+                                ...prev,
+                                batter1Id:
+                                  event.target.value,
+                              }))
+                            }
+                          >
+                            <option value="">
+                              Select striker
+                            </option>
+
+                            {(battingTeam?.players || []).map(
+                              (player) => (
+                                <option
+                                  key={player.id}
+                                  value={player.id}
+                                >
+                                  {player.name}
+                                </option>
+                              )
+                            )}
+                          </select>
+                        </label>
+
+                        <label>
+                          <span>
+                            Non-striker
+                          </span>
+
+                          <select
+                            value={
+                              superOverSetup.batter2Id
+                            }
+                            onChange={(event) =>
+                              setSuperOverSetup((prev) => ({
+                                ...prev,
+                                batter2Id:
+                                  event.target.value,
+                              }))
+                            }
+                          >
+                            <option value="">
+                              Select non-striker
+                            </option>
+
+                            {(battingTeam?.players || []).map(
+                              (player) => (
+                                <option
+                                  key={player.id}
+                                  value={player.id}
+                                >
+                                  {player.name}
+                                </option>
+                              )
+                            )}
+                          </select>
+                        </label>
+
+                        <label>
+                          <span>
+                            Third batter
+                          </span>
+
+                          <select
+                            value={
+                              superOverSetup.batter3Id
+                            }
+                            onChange={(event) =>
+                              setSuperOverSetup((prev) => ({
+                                ...prev,
+                                batter3Id:
+                                  event.target.value,
+                              }))
+                            }
+                          >
+                            <option value="">
+                              Optional
+                            </option>
+
+                            {(battingTeam?.players || []).map(
+                              (player) => (
+                                <option
+                                  key={player.id}
+                                  value={player.id}
+                                >
+                                  {player.name}
+                                </option>
+                              )
+                            )}
+                          </select>
+                        </label>
+
+                        <label>
+                          <span>
+                            Bowler
+                          </span>
+
+                          <select
+                            value={
+                              superOverSetup.bowlerId
+                            }
+                            onChange={(event) =>
+                              setSuperOverSetup((prev) => ({
+                                ...prev,
+                                bowlerId:
+                                  event.target.value,
+                              }))
+                            }
+                          >
+                            <option value="">
+                              Select bowler
+                            </option>
+
+                            {(bowlingTeam?.players || []).map(
+                              (player) => (
+                                <option
+                                  key={player.id}
+                                  value={player.id}
+                                >
+                                  {player.name}
+                                </option>
+                              )
+                            )}
+                          </select>
+                        </label>
+                      </div>
+
+                      <button
+                        type="button"
+                        className="super-over-primary"
+                        disabled={superOverBusy}
+                        onClick={
+                          setupSuperOverInnings
+                        }
+                      >
+                        Continue to scoring
+                      </button>
+                    </div>
+                  );
+                }
+
+                return (
+                  <div className="super-over-live">
+                    <div className="super-over-live-head">
+                      <div>
+                        <small>
+                          BATTING
+                        </small>
+
+                        <strong>
+                          {battingTeam?.name}
+                        </strong>
+                      </div>
+
+                      <div>
+                        <small>
+                          SCORE
+                        </small>
+
+                        <strong>
+                          {innings.runs}/{innings.wickets}
+                          {" · "}
+                          {innings.overs}
+                        </strong>
+                      </div>
+                    </div>
+
+                    <div className="super-over-players">
+                      <article>
+                        <span>
+                          ⚡ Striker
+                        </span>
+                        <strong>
+                          {superOverPlayerName(
+                            superOverState,
+                            innings.strikerId
+                          )}
+                        </strong>
+                      </article>
+
+                      <article>
+                        <span>
+                          Non-striker
+                        </span>
+                        <strong>
+                          {superOverPlayerName(
+                            superOverState,
+                            innings.nonStrikerId
+                          )}
+                        </strong>
+                      </article>
+
+                      <article>
+                        <span>
+                          🎯 Bowler
+                        </span>
+                        <strong>
+                          {superOverPlayerName(
+                            superOverState,
+                            innings.bowlerId
+                          )}
+                        </strong>
+                      </article>
+                    </div>
+
+                    {superInnings === 2 &&
+                      superOverState.target && (
+                        <div className="super-over-chase">
+                          Need{" "}
+                          {Math.max(
+                            Number(superOverState.target) -
+                            Number(innings.runs || 0),
+                            0
+                          )}
+                          {" run(s) from "}
+                          {Math.max(
+                            6 -
+                            Number(innings.legalBalls || 0),
+                            0
+                          )}
+                          {" legal ball(s)"}
+                        </div>
+                      )}
+
+                    <div className="super-over-run-buttons">
+                      {[0, 1, 2, 3, 4, 6].map(
+                        (runs) => (
+                          <button
+                            key={`so-run-${runs}`}
+                            type="button"
+                            disabled={superOverBusy}
+                            onClick={() =>
+                              scoreSuperOverBall({
+                                runsOffBat: runs,
+                              })
+                            }
+                          >
+                            {runs}
+                          </button>
+                        )
+                      )}
+
+                      <button
+                        type="button"
+                        disabled={superOverBusy}
+                        onClick={() =>
+                          scoreSuperOverBall({
+                            extras: 1,
+                            extraType: "WIDE",
+                          })
+                        }
+                      >
+                        Wd
+                      </button>
+
+                      <button
+                        type="button"
+                        disabled={superOverBusy}
+                        onClick={() =>
+                          scoreSuperOverBall({
+                            extras: 1,
+                            extraType: "NOBALL",
+                          })
+                        }
+                      >
+                        Nb
+                      </button>
+
+                      <button
+                        type="button"
+                        className="wicket"
+                        disabled={superOverBusy}
+                        onClick={() =>
+                          scoreSuperOverBall({
+                            isWicket: true,
+                          })
+                        }
+                      >
+                        Wkt
+                      </button>
+                    </div>
+
+                    <div className="super-over-secondary-actions">
+                      <button
+                        type="button"
+                        disabled={
+                          superOverBusy ||
+                          !innings.balls?.length
+                        }
+                        onClick={
+                          undoSuperOverBall
+                        }
+                      >
+                        ↶ Undo
+                      </button>
+                    </div>
+                  </div>
+                );
+              })()}
+
+            {superOverState.tied && (
+              <div className="super-over-tied-card">
+                <span>
+                  Super Over {superOverState.round} tied
+                </span>
+
+                <strong>
+                  Another Super Over is required
+                </strong>
+
+                <p>
+                  The side that batted second in the previous Super Over
+                  will bat first in the next one.
+                </p>
+
+                <button
+                  type="button"
+                  disabled={superOverBusy}
+                  onClick={
+                    startSuperOverRound
+                  }
+                >
+                  ⚡ Start Super Over{" "}
+                  {Number(superOverState.round) + 1}
+                </button>
+              </div>
+            )}
+
+            {superOverState.completed && (
+              <div className="super-over-winner-card">
+                <span>
+                  🏆 RESULT
+                </span>
+
+                <strong>
+                  {superOverState.resultText ||
+                  "Super Over completed"}
+                </strong>
+
+                <button
+                  type="button"
+                  onClick={async () => {
+                    setShowSuperOverModal(false);
+                    await loadMatches();
+                  }}
+                >
+                  Done
+                </button>
+              </div>
+            )}
+
+            {(superOverState.history || []).length > 0 && (
+              <details className="super-over-history">
+                <summary>
+                  Super Over history
+                </summary>
+
+                <div>
+                  {(superOverState.history || []).map(
+                    (round) => {
+                      const firstName =
+                        getSuperOverTeam(
+                          superOverState,
+                          round.firstBattingTeamId
+                        )?.name ||
+                        "Team";
+
+                      const secondName =
+                        getSuperOverTeam(
+                          superOverState,
+                          round.secondBattingTeamId
+                        )?.name ||
+                        "Team";
+
+                      return (
+                        <article
+                          key={`so-history-${round.round}`}
+                        >
+                          <strong>
+                            Round {round.round}
+                          </strong>
+
+                          <span>
+                            {firstName}:{" "}
+                            {round.first.runs}/
+                            {round.first.wickets} (
+                            {round.first.overs})
+                          </span>
+
+                          <span>
+                            {secondName}:{" "}
+                            {round.second.runs}/
+                            {round.second.wickets} (
+                            {round.second.overs})
+                          </span>
+                        </article>
+                      );
+                    }
+                  )}
+                </div>
+              </details>
+            )}
+          </>
+        )}
+      </section>
+    </div>,
+    document.body
+  )}
 
 {showDlsModal && scoreboard && (
   <div
@@ -13778,6 +15059,17 @@ const playerRoleBadge = (row) => {
               .toUpperCase()
               .includes("DUCKWORTH");
 
+          const hasSuperOver =
+            Boolean(
+              match?.superOver?.exists
+            );
+
+          const canOpenSuperOver =
+            Boolean(
+              match?.mainMatchTied ||
+              hasSuperOver
+            );
+
           const firstTeamName =
             match.battingFirstTeamName ||
             match.firstInningsTeamName ||
@@ -13846,6 +15138,25 @@ const playerRoleBadge = (row) => {
 
           const renderDesktopActions = () => (
             <div className="completed-actions-bar">
+              {permissions?.canScoreMatch &&
+                canOpenSuperOver && (
+                  <button
+                    type="button"
+                    className="completed-action-btn completed-super-over-btn"
+                    disabled={superOverBusy}
+                    onClick={() =>
+                      openSuperOver(match)
+                    }
+                  >
+                    <span>⚡</span>
+                    <b>
+                      {hasSuperOver
+                        ? "Super Over"
+                        : "Start Super Over"}
+                    </b>
+                  </button>
+                )}
+
               <button
                 type="button"
                 className="completed-action-btn"
@@ -14128,6 +15439,74 @@ const playerRoleBadge = (row) => {
                     </div>
                   </div>
 
+                  {match?.superOver?.exists && (
+                    <details className="completed-super-over-summary">
+                      <summary>
+                        <span>
+                          ⚡ Super Over
+                        </span>
+
+                        <strong>
+                          {match.superOver.completed
+                            ? match.superOver.resultText ||
+                              "Completed"
+                            : match.superOver.tied
+                              ? `Round ${match.superOver.round} tied`
+                              : `Round ${match.superOver.round} in progress`}
+                        </strong>
+                      </summary>
+
+                      <div className="completed-super-over-rounds">
+                        {(match.superOver.history || []).map(
+                          (round) => {
+                            const roundFirstTeam =
+                              Number(round.firstBattingTeamId) ===
+                              Number(match.teamAId)
+                                ? match.teamAName
+                                : match.teamBName;
+
+                            const roundSecondTeam =
+                              Number(round.secondBattingTeamId) ===
+                              Number(match.teamAId)
+                                ? match.teamAName
+                                : match.teamBName;
+
+                            return (
+                              <div
+                                key={`so-${match.id}-${round.round}`}
+                                className="completed-super-over-round"
+                              >
+                                <b>
+                                  Super Over {round.round}
+                                </b>
+
+                                <span>
+                                  {roundFirstTeam}:{" "}
+                                  {round.firstRuns}/
+                                  {round.firstWickets} (
+                                  {round.firstOvers})
+                                </span>
+
+                                <span>
+                                  {roundSecondTeam}:{" "}
+                                  {round.secondRuns}/
+                                  {round.secondWickets} (
+                                  {round.secondOvers})
+                                </span>
+
+                                {round.resultText && (
+                                  <small>
+                                    {round.resultText}
+                                  </small>
+                                )}
+                              </div>
+                            );
+                          }
+                        )}
+                      </div>
+                    </details>
+                  )}
+
                   {renderDesktopActions()}
                   {renderDesktopSetup()}
                 </div>
@@ -14220,6 +15599,40 @@ const playerRoleBadge = (row) => {
                         "Result unavailable"}
                     </strong>
                   </div>
+
+                  {permissions?.canScoreMatch &&
+                    canOpenSuperOver && (
+                      <button
+                        type="button"
+                        className="mobile-completed-super-over-btn"
+                        disabled={superOverBusy}
+                        onClick={() =>
+                          openSuperOver(match)
+                        }
+                      >
+                        ⚡{" "}
+                        {hasSuperOver
+                          ? "Super Over"
+                          : "Start Super Over"}
+                      </button>
+                    )}
+
+                  {match?.superOver?.exists && (
+                    <div className="mobile-super-over-result">
+                      <span>
+                        ⚡ Super Over
+                      </span>
+
+                      <strong>
+                        {match.superOver.completed
+                          ? match.superOver.resultText ||
+                            "Completed"
+                          : match.superOver.tied
+                            ? `Round ${match.superOver.round} tied`
+                            : `Round ${match.superOver.round} in progress`}
+                      </strong>
+                    </div>
+                  )}
 
                   <div className="mobile-completed-primary-actions">
                     <button

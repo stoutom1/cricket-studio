@@ -6,6 +6,7 @@ import {
   summarizeInningsDetailed,
   buildMatchStats
 } from "@/lib/scoring";
+import { buildSuperOverView } from "@/lib/super-over-view";
 
 function normalizeBattingStatsForRetiredHurt(battingStats, balls) {
   const retiredHurtIds = new Set();
@@ -96,6 +97,8 @@ const numericMatchId = Number(matchIdParam);
       { status: 404 }
     );
   }
+
+  const superOver = buildSuperOverView(match);
 
   const playerMap = new Map();
 
@@ -272,6 +275,14 @@ const currentInningsBalls = match.balls.filter(
         match.status = "LIVE";
       }
 
+      if (superOver.completed) {
+        statusText = superOver.resultText || match.statusText || "Match completed via Super Over";
+      } else if (superOver.active) {
+        statusText = `Super Over ${superOver.round} in progress`;
+      } else if (superOver.tied) {
+        statusText = `Super Over ${superOver.round} tied — another Super Over required`;
+      }
+
 return NextResponse.json({
   match: {
     id: match.id,
@@ -282,13 +293,24 @@ return NextResponse.json({
     oversPerInnings: match.oversPerInnings,
     powerplayOversInnings: match.powerplayOversInnings,
     status: match.status,
+    statusText: superOver.completed
+      ? (superOver.resultText || match.statusText || statusText)
+      : statusText,
+    resultText: superOver.completed
+      ? (superOver.resultText || match.statusText || statusText)
+      : null,
   },
 
   summary: {
-    target,
-    remainingBalls,
-    statusText
+    target: superOver.exists ? null : target,
+    remainingBalls: superOver.exists ? null : remainingBalls,
+    statusText,
+    resultText: superOver.completed
+      ? (superOver.resultText || match.statusText || statusText)
+      : null
   },
+
+  superOver,
 
   innings: inningsData,
 

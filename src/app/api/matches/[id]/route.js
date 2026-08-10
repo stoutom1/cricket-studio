@@ -56,6 +56,12 @@ export async function GET(request, { params }) {
       { id: "asc" }
     ],
   },
+
+  events: {
+    orderBy: {
+      id: "asc"
+    }
+  },
 }
   });
 
