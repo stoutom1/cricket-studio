@@ -471,7 +471,7 @@ if (!response.ok || !result.success) {
     ? "This browser does not support birthday push notifications. Birthday Management is still available."
     : showIosInstallHelp
       ? "Add Cric4All to your iPhone Home Screen to receive alerts. Birthday Management is still available."
-      : "League owners receive a day-before birthday reminder. On the birthday, the greeting is sent directly to the player."}
+      : "On the birthday, league owners receive a reminder they can forward to the players group, and the birthday player receives the personal greeting."}
 </p>
       </div>
     </div>
@@ -628,7 +628,7 @@ if (!response.ok || !result.success) {
         </strong>
 
         <small>
-          Receive owner day-before birthday reminders on this device
+          Receive owner birthday-day reminders on this device
         </small>
       </span>
 

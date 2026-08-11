@@ -13,8 +13,8 @@ import {
 } from "@/lib/sendBirthdayPush";
 
 import {
-  sendBirthdayOwnerSms,
-} from "@/lib/sendBirthdayOwnerSms";
+  sendBirthdayOwnerCommunication,
+} from "@/lib/sendBirthdayOwnerCommunication";
 
 import {
   sendTwilioWhatsAppBirthdayMessage,
@@ -1059,147 +1059,426 @@ function getUniqueOwnerRecipients(league) {
   return recipients;
 }
 
-async function sendDayBeforeOwnerSmsSummaries({
+async function sendBirthdayTodayOwnerSmsSummaries({
   birthdays,
   preference,
   birthdayYear,
   birthdayDate,
 }) {
-  if (!Array.isArray(birthdays) || birthdays.length === 0) {
+  if (
+    !Array.isArray(birthdays) ||
+    birthdays.length === 0
+  ) {
     return [];
   }
 
-  const league = birthdays[0]?.league;
+  const league =
+    birthdays[0]?.league;
 
-  if (league?.whatsappNotificationsEnabled !== true) {
+  if (
+    league?.whatsappNotificationsEnabled !==
+    true
+  ) {
     return [
       {
         skipped: true,
-        reason: "OWNER_REMINDERS_DISABLED",
+        reason:
+          "OWNER_REMINDERS_DISABLED",
       },
     ];
   }
 
-  const recipients = getUniqueOwnerRecipients(league);
+  const recipients =
+    getUniqueOwnerRecipients(
+      league
+    );
 
-  if (recipients.length === 0) {
+  if (
+    recipients.length === 0
+  ) {
     return [
       {
         skipped: true,
-        reason: "OWNER_RECIPIENTS_MISSING",
+        reason:
+          "OWNER_RECIPIENTS_MISSING",
       },
     ];
   }
 
-  const firstBirthday = birthdays[0];
   const results = [];
 
-  for (const recipient of recipients) {
-    const uniqueWhere = {
-      birthdayId_recipientUserId_birthdayYear_reminderType: {
-        birthdayId: firstBirthday.id,
-        recipientUserId: recipient.userId,
-        birthdayYear,
-        reminderType: "OWNER_SMS",
-      },
-    };
+  /*
+   * One forward-ready birthday message per birthday player,
+   * per unique Primary/Backup Owner.
+   *
+   * WhatsApp is always attempted first.
+   * SMS is the automatic fallback.
+   */
+  for (
+    const birthday of birthdays
+  ) {
+    for (
+      const recipient of recipients
+    ) {
+      /*
+       * Use the existing WHATSAPP enum value for the new owner
+       * WhatsApp-first communication.
+       *
+       * This deliberately does NOT reuse the old OWNER_SMS reminder
+       * key, so historical owner SMS logs cannot suppress today's
+       * new WhatsApp-first message.
+       */
+      const uniqueWhere = {
+        birthdayId_recipientUserId_birthdayYear_reminderType:
+          {
+            birthdayId:
+              birthday.id,
 
-    const existing = await prisma.birthdayReminderLog.findUnique({
-      where: uniqueWhere,
-      select: { id: true, status: true },
-    });
+            recipientUserId:
+              recipient.userId,
 
-    if (shouldSkipExistingLog(existing)) {
-      results.push({
-        skipped: true,
-        reason: "OWNER_SMS_ALREADY_PROCESSED",
-        recipientLabel: recipient.label,
-      });
-      continue;
-    }
+            birthdayYear,
 
-    const notificationBody =
-      birthdays.length === 1
-        ? `${getBirthdayPlayerName(firstBirthday)} has a birthday tomorrow in ${league?.name || "this league"}.`
-        : `${birthdays.length} players have birthdays tomorrow in ${league?.name || "this league"}.`;
+            reminderType:
+              "WHATSAPP",
+          },
+      };
 
-    const log = await prisma.birthdayReminderLog.upsert({
-      where: uniqueWhere,
-      create: {
-        birthdayId: firstBirthday.id,
-        leagueId: preference.leagueId,
-        recipientUserId: recipient.userId,
-        birthdayYear,
-        reminderType: "OWNER_SMS",
-        status: "PENDING",
-        recipientPhone: recipient.phone,
-        notificationTitle: "Cric4All birthday reminder",
-        notificationBody,
-      },
-      update: {
-        status: "PENDING",
-        recipientPhone: recipient.phone,
-        notificationTitle: "Cric4All birthday reminder",
-        notificationBody,
-        providerMessageId: null,
-        providerStatus: null,
-        errorMessage: null,
-        sentAt: null,
-      },
-    });
+      const existing =
+        await prisma
+          .birthdayReminderLog
+          .findUnique({
+            where:
+              uniqueWhere,
 
-    try {
-      const result = await sendBirthdayOwnerSms({
-        ownerPhone: recipient.phone,
-        birthdays: birthdays.map((birthday) => ({
-          birthdayId: birthday.id,
-          leagueId: birthday.leagueId,
-          leagueName: birthday.league?.name || "Cric4All League",
-          playerName: getBirthdayPlayerName(birthday),
-        })),
-        date: birthdayDate,
-      });
+            select: {
+              id: true,
+              status: true,
+              fallbackSmsMessageId:
+                true,
+            },
+          });
 
-      await prisma.birthdayReminderLog.update({
-        where: { id: log.id },
-        data: {
-          status: "SENT",
-          sentAt: new Date(),
-          providerMessageId: result.messageId,
-          providerStatus: result.status || "queued",
-          errorMessage: null,
-        },
-      });
+      if (
+        shouldSkipExistingLog(
+          existing
+        )
+      ) {
+        results.push({
+          skipped: true,
+          reason:
+            "OWNER_BIRTHDAY_ALREADY_PROCESSED",
+          recipientLabel:
+            recipient.label,
+          birthdayId:
+            birthday.id,
+        });
 
-      results.push({
-        sent: true,
-        recipientLabel: recipient.label,
-        messageId: result.messageId,
-      });
-    } catch (error) {
-      const errorMessage = getErrorMessage(error);
+        continue;
+      }
 
-      await prisma.birthdayReminderLog.update({
-        where: { id: log.id },
-        data: {
-          status: "FAILED",
-          providerStatus: "failed",
-          errorMessage,
-        },
-      });
+      const playerName =
+        getBirthdayPlayerName(
+          birthday
+        );
 
-      console.error("[BIRTHDAY_OWNER_SMS_FAILED]", {
-        leagueId: preference.leagueId,
-        recipientLabel: recipient.label,
-        recipientUserId: recipient.userId,
-        error: errorMessage,
-      });
+      const leagueName =
+        birthday.league?.name ||
+        league?.name ||
+        "Cric4All League";
 
-      results.push({
-        sent: false,
-        recipientLabel: recipient.label,
-        reason: "SEND_FAILED",
-      });
+      const log =
+        await prisma
+          .birthdayReminderLog
+          .upsert({
+            where:
+              uniqueWhere,
+
+            create: {
+              birthdayId:
+                birthday.id,
+
+              leagueId:
+                preference.leagueId,
+
+              recipientUserId:
+                recipient.userId,
+
+              birthdayYear,
+
+              reminderType:
+                "WHATSAPP",
+
+              status:
+                "PENDING",
+
+              recipientPhone:
+                recipient.phone,
+
+              notificationTitle:
+                `🎂 Birthday message for ${playerName}`,
+
+              notificationBody:
+                `Happy Birthday, ${playerName}!`,
+
+              fallbackSmsAllowed:
+                true,
+
+              fallbackSmsStatus:
+                null,
+
+              fallbackSmsMessageId:
+                null,
+
+              fallbackSmsError:
+                null,
+            },
+
+            update: {
+              status:
+                "PENDING",
+
+              recipientPhone:
+                recipient.phone,
+
+              notificationTitle:
+                `🎂 Birthday message for ${playerName}`,
+
+              notificationBody:
+                `Happy Birthday, ${playerName}!`,
+
+              providerMessageId:
+                null,
+
+              providerStatus:
+                null,
+
+              errorMessage:
+                null,
+
+              sentAt:
+                null,
+
+              callbackReceivedAt:
+                null,
+
+              lastCallbackAt:
+                null,
+
+              fallbackSmsAllowed:
+                true,
+
+              fallbackSmsStatus:
+                null,
+
+              fallbackSmsMessageId:
+                null,
+
+              fallbackSmsAttemptedAt:
+                null,
+
+              fallbackSmsQueuedAt:
+                null,
+
+              fallbackSmsError:
+                null,
+            },
+          });
+
+      try {
+        const result =
+          await sendBirthdayOwnerCommunication({
+            ownerPhone:
+              recipient.phone,
+
+            playerName,
+
+            leagueName,
+
+            birthdayId:
+              birthday.id,
+
+            leagueId:
+              preference.leagueId,
+
+            reminderLogId:
+              log.id,
+          });
+
+        if (
+          result.channel ===
+          "SMS"
+        ) {
+          /*
+           * WhatsApp was rejected immediately and SMS was
+           * accepted. Store the fallback result directly.
+           */
+          await prisma
+            .birthdayReminderLog
+            .update({
+              where: {
+                id:
+                  log.id,
+              },
+
+              data: {
+                status:
+                  "SENT",
+
+                sentAt:
+                  new Date(),
+
+                providerStatus:
+                  "WHATSAPP_IMMEDIATE_FAILURE",
+
+                errorMessage:
+                  result.whatsappError ||
+                  null,
+
+                fallbackSmsAttemptedAt:
+                  new Date(),
+
+                fallbackSmsQueuedAt:
+                  new Date(),
+
+                fallbackSmsStatus:
+                  result.status ||
+                  "ACCEPTED",
+
+                fallbackSmsMessageId:
+                  result.messageId,
+
+                fallbackSmsError:
+                  null,
+              },
+            });
+        } else {
+          /*
+           * WhatsApp was accepted by Twilio.
+           *
+           * Keep this PENDING until the callback reports a
+           * delivery outcome. If the callback has already
+           * triggered an SMS fallback, updateMany's condition
+           * prevents this response from overwriting it.
+           */
+          await prisma
+            .birthdayReminderLog
+            .updateMany({
+              where: {
+                id:
+                  log.id,
+
+                fallbackSmsMessageId:
+                  null,
+              },
+
+              data: {
+                status:
+                  "PENDING",
+
+                providerMessageId:
+                  result.messageId,
+
+                providerStatus:
+                  result.status ||
+                  "QUEUED",
+
+                errorMessage:
+                  null,
+
+                callbackExpectedAt:
+                  new Date(
+                    Date.now() +
+                    12 *
+                    60 *
+                    60 *
+                    1000
+                  ),
+              },
+            });
+        }
+
+        results.push({
+          sent: true,
+          recipientLabel:
+            recipient.label,
+          birthdayId:
+            birthday.id,
+          playerName,
+          messageId:
+            result.messageId,
+          channel:
+            result.channel,
+          fallbackUsed:
+            result.fallbackUsed,
+        });
+      } catch (error) {
+        const errorMessage =
+          getErrorMessage(
+            error
+          );
+
+        await prisma
+          .birthdayReminderLog
+          .update({
+            where: {
+              id:
+                log.id,
+            },
+
+            data: {
+              status:
+                "FAILED",
+
+              providerStatus:
+                "FAILED",
+
+              errorMessage,
+
+              fallbackSmsAttemptedAt:
+                new Date(),
+
+              fallbackSmsStatus:
+                "FAILED",
+
+              fallbackSmsError:
+                errorMessage,
+            },
+          });
+
+        console.error(
+          "[BIRTHDAY_OWNER_ALL_CHANNELS_FAILED]",
+          {
+            leagueId:
+              preference.leagueId,
+
+            birthdayId:
+              birthday.id,
+
+            playerName,
+
+            recipientLabel:
+              recipient.label,
+
+            recipientUserId:
+              recipient.userId,
+
+            error:
+              errorMessage,
+          }
+        );
+
+        results.push({
+          sent: false,
+          recipientLabel:
+            recipient.label,
+          birthdayId:
+            birthday.id,
+          playerName,
+          reason:
+            "WHATSAPP_AND_SMS_FAILED",
+        });
+      }
     }
   }
 
@@ -1428,7 +1707,9 @@ select: {
       id: true,
       name: true,
       ownerId: true,
+      backupOwnerId: true,
       ownerWhatsAppNumber: true,
+      backupOwnerWhatsAppNumber: true,
       whatsappNotificationsEnabled: true,
     },
   },
@@ -1480,14 +1761,58 @@ select: {
             ).toISODate();
 
           /*
-           * Current-day rule:
-           * do NOT send owner/admin reminders on the birthday itself.
-           * The birthday greeting is sent directly to the player below.
+           * CURRENT-DAY OWNER RULE
+           *
+           * Owners need the reminder on the actual birthday so they can
+           * immediately forward/share it with the players group.
+           *
+           * Send to:
+           *   1. Primary League Owner
+           *   2. Backup League Owner (when configured)
+           *
+           * Do not send any owner reminder the day before.
            */
+          if (await isBirthdayOwnerPreference(preference)) {
+            for (const birthday of todayBirthdays) {
+              const pushResult =
+                await createAndSendPushReminder({
+                  birthday,
+                  preference,
+                  reminderType: "BIRTHDAY_TODAY",
+                  birthdayYear: check.today.year,
+                });
+
+              if (pushResult.sent) {
+                pushSent += 1;
+              } else if (pushResult.skipped) {
+                pushSkipped += 1;
+              } else {
+                pushFailed += 1;
+              }
+            }
+
+            const ownerSmsResults =
+              await sendBirthdayTodayOwnerSmsSummaries({
+                birthdays: todayBirthdays,
+                preference,
+                birthdayYear: check.today.year,
+                birthdayDate,
+              });
+
+            for (const ownerSmsResult of ownerSmsResults) {
+              if (ownerSmsResult.sent) {
+                ownerSmsSent += 1;
+              } else if (ownerSmsResult.skipped) {
+                ownerSmsSkipped += 1;
+              } else {
+                ownerSmsFailed += 1;
+              }
+            }
+          }
 
           /*
-           * 3. Send a personal WhatsApp birthday
-           * greeting to each opted-in player.
+           * Send the personal birthday greeting directly to each
+           * opted-in birthday player on the actual birthday.
            */
           for (
             const birthday
@@ -1537,140 +1862,19 @@ select: {
       }
 
       /*
-       * Day-before rule:
-       * send reminders ONLY to the Primary League Owner and the
-       * configured Backup League Owner. Never send day-before
-       * reminders to the birthday player or other league members.
+       * DAY-BEFORE RULE
+       *
+       * Intentionally send NOTHING.
+       *
+       * Owner reminders now go out on the player's actual birthday,
+       * at the same scheduled cron run as the player's personal greeting.
+       * This lets the Primary/Backup Owner immediately forward the
+       * reminder to the players group.
+       *
+       * We keep notifyDayBefore in the preference model for backward
+       * compatibility, but this cron no longer sends day-before messages.
        */
-      if (
-        preference.notifyDayBefore &&
-        await isBirthdayOwnerPreference(preference)
-      ) {
-        const tomorrowBirthdays =
-          await prisma
-            .leagueBirthday
-            .findMany({
-              where: {
-                leagueId:
-                  preference.leagueId,
 
-                isActive:
-                  true,
-
-                ...birthdayWhereForDate(
-                  check.tomorrow.month,
-                  check.tomorrow.day,
-                  check.tomorrow.year
-                ),
-              },
-
-              select: {
-                id:
-                  true,
-
-                leagueId:
-                  true,
-
-                name:
-                  true,
-
-                birthMonth:
-                  true,
-
-                birthDay:
-                  true,
-
-                league: {
-                  select: {
-                    id: true,
-                    name: true,
-                    ownerId: true,
-                    backupOwnerId: true,
-                    ownerWhatsAppNumber: true,
-                    backupOwnerWhatsAppNumber: true,
-                    whatsappNotificationsEnabled: true,
-                  },
-                },
-
-                player: {
-                  select: {
-                    id:
-                      true,
-
-                    name:
-                      true,
-                  },
-                },
-              },
-
-              orderBy: {
-                name:
-                  "asc",
-              },
-            });
-
-        tomorrowBirthdaysFound +=
-          tomorrowBirthdays.length;
-
-        for (
-          const birthday
-          of tomorrowBirthdays
-        ) {
-          const pushResult =
-            await createAndSendPushReminder({
-              birthday,
-              preference,
-
-              reminderType:
-                "DAY_BEFORE",
-
-              birthdayYear:
-                check.tomorrow.year,
-            });
-
-          if (pushResult.sent) {
-            pushSent +=
-              1;
-          } else if (
-            pushResult.skipped
-          ) {
-            pushSkipped +=
-              1;
-          } else {
-            pushFailed +=
-              1;
-          }
-        }
-
-        if (tomorrowBirthdays.length > 0) {
-          const birthdayDate = DateTime.fromObject(
-            {
-              year: check.tomorrow.year,
-              month: check.tomorrow.month,
-              day: check.tomorrow.day,
-            },
-            { zone: preference.timeZone }
-          ).toISODate();
-
-          const ownerSmsResults =
-            await sendDayBeforeOwnerSmsSummaries({
-              birthdays: tomorrowBirthdays,
-              preference,
-              birthdayYear: check.tomorrow.year,
-              birthdayDate,
-            });
-
-          for (const ownerSmsResult of ownerSmsResults) {
-            if (ownerSmsResult.sent) {
-              ownerSmsSent += 1;
-            } else if (ownerSmsResult.skipped) {
-              ownerSmsSkipped += 1;
-            } else {
-              ownerSmsFailed += 1;
-            }
-          }
-        }
-      }
     }
 
     const cronCompletedAt =

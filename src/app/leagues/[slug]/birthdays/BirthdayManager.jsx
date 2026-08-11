@@ -1654,7 +1654,7 @@ async function runBirthdayAction(birthdayId, actionName, callback) {
 <BirthdayCollapsibleSection
   icon="💬"
   title="Automatic Birthday Messaging"
-  description="Owner reminders the day before; personal greeting to the player on the birthday"
+  description="Owner reminders and the player greeting are sent on the birthday"
   accent="whatsapp"
   className="league-whatsapp-settings-card"
   badge={
@@ -1678,7 +1678,7 @@ async function runBirthdayAction(birthdayId, actionName, callback) {
   </p>
 
   <p>
-    Day-before birthday reminders go to both configured owners.
+    Birthday-day reminders go to both configured owners so they can forward the message to the players group.
     On the actual birthday, the personal birthday greeting goes to the player only.
   </p>
 </div>
@@ -1813,7 +1813,7 @@ async function runBirthdayAction(birthdayId, actionName, callback) {
 
     <small>
       {whatsappNotificationsEnabled
-        ? "Owners receive day-before reminders and the birthday player receives the personal greeting on the actual birthday."
+        ? "On the birthday, both configured owners receive a reminder and the birthday player receives the personal greeting."
         : "Automatic birthday messaging is currently turned off."}
     </small>
   </span>

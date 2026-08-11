@@ -67,12 +67,14 @@ function getBirthdayWhatsAppStatusCallbackUrl({
 export function normalizeWhatsAppNumber(value) {
   const normalized = String(value || "")
     .trim()
-    .replace(/\s+/g, "")
-if (!normalized.startsWith("+")) {
+    .replace(/\s+/g, "");
+
+  if (!normalized.startsWith("+")) {
     throw new Error(
-        "Phone number must begin with '+'."
+      "Phone number must begin with '+'."
     );
-}
+  }
+
   if (
     !/^\+[1-9]\d{7,14}$/.test(normalized)
   ) {
@@ -84,37 +86,22 @@ if (!normalized.startsWith("+")) {
   return normalized;
 }
 
-export async function sendTwilioWhatsAppBirthdayMessage({
-  recipientPhone,
+function getBirthdayTemplateConfig({
   playerName,
   leagueName,
-  birthdayId,
-  leagueId,
 }) {
-  const messagingServiceSid =
-    process.env
-      .TWILIO_WHATSAPP_MESSAGING_SERVICE_SID;
-
   const contentSid =
-    process.env
-      .TWILIO_BIRTHDAY_CONTENT_SID;
-
-  if (!messagingServiceSid) {
-    throw new Error(
-      "TWILIO_WHATSAPP_MESSAGING_SERVICE_SID is missing."
-    );
-  }
+    String(
+      process.env
+        .TWILIO_BIRTHDAY_CONTENT_SID ||
+      ""
+    ).trim();
 
   if (!contentSid) {
     throw new Error(
       "TWILIO_BIRTHDAY_CONTENT_SID is missing."
     );
   }
-
-  const normalizedRecipient =
-    normalizeWhatsAppNumber(
-      recipientPhone
-    );
 
   const cleanPlayerName =
     String(playerName || "").trim();
@@ -134,74 +121,215 @@ export async function sendTwilioWhatsAppBirthdayMessage({
     );
   }
 
-  const client = getTwilioClient();
-
-const statusCallback =
-  getBirthdayWhatsAppStatusCallbackUrl({
-    birthdayId,
-    leagueId,
-  });
-
-let message;
-
-try {
-
-  message =
-    await client.messages.create({
-      messagingServiceSid,
-
-      to: `whatsapp:${normalizedRecipient}`,
-
-      contentSid,
-
-      contentVariables: JSON.stringify({
+  return {
+    contentSid,
+    contentVariables:
+      JSON.stringify({
         1: cleanPlayerName,
         2: cleanLeagueName,
       }),
+    cleanPlayerName,
+    cleanLeagueName,
+  };
+}
 
-      statusCallback,
+/*
+ * Existing player WhatsApp sender.
+ *
+ * Optional statusCallbackUrl was added so owner messages can use a
+ * dedicated callback that performs automatic SMS fallback.
+ * Existing callers do not need to change.
+ */
+export async function sendTwilioWhatsAppBirthdayMessage({
+  recipientPhone,
+  playerName,
+  leagueName,
+  birthdayId,
+  leagueId,
+  statusCallbackUrl = null,
+}) {
+  const messagingServiceSid =
+    process.env
+      .TWILIO_WHATSAPP_MESSAGING_SERVICE_SID;
+
+  if (!messagingServiceSid) {
+    throw new Error(
+      "TWILIO_WHATSAPP_MESSAGING_SERVICE_SID is missing."
+    );
+  }
+
+  const normalizedRecipient =
+    normalizeWhatsAppNumber(
+      recipientPhone
+    );
+
+  const {
+    contentSid,
+    contentVariables,
+  } =
+    getBirthdayTemplateConfig({
+      playerName,
+      leagueName,
     });
 
-} catch (error) {
+  const client = getTwilioClient();
 
-  console.error(
-    "[TWILIO_WHATSAPP_SEND_FAILED]",
-    {
+  const statusCallback =
+    statusCallbackUrl ||
+    getBirthdayWhatsAppStatusCallbackUrl({
       birthdayId,
       leagueId,
-      recipient: normalizedRecipient,
+    });
 
-      code: error.code,
+  let message;
 
-      status: error.status,
+  try {
+    message =
+      await client.messages.create({
+        messagingServiceSid,
 
-      message: error.message,
-    }
-  );
+        to:
+          `whatsapp:${normalizedRecipient}`,
 
-  throw error;
+        contentSid,
+
+        contentVariables,
+
+        statusCallback,
+      });
+  } catch (error) {
+    console.error(
+      "[TWILIO_WHATSAPP_SEND_FAILED]",
+      {
+        birthdayId,
+        leagueId,
+        recipient:
+          normalizedRecipient,
+
+        code:
+          error.code,
+
+        status:
+          error.status,
+
+        message:
+          error.message,
+      }
+    );
+
+    throw error;
+  }
+
+  if (!message.sid) {
+    throw new Error(
+      "Twilio accepted the request but did not return a Message SID."
+    );
+  }
+
+  return {
+    success: true,
+
+    messageSid:
+      message.sid,
+
+    status:
+      (
+        message.status ||
+        "queued"
+      ).toUpperCase(),
+
+    recipient:
+      message.to,
+
+    dateCreated:
+      message.dateCreated ??
+      null,
+
+    dateUpdated:
+      message.dateUpdated ??
+      null,
+  };
 }
 
-if (!message.sid) {
-  throw new Error(
-    "Twilio accepted the request but did not return a Message SID."
-  );
-}
+/*
+ * SMS fallback using THE SAME Twilio ContentSid and THE SAME
+ * ContentVariables as WhatsApp.
+ *
+ * This is intentionally NOT a separately-built SMS body. Twilio renders
+ * the same birthday content template for the SMS channel, which keeps the
+ * wording/variable format consistent with the WhatsApp message.
+ */
+export async function sendTwilioBirthdayTemplateSms({
+  recipientPhone,
+  playerName,
+  leagueName,
+}) {
+  const messagingServiceSid =
+    String(
+      process.env
+        .TWILIO_SMS_MESSAGING_SERVICE_SID ||
+      ""
+    ).trim();
 
-return {
-  success: true,
+  if (!messagingServiceSid) {
+    throw new Error(
+      "TWILIO_SMS_MESSAGING_SERVICE_SID is missing."
+    );
+  }
 
-  messageSid: message.sid,
+  const normalizedRecipient =
+    normalizeWhatsAppNumber(
+      recipientPhone
+    );
 
-  status:
-    (message.status || "queued").toUpperCase(),
+  const {
+    contentSid,
+    contentVariables,
+  } =
+    getBirthdayTemplateConfig({
+      playerName,
+      leagueName,
+    });
 
-  recipient: message.to,
+  const client =
+    getTwilioClient();
 
-  dateCreated:
-    message.dateCreated ?? null,
+  const message =
+    await client.messages.create({
+      messagingServiceSid,
 
-  dateUpdated:
-    message.dateUpdated ?? null,
-};
+      // SMS uses a normal E.164 destination.
+      // Do NOT prefix with "whatsapp:".
+      to:
+        normalizedRecipient,
+
+      // SAME approved birthday Content template.
+      contentSid,
+
+      // SAME {{1}} player and {{2}} league variables.
+      contentVariables,
+    });
+
+  if (!message?.sid) {
+    throw new Error(
+      "Twilio accepted the birthday SMS fallback but did not return a Message SID."
+    );
+  }
+
+  return {
+    success: true,
+
+    messageSid:
+      message.sid,
+
+    status:
+      (
+        message.status ||
+        "accepted"
+      ).toUpperCase(),
+
+    recipient:
+      message.to ||
+      normalizedRecipient,
+  };
 }

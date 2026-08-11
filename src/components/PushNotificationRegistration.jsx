@@ -80,7 +80,7 @@ export default function PushNotificationRegistration() {
 await PushNotifications.createChannel({
   id: "birthday-reminders",
   name: "Birthday Reminders",
-  description: "League day-before birthday reminders for owners",
+  description: "League birthday-day reminders for owners",
   importance: 5,
   visibility: 1,
   sound: "default",

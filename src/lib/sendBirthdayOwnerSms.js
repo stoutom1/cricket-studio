@@ -12,31 +12,37 @@ function normalizePhoneNumber(phone) {
     : `+${value.replace(/\D/g, "")}`;
 }
 
-function formatBirthdayNames(birthdays) {
-  const names = birthdays
-    .map((birthday) =>
-      String(
-        birthday?.playerName ||
-          "Player"
-      ).trim()
-    )
-    .filter(Boolean);
+function cleanText(value, fallback = "") {
+  const text = String(value || "").trim();
+  return text || fallback;
+}
 
-  if (names.length === 0) {
-    return "A player";
-  }
+export function buildForwardableBirthdayMessage({
+  playerName,
+  leagueName,
+}) {
+  const safePlayerName =
+    cleanText(playerName, "Player");
 
-  if (names.length === 1) {
-    return names[0];
-  }
+  const safeLeagueName =
+    cleanText(leagueName, "Cric4All League");
 
-  if (names.length === 2) {
-    return `${names[0]} and ${names[1]}`;
-  }
-
-  return `${names
-    .slice(0, -1)
-    .join(", ")}, and ${names.at(-1)}`;
+  /*
+   * IMPORTANT:
+   * This message is intentionally written as the actual birthday greeting,
+   * not as an administrative reminder. The Primary/Backup Owner should be
+   * able to forward this text directly into the players WhatsApp group
+   * without editing it first.
+   */
+  return [
+    `🎉 Happy Birthday, ${safePlayerName}! 🎂🏏`,
+    "",
+    "Wishing you a fantastic birthday and a wonderful year ahead filled with happiness, good health, success, and many memorable moments on and off the cricket field.",
+    "",
+    "Have a great day and keep enjoying the game we all love! 🥳🏏",
+    "",
+    `— ${safeLeagueName}`,
+  ].join("\n");
 }
 
 export async function sendBirthdayOwnerSms({
@@ -73,32 +79,25 @@ export async function sendBirthdayOwnerSms({
 
   if (
     !Array.isArray(birthdays) ||
-    birthdays.length === 0
+    birthdays.length !== 1
   ) {
     throw new Error(
-      "At least one birthday is required."
+      "Exactly one birthday is required for a forwardable owner message."
     );
   }
 
   const recipient =
     normalizePhoneNumber(ownerPhone);
 
-  const leagueName =
-    birthdays[0]?.leagueName ||
-    "your Cric4All league";
-
-  const birthdayNames =
-    formatBirthdayNames(birthdays);
-
-  const birthdayDate =
-    date
-      ? ` on ${date}`
-      : "";
+  const birthday = birthdays[0];
 
   const body =
-    birthdays.length === 1
-      ? `Cric4All reminder: ${birthdayNames} has a birthday${birthdayDate} in ${leagueName}.`
-      : `Cric4All reminder: ${birthdayNames} have birthdays${birthdayDate} in ${leagueName}.`;
+    buildForwardableBirthdayMessage({
+      playerName:
+        birthday?.playerName,
+      leagueName:
+        birthday?.leagueName,
+    });
 
   const client = twilio(
     accountSid,
@@ -113,12 +112,13 @@ export async function sendBirthdayOwnerSms({
       to: recipient,
       body,
     });
-//return here
+
   return {
     messageId: message.sid,
     status:
       message.status || "queued",
     to: message.to,
     from: message.from,
+    body,
   };
 }
