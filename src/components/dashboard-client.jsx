@@ -4499,216 +4499,152 @@ function quickExtra(type) {
 }
 
 async function confirmExtra(extraRuns) {
+  /*
+   * IMPORTANT:
+   * Wide / No Ball do not consume a legal delivery.
+   *
+   * Keep the extra type captured from the modal itself instead of relying on
+   * ballForm.extraType after async React state updates. This is especially
+   * important on the sixth attempted delivery of an over (0.5, 1.5, 2.5...),
+   * where another scorer workflow can update ballForm while this request is
+   * being saved.
+   */
   if (isSavingBall) {
     return;
   }
 
+  const extraTypeForThisDelivery =
+    String(selectedExtraType || ballForm.extraType || "NONE").toUpperCase();
+
   const modalSnapshot = {
-    selectedExtraType,
+    selectedExtraType: extraTypeForThisDelivery,
     selectedExtraOption,
     ballForm: {
       ...ballForm,
     },
   };
 
-  let runsOffBat =
-    Number(
-      ballForm.runsOffBat ||
-        0
-    );
+  let runsOffBat = Number(ballForm.runsOffBat || 0);
+  let extras = Number(ballForm.extras || 0);
 
-  let extras =
-    Number(
-      ballForm.extras ||
-        0
-    );
+  const displayLabel = String(extraRuns);
 
-  const displayLabel =
-    String(
-      extraRuns
-    );
-
-  setSelectedExtraOption(
-    displayLabel
-  );
+  setSelectedExtraOption(displayLabel);
 
   if (
-    typeof extraRuns ===
-      "string" &&
-    extraRuns.startsWith(
-      "WD"
-    )
+    typeof extraRuns === "string" &&
+    extraRuns.startsWith("WD")
   ) {
-    const additionalRuns =
-      extraRuns.includes(
-        "+"
-      )
-        ? Number(
-            extraRuns.split(
-              "+"
-            )[1]
-          )
-        : 0;
+    const additionalRuns = extraRuns.includes("+")
+      ? Number(extraRuns.split("+")[1])
+      : 0;
 
     runsOffBat = 0;
-    extras =
-      1 +
-      additionalRuns;
+    extras = 1 + additionalRuns;
   } else if (
-    typeof extraRuns ===
-      "string" &&
-    extraRuns.startsWith(
-      "NB"
-    )
+    typeof extraRuns === "string" &&
+    extraRuns.startsWith("NB")
   ) {
-    const batRuns =
-      extraRuns.includes(
-        "+"
-      )
-        ? Number(
-            extraRuns.split(
-              "+"
-            )[1]
-          )
-        : 0;
+    const batRuns = extraRuns.includes("+")
+      ? Number(extraRuns.split("+")[1])
+      : 0;
 
-    runsOffBat =
-      batRuns;
-
+    runsOffBat = batRuns;
     extras = 1;
   } else {
     runsOffBat = 0;
-    extras =
-      Number(
-        extraRuns
-      );
+    extras = Number(extraRuns);
   }
 
   /*
-   * Close immediately after a valid selection. The optimistic scoreboard in
-   * submitBall() gives instant feedback while the request is saved.
+   * Close the extra picker immediately.
+   *
+   * DO NOT automatically reopen it when submitBall() returns false.
+   * A false return can intentionally mean that another workflow has taken
+   * control (Change Bowler / Delivery Setup / duplicate-save guard). Reopening
+   * the Extras modal in that situation caused the same Wide / No Ball popup
+   * to appear repeatedly around .5 of every over.
+   *
+   * A genuine thrown/network error is handled by catch below and restores the
+   * modal so the scorer can retry.
    */
-  setShowExtrasModal(
-    false
-  );
+  setShowExtrasModal(false);
 
   try {
-    const saved =
-      await submitBall({
-        matchId:
-          Number(
-            selectedMatchId
-          ),
+    const saved = await submitBall({
+      matchId: Number(selectedMatchId),
+      inningsNo: Number(ballForm.inningsNo),
+      strikerId: Number(ballForm.strikerId),
+      nonStrikerId: Number(ballForm.nonStrikerId),
+      bowlerId: Number(ballForm.bowlerId),
 
-        inningsNo:
-          Number(
-            ballForm.inningsNo
-          ),
+      // Use the modal snapshot, never a possibly stale ballForm value.
+      extraType: extraTypeForThisDelivery,
 
-        strikerId:
-          Number(
-            ballForm.strikerId
-          ),
+      runsOffBat,
+      extras,
 
-        nonStrikerId:
-          Number(
-            ballForm.nonStrikerId
-          ),
+      isWicket:
+        ballForm.isWicket &&
+        ballForm.wicketType !== "RETIRED_HURT"
+          ? 1
+          : 0,
 
-        bowlerId:
-          Number(
-            ballForm.bowlerId
-          ),
+      wicketType: ballForm.isWicket
+        ? ballForm.wicketType
+        : "NONE",
 
-        extraType:
-          ballForm.extraType,
+      dismissedPlayerId: ballForm.isWicket
+        ? Number(
+            ballForm.dismissedPlayerId ||
+              ballForm.strikerId
+          )
+        : null,
 
-        runsOffBat,
-        extras,
+      newBatterId:
+        ballForm.isWicket &&
+        ballForm.newBatterId
+          ? Number(ballForm.newBatterId)
+          : null,
 
-        isWicket:
-          ballForm.isWicket &&
-          ballForm.wicketType !==
-            "RETIRED_HURT"
-            ? 1
-            : 0,
+      note: ballForm.note,
 
-        wicketType:
-          ballForm.isWicket
-            ? ballForm.wicketType
-            : "NONE",
-
-        dismissedPlayerId:
-          ballForm.isWicket
-            ? Number(
-                ballForm.dismissedPlayerId ||
-                  ballForm.strikerId
-              )
-            : null,
-
-        newBatterId:
-          ballForm.isWicket &&
-          ballForm.newBatterId
-            ? Number(
-                ballForm.newBatterId
-              )
-            : null,
-
-        note:
-          ballForm.note,
-
-        matchStatus:
-          scoreboard?.match
-            ?.status,
-      });
+      matchStatus:
+        scoreboard?.match?.status,
+    });
 
     if (!saved) {
-      setSelectedExtraType(
-        modalSnapshot.selectedExtraType
-      );
-
-      setSelectedExtraOption(
-        modalSnapshot.selectedExtraOption
-      );
-
-      setBallForm(
-        modalSnapshot.ballForm
-      );
-
-      setShowExtrasModal(
-        true
-      );
-
+      /*
+       * submitBall() has already displayed the relevant error or opened the
+       * required scoring workflow. Leave Extras closed so it cannot fight
+       * with that modal and reopen forever.
+       */
+      setSelectedExtraOption("");
       return;
     }
 
     const extraLabels = {
-      WIDE:
-        "Wide",
-      NOBALL:
-        "No Ball",
-      BYE:
-        "Bye",
-      LEGBYE:
-        "Leg Bye",
-      NONE:
-        "Extra",
+      WIDE: "Wide",
+      NOBALL: "No Ball",
+      BYE: "Bye",
+      LEGBYE: "Leg Bye",
+      NONE: "Extra",
     };
 
     const extraLabel =
-      extraLabels[
-        ballForm.extraType
-      ] ||
-      ballForm.extraType;
+      extraLabels[extraTypeForThisDelivery] ||
+      extraTypeForThisDelivery;
 
     setMessage(
       `✅ ${displayLabel} added as ${extraLabel}.`
     );
 
-    setSelectedExtraOption(
-      ""
-    );
+    setSelectedExtraOption("");
   } catch (err) {
+    /*
+     * Only a genuine thrown/network failure restores the picker.
+     * Intentional submitBall(false) flows stay closed.
+     */
     setSelectedExtraType(
       modalSnapshot.selectedExtraType
     );
@@ -4721,13 +4657,9 @@ async function confirmExtra(extraRuns) {
       modalSnapshot.ballForm
     );
 
-    setShowExtrasModal(
-      true
-    );
+    setShowExtrasModal(true);
 
-    setError(
-      err.message
-    );
+    setError(err.message);
   }
 }
 
