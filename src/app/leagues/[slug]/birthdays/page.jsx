@@ -88,7 +88,25 @@ export default async function BirthdayManagementPage({
         select: {
           id: true,
           name: true,
+          ownerId: true,
+          owner: {
+            select: {
+              id: true,
+              name: true,
+              email: true,
+            },
+          },
+          backupOwnerId: true,
+          backupOwner: {
+            select: {
+              id: true,
+              name: true,
+              email: true,
+            },
+          },
           ownerWhatsAppNumber:
+            true,
+          backupOwnerWhatsAppNumber:
             true,
           whatsappNotificationsEnabled:
             true,
@@ -113,10 +131,17 @@ export default async function BirthdayManagementPage({
       accessRole={
         access.role
       }
+      initialOwnerId={league.ownerId || ""}
+      initialOwnerName={league.owner?.name || ""}
+      initialOwnerEmail={league.owner?.email || ""}
+      initialBackupOwnerId={league.backupOwnerId || ""}
+      initialBackupOwnerName={league.backupOwner?.name || ""}
+      initialBackupOwnerEmail={league.backupOwner?.email || ""}
       initialOwnerWhatsAppNumber={
-        league
-          .ownerWhatsAppNumber ||
-        ""
+        league.ownerWhatsAppNumber || ""
+      }
+      initialBackupOwnerWhatsAppNumber={
+        league.backupOwnerWhatsAppNumber || ""
       }
       initialWhatsAppNotificationsEnabled={
         Boolean(

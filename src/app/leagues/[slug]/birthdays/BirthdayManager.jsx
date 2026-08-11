@@ -337,7 +337,14 @@ function BirthdayCollapsibleSection({
 export default function BirthdayManager({
   leagueId,
   leagueName,
+  initialOwnerId = "",
+  initialOwnerName = "",
+  initialOwnerEmail = "",
+  initialBackupOwnerId = "",
+  initialBackupOwnerName = "",
+  initialBackupOwnerEmail = "",
   initialOwnerWhatsAppNumber = "",
+  initialBackupOwnerWhatsAppNumber = "",
   initialWhatsAppNotificationsEnabled = false,
   readOnly = false,
   accessRole = null,
@@ -362,6 +369,8 @@ export default function BirthdayManager({
   const [error, setError] = useState("");
   const [players, setPlayers] = useState([]);
   const [playersLoading, setPlayersLoading] = useState(true);
+  const [leagueMembers, setLeagueMembers] = useState([]);
+  const [leagueMembersLoading, setLeagueMembersLoading] = useState(true);
   const [testingBirthdayId, setTestingBirthdayId] = useState(null);
   const [bulkFile, setBulkFile] =
   useState(null);
@@ -384,6 +393,20 @@ const [
   setOwnerWhatsAppNumber,
 ] = useState(
   initialOwnerWhatsAppNumber
+);
+
+const [
+  backupOwnerId,
+  setBackupOwnerId,
+] = useState(
+  initialBackupOwnerId ? String(initialBackupOwnerId) : ""
+);
+
+const [
+  backupOwnerWhatsAppNumber,
+  setBackupOwnerWhatsAppNumber,
+] = useState(
+  initialBackupOwnerWhatsAppNumber
 );
 
 const [
@@ -554,10 +577,63 @@ const [
   }
 }, [apiBaseUrl, numericLeagueId]);
 
+const loadLeagueMembers = useCallback(async () => {
+  if (!isValidLeagueId) {
+    setLeagueMembers([]);
+    setLeagueMembersLoading(false);
+    return;
+  }
+
+  setLeagueMembersLoading(true);
+
+  try {
+    const response = await fetch(
+      `/api/leagues/${numericLeagueId}/members`,
+      {
+        method: "GET",
+        cache: "no-store",
+        headers: { Accept: "application/json" },
+      }
+    );
+
+    const data = await readJsonResponse(response);
+
+    if (!response.ok) {
+      throw new Error(data?.error || "Unable to load league members.");
+    }
+
+    const members = Array.isArray(data) ? data : [];
+
+    setLeagueMembers(
+      members
+        .filter((member) => member?.user?.id)
+        .sort((a, b) =>
+          String(a?.user?.name || a?.user?.email || "")
+            .localeCompare(
+              String(b?.user?.name || b?.user?.email || ""),
+              undefined,
+              { sensitivity: "base" }
+            )
+        )
+    );
+  } catch (memberError) {
+    console.error("League member loading error:", memberError);
+    setLeagueMembers([]);
+    setWhatsAppSettingsError(
+      memberError instanceof Error
+        ? memberError.message
+        : "Unable to load league members."
+    );
+  } finally {
+    setLeagueMembersLoading(false);
+  }
+}, [isValidLeagueId, numericLeagueId]);
+
 useEffect(() => {
   loadBirthdays();
   loadPlayers();
-}, [loadBirthdays, loadPlayers]);
+  loadLeagueMembers();
+}, [loadBirthdays, loadPlayers, loadLeagueMembers]);
 
   function updateForm(field, value) {
     setForm((current) => {
@@ -1359,6 +1435,11 @@ async function saveWhatsAppSettings(
         ownerWhatsAppNumber
       );
 
+    const normalizedBackupNumber =
+      normalizeOwnerWhatsAppNumber(
+        backupOwnerWhatsAppNumber
+      );
+
     if (
       whatsappNotificationsEnabled &&
       !normalizedNumber
@@ -1370,12 +1451,31 @@ async function saveWhatsAppSettings(
 
     if (
       normalizedNumber &&
-      !/^\+[1-9]\d{7,14}$/.test(
-        normalizedNumber
-      )
+      !/^\+[1-9]\d{7,14}$/.test(normalizedNumber)
     ) {
       throw new Error(
-        "Enter a valid WhatsApp number with country code, for example +16025551234."
+        "Enter a valid primary owner WhatsApp number with country code, for example +16025551234."
+      );
+    }
+
+    if (
+      normalizedBackupNumber &&
+      !/^\+[1-9]\d{7,14}$/.test(normalizedBackupNumber)
+    ) {
+      throw new Error(
+        "Enter a valid backup owner WhatsApp number with country code."
+      );
+    }
+
+    if (backupOwnerId && String(backupOwnerId) === String(initialOwnerId)) {
+      throw new Error(
+        "Backup League Owner must be different from the Primary League Owner."
+      );
+    }
+
+    if (backupOwnerId && !normalizedBackupNumber) {
+      throw new Error(
+        "Enter the backup owner's WhatsApp number or clear the Backup League Owner selection."
       );
     }
 
@@ -1395,6 +1495,12 @@ async function saveWhatsAppSettings(
           ownerWhatsAppNumber:
             normalizedNumber ||
             null,
+
+          backupOwnerId:
+            backupOwnerId || null,
+
+          backupOwnerWhatsAppNumber:
+            normalizedBackupNumber || null,
 
           whatsappNotificationsEnabled:
             Boolean(
@@ -1420,6 +1526,18 @@ async function saveWhatsAppSettings(
       data?.league
         ?.ownerWhatsAppNumber ||
         normalizedNumber
+    );
+
+    setBackupOwnerId(
+      data?.league?.backupOwnerId
+        ? String(data.league.backupOwnerId)
+        : ""
+    );
+
+    setBackupOwnerWhatsAppNumber(
+      data?.league?.backupOwnerWhatsAppNumber ||
+        normalizedBackupNumber ||
+        ""
     );
 
     setWhatsappNotificationsEnabled(
@@ -1535,8 +1653,8 @@ async function runBirthdayAction(birthdayId, actionName, callback) {
   <>
 <BirthdayCollapsibleSection
   icon="💬"
-  title="Owner WhatsApp Notifications"
-  description="Set up automatic birthday wishes for the league owner"
+  title="Automatic Birthday Messaging"
+  description="Owner reminders the day before; personal greeting to the player on the birthday"
   accent="whatsapp"
   className="league-whatsapp-settings-card"
   badge={
@@ -1555,13 +1673,13 @@ async function runBirthdayAction(birthdayId, actionName, callback) {
 >
 <div className="birthday-section-intro">
   <p>
-    Send automatic birthday wishes to the league
-    owner through WhatsApp.
+    The Primary League Owner comes from the league's owner record.
+    You can also select one Backup League Owner from the league member list.
   </p>
 
   <p>
-    Browser and device notifications will continue
-    to work separately.
+    Day-before birthday reminders go to both configured owners.
+    On the actual birthday, the personal birthday greeting goes to the player only.
   </p>
 </div>
 
@@ -1583,7 +1701,26 @@ async function runBirthdayAction(birthdayId, actionName, callback) {
     </label>
 
     <label>
-      Owner&apos;s WhatsApp number
+      Primary League Owner
+
+      <input
+        type="text"
+        value={
+          initialOwnerName ||
+          initialOwnerEmail ||
+          "Primary owner not assigned"
+        }
+        disabled
+      />
+
+      <small>
+        This is the actual league owner from the League owner field.
+        Birthday settings do not change league ownership.
+      </small>
+    </label>
+
+    <label>
+      Primary Owner&apos;s WhatsApp number
 
       <input
         type="tel"
@@ -1607,6 +1744,61 @@ async function runBirthdayAction(birthdayId, actionName, callback) {
       </small>
     </label>
 
+    <label>
+      Backup League Owner
+
+      <select
+        value={backupOwnerId}
+        disabled={savingWhatsAppSettings || leagueMembersLoading}
+        onChange={(event) => {
+          setBackupOwnerId(event.target.value);
+          setWhatsAppSettingsMessage("");
+          setWhatsAppSettingsError("");
+        }}
+      >
+        <option value="">No backup owner</option>
+        {leagueMembers
+          .filter(
+            (member) =>
+              String(member?.user?.id || "") !== String(initialOwnerId || "")
+          )
+          .map((member) => (
+            <option
+              key={member.user.id}
+              value={member.user.id}
+            >
+              {member.user.name || member.user.email}
+              {member.role ? ` (${member.role})` : ""}
+            </option>
+          ))}
+      </select>
+
+      <small>
+        Only users already assigned to this league are available.
+      </small>
+    </label>
+
+    <label>
+      Backup Owner&apos;s WhatsApp number
+
+      <input
+        type="tel"
+        value={backupOwnerWhatsAppNumber}
+        placeholder="+16025551234"
+        autoComplete="tel"
+        disabled={savingWhatsAppSettings || !backupOwnerId}
+        onChange={(event) => {
+          setBackupOwnerWhatsAppNumber(event.target.value);
+          setWhatsAppSettingsMessage("");
+          setWhatsAppSettingsError("");
+        }}
+      />
+
+      <small>
+        Required only when a backup owner is selected. Include the country code.
+      </small>
+    </label>
+
 <label
   className={`whatsapp-toggle-card ${
     whatsappNotificationsEnabled
@@ -1616,13 +1808,13 @@ async function runBirthdayAction(birthdayId, actionName, callback) {
 >
   <span className="whatsapp-toggle-copy">
     <strong>
-      💬 Automatic WhatsApp Wishes
+      💬 Automatic Birthday Messaging
     </strong>
 
     <small>
       {whatsappNotificationsEnabled
-        ? "Birthday wishes will be sent automatically to the owner's WhatsApp number."
-        : "Automatic WhatsApp birthday wishes are currently turned off."}
+        ? "Owners receive day-before reminders and the birthday player receives the personal greeting on the actual birthday."
+        : "Automatic birthday messaging is currently turned off."}
     </small>
   </span>
 
@@ -1643,7 +1835,7 @@ async function runBirthdayAction(birthdayId, actionName, callback) {
         setWhatsAppSettingsMessage("");
         setWhatsAppSettingsError("");
       }}
-      aria-label="Enable automatic WhatsApp birthday wishes"
+      aria-label="Enable automatic birthday messaging"
     />
 
     <span
@@ -1985,7 +2177,26 @@ Rohit S - Feb 26`}</pre>
 </div>
 
     <label>
-      Owner&apos;s WhatsApp number
+      Primary League Owner
+
+      <input
+        type="text"
+        value={
+          initialOwnerName ||
+          initialOwnerEmail ||
+          "Primary owner not assigned"
+        }
+        disabled
+      />
+
+      <small>
+        This is the actual league owner from the League owner field.
+        Birthday settings do not change league ownership.
+      </small>
+    </label>
+
+    <label>
+      Primary Owner&apos;s WhatsApp number
 
       <input
         type="tel"

@@ -11,7 +11,8 @@ model User {
   email                        String                           @unique
   name                         String?
   password                     String
-  ownedLeagues                 League[]
+  ownedLeagues                 League[]                         @relation("PrimaryLeagueOwner")
+  backupOwnedLeagues           League[]                         @relation("BackupLeagueOwner")
   leagueMemberships            LeagueMember[]
   leagueRegistrations          LeagueRegistration[]
   activeLeagueId               Int?
@@ -194,7 +195,9 @@ model League {
   name                         String                           @unique
   createdAt                    DateTime                         @default(now())
   ownerId                      String?
-  owner                        User?                            @relation(fields: [ownerId], references: [id])
+  owner                        User?                            @relation("PrimaryLeagueOwner", fields: [ownerId], references: [id])
+  backupOwnerId                String?
+  backupOwner                  User?                            @relation("BackupLeagueOwner", fields: [backupOwnerId], references: [id], onDelete: SetNull)
   teams                        Team[]
   registrations                LeagueRegistration[]
   members                      LeagueMember[]
@@ -209,6 +212,7 @@ model League {
   birthdayReminderLogs         BirthdayReminderLog[]
   whatsappNotificationsEnabled Boolean                          @default(false)
   ownerWhatsAppNumber          String?
+  backupOwnerWhatsAppNumber    String?
   matchKitPlayers              MatchKitPlayer[]
   kitRotationMembers           KitRotationMember[]
   kitAssignments               KitAssignment[]
@@ -219,6 +223,8 @@ model League {
   leagueKitEvents              LeagueKitEvent[]
   resources                    LeagueResource[]
   resourceCollections          LeagueResourceCollection[]
+
+  @@index([backupOwnerId])
 }
 
 model LeagueRegistration {

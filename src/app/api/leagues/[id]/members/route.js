@@ -18,7 +18,8 @@ export async function GET(
     );
   }
 
-  const leagueId = Number(params.id);
+  const { id } = await params;
+  const leagueId = Number(id);
 
   const members =
     await prisma.leagueMember.findMany({
@@ -58,7 +59,8 @@ export async function POST(
     );
   }
 
-  const leagueId = Number(params.id);
+  const { id } = await params;
+  const leagueId = Number(id);
 
   const currentUser =
     await prisma.user.findUnique({
@@ -187,7 +189,8 @@ export async function DELETE(
     );
   }
 
-  const leagueId = Number(params.id);
+  const { id } = await params;
+  const leagueId = Number(id);
 
   const currentUser =
     await prisma.user.findUnique({

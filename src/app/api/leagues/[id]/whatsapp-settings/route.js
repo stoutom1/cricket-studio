@@ -6,24 +6,16 @@ import { authOptions } from "@/lib/auth";
 
 export const runtime = "nodejs";
 
-function normalizeWhatsAppNumber(
-  value
-) {
-  const rawValue =
-    String(value || "").trim();
+function normalizeWhatsAppNumber(value) {
+  const rawValue = String(value || "").trim();
 
   if (!rawValue) {
     return null;
   }
 
-  const normalized =
-    `+${rawValue.replace(/\D/g, "")}`;
+  const normalized = `+${rawValue.replace(/\D/g, "")}`;
 
-  if (
-    !/^\+[1-9]\d{7,14}$/.test(
-      normalized
-    )
-  ) {
+  if (!/^\+[1-9]\d{7,14}$/.test(normalized)) {
     throw new Error(
       "WhatsApp number must include a valid country code, for example +16025551234."
     );
@@ -32,55 +24,96 @@ function normalizeWhatsAppNumber(
   return normalized;
 }
 
-export async function PATCH(
-  request,
-  { params }
-) {
+export async function PATCH(request, { params }) {
   try {
     const { id } = await params;
     const leagueId = Number(id);
 
-    if (
-      !Number.isInteger(leagueId) ||
-      leagueId <= 0
-    ) {
+    if (!Number.isInteger(leagueId) || leagueId <= 0) {
       return NextResponse.json(
-        {
-          error:
-            "Invalid league ID.",
-        },
-        {
-          status: 400,
-        }
+        { error: "Invalid league ID." },
+        { status: 400 }
       );
     }
 
-    const session =
-      await getServerSession(
-        authOptions
-      );
+    const session = await getServerSession(authOptions);
 
     if (!session?.user?.email) {
       return NextResponse.json(
-        {
-          error: "Unauthorized.",
-        },
-        {
-          status: 401,
-        }
+        { error: "Unauthorized." },
+        { status: 401 }
       );
     }
 
-    const body =
-      await request.json();
+    const currentUser = await prisma.user.findUnique({
+      where: { email: session.user.email },
+      select: { id: true },
+    });
+
+    if (!currentUser) {
+      return NextResponse.json(
+        { error: "User account not found." },
+        { status: 404 }
+      );
+    }
+
+    const league = await prisma.league.findUnique({
+      where: { id: leagueId },
+      select: {
+        id: true,
+        ownerId: true,
+      },
+    });
+
+    if (!league) {
+      return NextResponse.json(
+        { error: "League not found." },
+        { status: 404 }
+      );
+    }
+
+    const membership = await prisma.leagueMember.findUnique({
+      where: {
+        userId_leagueId: {
+          userId: currentUser.id,
+          leagueId,
+        },
+      },
+      select: {
+        role: true,
+        canEditLeague: true,
+      },
+    });
+
+    const canManageSettings =
+      league.ownerId === currentUser.id ||
+      membership?.role === "OWNER" ||
+      membership?.role === "ADMIN" ||
+      membership?.canEditLeague === true;
+
+    if (!canManageSettings) {
+      return NextResponse.json(
+        {
+          error:
+            "Only the league owner or an authorized league administrator can update birthday reminder contacts.",
+        },
+        { status: 403 }
+      );
+    }
+
+    const body = await request.json();
 
     let ownerWhatsAppNumber;
+    let backupOwnerWhatsAppNumber;
 
     try {
-      ownerWhatsAppNumber =
-        normalizeWhatsAppNumber(
-          body.ownerWhatsAppNumber
-        );
+      ownerWhatsAppNumber = normalizeWhatsAppNumber(
+        body.ownerWhatsAppNumber
+      );
+
+      backupOwnerWhatsAppNumber = normalizeWhatsAppNumber(
+        body.backupOwnerWhatsAppNumber
+      );
     } catch (validationError) {
       return NextResponse.json(
         {
@@ -89,141 +122,127 @@ export async function PATCH(
               ? validationError.message
               : "Invalid WhatsApp number.",
         },
-        {
-          status: 400,
-        }
+        { status: 400 }
       );
     }
 
-    const whatsappNotificationsEnabled =
-      Boolean(
-        body.whatsappNotificationsEnabled
-      );
+    const backupOwnerId = body.backupOwnerId
+      ? String(body.backupOwnerId)
+      : null;
 
-    if (
-      whatsappNotificationsEnabled &&
-      !ownerWhatsAppNumber
-    ) {
+    const whatsappNotificationsEnabled = Boolean(
+      body.whatsappNotificationsEnabled
+    );
+
+    if (whatsappNotificationsEnabled && !ownerWhatsAppNumber) {
       return NextResponse.json(
         {
           error:
-            "Enter the owner's WhatsApp number before enabling automatic WhatsApp reminders.",
+            "Enter the primary league owner's WhatsApp number before enabling automatic owner birthday reminders.",
         },
-        {
-          status: 400,
-        }
+        { status: 400 }
       );
     }
 
-    const user =
-      await prisma.user.findUnique({
+    if (backupOwnerId) {
+      if (backupOwnerId === league.ownerId) {
+        return NextResponse.json(
+          {
+            error:
+              "Backup League Owner must be different from the Primary League Owner.",
+          },
+          { status: 400 }
+        );
+      }
+
+      const backupMembership = await prisma.leagueMember.findUnique({
         where: {
-          email:
-            session.user.email,
-        },
-
-        select: {
-          id: true,
-        },
-      });
-
-    if (!user) {
-      return NextResponse.json(
-        {
-          error:
-            "User account not found.",
-        },
-        {
-          status: 404,
-        }
-      );
-    }
-
-    /*
-     * Confirm the user has permission.
-     *
-     * Adjust `leagueMember`, `role`, or the
-     * relation name only if your schema uses
-     * different names.
-     */
-    const membership =
-      await prisma.leagueMember.findFirst({
-        where: {
-          leagueId,
-          userId: user.id,
-          role: {
-            in: [
-              "OWNER",
-              "ADMIN",
-            ],
+          userId_leagueId: {
+            userId: backupOwnerId,
+            leagueId,
           },
         },
-
         select: {
-          id: true,
-          role: true,
+          userId: true,
         },
       });
 
-    if (!membership) {
-      return NextResponse.json(
-        {
-          error:
-            "Only a league owner or administrator can update WhatsApp settings.",
-        },
-        {
-          status: 403,
-        }
-      );
+      if (!backupMembership) {
+        return NextResponse.json(
+          {
+            error:
+              "The selected Backup League Owner must already be assigned to this league.",
+          },
+          { status: 400 }
+        );
+      }
+
+      if (!backupOwnerWhatsAppNumber) {
+        return NextResponse.json(
+          {
+            error:
+              "Enter the Backup League Owner's WhatsApp number.",
+          },
+          { status: 400 }
+        );
+      }
     }
 
-    const updatedLeague =
-      await prisma.league.update({
-        where: {
-          id: leagueId,
-        },
+    if (!backupOwnerId) {
+      backupOwnerWhatsAppNumber = null;
+    }
 
-        data: {
-          ownerWhatsAppNumber,
-          whatsappNotificationsEnabled,
+    const updatedLeague = await prisma.league.update({
+      where: { id: leagueId },
+      data: {
+        ownerWhatsAppNumber,
+        backupOwnerId,
+        backupOwnerWhatsAppNumber,
+        whatsappNotificationsEnabled,
+      },
+      select: {
+        id: true,
+        name: true,
+        ownerId: true,
+        owner: {
+          select: {
+            id: true,
+            name: true,
+            email: true,
+          },
         },
-
-        select: {
-          id: true,
-          name: true,
-          ownerWhatsAppNumber: true,
-          whatsappNotificationsEnabled:
-            true,
+        backupOwnerId: true,
+        backupOwner: {
+          select: {
+            id: true,
+            name: true,
+            email: true,
+          },
         },
-      });
+        ownerWhatsAppNumber: true,
+        backupOwnerWhatsAppNumber: true,
+        whatsappNotificationsEnabled: true,
+      },
+    });
 
     return NextResponse.json({
       success: true,
-
       message:
-        "WhatsApp birthday settings saved successfully.",
-
-      league:
-        updatedLeague,
+        "League owner birthday reminder settings saved successfully.",
+      league: updatedLeague,
     });
   } catch (error) {
-    console.error(
-      "League WhatsApp settings error:",
-      error
-    );
+    console.error("League WhatsApp settings error:", error);
 
     return NextResponse.json(
       {
         success: false,
-
         error:
           error instanceof Error
             ? error.message
-            : "Unable to save WhatsApp settings.",
+            : "Unable to save birthday reminder settings.",
       },
-      {
-        status: 500,
-      }
+      { status: 500 }
     );
   }
 }
