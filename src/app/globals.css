@@ -74255,3 +74255,146 @@ body:has(.milestone-celebration-overlay)
     font-size: 15px !important;
   }
 }
+/* =========================================================
+   FINAL MOBILE ACCOUNT MODAL FIX
+   Keeps entire account menu above dashboard and scrollable
+   MOBILE ONLY — desktop/laptop unchanged
+   ========================================================= */
+
+@media (max-width: 768px) {
+
+  /* Lock the page behind the account popup */
+  html:has(.account-modal-backdrop),
+  body:has(.account-modal-backdrop) {
+    overflow: hidden !important;
+  }
+
+  /* Full-screen modal layer */
+  .account-modal-backdrop {
+    position: fixed !important;
+
+    top: 0 !important;
+    right: 0 !important;
+    bottom: 0 !important;
+    left: 0 !important;
+
+    width: 100% !important;
+    height: 100dvh !important;
+
+    z-index: 2147483647 !important;
+
+    display: flex !important;
+    align-items: flex-start !important;
+    justify-content: center !important;
+
+    padding:
+      calc(10px + env(safe-area-inset-top))
+      10px
+      calc(10px + env(safe-area-inset-bottom))
+      10px !important;
+
+    background: rgba(2, 6, 23, 0.92) !important;
+
+    /*
+      IMPORTANT:
+      Backdrop itself can scroll as a second safety layer.
+    */
+    overflow-x: hidden !important;
+    overflow-y: auto !important;
+
+    overscroll-behavior: contain !important;
+    -webkit-overflow-scrolling: touch !important;
+  }
+
+  /* Account card */
+  .account-modal {
+    position: relative !important;
+
+    width: 100% !important;
+    max-width: 430px !important;
+
+    /*
+      Critical:
+      fit inside the actual mobile viewport.
+    */
+    max-height:
+      calc(
+        100dvh
+        - env(safe-area-inset-top)
+        - env(safe-area-inset-bottom)
+        - 20px
+      ) !important;
+
+    margin: 0 auto !important;
+
+    /*
+      Critical:
+      scroll INSIDE the account card.
+    */
+    overflow-x: hidden !important;
+    overflow-y: auto !important;
+
+    -webkit-overflow-scrolling: touch !important;
+    overscroll-behavior: contain !important;
+
+    border-radius: 22px !important;
+
+    /*
+      Extra bottom room so Sign Out is completely visible.
+    */
+    padding-bottom:
+      calc(24px + env(safe-area-inset-bottom)) !important;
+
+    z-index: 1 !important;
+  }
+
+  /*
+    Keep the X available while scrolling.
+  */
+  .account-close-btn {
+    position: sticky !important;
+
+    top: 0 !important;
+    float: right !important;
+
+    z-index: 20 !important;
+
+    flex-shrink: 0 !important;
+  }
+
+  /* Prevent account content from forcing modal wider */
+  .account-hero,
+  .account-wow-grid,
+  .account-actions {
+    min-width: 0 !important;
+  }
+
+  /*
+    Bottom actions must remain part of modal flow.
+  */
+  .account-actions {
+    position: relative !important;
+    z-index: 1 !important;
+
+    display: grid !important;
+    width: 100% !important;
+
+    padding-bottom:
+      calc(12px + env(safe-area-inset-bottom)) !important;
+  }
+
+  .account-primary-action,
+  .account-secondary-action,
+  .account-danger-action {
+    width: 100% !important;
+    flex-shrink: 0 !important;
+  }
+
+  /*
+    Make sure Sign Out can never be clipped at bottom.
+  */
+  .account-danger-action {
+    margin-bottom:
+      calc(8px + env(safe-area-inset-bottom)) !important;
+  }
+}
