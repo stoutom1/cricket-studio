@@ -52,6 +52,21 @@ function normalizeStatus(value) {
   return String(value || "").trim().toUpperCase();
 }
 
+function getBirthdayPlayerName(reminderLog) {
+  return (
+    reminderLog?.birthday?.player?.name?.trim() ||
+    reminderLog?.birthday?.name?.trim() ||
+    "Player"
+  );
+}
+
+function getBirthdayLeagueName(reminderLog) {
+  return (
+    reminderLog?.birthday?.league?.name?.trim() ||
+    "Cric4All League"
+  );
+}
+
 function getErrorMessage(error) {
   return String(error instanceof Error ? error.message : error).slice(0, 1000);
 }
@@ -73,29 +88,70 @@ function buildProviderResponse({
   };
 }
 
-async function findReminderLog({ messageSid, birthdayId, leagueId }) {
-  if (messageSid) {
-    const bySid = await prisma.birthdayReminderLog.findFirst({
-      where: {
-        reminderType: "PLAYER_WHATSAPP",
-        providerMessageId: messageSid,
+async function findReminderLog({
+  messageSid,
+  birthdayId,
+  leagueId,
+}) {
+  const include = {
+    birthday: {
+      include: {
+        player: {
+          select: {
+            name: true,
+          },
+        },
+
+        league: {
+          select: {
+            name: true,
+          },
+        },
       },
-      orderBy: { id: "desc" },
-    });
+    },
+  };
+
+  if (messageSid) {
+    const bySid =
+      await prisma.birthdayReminderLog.findFirst({
+        where: {
+          reminderType:
+            "PLAYER_WHATSAPP",
+
+          providerMessageId:
+            messageSid,
+        },
+
+        include,
+
+        orderBy: {
+          id: "desc",
+        },
+      });
 
     if (bySid) {
       return bySid;
     }
   }
 
-  if (birthdayId && leagueId) {
+  if (
+    birthdayId &&
+    leagueId
+  ) {
     return prisma.birthdayReminderLog.findFirst({
       where: {
         birthdayId,
         leagueId,
-        reminderType: "PLAYER_WHATSAPP",
+
+        reminderType:
+          "PLAYER_WHATSAPP",
       },
-      orderBy: { id: "desc" },
+
+      include,
+
+      orderBy: {
+        id: "desc",
+      },
     });
   }
 
@@ -159,22 +215,6 @@ async function attempt63049SmsFallback({
     };
   }
 
-  if (!reminderLog.fallbackSmsBody) {
-    console.warn(
-      "[BIRTHDAY_SMS_FALLBACK_SKIPPED]",
-      {
-        reminderLogId: reminderLog.id,
-        birthdayId,
-        leagueId,
-        reason: "MISSING_FALLBACK_SMS_BODY",
-      }
-    );
-
-    return {
-      attempted: false,
-      reason: "MISSING_FALLBACK_SMS_BODY",
-    };
-  }
 
   /*
    * Atomic claim:
@@ -289,13 +329,24 @@ async function attempt63049SmsFallback({
   }
 
   try {
+    const playerName =
+      getBirthdayPlayerName(
+        reminderLog
+      );
+
+    const leagueName =
+      getBirthdayLeagueName(
+        reminderLog
+      );
+
     const smsResult =
       await sendTwilioBirthdaySmsFallback({
         recipientPhone:
           reminderLog.recipientPhone,
 
-        messageBody:
-          reminderLog.fallbackSmsBody,
+        playerName,
+
+        leagueName,
 
         reminderLogId:
           reminderLog.id,

@@ -1,110 +1,67 @@
-import twilio from "twilio";
+import {
+  sendTwilioBirthdayTemplateSms,
+} from "@/lib/sendTwilioWhatsAppBirthdayMessage";
 
-let cachedClient = null;
-
-function getTwilioClient() {
-  const accountSid = String(
-    process.env.TWILIO_ACCOUNT_SID || ""
-  ).trim();
-
-  const authToken = String(
-    process.env.TWILIO_AUTH_TOKEN || ""
-  ).trim();
-
-  if (!accountSid) {
-    throw new Error(
-      "TWILIO_ACCOUNT_SID is missing."
-    );
-  }
-
-  if (!authToken) {
-    throw new Error(
-      "TWILIO_AUTH_TOKEN is missing."
-    );
-  }
-
-  if (!cachedClient) {
-    cachedClient = twilio(
-      accountSid,
-      authToken
-    );
-  }
-
-  return cachedClient;
-}
-
-function normalizeSmsNumber(value) {
-  const normalized = String(value || "")
-    .trim()
-    .replace(/\s+/g, "");
-
-  if (
-    !/^\+[1-9]\d{7,14}$/.test(normalized)
-  ) {
-    throw new Error(
-      "SMS recipient must use E.164 format, for example +16025551234."
-    );
-  }
-
-  return normalized;
-}
-
+/*
+ * Player birthday SMS fallback.
+ *
+ * IMPORTANT:
+ * The fallback uses the SAME Twilio birthday ContentSid/template
+ * and the SAME content variables as the WhatsApp birthday message.
+ *
+ * This removes the old free-form SMS body path so WhatsApp and SMS
+ * cannot drift into different birthday wording.
+ */
 export async function sendTwilioBirthdaySmsFallback({
   recipientPhone,
-  messageBody,
+  playerName,
+  leagueName,
   reminderLogId,
   birthdayId,
   leagueId,
 }) {
-  const messagingServiceSid = String(
-    process.env
-      .TWILIO_SMS_MESSAGING_SERVICE_SID ||
-      ""
-  ).trim();
+  const normalizedPlayerName =
+    String(playerName || "").trim() ||
+    "Player";
 
-  if (!messagingServiceSid) {
-    throw new Error(
-      "TWILIO_SMS_MESSAGING_SERVICE_SID is missing."
-    );
-  }
+  const normalizedLeagueName =
+    String(leagueName || "").trim() ||
+    "Cric4All League";
 
-  const normalizedRecipient =
-    normalizeSmsNumber(recipientPhone);
-
-  const cleanMessageBody = String(
-    messageBody || ""
-  ).trim();
-
-  if (!cleanMessageBody) {
-    throw new Error(
-      "SMS fallback message body is required."
-    );
-  }
-
-  const client = getTwilioClient();
-  const startedAt = Date.now();
+  console.log(
+    "[BIRTHDAY_SMS_FALLBACK_TEMPLATE_SEND]",
+    {
+      reminderLogId,
+      birthdayId,
+      leagueId,
+      recipientPhone,
+      playerName:
+        normalizedPlayerName,
+      leagueName:
+        normalizedLeagueName,
+    }
+  );
 
   try {
-    const message =
-      await client.messages.create({
-        messagingServiceSid,
+    /*
+     * This is the exact same template-SMS helper already used by
+     * the owner birthday fallback.
+     *
+     * It uses:
+     *   TWILIO_BIRTHDAY_CONTENT_SID
+     *   {{1}} = playerName
+     *   {{2}} = leagueName
+     */
+    const result =
+      await sendTwilioBirthdayTemplateSms({
+        recipientPhone,
 
-        // Important: SMS uses the regular E.164 number.
-        // Do not prefix it with "whatsapp:".
-        to: normalizedRecipient,
+        playerName:
+          normalizedPlayerName,
 
-        body: cleanMessageBody,
+        leagueName:
+          normalizedLeagueName,
       });
-
-    if (!message?.sid) {
-      throw new Error(
-        "Twilio accepted the SMS fallback but did not return a Message SID."
-      );
-    }
-
-    const providerStatus = String(
-      message.status || "accepted"
-    ).toUpperCase();
 
     console.log(
       "[BIRTHDAY_SMS_FALLBACK_ACCEPTED]",
@@ -112,23 +69,31 @@ export async function sendTwilioBirthdaySmsFallback({
         reminderLogId,
         birthdayId,
         leagueId,
-        recipientPhone:
-          normalizedRecipient,
+        recipientPhone,
+
         messageSid:
-          message.sid,
-        providerStatus,
-        elapsedMs:
-          Date.now() - startedAt,
+          result.messageSid,
+
+        providerStatus:
+          result.status,
       }
     );
 
     return {
       success: true,
-      messageSid: message.sid,
-      status: providerStatus,
+
+      messageSid:
+        result.messageSid,
+
+      status:
+        String(
+          result.status ||
+          "ACCEPTED"
+        ).toUpperCase(),
+
       recipient:
-        message.to ||
-        normalizedRecipient,
+        result.recipient ||
+        recipientPhone,
     };
   } catch (error) {
     console.error(
@@ -137,18 +102,12 @@ export async function sendTwilioBirthdaySmsFallback({
         reminderLogId,
         birthdayId,
         leagueId,
-        recipientPhone:
-          normalizedRecipient,
-        code:
-          error?.code ?? null,
-        status:
-          error?.status ?? null,
+        recipientPhone,
+
         error:
           error instanceof Error
             ? error.message
             : String(error),
-        elapsedMs:
-          Date.now() - startedAt,
       }
     );
 
