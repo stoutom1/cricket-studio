@@ -380,9 +380,7 @@ const currentHolderKey = nameKey(
           "suggestedByUserId" =
             EXCLUDED."suggestedByUserId",
           "suggestionNote" =
-            EXCLUDED."suggestionNote",
-          "updatedAt" =
-            NOW()
+            EXCLUDED."suggestionNote"
         RETURNING *
       `;
 
