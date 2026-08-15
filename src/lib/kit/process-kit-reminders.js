@@ -16,10 +16,6 @@ import {
   sendKitReminderWhatsApp,
 } from "@/lib/notifications/send-whatsapp";
 
-import {
-  sendAssignedCarrierKitWhatsApp,
-  sendCurrentHolderKitWhatsApp,
-} from "@/lib/notifications/send-kit-role-whatsapp";
 
 import {
   sendPlayerCommunication,
@@ -29,10 +25,6 @@ import {
   buildKitReminderCommunicationContent,
 } from "@/lib/communications/templates/kitReminder";
 
-import {
-  buildAssignedCarrierKitContent,
-  buildCurrentHolderKitContent,
-} from "@/lib/communications/templates/kitRoleReminders";
 
 import {
   getKitRotationKey,
@@ -3247,6 +3239,16 @@ async function processTeamKitStateMatch({
         teamId
       );
 
+    /*
+     * FINAL BUSINESS RULE
+     * -------------------
+     * The CURRENT physical holder is responsible for bringing the kit to
+     * this team's next scheduled match.
+     *
+     * TeamKitState.suggestedHolder* is intentionally ignored here.
+     * The suggestion is only a candidate for who may take the kit AFTER
+     * this match. The suggested player receives NO pre-match reminder.
+     */
     const holder =
       state.holderContact ||
       null;
@@ -3255,24 +3257,19 @@ async function processTeamKitStateMatch({
       !holder ||
       !holder.name
     ) {
-      summary.skipped +=
-        1;
+      summary.skipped += 1;
 
       console.warn(
-        "[KIT_TEAM_REMINDER_SKIPPED]",
+        "[KIT_CURRENT_HOLDER_REMINDER_SKIPPED]",
         {
           leagueId:
             match.leagueId,
-
           matchId:
             match.id,
-
           teamId,
-
           currentHolderName:
             state.currentHolderName ||
             null,
-
           reason:
             "CURRENT_HOLDER_NOT_RESOLVED",
         }
@@ -3281,48 +3278,37 @@ async function processTeamKitStateMatch({
       continue;
     }
 
-    const suggested =
-      state.suggestionMatches
-        ? state.suggestedContact
-        : null;
-
-    /*
-     * When an exact-match suggestion exists, the suggested player is the
-     * upcoming carrier. Otherwise the current holder remains responsible
-     * for bringing the team's kit to the next match.
-     */
-    const responsible =
-      suggested?.name
-        ? suggested
-        : holder;
-
     const assignment =
       await ensureTeamStateReminderAssignment({
         match,
-        state,
+        state: {
+          ...state,
+          /*
+           * Compatibility assignment timestamp only.
+           * This does NOT alter TeamKitState custody.
+           */
+          suggestedAt:
+            state.updatedAt ||
+            now,
+        },
         contact:
-          responsible,
+          holder,
         now,
       });
 
     if (!assignment) {
-      summary.skipped +=
-        1;
+      summary.skipped += 1;
 
       console.warn(
-        "[KIT_TEAM_REMINDER_SKIPPED]",
+        "[KIT_CURRENT_HOLDER_REMINDER_SKIPPED]",
         {
           leagueId:
             match.leagueId,
-
           matchId:
             match.id,
-
           teamId,
-
-          responsibleName:
-            responsible.name,
-
+          currentHolderName:
+            holder.name,
           reason:
             "COMPATIBILITY_ASSIGNMENT_NOT_CREATED",
         }
@@ -3331,296 +3317,65 @@ async function processTeamKitStateMatch({
       continue;
     }
 
-    summary
-      .checkedAssignments +=
-      1;
+    summary.checkedAssignments += 1;
 
     const scheduledFor =
       getReminderScheduledFor({
         reminderType,
-
         match,
         now,
       });
 
-    if (!suggested?.name) {
-      /*
-       * No explicit next carrier was selected. The physical current holder
-       * is responsible for the team kit, so send the existing ordinary kit
-       * reminder directly to that holder.
-       */
-      const content =
-        buildKitReminderCommunicationContent({
-          playerName:
-            holder.name,
-
-          teamName,
-
-          opponentName,
-
-          leagueName,
-
-          matchDateText:
-            formattedMatch
-              .dateText,
-
-          matchTimeText:
-            formattedMatch
-              .timeText,
-        });
-
-      const whatsappVariables =
-        content
-          .whatsappVariables;
-
-      await sendOneRecipient({
-        assignment,
-        match,
-
-        reminderType,
-
-        recipientType:
-          "CURRENT_HOLDER",
-
-        recipient:
-          holder,
-
-        scheduledFor,
-
-        content,
-
-        summary,
-        dryRun,
-
-        sendPrimary:
-          ({
-            recipientPhone,
-          }) =>
-            sendKitReminderWhatsApp({
-              phoneNumber:
-                recipientPhone,
-
-              playerName:
-                whatsappVariables
-                  .playerName,
-
-              teamName:
-                whatsappVariables
-                  .teamName,
-
-              opponentName:
-                whatsappVariables
-                  .opponentName,
-
-              leagueName:
-                whatsappVariables
-                  .leagueName,
-
-              matchDateText:
-                whatsappVariables
-                  .matchDateText,
-
-              matchTimeText:
-                whatsappVariables
-                  .matchTimeText,
-            }),
-      });
-
-      continue;
-    }
-
-    const currentHolderName =
-      holder.name;
-
-    const assignedContent =
-      buildAssignedCarrierKitContent({
-        assignedCarrierName:
-          suggested.name,
-
-        assignedTeamName:
-          teamName,
-
-        opponentName,
-
-        currentHolderName,
-
-        matchDateText:
-          formattedMatch
-            .dateText,
-
-        matchTimeText:
-          formattedMatch
-            .timeText,
-
-        leagueName,
-
-        reminderType,
-      });
-
-    await sendOneRecipient({
-      assignment,
-      match,
-
-      reminderType,
-
-      recipientType:
-        "ASSIGNED_CARRIER",
-
-      recipient:
-        suggested,
-
-      scheduledFor,
-
-      content:
-        assignedContent,
-
-      summary,
-      dryRun,
-
-      sendPrimary:
-        ({
-          recipientPhone,
-          context,
-        }) =>
-          sendAssignedCarrierKitWhatsApp({
-            recipientPhone,
-
-            assignedCarrierName:
-              suggested.name,
-
-            assignedTeamName:
-              teamName,
-
-            opponentName,
-
-            matchDateText:
-              formattedMatch
-                .dateText,
-
-            matchTimeText:
-              formattedMatch
-                .timeText,
-
-            currentHolderName,
-
-            leagueName,
-
-            context,
-          }),
-    });
-
-    const samePerson =
-      (
-        suggested.playerId &&
-        holder.playerId &&
-        Number(
-          suggested.playerId
-        ) ===
-          Number(
-            holder.playerId
-          )
-      ) ||
-      (
-        normalizedNameKey(
-          suggested.name
-        ) &&
-        normalizedNameKey(
-          suggested.name
-        ) ===
-          normalizedNameKey(
-            holder.name
-          )
-      );
-
-    if (samePerson) {
-      summary
-        .holderNotRequired +=
-        1;
-
-      continue;
-    }
-
     /*
-     * If the current holder and next suggested carrier differ, the current
-     * holder still has the physical kit and needs the coordination reminder
-     * on both day-before and two-hours-before runs until custody changes.
+     * Reuse the existing APPROVED Cric4All kit reminder template.
+     * This is the same normal template path that already succeeded for G.
      */
-    const holderContent =
-      buildCurrentHolderKitContent({
-        currentHolderName:
+    const content =
+      buildKitReminderCommunicationContent({
+        playerName:
           holder.name,
-
-        assignedCarrierName:
-          suggested.name,
-
-        assignedTeamName:
-          teamName,
-
+        teamName,
         opponentName,
-
-        matchDateText:
-          formattedMatch
-            .dateText,
-
-        matchTimeText:
-          formattedMatch
-            .timeText,
-
         leagueName,
-
-        reminderType,
+        matchDateText:
+          formattedMatch.dateText,
+        matchTimeText:
+          formattedMatch.timeText,
       });
+
+    const whatsappVariables =
+      content.whatsappVariables;
 
     await sendOneRecipient({
       assignment,
       match,
-
       reminderType,
-
       recipientType:
         "CURRENT_HOLDER",
-
       recipient:
         holder,
-
       scheduledFor,
-
-      content:
-        holderContent,
-
+      content,
       summary,
       dryRun,
 
       sendPrimary:
-        ({
-          recipientPhone,
-          context,
-        }) =>
-          sendCurrentHolderKitWhatsApp({
-            recipientPhone,
-
-            currentHolderName:
-              holder.name,
-
-            assignedCarrierName:
-              suggested.name,
-
-            assignedTeamName:
-              teamName,
-
-            opponentName,
-
+        ({ recipientPhone }) =>
+          sendKitReminderWhatsApp({
+            phoneNumber:
+              recipientPhone,
+            playerName:
+              whatsappVariables.playerName,
+            teamName:
+              whatsappVariables.teamName,
+            opponentName:
+              whatsappVariables.opponentName,
+            leagueName:
+              whatsappVariables.leagueName,
             matchDateText:
-              formattedMatch
-                .dateText,
-
+              whatsappVariables.matchDateText,
             matchTimeText:
-              formattedMatch
-                .timeText,
-
-            leagueName,
-
-            context,
+              whatsappVariables.matchTimeText,
           }),
     });
   }
@@ -3637,77 +3392,100 @@ async function processSharedTeamKitStateMatch({
   const state =
     match.sharedKitState;
 
-  const assignedPlayer =
-    state?.assignedContact ||
+  /*
+   * Shared kit follows the same rule:
+   * the CURRENT holder from the last confirmed custody event is responsible
+   * for bringing the kit to the next scheduled match.
+   * The suggested fair carrier gets NO pre-match message.
+   */
+  const holder =
+    state?.holderContact ||
     null;
 
   if (
-    !assignedPlayer ||
-    !assignedPlayer.name
+    !holder ||
+    !holder.name
   ) {
-    summary.skipped +=
-      1;
+    summary.skipped += 1;
 
     console.warn(
-      "[KIT_SHARED_REMINDER_SKIPPED]",
+      "[KIT_CURRENT_HOLDER_REMINDER_SKIPPED]",
       {
         leagueId:
           match.leagueId,
-
         matchId:
           match.id,
-
+        currentHolderName:
+          state?.currentHolderName ||
+          null,
         reason:
-          "SUGGESTED_CARRIER_NOT_RESOLVED",
+          "CURRENT_HOLDER_NOT_RESOLVED",
       }
     );
 
     return;
   }
 
+  /*
+   * KitReminderLog requires assignmentId.
+   * Use a compatibility team anchor only for logging; this does not alter
+   * who owns the shared kit in TeamKitState.
+   */
+  const holderTeamId =
+    Number(holder.teamId);
+
+  const compatibilityTeamId =
+    [
+      Number(match.teamAId),
+      Number(match.teamBId),
+    ].includes(holderTeamId)
+      ? holderTeamId
+      : Number(match.teamAId);
+
   const assignment =
-    await ensureSharedReminderAssignment({
+    await ensureTeamStateReminderAssignment({
       match,
-      state,
-      assignedContact:
-        assignedPlayer,
+      state: {
+        ...state,
+        teamId:
+          compatibilityTeamId,
+        suggestedAt:
+          state?.updatedAt ||
+          now,
+      },
+      contact: {
+        ...holder,
+        teamId:
+          compatibilityTeamId,
+      },
       now,
     });
 
   if (!assignment) {
-    summary.skipped +=
-      1;
+    summary.skipped += 1;
 
     console.warn(
-      "[KIT_SHARED_REMINDER_SKIPPED]",
+      "[KIT_CURRENT_HOLDER_REMINDER_SKIPPED]",
       {
         leagueId:
           match.leagueId,
-
         matchId:
           match.id,
-
-        suggestedHolderName:
-          state
-            ?.suggestedHolderName ||
-          null,
-
+        currentHolderName:
+          holder.name,
         reason:
-          "SUGGESTED_CARRIER_TEAM_NOT_RESOLVED",
+          "COMPATIBILITY_ASSIGNMENT_NOT_CREATED",
       }
     );
 
     return;
   }
 
-  summary
-    .checkedAssignments +=
-    1;
+  summary.checkedAssignments += 1;
 
   const scheduledFor =
     getReminderScheduledFor({
       reminderType,
-
       match,
       now,
     });
@@ -3718,253 +3496,70 @@ async function processSharedTeamKitStateMatch({
       timeZone
     );
 
-  const assignedTeamName =
-    assignedPlayer
-      .teamName ||
-    (
-      Number(
-        assignedPlayer.teamId
-      ) ===
-      Number(match.teamAId)
-        ? match.teamA?.name
-        : Number(
-              assignedPlayer.teamId
-            ) ===
-            Number(match.teamBId)
-          ? match.teamB?.name
-          : null
-    ) ||
-    "Your team";
+  const teamName =
+    compatibilityTeamId ===
+    Number(match.teamBId)
+      ? match.teamB?.name ||
+        "Your team"
+      : match.teamA?.name ||
+        "Your team";
 
   const opponentName =
     getOpponentName(
       match,
-      assignment.teamId
+      compatibilityTeamId
     );
 
   const leagueName =
     match.league?.name ||
     "Your league";
 
-  const holder =
-    state?.holderContact ||
-    null;
-
-  const currentHolderName =
-    holder?.name ||
-    state?.currentHolderName ||
-    "the current holder";
-
-  const assignedContent =
-    buildAssignedCarrierKitContent({
-      assignedCarrierName:
-        assignedPlayer.name,
-
-      assignedTeamName,
-
-      opponentName,
-
-      currentHolderName,
-
-      matchDateText:
-        formattedMatch
-          .dateText,
-
-      matchTimeText:
-        formattedMatch
-          .timeText,
-
-      leagueName,
-
-      reminderType,
-    });
-
-  await sendOneRecipient({
-    assignment,
-    match,
-
-    reminderType,
-
-    recipientType:
-      "ASSIGNED_CARRIER",
-
-    recipient:
-      assignedPlayer,
-
-    scheduledFor,
-
-    content:
-      assignedContent,
-
-    summary,
-    dryRun,
-
-    sendPrimary:
-      ({
-        recipientPhone,
-        context,
-      }) =>
-        sendAssignedCarrierKitWhatsApp({
-          recipientPhone,
-
-          assignedCarrierName:
-            assignedPlayer.name,
-
-          assignedTeamName,
-
-          opponentName,
-
-          matchDateText:
-            formattedMatch
-              .dateText,
-
-          matchTimeText:
-            formattedMatch
-              .timeText,
-
-          currentHolderName,
-
-          leagueName,
-
-          context,
-        }),
-  });
-
-  if (
-    !holder ||
-    !state?.currentHolderName
-  ) {
-    summary
-      .holderNotRequired +=
-      1;
-
-    return;
-  }
-
-  const samePerson =
-    (
-      assignedPlayer.playerId &&
-      holder.playerId &&
-      Number(
-        assignedPlayer.playerId
-      ) ===
-        Number(
-          holder.playerId
-        )
-    ) ||
-    (
-      normalizedNameKey(
-        assignedPlayer.name
-      ) &&
-      normalizedNameKey(
-        assignedPlayer.name
-      ) ===
-        normalizedNameKey(
-          holder.name
-        )
-    );
-
-  /*
-   * In the active TeamKitState workflow, custody itself is the handover
-   * signal. If the current holder is still different from the assigned
-   * carrier, coordination is still relevant.
-   *
-   * Therefore:
-   * - DAY_BEFORE: current holder receives the coordination reminder.
-   * - TWO_HOURS_BEFORE: current holder receives it again if custody has
-   *   still not moved to the assigned carrier.
-   */
-  const shouldSendHolder =
-    reminderType ===
-      "DAY_BEFORE" ||
-    reminderType ===
-      "TWO_HOURS_BEFORE";
-
-  if (
-    !shouldSendHolder ||
-    samePerson
-  ) {
-    summary
-      .holderNotRequired +=
-      1;
-
-    return;
-  }
-
-  const holderContent =
-    buildCurrentHolderKitContent({
-      currentHolderName:
+  const content =
+    buildKitReminderCommunicationContent({
+      playerName:
         holder.name,
-
-      assignedCarrierName:
-        assignedPlayer.name,
-
-      assignedTeamName,
-
+      teamName,
       opponentName,
-
-      matchDateText:
-        formattedMatch
-          .dateText,
-
-      matchTimeText:
-        formattedMatch
-          .timeText,
-
       leagueName,
-
-      reminderType,
+      matchDateText:
+        formattedMatch.dateText,
+      matchTimeText:
+        formattedMatch.timeText,
     });
+
+  const whatsappVariables =
+    content.whatsappVariables;
 
   await sendOneRecipient({
     assignment,
     match,
-
     reminderType,
-
     recipientType:
       "CURRENT_HOLDER",
-
     recipient:
       holder,
-
     scheduledFor,
-
-    content:
-      holderContent,
-
+    content,
     summary,
     dryRun,
 
     sendPrimary:
-      ({
-        recipientPhone,
-        context,
-      }) =>
-        sendCurrentHolderKitWhatsApp({
-          recipientPhone,
-
-          currentHolderName:
-            holder.name,
-
-          assignedCarrierName:
-            assignedPlayer.name,
-
-          assignedTeamName,
-
-          opponentName,
-
+      ({ recipientPhone }) =>
+        sendKitReminderWhatsApp({
+          phoneNumber:
+            recipientPhone,
+          playerName:
+            whatsappVariables.playerName,
+          teamName:
+            whatsappVariables.teamName,
+          opponentName:
+            whatsappVariables.opponentName,
+          leagueName:
+            whatsappVariables.leagueName,
           matchDateText:
-            formattedMatch
-              .dateText,
-
+            whatsappVariables.matchDateText,
           matchTimeText:
-            formattedMatch
-              .timeText,
-
-          leagueName,
-
-          context,
+            whatsappVariables.matchTimeText,
         }),
   });
 }
@@ -4194,218 +3789,80 @@ export async function processKitReminders({
         "Your team";
 
       /*
-       * Shared league kit: two distinct operational roles.
+       * Legacy shared-kit compatibility path.
+       *
+       * ONLY the current physical holder gets a pre-match reminder.
+       * The suggested/assigned future carrier gets no reminder.
        */
       if (
         assignment
           .leagueKitId
       ) {
+        const holderMember =
+          assignment
+            .leagueKit
+            ?.currentHolderRotationMember;
+
+        if (!holderMember) {
+          summary.skipped += 1;
+          continue;
+        }
+
         const holder =
           contactFromRotationMember(
-            assignment
-              .leagueKit
-              ?.currentHolderRotationMember
+            holderMember
           );
 
-        const assignedContent =
-          buildAssignedCarrierKitContent({
-            assignedCarrierName:
-              assignedPlayer.name,
-
-            assignedTeamName:
-              teamName,
-
-            opponentName,
-
-            currentHolderName:
+        const holderContent =
+          buildKitReminderCommunicationContent({
+            playerName:
               holder.name,
-
-            matchDateText:
-              formattedMatch
-                .dateText,
-
-            matchTimeText:
-              formattedMatch
-                .timeText,
-
+            teamName,
+            opponentName,
             leagueName,
-
-            reminderType:
-              normalizedReminderType,
+            matchDateText:
+              formattedMatch.dateText,
+            matchTimeText:
+              formattedMatch.timeText,
           });
+
+        const holderVariables =
+          holderContent.whatsappVariables;
 
         await sendOneRecipient({
           assignment,
           match,
-
           reminderType:
             normalizedReminderType,
-
           recipientType:
-            "ASSIGNED_CARRIER",
-
+            "CURRENT_HOLDER",
           recipient:
-            assignedPlayer,
-
+            holder,
           scheduledFor,
-
           content:
-            assignedContent,
-
+            holderContent,
           summary,
           dryRun,
 
           sendPrimary:
-            ({
-              recipientPhone,
-              context,
-            }) =>
-              sendAssignedCarrierKitWhatsApp({
-                recipientPhone,
-
-                assignedCarrierName:
-                  assignedPlayer.name,
-
-                assignedTeamName:
-                  teamName,
-
-                opponentName,
-
+            ({ recipientPhone }) =>
+              sendKitReminderWhatsApp({
+                phoneNumber:
+                  recipientPhone,
+                playerName:
+                  holderVariables.playerName,
+                teamName:
+                  holderVariables.teamName,
+                opponentName:
+                  holderVariables.opponentName,
+                leagueName:
+                  holderVariables.leagueName,
                 matchDateText:
-                  formattedMatch
-                    .dateText,
-
+                  holderVariables.matchDateText,
                 matchTimeText:
-                  formattedMatch
-                    .timeText,
-
-                currentHolderName:
-                  holder.name,
-
-                leagueName,
-
-                context,
+                  holderVariables.matchTimeText,
               }),
         });
-
-        const shouldSendHolder =
-          normalizedReminderType ===
-            "DAY_BEFORE" ||
-          (normalizedReminderType ===
-            "TWO_HOURS_BEFORE" &&
-            holderNeedsTwoHourReminder(
-              assignment
-                .leagueKit
-            ));
-
-        const samePerson =
-          assignment
-            .leagueKit
-            ?.currentHolderRotationMember
-            ?.id &&
-          Number(
-            assignment
-              .leagueKit
-              .currentHolderRotationMember
-              .id
-          ) ===
-            Number(
-              assignment
-                .rotationMemberId
-            );
-
-        if (
-          shouldSendHolder &&
-          !samePerson &&
-          assignment
-            .leagueKit
-            ?.currentHolderRotationMember
-        ) {
-          const holderContent =
-            buildCurrentHolderKitContent({
-              currentHolderName:
-                holder.name,
-
-              assignedCarrierName:
-                assignedPlayer.name,
-
-              assignedTeamName:
-                teamName,
-
-              opponentName,
-
-              matchDateText:
-                formattedMatch
-                  .dateText,
-
-              matchTimeText:
-                formattedMatch
-                  .timeText,
-
-              leagueName,
-
-              reminderType:
-                normalizedReminderType,
-            });
-
-          await sendOneRecipient({
-            assignment,
-            match,
-
-            reminderType:
-              normalizedReminderType,
-
-            recipientType:
-              "CURRENT_HOLDER",
-
-            recipient:
-              holder,
-
-            scheduledFor,
-
-            content:
-              holderContent,
-
-            summary,
-            dryRun,
-
-            sendPrimary:
-              ({
-                recipientPhone,
-                context,
-              }) =>
-                sendCurrentHolderKitWhatsApp({
-                  recipientPhone,
-
-                  currentHolderName:
-                    holder.name,
-
-                  assignedCarrierName:
-                    assignedPlayer.name,
-
-                  assignedTeamName:
-                    teamName,
-
-                  opponentName,
-
-                  matchDateText:
-                    formattedMatch
-                      .dateText,
-
-                  matchTimeText:
-                    formattedMatch
-                      .timeText,
-
-                  leagueName,
-
-                  context,
-                }),
-          });
-        } else {
-          summary
-            .holderNotRequired +=
-            1;
-        }
 
         continue;
       }
