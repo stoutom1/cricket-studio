@@ -77,10 +77,54 @@ function cleanVariables(values) {
     Object.entries(values).map(
       ([key, value]) => [
         key,
-        String(value || "").trim(),
+        String(value ?? "").trim(),
       ]
     )
   );
+}
+
+function validateVariables({
+  role,
+  contentSid,
+  variables,
+}) {
+  const cleaned =
+    cleanVariables(variables);
+
+  const emptyKeys =
+    Object.entries(cleaned)
+      .filter(
+        ([, value]) =>
+          !String(value || "").trim()
+      )
+      .map(([key]) => key);
+
+  console.log(
+    "[KIT_ROLE_TEMPLATE_VARIABLES]",
+    {
+      role,
+      contentSid,
+      parameterCount:
+        Object.keys(cleaned).length,
+      variables:
+        cleaned,
+      emptyKeys,
+    }
+  );
+
+  if (emptyKeys.length > 0) {
+    const error =
+      new Error(
+        `Kit WhatsApp template ${role} has empty Content variables: ${emptyKeys.join(", ")}.`
+      );
+
+    error.code =
+      "KIT_TEMPLATE_EMPTY_VARIABLE";
+
+    throw error;
+  }
+
+  return cleaned;
 }
 
 async function sendTemplate({
@@ -120,6 +164,30 @@ async function sendTemplate({
   const startedAt =
     Date.now();
 
+  const cleanedVariables =
+    validateVariables({
+      role,
+      contentSid,
+      variables,
+    });
+
+  console.log(
+    "[KIT_ROLE_WHATSAPP_REQUEST]",
+    {
+      role,
+      contentSid,
+      messagingServiceSid,
+      recipientPhone:
+        normalizedRecipient,
+      statusCallback,
+      parameterCount:
+        Object.keys(
+          cleanedVariables
+        ).length,
+      context,
+    }
+  );
+
   try {
     const message =
       await getTwilioClient()
@@ -133,9 +201,7 @@ async function sendTemplate({
 
           contentVariables:
             JSON.stringify(
-              cleanVariables(
-                variables
-              )
+              cleanedVariables
             ),
 
           statusCallback,
@@ -228,6 +294,10 @@ async function sendTemplate({
         elapsedMs:
           Date.now() -
           startedAt,
+        contentSid,
+        messagingServiceSid,
+        variables:
+          cleanedVariables,
         context,
       }
     );
