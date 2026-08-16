@@ -1552,6 +1552,318 @@ async function resolveTeamKitStateContact({
   };
 }
 
+
+/*
+ * Shared-league exception:
+ * one real person can exist as multiple Player rows because the same person
+ * can belong to multiple teams in the league.
+ *
+ * TeamKitState.currentHolderPlayerId is therefore a useful hint, but it must
+ * not be treated as the only identity/contact source for the shared kit.
+ *
+ * Resolution rules:
+ * 1. Prefer the exact Player ID when that row itself has opted-in contact.
+ * 2. Otherwise look at same-name Player rows across the whole league.
+ * 3. If those same-name rows resolve to ONE unique valid opted-in phone,
+ *    use that contact (safe duplicate-player merge).
+ * 4. If there are multiple different valid phones for the same name, do not
+ *    guess; fall back to the exact Player row / normal resolver so Cric4All
+ *    skips rather than messaging the wrong person.
+ */
+async function resolveSharedLeagueHolderContact({
+  leagueId,
+  playerId,
+  name,
+}) {
+  const cleanName =
+    String(name || "")
+      .trim()
+      .replace(/\s+/g, " ");
+
+  const numericLeagueId =
+    Number(leagueId);
+
+  const numericPlayerId =
+    playerId
+      ? Number(playerId)
+      : null;
+
+  const orConditions = [];
+
+  if (
+    Number.isInteger(
+      numericPlayerId
+    ) &&
+    numericPlayerId > 0
+  ) {
+    orConditions.push({
+      id:
+        numericPlayerId,
+    });
+  }
+
+  if (cleanName) {
+    orConditions.push({
+      name: {
+        equals:
+          cleanName,
+
+        mode:
+          "insensitive",
+      },
+    });
+  }
+
+  if (
+    !Number.isInteger(
+      numericLeagueId
+    ) ||
+    numericLeagueId <= 0 ||
+    orConditions.length === 0
+  ) {
+    return resolveTeamKitStateContact({
+      leagueId,
+      matchId:
+        null,
+      teamIds:
+        [],
+      playerId,
+      name:
+        cleanName,
+    });
+  }
+
+  const candidates =
+    await prisma.player.findMany({
+      where: {
+        team: {
+          leagueId:
+            numericLeagueId,
+        },
+
+        OR:
+          orConditions,
+      },
+
+      select: {
+        id:
+          true,
+
+        name:
+          true,
+
+        teamId:
+          true,
+
+        whatsappNumber:
+          true,
+
+        whatsappOptIn:
+          true,
+
+        team: {
+          select: {
+            id:
+              true,
+
+            name:
+              true,
+          },
+        },
+      },
+
+      orderBy: {
+        id:
+          "asc",
+      },
+    });
+
+  const toContact = (
+    player
+  ) => ({
+    playerId:
+      player?.id ||
+      null,
+
+    name:
+      player?.name ||
+      cleanName ||
+      "Player",
+
+    phone:
+      player?.whatsappNumber ||
+      null,
+
+    optedIn:
+      player?.whatsappOptIn ===
+      true,
+
+    teamId:
+      player?.teamId ||
+      null,
+
+    teamName:
+      player?.team?.name ||
+      null,
+  });
+
+  const exactCandidate =
+    Number.isInteger(
+      numericPlayerId
+    )
+      ? candidates.find(
+          (candidate) =>
+            Number(candidate.id) ===
+            numericPlayerId
+        ) ||
+        null
+      : null;
+
+  const exactPhone =
+    normalizeInternationalPhone(
+      exactCandidate
+        ?.whatsappNumber
+    );
+
+  if (
+    exactCandidate &&
+    exactCandidate
+      .whatsappOptIn ===
+      true &&
+    exactPhone
+  ) {
+    return toContact(
+      exactCandidate
+    );
+  }
+
+  const normalizedCleanName =
+    normalizedNameKey(
+      cleanName
+    );
+
+  const sameNameCandidates =
+    candidates.filter(
+      (candidate) =>
+        normalizedNameKey(
+          candidate.name
+        ) ===
+        normalizedCleanName
+    );
+
+  const contactCandidates =
+    sameNameCandidates
+      .map((candidate) => ({
+        candidate,
+
+        phone:
+          normalizeInternationalPhone(
+            candidate
+              .whatsappNumber
+          ),
+      }))
+      .filter(
+        (entry) =>
+          entry.candidate
+            .whatsappOptIn ===
+            true &&
+          Boolean(entry.phone)
+      );
+
+  /*
+   * If the exact Player row has a phone but is not opted in, and another
+   * duplicate row has the SAME phone and is opted in, it is the same human.
+   */
+  if (exactPhone) {
+    const samePhoneCandidate =
+      contactCandidates.find(
+        (entry) =>
+          entry.phone ===
+          exactPhone
+      );
+
+    if (samePhoneCandidate) {
+      return toContact(
+        samePhoneCandidate
+          .candidate
+      );
+    }
+  }
+
+  /*
+   * Multiple Player IDs are safe to merge when every opted-in duplicate
+   * points to the same phone number.
+   */
+  const candidatesByPhone =
+    new Map();
+
+  for (
+    const entry
+    of contactCandidates
+  ) {
+    if (
+      !candidatesByPhone.has(
+        entry.phone
+      )
+    ) {
+      candidatesByPhone.set(
+        entry.phone,
+        entry.candidate
+      );
+    }
+  }
+
+  if (
+    candidatesByPhone.size ===
+    1
+  ) {
+    return toContact(
+      [
+        ...candidatesByPhone
+          .values(),
+      ][0]
+    );
+  }
+
+  /*
+   * Ambiguous same-name duplicates with different phones must never be
+   * guessed. Return the exact row if available; sendOneRecipient will then
+   * safely apply its normal phone/consent checks.
+   */
+  if (exactCandidate) {
+    return toContact(
+      exactCandidate
+    );
+  }
+
+  if (
+    sameNameCandidates.length ===
+    1
+  ) {
+    return toContact(
+      sameNameCandidates[0]
+    );
+  }
+
+  return resolveTeamKitStateContact({
+    leagueId:
+      numericLeagueId,
+
+    matchId:
+      null,
+
+    teamIds:
+      [],
+
+    playerId:
+      numericPlayerId,
+
+    name:
+      cleanName,
+  });
+}
+
+
 /*
  * KitReminderLog currently has a required KitAssignment foreign key.
  * The active Team Kit UI stores its live suggestion in TeamKitState.
@@ -2315,14 +2627,20 @@ async function ensureTeamStateReminderAssignment({
 async function loadSharedTeamKitStateMatches(
   now
 ) {
+  /*
+   * CURRENT HOLDER is the source of truth for pre-match reminders.
+   *
+   * Do NOT require suggestedHolderName or suggestedForMatchId here.
+   * The suggestion is only for who may take custody AFTER the upcoming
+   * match and must never control whether the current holder gets reminded.
+   */
   const stateRows =
     await prisma.$queryRaw`
       SELECT
         state.*
       FROM "TeamKitState" state
       WHERE state."scopeKey" = 'LEAGUE'
-        AND state."suggestedHolderName" IS NOT NULL
-        AND state."suggestedForMatchId" IS NOT NULL
+        AND state."currentHolderName" IS NOT NULL
     `;
 
   if (
@@ -2454,14 +2772,24 @@ async function loadSharedTeamKitStateMatches(
     const match
     of candidateMatches
   ) {
-    if (
-      match.league
-        ?.kitRotationMode !==
-        "LEAGUE_PLAYER"
-    ) {
-      continue;
-    }
-
+    /*
+     * IMPORTANT SHARED-KIT SOURCE OF TRUTH
+     * ------------------------------------
+     * Some historical/special leagues (notably Surprise Cricket League)
+     * have League.kitRotationMode = "TEAM" even though their active
+     * TeamKitState is a single league-wide row:
+     *
+     *   scopeKey = "LEAGUE"
+     *   teamId   = null
+     *
+     * That LEAGUE state is the authoritative indication that the league is
+     * operating one shared kit. Do not reject the upcoming match merely
+     * because the older League.kitRotationMode value still says TEAM.
+     *
+     * stateRows above already contains only leagues with a LEAGUE-scoped
+     * TeamKitState current holder, so candidateMatches is already limited
+     * to genuine shared-kit state leagues.
+     */
     if (
       isClosedMatch(match)
     ) {
@@ -2476,6 +2804,9 @@ async function loadSharedTeamKitStateMatches(
       continue;
     }
 
+    /*
+     * First non-closed future match for this shared-kit league.
+     */
     nextByLeague.set(
       Number(match.leagueId),
       match
@@ -2496,63 +2827,34 @@ async function loadSharedTeamKitStateMatches(
         leagueId
       );
 
-    /*
-     * A suggestion belongs to one match. Never carry a stale suggestion
-     * forward to a different upcoming match.
-     */
     if (
       !state ||
-      Number(
-        state.suggestedForMatchId
-      ) !==
-        Number(match.id)
+      !String(
+        state.currentHolderName ||
+        ""
+      ).trim()
     ) {
       continue;
     }
 
-    const teamIds = [
-      Number(match.teamAId),
-      Number(match.teamBId),
-    ];
-
-    const assignedContact =
-      await resolveTeamKitStateContact({
+    /*
+     * Surprise Cricket League can contain the same real person as several
+     * Player rows (one Player.id per team). Resolve the shared current
+     * holder league-wide instead of assuming currentHolderPlayerId is the
+     * only valid contact row.
+     */
+    const holderContact =
+      await resolveSharedLeagueHolderContact({
         leagueId,
-
-        matchId:
-          match.id,
-
-        teamIds,
 
         playerId:
           state
-            .suggestedHolderPlayerId,
+            .currentHolderPlayerId,
 
         name:
           state
-            .suggestedHolderName,
+            .currentHolderName,
       });
-
-    const holderContact =
-      state.currentHolderName
-        ? await resolveTeamKitStateContact({
-            leagueId,
-
-            matchId:
-              match.id,
-
-            teamIds:
-              [],
-
-            playerId:
-              state
-                .currentHolderPlayerId,
-
-            name:
-              state
-                .currentHolderName,
-          })
-        : null;
 
     result.push({
       ...match,
@@ -2562,8 +2864,6 @@ async function loadSharedTeamKitStateMatches(
 
       sharedKitState: {
         ...state,
-
-        assignedContact,
 
         holderContact,
       },
