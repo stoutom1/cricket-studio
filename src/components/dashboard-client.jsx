@@ -735,6 +735,8 @@ const [
   postMatchKitPrompt,
   setPostMatchKitPrompt,
 ] = useState(null);
+const postMatchKitAutoPromptedRef =
+  useRef(new Set());
 const [
   milestoneCelebration,
   setMilestoneCelebration,
@@ -4303,13 +4305,119 @@ if (scoreboard?.currentState && !showDeliverySetupModal) {
       wicketNote: "",
     }));
   }
-    if (updatedIsFinalBallBowled || updatedIsChaseComplete) {
+    const updatedMatchStatus =
+      String(
+        updatedBoard
+          ?.match
+          ?.status ||
+        ""
+      )
+        .trim()
+        .toUpperCase();
+
+    const updatedMatchCompleted =
+      [
+        "COMPLETED",
+        "COMPLETED_LOCKED",
+        "COMPLETED_CORRECTED",
+      ].includes(
+        updatedMatchStatus
+      );
+
+    /*
+     * A tied main match can temporarily have COMPLETED status while a
+     * Super Over is still required. Do not ask for final kit custody until
+     * the tie-breaker itself is complete.
+     */
+    const updatedStatusText =
+      String(
+        updatedBoard
+          ?.match
+          ?.statusText ||
+        updatedBoard
+          ?.summary
+          ?.resultText ||
+        updatedBoard
+          ?.resultText ||
+        ""
+      )
+        .trim()
+        .toLowerCase();
+
+    const inningsOneRuns =
+      Number(
+        updatedBoard
+          ?.innings
+          ?.[0]
+          ?.runs ??
+        NaN
+      );
+
+    const inningsTwoRuns =
+      Number(
+        updatedBoard
+          ?.innings
+          ?.[1]
+          ?.runs ??
+        NaN
+      );
+
+    const scoreIsTied =
+      Number.isFinite(
+        inningsOneRuns
+      ) &&
+      Number.isFinite(
+        inningsTwoRuns
+      ) &&
+      inningsOneRuns ===
+        inningsTwoRuns;
+
+    const superOverStillRequired =
+      (
+        updatedStatusText
+          .includes("tied") ||
+        scoreIsTied ||
+        (
+          updatedBoard
+            ?.superOver
+            ?.exists &&
+          !updatedBoard
+            ?.superOver
+            ?.completed
+        )
+      ) &&
+      !updatedBoard
+        ?.superOver
+        ?.completed;
+
+    if (
+      updatedIsFinalBallBowled ||
+      updatedIsChaseComplete ||
+      updatedMatchCompleted
+    ) {
       setShowBowlerModal(false);
       setMustChangeBowler(false);
       setPendingBallData(null);
 
+      if (
+        !superOverStillRequired
+      ) {
+        /*
+         * This is the missing path:
+         * automatic completion now produces the same post-match custody
+         * prompt as manual End Match.
+         *
+         * No future scheduled match is required.
+         */
+        await syncAndShowPostMatchKitPrompt(
+          selectedMatchId
+        );
+      }
+
       setMessage(
-        "🏁 Match ended. Review the scorecard, then click Lock Match to preserve the final scoreboard."
+        superOverStillRequired
+          ? "🏁 Main match tied. Complete the Super Over before confirming final kit custody."
+          : "🏁 Match ended. Confirm who took the kit home, then review/lock the final scoreboard."
       );
 
       //await loadMatches();
@@ -5950,6 +6058,113 @@ function showPostMatchKitPrompt(result) {
   });
 }
 
+/*
+ * AUTO-COMPLETION KIT FOLLOW-UP
+ * =============================
+ * A match can become COMPLETED directly from the final scored delivery
+ * (target reached, final legal ball, all-out, etc.) without the scorer
+ * pressing "End Match".
+ *
+ * The manual End / Lock / DLS routes already return kitCustody + nextAction.
+ * The automatic scoring path did not, so Scorer Mode had no result object
+ * to pass to showPostMatchKitPrompt().
+ *
+ * This helper calls a small sync-only endpoint. It DOES NOT change:
+ * - the match result,
+ * - scores,
+ * - status text,
+ * - innings,
+ * - lock state,
+ * - Super Over result.
+ *
+ * It only makes sure the completed match has its pending custody task(s)
+ * and then opens the existing KitPostMatchPrompt.
+ *
+ * IMPORTANT:
+ * A future/next scheduled match is NOT required. Custody belongs to the
+ * match that just ended.
+ */
+async function syncAndShowPostMatchKitPrompt(
+  matchId
+) {
+  const numericMatchId =
+    Number(matchId);
+
+  if (
+    !Number.isInteger(
+      numericMatchId
+    ) ||
+    numericMatchId <= 0
+  ) {
+    return;
+  }
+
+  /*
+   * Prevent the automatic scoring path from opening the same popup more
+   * than once if several scoreboard refreshes observe COMPLETED.
+   *
+   * Manual End/Lock/DLS behavior remains untouched.
+   */
+  if (
+    postMatchKitAutoPromptedRef
+      .current
+      .has(numericMatchId)
+  ) {
+    return;
+  }
+
+  postMatchKitAutoPromptedRef
+    .current
+    .add(numericMatchId);
+
+  try {
+    const result =
+      await api(
+        `/api/matches/${numericMatchId}/kit-custody/sync`,
+        {
+          method:
+            "POST",
+        }
+      );
+
+    showPostMatchKitPrompt(
+      result
+    );
+  } catch (err) {
+    console.error(
+      "[POST_MATCH_KIT_AUTO_SYNC_FAILED]",
+      err
+    );
+
+    /*
+     * Still show the existing popup. The scorer must never lose the
+     * post-match custody action merely because the background task sync
+     * encountered a temporary problem.
+     */
+    showPostMatchKitPrompt({
+      nextAction: {
+        type:
+          "RECORD_KIT_CUSTODY",
+
+        leagueId:
+          activeLeagueId,
+
+        matchId:
+          numericMatchId,
+      },
+
+      kitCustody: {
+        pendingTaskCount:
+          0,
+
+        warning:
+          err?.message ||
+          "The match completed, but Cric4All could not verify the kit-custody task. Open Kit to confirm who took the kit home.",
+      },
+    });
+  }
+}
+
 function openKitFromPostMatchPrompt() {
   const targetLeagueId =
     postMatchKitPrompt?.leagueId;
@@ -6258,6 +6473,16 @@ async function scoreSuperOverBall({
       setScorerMode(false);
       setScorerDrawer(null);
       setScoringSubTab("SCOREBOARD");
+
+      /*
+       * A tied main match deliberately skips the automatic custody popup.
+       * Once the Super Over has a final result, this is the true end of
+       * the match and custody must be confirmed even when no future match
+       * has been scheduled.
+       */
+      await syncAndShowPostMatchKitPrompt(
+        superOverMatch.id
+      );
     }
 
     if (
