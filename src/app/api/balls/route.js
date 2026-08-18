@@ -47,6 +47,15 @@ export async function POST(request) {
       ? Number(body.assistantFielderId)
       : null,
     wicketNote: body.wicketNote || null,
+
+    // Offline scoring metadata. These are optional for normal online scoring.
+    clientEventId: String(body.clientEventId || "").trim() || null,
+    clientDeviceId: String(body.clientDeviceId || "").trim() || null,
+    clientCreatedAt: body.clientCreatedAt ? new Date(body.clientCreatedAt) : null,
+    expectedPreviousSequence:
+      Number.isInteger(Number(body.expectedPreviousSequence))
+        ? Number(body.expectedPreviousSequence)
+        : null,
   };
 
   if (!Number.isInteger(payload.matchId) || payload.matchId <= 0) {
@@ -74,6 +83,63 @@ const endInningsAfterWicket = Boolean(payload.endInningsAfterWicket);
 
   if (!match) {
     return NextResponse.json({ error: "Match not found" }, { status: 404 });
+  }
+
+  /*
+   * IDEMPOTENCY FIRST.
+   * If the server saved an offline event but the client lost the HTTP response,
+   * retrying the same clientEventId must return the existing ball instead of
+   * inserting a duplicate delivery.
+   */
+  if (payload.clientEventId) {
+    const existingOfflineBall = await prisma.ball.findUnique({
+      where: { clientEventId: payload.clientEventId },
+    });
+
+    if (existingOfflineBall) {
+      return NextResponse.json(
+        {
+          ...existingOfflineBall,
+          idempotentReplay: true,
+        },
+        { status: 200 }
+      );
+    }
+  }
+
+  /*
+   * OFFLINE CONFLICT GUARD.
+   * The first queued event remembers which server sequence it was based on.
+   * If another scorer added/removed a delivery while this device was offline,
+   * stop before applying the queued event.
+   */
+  if (payload.expectedPreviousSequence !== null) {
+    const latestServerBall = await prisma.ball.findFirst({
+      where: {
+        matchId: payload.matchId,
+        inningsNo: payload.inningsNo,
+      },
+      orderBy: { sequence: "desc" },
+      select: { sequence: true },
+    });
+
+    const serverSequence = Number(latestServerBall?.sequence || 0);
+
+    if (serverSequence !== payload.expectedPreviousSequence) {
+      return NextResponse.json(
+        {
+          error: "OFFLINE_SYNC_CONFLICT",
+          code: "OFFLINE_SYNC_CONFLICT",
+          message:
+            "The match changed on the server while this device was offline. Review the server score before continuing sync.",
+          expectedPreviousSequence: payload.expectedPreviousSequence,
+          serverSequence,
+          matchId: payload.matchId,
+          inningsNo: payload.inningsNo,
+        },
+        { status: 409 }
+      );
+    }
   }
 
   const currentState = await prisma.matchState.findUnique({
@@ -389,7 +455,10 @@ if (isCountingWicket && dismissedThisBallId) {
     });
   }
 
-  const ball = await prisma.ball.create({
+  let ball;
+
+  try {
+    ball = await prisma.ball.create({
     data: {
       matchId: payload.matchId,
       inningsNo: payload.inningsNo,
@@ -413,8 +482,47 @@ if (isCountingWicket && dismissedThisBallId) {
       fielderId: payload.fielderId,
       assistantFielderId: payload.assistantFielderId,
       wicketNote: payload.wicketNote,
+      clientEventId: payload.clientEventId,
+      clientDeviceId: payload.clientDeviceId,
+      clientCreatedAt:
+        payload.clientCreatedAt && !Number.isNaN(payload.clientCreatedAt.getTime())
+          ? payload.clientCreatedAt
+          : null,
     },
   });
+  } catch (createError) {
+    /*
+     * A concurrent retry can race the idempotency lookup. If clientEventId
+     * won the unique race, return the already-created delivery.
+     */
+    if (createError?.code === "P2002" && payload.clientEventId) {
+      const existingOfflineBall = await prisma.ball.findUnique({
+        where: { clientEventId: payload.clientEventId },
+      });
+
+      if (existingOfflineBall) {
+        return NextResponse.json(
+          { ...existingOfflineBall, idempotentReplay: true },
+          { status: 200 }
+        );
+      }
+    }
+
+    if (createError?.code === "P2002") {
+      return NextResponse.json(
+        {
+          error: "OFFLINE_SYNC_CONFLICT",
+          code: "OFFLINE_SYNC_CONFLICT",
+          message: "Another delivery was saved at the same sequence. Refresh the server score before continuing.",
+          matchId: payload.matchId,
+          inningsNo: payload.inningsNo,
+        },
+        { status: 409 }
+      );
+    }
+
+    throw createError;
+  }
 
  const inningsAllOut =
   noMoreBattersAvailable || isFinalAllowedWicket;

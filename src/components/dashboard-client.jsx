@@ -1,7 +1,7 @@
 "use client";
 import { useSession } from "next-auth/react";
 import React, { useEffect, useMemo, useRef, useState } from "react";
-import { EXTRA_TYPES, getPlayerName, WICKET_TYPES } from "@/lib/scoring";
+import { EXTRA_TYPES, getPlayerName, WICKET_TYPES, applyBallOutcome, isLegalDelivery } from "@/lib/scoring";
 import "@/app/globals.css";
 import "@/app/super-over-scorecard-mobile.css";
 import { useRouter, useSearchParams } from "next/navigation";
@@ -17,6 +17,38 @@ import KitPostMatchPrompt from "@/components/kit/KitPostMatchPrompt";
 import LeagueResourcesShortcut from "@/components/resources/LeagueResourcesShortcut";
 import matchDayNavStyles from "./MatchDayDashboardNav.module.css";
 import playerCardStyles from "./DashboardPlayerCard.module.css";
+import {
+  cacheOfflineMatchSnapshot,
+  createClientEventId,
+  getLastPendingOfflineBall,
+  getOfflineDeviceId,
+  getOfflineMatchSnapshot,
+  getPendingOfflineBallCount,
+  isOfflineRetryableError,
+  listPendingOfflineBalls,
+  queueOfflineBall,
+  removeOfflineBall,
+  updateOfflineBall,
+  getPendingOfflineKeeperChangeCount,
+  listPendingOfflineKeeperChanges,
+  queueOfflineKeeperChange,
+  removeOfflineKeeperChange,
+  getPendingOfflineInningsTransition,
+  getPendingOfflineInningsTransitionCount,
+  queueOfflineInningsTransition,
+  removeOfflineInningsTransition,
+  getPendingOfflineStrikeSwapCount,
+  listPendingOfflineStrikeSwaps,
+  queueOfflineStrikeSwap,
+  removeOfflineStrikeSwap,
+  clearOfflineServerUndoSnapshot,
+  getOfflineServerUndoSnapshot,
+  getPendingOfflineServerUndo,
+  getPendingOfflineServerUndoCount,
+  queueOfflineServerUndo,
+  removeOfflineServerUndo,
+  saveOfflineServerUndoSnapshot,
+} from "@/lib/offline-scoring-store";
 
 function SuperOverScorecard({ superOver }) {
   if (!superOver?.exists) return null;
@@ -596,6 +628,21 @@ const [isMobile, setIsMobile] = useState(false);
 const [showAddPlayers, setShowAddPlayers] = useState(false);
 const [memberSearch, setMemberSearch] = useState("");
 const [matchesSubTab, setMatchesSubTab] = useState("ACTIVE");
+
+/*
+ * Completed history can grow very large. Rendering every completed match
+ * card (desktop + mobile details) in one React pass makes the Completed tab
+ * feel slow even though the data is already loaded.
+ *
+ * Render a small first page immediately, then progressively reveal more.
+ */
+const COMPLETED_MATCH_RENDER_PAGE_SIZE = 12;
+const [
+  completedMatchRenderLimit,
+  setCompletedMatchRenderLimit,
+] = useState(
+  COMPLETED_MATCH_RENDER_PAGE_SIZE
+);
 const [me, setMe] = useState(null);
 const [permissionsLoading, setPermissionsLoading] = useState(false);
 const scheduledMatches = matches.filter((m) => normalizeStatus(m.status) === "SCHEDULED");
@@ -639,6 +686,20 @@ const [deliverySetupReason, setDeliverySetupReason] = useState("");
 const [pendingDeliverySetupAfterStart, setPendingDeliverySetupAfterStart] = useState(false);
 const [pendingSecondInningsSetup, setPendingSecondInningsSetup] = useState(false);
 const [isSavingBall, setIsSavingBall] = useState(false);
+const [offlineSyncState, setOfflineSyncState] = useState({
+  online: typeof navigator === "undefined" ? true : navigator.onLine,
+  pending: 0,
+  syncing: false,
+  conflict: null,
+  lastError: "",
+});
+const [offlineLocalMatchComplete, setOfflineLocalMatchComplete] = useState(false);
+const offlineSyncRunningRef = useRef(false);
+const offlineServerSequencesRef = useRef({
+  matchId: null,
+  1: 0,
+  2: 0,
+});
 const [pressedScoreKey, setPressedScoreKey] = useState("");
 const [optimisticScoreboard, setOptimisticScoreboard] = useState(null);
 const [selectedExtraOption, setSelectedExtraOption] = useState("");
@@ -737,6 +798,30 @@ const [
 ] = useState(null);
 const postMatchKitAutoPromptedRef =
   useRef(new Set());
+useEffect(() => {
+  if (
+    !postMatchKitPrompt ||
+    typeof document === "undefined"
+  ) {
+    return;
+  }
+
+  /*
+   * The kit-custody prompt is a match-end blocking modal. Keep Scorer Mode
+   * visible underneath it, but prevent the scorer page from scrolling while
+   * the custody decision is being made.
+   */
+  const previousOverflow =
+    document.body.style.overflow;
+
+  document.body.style.overflow =
+    "hidden";
+
+  return () => {
+    document.body.style.overflow =
+      previousOverflow;
+  };
+}, [postMatchKitPrompt]);
 const [
   milestoneCelebration,
   setMilestoneCelebration,
@@ -2163,7 +2248,7 @@ function openEditPlayer(player) {
 
   setShowEditPlayerModal(true);
 }
-function buildLiveMatchCenter(scoreboard) {
+function buildLiveMatchCenter(scoreboard, preferLocalTarget = false) {
   if (!scoreboard) return null;
 
   const currentInningsNo = Number(scoreboard.currentInnings || 1);
@@ -2185,8 +2270,35 @@ function buildLiveMatchCenter(scoreboard) {
   const crr =
     legalBalls > 0 ? ((runs / legalBalls) * 6).toFixed(2) : "0.00";
 
-  const target = Number(scoreboard.summary?.target || 0);
-  const isSecondInnings = currentInningsNo === 2;
+  const isSecondInnings =
+    currentInningsNo === 2;
+
+  const firstInningsRuns =
+    Number(
+      scoreboard
+        ?.innings
+        ?.[0]
+        ?.runs ||
+      0
+    );
+
+  /*
+   * During offline/local-first scoring, scoreboard.summary.target may still
+   * be the last server target. If innings 1 contained local unsynced runs,
+   * derive the chase target from the LOCAL first-innings total instead.
+   *
+   * Keep the server target online so DLS/adjusted targets are preserved.
+   */
+  const target =
+    preferLocalTarget &&
+    isSecondInnings
+      ? firstInningsRuns + 1
+      : Number(
+          scoreboard
+            .summary
+            ?.target ||
+          0
+        );
 
   const ballsRemaining =
     maxBalls > 0 ? Math.max(maxBalls - legalBalls, 0) : 0;
@@ -2237,6 +2349,169 @@ function buildLiveMatchCenter(scoreboard) {
     isSecondInnings,
   };
 }
+
+
+function buildOfflineLocalResultText(
+  board,
+  liveCenter
+) {
+  if (
+    !board ||
+    !liveCenter
+  ) {
+    return "";
+  }
+
+  const inningsNo =
+    Number(
+      liveCenter.inningsNo ||
+      board.currentInnings ||
+      1
+    );
+
+  if (inningsNo !== 2) {
+    return "";
+  }
+
+  const firstInnings =
+    board
+      ?.innings
+      ?.[0] ||
+    {};
+
+  const secondInnings =
+    board
+      ?.innings
+      ?.[1] ||
+    {};
+
+  const firstRuns =
+    Number(
+      firstInnings.runs ||
+      0
+    );
+
+  const secondRuns =
+    Number(
+      secondInnings.runs ||
+      0
+    );
+
+  const secondWickets =
+    Number(
+      secondInnings.wickets ||
+      0
+    );
+
+  const target =
+    firstRuns + 1;
+
+  const ballsRemaining =
+    Number(
+      liveCenter
+        .ballsRemaining ||
+      0
+    );
+
+  const battingTeamName =
+    secondInnings.teamName ||
+    secondInnings
+      .battingTeamName ||
+    board
+      ?.match
+      ?.teamBName ||
+    "Chasing team";
+
+  const defendingTeamName =
+    firstInnings.teamName ||
+    firstInnings
+      .battingTeamName ||
+    board
+      ?.match
+      ?.teamAName ||
+    "Defending team";
+
+  const maxWickets =
+    Number(
+      board
+        ?.match
+        ?.maxWicketsPerInnings ||
+      matchDetail
+        ?.maxWicketsPerInnings ||
+      10
+    );
+
+  if (
+    secondRuns >=
+    target
+  ) {
+    const wicketsRemaining =
+      Math.max(
+        maxWickets -
+          secondWickets,
+        0
+      );
+
+    return wicketsRemaining > 0
+      ? `${battingTeamName} won by ${wicketsRemaining} wicket${
+          wicketsRemaining === 1
+            ? ""
+            : "s"
+        }`
+      : `${battingTeamName} won the match`;
+  }
+
+  const runsNeeded =
+    Math.max(
+      target -
+        secondRuns,
+      0
+    );
+
+  const localCompletion =
+    getOfflineLocalCompletionState(
+      board,
+      2
+    );
+
+  if (
+    localCompletion
+      .oversFinished ||
+    localCompletion
+      .wicketsFinished
+  ) {
+    if (
+      secondRuns ===
+      firstRuns
+    ) {
+      return "Match tied";
+    }
+
+    const winningMargin =
+      Math.max(
+        firstRuns -
+          secondRuns,
+        0
+      );
+
+    return `${defendingTeamName} won by ${winningMargin} run${
+      winningMargin === 1
+        ? ""
+        : "s"
+    }`;
+  }
+
+  return `${battingTeamName} need ${runsNeeded} run${
+    runsNeeded === 1
+      ? ""
+      : "s"
+  } from ${ballsRemaining} ball${
+    ballsRemaining === 1
+      ? ""
+      : "s"
+  }`;
+}
+
 
 function getInstantDeliveryStatus(data) {
   const runs = Number(data.runsOffBat || 0);
@@ -2561,11 +2836,34 @@ async function api(url, options = {}) {
     const data = await res.json().catch(() => ({}));
 
     if (!res.ok) {
-      throw new Error(data.error || "Request failed");
+      const requestError = new Error(
+        data.message || data.error || "Request failed"
+      );
+      requestError.status = res.status;
+      requestError.code = data.code || data.errorCode || data.error || null;
+      requestError.data = data;
+      throw requestError;
     }
 
     return data;
   }
+
+function isOfflineSyncConflictError(error) {
+  return (
+    Number(error?.status || 0) === 409 &&
+    (
+      String(error?.code || "").trim().toUpperCase() ===
+        "OFFLINE_SYNC_CONFLICT" ||
+      String(
+        error?.data?.code ||
+        error?.data?.error ||
+        ""
+      ).trim().toUpperCase() ===
+        "OFFLINE_SYNC_CONFLICT"
+    )
+  );
+}
+
 function showToast(type, text) {
   setToast({ type, text });
 
@@ -2703,11 +3001,34 @@ function previewScoreboardAfterBall(board, data) {
   if (!innings) return board;
 
   const nextBallLabel = (() => {
-  const legalBalls = Number(innings.legalBalls || 0);
-  const nextLegalBall = isLegal ? legalBalls + 1 : legalBalls;
+  const legalBallsBefore =
+    Number(
+      innings.legalBalls ||
+      0
+    );
 
-  const over = Math.floor(nextLegalBall / 6);
-  const ball = nextLegalBall % 6 || 6;
+  let over;
+  let ball;
+
+  /*
+   * Use the number of legal balls BEFORE the delivery.
+   * This keeps the sixth legal ball in the over that is actually ending.
+   *
+   * 17 legal balls before -> 2.6
+   * 18 legal balls before -> 3.1
+   */
+  over =
+    Math.floor(
+      legalBallsBefore /
+      6
+    );
+
+  ball =
+    (
+      legalBallsBefore %
+      6
+    ) +
+    1;
 
   let result = String(totalRuns);
 
@@ -2805,6 +3126,131 @@ const currentBalls = previousBowlerBalls + 1;
     }
   }
 }
+/*
+ * Keep local striker/non-striker state accurate while offline. The server uses
+ * the same applyBallOutcome() helper when it later replays this queued event.
+ */
+if (copy.currentState) {
+  const legalBallsBefore = Number(innings.legalBalls || 0) - (isLegal ? 1 : 0);
+  const localBallInOver = (Math.max(0, legalBallsBefore) % 6) + 1;
+
+  const localOutcome = applyBallOutcome({
+    ...data,
+    strikerId: Number(data.strikerId),
+    nonStrikerId: Number(data.nonStrikerId),
+    legalDelivery: isLegal,
+    ballInOver: localBallInOver,
+    isWicket: isRealWicket ? 1 : 0,
+  });
+
+  const oldStrikerId = Number(copy.currentState.strikerId || data.strikerId);
+  const oldNonStrikerId = Number(copy.currentState.nonStrikerId || data.nonStrikerId);
+  const oldStrikerName = copy.currentState.strikerName;
+  const oldNonStrikerName = copy.currentState.nonStrikerName;
+  const oldStrikerStats = copy.currentState.strikerStats;
+  const oldNonStrikerStats = copy.currentState.nonStrikerStats;
+
+  copy.currentState.strikerId = localOutcome.strikerId;
+  copy.currentState.nonStrikerId = localOutcome.nonStrikerId;
+
+  if (Number(localOutcome.strikerId) === oldNonStrikerId) {
+    copy.currentState.strikerName = oldNonStrikerName;
+    copy.currentState.strikerStats = oldNonStrikerStats;
+  } else if (Number(localOutcome.strikerId) === oldStrikerId) {
+    copy.currentState.strikerName = oldStrikerName;
+    copy.currentState.strikerStats = oldStrikerStats;
+  }
+
+  if (Number(localOutcome.nonStrikerId) === oldStrikerId) {
+    copy.currentState.nonStrikerName = oldStrikerName;
+    copy.currentState.nonStrikerStats = oldStrikerStats;
+  } else if (Number(localOutcome.nonStrikerId) === oldNonStrikerId) {
+    copy.currentState.nonStrikerName = oldNonStrikerName;
+    copy.currentState.nonStrikerStats = oldNonStrikerStats;
+  }
+
+  /*
+   * WICKET / RETIRED-HURT OFFLINE REPLACEMENT
+   * ------------------------------------------
+   * applyBallOutcome() correctly returns newBatterId, but the old preview
+   * code only knew how to copy names/stats when the final batter was one of
+   * the PREVIOUS striker/non-striker.
+   *
+   * When a new batter enters, the ID changed but the displayed name/stats
+   * stayed on the dismissed/retired player. Resolve both final IDs against
+   * the batting roster so local UI and ballForm move together.
+   */
+  const resolveLocalBatter =
+    (playerId) =>
+      battingTeam
+        ?.players
+        ?.find(
+          (player) =>
+            Number(player.id) ===
+            Number(playerId)
+        );
+
+  const finalStriker =
+    resolveLocalBatter(
+      copy.currentState.strikerId
+    );
+
+  const finalNonStriker =
+    resolveLocalBatter(
+      copy.currentState.nonStrikerId
+    );
+
+  if (finalStriker) {
+    copy.currentState.strikerName =
+      finalStriker.name;
+
+    if (
+      Number(finalStriker.id) !==
+        oldStrikerId &&
+      Number(finalStriker.id) !==
+        oldNonStrikerId
+    ) {
+      copy.currentState.strikerStats = {
+        playerId:
+          finalStriker.id,
+        playerName:
+          finalStriker.name,
+        runs: 0,
+        balls: 0,
+        fours: 0,
+        sixes: 0,
+        strikeRate:
+          "0.00",
+      };
+    }
+  }
+
+  if (finalNonStriker) {
+    copy.currentState.nonStrikerName =
+      finalNonStriker.name;
+
+    if (
+      Number(finalNonStriker.id) !==
+        oldStrikerId &&
+      Number(finalNonStriker.id) !==
+        oldNonStrikerId
+    ) {
+      copy.currentState.nonStrikerStats = {
+        playerId:
+          finalNonStriker.id,
+        playerName:
+          finalNonStriker.name,
+        runs: 0,
+        balls: 0,
+        fours: 0,
+        sixes: 0,
+        strikeRate:
+          "0.00",
+      };
+    }
+  }
+}
+
 copy.recentBalls = [
   {
     id: `optimistic-${Date.now()}`,
@@ -3077,7 +3523,7 @@ async function loadSelectedMatch(matchId, options = {}) {
     setMatchDetail(null);
     setScoreboard(null);
     setStats({ batting: [], bowling: [] });
-    return;
+    return null;
   }
 
   fetch("/api/user/preferences", {
@@ -3089,26 +3535,84 @@ async function loadSelectedMatch(matchId, options = {}) {
     }),
   }).catch(() => {});
 
-  const board = await api(`/api/scoreboard/${matchId}`);
-  setScoreboard(board);
+  let board = null;
+  let detail = null;
 
-  if (syncBallForm && board?.currentState && !showDeliverySetupModal) {
-    setBallForm((prev) => ({
-      ...prev,
-      strikerId: board.currentState.strikerId ?? prev.strikerId,
-      nonStrikerId: board.currentState.nonStrikerId ?? prev.nonStrikerId,
-      bowlerId: board.currentState.bowlerId ?? prev.bowlerId,
+  try {
+    board = await api(`/api/scoreboard/${matchId}`);
+    setScoreboard(board);
+
+    offlineServerSequencesRef.current = {
+      matchId: Number(matchId),
+      1: Number(board?.sync?.serverSequences?.[1] ?? board?.sync?.serverSequences?.["1"] ?? 0),
+      2: Number(board?.sync?.serverSequences?.[2] ?? board?.sync?.serverSequences?.["2"] ?? 0),
+    };
+
+    if (syncBallForm && board?.currentState && !showDeliverySetupModal) {
+      setBallForm((prev) => ({
+        ...prev,
+        strikerId: board.currentState.strikerId ?? prev.strikerId,
+        nonStrikerId: board.currentState.nonStrikerId ?? prev.nonStrikerId,
+        bowlerId: board.currentState.bowlerId ?? prev.bowlerId,
+      }));
+    }
+
+    if (loadDetail) {
+      detail = await api(`/api/matches/${matchId}`);
+      setMatchDetail(detail);
+    }
+
+    if (loadStatsData) {
+      const statData = await api(`/api/stats/${matchId}`);
+      setStats(statData);
+    }
+
+    await cacheOfflineMatchSnapshot(matchId, {
+      scoreboard: board,
+      matchDetail: detail || matchDetail || null,
+    }).catch(() => {});
+
+    return board;
+  } catch (loadError) {
+    if (!isOfflineRetryableError(loadError)) {
+      throw loadError;
+    }
+
+    const cached = await getOfflineMatchSnapshot(matchId).catch(() => null);
+
+    if (!cached?.scoreboard) {
+      throw loadError;
+    }
+
+    board = cached.scoreboard;
+    setScoreboard(board);
+
+    if (cached.matchDetail) {
+      setMatchDetail(cached.matchDetail);
+    }
+
+    if (
+      syncBallForm &&
+      board?.currentState &&
+      !showDeliverySetupModal &&
+      offlineSyncState?.online !== false &&
+      Number(offlineSyncState?.pending || 0) === 0
+    ) {
+      setBallForm((prev) => ({
+        ...prev,
+        strikerId: board.currentState.strikerId ?? prev.strikerId,
+        nonStrikerId: board.currentState.nonStrikerId ?? prev.nonStrikerId,
+        bowlerId: board.currentState.bowlerId ?? prev.bowlerId,
+      }));
+    }
+
+    setOfflineSyncState((previous) => ({
+      ...previous,
+      online: false,
+      lastError: "Using the last saved match snapshot while offline.",
     }));
-  }
 
-  if (loadDetail) {
-    const detail = await api(`/api/matches/${matchId}`);
-    setMatchDetail(detail);
-  }
-
-  if (loadStatsData) {
-    const statData = await api(`/api/stats/${matchId}`);
-    setStats(statData);
+    return board;
   }
 }
 
@@ -3195,13 +3699,29 @@ async function handleDeleteLeague(
   }, [selectedMatchId]);
 
   useEffect(() => {
+    /*
+     * While offline (or while unsynced local changes exist), ballForm is the
+     * authoritative live scoring state. Do not let a cached/server scoreboard
+     * overwrite the locally selected innings/players.
+     */
+    if (
+      offlineSyncState?.online === false ||
+      Number(offlineSyncState?.pending || 0) > 0
+    ) {
+      return;
+    }
+
     if (scoreboard?.currentInnings) {
       setBallForm((prev) => ({
         ...prev,
         inningsNo: String(scoreboard.currentInnings)
       }));
     }
-  }, [scoreboard?.currentInnings]);
+  }, [
+    scoreboard?.currentInnings,
+    offlineSyncState?.online,
+    offlineSyncState?.pending,
+  ]);
 
   const battingTeam = useMemo(() => {
     if (!matchDetail) return null;
@@ -3306,46 +3826,68 @@ useEffect(() => {
   }, [battingTeam?.id, bowlingTeam?.id]);
 
   useEffect(() => {
-    if (!scoreboard?.currentState) return;
+    if (!scoreboard?.currentState) {
+      return;
+    }
 
-setBallForm((prev) => ({
-  ...prev,
+    /*
+     * OFFLINE LOCAL STATE GUARD
+     * -------------------------
+     * When there are local unsynced actions, the current striker,
+     * non-striker and bowler in ballForm must NOT be replaced by a cached
+     * server snapshot. That was causing Setup Next Delivery to reopen
+     * intermittently during the 2nd innings.
+     */
+    if (
+      offlineSyncState?.online === false ||
+      Number(offlineSyncState?.pending || 0) > 0
+    ) {
+      return;
+    }
 
-  inningsNo:
-    scoreboard?.currentInnings != null
-      ? String(scoreboard.currentInnings)
-      : "",
+    setBallForm((prev) => ({
+      ...prev,
 
-  strikerId:
-    scoreboard?.currentState?.strikerId != null
-      ? String(scoreboard.currentState.strikerId)
-      : "",
+      inningsNo:
+        scoreboard?.currentInnings != null
+          ? String(scoreboard.currentInnings)
+          : prev.inningsNo,
 
-  nonStrikerId:
-    scoreboard?.currentState?.nonStrikerId != null
-      ? String(scoreboard.currentState.nonStrikerId)
-      : "",
+      strikerId:
+        scoreboard?.currentState?.strikerId != null
+          ? String(scoreboard.currentState.strikerId)
+          : prev.strikerId,
 
-  dismissedPlayerId:
-    scoreboard?.currentState?.strikerId != null
-      ? String(scoreboard.currentState.strikerId)
-      : "",
-  bowlerId:
-      scoreboard.currentState.bowlerId
-        ? String(scoreboard.currentState.bowlerId)
-        : "",
-  bowlerName:
-      scoreboard.currentState.bowlerId
-        ? String(scoreboard.currentState.bowlerName)
-        : "",      
-  newBatterId: ""
-}));
+      nonStrikerId:
+        scoreboard?.currentState?.nonStrikerId != null
+          ? String(scoreboard.currentState.nonStrikerId)
+          : prev.nonStrikerId,
+
+      dismissedPlayerId:
+        scoreboard?.currentState?.strikerId != null
+          ? String(scoreboard.currentState.strikerId)
+          : prev.dismissedPlayerId,
+
+      bowlerId:
+        scoreboard.currentState.bowlerId
+          ? String(scoreboard.currentState.bowlerId)
+          : prev.bowlerId,
+
+      bowlerName:
+        scoreboard.currentState.bowlerId
+          ? String(scoreboard.currentState.bowlerName || "")
+          : prev.bowlerName,
+
+      newBatterId: ""
+    }));
   }, [
     scoreboard?.currentState?.strikerId,
     scoreboard?.currentState?.nonStrikerId,
     scoreboard?.currentState?.bowlerId,
     scoreboard?.currentState?.bowlerName,
-    scoreboard?.currentInnings
+    scoreboard?.currentInnings,
+    offlineSyncState?.online,
+    offlineSyncState?.pending,
   ]);
 useEffect(() => {
   if (
@@ -3648,7 +4190,90 @@ async function handleStartMatch(match) {
   }
 }
   
-const isMatchCompleted = scoreboard?.match?.status === "COMPLETED";
+useEffect(() => {
+  if (
+    !offlineLocalMatchComplete
+  ) {
+    return;
+  }
+
+  const state =
+    getOfflineLocalCompletionState(
+      scoreboard,
+      ballForm?.inningsNo
+    );
+
+  if (!state.complete) {
+    setOfflineLocalMatchComplete(
+      false
+    );
+
+    if (
+      Number(
+        ballForm
+          ?.inningsNo
+      ) === 2 &&
+      state.runsNeeded != null &&
+      state.runsNeeded > 0
+    ) {
+      setError("");
+      setMessage(
+        `📴 Chase still live · ${state.runsNeeded} run${
+          state.runsNeeded === 1
+            ? ""
+            : "s"
+        } needed.`
+      );
+    }
+  }
+}, [
+  offlineLocalMatchComplete,
+  scoreboard,
+  ballForm?.inningsNo,
+]);
+
+const isMatchCompleted =
+  scoreboard?.match?.status ===
+  "COMPLETED";
+
+const hasOfflineLocalState =
+  offlineSyncState
+    ?.online ===
+    false ||
+  Number(
+    offlineSyncState
+      ?.pending ||
+    0
+  ) > 0;
+
+const offlineLocalCompletionState =
+  hasOfflineLocalState
+    ? getOfflineLocalCompletionState(
+        /*
+         * At this point in DashboardClient, displayScoreboard has not been
+         * declared yet. Offline scoring already writes every optimistic
+         * delivery into scoreboard, so scoreboard is the correct source
+         * for this early local-completion check.
+         */
+        scoreboard,
+        ballForm
+          ?.inningsNo
+      )
+    : {
+        complete:
+          false,
+      };
+
+const isOfflineMatchCompleted =
+  Boolean(
+    offlineLocalMatchComplete &&
+    offlineLocalCompletionState
+      .complete
+  );
+
+const isEffectiveMatchCompleted =
+  isMatchCompleted ||
+  isOfflineMatchCompleted;
 const isMatchLocked = scoreboard?.match?.status ===  "COMPLETED_LOCKED";
 const isMatchCorrected = scoreboard?.match?.status ===  "COMPLETED_CORRECTED";
 const isMatchAbandoned = scoreboard?.match?.status ===  "ABANDONED";
@@ -3687,6 +4312,253 @@ const isMatchAbandoned = scoreboard?.match?.status ===  "ABANDONED";
     setUndoSaving(true);
 
     try {
+      /*
+       * If the newest delivery exists only in the offline queue, undo it
+       * locally. Do not call the server because the server has never seen it.
+       */
+      const pendingOfflineBall = await getLastPendingOfflineBall(selectedMatchId).catch(() => null);
+
+      if (pendingOfflineBall) {
+        await removeOfflineBall(pendingOfflineBall.clientEventId);
+
+        if (pendingOfflineBall.boardBefore) {
+          setScoreboard(pendingOfflineBall.boardBefore);
+          await cacheOfflineMatchSnapshot(selectedMatchId, {
+            scoreboard: pendingOfflineBall.boardBefore,
+            matchDetail: matchDetail || null,
+          }).catch(() => {});
+        }
+
+        if (pendingOfflineBall.ballFormBefore) {
+          setBallForm(pendingOfflineBall.ballFormBefore);
+        }
+
+        setOptimisticScoreboard(null);
+        setOfflineLocalMatchComplete(false);
+        const pending = await refreshOfflinePendingCount(selectedMatchId);
+        setMessage(
+          `↩️ Offline delivery removed · ${pending} change${pending === 1 ? "" : "s"} still waiting to sync.`
+        );
+        return;
+      }
+
+      if (
+        (
+          typeof navigator !== "undefined" &&
+          navigator.onLine === false
+        ) ||
+        Boolean(offlineSyncState?.conflict)
+      ) {
+        /*
+         * There is no pending local ball, so the last visible delivery is
+         * already on the server.
+         *
+         * Offline Undo is still safe when we have the exact pre-delivery
+         * snapshot captured when that server ball was scored.
+         */
+        const undoSnapshot =
+          await getOfflineServerUndoSnapshot(
+            selectedMatchId
+          ).catch(
+            () => null
+          );
+
+        if (
+          !undoSnapshot
+            ?.boardBefore ||
+          !undoSnapshot
+            ?.ballFormBefore
+        ) {
+          setError(
+            "This server delivery was loaded before offline Undo history was available. Reconnect once, then future deliveries can be undone offline."
+          );
+
+          return;
+        }
+
+        const inningsNo =
+          Number(
+            undoSnapshot
+              .inningsNo ||
+            ballForm
+              ?.inningsNo ||
+            1
+          );
+
+        const expectedServerSequence =
+          Number(
+            undoSnapshot
+              .serverSequenceAfter ||
+            0
+          );
+
+        const currentKnownSequence =
+          Number(
+            offlineServerSequencesRef
+              .current
+              ?.[inningsNo] ??
+            scoreboard
+              ?.sync
+              ?.serverSequences
+              ?.[inningsNo] ??
+            scoreboard
+              ?.sync
+              ?.serverSequences
+              ?.[String(
+                inningsNo
+              )] ??
+            expectedServerSequence
+          );
+
+        if (
+          expectedServerSequence >
+            0 &&
+          currentKnownSequence >
+            0 &&
+          currentKnownSequence !==
+            expectedServerSequence
+        ) {
+          setError(
+            "Offline Undo snapshot does not match the latest known server delivery. Reconnect before undoing to avoid removing the wrong ball."
+          );
+
+          return;
+        }
+
+        await queueOfflineServerUndo({
+          matchId:
+            Number(
+              selectedMatchId
+            ),
+
+          inningsNo,
+
+          serverSequenceBefore:
+            Number(
+              undoSnapshot
+                .serverSequenceBefore ||
+              Math.max(
+                expectedServerSequence -
+                  1,
+                0
+              )
+            ),
+
+          serverSequenceAfter:
+            expectedServerSequence,
+
+          clientEventId:
+            undoSnapshot
+              .clientEventId ||
+            null,
+        });
+
+        setScoreboard(
+          undoSnapshot
+            .boardBefore
+        );
+
+        setBallForm(
+          undoSnapshot
+            .ballFormBefore
+        );
+
+        await cacheOfflineMatchSnapshot(
+          selectedMatchId,
+          {
+            scoreboard:
+              undoSnapshot
+                .boardBefore,
+
+            matchDetail:
+              matchDetail ||
+              null,
+
+            ballForm:
+              undoSnapshot
+                .ballFormBefore,
+
+            savedAt:
+              new Date()
+                .toISOString(),
+          }
+        ).catch(
+          () => {}
+        );
+
+        /*
+         * New offline balls scored AFTER this undo must branch from the
+         * server position that will exist once the queued undo is replayed.
+         */
+        offlineServerSequencesRef.current = {
+          ...offlineServerSequencesRef
+            .current,
+
+          matchId:
+            Number(
+              selectedMatchId
+            ),
+
+          [inningsNo]:
+            Number(
+              undoSnapshot
+                .serverSequenceBefore ||
+              0
+            ),
+        };
+
+        setOptimisticScoreboard(
+          null
+        );
+
+        setOfflineLocalMatchComplete(
+          false
+        );
+
+        setShowWicketModal(
+          false
+        );
+
+        setShowRetiredHurtModal(
+          false
+        );
+
+        setShowBowlerModal(
+          false
+        );
+
+        setMustChangeBowler(
+          false
+        );
+
+        setPendingBallData(
+          null
+        );
+
+        setWicketSubmissionInFlight(
+          false
+        );
+
+        const pending =
+          await refreshOfflinePendingCount(
+            selectedMatchId
+          );
+
+        setError(
+          ""
+        );
+
+        setMessage(
+          `↩️ Server delivery undone locally · ${pending} change${
+            pending === 1
+              ? ""
+              : "s"
+          } waiting to sync.`
+        );
+
+        return;
+      }
+
       const undoResult =
         await api(
           `/api/matches/${selectedMatchId}/undo`,
@@ -3850,6 +4722,12 @@ const isMatchAbandoned = scoreboard?.match?.status ===  "ABANDONED";
         null
       );
 
+      await clearOfflineServerUndoSnapshot(
+        selectedMatchId
+      ).catch(
+        () => {}
+      );
+
       void api(
         "/api/milestones/reconcile",
         {
@@ -3897,40 +4775,375 @@ const isMatchAbandoned = scoreboard?.match?.status ===  "ABANDONED";
     return acc;
   }, {});
 async function handleEndFirstInnings() {
-  if (!selectedMatchId) return;
+  if (!selectedMatchId) {
+    return;
+  }
 
-  const confirmed = window.confirm(
-  "End 1st innings and start 2nd innings setup?\n\nUse this when the batting side is finished before all scheduled overs are bowled."
-);
+  const confirmed =
+    window.confirm(
+      "End 1st innings and start 2nd innings setup?\n\nUse this when the batting side is finished before all scheduled overs are bowled."
+    );
 
-  if (!confirmed) return;
+  if (!confirmed) {
+    return;
+  }
+
+  const numericMatchId =
+    Number(
+      selectedMatchId
+    );
+
+  /*
+   * Move the LOCAL scoring state into innings 2 without changing any
+   * server score. This is used by the true-offline path and by the
+   * connection-loss race fallback.
+   */
+  const moveToSecondInningsLocally =
+    async () => {
+      const localBoard =
+        scoreboard
+          ? (
+              typeof structuredClone ===
+              "function"
+                ? structuredClone(
+                    scoreboard
+                  )
+                : JSON.parse(
+                    JSON.stringify(
+                      scoreboard
+                    )
+                  )
+            )
+          : null;
+
+      if (localBoard) {
+        localBoard.currentInnings =
+          2;
+
+        localBoard.currentState = {
+          ...(localBoard
+            .currentState ||
+            {}),
+
+          inningsNo:
+            2,
+
+          /*
+           * NEW INNINGS PLAYER STATE
+           * ------------------------
+           * Never carry Team 1's active-player presentation into innings 2.
+           *
+           * Previously we cleared only the IDs. The old names and stat
+           * objects remained on currentState, so after selecting the new
+           * innings-2 striker/non-striker/bowler their NAMES changed but:
+           *
+           *   strikerStats
+           *   nonStrikerStats
+           *   bowlerStats
+           *
+           * still belonged to innings 1.
+           */
+          strikerId:
+            null,
+
+          strikerName:
+            "",
+
+          strikerStats:
+            null,
+
+          nonStrikerId:
+            null,
+
+          nonStrikerName:
+            "",
+
+          nonStrikerStats:
+            null,
+
+          bowlerId:
+            null,
+
+          bowlerName:
+            "",
+
+          bowlerStats:
+            null,
+
+          legalBalls:
+            Number(
+              localBoard
+                ?.innings
+                ?.[1]
+                ?.legalBalls ||
+              0
+            ),
+        };
+
+        setScoreboard(
+          localBoard
+        );
+
+        await cacheOfflineMatchSnapshot(
+          numericMatchId,
+          {
+            scoreboard:
+              localBoard,
+
+            matchDetail:
+              matchDetail ||
+              null,
+
+            ballForm: {
+              ...ballForm,
+
+              inningsNo:
+                2,
+
+              strikerId:
+                "",
+
+              nonStrikerId:
+                "",
+
+              bowlerId:
+                "",
+            },
+
+            savedAt:
+              new Date()
+                .toISOString(),
+          }
+        ).catch(
+          (
+            cacheError
+          ) => {
+            console.warn(
+              "[OFFLINE_END_INNINGS_CACHE_FAILED]",
+              cacheError
+            );
+          }
+        );
+      }
+
+      setPendingSecondInningsSetup(
+        true
+      );
+
+      setBallForm(
+        (
+          previous
+        ) => ({
+          ...previous,
+
+          inningsNo:
+            "2",
+
+          strikerId:
+            "",
+
+          nonStrikerId:
+            "",
+
+          bowlerId:
+            "",
+        })
+      );
+
+      setDeliverySetupReason(
+        "🏏 1st innings ended locally. Select the opening striker, non-striker, and bowler for the 2nd innings. Cric4All will synchronize the innings transition automatically when the connection returns."
+      );
+
+      setShowDeliverySetupModal(
+        true
+      );
+    };
+
+  const queueTransitionLocally =
+    async () => {
+      const existingTransition =
+        await getPendingOfflineInningsTransition(
+          numericMatchId
+        ).catch(
+          () => null
+        );
+
+      if (!existingTransition) {
+        await queueOfflineInningsTransition({
+          matchId:
+            numericMatchId,
+
+          fromInnings:
+            1,
+
+          toInnings:
+            2,
+
+          /*
+           * The transition must be replayed after every queued innings-1
+           * ball and before the first queued innings-2 ball.
+           */
+          afterSequence:
+            Number(
+              offlineServerSequencesRef
+                .current
+                ?.[1] ||
+              scoreboard
+                ?.innings
+                ?.[0]
+                ?.lastSequence ||
+              scoreboard
+                ?.currentState
+                ?.lastSequence ||
+              0
+            ),
+
+          localOrder:
+            Date.now() * 1000 +
+            Math.floor(
+              Math.random() * 999
+            ),
+        });
+      }
+
+      await moveToSecondInningsLocally();
+
+      setOfflineSyncState(
+        (
+          previous
+        ) => ({
+          ...previous,
+
+          online:
+            false,
+
+          syncing:
+            false,
+
+          conflict:
+            null,
+        })
+      );
+
+      const pending =
+        await refreshOfflinePendingCount(
+          numericMatchId
+        );
+
+      setError(
+        ""
+      );
+
+      setMessage(
+        `📴 First innings ended locally · ${pending} change${
+          pending === 1
+            ? ""
+            : "s"
+        } waiting to sync. Set up the 2nd innings and continue scoring.`
+      );
+    };
 
   try {
-    await api(`/api/matches/${selectedMatchId}/end-innings`, {
-      method: "POST",
-    });
+    const browserIsOffline =
+      typeof navigator !==
+        "undefined" &&
+      navigator.onLine ===
+        false;
 
-    await loadSelectedMatch(selectedMatchId);
+    const appIsOffline =
+      offlineSyncState?.online === false ||
+      Boolean(offlineSyncState?.conflict);
 
-    setBallForm((prev) => ({
-      ...prev,
-      inningsNo: "2",
-      strikerId: "",
-      nonStrikerId: "",
-      bowlerId: "",
-    }));
+    if (
+      browserIsOffline ||
+      appIsOffline
+    ) {
+      await queueTransitionLocally();
+      return;
+    }
+
+    /*
+     * ONLINE PATH:
+     * Preserve the existing server behavior exactly.
+     */
+    await api(
+      `/api/matches/${numericMatchId}/end-innings`,
+      {
+        method:
+          "POST",
+      }
+    );
+
+    await loadSelectedMatch(
+      numericMatchId
+    );
+
+    setPendingSecondInningsSetup(
+      true
+    );
+
+    setBallForm(
+      (
+        previous
+      ) => ({
+        ...previous,
+
+        inningsNo:
+          "2",
+
+        strikerId:
+          "",
+
+        nonStrikerId:
+          "",
+
+        bowlerId:
+          "",
+      })
+    );
 
     setDeliverySetupReason(
       "🏏 2nd innings is ready. Select the opening striker, non-striker, and bowler before scoring."
     );
 
-    setShowDeliverySetupModal(true);
+    setShowDeliverySetupModal(
+      true
+    );
 
-    setMessage("✅ First innings ended. Set up the 2nd innings.");
+    setMessage(
+      "✅ First innings ended. Set up the 2nd innings."
+    );
   } catch (err) {
-    setError(err.message);
+    /*
+     * Race-condition safety:
+     * If connectivity disappears after the online check but before the
+     * request completes, convert the action into a queued offline innings
+     * transition instead of leaving the scorer stuck in innings 1.
+     */
+    if (
+      isOfflineRetryableError(
+        err
+      )
+    ) {
+      try {
+        await queueTransitionLocally();
+        return;
+      } catch (
+        queueError
+      ) {
+        console.error(
+          "[OFFLINE_END_INNINGS_QUEUE_FAILED]",
+          queueError
+        );
+      }
+    }
+
+    setError(
+      err.message
+    );
   }
 }
+
   async function quickNormalBall(runs) {
   
   try{  
@@ -4006,10 +5219,1669 @@ wicketNote: ballForm.wicketNote || null
   }
 }
 
+
+function getOfflineStatusLabel() {
+  if (offlineSyncState.conflict) {
+    return `🔴 Sync paused · ${offlineSyncState.pending} waiting · scoring locally`;
+  }
+
+  if (offlineSyncState.syncing) {
+    return `🔵 Syncing · ${offlineSyncState.pending} waiting`;
+  }
+
+  if (!offlineSyncState.online) {
+    return `🟠 Offline · ${offlineSyncState.pending} waiting`;
+  }
+
+  if (offlineSyncState.pending > 0) {
+    return `🟡 Online · ${offlineSyncState.pending} waiting`;
+  }
+
+  return "🟢 Online · Synced";
+}
+
+async function refreshOfflinePendingCount(matchId = selectedMatchId) {
+  if (!matchId) return 0;
+
+  const [
+    pendingBalls,
+    pendingKeeperChanges,
+    pendingInningsTransitions,
+    pendingStrikeSwaps,
+    pendingServerUndo,
+  ] = await Promise.all([
+    getPendingOfflineBallCount(
+      matchId
+    ).catch(() => 0),
+
+    getPendingOfflineKeeperChangeCount(
+      matchId
+    ).catch(() => 0),
+
+    getPendingOfflineInningsTransitionCount(
+      matchId
+    ).catch(() => 0),
+
+    getPendingOfflineStrikeSwapCount(
+      matchId
+    ).catch(() => 0),
+
+    getPendingOfflineServerUndoCount(
+      matchId
+    ).catch(() => 0),
+  ]);
+
+  const pending =
+    Number(pendingBalls || 0) +
+    Number(
+      pendingKeeperChanges ||
+      0
+    ) +
+    Number(
+      pendingInningsTransitions ||
+      0
+    ) +
+    Number(
+      pendingStrikeSwaps ||
+      0
+    ) +
+    Number(
+      pendingServerUndo ||
+      0
+    );
+
+  setOfflineSyncState(
+    (previous) => ({
+      ...previous,
+      pending,
+    })
+  );
+
+  return pending;
+}
+
+function getOfflineLocalCompletionState(
+  board,
+  inningsNoValue
+) {
+  const inningsNo =
+    Number(
+      inningsNoValue ||
+      board?.currentInnings ||
+      1
+    );
+
+  const innings =
+    board
+      ?.innings
+      ?.[inningsNo - 1] ||
+    {};
+
+  const oversPerInnings =
+    Number(
+      board
+        ?.match
+        ?.oversPerInnings ||
+      matchDetail
+        ?.oversPerInnings ||
+      0
+    );
+
+  const maxLegalBalls =
+    oversPerInnings > 0
+      ? oversPerInnings * 6
+      : 0;
+
+  const maxWickets =
+    Number(
+      board
+        ?.match
+        ?.maxWicketsPerInnings ??
+      matchDetail
+        ?.maxWicketsPerInnings ??
+      0
+    );
+
+  const legalBalls =
+    Number(
+      innings
+        ?.legalBalls ||
+      0
+    );
+
+  const wickets =
+    Number(
+      innings
+        ?.wickets ||
+      0
+    );
+
+  const currentRuns =
+    Number(
+      innings
+        ?.runs ||
+      0
+    );
+
+  /*
+   * For offline scoring, prefer the local first-innings total for the
+   * chase target. scoreboard.summary.target can still be a server-era
+   * snapshot when innings 1 itself contains unsynced local balls.
+   */
+  const firstInningsRuns =
+    Number(
+      board
+        ?.innings
+        ?.[0]
+        ?.runs ||
+      0
+    );
+
+  const localTarget =
+    firstInningsRuns >= 0
+      ? firstInningsRuns + 1
+      : Number(
+          board
+            ?.summary
+            ?.target ||
+          0
+        );
+
+  const targetReached =
+    inningsNo === 2 &&
+    localTarget > 0 &&
+    currentRuns >=
+      localTarget;
+
+  const oversFinished =
+    inningsNo === 2 &&
+    maxLegalBalls > 0 &&
+    legalBalls >=
+      maxLegalBalls;
+
+  const wicketsFinished =
+    inningsNo === 2 &&
+    maxWickets > 0 &&
+    wickets >=
+      maxWickets;
+
+  return {
+    complete:
+      targetReached ||
+      oversFinished ||
+      wicketsFinished,
+
+    targetReached,
+    oversFinished,
+    wicketsFinished,
+    target:
+      localTarget,
+    runs:
+      currentRuns,
+    runsNeeded:
+      inningsNo === 2 &&
+      localTarget > 0
+        ? Math.max(
+            localTarget -
+              currentRuns,
+            0
+          )
+        : null,
+    legalBalls,
+    maxLegalBalls,
+    wickets,
+    maxWickets,
+  };
+}
+
+function getLocalBallEnvelope(board, data) {
+  const inningsNo = Number(data.inningsNo || board?.currentInnings || 1);
+  const innings = board?.innings?.[inningsNo - 1] || {};
+  const legalBallsBefore = Number(innings.legalBalls || 0);
+  const legalDelivery = isLegalDelivery(data.extraType, data.wicketType);
+  const ballInOver = (legalBallsBefore % 6) + 1;
+  const overNo = Math.floor(legalBallsBefore / 6);
+
+  return {
+    ...data,
+    inningsNo,
+    legalDelivery,
+    ballInOver,
+    overNo,
+    totalRuns: Number(data.runsOffBat || 0) + Number(data.extras || 0),
+    isWicket:
+      Number(data.isWicket) && data.wicketType !== "RETIRED_HURT"
+        ? 1
+        : 0,
+  };
+}
+
+async function applyQueuedBallLocally({ data, previewBoard, event }) {
+  const localBall = getLocalBallEnvelope(scoreboard, data);
+
+  /*
+   * previewScoreboardAfterBall() already runs the same applyBallOutcome()
+   * logic and updates previewBoard.currentState. Use THAT exact state for the
+   * next delivery instead of calculating a second independent copy.
+   *
+   * This keeps striker/non-striker rotation and end-of-over swaps perfectly
+   * aligned with the locally displayed scoreboard.
+   */
+  const localCurrentState =
+    previewBoard?.currentState || {};
+
+  setScoreboard(previewBoard);
+  setOptimisticScoreboard(null);
+  setInstantDeliveryStatus("");
+  setShowAdvancedSheet(false);
+
+  const nextBallForm = {
+    ...ballForm,
+    inningsNo: Number(data.inningsNo),
+
+    strikerId:
+      localCurrentState.strikerId ??
+      data.strikerId ??
+      ballForm.strikerId,
+
+    nonStrikerId:
+      localCurrentState.nonStrikerId ??
+      data.nonStrikerId ??
+      ballForm.nonStrikerId,
+
+    bowlerId:
+      localCurrentState.bowlerId ??
+      data.bowlerId ??
+      ballForm.bowlerId,
+    extraType: "NONE",
+    runsOffBat: "0",
+    extras: "0",
+    isWicket: false,
+    wicketType: "NONE",
+    newBatterId: "",
+    dismissedPlayerId: "",
+    note: "",
+    dismissal: "",
+    fielderId: "",
+    assistantFielderId: "",
+    wicketNote: "",
+  };
+
+  setBallForm(nextBallForm);
+
+  await cacheOfflineMatchSnapshot(selectedMatchId, {
+    scoreboard: previewBoard,
+    matchDetail: matchDetail || null,
+    ballForm: nextBallForm,
+    savedAt: new Date().toISOString(),
+  }).catch(() => {});
+
+  const pending = await refreshOfflinePendingCount(selectedMatchId);
+
+  const innings = previewBoard?.innings?.[Number(data.inningsNo) - 1] || {};
+  const maxLegalBalls = Number(previewBoard?.match?.oversPerInnings || 0) * 6;
+  const maxWickets = Number(previewBoard?.match?.maxWicketsPerInnings || 0);
+  const inningsEndedByOvers = maxLegalBalls > 0 && Number(innings.legalBalls || 0) >= maxLegalBalls;
+  const inningsEndedByWickets = maxWickets > 0 && Number(innings.wickets || 0) >= maxWickets;
+  const localCompletion =
+    getOfflineLocalCompletionState(
+      previewBoard,
+      data.inningsNo
+    );
+
+  const targetReached =
+    localCompletion
+      .targetReached;
+
+  const inningsEnded =
+    inningsEndedByOvers ||
+    inningsEndedByWickets ||
+    Boolean(
+      data
+        .endInningsAfterWicket
+    );
+
+  if (Number(data.inningsNo) === 1 && inningsEnded) {
+    /*
+     * Move the LOCAL scoreboard into innings 2 as well. Without this, the
+     * delivery setup would say innings 2 while the cached board still looked
+     * like innings 1. The server will make the identical transition when the
+     * queued first-innings final ball is replayed.
+     */
+    const localSecondInningsBoard =
+      typeof structuredClone === "function"
+        ? structuredClone(previewBoard)
+        : JSON.parse(JSON.stringify(previewBoard));
+
+    localSecondInningsBoard.currentInnings = 2;
+    localSecondInningsBoard.currentState = {
+      inningsNo: 2,
+      strikerId: null,
+      nonStrikerId: null,
+      bowlerId: null,
+      legalBalls: Number(localSecondInningsBoard?.innings?.[1]?.legalBalls || 0),
+    };
+
+    setScoreboard(localSecondInningsBoard);
+    await cacheOfflineMatchSnapshot(selectedMatchId, {
+      scoreboard: localSecondInningsBoard,
+      matchDetail: matchDetail || null,
+    }).catch(() => {});
+
+    setPendingSecondInningsSetup(true);
+    setBallForm((previous) => ({
+      ...previous,
+      inningsNo: 2,
+      strikerId: "",
+      nonStrikerId: "",
+      bowlerId: "",
+    }));
+    setDeliverySetupReason(
+      "🏏 1st innings completed locally. Setup the 2nd innings. Cric4All will sync both innings in order when the connection returns."
+    );
+    window.setTimeout(() => setShowDeliverySetupModal(true), 100);
+  }
+
+  if (
+    Number(
+      data.inningsNo
+    ) === 2 &&
+    localCompletion.complete
+  ) {
+    setOfflineLocalMatchComplete(
+      true
+    );
+
+    const completionReason =
+      localCompletion
+        .targetReached
+        ? "target reached"
+        : localCompletion
+            .oversFinished
+          ? "scheduled overs completed"
+          : "maximum wickets reached";
+
+    const localResult =
+      buildOfflineLocalResultText(
+        previewBoard,
+        buildLiveMatchCenter(
+          previewBoard,
+          true
+        )
+      );
+
+    setMessage(
+      `🏁 ${
+        localResult ||
+        `Match completed locally (${completionReason})`
+      } · ${pending} change${
+        pending === 1
+          ? ""
+          : "s"
+      } waiting to sync. Reconnect before locking/finalizing the match.`
+    );
+
+    return true;
+  }
+
+  /*
+   * Never allow a stale local-complete flag from an earlier preview to
+   * freeze a chase that is still live.
+   */
+  if (
+    Number(
+      data.inningsNo
+    ) === 2 &&
+    !localCompletion.complete
+  ) {
+    setOfflineLocalMatchComplete(
+      false
+    );
+  }
+
+  if (localBall.legalDelivery && Number(localBall.ballInOver) === 6) {
+    setShowWicketModal(false);
+    setWicketSubmissionInFlight(false);
+    setPendingBallData(null);
+    setMustChangeBowler(true);
+    setBowlerSearchText("");
+    window.setTimeout(() => setShowBowlerModal(true), 0);
+  }
+
+  setMessage(
+    `📴 Delivery saved offline · ${pending} change${pending === 1 ? "" : "s"} waiting to sync.`
+  );
+
+  return true;
+}
+
+async function syncPendingOfflineBalls(matchId = selectedMatchId) {
+  const numericMatchId = Number(matchId);
+  if (!numericMatchId || offlineSyncRunningRef.current) return;
+  if (typeof navigator !== "undefined" && navigator.onLine === false) return;
+
+  const [
+    pendingEvents,
+    pendingKeeperChanges,
+    pendingInningsTransition,
+    pendingStrikeSwaps,
+    pendingServerUndo,
+  ] = await Promise.all([
+    listPendingOfflineBalls(
+      numericMatchId
+    ).catch(() => []),
+
+    listPendingOfflineKeeperChanges(
+      numericMatchId
+    ).catch(() => []),
+
+    getPendingOfflineInningsTransition(
+      numericMatchId
+    ).catch(() => null),
+
+    listPendingOfflineStrikeSwaps(
+      numericMatchId
+    ).catch(() => []),
+
+    getPendingOfflineServerUndo(
+      numericMatchId
+    ).catch(() => null),
+  ]);
+
+  const totalPending =
+    pendingEvents.length +
+    pendingKeeperChanges.length +
+    (
+      pendingInningsTransition
+        ? 1
+        : 0
+    ) +
+    pendingStrikeSwaps.length +
+    (
+      pendingServerUndo
+        ? 1
+        : 0
+    );
+
+  if (!totalPending) {
+    setOfflineSyncState(
+      (previous) => ({
+        ...previous,
+        online: true,
+        pending: 0,
+        syncing: false,
+        conflict: null,
+      })
+    );
+    return;
+  }
+
+  /*
+   * QUEUED OFFLINE SERVER UNDO
+   * ==========================
+   * This action must run BEFORE sequence reconciliation and before any balls
+   * scored locally after the undo.
+   *
+   * Lost-response safety:
+   * - server == sequenceAfter  -> undo still needs to be applied
+   * - server == sequenceBefore -> undo was already applied; just clear queue
+   * - anything else            -> stop safely
+   */
+  if (
+    pendingServerUndo
+  ) {
+    let undoBoard;
+
+    try {
+      undoBoard =
+        await api(
+          `/api/scoreboard/${numericMatchId}`
+        );
+    } catch (
+      undoReadError
+    ) {
+      if (
+        isOfflineRetryableError(
+          undoReadError
+        )
+      ) {
+        setOfflineSyncState(
+          (
+            previous
+          ) => ({
+            ...previous,
+
+            online:
+              false,
+
+            syncing:
+              false,
+
+            lastError:
+              "Undo sync paused until the connection is stable.",
+          })
+        );
+
+        return;
+      }
+
+      throw undoReadError;
+    }
+
+    const undoInningsNo =
+      Number(
+        pendingServerUndo
+          .inningsNo ||
+        1
+      );
+
+    const currentSequence =
+      Number(
+        undoBoard
+          ?.sync
+          ?.serverSequences
+          ?.[undoInningsNo] ??
+        undoBoard
+          ?.sync
+          ?.serverSequences
+          ?.[String(
+            undoInningsNo
+          )] ??
+        0
+      );
+
+    const sequenceAfter =
+      Number(
+        pendingServerUndo
+          .serverSequenceAfter ||
+        0
+      );
+
+    const sequenceBefore =
+      Number(
+        pendingServerUndo
+          .serverSequenceBefore ||
+        Math.max(
+          sequenceAfter -
+            1,
+          0
+        )
+      );
+
+    if (
+      currentSequence ===
+      sequenceAfter
+    ) {
+      try {
+        await api(
+          `/api/matches/${numericMatchId}/undo`,
+          {
+            method:
+              "POST",
+          }
+        );
+      } catch (
+        undoSyncError
+      ) {
+        if (
+          isOfflineRetryableError(
+            undoSyncError
+          )
+        ) {
+          setOfflineSyncState(
+            (
+              previous
+            ) => ({
+              ...previous,
+
+              online:
+                false,
+
+              syncing:
+                false,
+
+              lastError:
+                "Undo sync paused until the connection is stable.",
+            })
+          );
+
+          return;
+        }
+
+        setOfflineSyncState(
+          (
+            previous
+          ) => ({
+            ...previous,
+
+            syncing:
+              false,
+
+            conflict: {
+              message:
+                undoSyncError
+                  .message ||
+                "The queued offline undo could not be applied safely.",
+            },
+
+            lastError:
+              undoSyncError
+                .message ||
+              "The queued offline undo could not be applied safely.",
+          })
+        );
+
+        setError(
+          `Offline sync stopped: ${
+            undoSyncError
+              .message ||
+            "queued Undo requires review."
+          }`
+        );
+
+        return;
+      }
+    } else if (
+      currentSequence !==
+      sequenceBefore
+    ) {
+      const conflictMessage =
+        `Queued Undo expected server sequence ${sequenceAfter} (or ${sequenceBefore} if already applied), but server is at ${currentSequence}.`;
+
+      setOfflineSyncState(
+        (
+          previous
+        ) => ({
+          ...previous,
+
+          syncing:
+            false,
+
+          conflict: {
+            message:
+              conflictMessage,
+
+            expectedPreviousSequence:
+              sequenceAfter,
+
+            serverSequence:
+              currentSequence,
+
+            inningsNo:
+              undoInningsNo,
+          },
+
+          lastError:
+            conflictMessage,
+        })
+      );
+
+      setError(
+        "Offline sync conflict: queued Undo no longer matches the server. No local scoring changes were discarded."
+      );
+
+      return;
+    }
+
+    await removeOfflineServerUndo(
+      numericMatchId
+    );
+
+    await clearOfflineServerUndoSnapshot(
+      numericMatchId
+    ).catch(
+      () => {}
+    );
+
+    setOfflineSyncState(
+      (
+        previous
+      ) => ({
+        ...previous,
+
+        pending:
+          Math.max(
+            0,
+            Number(
+              previous.pending ||
+              totalPending
+            ) -
+              1
+          ),
+      })
+    );
+  }
+
+  /*
+   * SEQUENCE RECONCILIATION
+   * =======================
+   * expectedPreviousSequence stored on an individual offline event is a
+   * convenience value, not the authoritative branch point.
+   *
+   * Example that caused the user's false conflict:
+   *   stored expectedPreviousSequence = 23
+   *   actual server sequence          = 21
+   *
+   * This can happen when local pending events that existed when the event
+   * was created are later removed/replaced before reconnect. The server did
+   * NOT change; the local expected value simply became stale.
+   *
+   * We now compare the server against the LOCAL CHAIN'S BASE sequence.
+   * Only when the server still equals that base do we safely re-number the
+   * pending chain 21 -> 22 -> 23 ... during replay.
+   *
+   * If the server is AHEAD of the base, another server-side scoring change
+   * may exist and we preserve the 409-style safety stop.
+   *
+   * If the server is BEHIND the base, a server-side undo/correction may have
+   * occurred and we also stop rather than silently rewriting history.
+   */
+  let authoritativeBoard;
+
+  try {
+    authoritativeBoard =
+      await api(
+        `/api/scoreboard/${numericMatchId}`
+      );
+  } catch (sequenceReadError) {
+    if (
+      isOfflineRetryableError(
+        sequenceReadError
+      )
+    ) {
+      setOfflineSyncState(
+        (previous) => ({
+          ...previous,
+          online:
+            false,
+          syncing:
+            false,
+          lastError:
+            "Sync paused until the connection is stable.",
+        })
+      );
+      return;
+    }
+
+    throw sequenceReadError;
+  }
+
+  const authoritativeSequences = {
+    1:
+      Number(
+        authoritativeBoard
+          ?.sync
+          ?.serverSequences
+          ?.[1] ??
+        authoritativeBoard
+          ?.sync
+          ?.serverSequences
+          ?.["1"] ??
+        0
+      ),
+
+    2:
+      Number(
+        authoritativeBoard
+          ?.sync
+          ?.serverSequences
+          ?.[2] ??
+        authoritativeBoard
+          ?.sync
+          ?.serverSequences
+          ?.["2"] ??
+        0
+      ),
+  };
+
+  const eventsByInnings =
+    pendingEvents.reduce(
+      (
+        map,
+        event
+      ) => {
+        const inningsNo =
+          Number(
+            event
+              ?.payload
+              ?.inningsNo ||
+            event
+              ?.inningsNo ||
+            1
+          );
+
+        if (!map[inningsNo]) {
+          map[inningsNo] = [];
+        }
+
+        map[inningsNo].push(
+          event
+        );
+
+        return map;
+      },
+      {}
+    );
+
+  const replaySequenceByInnings = {
+    1:
+      authoritativeSequences[1],
+    2:
+      authoritativeSequences[2],
+  };
+
+  /*
+   * Automatic clientEventId reconciliation.
+   *
+   * /api/balls checks clientEventId before its sequence guard.
+   * Therefore replay can safely start from the current authoritative server
+   * sequence:
+   *   - event already accepted -> idempotent 200
+   *   - stale local expected sequence -> dynamically rebased
+   *   - genuine different server change -> 409, sync pauses
+   */
+  for (const inningsKey of Object.keys(eventsByInnings)) {
+    const inningsNo = Number(inningsKey);
+    replaySequenceByInnings[inningsNo] =
+      Number(authoritativeSequences[inningsNo] || 0);
+  }
+
+  offlineSyncRunningRef.current =
+    true;
+
+  setOfflineSyncState(
+    (previous) => ({
+      ...previous,
+      online: true,
+      syncing: true,
+      pending:
+        totalPending,
+      conflict:
+        null,
+      lastError:
+        "",
+    })
+  );
+
+  try {
+    let synced = 0;
+    let syncedKeeperChanges = 0;
+    let syncedInningsTransition = 0;
+    let syncedStrikeSwaps = 0;
+    let inningsTransitionApplied = false;
+    let nextStrikeSwapIndex = 0;
+
+    const syncStrikeSwapsBefore =
+      async (
+        localOrderLimit =
+          Number.POSITIVE_INFINITY
+      ) => {
+        while (
+          nextStrikeSwapIndex <
+            pendingStrikeSwaps.length &&
+          Number(
+            pendingStrikeSwaps[
+              nextStrikeSwapIndex
+            ]?.localOrder ||
+            0
+          ) <
+            Number(
+              localOrderLimit
+            )
+        ) {
+          const action =
+            pendingStrikeSwaps[
+              nextStrikeSwapIndex
+            ];
+
+          try {
+            await api(
+              "/api/events/swap-strike",
+              {
+                method:
+                  "POST",
+
+                body:
+                  JSON.stringify({
+                    matchId:
+                      numericMatchId,
+
+                    inningsNo:
+                      action
+                        .inningsNo,
+
+                    strikerId:
+                      action
+                        .strikerId,
+
+                    nonStrikerId:
+                      action
+                        .nonStrikerId,
+                  }),
+              }
+            );
+
+            await removeOfflineStrikeSwap(
+              numericMatchId,
+              action
+                .clientActionId
+            );
+
+            nextStrikeSwapIndex +=
+              1;
+
+            syncedStrikeSwaps +=
+              1;
+
+            setOfflineSyncState(
+              (
+                previous
+              ) => ({
+                ...previous,
+
+                pending:
+                  Math.max(
+                    0,
+                    totalPending -
+                      synced -
+                      syncedKeeperChanges -
+                      syncedInningsTransition -
+                      syncedStrikeSwaps
+                  ),
+              })
+            );
+          } catch (
+            swapSyncError
+          ) {
+            if (
+              isOfflineRetryableError(
+                swapSyncError
+              )
+            ) {
+              setOfflineSyncState(
+                (
+                  previous
+                ) => ({
+                  ...previous,
+
+                  online:
+                    typeof navigator ===
+                    "undefined"
+                      ? false
+                      : navigator
+                          .onLine,
+
+                  syncing:
+                    false,
+
+                  lastError:
+                    swapSyncError
+                      .message ||
+                    "Strike-swap sync paused until the connection is stable.",
+                })
+              );
+
+              return false;
+            }
+
+            setOfflineSyncState(
+              (
+                previous
+              ) => ({
+                ...previous,
+
+                syncing:
+                  false,
+
+                conflict: {
+                  message:
+                    swapSyncError
+                      .message ||
+                    "A queued strike swap could not be synchronized safely.",
+                },
+
+                lastError:
+                  swapSyncError
+                    .message ||
+                  "A queued strike swap could not be synchronized safely.",
+              })
+            );
+
+            setError(
+              `Offline sync stopped: ${
+                swapSyncError
+                  .message ||
+                "strike swap requires review."
+              }`
+            );
+
+            return false;
+          }
+        }
+
+        return true;
+      };
+
+    const syncQueuedInningsTransition =
+      async () => {
+        if (
+          !pendingInningsTransition ||
+          inningsTransitionApplied
+        ) {
+          return true;
+        }
+
+        try {
+          await api(
+            `/api/matches/${numericMatchId}/end-innings`,
+            {
+              method:
+                "POST",
+            }
+          );
+        } catch (
+          transitionError
+        ) {
+          /*
+           * If the original online request reached the server but its
+           * response was lost, retry may report that innings 1 is already
+           * over. Verify the authoritative scoreboard before treating it
+           * as a conflict.
+           */
+          if (
+            !isOfflineRetryableError(
+              transitionError
+            )
+          ) {
+            try {
+              const serverBoard =
+                await api(
+                  `/api/scoreboard/${numericMatchId}`
+                );
+
+              const serverInnings =
+                Number(
+                  serverBoard
+                    ?.currentInnings ||
+                  serverBoard
+                    ?.currentState
+                    ?.inningsNo ||
+                  1
+                );
+
+              if (
+                serverInnings >=
+                2
+              ) {
+                await removeOfflineInningsTransition(
+                  numericMatchId
+                );
+
+                inningsTransitionApplied =
+                  true;
+
+                syncedInningsTransition =
+                  1;
+
+                setOfflineSyncState(
+                  (
+                    previous
+                  ) => ({
+                    ...previous,
+
+                    pending:
+                      Math.max(
+                        0,
+                        totalPending -
+                          synced -
+                          syncedKeeperChanges -
+                          syncedInningsTransition
+                      ),
+                  })
+                );
+
+                return true;
+              }
+            } catch {
+              // Fall through to the normal error handling below.
+            }
+          }
+
+          if (
+            isOfflineRetryableError(
+              transitionError
+            )
+          ) {
+            setOfflineSyncState(
+              (
+                previous
+              ) => ({
+                ...previous,
+
+                online:
+                  typeof navigator ===
+                  "undefined"
+                    ? false
+                    : navigator
+                        .onLine,
+
+                syncing:
+                  false,
+
+                lastError:
+                  transitionError
+                    .message ||
+                  "First-innings sync paused until the connection is stable.",
+              })
+            );
+
+            return false;
+          }
+
+          setOfflineSyncState(
+            (
+              previous
+            ) => ({
+              ...previous,
+
+              syncing:
+                false,
+
+              conflict: {
+                message:
+                  transitionError
+                    .message ||
+                  "The queued first-innings transition could not be synchronized safely.",
+              },
+
+              lastError:
+                transitionError
+                  .message ||
+                "The queued first-innings transition could not be synchronized safely.",
+            })
+          );
+
+          setError(
+            `Offline sync stopped: ${
+              transitionError
+                .message ||
+              "first-innings transition requires review."
+            }`
+          );
+
+          return false;
+        }
+
+        await removeOfflineInningsTransition(
+          numericMatchId
+        );
+
+        inningsTransitionApplied =
+          true;
+
+        syncedInningsTransition =
+          1;
+
+        setOfflineSyncState(
+          (
+            previous
+          ) => ({
+            ...previous,
+
+            pending:
+              Math.max(
+                0,
+                totalPending -
+                  synced -
+                  syncedKeeperChanges -
+                  syncedInningsTransition
+              ),
+          })
+        );
+
+        return true;
+      };
+
+    for (const event of pendingEvents) {
+      const swapsSynced =
+        await syncStrikeSwapsBefore(
+          Number(
+            event.localOrder ||
+            Number.POSITIVE_INFINITY
+          )
+        );
+
+      if (!swapsSynced) {
+        return;
+      }
+
+      /*
+       * Manual offline End 1st Innings must reach the server AFTER every
+       * queued innings-1 delivery and BEFORE the first innings-2 delivery.
+       */
+      if (
+        Number(
+          event
+            ?.payload
+            ?.inningsNo ||
+          1
+        ) >=
+          2 &&
+        pendingInningsTransition &&
+        !inningsTransitionApplied
+      ) {
+        const transitionSynced =
+          await syncQueuedInningsTransition();
+
+        if (
+          !transitionSynced
+        ) {
+          return;
+        }
+      }
+
+      try {
+        const result = await api("/api/balls", {
+          method: "POST",
+          body: JSON.stringify({
+            ...event.payload,
+            clientEventId: event.clientEventId,
+            clientDeviceId: event.clientDeviceId,
+            clientCreatedAt: event.clientCreatedAt,
+            expectedPreviousSequence:
+              Number(
+                replaySequenceByInnings[
+                  Number(
+                    event
+                      ?.payload
+                      ?.inningsNo ||
+                    1
+                  )
+                ] ||
+                0
+              ),
+          }),
+        });
+
+        await removeOfflineBall(event.clientEventId);
+        synced += 1;
+
+        const inningsNo =
+          Number(
+            event
+              .payload
+              ?.inningsNo ||
+            1
+          );
+
+        const confirmedSequence =
+          Number(
+            result
+              ?.sequence ||
+            replaySequenceByInnings[
+              inningsNo
+            ] +
+              1 ||
+            0
+          );
+
+        replaySequenceByInnings[
+          inningsNo
+        ] =
+          confirmedSequence;
+
+        offlineServerSequencesRef.current = {
+          ...offlineServerSequencesRef.current,
+          matchId:
+            numericMatchId,
+          [inningsNo]:
+            confirmedSequence,
+        };
+
+        setOfflineSyncState((previous) => ({
+          ...previous,
+          pending: Math.max(
+            0,
+            totalPending -
+              synced -
+              syncedKeeperChanges -
+              syncedInningsTransition -
+              syncedStrikeSwaps
+          ),
+        }));
+      } catch (syncError) {
+        if (syncError?.status === 409 || syncError?.code === "OFFLINE_SYNC_CONFLICT") {
+          const conflict = {
+            message:
+              syncError?.data?.message ||
+              syncError.message ||
+              "The server score changed while this device was offline.",
+            expectedPreviousSequence:
+              syncError
+                ?.data
+                ?.expectedPreviousSequence ??
+              replaySequenceByInnings[
+                Number(
+                  event
+                    ?.payload
+                    ?.inningsNo ||
+                  1
+                )
+              ],
+            serverSequence: syncError?.data?.serverSequence ?? null,
+            inningsNo: syncError?.data?.inningsNo ?? event.payload?.inningsNo,
+          };
+
+          await updateOfflineBall(event.clientEventId, {
+            lastError: conflict.message,
+          }).catch(() => {});
+
+          setOfflineSyncState((previous) => ({
+            ...previous,
+            syncing: false,
+            conflict,
+            lastError: conflict.message,
+          }));
+          setError(
+            "Sync paused: server and local scoring history need reconciliation. Scoring can continue safely on this device."
+          );
+
+          setMessage(
+            "🔴 Synchronization is paused, but ball-by-ball scoring can continue locally."
+          );
+
+          return;
+        }
+
+        if (isOfflineRetryableError(syncError)) {
+          setOfflineSyncState((previous) => ({
+            ...previous,
+            online: typeof navigator === "undefined" ? false : navigator.onLine,
+            syncing: false,
+            lastError: syncError.message || "Sync paused until the connection is stable.",
+          }));
+          return;
+        }
+
+        await updateOfflineBall(event.clientEventId, {
+          lastError: syncError.message || "Sync failed.",
+        }).catch(() => {});
+
+        setOfflineSyncState((previous) => ({
+          ...previous,
+          syncing: false,
+          conflict: {
+            message: syncError.message || "A queued delivery could not be applied safely.",
+            inningsNo: event.payload?.inningsNo,
+          },
+          lastError: syncError.message || "A queued delivery could not be applied safely.",
+        }));
+        setError(
+          `Offline sync stopped: ${syncError.message || "queued delivery requires review."}`
+        );
+        return;
+      }
+    }
+
+    /*
+     * The scorer may reconnect immediately after ending innings 1, before
+     * recording any innings-2 ball. In that case there was no innings-2
+     * event to trigger the transition inside the loop above.
+     */
+    if (
+      pendingInningsTransition &&
+      !inningsTransitionApplied
+    ) {
+      const transitionSynced =
+        await syncQueuedInningsTransition();
+
+      if (
+        !transitionSynced
+      ) {
+        return;
+      }
+    }
+
+    const remainingSwapsSynced =
+      await syncStrikeSwapsBefore(
+        Number.POSITIVE_INFINITY
+      );
+
+    if (!remainingSwapsSynced) {
+      return;
+    }
+
+    /*
+     * Replay queued wicketkeeper changes after the pending balls.
+     *
+     * Each change stores afterSequence from the local scoreboard at the
+     * moment it was made, so the server can record the historical boundary
+     * after the corresponding offline balls have been restored.
+     */
+    for (
+      const keeperChange
+      of pendingKeeperChanges
+    ) {
+      try {
+        await api(
+          `/api/matches/${numericMatchId}/wicketkeeper-change`,
+          {
+            method:
+              "POST",
+
+            body:
+              JSON.stringify({
+                inningsNo:
+                  keeperChange
+                    .inningsNo,
+
+                newKeeperId:
+                  keeperChange
+                    .newKeeperId,
+
+                note:
+                  keeperChange
+                    .note,
+
+                afterSequence:
+                  keeperChange
+                    .afterSequence,
+
+                ...(keeperChange
+                  .teamId
+                  ? {
+                      teamId:
+                        keeperChange
+                          .teamId,
+                    }
+                  : {}),
+              }),
+          }
+        );
+
+        await removeOfflineKeeperChange(
+          numericMatchId,
+          keeperChange
+            .clientActionId
+        );
+
+        syncedKeeperChanges +=
+          1;
+
+        setOfflineSyncState(
+          (previous) => ({
+            ...previous,
+
+            pending:
+              Math.max(
+                0,
+                totalPending -
+                  synced -
+                  syncedKeeperChanges
+              ),
+          })
+        );
+      } catch (
+        keeperSyncError
+      ) {
+        if (
+          isOfflineRetryableError(
+            keeperSyncError
+          )
+        ) {
+          setOfflineSyncState(
+            (previous) => ({
+              ...previous,
+
+              online:
+                typeof navigator ===
+                "undefined"
+                  ? false
+                  : navigator
+                      .onLine,
+
+              syncing:
+                false,
+
+              lastError:
+                keeperSyncError
+                  .message ||
+                "Wicketkeeper sync paused until the connection is stable.",
+            })
+          );
+
+          return;
+        }
+
+        setOfflineSyncState(
+          (previous) => ({
+            ...previous,
+
+            syncing:
+              false,
+
+            conflict: {
+              message:
+                keeperSyncError
+                  .message ||
+                "A queued wicketkeeper change could not be synchronized safely.",
+            },
+
+            lastError:
+              keeperSyncError
+                .message ||
+              "A queued wicketkeeper change could not be synchronized safely.",
+          })
+        );
+
+        setError(
+          `Offline sync stopped: ${
+            keeperSyncError
+              .message ||
+            "queued wicketkeeper change requires review."
+          }`
+        );
+
+        return;
+      }
+    }
+
+    const refreshedBoard = await loadSelectedMatch(numericMatchId, {
+      syncBallForm: true,
+    });
+
+    setOfflineLocalMatchComplete(false);
+    setOfflineSyncState((previous) => ({
+      ...previous,
+      online: true,
+      pending: 0,
+      syncing: false,
+      conflict: null,
+      lastError: "",
+    }));
+
+    const totalSynced =
+      synced +
+      syncedKeeperChanges +
+      syncedInningsTransition +
+      syncedStrikeSwaps;
+
+    setMessage(
+      `✅ Offline scoring synchronized${
+        totalSynced
+          ? ` · ${totalSynced} change${
+              totalSynced === 1 ? "" : "s"
+            }`
+          : ""
+      }.`
+    );
+
+    const finalStatus =
+      String(
+        refreshedBoard
+          ?.match
+          ?.status ||
+        ""
+      )
+        .trim()
+        .toUpperCase();
+
+    /*
+     * COMPLETED is the only state that represents the initial match-end
+     * transition. Locked/corrected statuses are downstream administrative
+     * states and must not create another custody prompt.
+     */
+    if (finalStatus === "COMPLETED") {
+      await syncAndShowPostMatchKitPrompt(
+        numericMatchId
+      );
+    }
+  } finally {
+    offlineSyncRunningRef.current = false;
+  }
+}
+
 async function submitBall(data) {
   setMessage("");
   setError("");
 setOverCompleteNotice("");
+
+  if (
+    offlineLocalMatchComplete
+  ) {
+    const localCompletion =
+      getOfflineLocalCompletionState(
+        scoreboard,
+        ballForm
+          ?.inningsNo
+      );
+
+    if (
+      localCompletion.complete
+    ) {
+      const reason =
+        localCompletion
+          .targetReached
+          ? "target reached"
+          : localCompletion
+              .oversFinished
+            ? "scheduled overs completed"
+            : "maximum wickets reached";
+
+      setError(
+        `Match is complete on this device (${reason}). Reconnect and sync before scoring again.`
+      );
+
+      return false;
+    }
+
+    /*
+     * State was stale/incorrect. Clear it and allow scoring to continue.
+     */
+    setOfflineLocalMatchComplete(
+      false
+    );
+  }
 
   if (ballSaveInFlight) {
     return false;
@@ -4049,8 +6921,121 @@ data = {
     return false;
   }
 
+  const previewBoard = previewScoreboardAfterBall(scoreboard, data);
+  const clientEventId = createClientEventId();
+  let queuedEvent = null;
+
+  try {
+    const clientDeviceId = await getOfflineDeviceId();
+    const existingPending = await listPendingOfflineBalls(selectedMatchId);
+    const sameInningsPending = existingPending.filter(
+      (event) => Number(event.payload?.inningsNo) === Number(data.inningsNo)
+    );
+
+    const sequenceState = offlineServerSequencesRef.current;
+    const knownServerSequence =
+      Number(sequenceState?.matchId) === Number(selectedMatchId)
+        ? Number(sequenceState?.[Number(data.inningsNo)] || 0)
+        : Number(scoreboard?.sync?.serverSequences?.[Number(data.inningsNo)] || 0);
+
+    queuedEvent = {
+      clientEventId,
+      clientDeviceId,
+      clientCreatedAt: new Date().toISOString(),
+      matchId: Number(selectedMatchId),
+      inningsNo: Number(data.inningsNo),
+
+      /*
+       * baseServerSequence is the server position this LOCAL chain branched
+       * from. Keep it unchanged for every pending ball in the same chain.
+       *
+       * expectedPreviousSequence can become stale when local pending events
+       * are removed/replaced before reconnect (Undo, wicket replacement,
+       * innings setup, etc.). The base sequence is what lets reconnect
+       * safely rebuild the chain without weakening conflict detection.
+       */
+      baseServerSequence:
+        Number(
+          sameInningsPending
+            ?.[0]
+            ?.baseServerSequence ??
+          sameInningsPending
+            ?.[0]
+            ?.boardBefore
+            ?.sync
+            ?.serverSequences
+            ?.[Number(data.inningsNo)] ??
+          sameInningsPending
+            ?.[0]
+            ?.boardBefore
+            ?.sync
+            ?.serverSequences
+            ?.[String(Number(data.inningsNo))] ??
+          knownServerSequence
+        ),
+
+      expectedPreviousSequence:
+        knownServerSequence +
+        sameInningsPending.length,
+
+      payload: { ...data },
+      boardBefore: scoreboard,
+      ballFormBefore: { ...ballForm },
+    };
+
+    await queueOfflineBall(queuedEvent);
+  } catch (offlineStoreError) {
+    /*
+     * IndexedDB failure must never break existing ONLINE scoring. Continue with
+     * the old direct API path; only true offline persistence is unavailable.
+     */
+    console.error("[OFFLINE_SCORING_STORE_FAILED]", offlineStoreError);
+    queuedEvent = null;
+  }
+
   setIsSavingBall(true);
-  setOptimisticScoreboard(previewScoreboardAfterBall(scoreboard, data));
+  setOptimisticScoreboard(previewBoard);
+
+  /*
+   * A sync conflict pauses synchronization only.
+   * It must never pause the live cricket match.
+   */
+  if (offlineSyncState?.conflict) {
+    setOfflineSyncState((previous) => ({
+      ...previous,
+      online:
+        typeof navigator === "undefined"
+          ? previous.online
+          : navigator.onLine,
+      syncing: false,
+      lastError:
+        previous.lastError ||
+        "Synchronization is paused. Scoring is continuing safely on this device.",
+    }));
+
+    /*
+     * IMPORTANT:
+     * setIsSavingBall(true) is called immediately before this branch.
+     *
+     * The old conflict path returned BEFORE entering the try/finally below,
+     * so setIsSavingBall(false) never ran. The first click could show
+     * "Ball recorded", but every later scoring click was silently ignored by:
+     *
+     *   if (isSavingBall) return false;
+     *
+     * This is why scoring appeared completely frozen after Retry Sync.
+     */
+    try {
+      return await applyQueuedBallLocally({
+        data,
+        previewBoard,
+        event: queuedEvent,
+      });
+    } finally {
+      setIsSavingBall(false);
+      setInstantDeliveryStatus("");
+    }
+  }
 
   try {
     const instantMessage = getInstantDeliveryStatus(data);
@@ -4064,8 +7049,92 @@ data = {
 */
     const savedBall = await api("/api/balls", {
       method: "POST",
-      body: JSON.stringify(data),
+      body: JSON.stringify({
+        ...data,
+        ...(queuedEvent
+          ? {
+              clientEventId: queuedEvent.clientEventId,
+              clientDeviceId: queuedEvent.clientDeviceId,
+              clientCreatedAt: queuedEvent.clientCreatedAt,
+              expectedPreviousSequence: queuedEvent.expectedPreviousSequence,
+            }
+          : {}),
+      }),
     });
+
+    if (queuedEvent) {
+      await removeOfflineBall(queuedEvent.clientEventId).catch(() => {});
+      await refreshOfflinePendingCount(selectedMatchId);
+    }
+
+    offlineServerSequencesRef.current = {
+      ...offlineServerSequencesRef.current,
+      matchId: Number(selectedMatchId),
+      [Number(data.inningsNo)]: Number(savedBall?.sequence || 0),
+    };
+
+
+    /*
+     * OFFLINE UNDO SNAPSHOT
+     * ---------------------
+     * The ball has now been confirmed by the server, but `scoreboard` and
+     * `ballForm` in this submit closure still represent the state BEFORE
+     * this delivery.
+     *
+     * Preserve that exact state so if the scorer loses connectivity and
+     * immediately taps Undo, Cric4All can rewind the UI locally and queue
+     * the real server undo for reconnect.
+     */
+    await saveOfflineServerUndoSnapshot(
+      selectedMatchId,
+      {
+        inningsNo:
+          Number(
+            data.inningsNo
+          ),
+
+        serverSequenceBefore:
+          Math.max(
+            Number(
+              savedBall
+                ?.sequence ||
+              0
+            ) -
+              1,
+            0
+          ),
+
+        serverSequenceAfter:
+          Number(
+            savedBall
+              ?.sequence ||
+            0
+          ),
+
+        clientEventId:
+          savedBall
+            ?.clientEventId ||
+          queuedEvent
+            ?.clientEventId ||
+          null,
+
+        boardBefore:
+          scoreboard,
+
+        ballFormBefore: {
+          ...ballForm,
+        },
+      }
+    ).catch(
+      (
+        snapshotError
+      ) => {
+        console.warn(
+          "[OFFLINE_UNDO_SNAPSHOT_SAVE_FAILED]",
+          snapshotError
+        );
+      }
+    );
 
     if (
       Array.isArray(
@@ -4166,9 +7235,13 @@ setBallForm((prev) => ({
 
     const firstInningsJustEnded =
   Number(data.inningsNo) === 1 &&
-  savedBall?.inningsEnded === true &&
-  Number(savedBall?.nextInningsNo) === 2 &&
-  ["OVERS_COMPLETED", "ALL_OUT"].includes(savedBall?.inningsEndedReason);
+  (
+    (
+      savedBall?.inningsEnded === true &&
+      Number(savedBall?.nextInningsNo) === 2
+    ) ||
+    Number(updatedBoard?.currentInnings) === 2
+  );
 
 /*
  * FAST SCORING PATH
@@ -4520,6 +7593,62 @@ if (scoreboard?.currentState && !showDeliverySetupModal) {
     setOptimisticScoreboard(null);
     setInstantDeliveryStatus("");
 
+    if (
+      queuedEvent &&
+      (
+        isOfflineRetryableError(err) ||
+        isOfflineSyncConflictError(err)
+      )
+    ) {
+      const isConflict =
+        isOfflineSyncConflictError(err);
+
+      setOfflineSyncState((previous) => ({
+        ...previous,
+        online:
+          typeof navigator === "undefined"
+            ? false
+            : navigator.onLine,
+        syncing: false,
+        ...(isConflict
+          ? {
+              conflict: {
+                message:
+                  err?.data?.message ||
+                  err.message ||
+                  "Server and local scoring history need reconciliation.",
+                expectedPreviousSequence:
+                  err?.data?.expectedPreviousSequence,
+                serverSequence:
+                  err?.data?.serverSequence,
+                inningsNo:
+                  err?.data?.inningsNo,
+              },
+            }
+          : {}),
+        lastError:
+          isConflict
+            ? "Sync paused. Scoring can continue safely on this device."
+            : err.message ||
+              "Delivery queued for automatic sync.",
+      }));
+
+      return await applyQueuedBallLocally({
+        data,
+        previewBoard,
+        event: queuedEvent,
+      });
+    }
+
+    /*
+     * A validation/permission error means the delivery was never accepted.
+     * Remove its local queue record so it is not replayed later.
+     */
+    if (queuedEvent) {
+      await removeOfflineBall(queuedEvent.clientEventId).catch(() => {});
+      await refreshOfflinePendingCount(selectedMatchId);
+    }
+
     if (err.message?.includes("BOWLER_CONSECUTIVE_OVER")) {
       setPendingBallData({
         matchId: Number(selectedMatchId),
@@ -4559,6 +7688,61 @@ if (scoreboard?.currentState && !showDeliverySetupModal) {
   }
 }
   
+
+useEffect(() => {
+  if (typeof window === "undefined") return undefined;
+
+  let cancelled = false;
+
+  const refresh = async () => {
+    const online = navigator.onLine;
+    const pending = selectedMatchId
+      ? await getPendingOfflineBallCount(selectedMatchId).catch(() => 0)
+      : 0;
+
+    if (cancelled) return;
+
+    setOfflineSyncState((previous) => ({
+      ...previous,
+      online,
+      pending,
+      ...(online ? {} : { syncing: false }),
+    }));
+
+    if (
+      online &&
+      pending > 0 &&
+      selectedMatchId &&
+      !offlineSyncState?.conflict
+    ) {
+      void syncPendingOfflineBalls(selectedMatchId);
+    }
+  };
+
+  const handleOnline = () => {
+    setOfflineSyncState((previous) => ({ ...previous, online: true }));
+    void refresh();
+  };
+
+  const handleOffline = () => {
+    setOfflineSyncState((previous) => ({
+      ...previous,
+      online: false,
+      syncing: false,
+    }));
+  };
+
+  window.addEventListener("online", handleOnline);
+  window.addEventListener("offline", handleOffline);
+  void refresh();
+
+  return () => {
+    cancelled = true;
+    window.removeEventListener("online", handleOnline);
+    window.removeEventListener("offline", handleOffline);
+  };
+}, [selectedMatchId]);
+
 async function selectLeague(league) {
   setShowDeliverySetupModal(false);
 setPendingDeliverySetupAfterStart(false);
@@ -5216,33 +8400,236 @@ async function confirmWicket() {
 }
 
 async function swapBatters() {
-  if (!selectedMatchId) return;
+  if (!selectedMatchId) {
+    return;
+  }
+
+  const oldStrikerId =
+    ballForm.strikerId;
+
+  const oldNonStrikerId =
+    ballForm.nonStrikerId;
+
+  if (
+    !oldStrikerId ||
+    !oldNonStrikerId
+  ) {
+    setError(
+      "Striker and non-striker must be selected before swapping strike."
+    );
+    return;
+  }
+
+  const newStrikerId =
+    oldNonStrikerId;
+
+  const newNonStrikerId =
+    oldStrikerId;
+
+  const applySwapLocally =
+    async () => {
+      const localBoard =
+        scoreboard
+          ? (
+              typeof structuredClone ===
+              "function"
+                ? structuredClone(
+                    scoreboard
+                  )
+                : JSON.parse(
+                    JSON.stringify(
+                      scoreboard
+                    )
+                  )
+            )
+          : null;
+
+      if (
+        localBoard?.currentState
+      ) {
+        const currentState =
+          localBoard.currentState;
+
+        const strikerName =
+          currentState
+            .strikerName;
+
+        const nonStrikerName =
+          currentState
+            .nonStrikerName;
+
+        const strikerStats =
+          currentState
+            .strikerStats;
+
+        const nonStrikerStats =
+          currentState
+            .nonStrikerStats;
+
+        currentState.strikerId =
+          Number(
+            newStrikerId
+          );
+
+        currentState.nonStrikerId =
+          Number(
+            newNonStrikerId
+          );
+
+        currentState.strikerName =
+          nonStrikerName;
+
+        currentState.nonStrikerName =
+          strikerName;
+
+        currentState.strikerStats =
+          nonStrikerStats;
+
+        currentState.nonStrikerStats =
+          strikerStats;
+
+        setScoreboard(
+          localBoard
+        );
+      }
+
+      const nextForm = {
+        ...ballForm,
+
+        strikerId:
+          String(
+            newStrikerId
+          ),
+
+        nonStrikerId:
+          String(
+            newNonStrikerId
+          ),
+      };
+
+      setBallForm(
+        nextForm
+      );
+
+      await cacheOfflineMatchSnapshot(
+        selectedMatchId,
+        {
+          scoreboard:
+            localBoard ||
+            scoreboard,
+
+          matchDetail:
+            matchDetail ||
+            null,
+
+          ballForm:
+            nextForm,
+
+          savedAt:
+            new Date()
+              .toISOString(),
+        }
+      ).catch(
+        (
+          cacheError
+        ) => {
+          console.warn(
+            "[OFFLINE_SWAP_CACHE_FAILED]",
+            cacheError
+          );
+        }
+      );
+    };
 
   try {
-    const newStrikerId =
-      ballForm.nonStrikerId;
+    const browserIsOffline =
+      typeof navigator !==
+        "undefined" &&
+      navigator.onLine ===
+        false;
 
-    const newNonStrikerId =
-      ballForm.strikerId;
+    const appIsOffline =
+      offlineSyncState?.online === false ||
+      Boolean(offlineSyncState?.conflict);
+
+    if (
+      browserIsOffline ||
+      appIsOffline
+    ) {
+      await queueOfflineStrikeSwap({
+        matchId:
+          Number(
+            selectedMatchId
+          ),
+
+        inningsNo:
+          Number(
+            ballForm.inningsNo
+          ),
+
+        strikerId:
+          Number(
+            newStrikerId
+          ),
+
+        nonStrikerId:
+          Number(
+            newNonStrikerId
+          ),
+
+        localOrder:
+          Date.now() * 1000 +
+          Math.floor(
+            Math.random() * 999
+          ),
+      });
+
+      await applySwapLocally();
+
+      const pending =
+        await refreshOfflinePendingCount(
+          selectedMatchId
+        );
+
+      setError(
+        ""
+      );
+
+      setMessage(
+        `📴 Strike swapped locally · ${pending} change${
+          pending === 1
+            ? ""
+            : "s"
+        } waiting to sync.`
+      );
+
+      return;
+    }
 
     await api(
       "/api/events/swap-strike",
       {
-        method: "POST",
-        body: JSON.stringify({
-          matchId: selectedMatchId,
-          inningsNo: ballForm.inningsNo,
-          strikerId: newStrikerId,
-          nonStrikerId: newNonStrikerId
-        })
+        method:
+          "POST",
+
+        body:
+          JSON.stringify({
+            matchId:
+              selectedMatchId,
+
+            inningsNo:
+              ballForm.inningsNo,
+
+            strikerId:
+              newStrikerId,
+
+            nonStrikerId:
+              newNonStrikerId,
+          }),
       }
     );
 
-    setBallForm(prev => ({
-      ...prev,
-      strikerId: newStrikerId,
-      nonStrikerId: newNonStrikerId
-    }));
+    await applySwapLocally();
 
     await loadSelectedMatch(
       selectedMatchId
@@ -5251,11 +8638,85 @@ async function swapBatters() {
     setMessage(
       "🔄 Striker swapped successfully"
     );
-
   } catch (err) {
-    setError(err.message);
+    if (
+      isOfflineRetryableError(
+        err
+      )
+    ) {
+      try {
+        await queueOfflineStrikeSwap({
+          matchId:
+            Number(
+              selectedMatchId
+            ),
+
+          inningsNo:
+            Number(
+              ballForm.inningsNo
+            ),
+
+          strikerId:
+            Number(
+              newStrikerId
+            ),
+
+          nonStrikerId:
+            Number(
+              newNonStrikerId
+            ),
+        });
+
+        await applySwapLocally();
+
+        setOfflineSyncState(
+          (
+            previous
+          ) => ({
+            ...previous,
+
+            online:
+              false,
+
+            syncing:
+              false,
+          })
+        );
+
+        const pending =
+          await refreshOfflinePendingCount(
+            selectedMatchId
+          );
+
+        setError(
+          ""
+        );
+
+        setMessage(
+          `📴 Strike swapped locally · ${pending} change${
+            pending === 1
+              ? ""
+              : "s"
+          } waiting to sync.`
+        );
+
+        return;
+      } catch (
+        queueError
+      ) {
+        console.error(
+          "[OFFLINE_SWAP_QUEUE_FAILED]",
+          queueError
+        );
+      }
+    }
+
+    setError(
+      err.message
+    );
   }
 }
+
 const handleBulkAddPlayers = async (e) => {
   e.preventDefault();
 
@@ -5960,6 +9421,44 @@ async function loadMyLeaguePermissions(leagueId) {
   } catch (err) {
     console.error(err);
 
+    const browserIsOffline =
+      typeof navigator !==
+        "undefined" &&
+      navigator.onLine ===
+        false;
+
+    const retryableOfflineFailure =
+      browserIsOffline ||
+      isOfflineRetryableError(
+        err
+      );
+
+    /*
+     * IMPORTANT:
+     * Keep the last successfully loaded permissions while offline.
+     *
+     * Scorer Mode renders its scoring buttons behind:
+     *   permissions?.canScoreMatch
+     *
+     * Clearing permissions on a harmless offline fetch failure caused the
+     * entire scoring keypad to disappear after a few seconds.
+     */
+    if (
+      retryableOfflineFailure
+    ) {
+      setOfflineSyncState(
+        (
+          previous
+        ) => ({
+          ...previous,
+          online:
+            false,
+        })
+      );
+
+      return;
+    }
+
     const selected = leagues.find(
       (l) => String(l.id) === String(leagueId)
     );
@@ -6013,6 +9512,26 @@ function showPostMatchKitPrompt(result) {
 
   const kitCustody =
     result?.kitCustody || {};
+
+  /*
+   * The kit-custody prompt belongs to the first transition into a finished
+   * match. Later transitions such as COMPLETED -> COMPLETED_LOCKED must not
+   * reopen the same post-match workflow.
+   */
+  const promptedMatchId =
+    Number(
+      nextAction.matchId ||
+      selectedMatchId
+    );
+
+  if (
+    Number.isInteger(promptedMatchId) &&
+    promptedMatchId > 0
+  ) {
+    postMatchKitAutoPromptedRef
+      .current
+      .add(promptedMatchId);
+  }
 
   const selectedMatch =
     matches.find(
@@ -6103,7 +9622,8 @@ async function syncAndShowPostMatchKitPrompt(
    * Prevent the automatic scoring path from opening the same popup more
    * than once if several scoreboard refreshes observe COMPLETED.
    *
-   * Manual End/Lock/DLS behavior remains untouched.
+   * Manual End/DLS may show the prompt when the match first finishes.
+   * Lock is excluded because it is a later administrative state.
    */
   if (
     postMatchKitAutoPromptedRef
@@ -6172,6 +9692,21 @@ function openKitFromPostMatchPrompt() {
   const targetMatchId =
     postMatchKitPrompt?.matchId;
 
+  const handledMatchId =
+    Number(
+      targetMatchId ||
+      selectedMatchId
+    );
+
+  if (
+    Number.isInteger(handledMatchId) &&
+    handledMatchId > 0
+  ) {
+    postMatchKitAutoPromptedRef
+      .current
+      .add(handledMatchId);
+  }
+
   if (targetLeagueId) {
     setActiveLeagueId(
       Number(targetLeagueId)
@@ -6191,6 +9726,10 @@ function openKitFromPostMatchPrompt() {
   setActiveTab("matches");
   setMatchesSubTab("KIT");
   setPostMatchKitPrompt(null);
+
+  setMessage(
+    "🧳 Record the final kit holder below. The completed match can be locked from the Match completed panel at the top of this Kit tab."
+  );
 }
 
 
@@ -6839,6 +10378,11 @@ async function handleEndByDls() {
 }
 
 async function handleEndMatch() {
+  if (offlineSyncState.pending > 0 || offlineSyncState.syncing) {
+    setError("Sync all offline scoring changes before finalizing or locking this match.");
+    return;
+  }
+
   const confirmed = window.confirm(
     "End this match? No more scoring will be allowed."
   );
@@ -6874,14 +10418,46 @@ async function handleEndMatch() {
   }
 }
 async function handleLockMatch() {
-  const confirmed = window.confirm(
-    "Lock this match? Once locked, this match cannot be edited or scored further."
-  );
+  if (
+    offlineSyncState.pending > 0 ||
+    offlineSyncState.syncing ||
+    offlineSyncState.conflict
+  ) {
+    setError(
+      "Sync all offline scoring changes before finalizing or locking this match."
+    );
+    return;
+  }
+
+  const confirmed =
+    window.confirm(
+      "Lock this match? Once locked, this match cannot be edited or scored further."
+    );
 
   if (!confirmed) return;
 
+  const numericMatchId =
+    Number(selectedMatchId);
+
+  /*
+   * LOCK IS NOT A NEW POST-MATCH EVENT
+   * ----------------------------------
+   * Kit custody was already presented when the match first became complete.
+   * Locking is the final administrative step only.
+   */
+  if (
+    Number.isInteger(numericMatchId) &&
+    numericMatchId > 0
+  ) {
+    postMatchKitAutoPromptedRef
+      .current
+      .add(numericMatchId);
+  }
+
+  setPostMatchKitPrompt(null);
+
   try {
-    const result = await api(
+    await api(
       `/api/matches/${selectedMatchId}/end`,
       {
         method: "POST",
@@ -6897,10 +10473,8 @@ async function handleLockMatch() {
     );
 
     setMessage(
-      "Match locked successfully. Confirm who took the kit home."
+      "🔒 Match locked successfully."
     );
-
-    showPostMatchKitPrompt(result);
   } catch (err) {
     setError(
       err.message ||
@@ -6969,6 +10543,177 @@ async function confirmBowlerChange() {
             newBowlerId
         );
 
+    /*
+     * OFFLINE SCORING:
+     * ----------------
+     * A bowler change at the start of a new over is local scoring state,
+     * not a delivery by itself.
+     *
+     * When Chrome/Capacitor is offline, do NOT call the server
+     * /change-bowler endpoint. The next queued Ball already carries
+     * bowlerId, and that delivery is what will be replayed to the server
+     * when connectivity returns.
+     *
+     * This also prevents the mandatory Change Bowler modal from becoming
+     * impossible to close while offline.
+     */
+    const browserIsOffline =
+      typeof navigator !==
+        "undefined" &&
+      navigator.onLine ===
+        false;
+
+    const appIsOffline =
+      offlineSyncState?.online === false ||
+      Boolean(offlineSyncState?.conflict);
+
+    if (
+      browserIsOffline ||
+      appIsOffline
+    ) {
+      const localBoard =
+        scoreboard
+          ? {
+              ...scoreboard,
+
+              currentState:
+                scoreboard
+                  .currentState
+                  ? {
+                      ...scoreboard
+                        .currentState,
+
+                      bowlerId:
+                        newBowlerId,
+
+                      bowlerName:
+                        selectedBowler
+                          ?.name ||
+                        scoreboard
+                          .currentState
+                          .bowlerName,
+
+                      /*
+                       * A new over begins with fresh bowler figures for the
+                       * live popup only if the existing scoreboard does not
+                       * already have this bowler's current spell data.
+                       * Do not fabricate server statistics here.
+                       */
+                    }
+                  : scoreboard
+                      .currentState,
+            }
+          : scoreboard;
+
+      if (localBoard) {
+        setScoreboard(
+          localBoard
+        );
+
+        /*
+         * Persist the locally selected bowler with the cached match
+         * snapshot. If the scorer refreshes while still offline, the
+         * selected bowler remains available for the next delivery.
+         */
+        await cacheOfflineMatchSnapshot(
+          selectedMatchId,
+          {
+            scoreboard:
+              localBoard,
+
+            matchDetail:
+              matchDetail ||
+              null,
+
+            ballForm: {
+              ...ballForm,
+
+              bowlerId:
+                newBowlerId,
+            },
+
+            savedAt:
+              new Date()
+                .toISOString(),
+          }
+        ).catch(
+          (
+            cacheError
+          ) => {
+            console.warn(
+              "[OFFLINE_BOWLER_CACHE_FAILED]",
+              cacheError
+            );
+          }
+        );
+      }
+
+      setBallForm(
+        (
+          previous
+        ) => ({
+          ...previous,
+
+          bowlerId:
+            newBowlerId,
+
+          isWicket:
+            false,
+
+          wicketType:
+            "NONE",
+
+          dismissedPlayerId:
+            "",
+
+          newBatterId:
+            "",
+        })
+      );
+
+      setMustChangeBowler(
+        false
+      );
+
+      setShowBowlerModal(
+        false
+      );
+
+      setShowWicketModal(
+        false
+      );
+
+      setWicketSubmissionInFlight(
+        false
+      );
+
+      setPendingBallData(
+        null
+      );
+
+      setBowlerSearchText(
+        ""
+      );
+
+      setError(
+        ""
+      );
+
+      setMessage(
+        `📴 ${
+          selectedBowler
+            ?.name ||
+          "Selected bowler"
+        } selected for the next over · saved locally.`
+      );
+
+      return;
+    }
+
+    /*
+     * ONLINE PATH:
+     * Preserve the existing server behavior exactly as before.
+     */
     await api(
       `/api/matches/${selectedMatchId}/change-bowler`,
       {
@@ -7066,6 +10811,10 @@ async function confirmBowlerChange() {
       null
     );
 
+    setBowlerSearchText(
+      ""
+    );
+
     setMessage(
       `✅ Bowler changed to ${
         selectedBowler?.name ||
@@ -7073,6 +10822,111 @@ async function confirmBowlerChange() {
       }.`
     );
   } catch (err) {
+    /*
+     * If connectivity disappears between the online/offline check and the
+     * request itself, treat the selection as an offline bowler change
+     * instead of trapping the scorer in the mandatory modal.
+     */
+    if (
+      isOfflineRetryableError(
+        err
+      )
+    ) {
+      const newBowlerId =
+        Number(
+          ballForm.bowlerId
+        );
+
+      const selectedBowler =
+        bowlingTeam
+          ?.players
+          ?.find(
+            (player) =>
+              Number(
+                player.id
+              ) ===
+              newBowlerId
+          );
+
+      setBallForm(
+        (
+          previous
+        ) => ({
+          ...previous,
+
+          bowlerId:
+            newBowlerId,
+
+          isWicket:
+            false,
+
+          wicketType:
+            "NONE",
+
+          dismissedPlayerId:
+            "",
+
+          newBatterId:
+            "",
+        })
+      );
+
+      setMustChangeBowler(
+        false
+      );
+
+      setShowBowlerModal(
+        false
+      );
+
+      setShowWicketModal(
+        false
+      );
+
+      setWicketSubmissionInFlight(
+        false
+      );
+
+      setPendingBallData(
+        null
+      );
+
+      setBowlerSearchText(
+        ""
+      );
+
+      setOfflineSyncState(
+        (
+          previous
+        ) => ({
+          ...previous,
+
+          online:
+            false,
+
+          syncing:
+            false,
+
+          lastError:
+            "Bowler selection saved locally. It will be carried by the next queued delivery.",
+        })
+      );
+
+      setError(
+        ""
+      );
+
+      setMessage(
+        `📴 ${
+          selectedBowler
+            ?.name ||
+          "Selected bowler"
+        } selected for the next over · saved locally.`
+      );
+
+      return;
+    }
+
     setError(
       err.message
     );
@@ -7313,21 +11167,49 @@ const editTeamB = useMemo(
   [editMatchLeagueTeams, editMatchForm.teamBId]
 );
 
-const displayScoreboard = optimisticScoreboard || scoreboard;
+const displayScoreboard =
+  optimisticScoreboard ||
+  scoreboard;
 
-const matchInsights = buildMatchInsights(displayScoreboard);
+const liveMatchCenter =
+  buildLiveMatchCenter(
+    displayScoreboard ||
+      scoreboard,
+    hasOfflineLocalState
+  );
+
+const offlineLocalResultText =
+  hasOfflineLocalState
+    ? buildOfflineLocalResultText(
+        displayScoreboard ||
+          scoreboard,
+        liveMatchCenter
+      )
+    : "";
+
+const matchInsights =
+  buildMatchInsights(
+    displayScoreboard
+  );
+
 const dashboardResultText =
-  displayScoreboard?.superOver?.completed
-    ? (displayScoreboard.superOver.resultText || "Match completed via Super Over")
-    : matchInsights?.resultText;
+  displayScoreboard
+    ?.superOver
+    ?.completed
+    ? (
+        displayScoreboard
+          .superOver
+          .resultText ||
+        "Match completed via Super Over"
+      )
+    : offlineLocalResultText ||
+      matchInsights
+        ?.resultText;
 
 const combinedCommentary = [
   ...(scoreboard?.commentary || []),
   ...(scoreboard?.superOver?.commentary || []),
 ];
-
-const liveMatchCenter =
-  buildLiveMatchCenter(displayScoreboard || scoreboard);
 
 const normalizedMatchStatus = String(
   scoreboard?.match?.status || ""
@@ -8001,6 +11883,26 @@ const filteredScheduledMatches =
 const filteredCompletedMatches =
   completedMatches.filter(matchPassesContextFilters);
 
+const visibleCompletedMatches =
+  filteredCompletedMatches.slice(
+    0,
+    completedMatchRenderLimit
+  );
+
+const hasMoreCompletedMatches =
+  visibleCompletedMatches.length <
+  filteredCompletedMatches.length;
+
+useEffect(() => {
+  setCompletedMatchRenderLimit(
+    COMPLETED_MATCH_RENDER_PAGE_SIZE
+  );
+}, [
+  activeLeagueId,
+  contextFilters?.teamIds,
+  contextFilters?.seriesIds,
+]);
+
 function normalizeStatName(name) {
   return String(name || "")
     .trim()
@@ -8250,6 +12152,104 @@ const filteredMatchesForContextLens = uniqueMatchesForFilter
     setError(err.message);
   }
 }
+function applyWicketKeeperChangeLocally({
+  newKeeperId,
+  newKeeper,
+}) {
+  setMatchDetail(
+    (previous) => {
+      if (!previous) {
+        return previous;
+      }
+
+      const isTeamA =
+        Number(
+          bowlingTeam?.id
+        ) ===
+        Number(
+          previous.teamAId
+        );
+
+      return {
+        ...previous,
+
+        ...(isTeamA
+          ? {
+              teamAWicketKeeperId:
+                newKeeperId,
+
+              teamAWicketKeeperName:
+                newKeeper?.name ||
+                previous
+                  .teamAWicketKeeperName,
+            }
+          : {
+              teamBWicketKeeperId:
+                newKeeperId,
+
+              teamBWicketKeeperName:
+                newKeeper?.name ||
+                previous
+                  .teamBWicketKeeperName,
+            }),
+      };
+    }
+  );
+
+  setMatches(
+    (previousMatches) =>
+      (
+        previousMatches ||
+        []
+      ).map(
+        (match) => {
+          if (
+            Number(
+              match.id
+            ) !==
+            Number(
+              selectedMatchId
+            )
+          ) {
+            return match;
+          }
+
+          const isTeamA =
+            Number(
+              bowlingTeam?.id
+            ) ===
+            Number(
+              match.teamAId
+            );
+
+          return {
+            ...match,
+
+            ...(isTeamA
+              ? {
+                  teamAWicketKeeperId:
+                    newKeeperId,
+
+                  teamAWicketKeeperName:
+                    newKeeper?.name ||
+                    match
+                      .teamAWicketKeeperName,
+                }
+              : {
+                  teamBWicketKeeperId:
+                    newKeeperId,
+
+                  teamBWicketKeeperName:
+                    newKeeper?.name ||
+                    match
+                      .teamBWicketKeeperName,
+                }),
+          };
+        }
+      )
+  );
+}
+
 async function handleLiveWicketKeeperChange() {
   if (
     keeperChangeSaving
@@ -8266,7 +12266,6 @@ async function handleLiveWicketKeeperChange() {
       setError(
         "Please select a match first."
       );
-
       return;
     }
 
@@ -8276,7 +12275,6 @@ async function handleLiveWicketKeeperChange() {
       setError(
         "Please select the new wicketkeeper."
       );
-
       return;
     }
 
@@ -8301,128 +12299,147 @@ async function handleLiveWicketKeeperChange() {
       true
     );
 
-    setShowKeeperChangeModal(
-      false
-    );
+    /*
+     * OFFLINE WICKETKEEPER CHANGE
+     * ---------------------------
+     * Unlike bowler change, wicketkeeper change is NOT encoded in the next
+     * Ball payload. Therefore it must be queued as its own offline action.
+     *
+     * Save it to IndexedDB, update the UI locally, and close the modal
+     * immediately. When connectivity returns, syncPendingOfflineBalls()
+     * replays the keeper-change request as well.
+     */
+    const browserIsOffline =
+      typeof navigator !==
+        "undefined" &&
+      navigator.onLine ===
+        false;
 
-    await api(`/api/matches/${selectedMatchId}/wicketkeeper-change`, {
-      method: "POST",
-      body: JSON.stringify({
+    const appIsOffline =
+      offlineSyncState?.online === false ||
+      Boolean(offlineSyncState?.conflict);
+
+    const afterSequence =
+      Number(
+        scoreboard
+          ?.currentState
+          ?.lastSequence ||
+        0
+      );
+
+    if (
+      browserIsOffline ||
+      appIsOffline
+    ) {
+      await queueOfflineKeeperChange({
+        matchId:
+          Number(
+            selectedMatchId
+          ),
+
         inningsNo:
-          ballForm.inningsNo,
+          Number(
+            ballForm.inningsNo
+          ),
 
         newKeeperId,
 
         note:
-          keeperChangeForm.note,
-      }),
-    });
+          keeperChangeForm.note ||
+          "",
 
-    setMatchDetail(
-      (
-        previous
-      ) => {
-        if (!previous) {
-          return previous;
-        }
+        afterSequence,
 
-        const isTeamA =
+        teamId:
           Number(
-            bowlingTeam?.id
-          ) ===
-          Number(
-            previous.teamAId
-          );
+            bowlingTeam?.id ||
+            0
+          ) ||
+          null,
 
-        return {
-          ...previous,
+        keeperName:
+          newKeeper?.name ||
+          "",
 
-          ...(isTeamA
-            ? {
-                teamAWicketKeeperId:
-                  newKeeperId,
+        localOrder:
+          Date.now() * 1000 +
+          Math.floor(
+            Math.random() * 999
+          ),
+      });
 
-                teamAWicketKeeperName:
-                  newKeeper?.name ||
-                  previous
-                    .teamAWicketKeeperName,
-              }
-            : {
-                teamBWicketKeeperId:
-                  newKeeperId,
+      applyWicketKeeperChangeLocally({
+        newKeeperId,
+        newKeeper,
+      });
 
-                teamBWicketKeeperName:
-                  newKeeper?.name ||
-                  previous
-                    .teamBWicketKeeperName,
-              }),
-        };
+      setKeeperChangeForm({
+        newKeeperId:
+          "",
+        note:
+          "",
+      });
+
+      setShowKeeperChangeModal(
+        false
+      );
+
+      setError(
+        ""
+      );
+
+      const pending =
+        await refreshOfflinePendingCount(
+          selectedMatchId
+        );
+
+      setMessage(
+        `📴 Wicketkeeper changed to ${
+          newKeeper?.name ||
+          "the selected player"
+        } locally · ${pending} change${
+          pending === 1 ? "" : "s"
+        } waiting to sync.`
+      );
+
+      return;
+    }
+
+    /*
+     * ONLINE PATH:
+     * Preserve existing API behavior.
+     */
+    setShowKeeperChangeModal(
+      false
+    );
+
+    await api(
+      `/api/matches/${selectedMatchId}/wicketkeeper-change`,
+      {
+        method:
+          "POST",
+
+        body:
+          JSON.stringify({
+            inningsNo:
+              ballForm.inningsNo,
+
+            newKeeperId,
+
+            note:
+              keeperChangeForm.note,
+          }),
       }
     );
 
-    /*
-     * Dashboard does not have a setSelectedMatch state setter.
-     * Keep the already-loaded match list synchronized instead.
-     */
-    setMatches(
-      (
-        previousMatches
-      ) =>
-        (
-          previousMatches ||
-          []
-        ).map(
-          (match) => {
-            if (
-              Number(
-                match.id
-              ) !==
-              Number(
-                selectedMatchId
-              )
-            ) {
-              return match;
-            }
-
-            const isTeamA =
-              Number(
-                bowlingTeam?.id
-              ) ===
-              Number(
-                match.teamAId
-              );
-
-            return {
-              ...match,
-
-              ...(isTeamA
-                ? {
-                    teamAWicketKeeperId:
-                      newKeeperId,
-
-                    teamAWicketKeeperName:
-                      newKeeper?.name ||
-                      match
-                        .teamAWicketKeeperName,
-                  }
-                : {
-                    teamBWicketKeeperId:
-                      newKeeperId,
-
-                    teamBWicketKeeperName:
-                      newKeeper?.name ||
-                      match
-                        .teamBWicketKeeperName,
-                  }),
-            };
-          }
-        )
-    );
+    applyWicketKeeperChangeLocally({
+      newKeeperId,
+      newKeeper,
+    });
 
     setKeeperChangeForm({
       newKeeperId:
         "",
-
       note:
         "",
     });
@@ -8434,6 +12451,126 @@ async function handleLiveWicketKeeperChange() {
       } from this point onward.`
     );
   } catch (err) {
+    /*
+     * Race-condition safety:
+     * connectivity may disappear after the online check but before the
+     * request reaches the server. Queue the keeper change instead of
+     * reopening the same modal forever.
+     */
+    if (
+      isOfflineRetryableError(
+        err
+      )
+    ) {
+      const newKeeperId =
+        Number(
+          snapshot.newKeeperId
+        );
+
+      const newKeeper =
+        bowlingTeam
+          ?.players
+          ?.find(
+            (player) =>
+              Number(
+                player.id
+              ) ===
+              newKeeperId
+          );
+
+      try {
+        await queueOfflineKeeperChange({
+          matchId:
+            Number(
+              selectedMatchId
+            ),
+
+          inningsNo:
+            Number(
+              ballForm.inningsNo
+            ),
+
+          newKeeperId,
+
+          note:
+            snapshot.note ||
+            "",
+
+          afterSequence:
+            Number(
+              scoreboard
+                ?.currentState
+                ?.lastSequence ||
+              0
+            ),
+
+          teamId:
+            Number(
+              bowlingTeam?.id ||
+              0
+            ) ||
+            null,
+
+          keeperName:
+            newKeeper?.name ||
+            "",
+        });
+
+        applyWicketKeeperChangeLocally({
+          newKeeperId,
+          newKeeper,
+        });
+
+        setKeeperChangeForm({
+          newKeeperId:
+            "",
+          note:
+            "",
+        });
+
+        setShowKeeperChangeModal(
+          false
+        );
+
+        setOfflineSyncState(
+          (previous) => ({
+            ...previous,
+            online:
+              false,
+            syncing:
+              false,
+          })
+        );
+
+        const pending =
+          await refreshOfflinePendingCount(
+            selectedMatchId
+          );
+
+        setError(
+          ""
+        );
+
+        setMessage(
+          `📴 Wicketkeeper changed to ${
+            newKeeper?.name ||
+            "the selected player"
+          } locally · ${pending} change${
+            pending === 1 ? "" : "s"
+          } waiting to sync.`
+        );
+
+        return;
+      } catch (
+        queueError
+      ) {
+        console.error(
+          "[OFFLINE_KEEPER_QUEUE_FAILED]",
+          queueError
+        );
+      }
+    }
+
     setKeeperChangeForm(
       snapshot
     );
@@ -8451,6 +12588,7 @@ async function handleLiveWicketKeeperChange() {
     );
   }
 }
+
 
 const scoringComboMatches = (() => {
   let list = [...(matches || [])];
@@ -8912,6 +13050,21 @@ useEffect(() => {
   if (ballSaveInFlight) return;
   if (showDeliverySetupModal) return;
 
+  /*
+   * Do not poll the server while the device is intentionally offline or
+   * while local scoring changes are waiting to sync. The local scoreboard
+   * is authoritative during that period.
+   *
+   * This also avoids repeatedly loading an older cached snapshot every
+   * eight seconds while offline.
+   */
+  if (
+    offlineSyncState?.online === false ||
+    Number(offlineSyncState?.pending || 0) > 0
+  ) {
+    return;
+  }
+
   const interval = setInterval(() => {
     loadSelectedMatch(selectedMatchId, {
       syncBallForm: false,
@@ -8924,6 +13077,8 @@ useEffect(() => {
   pageVisible,
   ballSaveInFlight,
   showDeliverySetupModal,
+  offlineSyncState?.online,
+  offlineSyncState?.pending,
 ]);
 
 useEffect(() => {
@@ -11334,6 +15489,15 @@ const playerRoleBadge = (row) => {
     !isSelectedMatchCompleted &&
     !isMobile ? (
       <div className="advanced-scoring-actions">
+        <span
+          style={{
+            marginRight: 8,
+            fontSize: 12,
+            fontWeight: 800,
+          }}
+        >
+          {getOfflineStatusLabel()}
+        </span>
         <button
           type="button"
           className="scorer-mode-btn"
@@ -11430,6 +15594,50 @@ const playerRoleBadge = (row) => {
       <div>
         <strong>Scorer Mode</strong>
         <small>Focused ball-by-ball scoring</small>
+        <small
+          style={{
+            display: "inline-block",
+            marginTop: 4,
+            fontWeight: 800,
+          }}
+        >
+          {getOfflineStatusLabel()}
+        </small>
+        {offlineSyncState.conflict && (
+          <button
+            type="button"
+            className="btn"
+            style={{
+              display: "block",
+              marginTop: 6,
+              padding: "5px 10px",
+              fontSize: 11,
+              fontWeight: 900,
+            }}
+            disabled={
+              offlineSyncState.syncing ||
+              offlineSyncState.online === false
+            }
+            onClick={() => {
+              /*
+               * Defensive recovery for sessions that entered conflict mode
+               * before this fix and may still have a stale saving flag.
+               */
+              setIsSavingBall(false);
+              setInstantDeliveryStatus("");
+
+              setOfflineSyncState((previous) => ({
+                ...previous,
+                conflict: null,
+                lastError: "",
+              }));
+
+              void syncPendingOfflineBalls(selectedMatchId);
+            }}
+          >
+            🔄 Retry Sync
+          </button>
+        )}
       </div>
     </div>
 
@@ -11503,6 +15711,53 @@ const playerRoleBadge = (row) => {
           overCompleteNotice ||
           scorerStatusText ||
           "Ready for next delivery"}
+      </div>
+
+      <div
+        style={{
+          padding: "6px 10px",
+          fontSize: 12,
+          fontWeight: 900,
+          textAlign: "center",
+        }}
+        aria-live="polite"
+      >
+        {getOfflineStatusLabel()}
+
+        {offlineSyncState.conflict && (
+          <button
+            type="button"
+            className="btn"
+            style={{
+              marginLeft: 8,
+              padding: "4px 8px",
+              fontSize: 11,
+              fontWeight: 900,
+            }}
+            disabled={
+              offlineSyncState.syncing ||
+              offlineSyncState.online === false
+            }
+            onClick={() => {
+              /*
+               * Defensive recovery for sessions that entered conflict mode
+               * before this fix and may still have a stale saving flag.
+               */
+              setIsSavingBall(false);
+              setInstantDeliveryStatus("");
+
+              setOfflineSyncState((previous) => ({
+                ...previous,
+                conflict: null,
+                lastError: "",
+              }));
+
+              void syncPendingOfflineBalls(selectedMatchId);
+            }}
+          >
+            🔄 Retry Sync
+          </button>
+        )}
       </div>
 
       {/* PLAYERS */}
@@ -11745,7 +16000,7 @@ const playerRoleBadge = (row) => {
                     key={run}
                     type="button"
                     disabled={
-                      isMatchCompleted ||
+                      isEffectiveMatchCompleted ||
                       isMatchLocked ||
                       isMatchAbandoned
                     }
@@ -11771,7 +16026,7 @@ const playerRoleBadge = (row) => {
                   type="button"
                   className="msc-v3-key extra"
                   disabled={
-                    isMatchCompleted ||
+                    isEffectiveMatchCompleted ||
                     isMatchLocked ||
                     isMatchAbandoned
                   }
@@ -11789,7 +16044,7 @@ const playerRoleBadge = (row) => {
                   type="button"
                   className="msc-v3-key extra"
                   disabled={
-                    isMatchCompleted ||
+                    isEffectiveMatchCompleted ||
                     isMatchLocked ||
                     isMatchAbandoned
                   }
@@ -11807,7 +16062,7 @@ const playerRoleBadge = (row) => {
                   type="button"
                   className="msc-v3-key"
                   disabled={
-                    isMatchCompleted ||
+                    isEffectiveMatchCompleted ||
                     isMatchLocked ||
                     isMatchAbandoned
                   }
@@ -11825,7 +16080,7 @@ const playerRoleBadge = (row) => {
                   type="button"
                   className="msc-v3-key"
                   disabled={
-                    isMatchCompleted ||
+                    isEffectiveMatchCompleted ||
                     isMatchLocked ||
                     isMatchAbandoned
                   }
@@ -11843,7 +16098,7 @@ const playerRoleBadge = (row) => {
                   type="button"
                   className="msc-v3-key wicket"
                   disabled={
-                    isMatchCompleted ||
+                    isEffectiveMatchCompleted ||
                     isMatchLocked ||
                     isMatchAbandoned
                   }
@@ -11861,7 +16116,7 @@ const playerRoleBadge = (row) => {
                   type="button"
                   className="msc-v3-key retired"
                   disabled={
-                    isMatchCompleted ||
+                    isEffectiveMatchCompleted ||
                     isMatchLocked ||
                     isMatchAbandoned
                   }
@@ -11876,7 +16131,7 @@ const playerRoleBadge = (row) => {
                   type="button"
                   className="swap"
                   disabled={
-                    isMatchCompleted ||
+                    isEffectiveMatchCompleted ||
                     isMatchLocked ||
                     isMatchAbandoned
                   }
@@ -11904,7 +16159,7 @@ const playerRoleBadge = (row) => {
                 <button
                   type="button"
                   disabled={
-                    isMatchCompleted ||
+                    isEffectiveMatchCompleted ||
                     isMatchLocked ||
                     isMatchAbandoned
                   }
@@ -12012,9 +16267,6 @@ const playerRoleBadge = (row) => {
             </small>
           </div>
 
-          <div className="scorer-hud-status">
-            {scorerStatusText}
-          </div>
         </div>
           {!matchEnded && scoreboard?.currentState && (
   <>
@@ -12248,7 +16500,7 @@ const playerRoleBadge = (row) => {
     <button
       key={run}
       type="button"
-      disabled={isMatchCompleted || isMatchLocked || isMatchAbandoned}
+      disabled={isEffectiveMatchCompleted || isMatchLocked || isMatchAbandoned}
       className={`chip score-chip ${activeQuickAction === String(run) ? "chip-active" : ""}`}
       onClick={() => triggerQuickAction(String(run), () => quickNormalBall(run))}
     >
@@ -12256,16 +16508,16 @@ const playerRoleBadge = (row) => {
     </button>
   ))}
 
-  <button type="button" className={`chip score-chip ${activeQuickAction === "Wd" ? "chip-active" : ""}`} disabled={isMatchCompleted || isMatchLocked || isMatchAbandoned} onClick={() => triggerQuickAction("Wd", () => quickExtra("WIDE"))}>Wd</button>
-  <button type="button" className={`chip score-chip ${activeQuickAction === "Nb" ? "chip-active" : ""}`} disabled={isMatchCompleted || isMatchLocked || isMatchAbandoned} onClick={() => triggerQuickAction("Nb", () => quickExtra("NOBALL"))}>Nb</button>
-  <button type="button" className={`chip score-chip ${activeQuickAction === "B" ? "chip-active" : ""}`} disabled={isMatchCompleted || isMatchLocked || isMatchAbandoned} onClick={() => triggerQuickAction("B", () => quickExtra("BYE"))}>B</button>
-  <button type="button" className={`chip score-chip ${activeQuickAction === "LB" ? "chip-active" : ""}`} disabled={isMatchCompleted || isMatchLocked || isMatchAbandoned} onClick={() => triggerQuickAction("LB", () => quickExtra("LEGBYE"))}>LB</button>
+  <button type="button" className={`chip score-chip ${activeQuickAction === "Wd" ? "chip-active" : ""}`} disabled={isEffectiveMatchCompleted || isMatchLocked || isMatchAbandoned} onClick={() => triggerQuickAction("Wd", () => quickExtra("WIDE"))}>Wd</button>
+  <button type="button" className={`chip score-chip ${activeQuickAction === "Nb" ? "chip-active" : ""}`} disabled={isEffectiveMatchCompleted || isMatchLocked || isMatchAbandoned} onClick={() => triggerQuickAction("Nb", () => quickExtra("NOBALL"))}>Nb</button>
+  <button type="button" className={`chip score-chip ${activeQuickAction === "B" ? "chip-active" : ""}`} disabled={isEffectiveMatchCompleted || isMatchLocked || isMatchAbandoned} onClick={() => triggerQuickAction("B", () => quickExtra("BYE"))}>B</button>
+  <button type="button" className={`chip score-chip ${activeQuickAction === "LB" ? "chip-active" : ""}`} disabled={isEffectiveMatchCompleted || isMatchLocked || isMatchAbandoned} onClick={() => triggerQuickAction("LB", () => quickExtra("LEGBYE"))}>LB</button>
 
-  <button type="button" className={`chip score-chip score-wide ${activeQuickAction === "W" ? "chip-active" : ""}`} disabled={isMatchCompleted || isMatchLocked || isMatchAbandoned} onClick={() => triggerQuickAction("W", () => quickWicket("BOWLED"))}>Wkt</button>
+  <button type="button" className={`chip score-chip score-wide ${activeQuickAction === "W" ? "chip-active" : ""}`} disabled={isEffectiveMatchCompleted || isMatchLocked || isMatchAbandoned} onClick={() => triggerQuickAction("W", () => quickWicket("BOWLED"))}>Wkt</button>
 
-  <button type="button" className="chip score-chip score-wide chip-retired-hurt" disabled={isMatchCompleted || isMatchLocked || isMatchAbandoned} onClick={() => setShowRetiredHurtModal(true)}>Rtd H</button>
+  <button type="button" className="chip score-chip score-wide chip-retired-hurt" disabled={isEffectiveMatchCompleted || isMatchLocked || isMatchAbandoned} onClick={() => setShowRetiredHurtModal(true)}>Rtd H</button>
 
-  <button type="button" className="chip score-chip score-wide chip-swap" disabled={isMatchCompleted || isMatchLocked || isMatchAbandoned} onClick={swapBatters}>⇄ Swap</button>
+  <button type="button" className="chip score-chip score-wide chip-swap" disabled={isEffectiveMatchCompleted || isMatchLocked || isMatchAbandoned} onClick={swapBatters}>⇄ Swap</button>
 
   <button
     type="button"
@@ -12283,7 +16535,7 @@ const playerRoleBadge = (row) => {
 </div>
 
     <div className="mobile-secondary-actions scorer-secondary-row">
-      <button type="button" className="btn btn-outline action-change-wk" disabled={isMatchCompleted || isMatchLocked || isMatchAbandoned} onClick={() => setShowKeeperChangeModal(true)}>
+      <button type="button" className="btn btn-outline action-change-wk" disabled={isEffectiveMatchCompleted || isMatchLocked || isMatchAbandoned} onClick={() => setShowKeeperChangeModal(true)}>
         🧤 Change WK
       </button>
 
@@ -12304,8 +16556,10 @@ const playerRoleBadge = (row) => {
     </div>
   </div>
 )}
-    {(isMatchCompleted || isMatchLocked || isMatchCorrected) && (
-      regulationMatchTied && !selectedSuperOverState?.completed ? (
+    {(isEffectiveMatchCompleted || isMatchLocked || isMatchCorrected) && (
+      regulationMatchTied &&
+      !selectedSuperOverState?.completed &&
+      !isOfflineMatchCompleted ? (
         <div className="scorer-tie-super-over-panel">
           <div>
             <span>
@@ -12347,14 +16601,69 @@ const playerRoleBadge = (row) => {
           )}
         </div>
       ) : (
-        <button
-          type="submit"
-          form="add-ball-form"
-          className="btn scoring-btn scoring-btn-primary"
-          disabled
-        >
-          ✅ Match Ended
-        </button>
+        <div className="scorer-local-complete-panel">
+          <button
+            type="button"
+            className="btn scoring-btn scoring-btn-primary"
+            disabled
+          >
+            {isOfflineMatchCompleted
+              ? "🏁 Match Ended Locally"
+              : "✅ Match Ended"}
+          </button>
+
+          {isEffectiveMatchCompleted &&
+            !isMatchLocked &&
+            permissions?.canScoreMatch && (
+            <>
+              {isOfflineMatchCompleted && (
+                <small
+                  style={{
+                    display: "block",
+                    marginTop: "8px",
+                    opacity: 0.85,
+                    textAlign: "center",
+                  }}
+                >
+                  {offlineSyncState.pending > 0
+                    ? `${offlineSyncState.pending} offline change${
+                        offlineSyncState.pending === 1 ? "" : "s"
+                      } must sync before the match can be locked.`
+                    : offlineSyncState.online === false
+                      ? "Reconnect so Cric4All can finalize the server result before locking."
+                      : "Offline scoring is synchronized. You can now lock the completed match."}
+                </small>
+              )}
+
+              <button
+                type="button"
+                className="btn scoring-btn"
+                disabled={
+                  offlineSyncState.pending > 0 ||
+                  offlineSyncState.syncing ||
+                  offlineSyncState.online === false ||
+                  Boolean(offlineSyncState.conflict)
+                }
+                onClick={handleLockMatch}
+                title={
+                  offlineSyncState.pending > 0 ||
+                  offlineSyncState.online === false
+                    ? "Reconnect and synchronize all offline changes before locking."
+                    : "Lock this completed match."
+                }
+                style={{
+                  marginTop: "8px",
+                  width: "100%",
+                }}
+              >
+                🔒 Lock Match
+                {offlineSyncState.pending > 0
+                  ? " · Sync Required"
+                  : ""}
+              </button>
+            </>
+          )}
+        </div>
       )
     )}
 
@@ -14097,7 +18406,15 @@ const playerRoleBadge = (row) => {
       key={key}
       type="button"
       className={matchesSubTab === key ? "active" : ""}
-      onClick={() => setMatchesSubTab(key)}
+      onClick={() => {
+        if (key === "COMPLETED") {
+          setCompletedMatchRenderLimit(
+            COMPLETED_MATCH_RENDER_PAGE_SIZE
+          );
+        }
+
+        setMatchesSubTab(key);
+      }}
     >
       <span className="tab-icon">{icon}</span>
       <span className="tab-label">{label}</span>
@@ -14888,17 +19205,118 @@ const playerRoleBadge = (row) => {
 )}
 {activeLeagueId &&
   matchesSubTab === "KIT" && (
-    <TeamKitManagement
-      leagueId={activeLeagueId}
-      leagueName={activeLeague?.name || ""}
-      onMessage={(message) => {
-        setMessage(message);
-        setError("");
-      }}
-      onError={(message) => {
-        setError(message);
-      }}
-    />
+    <>
+      {selectedMatchId &&
+        isEffectiveMatchCompleted &&
+        !isMatchLocked &&
+        permissions?.canScoreMatch && (
+          <div
+            className="post-match-kit-lock-banner"
+            style={{
+              marginBottom: 14,
+              padding: 14,
+              borderRadius: 14,
+              border:
+                "1px solid rgba(99, 179, 237, 0.35)",
+              background:
+                "rgba(18, 38, 68, 0.78)",
+            }}
+          >
+            <div
+              style={{
+                display: "flex",
+                gap: 12,
+                alignItems: "center",
+                justifyContent: "space-between",
+                flexWrap: "wrap",
+              }}
+            >
+              <div>
+                <strong
+                  style={{
+                    display: "block",
+                    marginBottom: 4,
+                  }}
+                >
+                  🏁 Match completed
+                </strong>
+
+                <span
+                  style={{
+                    opacity: 0.82,
+                    fontSize: 13,
+                  }}
+                >
+                  Record the final kit holder below,
+                  then lock this completed match here.
+                </span>
+              </div>
+
+              <button
+                type="button"
+                className="btn scoring-btn"
+                disabled={
+                  offlineSyncState.pending > 0 ||
+                  offlineSyncState.syncing ||
+                  offlineSyncState.online === false ||
+                  Boolean(
+                    offlineSyncState.conflict
+                  )
+                }
+                onClick={
+                  handleLockMatch
+                }
+                title={
+                  offlineSyncState.pending > 0 ||
+                  offlineSyncState.syncing ||
+                  offlineSyncState.online === false ||
+                  Boolean(
+                    offlineSyncState.conflict
+                  )
+                    ? "Synchronize all offline scoring changes before locking."
+                    : "Lock this completed match."
+                }
+              >
+                🔒 Lock Match
+                {offlineSyncState.pending > 0
+                  ? " · Sync Required"
+                  : ""}
+              </button>
+            </div>
+
+            {(offlineSyncState.pending > 0 ||
+              offlineSyncState.conflict) && (
+              <small
+                style={{
+                  display: "block",
+                  marginTop: 8,
+                  opacity: 0.78,
+                }}
+              >
+                {offlineSyncState.conflict
+                  ? "Synchronization is paused. Resolve/retry sync before locking; kit custody can still be recorded."
+                  : `${offlineSyncState.pending} offline change${
+                      offlineSyncState.pending === 1
+                        ? ""
+                        : "s"
+                    } still need to sync before locking.`}
+              </small>
+            )}
+          </div>
+        )}
+
+      <TeamKitManagement
+        leagueId={activeLeagueId}
+        leagueName={activeLeague?.name || ""}
+        onMessage={(message) => {
+          setMessage(message);
+          setError("");
+        }}
+        onError={(message) => {
+          setError(message);
+        }}
+      />
+    </>
   )}
  {activeLeagueId && matchesSubTab === "SCHEDULED" && (
   <Card title="📅 Scheduled Matches">
@@ -15293,7 +19711,7 @@ const playerRoleBadge = (row) => {
       </div>
     ) : (
       <div className="completed-match-list pro-completed-list">
-        {filteredCompletedMatches.map((match, index) => {
+        {visibleCompletedMatches.map((match, index) => {
           const battingFirstTeamName =
             match.battingFirstTeamName ||
             match.teamAName;
@@ -16097,6 +20515,34 @@ const playerRoleBadge = (row) => {
             </article>
           );
         })}
+
+        {hasMoreCompletedMatches && (
+          <div
+            style={{
+              display: "flex",
+              justifyContent: "center",
+              padding: "14px 0 4px",
+            }}
+          >
+            <button
+              type="button"
+              className="btn btn-outline"
+              onClick={() =>
+                setCompletedMatchRenderLimit(
+                  (current) =>
+                    current +
+                    COMPLETED_MATCH_RENDER_PAGE_SIZE
+                )
+              }
+            >
+              Show More Completed Matches
+              {" · "}
+              {filteredCompletedMatches.length -
+                visibleCompletedMatches.length}
+              {" remaining"}
+            </button>
+          </div>
+        )}
       </div>
     )}
   </Card>
@@ -23746,19 +28192,328 @@ onClick={() => {
               !ballForm.bowlerId ||
               String(ballForm.strikerId) === String(ballForm.nonStrikerId)
             }
-onClick={() => {
-  const setupInningsNo = Number(ballForm?.inningsNo || 1);
+onClick={async () => {
+  const setupInningsNo =
+    Number(ballForm?.inningsNo || 1);
 
-  setBallForm((prev) => ({
-    ...prev,
+  const selectedStrikerId =
+    String(ballForm.strikerId || "");
+
+  const selectedNonStrikerId =
+    String(ballForm.nonStrikerId || "");
+
+  const selectedBowlerId =
+    String(ballForm.bowlerId || "");
+
+  const selectedStriker =
+    setupBatters.find(
+      (player) =>
+        String(player.id) ===
+        selectedStrikerId
+    );
+
+  const selectedNonStriker =
+    setupBatters.find(
+      (player) =>
+        String(player.id) ===
+        selectedNonStrikerId
+    );
+
+  const selectedBowler =
+    setupBowlers.find(
+      (player) =>
+        String(player.id) ===
+        selectedBowlerId
+    );
+
+  const nextForm = {
+    ...ballForm,
     inningsNo: setupInningsNo,
-    strikerId: String(prev.strikerId || ballForm.strikerId),
-    nonStrikerId: String(prev.nonStrikerId || ballForm.nonStrikerId),
-    bowlerId: String(prev.bowlerId || ballForm.bowlerId),
-  }));
+    strikerId: selectedStrikerId,
+    nonStrikerId: selectedNonStrikerId,
+    bowlerId: selectedBowlerId,
+  };
 
+  const setupInnings =
+    scoreboard
+      ?.innings
+      ?.[setupInningsNo - 1] ||
+    null;
+
+  const setupInningsLegalBalls =
+    Number(
+      setupInnings
+        ?.legalBalls ||
+      0
+    );
+
+  /*
+   * A Delivery Setup shown at 0.0 is opening a fresh innings.
+   * All three active-player stat cards must therefore start at zero even
+   * though currentState may still contain objects from the prior innings.
+   */
+  const isFreshInningsSetup =
+    setupInningsLegalBalls ===
+    0;
+
+  const createFreshBatterStats =
+    (player) => ({
+      playerId:
+        Number(
+          player?.id ||
+          0
+        ) ||
+        null,
+
+      playerName:
+        player?.name ||
+        "",
+
+      runs:
+        0,
+
+      balls:
+        0,
+
+      fours:
+        0,
+
+      sixes:
+        0,
+
+      strikeRate:
+        "0.00",
+    });
+
+  const createFreshBowlerStats =
+    (player) => ({
+      playerId:
+        Number(
+          player?.id ||
+          0
+        ) ||
+        null,
+
+      playerName:
+        player?.name ||
+        "",
+
+      wickets:
+        0,
+
+      runs:
+        0,
+
+      balls:
+        0,
+
+      overs:
+        "0.0",
+
+      maidens:
+        0,
+
+      economy:
+        "0.00",
+    });
+
+  /*
+   * Persist the setup into BOTH local scoring sources:
+   * 1. ballForm (used to submit the next delivery)
+   * 2. scoreboard.currentState (used by offline previews and cache recovery)
+   *
+   * Previously only ballForm changed. The cached local scoreboard still had
+   * null/old players, so periodic offline snapshot reloads could erase the
+   * chosen setup and reopen this modal.
+   */
+  const localBoard =
+    scoreboard
+      ? (
+          typeof structuredClone === "function"
+            ? structuredClone(scoreboard)
+            : JSON.parse(
+                JSON.stringify(scoreboard)
+              )
+        )
+      : null;
+
+  if (localBoard) {
+    localBoard.currentInnings =
+      setupInningsNo;
+
+    const previousCurrentState =
+      localBoard.currentState ||
+      {};
+
+    const keepExistingStrikerStats =
+      !isFreshInningsSetup &&
+      Number(
+        previousCurrentState
+          .strikerId
+      ) ===
+        Number(
+          selectedStrikerId
+        );
+
+    const keepExistingNonStrikerStats =
+      !isFreshInningsSetup &&
+      Number(
+        previousCurrentState
+          .nonStrikerId
+      ) ===
+        Number(
+          selectedNonStrikerId
+        );
+
+    const keepExistingBowlerStats =
+      !isFreshInningsSetup &&
+      Number(
+        previousCurrentState
+          .bowlerId
+      ) ===
+        Number(
+          selectedBowlerId
+        );
+
+    localBoard.currentState = {
+      ...previousCurrentState,
+
+      inningsNo:
+        setupInningsNo,
+
+      strikerId:
+        Number(
+          selectedStrikerId
+        ),
+
+      strikerName:
+        selectedStriker?.name ||
+        "",
+
+      strikerStats:
+        keepExistingStrikerStats &&
+        previousCurrentState
+          .strikerStats
+          ? {
+              ...previousCurrentState
+                .strikerStats,
+
+              playerId:
+                Number(
+                  selectedStrikerId
+                ),
+
+              playerName:
+                selectedStriker?.name ||
+                previousCurrentState
+                  .strikerStats
+                  ?.playerName ||
+                "",
+            }
+          : createFreshBatterStats(
+              selectedStriker
+            ),
+
+      nonStrikerId:
+        Number(
+          selectedNonStrikerId
+        ),
+
+      nonStrikerName:
+        selectedNonStriker?.name ||
+        "",
+
+      nonStrikerStats:
+        keepExistingNonStrikerStats &&
+        previousCurrentState
+          .nonStrikerStats
+          ? {
+              ...previousCurrentState
+                .nonStrikerStats,
+
+              playerId:
+                Number(
+                  selectedNonStrikerId
+                ),
+
+              playerName:
+                selectedNonStriker?.name ||
+                previousCurrentState
+                  .nonStrikerStats
+                  ?.playerName ||
+                "",
+            }
+          : createFreshBatterStats(
+              selectedNonStriker
+            ),
+
+      bowlerId:
+        Number(
+          selectedBowlerId
+        ),
+
+      bowlerName:
+        selectedBowler?.name ||
+        "",
+
+      bowlerStats:
+        keepExistingBowlerStats &&
+        previousCurrentState
+          .bowlerStats
+          ? {
+              ...previousCurrentState
+                .bowlerStats,
+
+              playerId:
+                Number(
+                  selectedBowlerId
+                ),
+
+              playerName:
+                selectedBowler?.name ||
+                previousCurrentState
+                  .bowlerStats
+                  ?.playerName ||
+                "",
+            }
+          : createFreshBowlerStats(
+              selectedBowler
+            ),
+    };
+
+    setScoreboard(localBoard);
+
+    await cacheOfflineMatchSnapshot(
+      selectedMatchId,
+      {
+        scoreboard:
+          localBoard,
+
+        matchDetail:
+          matchDetail ||
+          null,
+
+        ballForm:
+          nextForm,
+
+        savedAt:
+          new Date()
+            .toISOString(),
+      }
+    ).catch(
+      (cacheError) => {
+        console.warn(
+          "[OFFLINE_DELIVERY_SETUP_CACHE_FAILED]",
+          cacheError
+        );
+      }
+    );
+  }
+
+  setBallForm(nextForm);
   setPendingSecondInningsSetup(false);
   setShowDeliverySetupModal(false);
+  setError("");
 }}
           >
             ✅ Ready to Score
@@ -26058,24 +30813,58 @@ setBallForm((previous) => ({
     </div>
   </div>
 )}
-<KitPostMatchPrompt
-  open={Boolean(postMatchKitPrompt)}
-  matchLabel={
-    postMatchKitPrompt?.matchLabel || ""
-  }
-  taskCount={
-    postMatchKitPrompt?.taskCount || 0
-  }
-  warning={
-    postMatchKitPrompt?.warning || ""
-  }
-  onRecordNow={
-    openKitFromPostMatchPrompt
-  }
-  onLater={() =>
-    setPostMatchKitPrompt(null)
-  }
-/>
+{postMatchKitPrompt &&
+  typeof document !== "undefined" &&
+  createPortal(
+    <div
+      className="post-match-kit-prompt-top-layer"
+      style={{
+        position: "fixed",
+        inset: 0,
+        zIndex: 2147483000,
+        pointerEvents: "auto",
+      }}
+      role="presentation"
+    >
+      <KitPostMatchPrompt
+        open={true}
+        matchLabel={
+          postMatchKitPrompt?.matchLabel || ""
+        }
+        taskCount={
+          postMatchKitPrompt?.taskCount || 0
+        }
+        warning={
+          postMatchKitPrompt?.warning || ""
+        }
+        onRecordNow={
+          openKitFromPostMatchPrompt
+        }
+        onLater={() => {
+          const handledMatchId =
+            Number(
+              postMatchKitPrompt
+                ?.matchId ||
+              selectedMatchId
+            );
+
+          if (
+            Number.isInteger(handledMatchId) &&
+            handledMatchId > 0
+          ) {
+            postMatchKitAutoPromptedRef
+              .current
+              .add(handledMatchId);
+          }
+
+          setPostMatchKitPrompt(
+            null
+          );
+        }}
+      />
+    </div>,
+    document.body
+  )}
 {toast && (
   <div
     className={`toast-popup ${

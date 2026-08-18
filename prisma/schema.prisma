@@ -177,8 +177,15 @@ model Ball {
   assistantFielderId Int?
   wicketNote         String?
 
+  // Offline-scoring idempotency/audit metadata.
+  // Existing online balls keep these fields null.
+  clientEventId   String?   @unique
+  clientDeviceId  String?
+  clientCreatedAt DateTime?
+
   @@unique([matchId, inningsNo, sequence])
   @@index([matchId, inningsNo, sequence])
+  @@index([clientDeviceId])
 }
 
 model MatchState {

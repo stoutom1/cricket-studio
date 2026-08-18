@@ -564,8 +564,20 @@ function getBatterStats(playerId, balls) {
   .reverse()
   .map((ball) => ({
     id: ball.id,
+    inningsNo: Number(ball.inningsNo),
+    sequence: Number(ball.sequence),
+    clientEventId: ball.clientEventId || null,
     label: ballShortText(ball)
   }));
+
+  const serverSequences = {
+    1: match.balls
+      .filter((ball) => Number(ball.inningsNo) === 1)
+      .reduce((max, ball) => Math.max(max, Number(ball.sequence || 0)), 0),
+    2: match.balls
+      .filter((ball) => Number(ball.inningsNo) === 2)
+      .reduce((max, ball) => Math.max(max, Number(ball.sequence || 0)), 0),
+  };
 
   const currentInnings = innings2Started ? 2 : 1;
 
@@ -781,6 +793,9 @@ innings: [
         }
   },
   recentBalls,
+  sync: {
+    serverSequences,
+  },
   commentary: buildCommentary(match)
 };
 
