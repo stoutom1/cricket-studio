@@ -636,7 +636,7 @@ const [matchesSubTab, setMatchesSubTab] = useState("ACTIVE");
  *
  * Render a small first page immediately, then progressively reveal more.
  */
-const COMPLETED_MATCH_RENDER_PAGE_SIZE = 12;
+const COMPLETED_MATCH_RENDER_PAGE_SIZE = 6;
 const [
   completedMatchRenderLimit,
   setCompletedMatchRenderLimit,
@@ -798,6 +798,9 @@ const [
 ] = useState(null);
 const postMatchKitAutoPromptedRef =
   useRef(new Set());
+const selectedMatchExplicitLoadRef =
+  useRef("");
+
 useEffect(() => {
   if (
     !postMatchKitPrompt ||
@@ -3522,73 +3525,162 @@ async function loadSelectedMatch(matchId, options = {}) {
   if (!matchId) {
     setMatchDetail(null);
     setScoreboard(null);
-    setStats({ batting: [], bowling: [] });
+    setStats({
+      batting: [],
+      bowling: [],
+    });
     return null;
   }
-
-  fetch("/api/user/preferences", {
-    method: "POST",
-    headers: { "Content-Type": "application/json" },
-    body: JSON.stringify({
-      activeLeagueId,
-      activeMatchId: matchId,
-    }),
-  }).catch(() => {});
 
   let board = null;
   let detail = null;
 
   try {
-    board = await api(`/api/scoreboard/${matchId}`);
+    /*
+     * PERFORMANCE:
+     * Start scoreboard, detail and optional stats requests together.
+     * The scoreboard remains the primary/fast render path.
+     *
+     * Preference persistence is intentionally not done here anymore.
+     * The existing preferences useEffect owns that responsibility.
+     */
+    const boardPromise =
+      api(`/api/scoreboard/${matchId}`);
+
+    const detailPromise =
+      loadDetail
+        ? api(`/api/matches/${matchId}`)
+        : Promise.resolve(null);
+
+    const statsPromise =
+      loadStatsData
+        ? api(`/api/stats/${matchId}`)
+        : Promise.resolve(null);
+
+    board = await boardPromise;
     setScoreboard(board);
 
     offlineServerSequencesRef.current = {
-      matchId: Number(matchId),
-      1: Number(board?.sync?.serverSequences?.[1] ?? board?.sync?.serverSequences?.["1"] ?? 0),
-      2: Number(board?.sync?.serverSequences?.[2] ?? board?.sync?.serverSequences?.["2"] ?? 0),
+      matchId:
+        Number(matchId),
+
+      1:
+        Number(
+          board
+            ?.sync
+            ?.serverSequences
+            ?.[1] ??
+          board
+            ?.sync
+            ?.serverSequences
+            ?.["1"] ??
+          0
+        ),
+
+      2:
+        Number(
+          board
+            ?.sync
+            ?.serverSequences
+            ?.[2] ??
+          board
+            ?.sync
+            ?.serverSequences
+            ?.["2"] ??
+          0
+        ),
     };
 
-    if (syncBallForm && board?.currentState && !showDeliverySetupModal) {
+    if (
+      syncBallForm &&
+      board?.currentState &&
+      !showDeliverySetupModal
+    ) {
       setBallForm((prev) => ({
         ...prev,
-        strikerId: board.currentState.strikerId ?? prev.strikerId,
-        nonStrikerId: board.currentState.nonStrikerId ?? prev.nonStrikerId,
-        bowlerId: board.currentState.bowlerId ?? prev.bowlerId,
+
+        strikerId:
+          board.currentState.strikerId ??
+          prev.strikerId,
+
+        nonStrikerId:
+          board.currentState.nonStrikerId ??
+          prev.nonStrikerId,
+
+        bowlerId:
+          board.currentState.bowlerId ??
+          prev.bowlerId,
       }));
     }
 
-    if (loadDetail) {
-      detail = await api(`/api/matches/${matchId}`);
-      setMatchDetail(detail);
+    const [
+      resolvedDetail,
+      resolvedStats,
+    ] = await Promise.all([
+      detailPromise,
+      statsPromise,
+    ]);
+
+    if (resolvedDetail) {
+      detail = resolvedDetail;
+      setMatchDetail(
+        resolvedDetail
+      );
     }
 
-    if (loadStatsData) {
-      const statData = await api(`/api/stats/${matchId}`);
-      setStats(statData);
+    if (resolvedStats) {
+      setStats(
+        resolvedStats
+      );
     }
 
-    await cacheOfflineMatchSnapshot(matchId, {
-      scoreboard: board,
-      matchDetail: detail || matchDetail || null,
-    }).catch(() => {});
+    await cacheOfflineMatchSnapshot(
+      matchId,
+      {
+        scoreboard:
+          board,
+
+        matchDetail:
+          detail ||
+          matchDetail ||
+          null,
+      }
+    ).catch(() => {});
 
     return board;
   } catch (loadError) {
-    if (!isOfflineRetryableError(loadError)) {
+    if (
+      !isOfflineRetryableError(
+        loadError
+      )
+    ) {
       throw loadError;
     }
 
-    const cached = await getOfflineMatchSnapshot(matchId).catch(() => null);
+    const cached =
+      await getOfflineMatchSnapshot(
+        matchId
+      ).catch(() => null);
 
-    if (!cached?.scoreboard) {
+    if (
+      !cached?.scoreboard
+    ) {
       throw loadError;
     }
 
-    board = cached.scoreboard;
-    setScoreboard(board);
+    board =
+      cached.scoreboard;
 
-    if (cached.matchDetail) {
-      setMatchDetail(cached.matchDetail);
+    setScoreboard(
+      board
+    );
+
+    if (
+      cached.matchDetail
+    ) {
+      setMatchDetail(
+        cached.matchDetail
+      );
     }
 
     if (
@@ -3596,21 +3688,39 @@ async function loadSelectedMatch(matchId, options = {}) {
       board?.currentState &&
       !showDeliverySetupModal &&
       offlineSyncState?.online !== false &&
-      Number(offlineSyncState?.pending || 0) === 0
+      Number(
+        offlineSyncState?.pending ||
+        0
+      ) === 0
     ) {
       setBallForm((prev) => ({
         ...prev,
-        strikerId: board.currentState.strikerId ?? prev.strikerId,
-        nonStrikerId: board.currentState.nonStrikerId ?? prev.nonStrikerId,
-        bowlerId: board.currentState.bowlerId ?? prev.bowlerId,
+
+        strikerId:
+          board.currentState.strikerId ??
+          prev.strikerId,
+
+        nonStrikerId:
+          board.currentState.nonStrikerId ??
+          prev.nonStrikerId,
+
+        bowlerId:
+          board.currentState.bowlerId ??
+          prev.bowlerId,
       }));
     }
 
-    setOfflineSyncState((previous) => ({
-      ...previous,
-      online: false,
-      lastError: "Using the last saved match snapshot while offline.",
-    }));
+    setOfflineSyncState(
+      (previous) => ({
+        ...previous,
+
+        online:
+          false,
+
+        lastError:
+          "Using the last saved match snapshot while offline.",
+      })
+    );
 
     return board;
   }
@@ -3689,12 +3799,54 @@ async function handleDeleteLeague(
 
   useEffect(() => {
     if (selectedMatchId) {
-       if (!pageVisible) return;
-      loadSelectedMatch(selectedMatchId).catch((err) => setError(err.message));
+      if (!pageVisible) {
+        return;
+      }
+
+      /*
+       * handleMatchSelect() already performs the intentional load with the
+       * correct options. Do not immediately issue another scoreboard request
+       * just because selectedMatchId changed.
+       */
+      if (
+        selectedMatchExplicitLoadRef
+          .current ===
+        String(
+          selectedMatchId
+        )
+      ) {
+        selectedMatchExplicitLoadRef
+          .current =
+          "";
+
+        return;
+      }
+
+      loadSelectedMatch(
+        selectedMatchId
+      ).catch(
+        (err) =>
+          setError(
+            err.message
+          )
+      );
     } else {
-      setMatchDetail(null);
-      setScoreboard(null);
-      setStats({ batting: [], bowling: [] });
+      selectedMatchExplicitLoadRef
+        .current =
+        "";
+
+      setMatchDetail(
+        null
+      );
+
+      setScoreboard(
+        null
+      );
+
+      setStats({
+        batting: [],
+        bowling: [],
+      });
     }
   }, [selectedMatchId]);
 
@@ -8758,27 +8910,131 @@ const names = playerForm.names
   }
 };
 async function handleMatchSelect(matchId) {
-  setSelectedMatchId(String(matchId));
+  const numericMatchId =
+    Number(
+      matchId
+    );
 
-await loadSelectedMatch(matchId, {
-  loadDetail: true,
-  loadStatsData: true,
-  syncBallForm: true,
-});
+  if (
+    !Number.isInteger(
+      numericMatchId
+    ) ||
+    numericMatchId <= 0
+  ) {
+    setError(
+      "Unable to identify the selected match."
+    );
+    return;
+  }
 
-  setActiveTab("scoring");
+  const matchToOpen =
+    matches.find(
+      (match) =>
+        Number(
+          match.id
+        ) ===
+        numericMatchId
+    ) ||
+    null;
 
-  await fetch("/api/user/preferences", {
-    method: "POST",
-    headers: {
-      "Content-Type": "application/json"
-    },
-    body: JSON.stringify({
-      activeLeagueId: activeLeagueId,
-      activeMatchId: matchId
-    })
-  });
+  const normalizedOpenStatus =
+    String(
+      matchToOpen
+        ?.status ||
+      ""
+    )
+      .trim()
+      .replace(
+        /[\s-]+/g,
+        "_"
+      )
+      .toUpperCase();
+
+  const openingCompletedMatch =
+    normalizedOpenStatus
+      .includes(
+        "COMPLETED"
+      ) ||
+    normalizedOpenStatus ===
+      "LOCKED" ||
+    normalizedOpenStatus ===
+      "ABANDONED";
+
+  /*
+   * Navigate immediately. The user should not sit on the Completed tab while
+   * match data is loading.
+   *
+   * Existing desktop/mobile Scoreboard markup is unchanged.
+   */
+  setActiveTab(
+    "scoring"
+  );
+
+  if (
+    openingCompletedMatch
+  ) {
+    setScoringSubTab(
+      "SCOREBOARD"
+    );
+  }
+
+  if (
+    String(
+      selectedMatchId
+    ) !==
+    String(
+      numericMatchId
+    )
+  ) {
+    setScoreboard(
+      null
+    );
+
+    setMatchDetail(
+      null
+    );
+
+    setOptimisticScoreboard(
+      null
+    );
+  }
+
+  selectedMatchExplicitLoadRef
+    .current =
+    String(
+      numericMatchId
+    );
+
+  setSelectedMatchId(
+    String(
+      numericMatchId
+    )
+  );
+
+  /*
+   * Completed Scoreboard does not need /api/stats before the normal
+   * scorecard can render. Live/active match selection retains stats loading.
+   */
+  await loadSelectedMatch(
+    numericMatchId,
+    {
+      loadDetail:
+        true,
+
+      loadStatsData:
+        !openingCompletedMatch,
+
+      syncBallForm:
+        !openingCompletedMatch,
+    }
+  );
+
+  /*
+   * No explicit /api/user/preferences POST here.
+   * The existing preferences effect persists the selected match once.
+   */
 }
+
 function getWicketDismissedPlayerId(form) {
   const wicketType = String(form?.wicketType || "").toUpperCase();
 
@@ -19850,12 +20106,11 @@ const playerRoleBadge = (row) => {
               <button
                 type="button"
                 className="completed-action-btn"
-                onClick={() => {
-                  setSelectedMatchId(
-                    String(match.id)
-                  );
-                  handleMatchSelect(match.id);
-                }}
+                onClick={() =>
+                  handleMatchSelect(
+                    match.id
+                  )
+                }
               >
                 <span>📊</span>
                 <b>Scorecard</b>
@@ -20046,6 +20301,18 @@ const playerRoleBadge = (row) => {
             <article
               key={match.id}
               className="completed-scorecard-card"
+              style={{
+                /*
+                 * Let Chromium skip layout/paint work for off-screen completed
+                 * cards. Existing responsive CSS and mobile alignment remain
+                 * untouched.
+                 */
+                contentVisibility:
+                  "auto",
+
+                containIntrinsicSize:
+                  "1px 560px",
+              }}
             >
               {/* =========
                   DESKTOP / LAPTOP
@@ -20328,12 +20595,11 @@ const playerRoleBadge = (row) => {
                     <button
                       type="button"
                       className="mobile-completed-scorecard-btn"
-                      onClick={() => {
-                        setSelectedMatchId(
-                          String(match.id)
-                        );
-                        handleMatchSelect(match.id);
-                      }}
+                      onClick={() =>
+                        handleMatchSelect(
+                          match.id
+                        )
+                      }
                     >
                       <span>📊</span>
                       View Scorecard
