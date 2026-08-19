@@ -1,0 +1,928 @@
+
+/* =========================================================
+   Cric4All Score Now / Quick Match
+   Responsive full-page layout
+   This file intentionally scopes every rule below .c4a-quick-page
+   so dashboard/scoring styles cannot leak into this page.
+========================================================= */
+
+.c4a-quick-page,
+.c4a-quick-page * {
+  box-sizing: border-box;
+}
+
+.c4a-quick-page {
+  min-height: 100svh;
+  width: 100%;
+  overflow-x: clip;
+  padding: clamp(16px, 3vw, 34px);
+  background:
+    radial-gradient(circle at 82% 0%, rgba(14, 165, 233, 0.09), transparent 30rem),
+    linear-gradient(180deg, #020617 0%, #071225 100%);
+  color: #f8fafc;
+}
+
+.c4a-quick-shell {
+  width: min(1120px, 100%);
+  margin: 0 auto;
+}
+
+.c4a-quick-topbar {
+  min-height: 46px;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 14px;
+  margin-bottom: clamp(24px, 4vw, 42px);
+}
+
+.c4a-quick-brand,
+.c4a-quick-nav-button {
+  color: inherit;
+  text-decoration: none;
+}
+
+.c4a-quick-brand {
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+  min-width: 0;
+  font-size: 17px;
+  font-weight: 950;
+  letter-spacing: -0.02em;
+}
+
+.c4a-quick-nav-button {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  min-height: 38px;
+  padding: 7px 14px;
+  border: 1px solid rgba(148, 163, 184, 0.22);
+  border-radius: 999px;
+  background: rgba(15, 23, 42, 0.4);
+  font-size: 12px;
+  font-weight: 850;
+  white-space: nowrap;
+}
+
+.c4a-quick-layout {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr) minmax(420px, 0.94fr);
+  gap: clamp(34px, 6vw, 76px);
+  align-items: start;
+}
+
+.c4a-quick-intro {
+  min-width: 0;
+  padding-top: 4px;
+}
+
+.c4a-quick-kicker {
+  display: inline-flex;
+  align-items: center;
+  gap: 7px;
+  min-height: 32px;
+  padding: 6px 12px;
+  border: 1px solid rgba(56, 189, 248, 0.28);
+  border-radius: 999px;
+  background: rgba(14, 116, 144, 0.12);
+  color: #bae6fd;
+  font-size: 11px;
+  font-weight: 950;
+  letter-spacing: 0.025em;
+}
+
+.c4a-quick-intro h1 {
+  max-width: 620px;
+  margin: 18px 0 11px;
+  font-size: clamp(38px, 5.1vw, 64px);
+  line-height: 0.98;
+  letter-spacing: -0.045em;
+  text-wrap: balance;
+}
+
+.c4a-quick-intro-copy {
+  max-width: 610px;
+  margin: 0;
+  color: #cbd5e1;
+  font-size: clamp(15px, 1.55vw, 18px);
+  line-height: 1.62;
+}
+
+.c4a-quick-benefits {
+  display: grid;
+  gap: 9px;
+  max-width: 610px;
+  margin-top: 24px;
+}
+
+.c4a-quick-benefit {
+  min-width: 0;
+  padding: 11px 13px;
+  border: 1px solid rgba(148, 163, 184, 0.13);
+  border-radius: 12px;
+  background: rgba(15, 23, 42, 0.5);
+  font-size: 13px;
+  line-height: 1.35;
+  overflow-wrap: anywhere;
+}
+
+.c4a-quick-card {
+  min-width: 0;
+  width: 100%;
+  padding: clamp(18px, 2.5vw, 26px);
+  border: 1px solid rgba(96, 165, 250, 0.22);
+  border-radius: 22px;
+  background: rgba(15, 23, 42, 0.82);
+  box-shadow: 0 20px 70px rgba(0, 0, 0, 0.22);
+}
+
+.c4a-quick-card-head {
+  display: flex;
+  align-items: flex-start;
+  gap: 11px;
+  min-width: 0;
+  margin-bottom: 18px;
+}
+
+.c4a-quick-card-icon {
+  flex: 0 0 34px;
+  width: 34px;
+  height: 34px;
+  display: grid;
+  place-items: center;
+  border: 1px solid rgba(56, 189, 248, 0.18);
+  border-radius: 10px;
+  background: rgba(14, 116, 144, 0.08);
+}
+
+.c4a-quick-card-head h2 {
+  margin: 0;
+  font-size: 20px;
+  line-height: 1.15;
+  letter-spacing: -0.02em;
+}
+
+.c4a-quick-card-head p {
+  margin: 4px 0 0;
+  color: #94a3b8;
+  font-size: 12px;
+  line-height: 1.45;
+}
+
+.c4a-active-league-card {
+  width: 100% !important;
+  min-width: 0 !important;
+  min-height: 64px !important;
+  display: grid !important;
+  grid-template-columns: 22px minmax(0, 1fr) auto !important;
+  align-items: center !important;
+  gap: 11px !important;
+  margin: 0 0 16px !important;
+  padding: 12px 13px !important;
+  border: 1px solid rgba(52, 211, 153, 0.2) !important;
+  border-radius: 14px !important;
+  background: rgba(6, 78, 59, 0.11) !important;
+  cursor: pointer;
+}
+
+.c4a-quick-page .c4a-active-league-checkbox,
+.c4a-quick-page .c4a-active-league-card input[type="checkbox"] {
+  appearance: auto !important;
+  -webkit-appearance: checkbox !important;
+  display: block !important;
+  flex: 0 0 18px !important;
+  width: 18px !important;
+  min-width: 18px !important;
+  max-width: 18px !important;
+  height: 18px !important;
+  min-height: 18px !important;
+  max-height: 18px !important;
+  margin: 0 !important;
+  padding: 0 !important;
+  border-radius: 4px !important;
+  box-shadow: none !important;
+  transform: none !important;
+}
+
+.c4a-active-league-copy {
+  min-width: 0;
+  display: block;
+}
+
+.c4a-active-league-copy strong {
+  display: block;
+  color: #f8fafc;
+  font-size: 13px;
+  line-height: 1.25;
+}
+
+.c4a-active-league-copy small {
+  display: block;
+  min-width: 0;
+  margin-top: 4px;
+  color: #a7f3d0;
+  font-size: 12px;
+  line-height: 1.35;
+  overflow-wrap: anywhere;
+}
+
+.c4a-active-league-state {
+  align-self: center;
+  display: inline-flex;
+  justify-content: center;
+  padding: 5px 8px;
+  border: 1px solid rgba(148, 163, 184, 0.16);
+  border-radius: 999px;
+  color: #94a3b8;
+  font-size: 9px;
+  font-weight: 900;
+  white-space: nowrap;
+}
+
+.c4a-active-league-state.is-selected {
+  border-color: rgba(52, 211, 153, 0.28);
+  background: rgba(16, 185, 129, 0.1);
+  color: #a7f3d0;
+}
+
+.c4a-quick-fields {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: 12px 10px;
+}
+
+.c4a-quick-field {
+  min-width: 0;
+  display: grid !important;
+  gap: 6px !important;
+  margin: 0 !important;
+}
+
+.c4a-quick-field-full {
+  grid-column: 1 / -1;
+}
+
+.c4a-quick-field > span,
+.c4a-overs-group legend {
+  color: #e2e8f0;
+  font-size: 11px;
+  font-weight: 900;
+  line-height: 1.2;
+}
+
+.c4a-quick-field > small {
+  margin-top: -2px;
+  color: #64748b;
+  font-size: 10px;
+  line-height: 1.3;
+}
+
+.c4a-quick-page .c4a-quick-field input,
+.c4a-quick-page .c4a-quick-field textarea {
+  width: 100% !important;
+  min-width: 0 !important;
+  max-width: 100% !important;
+  margin: 0 !important;
+  border: 1px solid rgba(148, 163, 184, 0.24) !important;
+  border-radius: 11px !important;
+  background: rgba(2, 6, 23, 0.5) !important;
+  color: #f8fafc !important;
+  box-shadow: none !important;
+  outline: none;
+}
+
+.c4a-quick-page .c4a-quick-field input {
+  min-height: 44px !important;
+  height: 44px !important;
+  padding: 10px 12px !important;
+  font-size: 15px !important;
+}
+
+.c4a-quick-page .c4a-quick-field textarea {
+  min-height: 112px !important;
+  padding: 11px 12px !important;
+  resize: vertical;
+  font: inherit;
+  font-size: 14px !important;
+  line-height: 1.45;
+}
+
+.c4a-quick-page .c4a-quick-field input:focus,
+.c4a-quick-page .c4a-quick-field textarea:focus {
+  border-color: rgba(56, 189, 248, 0.58) !important;
+  box-shadow: 0 0 0 3px rgba(14, 165, 233, 0.1) !important;
+}
+
+.c4a-overs-group {
+  min-width: 0;
+  margin: 15px 0 0;
+  padding: 0;
+  border: 0;
+}
+
+.c4a-overs-group legend {
+  width: 100%;
+  margin-bottom: 8px;
+  padding: 0;
+}
+
+.c4a-overs-options {
+  display: grid;
+  grid-template-columns: repeat(4, minmax(0, 1fr));
+  gap: 7px;
+}
+
+.c4a-quick-page .c4a-overs-options > button,
+.c4a-overs-custom {
+  min-width: 0 !important;
+  min-height: 42px !important;
+  height: 42px;
+  margin: 0 !important;
+  border: 1px solid rgba(148, 163, 184, 0.18) !important;
+  border-radius: 10px !important;
+  background: rgba(2, 6, 23, 0.4) !important;
+  color: #e2e8f0 !important;
+  font-size: 13px !important;
+  font-weight: 900 !important;
+}
+
+.c4a-quick-page .c4a-overs-options > button {
+  display: inline-flex !important;
+  align-items: center;
+  justify-content: center;
+  padding: 7px 6px !important;
+  cursor: pointer;
+}
+
+.c4a-quick-page .c4a-overs-options > button.is-active {
+  border-color: rgba(56, 189, 248, 0.72) !important;
+  background: linear-gradient(135deg, #2563eb, #0ea5e9) !important;
+  color: #fff !important;
+  box-shadow: 0 7px 18px rgba(37, 99, 235, 0.18);
+}
+
+.c4a-overs-custom {
+  position: relative;
+  display: grid !important;
+  grid-template-columns: auto minmax(0, 1fr);
+  align-items: center;
+  gap: 4px;
+  padding: 5px 8px !important;
+  overflow: hidden;
+}
+
+.c4a-overs-custom > span {
+  color: #94a3b8;
+  font-size: 10px;
+  font-weight: 850;
+}
+
+.c4a-quick-page .c4a-overs-custom input {
+  width: 100% !important;
+  min-width: 0 !important;
+  height: 29px !important;
+  min-height: 29px !important;
+  margin: 0 !important;
+  padding: 2px 4px !important;
+  border: 0 !important;
+  background: transparent !important;
+  color: #fff !important;
+  box-shadow: none !important;
+  outline: 0 !important;
+  font-size: 12px !important;
+  font-weight: 900 !important;
+  text-align: center;
+}
+
+.c4a-overs-custom.is-active {
+  border-color: rgba(56, 189, 248, 0.58) !important;
+  background: rgba(14, 116, 144, 0.14) !important;
+}
+
+.c4a-player-toggle {
+  width: 100% !important;
+  min-width: 0 !important;
+  min-height: 44px !important;
+  display: flex !important;
+  align-items: center;
+  justify-content: space-between;
+  gap: 10px;
+  margin: 14px 0 0 !important;
+  padding: 9px 12px !important;
+  border: 1px solid rgba(148, 163, 184, 0.15) !important;
+  border-radius: 11px !important;
+  background: rgba(30, 41, 59, 0.72) !important;
+  color: #f8fafc !important;
+  font-size: 12px !important;
+  font-weight: 900 !important;
+  line-height: 1.25;
+  text-align: left;
+  cursor: pointer;
+}
+
+.c4a-player-toggle > span:first-child {
+  min-width: 0;
+  display: flex;
+  align-items: baseline;
+  flex-wrap: wrap;
+  gap: 4px;
+}
+
+.c4a-player-toggle b {
+  font-size: 16px;
+  line-height: 1;
+}
+
+.c4a-player-toggle small {
+  color: #94a3b8;
+  font-size: 10px;
+  font-weight: 700;
+}
+
+.c4a-player-toggle-chevron {
+  flex: 0 0 auto;
+  color: #94a3b8;
+}
+
+.c4a-player-panel {
+  margin-top: 10px;
+  padding: 12px;
+  border: 1px solid rgba(148, 163, 184, 0.12);
+  border-radius: 12px;
+  background: rgba(2, 6, 23, 0.22);
+}
+
+.c4a-player-columns {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: 10px;
+}
+
+.c4a-player-help {
+  margin: 10px 0 0;
+  color: #94a3b8;
+  font-size: 11px;
+  line-height: 1.45;
+}
+
+.c4a-quick-error {
+  margin-top: 12px;
+  padding: 10px 12px;
+  border: 1px solid rgba(248, 113, 113, 0.34);
+  border-radius: 10px;
+  background: rgba(127, 29, 29, 0.18);
+  color: #fecaca;
+  font-size: 12px;
+  line-height: 1.4;
+}
+
+.c4a-quick-submit {
+  width: 100% !important;
+  min-width: 0 !important;
+  min-height: 50px !important;
+  height: auto !important;
+  margin: 14px 0 0 !important;
+  padding: 11px 14px !important;
+  border: 0 !important;
+  border-radius: 12px !important;
+  background: linear-gradient(135deg, #2563eb, #22c1dc) !important;
+  color: #fff !important;
+  box-shadow: 0 10px 26px rgba(37, 99, 235, 0.22) !important;
+  font-size: 14px !important;
+  font-weight: 950 !important;
+  line-height: 1.3;
+  white-space: normal !important;
+  cursor: pointer;
+}
+
+.c4a-quick-submit:disabled {
+  opacity: 0.68;
+  cursor: wait;
+}
+
+.c4a-quick-footnote {
+  margin: 9px 0 0;
+  color: #94a3b8;
+  font-size: 10px;
+  line-height: 1.45;
+  text-align: center;
+}
+
+.c4a-auth-box {
+  margin-top: 14px;
+  padding: 14px;
+  border: 1px solid rgba(56, 189, 248, 0.28);
+  border-radius: 14px;
+  background: rgba(7, 89, 133, 0.13);
+}
+
+.c4a-auth-box > strong {
+  display: block;
+  font-size: 13px;
+}
+
+.c4a-auth-box > p {
+  margin: 6px 0 10px;
+  color: #bae6fd;
+  font-size: 11px;
+  line-height: 1.45;
+}
+
+.c4a-auth-actions {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: 8px;
+}
+
+.c4a-auth-actions a {
+  min-height: 42px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: 8px 10px;
+  border: 1px solid transparent;
+  border-radius: 10px;
+  background: #2563eb;
+  color: #fff;
+  text-decoration: none;
+  font-size: 12px;
+  font-weight: 900;
+  text-align: center;
+}
+
+.c4a-auth-actions a.is-secondary {
+  border-color: rgba(96, 165, 250, 0.45);
+  background: transparent;
+}
+
+.c4a-next-steps {
+  margin-top: clamp(20px, 4vw, 34px);
+  padding: 16px;
+  border: 1px solid rgba(148, 163, 184, 0.13);
+  border-radius: 16px;
+  background: rgba(15, 23, 42, 0.36);
+}
+
+.c4a-next-steps-head {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  margin-bottom: 12px;
+}
+
+.c4a-next-steps-head > span {
+  flex: 0 0 30px;
+  width: 30px;
+  height: 30px;
+  display: grid;
+  place-items: center;
+  border-radius: 50%;
+  background: rgba(14, 165, 233, 0.14);
+  color: #7dd3fc;
+  font-weight: 950;
+}
+
+.c4a-next-steps-head strong,
+.c4a-next-steps-head small {
+  display: block;
+}
+
+.c4a-next-steps-head strong {
+  font-size: 13px;
+}
+
+.c4a-next-steps-head small {
+  margin-top: 2px;
+  color: #94a3b8;
+  font-size: 10px;
+}
+
+.c4a-next-steps-grid {
+  display: grid;
+  grid-template-columns: repeat(4, minmax(0, 1fr));
+  gap: 8px;
+}
+
+.c4a-next-steps-grid article {
+  min-width: 0;
+  display: flex;
+  align-items: flex-start;
+  gap: 8px;
+  padding: 10px;
+  border: 1px solid rgba(148, 163, 184, 0.08);
+  border-radius: 10px;
+  background: rgba(2, 6, 23, 0.28);
+}
+
+.c4a-next-steps-grid article > span {
+  flex: 0 0 25px;
+  width: 25px;
+  height: 25px;
+  display: grid;
+  place-items: center;
+  border-radius: 8px;
+  background: rgba(30, 64, 175, 0.22);
+  color: #bfdbfe;
+  font-size: 10px;
+  font-weight: 950;
+}
+
+.c4a-next-steps-grid strong {
+  display: block;
+  font-size: 11px;
+}
+
+.c4a-next-steps-grid p {
+  margin: 3px 0 0;
+  color: #94a3b8;
+  font-size: 9px;
+  line-height: 1.35;
+}
+
+/* Laptop / narrow desktop */
+@media (max-width: 980px) {
+  .c4a-quick-layout {
+    grid-template-columns: minmax(0, 0.82fr) minmax(390px, 1fr);
+    gap: 28px;
+  }
+
+  .c4a-quick-intro h1 {
+    font-size: clamp(34px, 5vw, 48px);
+  }
+
+  .c4a-next-steps-grid {
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+  }
+}
+
+/* Tablet and mobile */
+@media (max-width: 760px) {
+  .c4a-quick-page {
+    padding: 14px 12px calc(28px + env(safe-area-inset-bottom));
+  }
+
+  .c4a-quick-shell {
+    width: 100%;
+  }
+
+  .c4a-quick-topbar {
+    min-height: 40px;
+    margin-bottom: 18px;
+  }
+
+  .c4a-quick-brand {
+    font-size: 15px;
+  }
+
+  .c4a-quick-nav-button {
+    min-height: 34px;
+    padding: 6px 11px;
+    font-size: 10px;
+  }
+
+  .c4a-quick-layout {
+    display: flex;
+    flex-direction: column;
+    gap: 18px;
+  }
+
+  .c4a-quick-intro {
+    width: 100%;
+    padding: 0;
+  }
+
+  .c4a-quick-kicker {
+    min-height: 28px;
+    padding: 5px 9px;
+    font-size: 9px;
+  }
+
+  .c4a-quick-intro h1 {
+    max-width: 470px;
+    margin: 12px 0 7px;
+    font-size: clamp(32px, 10.5vw, 44px);
+    line-height: 1.02;
+  }
+
+  .c4a-quick-intro-copy {
+    max-width: 540px;
+    font-size: 13px;
+    line-height: 1.5;
+  }
+
+  .c4a-quick-benefits {
+    margin-top: 14px;
+    gap: 7px;
+  }
+
+  .c4a-quick-benefit {
+    padding: 9px 10px;
+    border-radius: 10px;
+    font-size: 11px;
+  }
+
+  .c4a-quick-card {
+    width: 100%;
+    padding: 15px;
+    border-radius: 17px;
+  }
+
+  .c4a-quick-card-head {
+    margin-bottom: 13px;
+  }
+
+  .c4a-quick-card-icon {
+    flex-basis: 30px;
+    width: 30px;
+    height: 30px;
+  }
+
+  .c4a-quick-card-head h2 {
+    font-size: 17px;
+  }
+
+  .c4a-quick-card-head p {
+    font-size: 10px;
+  }
+
+  .c4a-active-league-card {
+    grid-template-columns: 20px minmax(0, 1fr) !important;
+    min-height: 58px !important;
+    gap: 10px !important;
+    margin-bottom: 13px !important;
+    padding: 10px 11px !important;
+  }
+
+  .c4a-active-league-state {
+    grid-column: 2;
+    justify-self: start;
+    margin-top: -2px;
+    padding: 3px 7px;
+    font-size: 8px;
+  }
+
+  .c4a-active-league-copy strong {
+    font-size: 12px;
+    line-height: 1.25;
+  }
+
+  .c4a-active-league-copy small {
+    font-size: 10px;
+  }
+
+  .c4a-quick-page .c4a-active-league-checkbox,
+  .c4a-quick-page .c4a-active-league-card input[type="checkbox"] {
+    width: 17px !important;
+    min-width: 17px !important;
+    max-width: 17px !important;
+    height: 17px !important;
+    min-height: 17px !important;
+    max-height: 17px !important;
+  }
+
+  .c4a-quick-fields {
+    gap: 10px 8px;
+  }
+
+  .c4a-quick-field > span,
+  .c4a-overs-group legend {
+    font-size: 10px;
+  }
+
+  .c4a-quick-page .c4a-quick-field input {
+    min-height: 42px !important;
+    height: 42px !important;
+    padding: 9px 10px !important;
+    font-size: 13px !important;
+  }
+
+  .c4a-overs-group {
+    margin-top: 12px;
+  }
+
+  .c4a-quick-page .c4a-overs-options > button,
+  .c4a-overs-custom {
+    min-height: 40px !important;
+    height: 40px;
+    font-size: 11px !important;
+  }
+
+  .c4a-player-toggle {
+    min-height: 42px !important;
+    margin-top: 12px !important;
+    font-size: 10px !important;
+  }
+
+  .c4a-player-columns {
+    grid-template-columns: 1fr;
+  }
+
+  .c4a-quick-submit {
+    min-height: 48px !important;
+    font-size: 12px !important;
+  }
+
+  .c4a-next-steps {
+    margin-top: 17px;
+    padding: 12px;
+  }
+
+  .c4a-next-steps-grid {
+    grid-template-columns: 1fr 1fr;
+  }
+}
+
+/* Small phone */
+@media (max-width: 430px) {
+  .c4a-quick-page {
+    padding-inline: 10px;
+  }
+
+  .c4a-quick-topbar {
+    margin-bottom: 14px;
+  }
+
+  .c4a-quick-intro h1 {
+    font-size: clamp(30px, 11vw, 40px);
+  }
+
+  .c4a-quick-benefits {
+    grid-template-columns: 1fr;
+  }
+
+  .c4a-quick-card {
+    padding: 13px;
+  }
+
+  .c4a-quick-fields {
+    grid-template-columns: 1fr 1fr;
+  }
+
+  .c4a-overs-options {
+    grid-template-columns: repeat(4, minmax(0, 1fr));
+    gap: 5px;
+  }
+
+  .c4a-quick-page .c4a-overs-options > button,
+  .c4a-overs-custom {
+    min-height: 38px !important;
+    height: 38px;
+  }
+
+  .c4a-overs-custom {
+    grid-template-columns: 1fr;
+    gap: 0;
+    padding: 2px 4px !important;
+    text-align: center;
+  }
+
+  .c4a-overs-custom > span {
+    line-height: 1;
+  }
+
+  .c4a-quick-page .c4a-overs-custom input {
+    height: 20px !important;
+    min-height: 20px !important;
+    line-height: 1;
+  }
+
+  .c4a-next-steps-grid {
+    grid-template-columns: 1fr;
+  }
+}
+
+/* Very narrow devices: avoid any squeezed text columns */
+@media (max-width: 345px) {
+  .c4a-quick-fields {
+    grid-template-columns: 1fr;
+  }
+
+  .c4a-quick-field-full {
+    grid-column: auto;
+  }
+
+  .c4a-overs-options {
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+  }
+
+  .c4a-auth-actions {
+    grid-template-columns: 1fr;
+  }
+}
+
+/* Prevent global Cric4All form/mobile rules from stretching controls */
+.c4a-quick-page label,
+.c4a-quick-page input,
+.c4a-quick-page textarea,
+.c4a-quick-page button,
+.c4a-quick-page fieldset {
+  max-width: 100%;
+}
+
+.c4a-quick-page button,
+.c4a-quick-page input,
+.c4a-quick-page textarea {
+  font-family: inherit;
+}

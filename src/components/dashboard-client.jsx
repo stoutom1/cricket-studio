@@ -17,6 +17,7 @@ import KitPostMatchPrompt from "@/components/kit/KitPostMatchPrompt";
 import LeagueResourcesShortcut from "@/components/resources/LeagueResourcesShortcut";
 import matchDayNavStyles from "./MatchDayDashboardNav.module.css";
 import playerCardStyles from "./DashboardPlayerCard.module.css";
+import FollowedLeaguesDrawerContent from "@/components/followed-leagues-drawer-content";
 import {
   cacheOfflineMatchSnapshot,
   createClientEventId,
@@ -5446,6 +5447,61 @@ showToast?.("success", "✅ Match created successfully.");
     }
   }
 
+function dispatchLeagueMatchAlert(
+  matchId,
+  alertType
+) {
+  const numericMatchId =
+    Number(
+      matchId
+    );
+
+  if (
+    !Number.isInteger(
+      numericMatchId
+    ) ||
+    numericMatchId <= 0
+  ) {
+    return;
+  }
+
+  /*
+   * Retention alerts must never block scoring.
+   * Delivery is deduplicated again on the server by:
+   * userId + matchId + alertType.
+   */
+  fetch(
+    "/api/league-alerts/dispatch",
+    {
+      method:
+        "POST",
+      credentials:
+        "include",
+      headers: {
+        "Content-Type":
+          "application/json",
+      },
+      keepalive:
+        true,
+      body:
+        JSON.stringify({
+          matchId:
+            numericMatchId,
+          alertType,
+        }),
+    }
+  ).catch(
+    (
+      error
+    ) => {
+      console.warn(
+        "[LEAGUE_MATCH_ALERT_DISPATCH_SKIPPED]",
+        error
+      );
+    }
+  );
+}
+
 async function handleStartMatch(match) {
   if (!match?.id) {
     setError("Match was not found.");
@@ -5480,6 +5536,11 @@ async function handleStartMatch(match) {
         battingFirstTeamId: Number(battingFirstTeamId),
       }),
     });
+
+    dispatchLeagueMatchAlert(
+      matchId,
+      "MATCH_START"
+    );
 
     await loadMatches(activeLeagueId);
 
@@ -11137,6 +11198,11 @@ async function syncAndShowPostMatchKitPrompt(
     .current
     .add(numericMatchId);
 
+  dispatchLeagueMatchAlert(
+    numericMatchId,
+    "MATCH_RESULT"
+  );
+
   try {
     const result =
       await api(
@@ -12025,6 +12091,11 @@ async function handleEndOfficialDls() {
       resultText
     );
 
+    dispatchLeagueMatchAlert(
+      selectedMatchId,
+      "MATCH_RESULT"
+    );
+
     showPostMatchKitPrompt(
       endResult
     );
@@ -12103,6 +12174,11 @@ async function handleEndByDls() {
 
     setMessage(resultText);
 
+    dispatchLeagueMatchAlert(
+      selectedMatchId,
+      "MATCH_RESULT"
+    );
+
     showPostMatchKitPrompt(
       endResult
     );
@@ -12147,6 +12223,11 @@ async function handleEndMatch() {
 
     setMessage(
       "Match ended successfully. Confirm who took the kit home."
+    );
+
+    dispatchLeagueMatchAlert(
+      selectedMatchId,
+      "MATCH_RESULT"
     );
 
     showPostMatchKitPrompt(result);
@@ -12269,6 +12350,11 @@ async function handleAbandonMatch() {
 
     setMessage(
       "Match abandoned. Confirm whether someone took the kit home."
+    );
+
+    dispatchLeagueMatchAlert(
+      selectedMatchId,
+      "MATCH_RESULT"
     );
 
     showPostMatchKitPrompt(result);
@@ -12764,6 +12850,11 @@ async function confirmStartMatch() {
         battingFirstTeamId: Number(startMatchData.battingFirstTeamId),
       }),
     });
+
+    dispatchLeagueMatchAlert(
+      matchId,
+      "MATCH_START"
+    );
 
     setShowStartMatchModal(false);
     setMessage("✅ Match started. Opening scoring...");
@@ -32621,11 +32712,7 @@ onClick={async () => {
         </button>
       </div>
 
-      <a href="/explore" className="public-league-explore-card">
-        <strong>Explore public leagues</strong>
-        <span>Find leagues to follow from the public Explore page.</span>
-        <b>Open Explore →</b>
-      </a>
+      <FollowedLeaguesDrawerContent />
     </aside>
   </div>
 )}

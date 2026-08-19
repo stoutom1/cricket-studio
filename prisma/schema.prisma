@@ -103,24 +103,16 @@ model Player {
 }
 
 model Match {
-  id                    Int       @id @default(autoincrement())
-  shareCode             String?   @unique
+  id                    Int                  @id @default(autoincrement())
+  shareCode             String?              @unique
   teamAId               Int
   teamBId               Int
   battingFirstTeamId    Int?
   oversPerInnings       Int
-  powerplayOversInnings Int       @default(0)
-  status                String    @default("in_progress")
-  createdAt             DateTime  @default(now())
+  powerplayOversInnings Int                  @default(0)
+  status                String               @default("in_progress")
+  createdAt             DateTime             @default(now())
   scheduledAt           DateTime?
-
-  // Physical match location.
-  // venueName is the ground/facility name (for example "Woodley Cricket Fields").
-  // venueAddress is the real one-line postal/location address used by spectators
-  // and Google Event structured data. Both remain optional for backward compatibility.
-  venueName    String?
-  venueAddress String?
-
   statusText            String?              @default("LIVE")
   maxOversPerBowler     Int?
   maxWicketsPerInnings  Int?
@@ -405,11 +397,36 @@ model LeagueFollower {
   userId    String
   leagueId  Int
   createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  // Growth Phase 7 — spectator retention preferences.
+  // Following a league does NOT automatically enable push notifications.
+  alertsEnabled    Boolean @default(false)
+  alertMatchStart  Boolean @default(true)
+  alertMatchResult Boolean @default(true)
 
   user   User   @relation(fields: [userId], references: [id], onDelete: Cascade)
   league League @relation(fields: [leagueId], references: [id], onDelete: Cascade)
 
   @@unique([userId, leagueId])
+  @@index([leagueId, alertsEnabled])
+}
+
+model LeagueAlertDelivery {
+  id          Int      @id @default(autoincrement())
+  userId      String
+  leagueId    Int
+  matchId     Int
+  alertType   String
+  deliveredAt DateTime @default(now())
+
+  // Intentionally scalar-only. This keeps alert delivery bookkeeping
+  // independent from match/league deletion and avoids adding relation
+  // complexity to existing scoring models.
+  @@unique([userId, matchId, alertType])
+  @@index([leagueId, deliveredAt])
+  @@index([userId, deliveredAt])
+  @@index([matchId, alertType])
 }
 
 model AuditLog {

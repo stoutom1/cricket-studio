@@ -1,5 +1,7 @@
 "use client";
 
+import "@/app/score-now/score-now.css";
+
 import Link from "next/link";
 import {
   useEffect,
@@ -9,7 +11,7 @@ import {
 import {
   useRouter,
 } from "next/navigation";
-import {
+import GrowthTracker, {
   trackGrowthEvent,
 } from "@/components/growth-tracker";
 
@@ -66,147 +68,9 @@ function initialDraft() {
 
 export default function QuickMatchStarter({
   userContext,
-  acquisitionContext = {},
 }) {
   const router =
     useRouter();
-
-  const isSpectatorAcquisition =
-    acquisitionContext?.source ===
-    "spectator";
-
-  const acquisitionMetadata =
-    isSpectatorAcquisition
-      ? {
-          acquisitionSource:
-            "SPECTATOR",
-          originMatchId:
-            acquisitionContext
-              ?.originMatchId ||
-            null,
-          originLeagueId:
-            acquisitionContext
-              ?.originLeagueId ||
-            null,
-          originShareCode:
-            acquisitionContext
-              ?.originShareCode ||
-            null,
-          originState:
-            acquisitionContext
-              ?.originState ||
-            null,
-        }
-      : {};
-
-  const scoreNowReturnPath =
-    useMemo(() => {
-      const params =
-        new URLSearchParams();
-
-      if (
-        isSpectatorAcquisition
-      ) {
-        params.set(
-          "source",
-          "spectator"
-        );
-
-        if (
-          acquisitionContext
-            ?.originMatchId
-        ) {
-          params.set(
-            "originMatchId",
-            String(
-              acquisitionContext
-                .originMatchId
-            )
-          );
-        }
-
-        if (
-          acquisitionContext
-            ?.originLeagueId
-        ) {
-          params.set(
-            "originLeagueId",
-            String(
-              acquisitionContext
-                .originLeagueId
-            )
-          );
-        }
-
-        if (
-          acquisitionContext
-            ?.originShareCode
-        ) {
-          params.set(
-            "originShareCode",
-            String(
-              acquisitionContext
-                .originShareCode
-            )
-          );
-        }
-
-        if (
-          acquisitionContext
-            ?.originState
-        ) {
-          params.set(
-            "originState",
-            String(
-              acquisitionContext
-                .originState
-            )
-          );
-        }
-      }
-
-      const query =
-        params.toString();
-
-      return query
-        ? `/score-now?${query}`
-        : "/score-now";
-    }, [
-      isSpectatorAcquisition,
-      acquisitionContext
-        ?.originMatchId,
-      acquisitionContext
-        ?.originLeagueId,
-      acquisitionContext
-        ?.originShareCode,
-      acquisitionContext
-        ?.originState,
-    ]);
-
-  useEffect(() => {
-    trackGrowthEvent(
-      "QUICK_MATCH_VIEW",
-      {
-        source:
-          isSpectatorAcquisition
-            ? "SPECTATOR_SCORE_NOW"
-            : "SCORE_NOW",
-        matchId:
-          acquisitionContext
-            ?.originMatchId ||
-          undefined,
-        leagueId:
-          acquisitionContext
-            ?.originLeagueId ||
-          undefined,
-        metadata:
-          acquisitionMetadata,
-      }
-    );
-    // Track once for this page mount. The acquisition context is immutable
-    // for a given /score-now navigation.
-    // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, []);
 
   const [
     form,
@@ -421,19 +285,8 @@ export default function QuickMatchStarter({
       "QUICK_MATCH_STARTED",
       {
         source:
-          isSpectatorAcquisition
-            ? "SPECTATOR_SCORE_NOW"
-            : "SCORE_NOW",
-        matchId:
-          acquisitionContext
-            ?.originMatchId ||
-          undefined,
-        leagueId:
-          acquisitionContext
-            ?.originLeagueId ||
-          undefined,
+          "SCORE_NOW",
         metadata: {
-          ...acquisitionMetadata,
           overs,
           hasPlayerNames:
             teamAPlayers.length >
@@ -516,15 +369,12 @@ export default function QuickMatchStarter({
         "QUICK_MATCH_CREATED",
         {
           source:
-            isSpectatorAcquisition
-              ? "SPECTATOR_SCORE_NOW_CREATED"
-              : "SCORE_NOW_CLIENT",
+            "SCORE_NOW_CLIENT",
           leagueId:
             data.leagueId,
           matchId:
             data.matchId,
           metadata: {
-            ...acquisitionMetadata,
             createdLeague:
               Boolean(
                 data.createdLeague
@@ -563,997 +413,271 @@ export default function QuickMatchStarter({
   }
 
   return (
-    <main
-      style={{
-        minHeight:
-          "100vh",
-        padding:
-          "clamp(14px, 3vw, 34px)",
-        background:
-          "linear-gradient(180deg, rgba(2,6,23,1) 0%, rgba(7,18,37,1) 100%)",
-        color:
-          "#f8fafc",
-      }}
-    >
-      <div
-        style={{
-          width:
-            "min(920px, 100%)",
-          margin:
-            "0 auto",
-        }}
-      >
-        <div
-          style={{
-            display:
-              "flex",
-            alignItems:
-              "center",
-            justifyContent:
-              "space-between",
-            gap:
-              10,
-            flexWrap:
-              "wrap",
-            marginBottom:
-              18,
-          }}
-        >
-          <Link
-            href="/"
-            style={{
-              color:
-                "inherit",
-              textDecoration:
-                "none",
-              fontWeight:
-                900,
-              fontSize:
-                18,
-            }}
-          >
-            🏏 Cric4All
+    <main className="c4a-quick-page">
+      <GrowthTracker
+        eventType="QUICK_MATCH_VIEW"
+        oncePerSession={false}
+      />
+
+      <div className="c4a-quick-shell">
+        <header className="c4a-quick-topbar">
+          <Link href="/" className="c4a-quick-brand">
+            <span aria-hidden="true">🏏</span>
+            <span>Cric4All</span>
           </Link>
 
-          <div
-            style={{
-              display:
-                "flex",
-              gap:
-                8,
-              flexWrap:
-                "wrap",
-            }}
-          >
-            {userContext
-              ?.signedIn ? (
-              <Link
-                href="/dashboard"
-                style={{
-                  color:
-                    "inherit",
-                  textDecoration:
-                    "none",
-                  padding:
-                    "8px 12px",
-                  borderRadius:
-                    999,
-                  border:
-                    "1px solid rgba(148,163,184,.25)",
-                  fontSize:
-                    13,
-                  fontWeight:
-                    800,
-                }}
-              >
-                Dashboard
-              </Link>
-            ) : (
-              <Link
-                href={`/login?callbackUrl=${encodeURIComponent(
-                      scoreNowReturnPath
-                    )}`}
-                style={{
-                  color:
-                    "inherit",
-                  textDecoration:
-                    "none",
-                  padding:
-                    "8px 12px",
-                  borderRadius:
-                    999,
-                  border:
-                    "1px solid rgba(148,163,184,.25)",
-                  fontSize:
-                    13,
-                  fontWeight:
-                    800,
-                }}
-              >
-                Sign In
-              </Link>
-            )}
-          </div>
-        </div>
-
-        <section
-          style={{
-            display:
-              "grid",
-            gridTemplateColumns:
-              "repeat(auto-fit, minmax(280px, 1fr))",
-            gap:
-              16,
-            alignItems:
-              "start",
-          }}
-        >
-          <div
-            style={{
-              minWidth:
-                0,
-            }}
-          >
-            <div
-              style={{
-                display:
-                  "inline-flex",
-                alignItems:
-                  "center",
-                gap:
-                  6,
-                padding:
-                  "7px 10px",
-                borderRadius:
-                  999,
-                border:
-                  "1px solid rgba(56,189,248,.28)",
-                background:
-                  "rgba(14,116,144,.12)",
-                color:
-                  "#bae6fd",
-                fontSize:
-                  12,
-                fontWeight:
-                  900,
-              }}
+          {userContext?.signedIn ? (
+            <Link href="/dashboard" className="c4a-quick-nav-button">
+              Dashboard
+            </Link>
+          ) : (
+            <Link
+              href="/login?callbackUrl=%2Fscore-now"
+              className="c4a-quick-nav-button"
             >
-              ⚡ QUICK MATCH
+              Sign In
+            </Link>
+          )}
+        </header>
+
+        <section className="c4a-quick-layout">
+          <div className="c4a-quick-intro">
+            <div className="c4a-quick-kicker">
+              <span aria-hidden="true">⚡</span>
+              QUICK MATCH
             </div>
 
-            <h1
-              style={{
-                margin:
-                  "14px 0 8px",
-                fontSize:
-                  "clamp(28px, 6vw, 46px)",
-                lineHeight:
-                  1.02,
-                letterSpacing:
-                  "-0.03em",
-              }}
-            >
-              Score a cricket
-              match now.
-            </h1>
+            <h1>Score a cricket match now.</h1>
 
-            <p
-              style={{
-                margin:
-                  0,
-                maxWidth:
-                  560,
-                color:
-                  "#cbd5e1",
-                fontSize:
-                  "clamp(15px, 2.8vw, 18px)",
-                lineHeight:
-                  1.55,
-              }}
-            >
-              Enter the two team
-              names and overs.
-              Cric4All creates the
-              setup and sends you
-              straight into the
-              normal scorer
-              workflow.
+            <p className="c4a-quick-intro-copy">
+              Enter the two team names and overs. Cric4All creates the setup and
+              sends you straight into the normal scorer workflow.
             </p>
 
-            <div
-              style={{
-                marginTop:
-                  18,
-                display:
-                  "grid",
-                gap:
-                  9,
-              }}
-            >
+            <div className="c4a-quick-benefits">
               {[
                 "📴 Keep scoring if connectivity drops",
                 "🌧 Rain / DLS workflows are available",
                 "📊 Full scorecard and player statistics",
                 "🔗 Share the live match with spectators",
-              ].map(
-                (
-                  item
-                ) => (
-                  <div
-                    key={
-                      item
-                    }
-                    style={{
-                      padding:
-                        "10px 12px",
-                      borderRadius:
-                        12,
-                      border:
-                        "1px solid rgba(148,163,184,.14)",
-                      background:
-                        "rgba(15,23,42,.48)",
-                      fontSize:
-                        13,
-                      lineHeight:
-                        1.35,
-                    }}
-                  >
-                    {item}
-                  </div>
-                )
-              )}
+              ].map((item) => (
+                <div key={item} className="c4a-quick-benefit">
+                  {item}
+                </div>
+              ))}
             </div>
           </div>
 
           <form
-            onSubmit={
-              createQuickMatch
-            }
-            style={{
-              minWidth:
-                0,
-              padding:
-                "clamp(16px, 3vw, 24px)",
-              borderRadius:
-                20,
-              border:
-                "1px solid rgba(96,165,250,.23)",
-              background:
-                "rgba(15,23,42,.78)",
-              boxShadow:
-                "0 18px 60px rgba(0,0,0,.20)",
-            }}
+            className="c4a-quick-card"
+            onSubmit={createQuickMatch}
+            noValidate
           >
-            <div
-              style={{
-                marginBottom:
-                  14,
-              }}
-            >
-              <strong
-                style={{
-                  display:
-                    "block",
-                  fontSize:
-                    19,
-                }}
-              >
-                🏏 Match Setup
-              </strong>
+            <div className="c4a-quick-card-head">
+              <div className="c4a-quick-card-icon" aria-hidden="true">
+                🏏
+              </div>
 
-              <span
-                style={{
-                  display:
-                    "block",
-                  marginTop:
-                    4,
-                  color:
-                    "#94a3b8",
-                  fontSize:
-                    12,
-                  lineHeight:
-                    1.4,
-                }}
-              >
-                You can change
-                detailed settings
-                later.
-              </span>
-            </div>
-
-            {activeLeagueAvailable && (
-              <label
-                style={{
-                  display:
-                    "flex",
-                  gap:
-                    10,
-                  alignItems:
-                    "flex-start",
-                  marginBottom:
-                    14,
-                  padding:
-                    12,
-                  borderRadius:
-                    12,
-                  border:
-                    "1px solid rgba(52,211,153,.20)",
-                  background:
-                    "rgba(6,78,59,.10)",
-                  cursor:
-                    "pointer",
-                }}
-              >
-                <input
-                  type="checkbox"
-                  checked={
-                    Boolean(
-                      form
-                        .useActiveLeague
-                    )
-                  }
-                  onChange={(
-                    event
-                  ) =>
-                    update(
-                      "useActiveLeague",
-                      event
-                        .target
-                        .checked
-                    )
-                  }
-                  style={{
-                    marginTop:
-                      2,
-                  }}
-                />
-
-                <span
-                  style={{
-                    minWidth:
-                      0,
-                  }}
-                >
-                  <strong
-                    style={{
-                      display:
-                        "block",
-                      fontSize:
-                        13,
-                    }}
-                  >
-                    Use my active
-                    league
-                  </strong>
-
-                  <small
-                    style={{
-                      display:
-                        "block",
-                      marginTop:
-                        3,
-                      color:
-                        "#a7f3d0",
-                      overflowWrap:
-                        "anywhere",
-                    }}
-                  >
-                    {
-                      userContext
-                        .activeLeagueName
-                    }
-                  </small>
-                </span>
-              </label>
-            )}
-
-            {!form.useActiveLeague && (
-              <label
-                style={{
-                  display:
-                    "grid",
-                  gap:
-                    6,
-                  marginBottom:
-                    12,
-                }}
-              >
-                <span
-                  style={{
-                    fontSize:
-                      12,
-                    fontWeight:
-                      900,
-                  }}
-                >
-                  League / Group
-                </span>
-
-                <input
-                  value={
-                    form
-                      .leagueName
-                  }
-                  onChange={(
-                    event
-                  ) =>
-                    update(
-                      "leagueName",
-                      event
-                        .target
-                        .value
-                    )
-                  }
-                  maxLength={
-                    70
-                  }
-                  placeholder="My Cricket League"
-                  style={{
-                    width:
-                      "100%",
-                    minWidth:
-                      0,
-                    boxSizing:
-                      "border-box",
-                    padding:
-                      "12px 13px",
-                    borderRadius:
-                      11,
-                    border:
-                      "1px solid rgba(148,163,184,.25)",
-                    background:
-                      "rgba(2,6,23,.48)",
-                    color:
-                      "inherit",
-                    fontSize:
-                      16,
-                    outline:
-                      "none",
-                  }}
-                />
-              </label>
-            )}
-
-            <div
-              style={{
-                display:
-                  "grid",
-                gridTemplateColumns:
-                  "repeat(auto-fit, minmax(145px, 1fr))",
-                gap:
-                  10,
-              }}
-            >
-              <label
-                style={{
-                  display:
-                    "grid",
-                  gap:
-                    6,
-                }}
-              >
-                <span
-                  style={{
-                    fontSize:
-                      12,
-                    fontWeight:
-                      900,
-                  }}
-                >
-                  Team 1
-                </span>
-
-                <input
-                  value={
-                    form
-                      .teamAName
-                  }
-                  onChange={(
-                    event
-                  ) =>
-                    update(
-                      "teamAName",
-                      event
-                        .target
-                        .value
-                    )
-                  }
-                  maxLength={
-                    60
-                  }
-                  placeholder="Team A"
-                  style={{
-                    width:
-                      "100%",
-                    minWidth:
-                      0,
-                    boxSizing:
-                      "border-box",
-                    padding:
-                      "12px 13px",
-                    borderRadius:
-                      11,
-                    border:
-                      "1px solid rgba(148,163,184,.25)",
-                    background:
-                      "rgba(2,6,23,.48)",
-                    color:
-                      "inherit",
-                    fontSize:
-                      16,
-                    outline:
-                      "none",
-                  }}
-                />
-              </label>
-
-              <label
-                style={{
-                  display:
-                    "grid",
-                  gap:
-                    6,
-                }}
-              >
-                <span
-                  style={{
-                    fontSize:
-                      12,
-                    fontWeight:
-                      900,
-                  }}
-                >
-                  Team 2
-                </span>
-
-                <input
-                  value={
-                    form
-                      .teamBName
-                  }
-                  onChange={(
-                    event
-                  ) =>
-                    update(
-                      "teamBName",
-                      event
-                        .target
-                        .value
-                    )
-                  }
-                  maxLength={
-                    60
-                  }
-                  placeholder="Team B"
-                  style={{
-                    width:
-                      "100%",
-                    minWidth:
-                      0,
-                    boxSizing:
-                      "border-box",
-                    padding:
-                      "12px 13px",
-                    borderRadius:
-                      11,
-                    border:
-                      "1px solid rgba(148,163,184,.25)",
-                    background:
-                      "rgba(2,6,23,.48)",
-                    color:
-                      "inherit",
-                    fontSize:
-                      16,
-                    outline:
-                      "none",
-                  }}
-                />
-              </label>
-            </div>
-
-            <div
-              style={{
-                marginTop:
-                  12,
-              }}
-            >
-              <span
-                style={{
-                  display:
-                    "block",
-                  marginBottom:
-                    7,
-                  fontSize:
-                    12,
-                  fontWeight:
-                    900,
-                }}
-              >
-                Overs per innings
-              </span>
-
-              <div
-                style={{
-                  display:
-                    "grid",
-                  gridTemplateColumns:
-                    "repeat(4, minmax(0, 1fr))",
-                  gap:
-                    7,
-                }}
-              >
-                {[
-                  5,
-                  10,
-                  20,
-                ].map(
-                  (
-                    overs
-                  ) => (
-                    <button
-                      key={
-                        overs
-                      }
-                      type="button"
-                      onClick={() =>
-                        update(
-                          "overs",
-                          String(
-                            overs
-                          )
-                        )
-                      }
-                      style={{
-                        minWidth:
-                          0,
-                        minHeight:
-                          42,
-                        padding:
-                          "8px 6px",
-                        borderRadius:
-                          10,
-                        border:
-                          Number(
-                            form
-                              .overs
-                          ) ===
-                          overs
-                            ? "2px solid rgba(56,189,248,.95)"
-                            : "1px solid rgba(148,163,184,.22)",
-                        background:
-                          Number(
-                            form
-                              .overs
-                          ) ===
-                          overs
-                            ? "linear-gradient(135deg, rgba(37,99,235,.95), rgba(14,165,233,.95))"
-                            : "rgba(2,6,23,.40)",
-                        color:
-                          "#fff",
-                        fontWeight:
-                          900,
-                        cursor:
-                          "pointer",
-                      }}
-                    >
-                      {overs}
-                    </button>
-                  )
-                )}
-
-                <input
-                  aria-label="Custom overs"
-                  type="number"
-                  min="1"
-                  max="100"
-                  step="1"
-                  value={
-                    [5, 10, 20]
-                      .includes(
-                        Number(
-                          form
-                            .overs
-                        )
-                      )
-                      ? ""
-                      : form
-                          .overs
-                  }
-                  onChange={(
-                    event
-                  ) =>
-                    update(
-                      "overs",
-                      event
-                        .target
-                        .value
-                    )
-                  }
-                  placeholder="Other"
-                  style={{
-                    width:
-                      "100%",
-                    minWidth:
-                      0,
-                    boxSizing:
-                      "border-box",
-                    padding:
-                      "8px 6px",
-                    borderRadius:
-                      10,
-                    border:
-                      "1px solid rgba(148,163,184,.22)",
-                    background:
-                      "rgba(2,6,23,.40)",
-                    color:
-                      "inherit",
-                    fontWeight:
-                      900,
-                    textAlign:
-                      "center",
-                    fontSize:
-                      14,
-                  }}
-                />
+              <div>
+                <h2>Match Setup</h2>
+                <p>You can change detailed settings later.</p>
               </div>
             </div>
 
+            {activeLeagueAvailable && (
+              <label className="c4a-active-league-card">
+                <input
+                  className="c4a-active-league-checkbox"
+                  type="checkbox"
+                  checked={Boolean(form.useActiveLeague)}
+                  onChange={(event) =>
+                    update("useActiveLeague", event.target.checked)
+                  }
+                />
+
+                <span className="c4a-active-league-copy">
+                  <strong>Use my active league</strong>
+                  <small>{userContext.activeLeagueName}</small>
+                </span>
+
+                <span
+                  className={`c4a-active-league-state ${
+                    form.useActiveLeague ? "is-selected" : ""
+                  }`}
+                  aria-hidden="true"
+                >
+                  {form.useActiveLeague ? "Selected" : "Optional"}
+                </span>
+              </label>
+            )}
+
+            <div className="c4a-quick-fields">
+              {!form.useActiveLeague && (
+                <label className="c4a-quick-field c4a-quick-field-full">
+                  <span>League / Group</span>
+
+                  <input
+                    value={form.leagueName}
+                    onChange={(event) =>
+                      update("leagueName", event.target.value)
+                    }
+                    maxLength={70}
+                    placeholder="My Cricket League"
+                    autoComplete="organization"
+                  />
+                </label>
+              )}
+
+              <label className="c4a-quick-field">
+                <span>Team 1</span>
+
+                <input
+                  value={form.teamAName}
+                  onChange={(event) =>
+                    update("teamAName", event.target.value)
+                  }
+                  maxLength={60}
+                  placeholder="Team A"
+                  autoComplete="off"
+                />
+              </label>
+
+              <label className="c4a-quick-field">
+                <span>Team 2</span>
+
+                <input
+                  value={form.teamBName}
+                  onChange={(event) =>
+                    update("teamBName", event.target.value)
+                  }
+                  maxLength={60}
+                  placeholder="Team B"
+                  autoComplete="off"
+                />
+              </label>
+            </div>
+
+            <fieldset className="c4a-overs-group">
+              <legend>Overs per innings</legend>
+
+              <div className="c4a-overs-options">
+                {[5, 10, 20].map((overs) => {
+                  const active = Number(form.overs) === overs;
+
+                  return (
+                    <button
+                      key={overs}
+                      type="button"
+                      className={active ? "is-active" : ""}
+                      aria-pressed={active}
+                      onClick={() => update("overs", String(overs))}
+                    >
+                      {overs}
+                    </button>
+                  );
+                })}
+
+                <label
+                  className={`c4a-overs-custom ${
+                    ![5, 10, 20].includes(Number(form.overs))
+                      ? "is-active"
+                      : ""
+                  }`}
+                >
+                  <span>Other</span>
+                  <input
+                    inputMode="numeric"
+                    pattern="[0-9]*"
+                    value={
+                      [5, 10, 20].includes(Number(form.overs))
+                        ? ""
+                        : form.overs
+                    }
+                    onChange={(event) =>
+                      update(
+                        "overs",
+                        event.target.value.replace(/\D/g, "").slice(0, 3)
+                      )
+                    }
+                    onFocus={() => {
+                      if ([5, 10, 20].includes(Number(form.overs))) {
+                        update("overs", "");
+                      }
+                    }}
+                    aria-label="Custom number of overs"
+                    placeholder="15"
+                  />
+                </label>
+              </div>
+            </fieldset>
+
             <button
               type="button"
-              onClick={() =>
-                setShowPlayers(
-                  (
-                    previous
-                  ) =>
-                    !previous
-                )
-              }
-              style={{
-                width:
-                  "100%",
-                marginTop:
-                  12,
-                padding:
-                  "10px 12px",
-                borderRadius:
-                  11,
-                border:
-                  "1px solid rgba(148,163,184,.20)",
-                background:
-                  "rgba(30,41,59,.55)",
-                color:
-                  "inherit",
-                fontSize:
-                  13,
-                fontWeight:
-                  800,
-                cursor:
-                  "pointer",
-              }}
+              className="c4a-player-toggle"
+              aria-expanded={showPlayers}
+              onClick={() => setShowPlayers((previous) => !previous)}
             >
-              {showPlayers
-                ? "− Hide player names"
-                : "+ Add player names now (optional)"}
+              <span>
+                <b aria-hidden="true">{showPlayers ? "−" : "+"}</b>
+                Add player names now
+                <small>(optional)</small>
+              </span>
+
+              <span className="c4a-player-toggle-chevron" aria-hidden="true">
+                {showPlayers ? "⌃" : "⌄"}
+              </span>
             </button>
 
             {showPlayers && (
-              <div
-                style={{
-                  marginTop:
-                    10,
-                  display:
-                    "grid",
-                  gridTemplateColumns:
-                    "repeat(auto-fit, minmax(180px, 1fr))",
-                  gap:
-                    10,
-                }}
-              >
-                {[
-                  [
-                    "teamAPlayers",
-                    `${form.teamAName || "Team 1"} players`,
-                    teamAPlayers.length,
-                  ],
-                  [
-                    "teamBPlayers",
-                    `${form.teamBName || "Team 2"} players`,
-                    teamBPlayers.length,
-                  ],
-                ].map(
-                  ([
-                    field,
-                    label,
-                    count,
-                  ]) => (
-                    <label
-                      key={
-                        field
+              <div className="c4a-player-panel">
+                <div className="c4a-player-columns">
+                  <label className="c4a-quick-field">
+                    <span>Team 1 players</span>
+                    <small>One name per line or comma separated</small>
+
+                    <textarea
+                      value={form.teamAPlayers}
+                      onChange={(event) =>
+                        update("teamAPlayers", event.target.value)
                       }
-                      style={{
-                        display:
-                          "grid",
-                        gap:
-                          6,
-                        minWidth:
-                          0,
-                      }}
-                    >
-                      <span
-                        style={{
-                          display:
-                            "flex",
-                          justifyContent:
-                            "space-between",
-                          gap:
-                            8,
-                          fontSize:
-                            12,
-                          fontWeight:
-                            900,
-                        }}
-                      >
-                        <span>
-                          {
-                            label
-                          }
-                        </span>
+                      rows={5}
+                      placeholder={"Player 1\nPlayer 2\nPlayer 3"}
+                    />
+                  </label>
 
-                        <small
-                          style={{
-                            opacity:
-                              0.65,
-                          }}
-                        >
-                          {
-                            count
-                          }
-                        </small>
-                      </span>
+                  <label className="c4a-quick-field">
+                    <span>Team 2 players</span>
+                    <small>One name per line or comma separated</small>
 
-                      <textarea
-                        value={
-                          form[
-                            field
-                          ]
-                        }
-                        onChange={(
-                          event
-                        ) =>
-                          update(
-                            field,
-                            event
-                              .target
-                              .value
-                          )
-                        }
-                        rows={
-                          5
-                        }
-                        placeholder={
-                          "One player per line"
-                        }
-                        style={{
-                          width:
-                            "100%",
-                          minWidth:
-                            0,
-                          boxSizing:
-                            "border-box",
-                          resize:
-                            "vertical",
-                          padding:
-                            "11px 12px",
-                          borderRadius:
-                            11,
-                          border:
-                            "1px solid rgba(148,163,184,.22)",
-                          background:
-                            "rgba(2,6,23,.40)",
-                          color:
-                            "inherit",
-                          fontSize:
-                            14,
-                          lineHeight:
-                            1.45,
-                        }}
-                      />
-                    </label>
-                  )
-                )}
+                    <textarea
+                      value={form.teamBPlayers}
+                      onChange={(event) =>
+                        update("teamBPlayers", event.target.value)
+                      }
+                      rows={5}
+                      placeholder={"Player 1\nPlayer 2\nPlayer 3"}
+                    />
+                  </label>
+                </div>
 
-                <p
-                  style={{
-                    gridColumn:
-                      "1 / -1",
-                    margin:
-                      0,
-                    color:
-                      "#94a3b8",
-                    fontSize:
-                      12,
-                    lineHeight:
-                      1.45,
-                  }}
-                >
-                  If you leave
-                  player names
-                  blank, Cric4All
-                  creates two
-                  temporary players
-                  per team so the
-                  normal delivery
-                  setup can open
-                  immediately. You
-                  can rename or add
-                  players later.
+                <p className="c4a-player-help">
+                  If you leave player names blank, Cric4All creates two
+                  temporary players per team so the normal delivery setup can
+                  open immediately. You can rename or add players later.
                 </p>
               </div>
             )}
 
             {error && (
-              <div
-                role="alert"
-                style={{
-                  marginTop:
-                    12,
-                  padding:
-                    "10px 12px",
-                  borderRadius:
-                    10,
-                  border:
-                    "1px solid rgba(248,113,113,.34)",
-                  background:
-                    "rgba(127,29,29,.17)",
-                  color:
-                    "#fecaca",
-                  fontSize:
-                    13,
-                  lineHeight:
-                    1.4,
-                }}
-              >
+              <div role="alert" className="c4a-quick-error">
                 {error}
               </div>
             )}
 
             <button
               type="submit"
-              disabled={
-                saving
-              }
-              style={{
-                width:
-                  "100%",
-                marginTop:
-                  14,
-                minHeight:
-                  50,
-                padding:
-                  "11px 14px",
-                border:
-                  0,
-                borderRadius:
-                  12,
-                background:
-                  "linear-gradient(135deg, #2563eb, #22c1dc)",
-                color:
-                  "#fff",
-                fontSize:
-                  15,
-                fontWeight:
-                  950,
-                cursor:
-                  saving
-                    ? "wait"
-                    : "pointer",
-                opacity:
-                  saving
-                    ? 0.72
-                    : 1,
-                boxShadow:
-                  "0 10px 26px rgba(37,99,235,.22)",
-              }}
+              disabled={saving}
+              className="c4a-quick-submit"
             >
               {saving
                 ? "Creating your match…"
@@ -1562,189 +686,46 @@ export default function QuickMatchStarter({
                   : "🏏 Continue to Score This Match"}
             </button>
 
-            <p
-              style={{
-                margin:
-                  "9px 0 0",
-                textAlign:
-                  "center",
-                color:
-                  "#94a3b8",
-                fontSize:
-                  11,
-                lineHeight:
-                  1.4,
-              }}
-            >
-              Detailed roles,
-              powerplay, wicket
-              limits, DLS and other
-              match settings remain
-              available in the
-              normal Cric4All
-              workflow.
+            <p className="c4a-quick-footnote">
+              Detailed roles, powerplay, wicket limits, DLS and other match
+              settings remain available in the normal Cric4All workflow.
             </p>
 
             {authRequired && (
-              <div
-                style={{
-                  marginTop:
-                    14,
-                  padding:
-                    14,
-                  borderRadius:
-                    14,
-                  border:
-                    "1px solid rgba(56,189,248,.28)",
-                  background:
-                    "rgba(7,89,133,.13)",
-                }}
-              >
-                <strong
-                  style={{
-                    display:
-                      "block",
-                    fontSize:
-                      14,
-                  }}
-                >
-                  Your match setup
-                  is saved on this
-                  device.
-                </strong>
+              <div className="c4a-auth-box">
+                <strong>Your match setup is saved on this device.</strong>
 
-                <p
-                  style={{
-                    margin:
-                      "6px 0 10px",
-                    color:
-                      "#bae6fd",
-                    fontSize:
-                      12,
-                    lineHeight:
-                      1.45,
-                  }}
-                >
-                  Sign in or create
-                  a free Cric4All
-                  account, then
-                  return here. Your
-                  team names and
-                  overs will still
-                  be waiting.
+                <p>
+                  Sign in or create a free Cric4All account, then return here.
+                  Your team names and overs will still be waiting.
                 </p>
 
-                <div
-                  style={{
-                    display:
-                      "grid",
-                    gridTemplateColumns:
-                      "repeat(auto-fit, minmax(130px, 1fr))",
-                    gap:
-                      8,
-                  }}
-                >
+                <div className="c4a-auth-actions">
                   <Link
-                    href={`/login?callbackUrl=${encodeURIComponent(
-                      scoreNowReturnPath
-                    )}`}
+                    href="/login?callbackUrl=%2Fscore-now"
                     onClick={() =>
-                      trackGrowthEvent(
-                        "QUICK_MATCH_AUTH_CLICKED",
-                        {
-                          source:
-                            isSpectatorAcquisition
-                              ? "SPECTATOR_SCORE_NOW_LOGIN"
-                              : "SCORE_NOW_LOGIN",
-                          matchId:
-                            acquisitionContext
-                              ?.originMatchId ||
-                            undefined,
-                          leagueId:
-                            acquisitionContext
-                              ?.originLeagueId ||
-                            undefined,
-                          metadata:
-                            acquisitionMetadata,
-                        }
-                      )
+                      trackGrowthEvent("QUICK_MATCH_AUTH_CLICKED", {
+                        source: "SCORE_NOW_LOGIN",
+                      })
                     }
-                    style={{
-                      display:
-                        "flex",
-                      alignItems:
-                        "center",
-                      justifyContent:
-                        "center",
-                      minHeight:
-                        42,
-                      padding:
-                        "8px 10px",
-                      borderRadius:
-                        10,
-                      background:
-                        "#2563eb",
-                      color:
-                        "#fff",
-                      textDecoration:
-                        "none",
-                      fontWeight:
-                        900,
-                      fontSize:
-                        13,
-                    }}
                   >
                     Sign In
                   </Link>
 
                   <Link
-                    href={`/register?next=${encodeURIComponent(
-                      scoreNowReturnPath
-                    )}`}
+                    href="/register?next=%2Fscore-now"
+                    className="is-secondary"
                     onClick={() => {
-                      trackGrowthEvent(
-                        "QUICK_MATCH_AUTH_CLICKED",
-                        {
-                          source:
-                            "SCORE_NOW_REGISTER",
-                        }
-                      );
+                      trackGrowthEvent("QUICK_MATCH_AUTH_CLICKED", {
+                        source: "SCORE_NOW_REGISTER",
+                      });
 
-                      trackGrowthEvent(
-                        "SIGNUP_STARTED",
-                        {
-                          source:
-                            "SCORE_NOW",
-                        }
-                      );
-                    }}
-                    style={{
-                      display:
-                        "flex",
-                      alignItems:
-                        "center",
-                      justifyContent:
-                        "center",
-                      minHeight:
-                        42,
-                      padding:
-                        "8px 10px",
-                      borderRadius:
-                        10,
-                      border:
-                        "1px solid rgba(96,165,250,.45)",
-                      color:
-                        "#fff",
-                      textDecoration:
-                        "none",
-                      fontWeight:
-                        900,
-                      fontSize:
-                        13,
+                      trackGrowthEvent("SIGNUP_STARTED", {
+                        source: "SCORE_NOW",
+                      });
                     }}
                   >
-                    Create Free
-                    Account
+                    Create Free Account
                   </Link>
                 </div>
               </div>
@@ -1752,74 +733,30 @@ export default function QuickMatchStarter({
           </form>
         </section>
 
-        <section
-          style={{
-            marginTop:
-              18,
-            padding:
-              14,
-            borderRadius:
-              14,
-            border:
-              "1px solid rgba(148,163,184,.14)",
-            background:
-              "rgba(15,23,42,.38)",
-          }}
-        >
-          <strong
-            style={{
-              display:
-                "block",
-              marginBottom:
-                7,
-              fontSize:
-                13,
-            }}
-          >
-            What happens after I
-            click Start Scoring?
-          </strong>
+        <section className="c4a-next-steps">
+          <div className="c4a-next-steps-head">
+            <span aria-hidden="true">✓</span>
+            <div>
+              <strong>What happens after Start Scoring?</strong>
+              <small>Four quick steps, then you are live.</small>
+            </div>
+          </div>
 
-          <div
-            style={{
-              display:
-                "grid",
-              gridTemplateColumns:
-                "repeat(auto-fit, minmax(145px, 1fr))",
-              gap:
-                8,
-            }}
-          >
+          <div className="c4a-next-steps-grid">
             {[
-              "1️⃣ Cric4All creates the league/teams if needed.",
-              "2️⃣ You choose who bats first.",
-              "3️⃣ Select striker, non-striker and bowler.",
-              "4️⃣ Score the first delivery.",
-            ].map(
-              (
-                item
-              ) => (
-                <div
-                  key={
-                    item
-                  }
-                  style={{
-                    padding:
-                      "9px 10px",
-                    borderRadius:
-                      10,
-                    background:
-                      "rgba(2,6,23,.34)",
-                    fontSize:
-                      12,
-                    lineHeight:
-                      1.4,
-                  }}
-                >
-                  {item}
+              ["1", "Setup", "Cric4All creates the league and teams if needed."],
+              ["2", "Toss", "Choose which team bats first."],
+              ["3", "Players", "Select striker, non-striker and bowler."],
+              ["4", "Score", "Record the first delivery."],
+            ].map(([number, title, copy]) => (
+              <article key={number}>
+                <span>{number}</span>
+                <div>
+                  <strong>{title}</strong>
+                  <p>{copy}</p>
                 </div>
-              )
-            )}
+              </article>
+            ))}
           </div>
         </section>
       </div>
