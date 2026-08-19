@@ -102,22 +102,26 @@ export async function generateMetadata({ params }) {
       `/leagues/${league.slug}/matches/${match.id}`
     );
 
-  const statusText =
-    String(
-      match.statusText ||
-      ""
-    ).trim();
+  const resultText =
+    buildPublicMatchResult(
+      match
+    );
+
+  const normalizedStatus =
+    normalizeStatus(
+      match.status
+    );
 
   const description =
-    statusText &&
-    ![
-      "LIVE",
-      "SCHEDULED",
-      "MATCH COMPLETED",
+    [
+      "COMPLETED",
+      "COMPLETED_LOCKED",
+      "COMPLETED_CORRECTED",
+      "ABANDONED",
     ].includes(
-      statusText.toUpperCase()
+      normalizedStatus
     )
-      ? `${match.teamA?.name} vs ${match.teamB?.name}: ${statusText}. View the cricket scorecard, match status and details from ${league.name} on Cric4All.`
+      ? `${match.teamA?.name} vs ${match.teamB?.name}: ${resultText}. View the cricket scorecard and match details from ${league.name} on Cric4All.`
       : `Follow ${match.teamA?.name} vs ${match.teamB?.name} in ${league.name}. View the cricket match center, scorecard, status and live-score link on Cric4All.`;
 
   return {

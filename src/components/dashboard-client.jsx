@@ -4441,11 +4441,31 @@ setLastCorrectionId(null);
     setError(err.message);
   }
 }
+const spectatorShareSiteUrl =
+  String(
+    process.env.NEXT_PUBLIC_SITE_URL ||
+    "https://cric4all.app"
+  )
+    .trim()
+    .replace(/\/+$/, "");
+
 async function handleShareMatch() {
   if (!scoreboard) return;
 
-  const shareCode = scoreboard?.match?.shareCode;
-  const shareUrl = `${window.location.origin}/live/${shareCode}`;
+  const shareCode =
+    scoreboard?.match?.shareCode;
+
+  if (!shareCode) {
+    setError(
+      "Share code is not available for this match."
+    );
+    return;
+  }
+
+  const shareUrl =
+    `${spectatorShareSiteUrl}/live/${encodeURIComponent(
+      shareCode
+    )}/share-v1`;
 
   const innings =
     scoreboard.innings?.[scoreboard.innings.length - 1];
@@ -15362,7 +15382,10 @@ async function handleShareScheduledMatch(match) {
     return;
   }
 
-  const shareUrl = `${window.location.origin}/live/${shareCode}`;
+  const shareUrl =
+    `${spectatorShareSiteUrl}/live/${encodeURIComponent(
+      shareCode
+    )}/share-v1`;
 
   const shareText = `🏏 ${match.teamAName} vs ${match.teamBName}
 
@@ -15407,7 +15430,10 @@ async function handleShareActiveMatch(match) {
     return;
   }
 
-  const shareUrl = `${window.location.origin}/live/${shareCode}`;
+  const shareUrl =
+    `${spectatorShareSiteUrl}/live/${encodeURIComponent(
+      shareCode
+    )}/share-v1`;
 
   const shareText = `🏏 ${match.teamAName} vs ${match.teamBName}
 
@@ -15742,7 +15768,7 @@ async function shareCompletedMatch(match) {
   const path = usePublicPage
     ? `/leagues/${encodeURIComponent(leagueSlug)}/matches/${match.id}`
     : match.shareCode
-      ? `/live/${encodeURIComponent(match.shareCode)}`
+      ? `/live/${encodeURIComponent(match.shareCode)}/share-v1`
       : "";
 
   if (!path) {

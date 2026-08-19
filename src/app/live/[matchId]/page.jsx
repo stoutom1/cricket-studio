@@ -1,46 +1,26 @@
 import LiveScoreClient from "./LiveScoreClient";
-import prisma from "@/lib/prisma";
 import {
   absoluteCric4AllUrl,
 } from "@/lib/seo";
+import {
+  getLiveShareMatch,
+} from "@/lib/live-share";
 
 export async function generateMetadata({
   params,
 }) {
   const {
-    matchId: shareCode,
+    matchId:
+      shareCode,
   } = await params;
 
+  const data =
+    await getLiveShareMatch(
+      shareCode
+    );
+
   const match =
-    await prisma.match.findUnique({
-      where: {
-        shareCode:
-          String(
-            shareCode ||
-            ""
-          ),
-      },
-      select: {
-        id: true,
-        statusText: true,
-        teamA: {
-          select: {
-            name: true,
-          },
-        },
-        teamB: {
-          select: {
-            name: true,
-          },
-        },
-        league: {
-          select: {
-            slug: true,
-            visibility: true,
-          },
-        },
-      },
-    });
+    data?.match;
 
   const teamA =
     match?.teamA?.name ||
@@ -61,40 +41,35 @@ export async function generateMetadata({
           `/leagues/${match.league.slug}/matches/${match.id}`
         )
       : absoluteCric4AllUrl(
-          "/"
+          `/live/${shareCode}`
         );
 
-  const statusText =
-    String(
-      match?.statusText ||
-      ""
-    ).trim();
+  const imageUrl =
+    absoluteCric4AllUrl(
+      `/live/${shareCode}/share-card-v1.png`
+    );
 
   const description =
-    statusText &&
-    ![
-      "LIVE",
-      "SCHEDULED",
-      "MATCH COMPLETED",
-    ].includes(
-      statusText.toUpperCase()
-    )
-      ? `${teamA} vs ${teamB}: ${statusText}. Follow the Cric4All scorecard and match details.`
-      : `Follow ${teamA} vs ${teamB} live on Cric4All with score, scorecard and ball-by-ball match updates.`;
+    data?.description ||
+    `Follow ${teamA} vs ${teamB} live on Cric4All with score, scorecard and ball-by-ball match updates.`;
 
   return {
     title:
       `${teamA} vs ${teamB} Live Cricket Score | Cric4All`,
+
     description,
+
     robots: {
       index: false,
       follow: true,
       nocache: true,
     },
+
     alternates: {
       canonical:
         publicCanonical,
     },
+
     openGraph: {
       title:
         `${teamA} vs ${teamB} | Cric4All Live Score`,
@@ -107,13 +82,38 @@ export async function generateMetadata({
         "website",
       siteName:
         "Cric4All",
+      images: [
+        {
+          url:
+            imageUrl,
+          secureUrl:
+            imageUrl,
+          width:
+            1200,
+          height:
+            630,
+          type:
+            "image/png",
+          alt:
+            `${teamA} vs ${teamB} Cric4All live cricket score`,
+        },
+      ],
     },
+
     twitter: {
       card:
-        "summary",
+        "summary_large_image",
       title:
         `${teamA} vs ${teamB} | Cric4All Live Score`,
       description,
+      images: [
+        imageUrl,
+      ],
+    },
+
+    other: {
+      "og:image:secure_url":
+        imageUrl,
     },
   };
 }
