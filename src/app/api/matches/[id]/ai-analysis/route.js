@@ -12,8 +12,8 @@ const openai = new OpenAI({
   apiKey: process.env.OPENAI_API_KEY,
 });
 
-const REVIEW_VERSION = 2;
-const CACHE_PREFIX = "CRIC4ALL_AI_REVIEW_V2:";
+const REVIEW_VERSION = 3;
+const CACHE_PREFIX = "CRIC4ALL_AI_REVIEW_V3:";
 
 function cleanStatus(value) {
   return String(value || "")
@@ -357,12 +357,29 @@ function buildVerifiedContext(match, innings1, innings2, stats) {
       teamB: match.teamB?.name || "Team B",
       battingFirst: match.battingFirstTeam?.name || "",
       status: match.status,
+      /*
+       * IMPORTANT: completed-match statusText is authoritative.
+       * It already contains any revised DLS result produced by the scoring
+       * engine. Never re-decide a completed DLS winner from the raw innings
+       * totals because the second innings may have chased a revised target.
+       */
       resultText:
+        safeText(match.statusText) ||
         buildResultText(
           match,
           innings1,
           innings2
         ),
+      dls: {
+        active: /\b(?:DLS|D\/L Standard)\b/i.test(
+          safeText(match.statusText)
+        ),
+        method: /D\/L Standard/i.test(safeText(match.statusText))
+          ? "D/L Standard"
+          : /\bDLS\b/i.test(safeText(match.statusText))
+            ? "Official DLS"
+            : "",
+      },
       oversPerInnings: number(match.oversPerInnings),
       startedAt: match.startedAt,
       endedAt: match.endedAt,
@@ -570,6 +587,9 @@ function normalizeGeneratedReview(generated, fallback, context) {
     executiveSummary: {
       ...fallback.executiveSummary,
       ...(generated?.executiveSummary || {}),
+      // The scoring engine, not the language model, owns the final result.
+      headline: context.match.resultText,
+      result: context.match.resultText,
     },
     playerOfTheMatch: {
       ...fallback.playerOfTheMatch,
@@ -809,7 +829,7 @@ export async function GET(request, { params }) {
             {
               role: "system",
               content:
-                "You are Cric4All's post-match cricket analyst. Use only the verified data supplied. Never invent a player, score, wicket, over, record, milestone, percentage, or event. Keep every field concise, useful, and suitable for a compact mobile dashboard. Records and milestones must refer only to this match unless league-history data is explicitly supplied. Player of the Match identity and verified stat lines are enforced by the server; explain the recommendation without changing the player.",
+                "You are Cric4All's post-match cricket analyst. Use only the verified data supplied. Never invent a player, score, wicket, over, record, milestone, percentage, or event. The supplied match.resultText is the authoritative final result from Cric4All and MUST be treated as fact; never recalculate the winner from raw innings totals. If match.dls.active is true, explicitly describe the match as decided under the supplied DLS method and do not compare the chase against the original first-innings target. Keep every field concise, useful, and suitable for a compact mobile dashboard. Records and milestones must refer only to this match unless league-history data is explicitly supplied. Player of the Match identity and verified stat lines are enforced by the server; explain the recommendation without changing the player.",
             },
             {
               role: "user",
