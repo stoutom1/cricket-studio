@@ -116,10 +116,10 @@ export default async function Image({ params }) {
             {match.teamA?.name || "Team A"}
           </div>
           <div style={{ fontSize: 72, fontWeight: 900, marginTop: 10 }}>
-            {first.runs}/{first.wickets}
+            {`${first.runs}/${first.wickets}`}
           </div>
           <div style={{ fontSize: 21, color: "#cbd5e1" }}>
-            {first.overs} overs
+            {`${first.overs} overs`}
           </div>
         </div>
 
@@ -139,10 +139,10 @@ export default async function Image({ params }) {
             {match.teamB?.name || "Team B"}
           </div>
           <div style={{ fontSize: 72, fontWeight: 900, marginTop: 10 }}>
-            {second.runs}/{second.wickets}
+            {`${second.runs}/${second.wickets}`}
           </div>
           <div style={{ fontSize: 21, color: "#cbd5e1" }}>
-            {second.overs} overs
+            {`${second.overs} overs`}
           </div>
         </div>
       </div>
@@ -153,7 +153,7 @@ export default async function Image({ params }) {
         border: "1px solid rgba(52,211,153,.28)",
         fontSize: 28, fontWeight: 800,
       }}>
-        🏆 {result}
+        {`🏆 ${result}`}
       </div>
 
       <div style={{

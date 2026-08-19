@@ -15750,7 +15750,16 @@ async function shareCompletedMatch(match) {
     return;
   }
 
-  const url = `${window.location.origin}${path}`;
+  const configuredSiteUrl =
+    String(
+      process.env.NEXT_PUBLIC_SITE_URL ||
+      "https://cric4all.app"
+    )
+      .trim()
+      .replace(/\/+$/, "");
+
+  const url =
+    `${configuredSiteUrl}${path}`;
   const teamA = match.teamAName || match.teamA?.name || "Team A";
   const teamB = match.teamBName || match.teamB?.name || "Team B";
   const result = String(match.statusText || "").trim();
