@@ -15758,16 +15758,55 @@ async function shareCompletedMatch(match) {
       .trim()
       .replace(/\/+$/, "");
 
-  const url =
+  const cleanUrl =
     `${configuredSiteUrl}${path}`;
+
+  /*
+   * WhatsApp/social apps cache URL previews aggressively. The stable Match
+   * Center remains canonical, while this harmless query gives a corrected
+   * Phase-6 share a fresh scrape after the earlier broken OG response.
+   */
+  const url =
+    usePublicPage
+      ? `${cleanUrl}?share=3`
+      : cleanUrl;
+
   const teamA = match.teamAName || match.teamA?.name || "Team A";
   const teamB = match.teamBName || match.teamB?.name || "Team B";
   const result = String(match.statusText || "").trim();
 
+  const normalizedResult =
+    result
+      .replace(/-/g, "_")
+      .toUpperCase();
+
+  const technicalStatuses =
+    new Set([
+      "",
+      "LIVE",
+      "SCHEDULED",
+      "IN_PROGRESS",
+      "IN PROGRESS",
+      "COMPLETED",
+      "COMPLETED_LOCKED",
+      "COMPLETED LOCKED",
+      "COMPLETED_CORRECTED",
+      "COMPLETED CORRECTED",
+      "MATCH COMPLETED",
+      "LOCKED",
+    ]);
+
+  const shareableResult =
+    technicalStatuses.has(
+      normalizedResult
+    )
+      ? ""
+      : result;
+
   const text =
-    result &&
-    !["LIVE", "SCHEDULED", "MATCH COMPLETED"].includes(result.toUpperCase())
-      ? `🏏 ${teamA} vs ${teamB}\n🏆 ${result}\n\nView the Cric4All scorecard:`
+    shareableResult &&
+    !["LIVE", "SCHEDULED", "MATCH COMPLETED"].includes(shareableResult.toUpperCase())
+      ? `🏏 ${teamA} vs ${teamB}\n🏆 ${shareableResult}\n\nView the Cric4All scorecard:`
       : `🏏 ${teamA} vs ${teamB}\n\nView the Cric4All scorecard:`;
 
   fetch("/api/growth/event", {

@@ -7,6 +7,9 @@ import "@/app/public-league-wow.css";
 import SeoJsonLd from "@/components/seo-json-ld";
 import MatchShareButton from "@/components/match-share-button";
 import {
+  buildPublicMatchResult,
+} from "@/lib/public-match-result";
+import {
   absoluteCric4AllUrl,
   publicPageRobots,
   seoDate,
@@ -142,7 +145,7 @@ export async function generateMetadata({ params }) {
         {
           url:
             absoluteCric4AllUrl(
-              `/leagues/${league.slug}/matches/${match.id}/opengraph-image`
+              `/leagues/${league.slug}/matches/${match.id}/opengraph-image?v=3`
             ),
           width:
             1200,
@@ -161,7 +164,7 @@ export async function generateMetadata({ params }) {
       description,
       images: [
         absoluteCric4AllUrl(
-          `/leagues/${league.slug}/matches/${match.id}/opengraph-image`
+          `/leagues/${league.slug}/matches/${match.id}/opengraph-image?v=3`
         ),
       ],
     },
@@ -207,10 +210,9 @@ export default async function PublicMatchPage({ params }) {
   const statusClass = getStatusClass(status);
 
   const matchResultText =
-    match.statusText ||
-    (normalizeStatus(status).includes("COMPLETED")
-      ? "Match completed"
-      : "Match details will update as scoring progresses.");
+    buildPublicMatchResult(
+      match
+    );
 
   const matchInfoItems = [
     ["League", league.name],
@@ -486,7 +488,7 @@ export default async function PublicMatchPage({ params }) {
                 teamAName={match.teamA?.name || "Team A"}
                 teamBName={match.teamB?.name || "Team B"}
                 resultText={matchResultText}
-                shareUrl={canonicalMatchUrl}
+                shareUrl={`${canonicalMatchUrl}?share=3`}
               />
 
               {match.shareCode && (

@@ -1,34 +1,13 @@
 import { ImageResponse } from "next/og";
 import prisma from "@/lib/prisma";
+import {
+  buildPublicMatchResult,
+  summarizePublicInnings,
+} from "@/lib/public-match-result";
 
 export const alt = "Cric4All cricket match result";
 export const size = { width: 1200, height: 630 };
 export const contentType = "image/png";
-
-function inningsSummary(balls, inningsNo) {
-  const rows = (balls || []).filter(
-    (ball) => Number(ball.inningsNo) === Number(inningsNo)
-  );
-
-  const runs = rows.reduce(
-    (sum, ball) => sum + Number(ball.totalRuns || 0),
-    0
-  );
-
-  const wickets = rows.filter(
-    (ball) =>
-      Boolean(ball.isWicket) &&
-      String(ball.wicketType || "").toUpperCase() !== "RETIRED_HURT"
-  ).length;
-
-  const legalBalls = rows.filter((ball) => Boolean(ball.legalDelivery)).length;
-
-  return {
-    runs,
-    wickets,
-    overs: `${Math.floor(legalBalls / 6)}.${legalBalls % 6}`,
-  };
-}
 
 export default async function Image({ params }) {
   const { slug, matchId } = await params;
@@ -45,7 +24,12 @@ export default async function Image({ params }) {
         where: { id },
         take: 1,
         select: {
+          status: true,
           statusText: true,
+          battingFirstTeamId: true,
+          maxWicketsPerInnings: true,
+          teamAId: true,
+          teamBId: true,
           venueName: true,
           venueAddress: true,
           teamA: { select: { name: true } },
@@ -53,6 +37,7 @@ export default async function Image({ params }) {
           balls: {
             select: {
               inningsNo: true,
+              battingTeamId: true,
               totalRuns: true,
               isWicket: true,
               wicketType: true,
@@ -80,9 +65,22 @@ export default async function Image({ params }) {
     );
   }
 
-  const first = inningsSummary(match.balls, 1);
-  const second = inningsSummary(match.balls, 2);
-  const result = String(match.statusText || "View the full scorecard on Cric4All");
+  const first =
+    summarizePublicInnings(
+      match.balls,
+      1
+    );
+
+  const second =
+    summarizePublicInnings(
+      match.balls,
+      2
+    );
+
+  const result =
+    buildPublicMatchResult(
+      match
+    );
   const venue = String(match.venueName || match.venueAddress || "").trim();
 
   return new ImageResponse(
