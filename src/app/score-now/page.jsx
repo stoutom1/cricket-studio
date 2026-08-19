@@ -5,7 +5,63 @@ import QuickMatchStarter from "@/components/quick-match-starter";
 
 export const dynamic = "force-dynamic";
 
-export default async function ScoreNowPage() {
+export default async function ScoreNowPage({ searchParams }) {
+  const params =
+    (await searchParams) || {};
+
+  const first = (value) =>
+    Array.isArray(value)
+      ? value[0]
+      : value;
+
+  const cleanText = (value, max = 120) =>
+    String(first(value) || "")
+      .trim()
+      .slice(0, max);
+
+  const cleanPositiveInt = (value) => {
+    const number =
+      Number(first(value));
+
+    return Number.isInteger(number) &&
+      number > 0
+      ? number
+      : null;
+  };
+
+  const acquisitionContext = {
+    source:
+      cleanText(params.source, 40)
+        .toLowerCase() === "spectator"
+        ? "spectator"
+        : "",
+    originMatchId:
+      cleanPositiveInt(
+        params.originMatchId
+      ),
+    originLeagueId:
+      cleanPositiveInt(
+        params.originLeagueId
+      ),
+    originShareCode:
+      cleanText(
+        params.originShareCode,
+        100
+      ),
+    originState:
+      ["live", "completed"].includes(
+        cleanText(
+          params.originState,
+          20
+        ).toLowerCase()
+      )
+        ? cleanText(
+            params.originState,
+            20
+          ).toLowerCase()
+        : "",
+  };
+
   const session =
     await getServerSession(
       authOptions
@@ -109,6 +165,9 @@ export default async function ScoreNowPage() {
     <QuickMatchStarter
       userContext={
         userContext
+      }
+      acquisitionContext={
+        acquisitionContext
       }
     />
   );

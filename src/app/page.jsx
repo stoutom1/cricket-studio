@@ -1,5 +1,49 @@
 import Link from "next/link";
 import GrowthTracker from "@/components/growth-tracker";
+import {
+  absoluteCric4AllUrl,
+} from "@/lib/seo";
+
+export const metadata = {
+  title:
+    "Cric4All | Free Cricket Scoring, League Management & Live Scorecards",
+
+  description:
+    "Score cricket matches online or offline, manage leagues and teams, handle rain/DLS, share live scorecards, track player stats, and use AI cricket tools with Cric4All.",
+
+  alternates: {
+    canonical:
+      absoluteCric4AllUrl("/"),
+  },
+
+  robots: {
+    index: true,
+    follow: true,
+  },
+
+  openGraph: {
+    title:
+      "Cric4All | Cricket Scoring for Clubs, Leagues & Communities",
+    description:
+      "Live and offline cricket scoring, DLS/rain workflows, public scorecards, league management, player statistics and AI cricket tools.",
+    url:
+      absoluteCric4AllUrl("/"),
+    type:
+      "website",
+    siteName:
+      "Cric4All",
+  },
+
+  twitter: {
+    card:
+      "summary",
+    title:
+      "Cric4All | Cricket Scoring & League Management",
+    description:
+      "Start scoring a cricket match in about a minute. Live, offline, DLS-aware and shareable.",
+  },
+};
+
 
 export default function HomePage() {
   return (

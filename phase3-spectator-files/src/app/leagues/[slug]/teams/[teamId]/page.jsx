@@ -2,11 +2,6 @@ import prisma from "@/lib/prisma";
 import { notFound } from "next/navigation";
 import Link from "next/link";
 import "@/app/public-league-wow.css";
-import SeoJsonLd from "@/components/seo-json-ld";
-import {
-  absoluteCric4AllUrl,
-  publicPageRobots,
-} from "@/lib/seo";
 
 function normalizeStatus(status) {
   return String(status || "SCHEDULED").toUpperCase();
@@ -51,50 +46,9 @@ export async function generateMetadata({ params }) {
     };
   }
 
-  const isPublic =
-    String(
-      league.visibility ||
-      ""
-    ).toUpperCase() ===
-    "PUBLIC";
-
-  const canonical =
-    absoluteCric4AllUrl(
-      `/leagues/${league.slug}/teams/${team.id}`
-    );
-
-  const description =
-    `View ${team.name} cricket team in ${league.name}: squad, public player profiles, matches, results and team record on Cric4All.`;
-
   return {
-    title:
-      `${team.name} Cricket Team | Squad, Matches & Results | Cric4All`,
-    description,
-    alternates: {
-      canonical,
-    },
-    robots:
-      publicPageRobots(
-        isPublic
-      ),
-    openGraph: {
-      title:
-        `${team.name} Cricket Team | ${league.name}`,
-      description,
-      url:
-        canonical,
-      type:
-        "website",
-      siteName:
-        "Cric4All",
-    },
-    twitter: {
-      card:
-        "summary",
-      title:
-        `${team.name} Cricket Team | Cric4All`,
-      description,
-    },
+    title: `${team.name} | ${league.name} | Cric4All`,
+    description: `View ${team.name} team roster, matches, results, and public cricket profile for ${league.name}.`,
   };
 }
 
@@ -160,61 +114,8 @@ export default async function PublicTeamPage({ params }) {
     ? Math.round((wins / completedMatches.length) * 100)
     : 0;
 
-  const isPublic =
-    String(
-      league.visibility ||
-      ""
-    ).toUpperCase() ===
-    "PUBLIC";
-
-  const jsonLd =
-    isPublic
-      ? {
-          "@context":
-            "https://schema.org",
-          "@type":
-            "SportsTeam",
-          name:
-            team.name,
-          sport:
-            "Cricket",
-          url:
-            absoluteCric4AllUrl(
-              `/leagues/${league.slug}/teams/${team.id}`
-            ),
-          member:
-            (team.players || []).map(
-              (player) => ({
-                "@type":
-                  "Person",
-                name:
-                  player.name,
-                url:
-                  absoluteCric4AllUrl(
-                    `/leagues/${league.slug}/players/${player.id}`
-                  ),
-              })
-            ),
-          memberOf: {
-            "@type":
-              "SportsOrganization",
-            name:
-              league.name,
-            sport:
-              "Cricket",
-            url:
-              absoluteCric4AllUrl(
-                `/leagues/${league.slug}`
-              ),
-          },
-        }
-      : null;
-
   return (
-    <>
-      <SeoJsonLd data={jsonLd} />
-
-      <main className="stp-page">
+    <main className="stp-page">
       <section className="stp-shell">
         <header className="stp-hero">
           <div className="stp-topline">
@@ -347,7 +248,6 @@ export default async function PublicTeamPage({ params }) {
           </footer>
         </div>
       </section>
-      </main>
-    </>
+    </main>
   );
 }

@@ -15,11 +15,6 @@ import {
   authOptions,
 } from "@/lib/auth";
 import PlayerCardActions from "./PlayerCardActions";
-import SeoJsonLd from "@/components/seo-json-ld";
-import {
-  absoluteCric4AllUrl,
-  publicPageRobots,
-} from "@/lib/seo";
 import "@/app/spectator-player-final.css";
 import "@/app/player-milestones-final.css";
 
@@ -1289,50 +1284,12 @@ export async function generateMetadata({
     };
   }
 
-  const isPublic =
-    String(
-      league.visibility ||
-      ""
-    ).toUpperCase() ===
-    "PUBLIC";
-
-  const canonical =
-    absoluteCric4AllUrl(
-      `/leagues/${league.slug}/players/${player.id}`
-    );
-
-  const description =
-    `View ${player.name}'s cricket player profile for ${player.teamName} in ${league.name}: batting, bowling, fielding, achievements, form and match history on Cric4All.`;
-
   return {
     title:
-      `${player.name} Cricket Player Profile | ${player.teamName} | Cric4All`,
-    description,
-    alternates: {
-      canonical,
-    },
-    robots:
-      publicPageRobots(
-        isPublic
-      ),
-    openGraph: {
-      title:
-        `${player.name} Cricket Player Profile | Cric4All`,
-      description,
-      url:
-        canonical,
-      type:
-        "profile",
-      siteName:
-        "Cric4All",
-    },
-    twitter: {
-      card:
-        "summary",
-      title:
-        `${player.name} Cricket Player Profile | Cric4All`,
-      description,
-    },
+      `${player.name} Cricket Card | ${player.teamName} | Cric4All`,
+
+    description:
+      `Explore ${player.name}'s interactive Cric4All player card, rating, achievements, career statistics, form and match history.`,
   };
 }
 
@@ -1878,48 +1835,8 @@ export default async function PublicPlayerPage({
   const shareText =
     `${player.name} on Cric4All: ${stats.runs} runs, ${stats.wickets} wickets, ${overallRating}/10 rating and ${unlocked.length} achievements.`;
 
-  const isPublicForSeo =
-    String(
-      league.visibility ||
-      ""
-    ).toUpperCase() ===
-    "PUBLIC";
-
-  const playerJsonLd =
-    isPublicForSeo
-      ? {
-          "@context":
-            "https://schema.org",
-          "@type":
-            "Person",
-          name:
-            player.name,
-          url:
-            absoluteCric4AllUrl(
-              `/leagues/${league.slug}/players/${player.id}`
-            ),
-          memberOf: {
-            "@type":
-              "SportsTeam",
-            name:
-              player.teamName,
-            sport:
-              "Cricket",
-            url:
-              player.teamId
-                ? absoluteCric4AllUrl(
-                    `/leagues/${league.slug}/teams/${player.teamId}`
-                  )
-                : undefined,
-          },
-        }
-      : null;
-
   return (
-    <>
-      <SeoJsonLd data={playerJsonLd} />
-
-      <main className="spf-page">
+    <main className="spf-page">
       <section className="spf-shell">
         <header className="spf-hero">
           <div className="spf-topbar">
@@ -3001,7 +2918,6 @@ export default async function PublicPlayerPage({
           </footer>
         </div>
       </section>
-      </main>
-    </>
+    </main>
   );
 }

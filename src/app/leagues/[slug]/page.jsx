@@ -8,6 +8,11 @@ import {
   summarizeInningsDetailed,
   getBattingTeamId,
 } from "@/lib/scoring";
+import SeoJsonLd from "@/components/seo-json-ld";
+import {
+  absoluteCric4AllUrl,
+  publicPageRobots,
+} from "@/lib/seo";
 
 export async function generateMetadata({ params }) {
   const { slug } = await params;
@@ -20,8 +25,18 @@ export async function generateMetadata({ params }) {
       },
     },
     select: {
+      id: true,
       name: true,
+      slug: true,
       visibility: true,
+      createdAt: true,
+      _count: {
+        select: {
+          teams: true,
+          matches: true,
+          leagueFollowers: true,
+        },
+      },
     },
   });
 
@@ -31,13 +46,49 @@ export async function generateMetadata({ params }) {
     };
   }
 
+  const isPublic =
+    String(
+      league.visibility ||
+      ""
+    ).toUpperCase() ===
+    "PUBLIC";
+
+  const canonical =
+    absoluteCric4AllUrl(
+      `/leagues/${league.slug}`
+    );
+
+  const description =
+    `Follow ${league.name} on Cric4All: cricket matches, live scorecards, results, points table, teams, player statistics and league leaders. ${league._count.teams} team${league._count.teams === 1 ? "" : "s"} and ${league._count.matches} recorded match${league._count.matches === 1 ? "" : "es"}.`;
+
   return {
-    title: `${league.name} | Cric4All`,
-    description: `Follow ${league.name} cricket matches, scorecards, points table, stats, teams, and leaders on Cric4All.`,
+    title:
+      `${league.name} Cricket League | Scores, Teams & Stats | Cric4All`,
+    description,
+    alternates: {
+      canonical,
+    },
+    robots:
+      publicPageRobots(
+        isPublic
+      ),
     openGraph: {
-      title: `${league.name} | Cric4All`,
-      description: `Live cricket league portal for ${league.name}.`,
-      type: "website",
+      title:
+        `${league.name} Cricket League | Cric4All`,
+      description,
+      url:
+        canonical,
+      type:
+        "website",
+      siteName:
+        "Cric4All",
+    },
+    twitter: {
+      card:
+        "summary",
+      title:
+        `${league.name} Cricket League | Cric4All`,
+      description,
     },
   };
 }
@@ -129,5 +180,61 @@ const leagueForClient = {
 
   const safeLeague = JSON.parse(JSON.stringify(league));
 
-  return <PublicLeagueViewClient league={leagueForClient} />;
+  const isPublic =
+    String(
+      league.visibility ||
+      ""
+    ).toUpperCase() ===
+    "PUBLIC";
+
+  const jsonLd =
+    isPublic
+      ? {
+          "@context":
+            "https://schema.org",
+          "@type":
+            "SportsOrganization",
+          name:
+            league.name,
+          url:
+            absoluteCric4AllUrl(
+              `/leagues/${league.slug}`
+            ),
+          sport:
+            "Cricket",
+          description:
+            `Public cricket league on Cric4All with ${league.teams.length} team${league.teams.length === 1 ? "" : "s"} and ${league.matches.length} recorded match${league.matches.length === 1 ? "" : "es"}.`,
+          subOrganization:
+            league.teams.map(
+              (team) => ({
+                "@type":
+                  "SportsTeam",
+                name:
+                  team.name,
+                sport:
+                  "Cricket",
+                url:
+                  absoluteCric4AllUrl(
+                    `/leagues/${league.slug}/teams/${team.id}`
+                  ),
+              })
+            ),
+        }
+      : null;
+
+  return (
+    <>
+      <SeoJsonLd
+        data={
+          jsonLd
+        }
+      />
+
+      <PublicLeagueViewClient
+        league={
+          leagueForClient
+        }
+      />
+    </>
+  );
 }

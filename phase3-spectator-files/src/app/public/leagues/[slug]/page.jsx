@@ -1,7 +1,7 @@
-import { permanentRedirect } from "next/navigation";
+import { redirect } from "next/navigation";
 
 export default async function OldPublicLeagueRedirect({ params }) {
   const { slug } = await params;
 
-  permanentRedirect(`/leagues/${slug}`);
+  redirect(`/leagues/${slug}`);
 }

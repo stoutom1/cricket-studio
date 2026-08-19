@@ -1,0 +1,286 @@
+/*
+ * Cric4All Super Over scorecard layout.
+ * Desktop styles intentionally match the existing presentation.
+ * The mobile-only rules below prevent the scorecard from widening the page.
+ */
+
+.super-over-scorecard-panel {
+  margin-top: 16px;
+  padding: 16px;
+  border: 1px solid rgba(245, 158, 11, 0.45);
+  border-radius: 14px;
+  background: rgba(120, 53, 15, 0.16);
+  width: 100%;
+  max-width: 100%;
+  min-width: 0;
+  box-sizing: border-box;
+  overflow: hidden;
+}
+
+.super-over-scorecard-heading {
+  display: flex;
+  justify-content: space-between;
+  gap: 12px;
+  flex-wrap: wrap;
+  align-items: center;
+  min-width: 0;
+}
+
+.super-over-scorecard-round {
+  margin-top: 14px;
+  padding-top: 14px;
+  border-top: 1px solid rgba(255, 255, 255, 0.12);
+  min-width: 0;
+  max-width: 100%;
+}
+
+.super-over-round-title {
+  display: block;
+}
+
+.super-over-innings-details {
+  margin-top: 12px;
+  border: 1px solid rgba(255, 255, 255, 0.10);
+  border-radius: 12px;
+  padding: 12px;
+  width: 100%;
+  max-width: 100%;
+  min-width: 0;
+  box-sizing: border-box;
+  overflow: hidden;
+}
+
+.super-over-innings-summary {
+  cursor: pointer;
+  font-weight: 700;
+  min-width: 0;
+}
+
+.super-over-stat-section,
+.super-over-ball-section {
+  margin-top: 14px;
+  width: 100%;
+  max-width: 100%;
+  min-width: 0;
+}
+
+.super-over-stat-section:first-of-type {
+  margin-top: 12px;
+}
+
+.super-over-table-wrap {
+  margin-top: 8px;
+  width: 100%;
+  max-width: 100%;
+  min-width: 0;
+  overflow-x: auto;
+  -webkit-overflow-scrolling: touch;
+}
+
+.super-over-table {
+  margin-top: 0;
+  width: 100%;
+}
+
+.super-over-ball-list {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px;
+  margin-top: 8px;
+  width: 100%;
+  min-width: 0;
+}
+
+.super-over-ball-badge {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  min-width: 34px;
+  min-height: 34px;
+  padding: 4px 8px;
+  border-radius: 8px;
+  border: 1px solid rgba(255, 255, 255, 0.14);
+  font-weight: 700;
+  box-sizing: border-box;
+}
+
+.super-over-round-result {
+  display: block;
+  margin-top: 10px;
+}
+
+/* MOBILE ONLY — desktop/laptop layout is unchanged. */
+@media (max-width: 700px) {
+  .super-over-scorecard-panel {
+    margin-top: 12px;
+    padding: 10px;
+    border-radius: 12px;
+  }
+
+  .super-over-scorecard-heading {
+    display: grid;
+    grid-template-columns: minmax(0, 1fr);
+    gap: 6px;
+    align-items: start;
+  }
+
+  .super-over-scorecard-heading > span {
+    display: block;
+    max-width: 100%;
+    overflow-wrap: anywhere;
+    line-height: 1.35;
+  }
+
+  .super-over-scorecard-round {
+    margin-top: 12px;
+    padding-top: 12px;
+  }
+
+  .super-over-innings-details {
+    margin-top: 10px;
+    padding: 9px;
+    border-radius: 10px;
+  }
+
+  .super-over-innings-summary {
+    display: grid;
+    grid-template-columns: minmax(0, 1fr);
+    gap: 2px;
+    padding-right: 2px;
+    line-height: 1.3;
+    overflow-wrap: anywhere;
+  }
+
+  .super-over-team-name,
+  .super-over-team-score {
+    min-width: 0;
+    max-width: 100%;
+    overflow-wrap: anywhere;
+  }
+
+  .super-over-section-label {
+    display: block;
+    margin-bottom: 8px;
+  }
+
+  /*
+   * On phones each statistics row becomes a compact card. This keeps every
+   * value visible without changing desktop tables or requiring sideways page
+   * scrolling.
+   */
+  .super-over-table-wrap {
+    overflow: visible;
+  }
+
+  .super-over-table,
+  .super-over-table tbody,
+  .super-over-table tr,
+  .super-over-table td {
+    display: block;
+    width: 100%;
+    max-width: 100%;
+    min-width: 0 !important;
+    box-sizing: border-box;
+  }
+
+  .super-over-table {
+    table-layout: auto;
+    border-collapse: separate;
+    border-spacing: 0 8px;
+  }
+
+  .super-over-table thead {
+    display: none;
+  }
+
+  .super-over-table tbody {
+    display: grid;
+    gap: 8px;
+  }
+
+  .super-over-table tr {
+    display: grid;
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+    gap: 0;
+    overflow: hidden;
+    border: 1px solid rgba(255, 255, 255, 0.10);
+    border-radius: 9px;
+    background: rgba(6, 16, 34, 0.32);
+  }
+
+  .super-over-table td {
+    position: relative;
+    padding: 22px 8px 7px !important;
+    border: 0 !important;
+    border-bottom: 1px solid rgba(255, 255, 255, 0.07) !important;
+    overflow-wrap: anywhere;
+    white-space: normal !important;
+    text-align: left !important;
+    font-size: 12px;
+    line-height: 1.25;
+  }
+
+  .super-over-table td::before {
+    content: attr(data-label);
+    position: absolute;
+    top: 6px;
+    left: 8px;
+    right: 8px;
+    color: rgba(191, 219, 254, 0.78);
+    font-size: 9px;
+    font-weight: 800;
+    line-height: 1;
+    letter-spacing: 0.06em;
+    text-transform: uppercase;
+  }
+
+  .super-over-batting-table td:first-child,
+  .super-over-batting-table td:last-child,
+  .super-over-bowling-table td:first-child {
+    grid-column: 1 / -1;
+  }
+
+  .super-over-table td:last-child {
+    border-bottom: 0 !important;
+  }
+
+  .super-over-ball-list {
+    gap: 6px;
+  }
+
+  .super-over-ball-badge {
+    min-width: 32px;
+    min-height: 32px;
+    padding: 3px 7px;
+    font-size: 12px;
+  }
+}
+
+/* Very narrow phones such as 320px logical-width devices. */
+@media (max-width: 360px) {
+  .super-over-scorecard-panel {
+    padding: 8px;
+  }
+
+  .super-over-innings-details {
+    padding: 7px;
+  }
+
+  .super-over-table td {
+    padding-left: 7px !important;
+    padding-right: 7px !important;
+    font-size: 11px;
+  }
+
+  .super-over-table td::before {
+    left: 7px;
+    right: 7px;
+    font-size: 8px;
+  }
+
+  .super-over-ball-badge {
+    min-width: 30px;
+    min-height: 30px;
+    padding: 2px 6px;
+  }
+}

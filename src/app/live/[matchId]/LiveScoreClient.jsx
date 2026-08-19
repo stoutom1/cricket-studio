@@ -3,6 +3,7 @@
 import {useEffect,useMemo,useRef,useState,} from "react";
 import { buildMatchInsights } from "@/lib/match-insights";
 import "@/app/live-score-premium.css";
+import { trackGrowthEvent } from "@/components/growth-tracker";
 
 const FINAL_MATCH_STATUSES = new Set([
   "ABANDONED",
@@ -799,6 +800,56 @@ export default function LiveScoreClient({
   ] = useState(false);
 
   const finalViewInitializedRef = useRef(false);
+  const spectatorViewTrackedRef = useRef(false);
+
+  /*
+   * Phase 3 acquisition:
+   * Track one spectator view for this mounted public scorecard after the API
+   * resolves the real numeric match ID / league ID. Analytics failure must
+   * never affect the live score experience.
+   */
+  useEffect(() => {
+    const resolvedMatchId = Number(scoreboard?.match?.id);
+
+    if (
+      spectatorViewTrackedRef.current ||
+      !Number.isInteger(resolvedMatchId) ||
+      resolvedMatchId <= 0
+    ) {
+      return;
+    }
+
+    const storageKey =
+      `cric4all_spectator_view_${resolvedMatchId}`;
+
+    try {
+      if (sessionStorage.getItem(storageKey)) {
+        spectatorViewTrackedRef.current = true;
+        return;
+      }
+
+      sessionStorage.setItem(storageKey, "1");
+    } catch {
+      // sessionStorage can be unavailable in privacy-restricted browsers.
+    }
+
+    spectatorViewTrackedRef.current = true;
+
+    trackGrowthEvent("SPECTATOR_VIEW", {
+      source: "LIVE_SCORECARD",
+      matchId: resolvedMatchId,
+      leagueId: scoreboard?.match?.leagueId,
+      metadata: {
+        shareCode: scoreboard?.match?.shareCode || null,
+        publicRouteId: String(matchId || ""),
+      },
+    });
+  }, [
+    matchId,
+    scoreboard?.match?.id,
+    scoreboard?.match?.leagueId,
+    scoreboard?.match?.shareCode,
+  ]);
 
   useEffect(() => {
     let intervalId = null;
@@ -1079,6 +1130,43 @@ const finalResultText =
     ? "The match was abandoned."
     : "Match completed.");
 
+const liveDls =
+  scoreboard?.summary?.dls ||
+  scoreboard?.match?.dls ||
+  null;
+
+const liveDlsActive =
+  Boolean(
+    liveDls?.active
+  );
+
+const liveDlsMethodLabel =
+  liveDls?.methodLabel ||
+  (
+    liveDlsActive
+      ? "D/L Standard"
+      : ""
+  );
+
+const liveStatusText =
+  isMatchFinished &&
+  matchStatus !== "ABANDONED" &&
+  finalResultText
+    ? (
+        String(finalResultText)
+          .trim()
+          .startsWith("🏆")
+          ? finalResultText
+          : `🏆 ${finalResultText}`
+      )
+    : (
+        scoreboard?.summary
+          ?.statusText ||
+        scoreboard?.match
+          ?.statusText ||
+        "Match in progress"
+      );
+
   const chaseRunsNeeded =
     scoreboard?.currentInnings === 2 &&
     scoreboard?.summary?.target
@@ -1115,6 +1203,65 @@ const finalResultText =
           : matchStatus === "COMPLETED"
             ? "MATCH COMPLETED"
             : "LIVE";
+
+  const spectatorScoreNowHref = (() => {
+    const params = new URLSearchParams();
+
+    params.set("source", "spectator");
+
+    if (scoreboard?.match?.id) {
+      params.set(
+        "originMatchId",
+        String(scoreboard.match.id)
+      );
+    }
+
+    if (scoreboard?.match?.leagueId) {
+      params.set(
+        "originLeagueId",
+        String(scoreboard.match.leagueId)
+      );
+    }
+
+    if (scoreboard?.match?.shareCode) {
+      params.set(
+        "originShareCode",
+        String(scoreboard.match.shareCode)
+      );
+    }
+
+    params.set(
+      "originState",
+      isMatchFinished ? "completed" : "live"
+    );
+
+    return `/score-now?${params.toString()}`;
+  })();
+
+  function openSpectatorScoreNow() {
+    trackGrowthEvent(
+      "SPECTATOR_CTA_CLICKED",
+      {
+        source: isMatchFinished
+          ? "COMPLETED_SCORECARD_CTA"
+          : "LIVE_SCORECARD_CTA",
+        matchId:
+          scoreboard?.match?.id,
+        leagueId:
+          scoreboard?.match?.leagueId,
+        metadata: {
+          shareCode:
+            scoreboard?.match?.shareCode || null,
+          matchState:
+            isMatchFinished
+              ? "completed"
+              : "live",
+          cta:
+            "SCORE_YOUR_MATCH_FREE",
+        },
+      }
+    );
+  }
 
   const strikerValue =
     scoreboard?.currentState
@@ -1386,10 +1533,60 @@ const finalResultText =
         </div>
 
         <p className="live-status-text">
-          {scoreboard?.summary
-            ?.statusText ||
-            "Match in progress"}
+          {liveStatusText}
         </p>
+
+        {liveDlsActive &&
+        !superOver?.active &&
+        !superOver?.tied ? (
+          <div
+            className="live-chase-card"
+            style={{
+              borderColor:
+                "rgba(56, 189, 248, 0.38)",
+              background:
+                "rgba(14, 116, 144, 0.10)",
+            }}
+          >
+            <span>
+              🌧 {liveDlsMethodLabel}
+            </span>
+
+            <strong>
+              {scoreboard?.currentInnings === 2 &&
+              scoreboard?.summary?.target
+                ? `Revised target ${scoreboard.summary.target}`
+                : "Rain-adjusted match"}
+            </strong>
+
+            <small>
+              {scoreboard?.currentInnings === 2 &&
+              Number(
+                liveDls?.innings2Allocation ||
+                0
+              ) > 0
+                ? `${liveDls.innings2Allocation} over${
+                    Number(
+                      liveDls.innings2Allocation
+                    ) === 1
+                      ? ""
+                      : "s"
+                  } allocation`
+                : Number(
+                    liveDls?.revisedOvers ||
+                    0
+                  ) > 0
+                  ? `${liveDls.revisedOvers} revised over${
+                      Number(
+                        liveDls.revisedOvers
+                      ) === 1
+                        ? ""
+                        : "s"
+                    }`
+                  : "DLS adjustment active"}
+            </small>
+          </div>
+        ) : null}
 
         {superOver?.exists && !isMatchFinished ? (
           <div
@@ -1449,7 +1646,13 @@ const finalResultText =
           />
 
           <InfoPill
-            label="Target"
+            label={
+              liveDlsActive &&
+              scoreboard?.currentInnings ===
+                2
+                ? "DLS Target"
+                : "Target"
+            }
             value={
               scoreboard?.currentInnings ===
               2
@@ -1703,14 +1906,18 @@ const finalResultText =
             )
           }
         >
-          {(superOver?.completed ? finalResultText : matchInsights?.resultText) ? (
+          {(isMatchFinished
+            ? finalResultText
+            : matchInsights?.resultText) ? (
             <div className="insight-result">
               <span>
                 🏆 Match Result
               </span>
 
               <strong>
-                {superOver?.completed ? finalResultText : matchInsights.resultText}
+                {isMatchFinished
+                  ? finalResultText
+                  : matchInsights.resultText}
               </strong>
             </div>
           ) : null}
@@ -2347,6 +2554,180 @@ const finalResultText =
           </div>
         </AccordionSection>
       ) : null}
+
+      {!tvMode ? (
+        <section
+          className="spectator-growth-card"
+          aria-label="Score your own cricket match with Cric4All"
+        >
+          <div className="spectator-growth-copy">
+            <span className="spectator-growth-kicker">
+              🏏 CRIC4ALL
+            </span>
+
+            <strong>
+              {isMatchFinished
+                ? "Want a scorecard like this for your team?"
+                : "Enjoying the live score?"}
+            </strong>
+
+            <p>
+              {isMatchFinished
+                ? "Set up your own match and start ball-by-ball scoring in about a minute."
+                : "Create your own match and share a live scorecard with your players and spectators."}
+            </p>
+          </div>
+
+          <a
+            href={spectatorScoreNowHref}
+            className="spectator-growth-cta"
+            onClick={openSpectatorScoreNow}
+          >
+            <span>
+              Score Your Match Free
+            </span>
+
+            <b aria-hidden="true">
+              →
+            </b>
+          </a>
+        </section>
+      ) : null}
+
+      <style jsx>{`
+        .spectator-growth-card {
+          width: 100%;
+          box-sizing: border-box;
+          display: flex;
+          align-items: center;
+          justify-content: space-between;
+          gap: 18px;
+          margin: 18px 0 4px;
+          padding: 18px;
+          border: 1px solid rgba(56, 189, 248, 0.24);
+          border-radius: 18px;
+          background:
+            linear-gradient(
+              135deg,
+              rgba(14, 116, 144, 0.15),
+              rgba(30, 64, 175, 0.13)
+            );
+          overflow: hidden;
+        }
+
+        .spectator-growth-copy {
+          min-width: 0;
+          flex: 1 1 auto;
+        }
+
+        .spectator-growth-kicker {
+          display: block;
+          margin-bottom: 5px;
+          color: #7dd3fc;
+          font-size: 11px;
+          font-weight: 900;
+          letter-spacing: 0.08em;
+        }
+
+        .spectator-growth-copy strong {
+          display: block;
+          color: #f8fafc;
+          font-size: clamp(16px, 2vw, 20px);
+          line-height: 1.25;
+          overflow-wrap: anywhere;
+        }
+
+        .spectator-growth-copy p {
+          max-width: 680px;
+          margin: 6px 0 0;
+          color: #b8c7db;
+          font-size: 13px;
+          line-height: 1.5;
+          overflow-wrap: anywhere;
+        }
+
+        .spectator-growth-cta {
+          flex: 0 0 auto;
+          min-height: 46px;
+          box-sizing: border-box;
+          display: inline-flex;
+          align-items: center;
+          justify-content: center;
+          gap: 9px;
+          padding: 11px 16px;
+          border: 1px solid rgba(125, 211, 252, 0.65);
+          border-radius: 12px;
+          background:
+            linear-gradient(
+              135deg,
+              #2563eb,
+              #22b8cf
+            );
+          color: #ffffff;
+          font-size: 13px;
+          font-weight: 900;
+          line-height: 1.2;
+          text-align: center;
+          text-decoration: none;
+          box-shadow:
+            0 10px 24px rgba(2, 132, 199, 0.16);
+          transition:
+            transform 0.16s ease,
+            filter 0.16s ease;
+        }
+
+        .spectator-growth-cta:hover {
+          filter: brightness(1.08);
+          transform: translateY(-1px);
+        }
+
+        .spectator-growth-cta:focus-visible {
+          outline: 3px solid rgba(125, 211, 252, 0.38);
+          outline-offset: 3px;
+        }
+
+        .spectator-growth-cta b {
+          font-size: 17px;
+          line-height: 1;
+        }
+
+        @media (max-width: 680px) {
+          .spectator-growth-card {
+            align-items: stretch;
+            flex-direction: column;
+            gap: 13px;
+            margin-top: 14px;
+            padding: 14px;
+            border-radius: 15px;
+          }
+
+          .spectator-growth-copy strong {
+            font-size: 16px;
+          }
+
+          .spectator-growth-copy p {
+            font-size: 12.5px;
+            line-height: 1.45;
+          }
+
+          .spectator-growth-cta {
+            width: 100%;
+            min-height: 48px;
+            padding: 12px 14px;
+            white-space: normal;
+          }
+        }
+
+        @media (max-width: 390px) {
+          .spectator-growth-card {
+            padding: 12px;
+          }
+
+          .spectator-growth-cta {
+            font-size: 12.5px;
+          }
+        }
+      `}</style>
 
       {error ? (
         <p className="live-inline-error">

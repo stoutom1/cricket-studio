@@ -4,12 +4,6 @@ import prisma from "@/lib/prisma";
 import { notFound } from "next/navigation";
 import Link from "next/link";
 import "@/app/public-league-wow.css";
-import SeoJsonLd from "@/components/seo-json-ld";
-import {
-  absoluteCric4AllUrl,
-  publicPageRobots,
-  seoDate,
-} from "@/lib/seo";
 
 function normalizeStatus(status) {
   return String(status || "SCHEDULED").toUpperCase();
@@ -86,65 +80,9 @@ export async function generateMetadata({ params }) {
     };
   }
 
-  const isPublic =
-    String(
-      league.visibility ||
-      ""
-    ).toUpperCase() ===
-    "PUBLIC";
-
-  const canonical =
-    absoluteCric4AllUrl(
-      `/leagues/${league.slug}/matches/${match.id}`
-    );
-
-  const statusText =
-    String(
-      match.statusText ||
-      ""
-    ).trim();
-
-  const description =
-    statusText &&
-    ![
-      "LIVE",
-      "SCHEDULED",
-      "MATCH COMPLETED",
-    ].includes(
-      statusText.toUpperCase()
-    )
-      ? `${match.teamA?.name} vs ${match.teamB?.name}: ${statusText}. View the cricket scorecard, match status and details from ${league.name} on Cric4All.`
-      : `Follow ${match.teamA?.name} vs ${match.teamB?.name} in ${league.name}. View the cricket match center, scorecard, status and live-score link on Cric4All.`;
-
   return {
-    title:
-      `${match.teamA?.name} vs ${match.teamB?.name} Cricket Scorecard | ${league.name} | Cric4All`,
-    description,
-    alternates: {
-      canonical,
-    },
-    robots:
-      publicPageRobots(
-        isPublic
-      ),
-    openGraph: {
-      title:
-        `${match.teamA?.name} vs ${match.teamB?.name} | ${league.name}`,
-      description,
-      url:
-        canonical,
-      type:
-        "website",
-      siteName:
-        "Cric4All",
-    },
-    twitter: {
-      card:
-        "summary",
-      title:
-        `${match.teamA?.name} vs ${match.teamB?.name} | Cric4All`,
-      description,
-    },
+    title: `${match.teamA?.name} vs ${match.teamB?.name} | ${league.name} | Cric4All`,
+    description: `View ${match.teamA?.name} vs ${match.teamB?.name} match center, scorecard, series, and match status for ${league.name}.`,
   };
 }
 
@@ -199,107 +137,8 @@ export default async function PublicMatchPage({ params }) {
     ["Scorecard", match.shareCode ? "Available" : "Not shared yet"],
   ];
 
-  const isPublic =
-    String(
-      league.visibility ||
-      ""
-    ).toUpperCase() ===
-    "PUBLIC";
-
-  const jsonLd =
-    isPublic
-      ? {
-          "@context":
-            "https://schema.org",
-          "@type":
-            "SportsEvent",
-          name:
-            `${match.teamA?.name || "Team A"} vs ${match.teamB?.name || "Team B"}`,
-          sport:
-            "Cricket",
-          url:
-            absoluteCric4AllUrl(
-              `/leagues/${league.slug}/matches/${match.id}`
-            ),
-          startDate:
-            seoDate(
-              match.scheduledAt ||
-              match.createdAt
-            ),
-          eventStatus:
-            normalizeStatus(status) ===
-            "SCHEDULED"
-              ? "https://schema.org/EventScheduled"
-              : [
-                  "COMPLETED",
-                  "COMPLETED_LOCKED",
-                  "COMPLETED_CORRECTED",
-                ].includes(
-                  normalizeStatus(status)
-                )
-                ? "https://schema.org/EventCompleted"
-                : normalizeStatus(status) ===
-                    "ABANDONED"
-                  ? "https://schema.org/EventCancelled"
-                  : "https://schema.org/EventScheduled",
-          competitor: [
-            {
-              "@type":
-                "SportsTeam",
-              name:
-                match.teamA?.name ||
-                "Team A",
-              sport:
-                "Cricket",
-              url:
-                match.teamA?.id
-                  ? absoluteCric4AllUrl(
-                      `/leagues/${league.slug}/teams/${match.teamA.id}`
-                    )
-                  : undefined,
-            },
-            {
-              "@type":
-                "SportsTeam",
-              name:
-                match.teamB?.name ||
-                "Team B",
-              sport:
-                "Cricket",
-              url:
-                match.teamB?.id
-                  ? absoluteCric4AllUrl(
-                      `/leagues/${league.slug}/teams/${match.teamB.id}`
-                    )
-                  : undefined,
-            },
-          ],
-          organizer: {
-            "@type":
-              "SportsOrganization",
-            name:
-              league.name,
-            sport:
-              "Cricket",
-            url:
-              absoluteCric4AllUrl(
-                `/leagues/${league.slug}`
-              ),
-          },
-          description:
-            matchResultText,
-        }
-      : null;
-
   return (
-    <>
-      <SeoJsonLd
-        data={
-          jsonLd
-        }
-      />
-
-      <main className="smp-page">
+    <main className="smp-page">
       <section className="smp-shell">
         <header className="smp-hero">
           <div className="smp-topline">
@@ -484,7 +323,6 @@ export default async function PublicMatchPage({ params }) {
           </aside>
         </div>
       </section>
-      </main>
-    </>
+    </main>
   );
 }

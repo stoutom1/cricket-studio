@@ -413,6 +413,9 @@ export async function GET(
     externalActivity,
     spectatorViews,
     spectatorCtaClicks,
+    spectatorScoreNowViews,
+    spectatorQuickMatchStarts,
+    spectatorQuickMatchCreated,
     quickMatchViews,
     quickMatchStarts,
     quickMatchAuthClicks,
@@ -486,6 +489,42 @@ export async function GET(
         where: {
           eventType:
             "SPECTATOR_CTA_CLICKED",
+          createdAt: {
+            gte: since,
+          },
+        },
+      }),
+
+      prisma.growthEvent.count({
+        where: {
+          eventType:
+            "QUICK_MATCH_VIEW",
+          source:
+            "SPECTATOR_SCORE_NOW",
+          createdAt: {
+            gte: since,
+          },
+        },
+      }),
+
+      prisma.growthEvent.count({
+        where: {
+          eventType:
+            "QUICK_MATCH_STARTED",
+          source:
+            "SPECTATOR_SCORE_NOW",
+          createdAt: {
+            gte: since,
+          },
+        },
+      }),
+
+      prisma.growthEvent.count({
+        where: {
+          eventType:
+            "QUICK_MATCH_CREATED",
+          source:
+            "SPECTATOR_SCORE_NOW_CREATED",
           createdAt: {
             gte: since,
           },
@@ -570,6 +609,9 @@ export async function GET(
 
       spectatorViews,
       spectatorCtaClicks,
+      spectatorScoreNowViews,
+      spectatorQuickMatchStarts,
+      spectatorQuickMatchCreated,
       quickMatchViews,
       quickMatchStarts,
       quickMatchAuthClicks,
@@ -585,6 +627,30 @@ export async function GET(
         spectatorToCta:
           pct(
             spectatorCtaClicks,
+            spectatorViews
+          ),
+
+        spectatorCtaToScoreNow:
+          pct(
+            spectatorScoreNowViews,
+            spectatorCtaClicks
+          ),
+
+        spectatorScoreNowToStart:
+          pct(
+            spectatorQuickMatchStarts,
+            spectatorScoreNowViews
+          ),
+
+        spectatorStartToCreated:
+          pct(
+            spectatorQuickMatchCreated,
+            spectatorQuickMatchStarts
+          ),
+
+        spectatorViewToCreated:
+          pct(
+            spectatorQuickMatchCreated,
             spectatorViews
           ),
 

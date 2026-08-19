@@ -27225,7 +27225,7 @@ onClick={() => {
                   background: "rgba(7,89,133,.12)",
                 }}
               >
-                <strong>👀 Spectator acquisition</strong>
+                <strong>👀 Spectator → Cric4All</strong>
 
                 <p
                   className="muted"
@@ -27234,9 +27234,34 @@ onClick={() => {
                     lineHeight: 1.5,
                   }}
                 >
-                  {growthData.all?.spectatorViews ?? 0} tracked views ·{" "}
+                  {growthData.all?.spectatorViews ?? 0} scorecard views ·{" "}
                   {growthData.all?.spectatorCtaClicks ?? 0} CTA clicks ·{" "}
-                  {growthData.all?.conversion?.spectatorToCta ?? 0}% conversion
+                  {growthData.all?.spectatorScoreNowViews ?? 0} Score Now visits
+                </p>
+
+                <p
+                  className="muted"
+                  style={{
+                    margin: "4px 0 0",
+                    lineHeight: 1.45,
+                    fontSize: 12,
+                  }}
+                >
+                  {growthData.all?.spectatorQuickMatchStarts ?? 0} setup attempts ·{" "}
+                  {growthData.all?.spectatorQuickMatchCreated ?? 0} matches created
+                </p>
+
+                <p
+                  className="muted"
+                  style={{
+                    margin: "4px 0 0",
+                    lineHeight: 1.45,
+                    fontSize: 12,
+                  }}
+                >
+                  {growthData.all?.conversion?.spectatorToCta ?? 0}% view → CTA ·{" "}
+                  {growthData.all?.conversion?.spectatorCtaToScoreNow ?? 0}% CTA → Score Now ·{" "}
+                  {growthData.all?.conversion?.spectatorStartToCreated ?? 0}% setup → match
                 </p>
               </div>
 

@@ -7,6 +7,10 @@ import {
   buildMatchStats
 } from "@/lib/scoring";
 import { buildSuperOverView } from "@/lib/super-over-view";
+import {
+  currentAllocation,
+  latestDlsState,
+} from "@/lib/dls-standard";
 
 function normalizeBattingStatsForRetiredHurt(battingStats, balls) {
   const retiredHurtIds = new Set();
@@ -117,18 +121,49 @@ const numericMatchId = Number(matchIdParam);
     (b) => b.inningsNo === 2
   );
 
+/*
+ * LIVE VIEW MUST READ THE SAME PERSISTED DLS STATE AS SCORER MODE
+ * ===============================================================
+ * Do not reimplement DLS math here. The DLS API already persists revisions
+ * as MatchEvent rows and src/lib/dls-standard.js is the shared reader.
+ */
+const latestDls =
+  latestDlsState(
+    match
+  );
+
+const innings1Allocation =
+  Number(
+    currentAllocation(
+      match,
+      1
+    ) ||
+    match.oversPerInnings ||
+    0
+  );
+
+const innings2Allocation =
+  Number(
+    currentAllocation(
+      match,
+      2
+    ) ||
+    match.oversPerInnings ||
+    0
+  );
+
 const innings1Summary =
   summarizeInningsDetailed(
     innings1Balls,
     playerMap,
-    match.oversPerInnings
+    innings1Allocation
   );
 
 const innings2Summary =
   summarizeInningsDetailed(
     innings2Balls,
     playerMap,
-    match.oversPerInnings
+    innings2Allocation
   );
 
 const innings1MatchStats = buildMatchStats({
@@ -196,118 +231,465 @@ const currentInningsBalls = match.balls.filter(
       label: ballShortText(ball)
   }));
 
-  const maxLegalBalls = match.oversPerInnings * 6;
+  const innings1MaxLegalBalls =
+    innings1Allocation > 0
+      ? Math.round(
+          innings1Allocation *
+            6
+        )
+      : Infinity;
+
+  const innings2MaxLegalBalls =
+    innings2Allocation > 0
+      ? Math.round(
+          innings2Allocation *
+            6
+        )
+      : Infinity;
 
   const innings1Complete =
-    innings1Summary.legalBalls >= maxLegalBalls ||
-    innings2Balls.length > 0;
+    match.innings1EndedManually ||
+    innings1Summary.legalBalls >=
+      innings1MaxLegalBalls ||
+    innings2Balls.length > 0 ||
+    [
+      "COMPLETED",
+      "COMPLETED_CORRECTED",
+      "COMPLETED_LOCKED",
+    ].includes(
+      String(
+        match.status ||
+        ""
+      ).toUpperCase()
+    );
 
-  const target = innings1Complete
-    ? innings1Summary.runs + 1
-    : null;
+  const normalTarget =
+    innings1Complete
+      ? innings1Summary.runs +
+        1
+      : null;
+
+  /*
+   * If a DLS event has supplied a revised innings-2 target, that is the
+   * authoritative chase target. Otherwise preserve normal cricket behavior.
+   */
+  const persistedDlsTarget =
+    Number(
+      latestDls
+        ?.inningsNo ===
+        2
+        ? latestDls
+            ?.target
+        : 0
+    );
+
+  const dlsActive =
+    Boolean(
+      latestDls &&
+      (
+        Number(
+          latestDls
+            ?.revisedOvers ||
+          0
+        ) > 0 ||
+        persistedDlsTarget >
+          0 ||
+        latestDls
+          ?.terminated
+      )
+    );
+
+  const dlsMode =
+    String(
+      latestDls
+        ?.mode ||
+      ""
+    )
+      .trim()
+      .toUpperCase();
+
+  const dlsMethodLabel =
+    dlsMode ===
+    "OFFICIAL_OVERRIDE"
+      ? "DLS"
+      : dlsActive
+        ? "D/L Standard"
+        : "";
+
+  const target =
+    innings1Complete
+      ? (
+          persistedDlsTarget >
+          0
+            ? persistedDlsTarget
+            : normalTarget
+        )
+      : null;
 
   const remainingBalls =
-  innings1Complete
-    ? Math.max(
-        maxLegalBalls - innings2Summary.legalBalls,
-        0
-      )
-    : null;
+    innings1Complete
+      ? Math.max(
+          innings2MaxLegalBalls -
+            innings2Summary
+              .legalBalls,
+          0
+        )
+      : null;
 
-      const innings2Complete =
-        innings2Summary.legalBalls >= maxLegalBalls;
+  const innings2Complete =
+    innings2Summary
+      .legalBalls >=
+    innings2MaxLegalBalls;
 
-      const chaseCompleted =
-        target &&
-        innings2Summary.runs >= target;
+  const chaseCompleted =
+    Boolean(
+      target &&
+      innings2Summary.runs >=
+        target
+    );
 
-      const maxWickets =
-        match.maxWicketsPerInnings ??
-        ((innings2TeamId.battingTeam?.players?.length) -1);
+  /*
+   * Unlimited-wicket matches are valid Cric4All matches. Do not invent an
+   * all-out threshold when maxWicketsPerInnings is null.
+   */
+  const configuredMaxWickets =
+    Number(
+      match
+        .maxWicketsPerInnings
+    );
 
+  const hasFiniteWicketLimit =
+    Number.isInteger(
+      configuredMaxWickets
+    ) &&
+    configuredMaxWickets >
+      0;
 
-      const allOut =
-        innings2Summary.wickets >= maxWickets;
+  const allOut =
+    hasFiniteWicketLimit &&
+    innings2Summary.wickets >=
+      configuredMaxWickets;
 
- 
-      const isCompleted =
-        innings1Complete &&
-        (
-          innings2Complete ||  chaseCompleted || match.status === "COMPLETED_LOCKED" || match.status === "COMPLETED" || match.status === "COMPLETED_CORRECTED"
-        );
+  const persistedStatus =
+    String(
+      match.status ||
+      ""
+    ).toUpperCase();
 
-      let statusText = "Match in progress";
+  const persistedFinalStatus =
+    [
+      "COMPLETED",
+      "COMPLETED_CORRECTED",
+      "COMPLETED_LOCKED",
+    ].includes(
+      persistedStatus
+    );
 
-      if(match.status === "ABANDONED"){
-        statusText = "Match is Abandoned";
-      }
+  const isCompleted =
+    innings1Complete &&
+    (
+      innings2Complete ||
+      chaseCompleted ||
+      allOut ||
+      persistedFinalStatus
+    );
 
-      if (isCompleted) {
-        if (innings2Summary.runs >= target) {
-          //const wicketsRemaining = maxWicketsPerInnings;
-            //10 - innings2Summary.wickets;
+  /*
+   * NORMAL fallback result is retained for older/non-DLS records whose
+   * match.statusText is generic. New completed DLS matches should already
+   * carry the authoritative result saved by /api/balls or /end.
+   */
+  function buildFallbackCompletedResult() {
+    if (
+      target &&
+      innings2Summary.runs >=
+        target
+    ) {
+      if (
+        hasFiniteWicketLimit
+      ) {
+        const wicketsRemaining =
+          Math.max(
+            configuredMaxWickets -
+              innings2Summary
+                .wickets,
+            0
+          );
 
-          statusText = `${innings2TeamName} won by chasing the target`;
-          //by ${wicketsRemaining} wickets`;
-        } else if (
-          innings2Summary.runs === innings1Summary.runs
+        if (
+          wicketsRemaining >
+          0
         ) {
-          statusText = "Match tied";
-        } else {
-          const margin =
-            innings1Summary.runs -
-            innings2Summary.runs;
-
-          statusText = `${innings1TeamName} won by ${margin} runs`;
+          return `${innings2TeamName} won by ${wicketsRemaining} wicket${
+            wicketsRemaining ===
+            1
+              ? ""
+              : "s"
+          }${
+            dlsActive
+              ? ` (${dlsMethodLabel})`
+              : ""
+          }`;
         }
-
- /*       // UPDATE MATCH STATUS
-        await prisma.match.update({
-          where: { id: match.id },
-          data: {
-            status: "COMPLETED",
-            statusText
-          }
-        });
-*/
-        match.status = "COMPLETED";
-      }else {
-        match.status = "LIVE";
       }
 
-      if (superOver.completed) {
-        statusText = superOver.resultText || match.statusText || "Match completed via Super Over";
-      } else if (superOver.active) {
-        statusText = `Super Over ${superOver.round} in progress`;
-      } else if (superOver.tied) {
-        statusText = `Super Over ${superOver.round} tied — another Super Over required`;
-      }
+      return `${innings2TeamName} won by chasing the target${
+        dlsActive
+          ? ` (${dlsMethodLabel})`
+          : ""
+      }`;
+    }
+
+    const tieScore =
+      dlsActive &&
+      target
+        ? Math.max(
+            Number(target) -
+              1,
+            0
+          )
+        : innings1Summary.runs;
+
+    if (
+      innings2Summary.runs ===
+      tieScore
+    ) {
+      return `Match tied${
+        dlsActive
+          ? ` (${dlsMethodLabel})`
+          : ""
+      }`;
+    }
+
+    if (
+      innings2Summary.runs <
+      tieScore
+    ) {
+      const margin =
+        tieScore -
+        innings2Summary.runs;
+
+      return `${innings1TeamName} won by ${margin} run${
+        margin === 1
+          ? ""
+          : "s"
+      }${
+        dlsActive
+          ? ` (${dlsMethodLabel})`
+          : ""
+      }`;
+    }
+
+    const margin =
+      innings2Summary.runs -
+      tieScore;
+
+    return `${innings2TeamName} won by ${margin} run${
+      margin === 1
+        ? ""
+        : "s"
+    }${
+      dlsActive
+        ? ` (${dlsMethodLabel})`
+        : ""
+    }`;
+  }
+
+  const storedStatusText =
+    String(
+      match.statusText ||
+      ""
+    ).trim();
+
+  const storedStatusIsUseful =
+    Boolean(
+      storedStatusText &&
+      ![
+        "MATCH COMPLETED",
+        "COMPLETED",
+        "SCHEDULED",
+        "IN_PROGRESS",
+        "LIVE",
+      ].includes(
+        storedStatusText
+          .toUpperCase()
+      )
+    );
+
+  let responseStatus =
+    persistedStatus ||
+    "SCHEDULED";
+
+  let statusText =
+    "Match in progress";
+
+  let resultText =
+    null;
+
+  if (
+    persistedStatus ===
+    "ABANDONED"
+  ) {
+    responseStatus =
+      "ABANDONED";
+    statusText =
+      storedStatusIsUseful
+        ? storedStatusText
+        : "Match is Abandoned";
+  } else if (
+    isCompleted
+  ) {
+    responseStatus =
+      persistedFinalStatus
+        ? persistedStatus
+        : "COMPLETED";
+
+    resultText =
+      storedStatusIsUseful
+        ? storedStatusText
+        : buildFallbackCompletedResult();
+
+    statusText =
+      resultText;
+  } else if (
+    dlsActive &&
+    currentInningsNo ===
+      2 &&
+    target
+  ) {
+    const revisedLabel =
+      innings2Allocation >
+      0
+        ? ` · ${innings2Allocation} over${
+            innings2Allocation ===
+            1
+              ? ""
+              : "s"
+          }`
+        : "";
+
+    statusText =
+      `🌧 ${dlsMethodLabel} · Revised target ${target}${revisedLabel}`;
+  } else if (
+    dlsActive
+  ) {
+    statusText =
+      `🌧 ${dlsMethodLabel} adjustment active`;
+  }
+
+  /*
+   * Super Over remains the final override. DLS applies to the regulation
+   * match; once a Super Over is active/completed its own result/status wins.
+   */
+  if (
+    superOver.completed
+  ) {
+    responseStatus =
+      persistedFinalStatus
+        ? persistedStatus
+        : "COMPLETED";
+
+    resultText =
+      superOver.resultText ||
+      storedStatusText ||
+      resultText ||
+      "Match completed via Super Over";
+
+    statusText =
+      resultText;
+  } else if (
+    superOver.active
+  ) {
+    statusText =
+      `Super Over ${superOver.round} in progress`;
+  } else if (
+    superOver.tied
+  ) {
+    statusText =
+      `Super Over ${superOver.round} tied — another Super Over required`;
+  }
+
+  const dlsSummary = {
+    active:
+      dlsActive,
+    mode:
+      dlsMode ||
+      null,
+    methodLabel:
+      dlsMethodLabel ||
+      null,
+    target:
+      dlsActive &&
+      target
+        ? Number(
+            target
+          )
+        : null,
+    par:
+      latestDls
+        ?.par != null
+        ? Number(
+            latestDls.par
+          )
+        : latestDls
+            ?.parScore !=
+          null
+          ? Number(
+              latestDls
+                .parScore
+            )
+          : null,
+    innings1Allocation,
+    innings2Allocation,
+    revisedOvers:
+      Number(
+        latestDls
+          ?.revisedOvers ||
+        0
+      ) ||
+      null,
+    terminated:
+      Boolean(
+        latestDls
+          ?.terminated
+      ),
+    eventId:
+      latestDls
+        ?.eventId ||
+      null,
+  };
 
 return NextResponse.json({
   match: {
     id: match.id,
     shareCode: match.shareCode,
+    leagueId: match.leagueId,
     teamAName: match.teamA.name,
     teamBName: match.teamB.name,
     battingFirstTeamId: match.battingFirstTeamId,
     oversPerInnings: match.oversPerInnings,
     powerplayOversInnings: match.powerplayOversInnings,
-    status: match.status,
-    statusText: superOver.completed
-      ? (superOver.resultText || match.statusText || statusText)
-      : statusText,
-    resultText: superOver.completed
-      ? (superOver.resultText || match.statusText || statusText)
-      : null,
+    status:
+      responseStatus,
+    statusText,
+    resultText,
+    dls:
+      dlsSummary,
   },
 
   summary: {
-    target: superOver.exists ? null : target,
-    remainingBalls: superOver.exists ? null : remainingBalls,
+    target:
+      superOver.exists
+        ? null
+        : target,
+    remainingBalls:
+      superOver.exists
+        ? null
+        : remainingBalls,
     statusText,
-    resultText: superOver.completed
-      ? (superOver.resultText || match.statusText || statusText)
-      : null
+    resultText,
+    dls:
+      dlsSummary,
   },
 
   superOver,

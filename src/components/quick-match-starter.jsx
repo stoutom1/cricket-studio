@@ -9,7 +9,7 @@ import {
 import {
   useRouter,
 } from "next/navigation";
-import GrowthTracker, {
+import {
   trackGrowthEvent,
 } from "@/components/growth-tracker";
 
@@ -66,9 +66,147 @@ function initialDraft() {
 
 export default function QuickMatchStarter({
   userContext,
+  acquisitionContext = {},
 }) {
   const router =
     useRouter();
+
+  const isSpectatorAcquisition =
+    acquisitionContext?.source ===
+    "spectator";
+
+  const acquisitionMetadata =
+    isSpectatorAcquisition
+      ? {
+          acquisitionSource:
+            "SPECTATOR",
+          originMatchId:
+            acquisitionContext
+              ?.originMatchId ||
+            null,
+          originLeagueId:
+            acquisitionContext
+              ?.originLeagueId ||
+            null,
+          originShareCode:
+            acquisitionContext
+              ?.originShareCode ||
+            null,
+          originState:
+            acquisitionContext
+              ?.originState ||
+            null,
+        }
+      : {};
+
+  const scoreNowReturnPath =
+    useMemo(() => {
+      const params =
+        new URLSearchParams();
+
+      if (
+        isSpectatorAcquisition
+      ) {
+        params.set(
+          "source",
+          "spectator"
+        );
+
+        if (
+          acquisitionContext
+            ?.originMatchId
+        ) {
+          params.set(
+            "originMatchId",
+            String(
+              acquisitionContext
+                .originMatchId
+            )
+          );
+        }
+
+        if (
+          acquisitionContext
+            ?.originLeagueId
+        ) {
+          params.set(
+            "originLeagueId",
+            String(
+              acquisitionContext
+                .originLeagueId
+            )
+          );
+        }
+
+        if (
+          acquisitionContext
+            ?.originShareCode
+        ) {
+          params.set(
+            "originShareCode",
+            String(
+              acquisitionContext
+                .originShareCode
+            )
+          );
+        }
+
+        if (
+          acquisitionContext
+            ?.originState
+        ) {
+          params.set(
+            "originState",
+            String(
+              acquisitionContext
+                .originState
+            )
+          );
+        }
+      }
+
+      const query =
+        params.toString();
+
+      return query
+        ? `/score-now?${query}`
+        : "/score-now";
+    }, [
+      isSpectatorAcquisition,
+      acquisitionContext
+        ?.originMatchId,
+      acquisitionContext
+        ?.originLeagueId,
+      acquisitionContext
+        ?.originShareCode,
+      acquisitionContext
+        ?.originState,
+    ]);
+
+  useEffect(() => {
+    trackGrowthEvent(
+      "QUICK_MATCH_VIEW",
+      {
+        source:
+          isSpectatorAcquisition
+            ? "SPECTATOR_SCORE_NOW"
+            : "SCORE_NOW",
+        matchId:
+          acquisitionContext
+            ?.originMatchId ||
+          undefined,
+        leagueId:
+          acquisitionContext
+            ?.originLeagueId ||
+          undefined,
+        metadata:
+          acquisitionMetadata,
+      }
+    );
+    // Track once for this page mount. The acquisition context is immutable
+    // for a given /score-now navigation.
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, []);
 
   const [
     form,
@@ -283,8 +421,19 @@ export default function QuickMatchStarter({
       "QUICK_MATCH_STARTED",
       {
         source:
-          "SCORE_NOW",
+          isSpectatorAcquisition
+            ? "SPECTATOR_SCORE_NOW"
+            : "SCORE_NOW",
+        matchId:
+          acquisitionContext
+            ?.originMatchId ||
+          undefined,
+        leagueId:
+          acquisitionContext
+            ?.originLeagueId ||
+          undefined,
         metadata: {
+          ...acquisitionMetadata,
           overs,
           hasPlayerNames:
             teamAPlayers.length >
@@ -367,12 +516,15 @@ export default function QuickMatchStarter({
         "QUICK_MATCH_CREATED",
         {
           source:
-            "SCORE_NOW_CLIENT",
+            isSpectatorAcquisition
+              ? "SPECTATOR_SCORE_NOW_CREATED"
+              : "SCORE_NOW_CLIENT",
           leagueId:
             data.leagueId,
           matchId:
             data.matchId,
           metadata: {
+            ...acquisitionMetadata,
             createdLeague:
               Boolean(
                 data.createdLeague
@@ -423,13 +575,6 @@ export default function QuickMatchStarter({
           "#f8fafc",
       }}
     >
-      <GrowthTracker
-        eventType="QUICK_MATCH_VIEW"
-        oncePerSession={
-          false
-        }
-      />
-
       <div
         style={{
           width:
@@ -505,7 +650,9 @@ export default function QuickMatchStarter({
               </Link>
             ) : (
               <Link
-                href="/login?callbackUrl=%2Fscore-now"
+                href={`/login?callbackUrl=${encodeURIComponent(
+                      scoreNowReturnPath
+                    )}`}
                 style={{
                   color:
                     "inherit",
@@ -1498,13 +1645,27 @@ export default function QuickMatchStarter({
                   }}
                 >
                   <Link
-                    href="/login?callbackUrl=%2Fscore-now"
+                    href={`/login?callbackUrl=${encodeURIComponent(
+                      scoreNowReturnPath
+                    )}`}
                     onClick={() =>
                       trackGrowthEvent(
                         "QUICK_MATCH_AUTH_CLICKED",
                         {
                           source:
-                            "SCORE_NOW_LOGIN",
+                            isSpectatorAcquisition
+                              ? "SPECTATOR_SCORE_NOW_LOGIN"
+                              : "SCORE_NOW_LOGIN",
+                          matchId:
+                            acquisitionContext
+                              ?.originMatchId ||
+                            undefined,
+                          leagueId:
+                            acquisitionContext
+                              ?.originLeagueId ||
+                            undefined,
+                          metadata:
+                            acquisitionMetadata,
                         }
                       )
                     }
@@ -1537,7 +1698,9 @@ export default function QuickMatchStarter({
                   </Link>
 
                   <Link
-                    href="/register?next=%2Fscore-now"
+                    href={`/register?next=${encodeURIComponent(
+                      scoreNowReturnPath
+                    )}`}
                     onClick={() => {
                       trackGrowthEvent(
                         "QUICK_MATCH_AUTH_CLICKED",
