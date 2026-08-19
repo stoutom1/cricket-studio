@@ -1325,3 +1325,23 @@ model PlayerMilestone {
   @@index([matchId])
   @@index([representativePlayerId])
 }
+
+model GrowthEvent {
+  id        BigInt   @id @default(autoincrement())
+  eventType String
+  visitorId String?
+  sessionId String?
+  userId    String?
+  leagueId  Int?
+  matchId   Int?
+  source    String?
+  path      String?
+  metadata  Json?
+  createdAt DateTime @default(now())
+
+  @@index([eventType, createdAt])
+  @@index([visitorId, createdAt])
+  @@index([userId, createdAt])
+  @@index([leagueId, createdAt])
+  @@index([matchId, createdAt])
+}

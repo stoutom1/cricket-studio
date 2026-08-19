@@ -6,6 +6,7 @@ import { isSuperAdmin } from "@/lib/superAdmin";
 export const dynamic = "force-dynamic";
 import { logAudit } from "@/lib/audit";
 import { slugify } from "@/lib/slug";
+import { recordGrowthEvent } from "@/lib/growth";
 
 export async function GET() {
   const session =
@@ -143,6 +144,7 @@ const league = await prisma.league.create({
     slug: slugify(body.name)
   }
 });
+await recordGrowthEvent({ eventType: "LEAGUE_CREATED", userId: user.id, leagueId: league.id, source: "LEAGUE_API", path: "/dashboard" });
     await logAudit({
       action: "LEAGUE_CREATED",
       entityType: "LEAGUE",

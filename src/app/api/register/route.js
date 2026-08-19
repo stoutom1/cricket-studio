@@ -5,6 +5,7 @@ import { sendWelcomeEmail } from "@/lib/email";
 import {
   normalizeSmsPhoneNumber,
 } from "@/lib/notifications/sms-phone";
+import { recordGrowthEvent } from "@/lib/growth";
 import {
   SMS_CONSENT_TEXT,
   SMS_CONSENT_VERSION,
@@ -148,6 +149,8 @@ smsConsentVersion:
     : null,
     },
   });
+
+    await recordGrowthEvent({ eventType: "SIGNUP_COMPLETED", userId: user.id, source: "REGISTER_API", path: "/register" });
 
     await sendWelcomeEmail(
       user.email,

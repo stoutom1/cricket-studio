@@ -794,6 +794,9 @@ const [userActivity, setUserActivity] = useState(null);
 const [userActivityLoading, setUserActivityLoading] = useState(false);
 const [auditLogs, setAuditLogs] = useState([]);
 const [auditLogsLoading, setAuditLogsLoading] = useState(false);
+const [growthData, setGrowthData] = useState(null);
+const [growthLoading, setGrowthLoading] = useState(false);
+const [growthDays, setGrowthDays] = useState(30);
 const [showCorrectionCenter, setShowCorrectionCenter] = useState(false);
 const [correctionType, setCorrectionType] = useState("TRANSFER_BATTER_RUNS");
 const [correctionReason, setCorrectionReason] = useState("");
@@ -1021,6 +1024,7 @@ useEffect(() => {
 
   loadUserActivity();
   loadAuditLogs();
+  loadGrowthData(growthDays);
 }, [activeTab, activeLeagueId]);
 
 const battingTeamForCorrection =
@@ -1054,6 +1058,18 @@ async function loadUserActivity() {
     setUserActivityLoading(false);
   }
 }
+async function loadGrowthData(days = growthDays) {
+  try {
+    setGrowthLoading(true);
+    const data = await api(`/api/admin/growth?days=${Number(days) || 30}`);
+    setGrowthData(data);
+  } catch (err) {
+    setError(err.message || "Failed to load growth analytics.");
+  } finally {
+    setGrowthLoading(false);
+  }
+}
+
 async function loadAuditLogs() {
   try {
     setAuditLogsLoading(true);
@@ -26748,6 +26764,69 @@ onClick={() => {
 )}
 {activeTab === "admin" && (
   <Card title="🛡️ Admin Center">
+    <section style={{ marginBottom: 18, padding: 16, border: "1px solid rgba(96,165,250,.22)", borderRadius: 18, background: "rgba(15,23,42,.55)" }}>
+      <div style={{ display: "flex", gap: 12, alignItems: "center", justifyContent: "space-between", flexWrap: "wrap", marginBottom: 14 }}>
+        <div>
+          <h3 style={{ margin: 0 }}>📈 Cric4All Growth Center</h3>
+          <p className="muted" style={{ margin: "5px 0 0" }}>Measure discovery, activation and repeat league usage before spending on acquisition.</p>
+        </div>
+        <div style={{ display: "flex", gap: 8, flexWrap: "wrap" }}>
+          {[7, 30, 90].map((days) => (
+            <button key={days} type="button" className={`btn ${growthDays === days ? "" : "btn-outline"}`} onClick={() => { setGrowthDays(days); loadGrowthData(days); }}>
+              {days} days
+            </button>
+          ))}
+        </div>
+      </div>
+
+      {growthLoading && !growthData ? (
+        <p className="muted">Loading growth analytics...</p>
+      ) : growthData ? (
+        <>
+          <div style={{ display: "grid", gridTemplateColumns: "repeat(auto-fit, minmax(125px, 1fr))", gap: 10 }}>
+            {[
+              ["Visitors", growthData.all?.visitors ?? 0, "Unique landing visitors"],
+              ["Signups", growthData.all?.signups ?? 0, `${growthData.all?.conversion?.visitorToSignup ?? 0}% of visitors`],
+              ["Leagues", growthData.all?.leagues ?? 0, "New leagues"],
+              ["Matches", growthData.all?.matches ?? 0, `${growthData.all?.conversion?.leagueToMatch ?? 0}% league → match`],
+              ["Started", growthData.all?.startedMatches ?? 0, `${growthData.all?.conversion?.matchToStart ?? 0}% match → start`],
+              ["Completed", growthData.all?.completedMatches ?? 0, `${growthData.all?.conversion?.startToComplete ?? 0}% start → complete`],
+              ["Repeat Leagues", growthData.all?.repeatLeagues ?? 0, "2+ completed matches"],
+            ].map(([label, value, note]) => (
+              <div key={label} style={{ padding: 12, minWidth: 0, borderRadius: 14, border: "1px solid rgba(148,163,184,.16)", background: "rgba(2,6,23,.38)" }}>
+                <span className="muted" style={{ display: "block", fontSize: 12 }}>{label}</span>
+                <strong style={{ display: "block", fontSize: 24, lineHeight: 1.15, marginTop: 5 }}>{value}</strong>
+                <small className="muted" style={{ display: "block", marginTop: 5, overflowWrap: "anywhere" }}>{note}</small>
+              </div>
+            ))}
+          </div>
+
+          <div style={{ marginTop: 12, display: "grid", gridTemplateColumns: "repeat(auto-fit, minmax(210px, 1fr))", gap: 10 }}>
+            <div style={{ padding: 13, borderRadius: 14, border: "1px solid rgba(52,211,153,.2)", background: "rgba(6,78,59,.12)" }}>
+              <strong>🌍 External adoption</strong>
+              <p className="muted" style={{ margin: "7px 0 0", lineHeight: 1.5 }}>
+                {growthData.external?.leagues ?? 0} leagues · {growthData.external?.startedMatches ?? 0} matches started · {growthData.external?.completedMatches ?? 0} completed · {growthData.external?.repeatLeagues ?? 0} repeat leagues
+              </p>
+            </div>
+            <div style={{ padding: 13, borderRadius: 14, border: "1px solid rgba(56,189,248,.2)", background: "rgba(7,89,133,.12)" }}>
+              <strong>👀 Spectator acquisition</strong>
+              <p className="muted" style={{ margin: "7px 0 0", lineHeight: 1.5 }}>
+                {growthData.all?.spectatorViews ?? 0} tracked views · {growthData.all?.spectatorCtaClicks ?? 0} CTA clicks · {growthData.all?.conversion?.spectatorToCta ?? 0}% conversion
+              </p>
+            </div>
+          </div>
+
+          {Array.isArray(growthData.internalLeagueIds) && growthData.internalLeagueIds.length > 0 ? (
+            <p className="muted" style={{ margin: "10px 0 0", fontSize: 12 }}>Internal/test league IDs excluded from External adoption: {growthData.internalLeagueIds.join(", ")}</p>
+          ) : (
+            <p className="muted" style={{ margin: "10px 0 0", fontSize: 12 }}>Set GROWTH_INTERNAL_LEAGUE_IDS in your environment to keep your own community/test leagues out of External adoption.</p>
+          )}
+        </>
+      ) : (
+        <p className="muted">Growth analytics are not available yet.</p>
+      )}
+    </section>
+
     <div className="admin-center-grid">
       <div className="admin-activity-card">
         <h3>🟢 Online Now</h3>
@@ -26886,6 +26965,7 @@ onClick={() => {
           onClick={() => {
             loadUserActivity();
             loadAuditLogs();
+            loadGrowthData(growthDays);
           }}
         >
           🔄 Refresh Activity

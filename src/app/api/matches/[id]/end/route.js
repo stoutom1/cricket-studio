@@ -4,6 +4,7 @@ import { getServerSession } from "next-auth";
 import prisma from "@/lib/prisma";
 import { authOptions } from "@/lib/auth";
 import { logAudit } from "@/lib/audit";
+import { recordGrowthEvent } from "@/lib/growth";
 import {
   syncKitCustodyTasksForMatch,
 } from "@/lib/kit/team-custody";
@@ -214,6 +215,18 @@ export async function POST(
       kitCustody.warning =
         kitTaskError?.message ||
         "Unable to create the kit-custody follow-up.";
+    }
+
+    if (status === "COMPLETED" && beforeMatch.status !== "COMPLETED" && beforeMatch.status !== "COMPLETED_LOCKED") {
+      await recordGrowthEvent({
+        eventType: "MATCH_COMPLETED",
+        userId: session?.user?.id || null,
+        leagueId: updatedMatch.leagueId,
+        matchId: updatedMatch.id,
+        source: "MATCH_END_API",
+        path: "/dashboard",
+        metadata: { method: matchEndType },
+      });
     }
 
     await logAudit({

@@ -1,8 +1,10 @@
 import Link from "next/link";
+import GrowthTracker from "@/components/growth-tracker";
 
 export default function HomePage() {
   return (
     <main className="home-lite">
+      <GrowthTracker eventType="LANDING_VIEW" />
       <section className="home-hero-lite">
         <div className="home-hero-grid">
           <div className="home-left">

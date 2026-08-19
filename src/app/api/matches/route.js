@@ -2,6 +2,7 @@ import { getServerSession } from "next-auth";
 import { NextResponse } from "next/server";
 import prisma from "@/lib/prisma";
 import { authOptions } from "@/lib/auth";
+import { recordGrowthEvent } from "@/lib/growth";
 import { isSuperAdmin } from "@/lib/superAdmin";
 export const runtime = "nodejs";
 import crypto from "crypto";
@@ -673,6 +674,8 @@ const match = await prisma.match.create({
       shareCode
     }
   });
+
+  await recordGrowthEvent({ eventType: "MATCH_CREATED", userId: user.id, leagueId: match.leagueId, matchId: match.id, source: "MATCH_API", path: "/dashboard" });
 
   return NextResponse.json(match, { status: 201 });
 }
