@@ -322,6 +322,18 @@ const battingFirstTeamId = [
   ? Number(existingMatch.battingFirstTeamId)
   : null;
 
+const venueName =
+  String(body.venueName || "")
+    .replace(/\s+/g, " ")
+    .trim()
+    .slice(0, 160) || null;
+
+const venueAddress =
+  String(body.venueAddress || "")
+    .replace(/\s+/g, " ")
+    .trim()
+    .slice(0, 300) || null;
+
 
   const updated = await prisma.match.update({
     where: { id: matchId },
@@ -332,6 +344,10 @@ const battingFirstTeamId = [
       maxWicketsPerInnings: body.maxWicketsPerInnings ?? null,
       maxOversPerBowler: body.maxOversPerBowler ?? null,
       seriesId: body.seriesId ? Number(body.seriesId) : null,
+
+      venueName,
+      venueAddress,
+
 teamAId: requestedTeamAId,
 teamBId: requestedTeamBId,
 battingFirstTeamId,
@@ -418,6 +434,8 @@ await prisma.$transaction(async (tx) => {
       maxWicketsPerInnings: beforeMatch.maxWicketsPerInnings,
       maxOversPerBowler: beforeMatch.maxOversPerBowler,
       scheduledAt: beforeMatch.scheduledAt,
+      venueName: beforeMatch.venueName || null,
+      venueAddress: beforeMatch.venueAddress || null,
       startedAt: beforeMatch.startedAt,
       endedAt: beforeMatch.endedAt,
       ballsDeleted: beforeMatch.balls?.length || 0,

@@ -196,6 +196,8 @@ export default async function PublicMatchPage({ params }) {
     ["League", league.name],
     ["Series", match.series?.name || "No Series"],
     ["Status", formatStatus(status)],
+    ["Venue", match.venueName || "Not set"],
+    ["Address", match.venueAddress || "Not set"],
     ["Scorecard", match.shareCode ? "Available" : "Not shared yet"],
   ];
 
@@ -206,26 +208,58 @@ export default async function PublicMatchPage({ params }) {
     ).toUpperCase() ===
     "PUBLIC";
 
+  /*
+   * Google requires a real physical Event location/address.
+   *
+   * When venueAddress is available, Cric4All emits SportsEvent with a Place
+   * and one-line PostalAddress. When it is missing (older/imported matches),
+   * Cric4All falls back to WebPage structured data instead of publishing an
+   * invalid or invented Event location.
+   */
+  const hasRealVenueAddress =
+    Boolean(
+      String(
+        match.venueAddress ||
+        ""
+      ).trim()
+    );
+
+  const canonicalMatchUrl =
+    absoluteCric4AllUrl(
+      `/leagues/${league.slug}/matches/${match.id}`
+    );
+
   const jsonLd =
-    isPublic
+    isPublic &&
+    hasRealVenueAddress
       ? {
           "@context":
             "https://schema.org",
           "@type":
             "SportsEvent",
+
           name:
             `${match.teamA?.name || "Team A"} vs ${match.teamB?.name || "Team B"}`,
+
           sport:
             "Cricket",
+
           url:
-            absoluteCric4AllUrl(
-              `/leagues/${league.slug}/matches/${match.id}`
-            ),
+            canonicalMatchUrl,
+
           startDate:
             seoDate(
               match.scheduledAt ||
               match.createdAt
             ),
+
+          endDate:
+            match.endedAt
+              ? seoDate(
+                  match.endedAt
+                )
+              : undefined,
+
           eventStatus:
             normalizeStatus(status) ===
             "SCHEDULED"
@@ -242,6 +276,34 @@ export default async function PublicMatchPage({ params }) {
                     "ABANDONED"
                   ? "https://schema.org/EventCancelled"
                   : "https://schema.org/EventScheduled",
+
+          location: {
+            "@type":
+              "Place",
+
+            name:
+              String(
+                match.venueName ||
+                ""
+              ).trim() ||
+              undefined,
+
+            address: {
+              "@type":
+                "PostalAddress",
+
+              /*
+               * Google explicitly permits an entire real address on one line
+               * in PostalAddress.name. This keeps Cric4All's match setup simple
+               * while still providing genuine physical-location information.
+               */
+              name:
+                String(
+                  match.venueAddress
+                ).trim(),
+            },
+          },
+
           competitor: [
             {
               "@type":
@@ -258,6 +320,7 @@ export default async function PublicMatchPage({ params }) {
                     )
                   : undefined,
             },
+
             {
               "@type":
                 "SportsTeam",
@@ -274,6 +337,7 @@ export default async function PublicMatchPage({ params }) {
                   : undefined,
             },
           ],
+
           organizer: {
             "@type":
               "SportsOrganization",
@@ -286,10 +350,46 @@ export default async function PublicMatchPage({ params }) {
                 `/leagues/${league.slug}`
               ),
           },
+
           description:
             matchResultText,
         }
-      : null;
+      : isPublic
+        ? {
+            "@context":
+              "https://schema.org",
+            "@type":
+              "WebPage",
+            name:
+              `${match.teamA?.name || "Team A"} vs ${match.teamB?.name || "Team B"} Cricket Match`,
+            url:
+              canonicalMatchUrl,
+            description:
+              matchResultText,
+            datePublished:
+              seoDate(
+                match.createdAt
+              ),
+            dateModified:
+              seoDate(
+                match.lockedAt ||
+                match.endedAt ||
+                match.startedAt ||
+                match.scheduledAt ||
+                match.createdAt
+              ),
+            isPartOf: {
+              "@type":
+                "WebSite",
+              name:
+                "Cric4All",
+              url:
+                absoluteCric4AllUrl(
+                  "/"
+                ),
+            },
+          }
+        : null;
 
   return (
     <>
@@ -413,6 +513,19 @@ export default async function PublicMatchPage({ params }) {
                   {match.series?.year
                     ? `Season ${match.series.year}`
                     : "Competition details"}
+                </small>
+              </div>
+
+              <div>
+                <span>Venue</span>
+                <strong>
+                  {match.venueName ||
+                    match.venueAddress ||
+                    "Not set"}
+                </strong>
+                <small>
+                  {match.venueAddress ||
+                    "Physical venue has not been added yet"}
                 </small>
               </div>
 

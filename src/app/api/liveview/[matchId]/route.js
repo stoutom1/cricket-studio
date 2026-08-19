@@ -669,6 +669,14 @@ return NextResponse.json({
     battingFirstTeamId: match.battingFirstTeamId,
     oversPerInnings: match.oversPerInnings,
     powerplayOversInnings: match.powerplayOversInnings,
+
+    venueName:
+      match.venueName ||
+      "",
+    venueAddress:
+      match.venueAddress ||
+      "",
+
     status:
       responseStatus,
     statusText,

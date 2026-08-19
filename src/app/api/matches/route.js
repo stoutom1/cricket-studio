@@ -2,7 +2,6 @@ import { getServerSession } from "next-auth";
 import { NextResponse } from "next/server";
 import prisma from "@/lib/prisma";
 import { authOptions } from "@/lib/auth";
-import { recordGrowthEvent } from "@/lib/growth";
 import { isSuperAdmin } from "@/lib/superAdmin";
 export const runtime = "nodejs";
 import crypto from "crypto";
@@ -388,6 +387,9 @@ teamB: {
       createdAt: m.createdAt,
       scheduledAt: m.scheduledAt,
 
+      venueName: m.venueName || "",
+      venueAddress: m.venueAddress || "",
+
       firstInningsTeamName,
       firstInningsRuns: innings1.runs,
       firstInningsWickets: innings1.wickets,
@@ -496,6 +498,18 @@ const activeLeagueId = user?.activeLeagueId;
   const oversPerInnings = Number(body.oversPerInnings);
   const powerplayOversInnings = Number(body.powerplayOversInnings || 0);
   const scheduledAt = body.scheduledAt || null;
+
+  const venueName =
+    String(body.venueName || "")
+      .replace(/\s+/g, " ")
+      .trim()
+      .slice(0, 160) || null;
+
+  const venueAddress =
+    String(body.venueAddress || "")
+      .replace(/\s+/g, " ")
+      .trim()
+      .slice(0, 300) || null;
 
   if (!teamAId || !teamBId) {
     return NextResponse.json({ error: "Teams and batting first team are required" }, { status: 400 });
@@ -665,6 +679,10 @@ const match = await prisma.match.create({
       scheduledAt: scheduledAt
         ? new Date(scheduledAt)
         : null,
+
+      venueName,
+      venueAddress,
+
       teamACaptainId,
       teamBCaptainId,
       teamAViceCaptainId,
@@ -674,8 +692,6 @@ const match = await prisma.match.create({
       shareCode
     }
   });
-
-  await recordGrowthEvent({ eventType: "MATCH_CREATED", userId: user.id, leagueId: match.leagueId, matchId: match.id, source: "MATCH_API", path: "/dashboard" });
 
   return NextResponse.json(match, { status: 201 });
 }

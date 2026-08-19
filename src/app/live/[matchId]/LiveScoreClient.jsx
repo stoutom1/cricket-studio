@@ -1617,6 +1617,35 @@ const liveStatusText =
           <SuperOverLiveDetails superOver={superOver} compact />
         ) : null}
 
+        {(scoreboard?.match?.venueName ||
+          scoreboard?.match?.venueAddress) ? (
+          <div
+            className="live-chase-card"
+            style={{
+              borderColor:
+                "rgba(148, 163, 184, 0.25)",
+              background:
+                "rgba(15, 23, 42, 0.22)",
+            }}
+          >
+            <span>
+              📍 VENUE
+            </span>
+
+            <strong>
+              {scoreboard?.match?.venueName ||
+                scoreboard?.match?.venueAddress}
+            </strong>
+
+            {scoreboard?.match?.venueName &&
+            scoreboard?.match?.venueAddress ? (
+              <small>
+                {scoreboard.match.venueAddress}
+              </small>
+            ) : null}
+          </div>
+        ) : null}
+
         {scoreboard?.currentInnings ===
           2 &&
         chaseRunsNeeded !== null &&

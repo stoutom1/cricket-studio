@@ -740,8 +740,19 @@ const [keeperChangeSaving, setKeeperChangeSaving] = useState(false);
 const [undoSaving, setUndoSaving] = useState(false);
 const [showEditMatchModal, setShowEditMatchModal] = useState(false);
 const [editingMatch, setEditingMatch] = useState(null);
+
+const [showVenueModal, setShowVenueModal] = useState(false);
+const [venueMatch, setVenueMatch] = useState(null);
+const [venueSaving, setVenueSaving] = useState(false);
+const [venueForm, setVenueForm] = useState({
+  venueName: "",
+  venueAddress: "",
+});
+
 const [editMatchForm, setEditMatchForm] = useState({
   scheduledAt: "",
+  venueName: "",
+  venueAddress: "",
   oversPerInnings: 20,
   powerplayOversInnings: 6,
   maxWicketsPerInnings: "",
@@ -797,13 +808,6 @@ const [auditLogsLoading, setAuditLogsLoading] = useState(false);
 const [growthData, setGrowthData] = useState(null);
 const [growthLoading, setGrowthLoading] = useState(false);
 const [growthDays, setGrowthDays] = useState(30);
-
-/*
- * Growth Center can switch between the complete Cric4All activity picture
- * and genuine external adoption. Internal/test league IDs are excluded only
- * from EXTERNAL mode.
- */
-const [growthScope, setGrowthScope] = useState("ALL");
 const [showCorrectionCenter, setShowCorrectionCenter] = useState(false);
 const [correctionType, setCorrectionType] = useState("TRANSFER_BATTER_RUNS");
 const [correctionReason, setCorrectionReason] = useState("");
@@ -1986,8 +1990,10 @@ const teamsForMatch =
   teamAId: "",
   teamBId: "",
 
-  // NEW
+  // Match date and real physical venue.
   scheduledAt: "",
+  venueName: "",
+  venueAddress: "",
 
   // keep this, but now it is optional
   battingFirstTeamId: "",
@@ -2874,6 +2880,121 @@ function getInstantDeliveryStatus(data) {
   return `🏏 Ball recorded • ${runs} run${runs > 1 ? "s" : ""} added to the total.`;
 }
 
+function openVenueModalForMatch(
+  match
+) {
+  if (!match?.id) {
+    return;
+  }
+
+  setVenueMatch(
+    match
+  );
+
+  setVenueForm({
+    venueName:
+      match.venueName ||
+      "",
+    venueAddress:
+      match.venueAddress ||
+      "",
+  });
+
+  setShowVenueModal(
+    true
+  );
+}
+
+async function handleSaveMatchVenue(
+  event
+) {
+  event?.preventDefault?.();
+
+  if (!venueMatch?.id) {
+    return;
+  }
+
+  setVenueSaving(
+    true
+  );
+
+  setError("");
+  setMessage("");
+
+  try {
+    const updated =
+      await api(
+        `/api/matches/${venueMatch.id}/venue`,
+        {
+          method:
+            "PATCH",
+          body:
+            JSON.stringify({
+              venueName:
+                venueForm.venueName,
+              venueAddress:
+                venueForm.venueAddress,
+            }),
+        }
+      );
+
+    setVenueMatch(
+      (
+        previous
+      ) => ({
+        ...previous,
+        ...updated,
+      })
+    );
+
+    setShowVenueModal(
+      false
+    );
+
+    setVenueMatch(
+      null
+    );
+
+    await loadMatches(
+      activeLeagueId
+    );
+
+    if (
+      selectedMatchId &&
+      Number(
+        selectedMatchId
+      ) ===
+        Number(
+          updated.id
+        )
+    ) {
+      await loadSelectedMatch(
+        selectedMatchId
+      );
+    }
+
+    setMessage(
+      "📍 Match venue updated."
+    );
+
+    showToast?.(
+      "success",
+      "📍 Match venue updated"
+    );
+  } catch (
+    err
+  ) {
+    setError(
+      err?.message ||
+      "Unable to update match venue."
+    );
+  } finally {
+    setVenueSaving(
+      false
+    );
+  }
+}
+
 async function openEditMatchModal(match) {
   try {
     const fullMatch = await api(`/api/matches/${match.id}`);
@@ -2884,6 +3005,14 @@ async function openEditMatchModal(match) {
       scheduledAt: fullMatch.scheduledAt
         ? new Date(fullMatch.scheduledAt).toISOString().slice(0, 16)
         : "",
+
+      venueName:
+        fullMatch.venueName ||
+        "",
+
+      venueAddress:
+        fullMatch.venueAddress ||
+        "",
 
       oversPerInnings: fullMatch.oversPerInnings || 20,
       powerplayOversInnings: fullMatch.powerplayOversInnings || 0,
@@ -2948,6 +3077,15 @@ if (teamAId === teamBId) {
         scheduledAt: editMatchForm.scheduledAt
           ? new Date(editMatchForm.scheduledAt).toISOString()
           : null,
+
+        venueName:
+          editMatchForm.venueName ||
+          "",
+
+        venueAddress:
+          editMatchForm.venueAddress ||
+          "",
+
         oversPerInnings: Number(editMatchForm.oversPerInnings),
         powerplayOversInnings: Number(editMatchForm.powerplayOversInnings || 0),
         maxWicketsPerInnings: editMatchForm.maxWicketsPerInnings
@@ -4574,6 +4712,14 @@ scheduledAt: matchForm.scheduledAt
   ? new Date(matchForm.scheduledAt).toISOString()
   : null,
 
+venueName:
+  matchForm.venueName ||
+  "",
+
+venueAddress:
+  matchForm.venueAddress ||
+  "",
+
 status: "SCHEDULED",
 
   oversPerInnings: Number(matchForm.oversPerInnings),
@@ -4622,6 +4768,8 @@ setMatchForm({
   teamAId: "",
   teamBId: "",
   scheduledAt: "",
+  venueName: "",
+  venueAddress: "",
   battingFirstTeamId: "",
   oversPerInnings: 20,
   powerplayOversInnings: 6,
@@ -20327,6 +20475,46 @@ const playerRoleBadge = (row) => {
           />
         </label>
       </div>
+
+      <div className="form-two-col">
+        <label>
+          <span>📍 Venue / Ground</span>
+          <input
+            type="text"
+            maxLength={160}
+            placeholder="e.g. Woodley Cricket Fields"
+            value={matchForm.venueName || ""}
+            onChange={(e) =>
+              setMatchForm((prev) => ({
+                ...prev,
+                venueName: e.target.value,
+              }))
+            }
+          />
+          <small>
+            Optional, but recommended for spectators and public match discovery.
+          </small>
+        </label>
+
+        <label>
+          <span>🗺️ Venue Address</span>
+          <input
+            type="text"
+            maxLength={300}
+            placeholder="Street, city, state/province, postal code, country"
+            value={matchForm.venueAddress || ""}
+            onChange={(e) =>
+              setMatchForm((prev) => ({
+                ...prev,
+                venueAddress: e.target.value,
+              }))
+            }
+          />
+          <small>
+            Use a real physical address. Cric4All never invents location data.
+          </small>
+        </label>
+      </div>
     </section>
 
     <section className="create-match-section">
@@ -21664,6 +21852,24 @@ const playerRoleBadge = (row) => {
               )}
 
               {(
+                isSuperAdmin ||
+                permissions?.canEditMatch ||
+                permissions?.canManagePermissions ||
+                ["OWNER", "ADMIN"].includes(activeLeagueRole)
+              ) && (
+                <button
+                  type="button"
+                  className="completed-action-btn"
+                  onClick={() =>
+                    openVenueModalForMatch(match)
+                  }
+                >
+                  <span>📍</span>
+                  <b>Venue</b>
+                </button>
+              )}
+
+              {(
                 permissions?.canScoreMatch ||
                 permissions?.canEditMatch ||
                 permissions?.canManagePermissions
@@ -21730,6 +21936,16 @@ const playerRoleBadge = (row) => {
                     <strong>
                       {match.battingFirstTeamName ||
                         "Not decided"}
+                    </strong>
+                  </div>
+
+                  <div>
+                    <span>📍 Venue</span>
+
+                    <strong>
+                      {match.venueName ||
+                        match.venueAddress ||
+                        "Not set"}
                     </strong>
                   </div>
 
@@ -22155,6 +22371,22 @@ const playerRoleBadge = (row) => {
                       )}
 
                       {(
+                        isSuperAdmin ||
+                        permissions?.canEditMatch ||
+                        permissions?.canManagePermissions ||
+                        ["OWNER", "ADMIN"].includes(activeLeagueRole)
+                      ) && (
+                        <button
+                          type="button"
+                          onClick={() =>
+                            openVenueModalForMatch(match)
+                          }
+                        >
+                          📍 Venue
+                        </button>
+                      )}
+
+                      {(
                         permissions?.canScoreMatch ||
                         permissions?.canEditMatch ||
                         permissions?.canManagePermissions
@@ -22206,6 +22438,16 @@ const playerRoleBadge = (row) => {
                           <strong>
                             {match.battingFirstTeamName ||
                               "Not decided"}
+                          </strong>
+                        </div>
+
+                        <div>
+                          <span>Venue</span>
+
+                          <strong>
+                            {match.venueName ||
+                              match.venueAddress ||
+                              "Not set"}
                           </strong>
                         </div>
 
@@ -26865,495 +27107,73 @@ onClick={() => {
 )}
 {activeTab === "admin" && (
   <Card title="🛡️ Admin Center">
-    <section
-      style={{
-        marginBottom: 18,
-        padding: 16,
-        border: "1px solid rgba(96,165,250,.22)",
-        borderRadius: 18,
-        background: "rgba(15,23,42,.55)",
-      }}
-    >
-      <div
-        style={{
-          display: "flex",
-          gap: 12,
-          alignItems: "flex-start",
-          justifyContent: "space-between",
-          flexWrap: "wrap",
-          marginBottom: 14,
-        }}
-      >
-        <div style={{ minWidth: 0 }}>
+    <section style={{ marginBottom: 18, padding: 16, border: "1px solid rgba(96,165,250,.22)", borderRadius: 18, background: "rgba(15,23,42,.55)" }}>
+      <div style={{ display: "flex", gap: 12, alignItems: "center", justifyContent: "space-between", flexWrap: "wrap", marginBottom: 14 }}>
+        <div>
           <h3 style={{ margin: 0 }}>📈 Cric4All Growth Center</h3>
-
-          <p
-            className="muted"
-            style={{
-              margin: "5px 0 0",
-              lineHeight: 1.45,
-            }}
-          >
-            Measure discovery, activation and repeat usage with real
-            league-cohort conversion instead of dividing unrelated totals.
-          </p>
+          <p className="muted" style={{ margin: "5px 0 0" }}>Measure discovery, activation and repeat league usage before spending on acquisition.</p>
         </div>
-
-        <div
-          style={{
-            display: "flex",
-            gap: 8,
-            flexWrap: "wrap",
-          }}
-        >
+        <div style={{ display: "flex", gap: 8, flexWrap: "wrap" }}>
           {[7, 30, 90].map((days) => (
-            <button
-              key={days}
-              type="button"
-              className={`btn ${growthDays === days ? "" : "btn-outline"}`}
-              onClick={() => {
-                setGrowthDays(days);
-                loadGrowthData(days);
-              }}
-            >
+            <button key={days} type="button" className={`btn ${growthDays === days ? "" : "btn-outline"}`} onClick={() => { setGrowthDays(days); loadGrowthData(days); }}>
               {days} days
             </button>
           ))}
         </div>
       </div>
 
-      {/* ----------------------------------------------------------
-          SCOPE SWITCH
-          ----------------------------------------------------------
-          External Only intentionally scopes league adoption/activity.
-          Anonymous landing visitors cannot be honestly assigned to an
-          external league before they create/join one, so acquisition-site
-          metrics remain in the separate Site-wide Acquisition panel below.
-          ---------------------------------------------------------- */}
-      <div
-        style={{
-          display: "grid",
-          gridTemplateColumns: "repeat(2, minmax(0, 1fr))",
-          gap: 8,
-          padding: 5,
-          marginBottom: 14,
-          borderRadius: 13,
-          border: "1px solid rgba(148,163,184,.16)",
-          background: "rgba(2,6,23,.28)",
-        }}
-      >
-        {[
-          ["ALL", "📊 All Activity"],
-          ["EXTERNAL", "🌍 External Only"],
-        ].map(([scope, label]) => {
-          const selected =
-            growthScope === scope;
-
-          return (
-            <button
-              key={scope}
-              type="button"
-              onClick={() => setGrowthScope(scope)}
-              style={{
-                minWidth: 0,
-                minHeight: 42,
-                padding: "9px 10px",
-                borderRadius: 10,
-                border: selected
-                  ? "1px solid rgba(56,189,248,.75)"
-                  : "1px solid transparent",
-                background: selected
-                  ? "linear-gradient(135deg, rgba(37,99,235,.90), rgba(34,193,220,.88))"
-                  : "rgba(15,23,42,.36)",
-                color: "#fff",
-                fontWeight: 900,
-                fontSize: 13,
-                lineHeight: 1.2,
-                cursor: "pointer",
-                overflowWrap: "anywhere",
-              }}
-            >
-              {label}
-            </button>
-          );
-        })}
-      </div>
-
       {growthLoading && !growthData ? (
         <p className="muted">Loading growth analytics...</p>
       ) : growthData ? (
         <>
-          {(() => {
-            const cohort =
-              growthScope === "EXTERNAL"
-                ? growthData.external?.cohort
-                : growthData.all?.cohort;
+          <div style={{ display: "grid", gridTemplateColumns: "repeat(auto-fit, minmax(125px, 1fr))", gap: 10 }}>
+            {[
+              ["Visitors", growthData.all?.visitors ?? 0, "Unique landing visitors"],
+              ["Signups", growthData.all?.signups ?? 0, `${growthData.all?.conversion?.visitorToSignup ?? 0}% of visitors`],
+              ["Leagues", growthData.all?.leagues ?? 0, "New leagues"],
+              ["Matches", growthData.all?.matches ?? 0, `${growthData.all?.conversion?.leagueToMatch ?? 0}% league → match`],
+              ["Started", growthData.all?.startedMatches ?? 0, `${growthData.all?.conversion?.matchToStart ?? 0}% match → start`],
+              ["Completed", growthData.all?.completedMatches ?? 0, `${growthData.all?.conversion?.startToComplete ?? 0}% start → complete`],
+              ["Repeat Leagues", growthData.all?.repeatLeagues ?? 0, "2+ completed matches"],
+            ].map(([label, value, note]) => (
+              <div key={label} style={{ padding: 12, minWidth: 0, borderRadius: 14, border: "1px solid rgba(148,163,184,.16)", background: "rgba(2,6,23,.38)" }}>
+                <span className="muted" style={{ display: "block", fontSize: 12 }}>{label}</span>
+                <strong style={{ display: "block", fontSize: 24, lineHeight: 1.15, marginTop: 5 }}>{value}</strong>
+                <small className="muted" style={{ display: "block", marginTop: 5, overflowWrap: "anywhere" }}>{note}</small>
+              </div>
+            ))}
+          </div>
 
-            const activity =
-              growthScope === "EXTERNAL"
-                ? growthData.external?.activity
-                : growthData.all?.activity;
-
-            const cards =
-              growthScope === "EXTERNAL"
-                ? [
-                    [
-                      "Organizers",
-                      cohort?.organizers ?? 0,
-                      "Owners of new external leagues",
-                    ],
-                    [
-                      "New Leagues",
-                      cohort?.leagues ?? 0,
-                      "External league cohort",
-                    ],
-                    [
-                      "Activated",
-                      cohort?.withMatch ?? 0,
-                      `${cohort?.conversion?.leagueToMatch ?? 0}% created a match`,
-                    ],
-                    [
-                      "Started",
-                      cohort?.started ?? 0,
-                      `${cohort?.conversion?.matchToStart ?? 0}% activated → started`,
-                    ],
-                    [
-                      "Completed",
-                      cohort?.completed ?? 0,
-                      `${cohort?.conversion?.startToComplete ?? 0}% started → completed`,
-                    ],
-                    [
-                      "Repeat",
-                      cohort?.repeat ?? 0,
-                      `${cohort?.conversion?.completeToRepeat ?? 0}% completed → 2+ matches`,
-                    ],
-                  ]
-                : [
-                    [
-                      "Visitors",
-                      growthData.all?.visitors ?? 0,
-                      "Tracked landing visitors",
-                    ],
-                    [
-                      "Signups",
-                      growthData.all?.signups ?? 0,
-                      "New accounts in this period",
-                    ],
-                    [
-                      "New Leagues",
-                      cohort?.leagues ?? 0,
-                      "League cohort",
-                    ],
-                    [
-                      "Activated",
-                      cohort?.withMatch ?? 0,
-                      `${cohort?.conversion?.leagueToMatch ?? 0}% created a match`,
-                    ],
-                    [
-                      "Started",
-                      cohort?.started ?? 0,
-                      `${cohort?.conversion?.matchToStart ?? 0}% activated → started`,
-                    ],
-                    [
-                      "Completed",
-                      cohort?.completed ?? 0,
-                      `${cohort?.conversion?.startToComplete ?? 0}% started → completed`,
-                    ],
-                    [
-                      "Repeat",
-                      cohort?.repeat ?? 0,
-                      `${cohort?.conversion?.completeToRepeat ?? 0}% completed → 2+ matches`,
-                    ],
-                  ];
-
-            return (
-              <>
-                <div
-                  style={{
-                    display: "grid",
-                    gridTemplateColumns:
-                      "repeat(auto-fit, minmax(125px, 1fr))",
-                    gap: 10,
-                  }}
-                >
-                  {cards.map(([label, value, note]) => (
-                    <div
-                      key={label}
-                      style={{
-                        padding: 12,
-                        minWidth: 0,
-                        borderRadius: 14,
-                        border: "1px solid rgba(148,163,184,.16)",
-                        background: "rgba(2,6,23,.38)",
-                      }}
-                    >
-                      <span
-                        className="muted"
-                        style={{
-                          display: "block",
-                          fontSize: 12,
-                        }}
-                      >
-                        {label}
-                      </span>
-
-                      <strong
-                        style={{
-                          display: "block",
-                          fontSize: 24,
-                          lineHeight: 1.15,
-                          marginTop: 5,
-                        }}
-                      >
-                        {value}
-                      </strong>
-
-                      <small
-                        className="muted"
-                        style={{
-                          display: "block",
-                          marginTop: 5,
-                          overflowWrap: "anywhere",
-                          lineHeight: 1.35,
-                        }}
-                      >
-                        {note}
-                      </small>
-                    </div>
-                  ))}
-                </div>
-
-                <div
-                  style={{
-                    marginTop: 12,
-                    padding: 13,
-                    borderRadius: 14,
-                    border:
-                      growthScope === "EXTERNAL"
-                        ? "1px solid rgba(52,211,153,.22)"
-                        : "1px solid rgba(96,165,250,.20)",
-                    background:
-                      growthScope === "EXTERNAL"
-                        ? "rgba(6,78,59,.12)"
-                        : "rgba(30,64,175,.08)",
-                  }}
-                >
-                  <strong>
-                    {growthScope === "EXTERNAL"
-                      ? "🌍 External activity"
-                      : "📊 All match activity"}
-                  </strong>
-
-                  <p
-                    className="muted"
-                    style={{
-                      margin: "7px 0 0",
-                      lineHeight: 1.5,
-                    }}
-                  >
-                    {activity?.matches ?? 0} matches created ·{" "}
-                    {activity?.startedMatches ?? 0} started ·{" "}
-                    {activity?.completedMatches ?? 0} completed ·{" "}
-                    {activity?.repeatLeagues ?? 0} leagues with 2+ completed
-                    matches
-                  </p>
-
-                  <p
-                    className="muted"
-                    style={{
-                      margin: "5px 0 0",
-                      fontSize: 12,
-                      lineHeight: 1.45,
-                    }}
-                  >
-                    Cohort conversion above follows leagues created during the
-                    selected period. This activity line shows raw match volume
-                    during the same period.
-                  </p>
-                </div>
-              </>
-            );
-          })()}
-
-          {/* Site-wide acquisition cannot be honestly assigned to an
-              external league until the visitor creates/joins one. Keep these
-              metrics clearly separate from the External league toggle. */}
-          <div
-            style={{
-              marginTop: 14,
-              paddingTop: 14,
-              borderTop: "1px solid rgba(148,163,184,.14)",
-            }}
-          >
-            <div style={{ marginBottom: 9 }}>
-              <strong
-                style={{
-                  display: "block",
-                  fontSize: 14,
-                }}
-              >
-                📣 Site-wide acquisition channels
-              </strong>
-
-              <span
-                className="muted"
-                style={{
-                  display: "block",
-                  marginTop: 3,
-                  fontSize: 12,
-                  lineHeight: 1.4,
-                }}
-              >
-                These are website/channel metrics and are intentionally not
-                changed by the External league filter.
-              </span>
+          <div style={{ marginTop: 12, display: "grid", gridTemplateColumns: "repeat(auto-fit, minmax(210px, 1fr))", gap: 10 }}>
+            <div style={{ padding: 13, borderRadius: 14, border: "1px solid rgba(52,211,153,.2)", background: "rgba(6,78,59,.12)" }}>
+              <strong>🌍 External adoption</strong>
+              <p className="muted" style={{ margin: "7px 0 0", lineHeight: 1.5 }}>
+                {growthData.external?.leagues ?? 0} leagues · {growthData.external?.startedMatches ?? 0} matches started · {growthData.external?.completedMatches ?? 0} completed · {growthData.external?.repeatLeagues ?? 0} repeat leagues
+              </p>
+            </div>
+            <div style={{ padding: 13, borderRadius: 14, border: "1px solid rgba(56,189,248,.2)", background: "rgba(7,89,133,.12)" }}>
+              <strong>👀 Spectator acquisition</strong>
+              <p className="muted" style={{ margin: "7px 0 0", lineHeight: 1.5 }}>
+                {growthData.all?.spectatorViews ?? 0} tracked views · {growthData.all?.spectatorCtaClicks ?? 0} CTA clicks · {growthData.all?.conversion?.spectatorToCta ?? 0}% conversion
+              </p>
             </div>
 
-            <div
-              style={{
-                display: "grid",
-                gridTemplateColumns:
-                  "repeat(auto-fit, minmax(210px, 1fr))",
-                gap: 10,
-              }}
-            >
-              <div
-                style={{
-                  padding: 13,
-                  borderRadius: 14,
-                  border: "1px solid rgba(56,189,248,.2)",
-                  background: "rgba(7,89,133,.12)",
-                }}
-              >
-                <strong>👀 Spectator → Cric4All</strong>
-
-                <p
-                  className="muted"
-                  style={{
-                    margin: "7px 0 0",
-                    lineHeight: 1.5,
-                  }}
-                >
-                  {growthData.all?.spectatorViews ?? 0} scorecard views ·{" "}
-                  {growthData.all?.spectatorCtaClicks ?? 0} CTA clicks ·{" "}
-                  {growthData.all?.spectatorScoreNowViews ?? 0} Score Now visits
-                </p>
-
-                <p
-                  className="muted"
-                  style={{
-                    margin: "4px 0 0",
-                    lineHeight: 1.45,
-                    fontSize: 12,
-                  }}
-                >
-                  {growthData.all?.spectatorQuickMatchStarts ?? 0} setup attempts ·{" "}
-                  {growthData.all?.spectatorQuickMatchCreated ?? 0} matches created
-                </p>
-
-                <p
-                  className="muted"
-                  style={{
-                    margin: "4px 0 0",
-                    lineHeight: 1.45,
-                    fontSize: 12,
-                  }}
-                >
-                  {growthData.all?.conversion?.spectatorToCta ?? 0}% view → CTA ·{" "}
-                  {growthData.all?.conversion?.spectatorCtaToScoreNow ?? 0}% CTA → Score Now ·{" "}
-                  {growthData.all?.conversion?.spectatorStartToCreated ?? 0}% setup → match
-                </p>
-              </div>
-
-              <div
-                style={{
-                  padding: 13,
-                  borderRadius: 14,
-                  border: "1px solid rgba(167,139,250,.22)",
-                  background: "rgba(76,29,149,.12)",
-                }}
-              >
-                <strong>🏏 Quick Match onboarding</strong>
-
-                <p
-                  className="muted"
-                  style={{
-                    margin: "7px 0 0",
-                    lineHeight: 1.5,
-                  }}
-                >
-                  {growthData.all?.quickMatchViews ?? 0} views ·{" "}
-                  {growthData.all?.quickMatchStarts ?? 0} setup attempts ·{" "}
-                  {growthData.all?.quickMatchCreated ?? 0} matches created
-                </p>
-
-                <p
-                  className="muted"
-                  style={{
-                    margin: "4px 0 0",
-                    lineHeight: 1.45,
-                    fontSize: 12,
-                  }}
-                >
-                  {growthData.all?.conversion?.quickViewToStart ?? 0}% view →
-                  setup ·{" "}
-                  {growthData.all?.conversion?.quickStartToCreated ?? 0}% setup
-                  → match ·{" "}
-                  {growthData.all?.quickMatchAuthClicks ?? 0} auth clicks
-                </p>
-              </div>
+            <div style={{ padding: 13, borderRadius: 14, border: "1px solid rgba(167,139,250,.22)", background: "rgba(76,29,149,.12)" }}>
+              <strong>🏏 Quick Match onboarding</strong>
+              <p className="muted" style={{ margin: "7px 0 0", lineHeight: 1.5 }}>
+                {growthData.all?.quickMatchViews ?? 0} views · {growthData.all?.quickMatchStarts ?? 0} setup attempts · {growthData.all?.quickMatchCreated ?? 0} matches created
+              </p>
+              <p className="muted" style={{ margin: "4px 0 0", lineHeight: 1.45, fontSize: 12 }}>
+                {growthData.all?.conversion?.quickViewToStart ?? 0}% view → setup · {growthData.all?.conversion?.quickStartToCreated ?? 0}% setup → match · {growthData.all?.quickMatchAuthClicks ?? 0} auth clicks
+              </p>
             </div>
           </div>
 
-          {Array.isArray(growthData.internalLeagueIds) &&
-          growthData.internalLeagueIds.length > 0 ? (
-            <p
-              className="muted"
-              style={{
-                margin: "11px 0 0",
-                fontSize: 12,
-                lineHeight: 1.45,
-              }}
-            >
-              External Only excludes internal/test league IDs:{" "}
-              {growthData.internalLeagueIds.join(", ")}
-            </p>
+          {Array.isArray(growthData.internalLeagueIds) && growthData.internalLeagueIds.length > 0 ? (
+            <p className="muted" style={{ margin: "10px 0 0", fontSize: 12 }}>Internal/test league IDs excluded from External adoption: {growthData.internalLeagueIds.join(", ")}</p>
           ) : (
-            <p
-              className="muted"
-              style={{
-                margin: "11px 0 0",
-                fontSize: 12,
-                lineHeight: 1.45,
-              }}
-            >
-              Set GROWTH_INTERNAL_LEAGUE_IDS to keep your community/test
-              leagues out of External Only.
-            </p>
+            <p className="muted" style={{ margin: "10px 0 0", fontSize: 12 }}>Set GROWTH_INTERNAL_LEAGUE_IDS in your environment to keep your own community/test leagues out of External adoption.</p>
           )}
-
-          <div
-            style={{
-              marginTop: 10,
-              padding: "9px 11px",
-              borderRadius: 11,
-              border: "1px solid rgba(250,204,21,.15)",
-              background: "rgba(113,63,18,.08)",
-            }}
-          >
-            <small
-              className="muted"
-              style={{
-                display: "block",
-                lineHeight: 1.45,
-              }}
-            >
-              ℹ️ Visitor tracking started when Growth Analytics was installed,
-              so older signups cannot be compared reliably with newly tracked
-              visitors. Cohort percentages begin becoming meaningful as new
-              leagues move through the funnel.
-            </small>
-          </div>
         </>
       ) : (
         <p className="muted">Growth analytics are not available yet.</p>
@@ -30182,6 +30002,163 @@ onClick={async () => {
     </div>
   </div>
 )}
+{showVenueModal && venueMatch && (
+  <div
+    className="modal-backdrop"
+    onMouseDown={(event) => {
+      if (
+        event.target ===
+        event.currentTarget
+      ) {
+        setShowVenueModal(false);
+        setVenueMatch(null);
+      }
+    }}
+  >
+    <div
+      className="modal-card"
+      style={{
+        width: "min(560px, calc(100vw - 24px))",
+        maxHeight: "calc(100vh - 24px)",
+        overflowY: "auto",
+      }}
+    >
+      <div
+        style={{
+          display: "flex",
+          alignItems: "flex-start",
+          justifyContent: "space-between",
+          gap: 12,
+          marginBottom: 14,
+        }}
+      >
+        <div style={{ minWidth: 0 }}>
+          <strong
+            style={{
+              display: "block",
+              fontSize: 18,
+            }}
+          >
+            📍 Match Venue
+          </strong>
+
+          <span
+            className="muted"
+            style={{
+              display: "block",
+              marginTop: 4,
+              lineHeight: 1.4,
+              overflowWrap: "anywhere",
+            }}
+          >
+            {venueMatch.teamAName ||
+              venueMatch.teamA?.name ||
+              "Team A"}{" "}
+            vs{" "}
+            {venueMatch.teamBName ||
+              venueMatch.teamB?.name ||
+              "Team B"}
+          </span>
+        </div>
+
+        <button
+          type="button"
+          className="btn btn-outline"
+          onClick={() => {
+            setShowVenueModal(false);
+            setVenueMatch(null);
+          }}
+        >
+          ✕
+        </button>
+      </div>
+
+      <form
+        onSubmit={handleSaveMatchVenue}
+        className="form"
+      >
+        <label>
+          <span>Venue / Ground</span>
+          <input
+            type="text"
+            maxLength={160}
+            placeholder="e.g. Woodley Cricket Fields"
+            value={venueForm.venueName}
+            onChange={(event) =>
+              setVenueForm((previous) => ({
+                ...previous,
+                venueName:
+                  event.target.value,
+              }))
+            }
+          />
+        </label>
+
+        <label>
+          <span>Venue Address</span>
+          <input
+            type="text"
+            maxLength={300}
+            placeholder="Street, city, state/province, postal code, country"
+            value={venueForm.venueAddress}
+            onChange={(event) =>
+              setVenueForm((previous) => ({
+                ...previous,
+                venueAddress:
+                  event.target.value,
+              }))
+            }
+          />
+
+          <small
+            className="muted"
+            style={{
+              display: "block",
+              marginTop: 5,
+              lineHeight: 1.4,
+            }}
+          >
+            Enter the real physical address. A real address lets public
+            Cric4All match pages use valid Google SportsEvent location data.
+          </small>
+        </label>
+
+        <div
+          style={{
+            display: "grid",
+            gridTemplateColumns:
+              "repeat(2, minmax(0, 1fr))",
+            gap: 9,
+            marginTop: 10,
+          }}
+        >
+          <button
+            type="button"
+            className="btn btn-outline"
+            disabled={venueSaving}
+            onClick={() => {
+              setShowVenueModal(false);
+              setVenueMatch(null);
+            }}
+          >
+            Cancel
+          </button>
+
+          <button
+            type="submit"
+            className="btn"
+            disabled={venueSaving}
+          >
+            {venueSaving
+              ? "Saving…"
+              : "Save Venue"}
+          </button>
+        </div>
+      </form>
+    </div>
+  </div>
+)}
+
 {showEditMatchModal && editingMatch && (
   <div className="modal-backdrop edit-match-backdrop-v3">
     <div className="edit-match-modal-v3">
@@ -30336,6 +30313,38 @@ onClick={async () => {
                   setEditMatchForm((prev) => ({
                     ...prev,
                     scheduledAt: e.target.value,
+                  }))
+                }
+              />
+            </label>
+
+            <label className="edit-field-v3 wide">
+              <span>📍 Venue / Ground</span>
+              <input
+                type="text"
+                maxLength={160}
+                placeholder="e.g. Woodley Cricket Fields"
+                value={editMatchForm.venueName || ""}
+                onChange={(e) =>
+                  setEditMatchForm((prev) => ({
+                    ...prev,
+                    venueName: e.target.value,
+                  }))
+                }
+              />
+            </label>
+
+            <label className="edit-field-v3 wide">
+              <span>🗺️ Venue Address</span>
+              <input
+                type="text"
+                maxLength={300}
+                placeholder="Street, city, state/province, postal code, country"
+                value={editMatchForm.venueAddress || ""}
+                onChange={(e) =>
+                  setEditMatchForm((prev) => ({
+                    ...prev,
+                    venueAddress: e.target.value,
                   }))
                 }
               />
