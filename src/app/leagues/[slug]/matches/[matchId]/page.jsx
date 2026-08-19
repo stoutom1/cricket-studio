@@ -490,7 +490,7 @@ export default async function PublicMatchPage({ params }) {
                 teamAName={match.teamA?.name || "Team A"}
                 teamBName={match.teamB?.name || "Team B"}
                 resultText={matchResultText}
-                shareUrl={`${canonicalMatchUrl}?share=4`}
+                shareUrl={`${canonicalMatchUrl}/share-v5`}
               />
 
               {match.shareCode && (
