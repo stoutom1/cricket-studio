@@ -136,14 +136,44 @@ export async function POST(request, { params }) {
   if (action === "OFFICIAL_OVERRIDE") {
     const target = Number(body?.target);
     const revisedOvers = Number(body?.revisedOvers);
-    const par = body?.par === "" || body?.par == null
-      ? target - 1
-      : Number(body.par);
+    /*
+     * Official target and Official par are separate DLS outputs.
+     *
+     * When play will resume, the scorer may correctly have only the revised
+     * target. Do NOT silently manufacture an Official par as target - 1.
+     * Par is required only when an Official DLS termination is actually
+     * being decided.
+     */
+    const par =
+      body?.par === "" ||
+      body?.par == null
+        ? null
+        : Number(
+            body.par
+          );
 
     if (!Number.isInteger(target) || target <= 0) {
       return NextResponse.json(
         { error: "Enter a valid official DLS target." },
         { status: 400 }
+      );
+    }
+
+    if (
+      par != null &&
+      (
+        !Number.isInteger(par) ||
+        par < 0
+      )
+    ) {
+      return NextResponse.json(
+        {
+          error:
+            "Enter a valid official DLS par, or leave it blank when play will resume.",
+        },
+        {
+          status: 400,
+        }
       );
     }
 
@@ -167,7 +197,21 @@ export async function POST(request, { params }) {
   } else if (action === "TERMINATE") {
     const latest = latestDlsState(match);
 
-    if (latest?.mode === "OFFICIAL_OVERRIDE" && Number(latest.par) >= 0) {
+    const hasOfficialPar =
+      latest?.mode ===
+        "OFFICIAL_OVERRIDE" &&
+      latest?.par != null &&
+      latest?.par !== "" &&
+      Number.isInteger(
+        Number(
+          latest.par
+        )
+      ) &&
+      Number(
+        latest.par
+      ) >= 0;
+
+    if (hasOfficialPar) {
       const second = inningsSnapshot(match, 2);
       const par = Number(latest.par);
       const score = second.runs;

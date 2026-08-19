@@ -8,13 +8,18 @@
  *
  * Cric4All therefore exposes:
  *   1) STANDARD — calculated from the published Standard Edition table.
- *      Automatic calculation is intentionally restricted to interruptions
- *      recorded at a completed-over boundary.
+ *      The published table is over-by-over. Cric4All linearly interpolates
+ *      between adjacent table rows so an interruption can be recorded at
+ *      any LEGAL-delivery boundary (for example 3.3 overs).
  *   2) OFFICIAL_OVERRIDE — scorer enters a target/par produced by an
  *      official/licensed DLS calculator. This can be used at any ball.
  *
  * Source table: ICC D/L Standard Edition, resource percentages remaining,
  * over-by-over, 50 overs to 0.
+ *
+ * IMPORTANT:
+ * Ball-level interpolation is a Cric4All Standard convenience calculation.
+ * It must not be represented as Official DLS / Stern Edition.
  */
 
 export const DLS_STANDARD_G50 = 200;
@@ -40,6 +45,73 @@ export function resourcePercent(oversLeft, wicketsLost) {
   }
 
   return Number(RESOURCE[overs]?.[wickets] || 0);
+}
+
+
+/*
+ * Return Standard-table resource remaining at an exact LEGAL-ball position.
+ *
+ * RESOURCE contains whole overs remaining only. For a partial over we linearly
+ * interpolate between the surrounding whole-over rows.
+ *
+ * Example:
+ *   4.3 overs remaining = 27 legal balls remaining.
+ *   That lies halfway between 4 overs (24 balls) and 5 overs (30 balls).
+ *
+ * This makes Cric4All Standard usable when rain stops play at 3.1, 3.2,
+ * 3.3, etc. It is intentionally labelled Cric4All Standard, not Official DLS.
+ */
+export function resourcePercentAtBalls(legalBallsLeft, wicketsLost) {
+  const balls = Number(legalBallsLeft);
+
+  if (
+    !Number.isInteger(balls) ||
+    balls < 0 ||
+    balls > 50 * 6
+  ) {
+    throw new Error(
+      "D/L Standard automatic calculation requires legal balls remaining between 0 and 300."
+    );
+  }
+
+  const lowerOvers =
+    Math.floor(balls / 6);
+
+  const extraBalls =
+    balls % 6;
+
+  if (extraBalls === 0) {
+    return resourcePercent(
+      lowerOvers,
+      wicketsLost
+    );
+  }
+
+  const upperOvers =
+    lowerOvers + 1;
+
+  const lower =
+    resourcePercent(
+      lowerOvers,
+      wicketsLost
+    );
+
+  const upper =
+    resourcePercent(
+      upperOvers,
+      wicketsLost
+    );
+
+  const fraction =
+    extraBalls / 6;
+
+  return Number(
+    (
+      lower +
+      (upper - lower) *
+        fraction
+    ).toFixed(3)
+  );
 }
 
 export function calculateTarget({ team1Score, r1, r2, g50 = DLS_STANDARD_G50 }) {
@@ -167,13 +239,16 @@ export function calculateStandardInterruption({
 }) {
   const innings = inningsSnapshot(match, inningsNo);
   const currentOvers = currentAllocation(match, inningsNo);
-  const completedOvers = innings.legalBalls / 6;
 
-  if (innings.legalBalls % 6 !== 0) {
-    throw new Error(
-      "Automatic D/L Standard calculation is available at completed-over boundaries. For a mid-over interruption, use Official DLS Override."
-    );
-  }
+  /*
+   * Keep the exact legal-ball position. Cricket notation 3.3 means
+   * 3 overs + 3 balls = 21 legal balls = 3.5 decimal overs for arithmetic.
+   */
+  const completedBalls =
+    innings.legalBalls;
+
+  const completedOvers =
+    completedBalls / 6;
 
   const newOvers = Number(revisedOvers);
 
@@ -193,12 +268,55 @@ export function calculateStandardInterruption({
     );
   }
 
-  const beforeRemaining = currentOvers - completedOvers;
-  const afterRemaining = newOvers - completedOvers;
+  const currentAllocationBalls =
+    Math.round(
+      currentOvers * 6
+    );
 
-  const beforeResource = resourcePercent(beforeRemaining, innings.wickets);
-  const afterResource = resourcePercent(afterRemaining, innings.wickets);
-  const resourceLost = Number((beforeResource - afterResource).toFixed(1));
+  const revisedAllocationBalls =
+    Math.round(
+      newOvers * 6
+    );
+
+  const beforeRemainingBalls =
+    Math.max(
+      currentAllocationBalls -
+        completedBalls,
+      0
+    );
+
+  const afterRemainingBalls =
+    Math.max(
+      revisedAllocationBalls -
+        completedBalls,
+      0
+    );
+
+  const beforeRemaining =
+    beforeRemainingBalls / 6;
+
+  const afterRemaining =
+    afterRemainingBalls / 6;
+
+  const beforeResource =
+    resourcePercentAtBalls(
+      beforeRemainingBalls,
+      innings.wickets
+    );
+
+  const afterResource =
+    resourcePercentAtBalls(
+      afterRemainingBalls,
+      innings.wickets
+    );
+
+  const resourceLost =
+    Number(
+      (
+        beforeResource -
+        afterResource
+      ).toFixed(1)
+    );
 
   const originalStartResource = resourcePercent(
     Number(match.oversPerInnings),
@@ -239,6 +357,7 @@ export function calculateStandardInterruption({
     mode: "STANDARD",
     inningsNo: Number(inningsNo),
     completedOvers,
+    completedBalls,
     wickets: innings.wickets,
     runs: innings.runs,
     previousOvers: currentOvers,
@@ -265,17 +384,23 @@ export function calculateTermination({ match, g50 = DLS_STANDARD_G50 }) {
     0
   );
 
-  if (second.legalBalls % 6 !== 0) {
-    throw new Error(
-      "Automatic Standard par at a mid-over termination is not available in Cric4All. Enter the official DLS par/target using Official Override first."
-    );
-  }
+  /*
+   * Standard termination is also ball-aware. The remaining resource is
+   * interpolated from the public whole-over Standard table at the exact
+   * legal-delivery boundary where play stopped.
+   *
+   * Match/competition minimum-overs eligibility is a separate rule and
+   * should be enforced by the match-ending workflow, not by rounding this
+   * resource calculation to a completed over.
+   */
+  const remainingOvers =
+    remainingBalls / 6;
 
-  const remainingOvers = remainingBalls / 6;
-  const remainingResource = resourcePercent(
-    remainingOvers,
-    second.wickets
-  );
+  const remainingResource =
+    resourcePercentAtBalls(
+      remainingBalls,
+      second.wickets
+    );
 
   const r1 = resourceAvailableForInnings(match, 1);
   const r2BeforeTermination = resourceAvailableForInnings(match, 2);

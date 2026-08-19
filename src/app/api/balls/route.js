@@ -12,6 +12,10 @@ import {
 import {
   detectLiveMilestonesForBall,
 } from "@/lib/player-milestones";
+import {
+  currentAllocation,
+  latestDlsState,
+} from "@/lib/dls-standard";
 
 export const runtime = "nodejs";
 
@@ -78,7 +82,55 @@ const endInningsAfterWicket = Boolean(payload.endInningsAfterWicket);
   }
 
   const match = await prisma.match.findUnique({
-    where: { id: payload.matchId },
+    where: {
+      id: payload.matchId,
+    },
+    include: {
+      /*
+       * DLS revisions are persisted as MatchEvent rows. Ball scoring must
+       * read them so the server—not just the browser—knows the active revised
+       * innings allocation and target.
+       */
+      events: {
+        where: {
+          eventType: {
+            in: [
+              "DLS_INTERRUPTION",
+              "DLS_OFFICIAL_OVERRIDE",
+              "DLS_RESULT",
+            ],
+          },
+        },
+        orderBy: {
+          id: "asc",
+        },
+      },
+
+      /*
+       * Team names are needed only to persist an accurate authoritative
+       * DLS-aware result in match.statusText when the revised chase finishes.
+       */
+      teamA: {
+        select: {
+          id: true,
+          name: true,
+        },
+      },
+
+      teamB: {
+        select: {
+          id: true,
+          name: true,
+        },
+      },
+
+      battingFirstTeam: {
+        select: {
+          id: true,
+          name: true,
+        },
+      },
+    },
   });
 
   if (!match) {
@@ -551,9 +603,32 @@ await prisma.matchState.upsert({
   },
 });
 
-const rawOversPerInnings = Number(match.oversPerInnings || 0);
+/*
+ * ACTIVE INNINGS ALLOCATION
+ * =========================
+ * Normally this is match.oversPerInnings.
+ *
+ * After a rain/DLS revision, currentAllocation() returns the latest revised
+ * allocation stored in MatchEvent. This is critical: an 8-over DLS chase
+ * must finish at 8.0, not continue toward the original 20.0.
+ */
+const activeOversPerInnings =
+  Number(
+    currentAllocation(
+      match,
+      payload.inningsNo
+    ) ||
+    match.oversPerInnings ||
+    0
+  );
+
 const maxLegalBalls =
-  rawOversPerInnings > 0 ? rawOversPerInnings * 6 : Infinity;
+  activeOversPerInnings > 0
+    ? Math.round(
+        activeOversPerInnings *
+          6
+      )
+    : Infinity;
 
 const updatedLegalBallsCount =
   !isRetiredHurt && legalDelivery
@@ -595,10 +670,220 @@ const innings2Runs = await prisma.ball.aggregate({
   _sum: { totalRuns: true },
 });
 
+/*
+ * ACTIVE CHASE TARGET
+ * ===================
+ * The old code always used:
+ *
+ *   first innings runs + 1
+ *
+ * That is wrong once DLS has revised the chase.
+ *
+ * latestDlsState(match) reads the MatchEvent history. If the latest active
+ * DLS state supplies a positive target for innings 2, that target becomes the
+ * authoritative server target. Otherwise preserve normal cricket behavior.
+ */
+const latestDls =
+  latestDlsState(
+    match
+  );
+
+const normalTarget =
+  Number(
+    innings1Runs
+      ._sum
+      .totalRuns ||
+    0
+  ) +
+  1;
+
+const dlsTarget =
+  Number(
+    latestDls
+      ?.inningsNo === 2
+      ? latestDls
+          ?.target
+      : 0
+  );
+
+const activeTarget =
+  dlsTarget > 0
+    ? dlsTarget
+    : normalTarget;
+
+const innings2Total =
+  Number(
+    innings2Runs
+      ._sum
+      .totalRuns ||
+    0
+  );
+
 const targetReached =
   payload.inningsNo === 2 &&
-  Number(innings2Runs._sum.totalRuns || 0) >=
-    Number(innings1Runs._sum.totalRuns || 0) + 1;
+  activeTarget > 0 &&
+  innings2Total >=
+    activeTarget;
+
+/*
+ * AUTHORITATIVE DLS RESULT
+ * ========================
+ * Reaching a revised DLS target must not fall back to the normal/original
+ * first-innings result calculation elsewhere in the application.
+ *
+ * Persist a DLS-labelled result directly on Match.statusText so Scorer Mode,
+ * Scoreboard, Completed history, live/spectator views and later reloads all
+ * have one authoritative result string available.
+ */
+const dlsActiveForInnings2 =
+  payload.inningsNo === 2 &&
+  dlsTarget > 0;
+
+const dlsMethodLabel =
+  String(
+    latestDls
+      ?.mode ||
+    ""
+  )
+    .trim()
+    .toUpperCase() ===
+  "OFFICIAL_OVERRIDE"
+    ? "DLS"
+    : "D/L Standard";
+
+const firstBattingTeam =
+  Number(
+    match
+      ?.battingFirstTeamId
+  ) ===
+  Number(
+    match
+      ?.teamAId
+  )
+    ? match.teamA
+    : match.teamB;
+
+const secondBattingTeam =
+  Number(
+    firstBattingTeam
+      ?.id
+  ) ===
+  Number(
+    match
+      ?.teamAId
+  )
+    ? match.teamB
+    : match.teamA;
+
+const firstBattingTeamName =
+  firstBattingTeam
+    ?.name ||
+  "Team 1";
+
+const secondBattingTeamName =
+  secondBattingTeam
+    ?.name ||
+  "Team 2";
+
+let completedStatusText =
+  "MATCH COMPLETED";
+
+if (
+  dlsActiveForInnings2
+) {
+  if (
+    targetReached
+  ) {
+    /*
+     * A successful chase is a wickets result when the competition configured
+     * a finite wicket limit. For unlimited-wicket formats, avoid inventing an
+     * arbitrary wickets-remaining margin.
+     */
+    if (
+      rawMaxWickets > 0
+    ) {
+      const wicketsRemaining =
+        Math.max(
+          rawMaxWickets -
+            updatedWicketCount,
+          0
+        );
+
+      completedStatusText =
+        wicketsRemaining > 0
+          ? `${secondBattingTeamName} won by ${wicketsRemaining} wicket${
+              wicketsRemaining === 1
+                ? ""
+                : "s"
+            } (${dlsMethodLabel})`
+          : `${secondBattingTeamName} won by chasing the target (${dlsMethodLabel})`;
+    } else {
+      completedStatusText =
+        `${secondBattingTeamName} won by chasing the target (${dlsMethodLabel})`;
+    }
+  } else if (
+    inningsEnded
+  ) {
+    /*
+     * If the revised allocation/all-out ends before the winning target is
+     * reached, the tie position for the FINAL revised chase is target - 1.
+     * When Standard DLS supplied an explicit par, prefer that persisted value.
+     */
+    const explicitPar =
+      latestDls?.par != null &&
+      latestDls?.par !== "" &&
+      Number.isFinite(
+        Number(
+          latestDls.par
+        )
+      )
+        ? Number(
+            latestDls.par
+          )
+        : null;
+
+    const finalPar =
+      explicitPar != null
+        ? explicitPar
+        : Math.max(
+            activeTarget - 1,
+            0
+          );
+
+    if (
+      innings2Total >
+      finalPar
+    ) {
+      const difference =
+        innings2Total -
+        finalPar;
+
+      completedStatusText =
+        `${secondBattingTeamName} won by ${difference} run${
+          difference === 1
+            ? ""
+            : "s"
+        } (${dlsMethodLabel})`;
+    } else if (
+      innings2Total ===
+      finalPar
+    ) {
+      completedStatusText =
+        `Match tied (${dlsMethodLabel})`;
+    } else {
+      const difference =
+        finalPar -
+        innings2Total;
+
+      completedStatusText =
+        `${firstBattingTeamName} won by ${difference} run${
+          difference === 1
+            ? ""
+            : "s"
+        } (${dlsMethodLabel})`;
+    }
+  }
+}
 
 if (payload.inningsNo === 1 && inningsEnded) {
   nextInningsNo = 2;
@@ -627,7 +912,8 @@ if (
     data: {
       status: "COMPLETED",
       endedAt: match.endedAt || new Date(),
-      statusText: "MATCH COMPLETED",
+      statusText:
+        completedStatusText,
     },
   });
 }
@@ -689,6 +975,46 @@ return NextResponse.json(
     inningsEnded,
     inningsEndedReason,
     nextInningsNo,
+
+    /*
+     * These values are additive response metadata only. Existing clients can
+     * ignore them, while the scorer/debugger can verify which server target
+     * and allocation actually governed this delivery.
+     */
+    activeTarget:
+      payload.inningsNo === 2
+        ? activeTarget
+        : null,
+
+    activeOversPerInnings,
+
+    dlsActive:
+      Boolean(
+        latestDls &&
+        (
+          Number(
+            latestDls
+              ?.target ||
+            0
+          ) > 0 ||
+          Number(
+            latestDls
+              ?.revisedOvers ||
+            0
+          ) > 0
+        )
+      ),
+
+    dlsMethodLabel:
+      dlsActiveForInnings2
+        ? dlsMethodLabel
+        : null,
+
+    completedStatusText:
+      inningsEnded ||
+      targetReached
+        ? completedStatusText
+        : null,
 
     milestones:
       milestoneResult.newMilestones.map(
