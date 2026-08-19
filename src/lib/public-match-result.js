@@ -69,16 +69,11 @@ export function summarizePublicInnings(balls = [], inningsNo) {
     (ball) => Boolean(ball.legalDelivery)
   ).length;
 
-  const battingTeamIds = rows
-    .map((ball) => Number(ball.battingTeamId))
-    .filter((value) => Number.isInteger(value) && value > 0);
-
   return {
     runs,
     wickets,
     legalBalls,
     overs: `${Math.floor(legalBalls / 6)}.${legalBalls % 6}`,
-    battingTeamId: battingTeamIds[0] || null,
   };
 }
 
@@ -127,24 +122,23 @@ export function buildPublicMatchResult(match) {
   const second = summarizePublicInnings(match?.balls || [], 2);
 
   /*
-   * Resolve batting order from recorded balls first, then battingFirstTeamId,
-   * then fall back to Team A / Team B.
+   * Ball does not store battingTeamId in the current Cric4All schema.
+   * Resolve innings batting order from Match.battingFirstTeamId instead.
+   *
+   * If an older match does not have battingFirstTeamId populated, fall back
+   * to Team A batting first. This mirrors the existing match-level model
+   * rather than querying a Ball field that does not exist.
    */
   const firstBattingTeamId =
-    first.battingTeamId ||
     Number(match?.battingFirstTeamId) ||
     Number(match?.teamAId) ||
     null;
 
   const secondBattingTeamId =
-    second.battingTeamId ||
-    (
-      firstBattingTeamId &&
-      Number(match?.teamAId) === firstBattingTeamId
-        ? Number(match?.teamBId)
-        : Number(match?.teamAId)
-    ) ||
-    null;
+    firstBattingTeamId &&
+    Number(match?.teamAId) === firstBattingTeamId
+      ? Number(match?.teamBId) || null
+      : Number(match?.teamAId) || null;
 
   const defendingTeamName =
     teamNameForId(match, firstBattingTeamId) ||

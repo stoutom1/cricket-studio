@@ -37,7 +37,6 @@ export default async function Image({ params }) {
           balls: {
             select: {
               inningsNo: true,
-              battingTeamId: true,
               totalRuns: true,
               isWicket: true,
               wicketType: true,
