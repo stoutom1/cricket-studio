@@ -145,12 +145,14 @@ export async function generateMetadata({ params }) {
         {
           url:
             absoluteCric4AllUrl(
-              `/leagues/${league.slug}/matches/${match.id}/opengraph-image?v=3`
+              `/leagues/${league.slug}/matches/${match.id}/share-card-v4`
             ),
           width:
             1200,
           height:
             630,
+          type:
+            "image/png",
           alt:
             `${match.teamA?.name} vs ${match.teamB?.name} Cric4All match result`,
         },
@@ -164,7 +166,7 @@ export async function generateMetadata({ params }) {
       description,
       images: [
         absoluteCric4AllUrl(
-          `/leagues/${league.slug}/matches/${match.id}/opengraph-image?v=3`
+          `/leagues/${league.slug}/matches/${match.id}/share-card-v4`
         ),
       ],
     },
@@ -488,7 +490,7 @@ export default async function PublicMatchPage({ params }) {
                 teamAName={match.teamA?.name || "Team A"}
                 teamBName={match.teamB?.name || "Team B"}
                 resultText={matchResultText}
-                shareUrl={`${canonicalMatchUrl}?share=3`}
+                shareUrl={`${canonicalMatchUrl}?share=4`}
               />
 
               {match.shareCode && (

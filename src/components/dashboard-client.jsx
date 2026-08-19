@@ -15768,7 +15768,7 @@ async function shareCompletedMatch(match) {
    */
   const url =
     usePublicPage
-      ? `${cleanUrl}?share=3`
+      ? `${cleanUrl}?share=4`
       : cleanUrl;
 
   const teamA = match.teamAName || match.teamA?.name || "Team A";
