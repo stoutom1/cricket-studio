@@ -640,6 +640,17 @@ const [playerNames, setPlayerNames] = useState("");
 const [selectedMemberId, setSelectedMemberId] = useState("");
 const [isMobile, setIsMobile] = useState(false);
 const [showAddPlayers, setShowAddPlayers] = useState(false);
+
+/*
+ * Growth Phase 5 — Move Your League to Cric4All.
+ * CSV is parsed locally for instant preview; only normalized rows are sent.
+ */
+const [showLeagueImportModal, setShowLeagueImportModal] = useState(false);
+const [leagueImportText, setLeagueImportText] = useState("");
+const [leagueImportRows, setLeagueImportRows] = useState([]);
+const [leagueImportErrors, setLeagueImportErrors] = useState([]);
+const [leagueImportSaving, setLeagueImportSaving] = useState(false);
+const [leagueImportResult, setLeagueImportResult] = useState(null);
 const [memberSearch, setMemberSearch] = useState("");
 const [matchesSubTab, setMatchesSubTab] = useState("ACTIVE");
 
@@ -2159,6 +2170,608 @@ async function loadTeams() {
     setTeams([]);
   }
 }
+function parseLeagueImportCsv(
+  text
+) {
+  const source =
+    String(
+      text ||
+      ""
+    ).replace(
+      /^\uFEFF/,
+      ""
+    );
+
+  const rows =
+    [];
+
+  let current =
+    [];
+
+  let cell =
+    "";
+
+  let quoted =
+    false;
+
+  for (
+    let i = 0;
+    i <
+    source.length;
+    i += 1
+  ) {
+    const char =
+      source[i];
+
+    if (char === '"') {
+      if (
+        quoted &&
+        source[i + 1] ===
+          '"'
+      ) {
+        cell +=
+          '"';
+        i += 1;
+      } else {
+        quoted =
+          !quoted;
+      }
+
+      continue;
+    }
+
+    if (
+      char === "," &&
+      !quoted
+    ) {
+      current.push(
+        cell
+      );
+      cell =
+        "";
+      continue;
+    }
+
+    if (
+      (
+        char === "\n" ||
+        char === "\r"
+      ) &&
+      !quoted
+    ) {
+      if (
+        char === "\r" &&
+        source[i + 1] ===
+          "\n"
+      ) {
+        i += 1;
+      }
+
+      current.push(
+        cell
+      );
+
+      if (
+        current.some(
+          (value) =>
+            String(
+              value ||
+              ""
+            ).trim()
+        )
+      ) {
+        rows.push(
+          current
+        );
+      }
+
+      current =
+        [];
+      cell =
+        "";
+      continue;
+    }
+
+    cell +=
+      char;
+  }
+
+  if (
+    cell ||
+    current.length >
+      0
+  ) {
+    current.push(
+      cell
+    );
+
+    if (
+      current.some(
+        (value) =>
+          String(
+            value ||
+            ""
+          ).trim()
+      )
+    ) {
+      rows.push(
+        current
+      );
+    }
+  }
+
+  return rows;
+}
+
+function buildLeagueImportPreview(
+  text
+) {
+  const csvRows =
+    parseLeagueImportCsv(
+      text
+    );
+
+  if (
+    csvRows.length ===
+    0
+  ) {
+    return {
+      rows: [],
+      errors: [],
+    };
+  }
+
+  const first =
+    csvRows[0].map(
+      (value) =>
+        String(
+          value ||
+          ""
+        )
+          .trim()
+          .toLowerCase()
+    );
+
+  const hasHeader =
+    first.some(
+      (value) =>
+        [
+          "team",
+          "team name",
+          "teamname",
+        ].includes(
+          value
+        )
+    );
+
+  const dataRows =
+    hasHeader
+      ? csvRows.slice(1)
+      : csvRows;
+
+  const teamIndex =
+    hasHeader
+      ? first.findIndex(
+          (value) =>
+            [
+              "team",
+              "team name",
+              "teamname",
+            ].includes(
+              value
+            )
+        )
+      : 0;
+
+  const playerIndex =
+    hasHeader
+      ? first.findIndex(
+          (value) =>
+            [
+              "player",
+              "player name",
+              "playername",
+              "name",
+            ].includes(
+              value
+            )
+        )
+      : 1;
+
+  const phoneIndex =
+    hasHeader
+      ? first.findIndex(
+          (value) =>
+            [
+              "whatsapp",
+              "whatsapp number",
+              "phone",
+              "mobile",
+              "mobile number",
+            ].includes(
+              value
+            )
+        )
+      : 2;
+
+  const result =
+    [];
+
+  const errors =
+    [];
+
+  dataRows.forEach(
+    (
+      row,
+      index
+    ) => {
+      const displayRow =
+        index +
+        (
+          hasHeader
+            ? 2
+            : 1
+        );
+
+      const teamName =
+        String(
+          row[
+            teamIndex >=
+            0
+              ? teamIndex
+              : 0
+          ] ||
+          ""
+        ).trim();
+
+      const playerName =
+        String(
+          row[
+            playerIndex >=
+            0
+              ? playerIndex
+              : 1
+          ] ||
+          ""
+        ).trim();
+
+      const whatsappNumber =
+        String(
+          row[
+            phoneIndex >=
+            0
+              ? phoneIndex
+              : 2
+          ] ||
+          ""
+        ).trim();
+
+      if (
+        !teamName
+      ) {
+        errors.push(
+          `Row ${displayRow}: Team is required.`
+        );
+
+        return;
+      }
+
+      result.push({
+        teamName,
+        playerName,
+        whatsappNumber,
+      });
+    }
+  );
+
+  return {
+    rows:
+      result.slice(
+        0,
+        1000
+      ),
+    errors:
+      errors.slice(
+        0,
+        25
+      ),
+  };
+}
+
+function updateLeagueImportPreview(
+  value
+) {
+  setLeagueImportText(
+    value
+  );
+
+  const preview =
+    buildLeagueImportPreview(
+      value
+    );
+
+  setLeagueImportRows(
+    preview.rows
+  );
+
+  setLeagueImportErrors(
+    preview.errors
+  );
+
+  setLeagueImportResult(
+    null
+  );
+}
+
+async function handleLeagueImportFile(
+  event
+) {
+  const file =
+    event?.target?.files?.[0];
+
+  if (!file) {
+    return;
+  }
+
+  const lowerName =
+    String(
+      file.name ||
+      ""
+    ).toLowerCase();
+
+  if (
+    !lowerName.endsWith(
+      ".csv"
+    )
+  ) {
+    setLeagueImportErrors([
+      "Please choose a .csv file. Excel files can be saved/exported as CSV before importing.",
+    ]);
+    event.target.value =
+      "";
+    return;
+  }
+
+  if (
+    file.size >
+    2 * 1024 * 1024
+  ) {
+    setLeagueImportErrors([
+      "CSV file is too large. Keep a single import under 2 MB / 1,000 rows.",
+    ]);
+    event.target.value =
+      "";
+    return;
+  }
+
+  try {
+    const text =
+      await file.text();
+
+    updateLeagueImportPreview(
+      text
+    );
+  } catch (
+    error
+  ) {
+    setLeagueImportErrors([
+      error?.message ||
+      "Unable to read the CSV file.",
+    ]);
+  }
+}
+
+function downloadLeagueImportTemplate() {
+  /*
+   * IMPORTANT:
+   * Use REAL CRLF line breaks in the CSV.
+   *
+   * The previous implementation joined with the literal characters
+   * "\\r\\n", which caused Excel to put almost the entire template on one
+   * worksheet row.
+   *
+   * One player belongs on one CSV row and the Team name repeats for every
+   * player on that team.
+   */
+  const csvRows = [
+    [
+      "Team",
+      "Player",
+      "WhatsApp",
+    ],
+    [
+      "Eagles",
+      "John Smith",
+      "+16105550101",
+    ],
+    [
+      "Eagles",
+      "David Patel",
+      "",
+    ],
+    [
+      "Eagles",
+      "Mike Jones",
+      "+16105550103",
+    ],
+    [
+      "Tigers",
+      "Raj Kumar",
+      "+12155550104",
+    ],
+    [
+      "Tigers",
+      "Steve Thomas",
+      "",
+    ],
+    [
+      "New Team",
+      "",
+      "",
+    ],
+  ];
+
+  function csvEscape(value) {
+    const text =
+      String(
+        value ??
+        ""
+      );
+
+    if (
+      /[",\r\n]/.test(
+        text
+      )
+    ) {
+      return `"${text.replace(
+        /"/g,
+        '""'
+      )}"`;
+    }
+
+    return text;
+  }
+
+  const csv =
+    csvRows
+      .map(
+        (row) =>
+          row
+            .map(
+              csvEscape
+            )
+            .join(",")
+      )
+      .join("\r\n");
+
+  /*
+   * UTF-8 BOM helps Excel open the CSV cleanly, including non-ASCII names.
+   */
+  const blob =
+    new Blob(
+      [
+        "\uFEFF",
+        csv,
+      ],
+      {
+        type:
+          "text/csv;charset=utf-8",
+      }
+    );
+
+  const url =
+    URL.createObjectURL(
+      blob
+    );
+
+  const link =
+    document.createElement(
+      "a"
+    );
+
+  link.href =
+    url;
+  link.download =
+    "cric4all-league-import-template.csv";
+
+  document.body.appendChild(
+    link
+  );
+
+  link.click();
+  link.remove();
+
+  URL.revokeObjectURL(
+    url
+  );
+}
+
+async function submitLeagueImport(
+  event
+) {
+  event?.preventDefault?.();
+
+  if (
+    !activeLeagueId
+  ) {
+    setLeagueImportErrors([
+      "Select a league before importing.",
+    ]);
+    return;
+  }
+
+  if (
+    leagueImportRows.length ===
+    0
+  ) {
+    setLeagueImportErrors([
+      "Add at least one valid import row.",
+    ]);
+    return;
+  }
+
+  if (
+    leagueImportErrors.length >
+    0
+  ) {
+    return;
+  }
+
+  setLeagueImportSaving(
+    true
+  );
+
+  setLeagueImportResult(
+    null
+  );
+
+  try {
+    const result =
+      await api(
+        `/api/leagues/${activeLeagueId}/import`,
+        {
+          method:
+            "POST",
+          body:
+            JSON.stringify({
+              rows:
+                leagueImportRows,
+            }),
+        }
+      );
+
+    setLeagueImportResult(
+      result
+    );
+
+    await loadLeagues();
+
+    await loadMatches(
+      activeLeagueId
+    );
+
+    setMessage(
+      `🚚 Import complete: ${result.createdTeams || 0} team(s) and ${result.createdPlayers || 0} player(s) created.`
+    );
+
+    showToast?.(
+      "success",
+      `🚚 Imported ${result.createdTeams || 0} team(s) and ${result.createdPlayers || 0} player(s)`
+    );
+  } catch (
+    error
+  ) {
+    setLeagueImportErrors([
+      error?.message ||
+      "League import failed.",
+    ]);
+  } finally {
+    setLeagueImportSaving(
+      false
+    );
+  }
+}
+
 const handleAddPlayers = async (e) => {
  //alert(JSON.stringify(playerForm));
 
@@ -15111,6 +15724,94 @@ const canEditPlayers = Boolean(
     ["OWNER", "ADMIN"].includes(activeLeagueRole)
 );
 
+async function shareCompletedMatch(match) {
+  if (!match?.id) return;
+
+  const leagueSlug = String(
+    activeLeagueSlug || selectedLeague?.slug || ""
+  ).trim();
+
+  const visibility = String(
+    selectedLeague?.visibility || ""
+  ).toUpperCase();
+
+  const usePublicPage =
+    Boolean(leagueSlug) &&
+    ["PUBLIC", "UNLISTED"].includes(visibility);
+
+  const path = usePublicPage
+    ? `/leagues/${encodeURIComponent(leagueSlug)}/matches/${match.id}`
+    : match.shareCode
+      ? `/live/${encodeURIComponent(match.shareCode)}`
+      : "";
+
+  if (!path) {
+    setError("This match does not have a shareable link yet.");
+    return;
+  }
+
+  const url = `${window.location.origin}${path}`;
+  const teamA = match.teamAName || match.teamA?.name || "Team A";
+  const teamB = match.teamBName || match.teamB?.name || "Team B";
+  const result = String(match.statusText || "").trim();
+
+  const text =
+    result &&
+    !["LIVE", "SCHEDULED", "MATCH COMPLETED"].includes(result.toUpperCase())
+      ? `🏏 ${teamA} vs ${teamB}\n🏆 ${result}\n\nView the Cric4All scorecard:`
+      : `🏏 ${teamA} vs ${teamB}\n\nView the Cric4All scorecard:`;
+
+  fetch("/api/growth/event", {
+    method: "POST",
+    headers: { "Content-Type": "application/json" },
+    keepalive: true,
+    body: JSON.stringify({
+      eventType: "SHARE_SCORECARD",
+      leagueId: activeLeagueId ? Number(activeLeagueId) : null,
+      matchId: Number(match.id),
+      source: "COMPLETED_MATCH",
+      path: window.location.pathname,
+      metadata: {
+        shareTarget: usePublicPage ? "PUBLIC_MATCH_CENTER" : "LIVE_SHARE",
+      },
+    }),
+  }).catch(() => {});
+
+  try {
+    if (navigator.share) {
+      await navigator.share({
+        title: `${teamA} vs ${teamB} | Cric4All`,
+        text,
+        url,
+      });
+      return;
+    }
+
+    await navigator.clipboard.writeText(`${text}\n${url}`);
+    setMessage("🔗 Match result link copied.");
+    showToast?.("success", "🔗 Match result link copied");
+  } catch (error) {
+    if (error?.name === "AbortError") return;
+
+    try {
+      await navigator.clipboard.writeText(`${text}\n${url}`);
+      setMessage("🔗 Match result link copied.");
+    } catch {
+      setError("Unable to share this match from this browser.");
+    }
+  }
+}
+
+const canImportLeagueRoster = Boolean(
+  isSuperAdmin ||
+    permissions?.canManagePermissions === true ||
+    ["OWNER", "ADMIN"].includes(activeLeagueRole) ||
+    (
+      permissions?.canCreateTeam === true &&
+      permissions?.canCreatePlayer === true
+    )
+);
+
 const activeLeagueSlug = String(
   activeLeague?.slug ||
     selectedLeague?.slug ||
@@ -21820,6 +22521,18 @@ const playerRoleBadge = (row) => {
                 <b>Scorecard</b>
               </button>
 
+
+              <button
+                type="button"
+                className="completed-action-btn"
+                onClick={() =>
+                  shareCompletedMatch(match)
+                }
+              >
+                <span>📤</span>
+                <b>Share Result</b>
+              </button>
+
               {canShowAi && (
                 <button
                   type="button"
@@ -22335,6 +23048,18 @@ const playerRoleBadge = (row) => {
                     >
                       <span>📊</span>
                       View Scorecard
+                    </button>
+
+
+                    <button
+                      type="button"
+                      className="mobile-completed-scorecard-btn"
+                      onClick={() =>
+                        shareCompletedMatch(match)
+                      }
+                    >
+                      <span>📤</span>
+                      Share Result
                     </button>
 
                     {canShowAi && (
@@ -23753,6 +24478,36 @@ const playerRoleBadge = (row) => {
               }}
             >
               ➕ Add Team
+            </button>
+
+            <button
+              type="button"
+              className="mgmt-clean-btn"
+              disabled={
+                !selectedLeague ||
+                !canImportLeagueRoster
+              }
+              title={
+                canImportLeagueRoster
+                  ? "Move teams and players into Cric4All from CSV"
+                  : "Owner/Admin or team+player create permission required"
+              }
+              onClick={() => {
+                if (
+                  !selectedLeague ||
+                  !canImportLeagueRoster
+                ) {
+                  return;
+                }
+
+                setLeagueImportText("");
+                setLeagueImportRows([]);
+                setLeagueImportErrors([]);
+                setLeagueImportResult(null);
+                setShowLeagueImportModal(true);
+              }}
+            >
+              🚚 Move Your League
             </button>
 {canEditSelectedTeam && (
   <button
@@ -27686,6 +28441,905 @@ onClick={() => {
   </div>,
   document.body
 )}
+{showLeagueImportModal && (
+  <div
+    className="modal-backdrop"
+    onMouseDown={(event) => {
+      if (
+        event.target ===
+          event.currentTarget &&
+        !leagueImportSaving
+      ) {
+        setShowLeagueImportModal(false);
+      }
+    }}
+    style={{
+      padding:
+        "clamp(8px, 1.5vw, 18px)",
+      alignItems:
+        "center",
+      justifyContent:
+        "center",
+      overflow:
+        "hidden",
+    }}
+  >
+    <div
+      className="modal-card phase5-import-modal"
+      style={{
+        width:
+          "min(1100px, calc(100vw - 20px))",
+        height:
+          "min(800px, calc(100dvh - 20px))",
+        maxHeight:
+          "calc(100dvh - 20px)",
+        padding:
+          0,
+        overflow:
+          "hidden",
+        display:
+          "grid",
+        gridTemplateRows:
+          "auto minmax(0, 1fr) auto",
+        borderRadius:
+          18,
+      }}
+    >
+      {/* Fixed header */}
+      <div
+        style={{
+          display:
+            "flex",
+          justifyContent:
+            "space-between",
+          gap:
+            12,
+          alignItems:
+            "flex-start",
+          flexWrap:
+            "wrap",
+          padding:
+            "14px clamp(14px, 2vw, 20px) 12px",
+          borderBottom:
+            "1px solid rgba(148,163,184,.14)",
+          background:
+            "rgba(15,23,42,.96)",
+          position:
+            "relative",
+          zIndex:
+            2,
+        }}
+      >
+        <div
+          style={{
+            minWidth:
+              0,
+            flex:
+              "1 1 560px",
+          }}
+        >
+          <div
+            style={{
+              display:
+                "inline-flex",
+              padding:
+                "4px 8px",
+              borderRadius:
+                999,
+              border:
+                "1px solid rgba(56,189,248,.25)",
+              fontSize:
+                10,
+              fontWeight:
+                900,
+              marginBottom:
+                6,
+            }}
+          >
+            🚚 GROWTH PHASE 5
+          </div>
+
+          <h3
+            style={{
+              margin:
+                0,
+              fontSize:
+                "clamp(18px, 2vw, 22px)",
+              lineHeight:
+                1.2,
+              overflowWrap:
+                "anywhere",
+            }}
+          >
+            Move Your League to Cric4All
+          </h3>
+
+          <p
+            className="muted"
+            style={{
+              margin:
+                "5px 0 0",
+              lineHeight:
+                1.4,
+              maxWidth:
+                780,
+              fontSize:
+                "clamp(12px, 1.4vw, 13px)",
+              overflowWrap:
+                "anywhere",
+            }}
+          >
+            Paste your roster directly or upload a CSV. One player per row;
+            repeat the team name for each player.
+          </p>
+        </div>
+
+        <button
+          type="button"
+          className="btn btn-outline"
+          disabled={
+            leagueImportSaving
+          }
+          onClick={() =>
+            setShowLeagueImportModal(
+              false
+            )
+          }
+          style={{
+            flex:
+              "0 0 auto",
+            minWidth:
+              42,
+            minHeight:
+              38,
+            padding:
+              "7px 11px",
+          }}
+          aria-label="Close league import"
+        >
+          ✕
+        </button>
+      </div>
+
+      {/* Scrollable content */}
+      <div
+        style={{
+          minHeight:
+            0,
+          overflowY:
+            "auto",
+          overflowX:
+            "hidden",
+          padding:
+            "12px clamp(12px, 2vw, 20px)",
+          WebkitOverflowScrolling:
+            "touch",
+        }}
+      >
+        {/* Primary action: full-width paste area */}
+        <section
+          style={{
+            padding:
+              12,
+            borderRadius:
+              14,
+            border:
+              "1px solid rgba(56,189,248,.20)",
+            background:
+              "rgba(7,89,133,.08)",
+            minWidth:
+              0,
+          }}
+        >
+          <div
+            style={{
+              display:
+                "flex",
+              alignItems:
+                "flex-start",
+              justifyContent:
+                "space-between",
+              gap:
+                10,
+              flexWrap:
+                "wrap",
+              marginBottom:
+                8,
+            }}
+          >
+            <div
+              style={{
+                minWidth:
+                  0,
+                flex:
+                  "1 1 520px",
+              }}
+            >
+              <strong
+                style={{
+                  display:
+                    "block",
+                  fontSize:
+                    14,
+                }}
+              >
+                📋 Paste CSV rows
+              </strong>
+
+              <span
+                className="muted"
+                style={{
+                  display:
+                    "block",
+                  marginTop:
+                    4,
+                  lineHeight:
+                    1.4,
+                  fontSize:
+                    12,
+                  overflowWrap:
+                    "anywhere",
+                }}
+              >
+                This is the fastest option. Paste directly from your prepared
+                CSV text using Team, Player, WhatsApp.
+              </span>
+            </div>
+
+            <div
+              style={{
+                display:
+                  "flex",
+                gap:
+                  8,
+                flexWrap:
+                  "wrap",
+                flex:
+                  "0 1 auto",
+              }}
+            >
+              <button
+                type="button"
+                className="btn btn-outline"
+                onClick={
+                  downloadLeagueImportTemplate
+                }
+                style={{
+                  whiteSpace:
+                    "nowrap",
+                }}
+              >
+                ⬇️ Template
+              </button>
+
+              <label
+                className="btn btn-outline"
+                style={{
+                  cursor:
+                    "pointer",
+                  whiteSpace:
+                    "nowrap",
+                  display:
+                    "inline-flex",
+                  alignItems:
+                    "center",
+                  justifyContent:
+                    "center",
+                }}
+              >
+                📤 Upload CSV
+
+                <input
+                  type="file"
+                  accept=".csv,text/csv"
+                  disabled={
+                    leagueImportSaving
+                  }
+                  onChange={
+                    handleLeagueImportFile
+                  }
+                  style={{
+                    position:
+                      "absolute",
+                    width:
+                      1,
+                    height:
+                      1,
+                    opacity:
+                      0,
+                    pointerEvents:
+                      "none",
+                  }}
+                />
+              </label>
+            </div>
+          </div>
+
+          <textarea
+            rows={10}
+            value={
+              leagueImportText
+            }
+            disabled={
+              leagueImportSaving
+            }
+            onChange={(event) =>
+              updateLeagueImportPreview(
+                event.target.value
+              )
+            }
+            placeholder={`Team,Player,WhatsApp
+Eagles,John Smith,+16105550101
+Eagles,David Patel,
+Eagles,Mike Jones,+16105550103
+Tigers,Raj Kumar,+12155550104
+New Team,,`}
+            style={{
+              width:
+                "100%",
+              boxSizing:
+                "border-box",
+              resize:
+                "vertical",
+              borderRadius:
+                12,
+              padding:
+                "12px 13px",
+              lineHeight:
+                1.45,
+              minHeight:
+                220,
+              maxHeight:
+                380,
+              fontSize:
+                "clamp(12px, 1.4vw, 14px)",
+              fontFamily:
+                "ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, monospace",
+              overflowWrap:
+                "normal",
+              whiteSpace:
+                "pre",
+            }}
+          />
+
+          <div
+            className="phase5-import-helper-grid"
+            style={{
+              display:
+                "grid",
+              gridTemplateColumns:
+                "repeat(2, minmax(0, 1fr))",
+              gap:
+                10,
+              marginTop:
+                10,
+            }}
+          >
+            <div
+              style={{
+                padding:
+                  10,
+                borderRadius:
+                  11,
+                border:
+                  "1px solid rgba(56,189,248,.16)",
+                background:
+                  "rgba(15,23,42,.28)",
+                fontSize:
+                  12,
+                lineHeight:
+                  1.45,
+                minWidth:
+                  0,
+              }}
+            >
+              <strong>
+                📌 How rows work
+              </strong>
+
+              <div
+                className="muted"
+                style={{
+                  marginTop:
+                    4,
+                  overflowWrap:
+                    "anywhere",
+                }}
+              >
+                Each player gets one row. If Eagles has 15 players, Eagles is
+                repeated on 15 rows. <b>New Team,,</b> creates only the team.
+              </div>
+            </div>
+
+            <div
+              style={{
+                padding:
+                  10,
+                borderRadius:
+                  11,
+                border:
+                  "1px solid rgba(250,204,21,.16)",
+                background:
+                  "rgba(113,63,18,.08)",
+                fontSize:
+                  12,
+                lineHeight:
+                  1.45,
+                minWidth:
+                  0,
+              }}
+            >
+              <strong>
+                🔐 Consent protection
+              </strong>
+
+              <div
+                className="muted"
+                style={{
+                  marginTop:
+                    4,
+                  overflowWrap:
+                    "anywhere",
+                }}
+              >
+                Imported phone numbers remain contact data only. SMS/WhatsApp
+                consent is never enabled by roster import.
+              </div>
+            </div>
+          </div>
+        </section>
+
+        {/* Compact counts */}
+        <div
+          className="phase5-import-stats-grid"
+          style={{
+            display:
+              "grid",
+            gridTemplateColumns:
+              "repeat(4, minmax(0, 1fr))",
+            gap:
+              8,
+            marginTop:
+              10,
+          }}
+        >
+          {[
+            [
+              "Rows",
+              leagueImportRows.length,
+            ],
+            [
+              "Teams",
+              new Set(
+                leagueImportRows.map(
+                  (row) =>
+                    String(
+                      row.teamName ||
+                      ""
+                    ).toLowerCase()
+                )
+              ).size,
+            ],
+            [
+              "Players",
+              leagueImportRows.filter(
+                (row) =>
+                  row.playerName
+              ).length,
+            ],
+            [
+              "Errors",
+              leagueImportErrors.length,
+            ],
+          ].map(
+            ([
+              label,
+              value,
+            ]) => (
+              <div
+                key={
+                  label
+                }
+                style={{
+                  padding:
+                    "8px 10px",
+                  borderRadius:
+                    10,
+                  border:
+                    "1px solid rgba(148,163,184,.15)",
+                  background:
+                    "rgba(15,23,42,.34)",
+                  minWidth:
+                    0,
+                }}
+              >
+                <span
+                  className="muted"
+                  style={{
+                    display:
+                      "block",
+                    fontSize:
+                      10,
+                  }}
+                >
+                  {label}
+                </span>
+
+                <strong
+                  style={{
+                    display:
+                      "block",
+                    marginTop:
+                      2,
+                    fontSize:
+                      17,
+                  }}
+                >
+                  {value}
+                </strong>
+              </div>
+            )
+          )}
+        </div>
+
+        {leagueImportErrors.length >
+        0 ? (
+          <div
+            role="alert"
+            style={{
+              marginTop:
+                10,
+              padding:
+                11,
+              borderRadius:
+                11,
+              border:
+                "1px solid rgba(248,113,113,.28)",
+              background:
+                "rgba(127,29,29,.12)",
+              minWidth:
+                0,
+            }}
+          >
+            <strong>
+              ⚠️ Fix these rows first
+            </strong>
+
+            <ul
+              style={{
+                margin:
+                  "6px 0 0",
+                paddingLeft:
+                  18,
+                lineHeight:
+                  1.4,
+                fontSize:
+                  12,
+                overflowWrap:
+                  "anywhere",
+              }}
+            >
+              {leagueImportErrors.map(
+                (
+                  error
+                ) => (
+                  <li
+                    key={
+                      error
+                    }
+                  >
+                    {error}
+                  </li>
+                )
+              )}
+            </ul>
+          </div>
+        ) : null}
+
+        {leagueImportRows.length >
+        0 ? (
+          <section
+            style={{
+              marginTop:
+                10,
+              minWidth:
+                0,
+            }}
+          >
+            <div
+              style={{
+                display:
+                  "flex",
+                alignItems:
+                  "center",
+                justifyContent:
+                  "space-between",
+                gap:
+                  8,
+                flexWrap:
+                  "wrap",
+                marginBottom:
+                  6,
+              }}
+            >
+              <strong>
+                👀 Preview
+              </strong>
+
+              {leagueImportRows.length >
+              10 ? (
+                <small
+                  className="muted"
+                >
+                  Showing first 10 of {leagueImportRows.length}
+                </small>
+              ) : null}
+            </div>
+
+            <div
+              style={{
+                overflowX:
+                  "auto",
+                borderRadius:
+                  11,
+                border:
+                  "1px solid rgba(148,163,184,.15)",
+                WebkitOverflowScrolling:
+                  "touch",
+                maxWidth:
+                  "100%",
+              }}
+            >
+              <table
+                style={{
+                  width:
+                    "100%",
+                  borderCollapse:
+                    "collapse",
+                  minWidth:
+                    500,
+                  fontSize:
+                    11,
+                }}
+              >
+                <thead>
+                  <tr>
+                    <th
+                      style={{
+                        padding:
+                          8,
+                        textAlign:
+                          "left",
+                      }}
+                    >
+                      Team
+                    </th>
+
+                    <th
+                      style={{
+                        padding:
+                          8,
+                        textAlign:
+                          "left",
+                      }}
+                    >
+                      Player
+                    </th>
+
+                    <th
+                      style={{
+                        padding:
+                          8,
+                        textAlign:
+                          "left",
+                      }}
+                    >
+                      WhatsApp
+                    </th>
+                  </tr>
+                </thead>
+
+                <tbody>
+                  {leagueImportRows
+                    .slice(
+                      0,
+                      10
+                    )
+                    .map(
+                      (
+                        row,
+                        index
+                      ) => (
+                        <tr
+                          key={`${row.teamName}-${row.playerName}-${index}`}
+                        >
+                          <td
+                            style={{
+                              padding:
+                                8,
+                              overflowWrap:
+                                "anywhere",
+                            }}
+                          >
+                            {row.teamName}
+                          </td>
+
+                          <td
+                            style={{
+                              padding:
+                                8,
+                              overflowWrap:
+                                "anywhere",
+                            }}
+                          >
+                            {row.playerName ||
+                              "— team only —"}
+                          </td>
+
+                          <td
+                            style={{
+                              padding:
+                                8,
+                              overflowWrap:
+                                "anywhere",
+                            }}
+                          >
+                            {row.whatsappNumber ||
+                              "—"}
+                          </td>
+                        </tr>
+                      )
+                    )}
+                </tbody>
+              </table>
+            </div>
+          </section>
+        ) : null}
+
+        {leagueImportResult ? (
+          <div
+            style={{
+              marginTop:
+                10,
+              padding:
+                11,
+              borderRadius:
+                11,
+              border:
+                "1px solid rgba(52,211,153,.24)",
+              background:
+                "rgba(6,78,59,.11)",
+              minWidth:
+                0,
+            }}
+          >
+            <strong>
+              ✅ Import completed
+            </strong>
+
+            <p
+              className="muted"
+              style={{
+                margin:
+                  "5px 0 0",
+                lineHeight:
+                  1.4,
+                fontSize:
+                  12,
+                overflowWrap:
+                  "anywhere",
+              }}
+            >
+              {leagueImportResult.createdTeams || 0} new team(s) ·{" "}
+              {leagueImportResult.createdPlayers || 0} new player(s) ·{" "}
+              {leagueImportResult.existingTeams || 0} existing team(s) reused ·{" "}
+              {leagueImportResult.skippedPlayers?.length || 0} duplicate player(s) skipped
+            </p>
+          </div>
+        ) : null}
+      </div>
+
+      {/* Fixed footer */}
+      <div
+        className="phase5-import-footer"
+        style={{
+          display:
+            "grid",
+          gridTemplateColumns:
+            "minmax(0, 140px) minmax(180px, 280px)",
+          justifyContent:
+            "end",
+          gap:
+            9,
+          padding:
+            "10px clamp(12px, 2vw, 20px)",
+          borderTop:
+            "1px solid rgba(148,163,184,.14)",
+          background:
+            "rgba(15,23,42,.96)",
+          position:
+            "relative",
+          zIndex:
+            2,
+        }}
+      >
+        <button
+          type="button"
+          className="btn btn-outline"
+          disabled={
+            leagueImportSaving
+          }
+          onClick={() =>
+            setShowLeagueImportModal(
+              false
+            )
+          }
+          style={{
+            minWidth:
+              0,
+          }}
+        >
+          Close
+        </button>
+
+        <button
+          type="button"
+          className="btn"
+          disabled={
+            leagueImportSaving ||
+            leagueImportRows.length ===
+              0 ||
+            leagueImportErrors.length >
+              0
+          }
+          onClick={
+            submitLeagueImport
+          }
+          style={{
+            minWidth:
+              0,
+            overflowWrap:
+              "anywhere",
+          }}
+        >
+          {leagueImportSaving
+            ? "Importing…"
+            : "🚚 Import to Cric4All"}
+        </button>
+      </div>
+    </div>
+
+    <style jsx>{`
+      @media (max-width: 760px) {
+        :global(.phase5-import-modal) {
+          width: calc(100vw - 12px) !important;
+          height: calc(100dvh - 12px) !important;
+          max-height: calc(100dvh - 12px) !important;
+          border-radius: 15px !important;
+        }
+
+        :global(.phase5-import-helper-grid) {
+          grid-template-columns: minmax(0, 1fr) !important;
+        }
+
+        :global(.phase5-import-stats-grid) {
+          grid-template-columns: repeat(2, minmax(0, 1fr)) !important;
+        }
+
+        :global(.phase5-import-footer) {
+          grid-template-columns: repeat(2, minmax(0, 1fr)) !important;
+        }
+      }
+
+      @media (max-width: 420px) {
+        :global(.phase5-import-footer) {
+          grid-template-columns: minmax(0, 1fr) !important;
+        }
+      }
+    `}</style>
+  </div>
+)}
+
 {showAddTeam && (
   <div className="modal-backdrop">
     <div className="modal-card app-modal-card">

@@ -5,6 +5,7 @@ import { notFound } from "next/navigation";
 import Link from "next/link";
 import "@/app/public-league-wow.css";
 import SeoJsonLd from "@/components/seo-json-ld";
+import MatchShareButton from "@/components/match-share-button";
 import {
   absoluteCric4AllUrl,
   publicPageRobots,
@@ -137,13 +138,32 @@ export async function generateMetadata({ params }) {
         "website",
       siteName:
         "Cric4All",
+      images: [
+        {
+          url:
+            absoluteCric4AllUrl(
+              `/leagues/${league.slug}/matches/${match.id}/opengraph-image`
+            ),
+          width:
+            1200,
+          height:
+            630,
+          alt:
+            `${match.teamA?.name} vs ${match.teamB?.name} Cric4All match result`,
+        },
+      ],
     },
     twitter: {
       card:
-        "summary",
+        "summary_large_image",
       title:
         `${match.teamA?.name} vs ${match.teamB?.name} | Cric4All`,
       description,
+      images: [
+        absoluteCric4AllUrl(
+          `/leagues/${league.slug}/matches/${match.id}/opengraph-image`
+        ),
+      ],
     },
   };
 }
@@ -458,6 +478,17 @@ export default async function PublicMatchPage({ params }) {
             <div className="smp-actions">
               <Link href={`/leagues/${league.slug}`}>League</Link>
               <Link href="/explore">Explore</Link>
+
+              <MatchShareButton
+                className="smp-primary-action"
+                leagueId={league.id}
+                matchId={match.id}
+                teamAName={match.teamA?.name || "Team A"}
+                teamBName={match.teamB?.name || "Team B"}
+                resultText={matchResultText}
+                shareUrl={canonicalMatchUrl}
+              />
+
               {match.shareCode && (
                 <a className="smp-primary-action" href={`/live/${match.shareCode}`}>
                   Open live scorecard

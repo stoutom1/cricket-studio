@@ -23,6 +23,11 @@ export const GROWTH_EVENT_TYPES = new Set([
   "QUICK_MATCH_STARTED",
   "QUICK_MATCH_AUTH_CLICKED",
   "QUICK_MATCH_CREATED",
+
+  // Growth Phase 5 — league migration/import.
+  "LEAGUE_IMPORT_OPENED",
+  "LEAGUE_IMPORT_STARTED",
+  "LEAGUE_IMPORT_COMPLETED",
 ]);
 
 function clean(value, max = 180) {
