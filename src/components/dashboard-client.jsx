@@ -25708,85 +25708,116 @@ onClick={() => {
 {activeTab === "help" && (
   <Card title="❓ Cric4All Help Center">
     <div className="help-page">
-      {/* ============================================================
-          HELP HERO
-          ------------------------------------------------------------
-          Uses existing Help classes and app typography.
-          No global font, spacing, or responsive CSS changes.
-          ============================================================ */}
       <div className="help-hero">
         <div>
           <h2>🏏 Welcome to Cric4All</h2>
 
           <p>
-            Cric4All brings league management, live scoring, offline scoring,
-            DLS/rain adjustments, AI match review, AI team planning, public
-            score sharing, statistics, permissions, birthdays, and fair
-            cricket-kit custody into one match-day workspace.
+            Find practical guidance for league setup, live and offline scoring,
+            DLS/rain workflows, AI tools, public sharing, permissions,
+            birthdays, and team-kit custody.
           </p>
         </div>
       </div>
 
       {/* ============================================================
-          QUICK NAVIGATION
-          ------------------------------------------------------------
-          Horizontal scrolling is intentional only for this compact nav on
-          narrow phones. The content itself remains width-safe.
+          EXPLORE HELP NAVIGATION
+          - clear navigation title
+          - responsive grid, NOT horizontal scrolling
+          - readable on phone and laptop
           ============================================================ */}
       <div
         style={{
-          position: "sticky",
-          top: 0,
-          zIndex: 5,
-          marginBottom: 16,
-          padding: "9px 10px",
-          borderRadius: 14,
+          marginBottom: 18,
+          padding: 14,
+          borderRadius: 16,
           border: "1px solid rgba(148, 163, 184, 0.18)",
-          background: "rgba(15, 23, 42, 0.92)",
-          backdropFilter: "blur(10px)",
-          WebkitBackdropFilter: "blur(10px)",
-          overflowX: "auto",
-          overflowY: "hidden",
-          whiteSpace: "nowrap",
+          background: "rgba(15, 23, 42, 0.68)",
         }}
       >
-        {[
-          ["help-new", "✨ What’s New"],
-          ["help-start", "🚀 Quick Start"],
-          ["help-scoring", "⚡ Scoring"],
-          ["help-offline", "📴 Offline"],
-          ["help-dls", "🌧 DLS & Par"],
-          ["help-kit", "🎒 Kit"],
-          ["help-ai", "🤖 AI"],
-          ["help-tabs", "🧭 Main Tabs"],
-          ["help-public", "🌐 Public"],
-          ["help-admin", "🛡 Admin"],
-          ["help-faq", "❓ FAQ"],
-        ].map(([id, label]) => (
-          <a
-            key={id}
-            href={`#${id}`}
-            style={{
-              display: "inline-block",
-              marginRight: 7,
-              padding: "7px 10px",
-              borderRadius: 999,
-              border: "1px solid rgba(148, 163, 184, 0.20)",
-              textDecoration: "none",
-              color: "inherit",
-              fontSize: 12,
-              fontWeight: 800,
-              lineHeight: 1,
-            }}
-          >
-            {label}
-          </a>
-        ))}
+        <div
+          style={{
+            display: "flex",
+            alignItems: "center",
+            justifyContent: "space-between",
+            gap: 10,
+            marginBottom: 10,
+            flexWrap: "wrap",
+          }}
+        >
+          <div>
+            <strong
+              style={{
+                display: "block",
+                fontSize: 15,
+                lineHeight: 1.2,
+              }}
+            >
+              🧭 Explore Help
+            </strong>
+
+            <span
+              style={{
+                display: "block",
+                marginTop: 3,
+                fontSize: 12,
+                opacity: 0.72,
+                lineHeight: 1.35,
+              }}
+            >
+              Choose a topic to jump directly to that section.
+            </span>
+          </div>
+        </div>
+
+        <div
+          style={{
+            display: "grid",
+            gridTemplateColumns: "repeat(auto-fit, minmax(132px, 1fr))",
+            gap: 8,
+          }}
+        >
+          {[
+            ["help-new", "✨ What’s New"],
+            ["help-start", "🚀 Quick Start"],
+            ["help-scoring", "⚡ Scoring"],
+            ["help-offline", "📴 Offline"],
+            ["help-dls", "🌧 DLS & Par"],
+            ["help-kit", "🎒 Team Kit"],
+            ["help-ai", "🤖 AI"],
+            ["help-tabs", "🧭 Main Tabs"],
+            ["help-public", "🌐 Public"],
+            ["help-admin", "🛡 Admin"],
+            ["help-faq", "❓ FAQ"],
+          ].map(([id, label]) => (
+            <a
+              key={id}
+              href={`#${id}`}
+              style={{
+                display: "flex",
+                alignItems: "center",
+                justifyContent: "center",
+                minHeight: 42,
+                padding: "9px 10px",
+                borderRadius: 11,
+                border: "1px solid rgba(96, 165, 250, 0.24)",
+                background: "rgba(30, 41, 59, 0.72)",
+                textDecoration: "none",
+                color: "inherit",
+                fontSize: 13,
+                fontWeight: 800,
+                lineHeight: 1.2,
+                textAlign: "center",
+                whiteSpace: "normal",
+                overflowWrap: "anywhere",
+              }}
+            >
+              {label}
+            </a>
+          ))}
+        </div>
       </div>
 
-      {/* ============================================================
-          WHAT'S NEW / RECENTLY ADDED
-          ============================================================ */}
       <section id="help-new">
         <h3 className="help-section-title">✨ What&apos;s New in Cric4All</h3>
 
@@ -25794,125 +25825,72 @@ onClick={() => {
           <div className="help-card">
             <h3>📴 Offline Scoring + Auto Sync</h3>
             <p>
-              Keep scoring when connectivity drops. Deliveries and supported
-              scoring actions are stored locally and synchronized when the
-              connection returns.
+              Keep scoring when connectivity drops. Supported scoring actions
+              are stored locally and synchronize when the connection returns.
             </p>
           </div>
 
           <div className="help-card">
             <h3>🔄 Sync Conflict Protection</h3>
             <p>
-              If the match changes on the server while a device is offline,
-              Cric4All pauses synchronization instead of deleting local
-              scoring. Scoring can continue locally and <strong>Retry Sync</strong>{" "}
-              can be used after connectivity/server state is reviewed.
+              If server state changes while a device is offline, Cric4All
+              pauses synchronization instead of discarding local scoring.
+              Use <strong>Retry Sync</strong> after reviewing the match state.
             </p>
           </div>
 
           <div className="help-card">
             <h3>↩️ Offline Undo</h3>
             <p>
-              Pending local deliveries can be undone without contacting the
-              server. Cric4All also preserves safe pre-delivery snapshots for
-              supported server-ball undo scenarios while offline.
+              Unsynced local deliveries can be undone safely, with snapshot
+              support for compatible reconnect-undo scenarios.
             </p>
           </div>
 
           <div className="help-card">
             <h3>🌧 Cric4All Standard DLS</h3>
             <p>
-              Rain reductions can be applied at any legal-delivery boundary,
-              including 3.1 through 3.5 overs. Cric4All Standard interpolates
-              between published Standard resource-table rows and remains
-              clearly separate from Official DLS.
+              Standard rain adjustments can be applied at legal-delivery
+              boundaries such as 3.1 through 3.5 using interpolation between
+              adjacent Standard resource-table rows.
             </p>
           </div>
 
           <div className="help-card">
             <h3>📐 Official DLS Workflow</h3>
             <p>
-              Official DLS now separates <strong>Revise &amp; Resume</strong>{" "}
-              from <strong>End Match Now</strong>. Revised target and official
-              par are entered only when they are actually required.
+              Official DLS separates <strong>Revise &amp; Resume</strong> from{" "}
+              <strong>End Match Now</strong>, so target and par are entered only
+              when they are actually needed.
             </p>
           </div>
 
           <div className="help-card">
             <h3>📊 Cric4All Chase Par</h3>
             <p>
-              During the second innings, Cric4All can show a tactical chase
-              par after the first legal delivery. Example:{" "}
-              <strong>Cric4All Par: 18 runs · ▲ +4 ahead</strong>.
-              This is a planning indicator, not Official DLS.
-            </p>
-          </div>
-
-          <div className="help-card">
-            <h3>🏁 DLS-Aware Results</h3>
-            <p>
-              Revised DLS targets and allocations are now used when deciding
-              match completion, balls remaining, final result text, and DLS
-              status labels.
+              During innings 2, Cric4All can show a tactical par such as{" "}
+              <strong>Par: 18 runs · ▲ +4 ahead</strong>. It is not Official DLS.
             </p>
           </div>
 
           <div className="help-card">
             <h3>🤖 Faster, DLS-Aware AI Review</h3>
             <p>
-              AI Review opens immediately with an in-modal loading state,
-              preserves Cric4All&apos;s authoritative result, and understands
-              DLS-adjusted matches instead of comparing raw innings totals.
+              AI Review opens immediately with an in-modal loading state and
+              respects Cric4All&apos;s authoritative DLS-aware final result.
             </p>
           </div>
 
           <div className="help-card">
             <h3>🎒 Post-Match Kit Follow-Up</h3>
             <p>
-              The final-kit-holder prompt can appear above Scorer Mode when a
-              match finishes. If it was missed, Lock Match provides a safe
-              fallback so custody can still be confirmed.
-            </p>
-          </div>
-
-          <div className="help-card">
-            <h3>⚡ Faster Completed Matches</h3>
-            <p>
-              Completed history uses progressive rendering, avoids duplicate
-              match loads, and opens scorecards with fewer unnecessary
-              requests while preserving the existing mobile layout.
-            </p>
-          </div>
-
-          <div className="help-card">
-            <h3>🏏 Clean 2nd-Innings Player State</h3>
-            <p>
-              After ending the first innings and choosing the new striker,
-              non-striker, and bowler, live player stat cards start from the
-              correct second-innings state instead of carrying first-innings
-              values.
-            </p>
-          </div>
-
-          <div className="help-card">
-            <h3>🔒 Match Locking</h3>
-            <p>
-              Completed matches can be locked after all offline changes are
-              synchronized. Locking finalizes the scorecard and no longer
-              reopens an already-handled kit prompt.
+              The final-kit-holder prompt can appear over Scorer Mode when the
+              match finishes, with Lock Match acting as a safe fallback if the
+              prompt was missed.
             </p>
           </div>
         </div>
       </section>
-
-      {/* ============================================================
-          COLLAPSIBLE SECTION HELPER STYLE
-          ============================================================ */}
-      {/*
-        Native <details> is used instead of new React state.
-        This keeps the Help tab lightweight and dramatically reduces the
-        "scrolling nightmare" while retaining all help content.
-      */}
 
       <details id="help-start" open style={{ marginTop: 18 }}>
         <summary
@@ -25932,8 +25910,8 @@ onClick={() => {
             <h4>Create or Select League</h4>
             <p>
               Open <strong>Leagues</strong> and choose the active league.
-              Teams, players, series, matches, permissions, points, stats, AI
-              features, birthdays, and kit workflows are league-scoped.
+              Teams, players, matches, permissions, stats, AI tools, birthdays,
+              and kit workflows are league-scoped.
             </p>
           </div>
 
@@ -25941,18 +25919,17 @@ onClick={() => {
             <h3>✅ Step 2</h3>
             <h4>Complete Minimum Setup</h4>
             <p>
-              Create at least <strong>2 teams</strong> and add enough players
-              for your match format before scheduling or starting a match.
+              Create at least two teams and add enough players for the intended
+              match format before starting a game.
             </p>
           </div>
 
           <div className="help-card">
             <h3>🌐 Step 3</h3>
-            <h4>Choose League Visibility</h4>
+            <h4>Choose Visibility</h4>
             <p>
               Use <strong>Private</strong>, <strong>Unlisted</strong>, or{" "}
-              <strong>Public</strong> depending on whether the league should be
-              member-only, link-only, or discoverable through Explore.
+              <strong>Public</strong> depending on who should be able to view the league.
             </p>
           </div>
 
@@ -25961,7 +25938,7 @@ onClick={() => {
             <h4>Create Series / Season</h4>
             <p>
               Series are optional. Use them for tournaments, cups, seasons,
-              divisions, or years. Friendly matches can remain standalone.
+              divisions, or years.
             </p>
           </div>
 
@@ -25972,25 +25949,14 @@ onClick={() => {
               Add teams first, then add players manually, in bulk, or through
               supported import tools.
             </p>
-
-            <div className="help-code-box">
-              Virat Kohli
-              <br />
-              Rohit Sharma
-              <br />
-              MS Dhoni
-              <br />
-              KL Rahul
-            </div>
           </div>
 
           <div className="help-card">
             <h3>📋 Step 6</h3>
             <h4>Create / Schedule Match</h4>
             <p>
-              Go to <strong>Matches → Create Match</strong>. Configure overs,
-              powerplay, wickets, bowler limits, captains, wicketkeepers,
-              date/time, and optional series.
+              Configure overs, powerplay, wickets, bowler limits, captains,
+              wicketkeepers, date/time, and optional series.
             </p>
           </div>
 
@@ -25998,9 +25964,8 @@ onClick={() => {
             <h3>▶ Step 7</h3>
             <h4>Start Match</h4>
             <p>
-              From <strong>Scheduled</strong>, select{" "}
-              <strong>Start Match</strong>, confirm batting first, complete
-              delivery setup, and begin scoring.
+              From Scheduled, select Start Match, confirm batting first,
+              complete delivery setup, and begin scoring.
             </p>
           </div>
 
@@ -26008,18 +25973,14 @@ onClick={() => {
             <h3>📤 Step 8</h3>
             <h4>Share With Spectators</h4>
             <p>
-              Use <strong>Share - Spectator View</strong> to send a live score
-              link with Cric4All branding and current match information.
+              Use Share - Spectator View to send a live score link with Cric4All branding.
             </p>
           </div>
         </div>
       </details>
 
       <details id="help-scoring" style={{ marginTop: 18 }}>
-        <summary
-          className="help-section-title"
-          style={{ cursor: "pointer", listStyle: "none", userSelect: "none" }}
-        >
+        <summary className="help-section-title" style={{ cursor: "pointer", listStyle: "none", userSelect: "none" }}>
           ⚡ Scorer Mode &amp; Live Scoring
         </summary>
 
@@ -26027,70 +25988,40 @@ onClick={() => {
           <div className="help-card">
             <h3>🎯 Quick Buttons</h3>
             <p>
-              Record 0, 1, 2, 3, 4, 6, wides, no-balls, byes, leg-byes,
-              wickets, retired hurt, striker swaps, and undo from the focused
-              match-day workspace.
+              Record runs, extras, wickets, retired hurt, striker swaps, and
+              undo from the focused match-day workspace.
             </p>
           </div>
 
           <div className="help-card">
             <h3>🏏 Delivery Setup</h3>
             <p>
-              Before scoring starts—or after an innings transition—select the
-              striker, non-striker, and bowler. Cric4All keeps second-innings
-              player names and live stats isolated from the first innings.
+              Select striker, non-striker, and bowler before scoring starts and
+              again when required by innings/over transitions.
             </p>
           </div>
 
           <div className="help-card">
             <h3>🎯 Bowler Change</h3>
             <p>
-              At the end of an over, choose the next bowler. The workflow
-              prevents accidental repeated modal loops and helps enforce
-              consecutive-over restrictions.
+              Choose the next bowler at over completion while Cric4All protects
+              against invalid consecutive-over choices.
             </p>
           </div>
 
           <div className="help-card">
             <h3>🧤 Wicketkeeper Change</h3>
             <p>
-              Authorized scorers can change the wicketkeeper during the match.
-              Saved changes update the current scoring state without reopening
-              the same picker repeatedly.
-            </p>
-          </div>
-
-          <div className="help-card">
-            <h3>🚨 Wickets</h3>
-            <p>
-              Supports bowled, caught, LBW, run out, stumped, hit wicket,
-              retired hurt, retired out, and other dismissal types.
-            </p>
-          </div>
-
-          <div className="help-card">
-            <h3>🛑 End Innings After Wicket</h3>
-            <p>
-              If no genuine replacement batter is available, authorized
-              scorers can end the innings from the wicket flow rather than
-              selecting a non-playing roster member.
-            </p>
-          </div>
-
-          <div className="help-card">
-            <h3>➕ Extras</h3>
-            <p>
-              Wides, no-balls, byes, and leg-byes are supported. No-ball runs
-              off the bat are credited correctly to the striker.
+              Authorized scorers can change the wicketkeeper without reopening
+              the same picker after the change is saved.
             </p>
           </div>
 
           <div className="help-card">
             <h3>🔄 SWAP / RTD / WKT</h3>
             <p>
-              Striker and non-striker transitions stay synchronized with live
-              scoring state for wickets, retired-hurt flows, and manual strike
-              swaps.
+              Striker and non-striker state stays synchronized for wickets,
+              retired-hurt flows, and manual strike swaps.
             </p>
           </div>
 
@@ -26098,135 +26029,68 @@ onClick={() => {
             <h3>📊 Live Match Center</h3>
             <p>
               View score, overs, CRR, target, need, balls remaining, current
-              batters, current bowler, partnership, recent balls, and chase
-              indicators.
-            </p>
-          </div>
-
-          <div className="help-card">
-            <h3>📋 Scoring / Scoreboard / Commentary</h3>
-            <p>
-              Switch between quick scoring, the detailed scorecard, and
-              ball-by-ball commentary without leaving the live match.
-            </p>
-          </div>
-
-          <div className="help-card">
-            <h3>📝 Match Setup</h3>
-            <p>
-              Expand Match Setup only when needed to review overs, powerplay,
-              wicket limits, bowler limits, batting first, captains, and
-              wicketkeepers.
-            </p>
-          </div>
-
-          <div className="help-card">
-            <h3>🎤 Voice Scoring</h3>
-            <p>
-              Where supported by the browser, voice commands can assist with
-              common scoring actions such as dot, one, four, six, wide, no
-              ball, wicket, and undo.
+              batters, bowler, partnership, recent balls, and chase indicators.
             </p>
           </div>
         </div>
       </details>
 
       <details id="help-offline" style={{ marginTop: 18 }}>
-        <summary
-          className="help-section-title"
-          style={{ cursor: "pointer", listStyle: "none", userSelect: "none" }}
-        >
+        <summary className="help-section-title" style={{ cursor: "pointer", listStyle: "none", userSelect: "none" }}>
           📴 Offline Scoring &amp; Automatic Sync
         </summary>
 
         <div className="help-grid" style={{ marginTop: 12 }}>
           <div className="help-card">
-            <h3>📴 Continue Scoring Offline</h3>
+            <h3>📴 Continue Offline</h3>
             <p>
-              When the browser loses connectivity, supported deliveries and
-              match-state actions are saved locally so scoring can continue on
-              the device.
-            </p>
-          </div>
-
-          <div className="help-card">
-            <h3>🟠 Offline Status</h3>
-            <p>
-              Scorer Mode shows connectivity and pending-change status so the
-              scorer knows whether events are local, waiting, syncing, or
-              paused by a conflict.
+              Supported scoring actions are saved locally on the active device
+              when connectivity is unavailable.
             </p>
           </div>
 
           <div className="help-card">
             <h3>🔵 Automatic Sync</h3>
             <p>
-              When connectivity returns, Cric4All replays pending events using
-              client event IDs and server sequence protection to reduce
-              duplicate or out-of-order scoring.
+              Pending events synchronize when connectivity returns using
+              sequence and client-event safeguards.
             </p>
           </div>
 
           <div className="help-card">
             <h3>🔴 Sync Conflict</h3>
             <p>
-              A conflict means the server changed while this device was
-              offline. Synchronization pauses, but local scoring can continue
-              safely instead of losing queued deliveries.
+              A conflict means the server changed while this device was offline.
+              Cric4All pauses sync instead of silently overwriting newer state.
             </p>
           </div>
 
           <div className="help-card">
             <h3>🔄 Retry Sync</h3>
             <p>
-              Use Retry Sync after connectivity/server state is stable.
-              Cric4All preserves pending events instead of discarding them.
+              Retry synchronization after connectivity and server state are stable.
             </p>
           </div>
 
           <div className="help-card">
             <h3>↩️ Offline Undo</h3>
             <p>
-              The newest unsynced delivery can be removed locally. Where a
-              safe pre-delivery snapshot exists, Cric4All can also queue a
-              server undo for reconnect.
-            </p>
-          </div>
-
-          <div className="help-card">
-            <h3>🏁 Innings Transitions Offline</h3>
-            <p>
-              End-first-innings state, delivery setup, strike swaps, bowler
-              changes, and wicketkeeper changes are preserved in the
-              supported offline workflow.
+              Remove pending local deliveries safely before they are synchronized.
             </p>
           </div>
 
           <div className="help-card">
             <h3>🔒 Lock Requires Sync</h3>
             <p>
-              Match Lock stays unavailable while offline changes are pending,
-              synchronization is running, the browser is offline, or a sync
-              conflict still exists.
+              Match Lock stays unavailable while offline changes remain pending,
+              sync is running, the browser is offline, or a conflict remains.
             </p>
           </div>
-        </div>
-
-        <div className="help-tip-box">
-          <h3>💡 Offline Match-Day Tip</h3>
-          <p>
-            Keep scoring on the same active device while offline. Reconnect
-            and synchronize before handing scoring control to another device
-            or locking the final result.
-          </p>
         </div>
       </details>
 
       <details id="help-dls" style={{ marginTop: 18 }}>
-        <summary
-          className="help-section-title"
-          style={{ cursor: "pointer", listStyle: "none", userSelect: "none" }}
-        >
+        <summary className="help-section-title" style={{ cursor: "pointer", listStyle: "none", userSelect: "none" }}>
           🌧 Rain, DLS &amp; Cric4All Par
         </summary>
 
@@ -26234,847 +26098,248 @@ onClick={() => {
           <div className="help-card">
             <h3>🌧 Cric4All Standard</h3>
             <p>
-              Cric4All Standard is a built-in rain-adjustment workflow based
-              on the published D/L Standard resource table. It is not
-              presented as Official DLS.
+              Built-in rain adjustment based on the published Standard resource
+              table. It remains separate from Official DLS.
             </p>
           </div>
 
           <div className="help-card">
             <h3>🏏 Mid-Over Interruptions</h3>
             <p>
-              Standard mode supports any legal-delivery boundary such as 3.1,
-              3.2, 3.3, 3.4, or 3.5 by interpolating between adjacent
-              whole-over resource-table values.
+              Standard mode supports legal-delivery points such as 3.1–3.5
+              through interpolation.
             </p>
           </div>
 
           <div className="help-card">
             <h3>📉 Revised Overs</h3>
             <p>
-              Enter the new <strong>total innings allocation</strong>, not the
-              number of overs remaining. A match reduced from 20 overs to 8
-              overs uses a revised allocation of 8.
+              Enter the new <strong>total innings allocation</strong>, not overs remaining.
             </p>
           </div>
 
           <div className="help-card">
             <h3>🎯 Par vs Target</h3>
             <p>
-              <strong>Par</strong> is the tie/equivalent score.{" "}
-              <strong>Target</strong> is the score needed to win. A par of 18
-              therefore normally means a target of 19.
+              Par is the tie/equivalent score; target is the score required to win.
             </p>
           </div>
 
           <div className="help-card">
             <h3>📊 Cric4All Chase Par</h3>
             <p>
-              The tactical scorer indicator appears in innings 2 after the
-              first legal delivery and can show:{" "}
-              <strong>Cric4All Par: 18 runs · ▲ +4 ahead</strong>.
-            </p>
-          </div>
-
-          <div className="help-card">
-            <h3>⚠️ Chase Par ≠ Official DLS Par</h3>
-            <p>
-              Never copy Cric4All Chase Par into an Official DLS par field.
-              Chase Par is a planning indicator; Official DLS values must come
-              from the competition&apos;s authorized DLS source.
+              Tactical innings-planning indicator. It is not an Official DLS Par.
             </p>
           </div>
 
           <div className="help-card">
             <h3>▶ Official DLS — Revise &amp; Resume</h3>
             <p>
-              Use this when play will continue. Enter the revised innings
-              allocation and revised target supplied by the authorized DLS
-              calculation. Official par is not required just to resume.
+              Use when play will continue. Enter revised allocation and revised
+              target supplied by the authorized DLS source.
             </p>
           </div>
 
           <div className="help-card">
             <h3>🏁 Official DLS — End Match Now</h3>
             <p>
-              If play cannot resume, enter the official target and official
-              par at the exact suspension point. Cric4All previews whether
-              the chasing side is above, below, or level with par before
-              confirmation.
-            </p>
-          </div>
-
-          <div className="help-card">
-            <h3>🌧 DLS-Aware Completion</h3>
-            <p>
-              Once a DLS revision is active, the server uses the revised
-              target and revised innings allocation for completion and balls
-              remaining rather than the original target/overs.
+              Use when play cannot resume. Enter official target and official par
+              at the exact suspension point.
             </p>
           </div>
 
           <div className="help-card">
             <h3>🏆 DLS Result Labels</h3>
             <p>
-              Final DLS-aware results retain a DLS label such as{" "}
-              <strong>(D/L Standard)</strong> or <strong>(DLS)</strong> so the
-              rain-adjusted result is not confused with a normal raw-score
-              comparison.
+              Final rain-adjusted results retain a D/L Standard or DLS label.
             </p>
           </div>
         </div>
       </details>
 
       <details id="help-kit" style={{ marginTop: 18 }}>
-        <summary
-          className="help-section-title"
-          style={{ cursor: "pointer", listStyle: "none", userSelect: "none" }}
-        >
-          🎂 Player Birthdays &amp; 🎒 Team Kit Custody
+        <summary className="help-section-title" style={{ cursor: "pointer", listStyle: "none", userSelect: "none" }}>
+          🎂 Birthdays &amp; 🎒 Team Kit Custody
         </summary>
 
         <div className="help-grid" style={{ marginTop: 12 }}>
           <div className="help-card">
             <h3>🎂 Birthday Setup</h3>
             <p>
-              Keep the player birthday, phone number, league, and consent
-              details accurate in Birthday Management.
+              Keep birthday, phone, league, and consent information current.
             </p>
           </div>
 
           <div className="help-card">
-            <h3>🎉 Birthday-Day Messages</h3>
+            <h3>🎒 Current Kit Holder</h3>
             <p>
-              Birthday messaging can include player WhatsApp greetings and
-              owner/backup-owner notification workflows where configured and
-              permitted.
-            </p>
-          </div>
-
-          <div className="help-card">
-            <h3>🧾 Duplicate Protection</h3>
-            <p>
-              Birthday reminder logs track recipient, year, provider message
-              ID, type, and delivery status so the same reminder is not
-              repeatedly submitted.
-            </p>
-          </div>
-
-          <div className="help-card">
-            <h3>🎒 Kit Overview</h3>
-            <p>
-              Open <strong>Matches → Kit</strong> to see the current holder,
-              fair suggestion, custody tasks, rotation standings, and custody
-              history.
-            </p>
-          </div>
-
-          <div className="help-card">
-            <h3>👥 Team vs Shared Kit</h3>
-            <p>
-              Team-based leagues can track separate holders per team. Shared
-              kit leagues use one league-wide holder and history. Surprise
-              Cricket League uses shared-kit behavior across its mapped teams.
+              The confirmed current holder remains separate from any suggested future carrier.
             </p>
           </div>
 
           <div className="help-card">
             <h3>✨ Fair Next Carrier</h3>
             <p>
-              A suggestion chooses fairly among eligible players with the
-              lowest completed-turn count. A suggestion is not an assignment
-              and does not replace the current holder.
+              Suggestions favor eligible players with the lowest completed rotation count.
             </p>
           </div>
 
           <div className="help-card">
             <h3>✅ Record Actual Holder</h3>
             <p>
-              After the match, confirm who actually took the kit. Only the
-              recorded holder receives completed rotation credit.
+              After the match, confirm who actually took the kit. Only the recorded
+              holder receives completed rotation credit.
             </p>
           </div>
 
           <div className="help-card">
             <h3>🏁 Post-Match Popup</h3>
             <p>
-              When a match completes, the final-kit-holder prompt appears
-              above Scorer Mode where possible. Record Now opens the Kit
-              workflow; Do It Later closes the prompt.
+              Final-holder confirmation can appear over Scorer Mode when the match finishes.
             </p>
           </div>
 
           <div className="help-card">
             <h3>🔒 Lock Fallback</h3>
             <p>
-              If a timing/DLS/offline transition caused the kit prompt to be
-              missed, Lock Match can safely surface the custody workflow after
-              the server confirms the final state.
+              If the prompt was missed, Lock Match can safely surface the custody workflow.
             </p>
           </div>
 
           <div className="help-card">
             <h3>⏰ Kit Reminders</h3>
             <p>
-              The current confirmed holder can receive configured day-before
-              and approximately two-hours-before reminders. Live suggestions
-              are not reminder recipients simply because they were suggested.
+              Configured pre-match reminders are sent to the confirmed current holder,
+              not merely to a suggested future carrier.
             </p>
           </div>
 
           <div className="help-card">
             <h3>🕘 Custody History</h3>
             <p>
-              Permanent custody events record actual holder changes,
-              corrections, and reminder activity. TeamKitState remains the
-              live source of truth for the current holder and suggestion.
-            </p>
-          </div>
-
-          <div className="help-card">
-            <h3>🔐 Kit Permissions</h3>
-            <p>
-              Owners have league-wide oversight. Other users can view or
-              modify only the scopes/actions granted by their league
-              permissions and mappings.
+              Actual holder changes, corrections, and reminder activity are retained separately
+              from live suggestions.
             </p>
           </div>
         </div>
       </details>
 
       <details id="help-ai" style={{ marginTop: 18 }}>
-        <summary
-          className="help-section-title"
-          style={{ cursor: "pointer", listStyle: "none", userSelect: "none" }}
-        >
+        <summary className="help-section-title" style={{ cursor: "pointer", listStyle: "none", userSelect: "none" }}>
           🤖 AI Team Builder, Strategy &amp; Match Review
         </summary>
 
         <div className="help-grid" style={{ marginTop: 12 }}>
           <div className="help-card">
-            <h3>🤖 AI Team Builder</h3>
-            <p>
-              Build balanced teams from selected players using available
-              batting, bowling, all-round performance, and match-history data.
-            </p>
+            <h3>🧠 AI Team Builder</h3>
+            <p>Build balanced sides from selected players using available player statistics.</p>
           </div>
 
           <div className="help-card">
-            <h3>👥 Player Availability</h3>
-            <p>
-              Run an optional availability poll before generating teams so
-              confirmed players can be selected more quickly.
-            </p>
+            <h3>✅ Availability Polls</h3>
+            <p>Confirm player availability before generating the match-day pool.</p>
           </div>
 
           <div className="help-card">
-            <h3>📷 Player List Import</h3>
-            <p>
-              Import player names from supported screenshots, images,
-              spreadsheets, CSV, or text files instead of entering every name
-              manually.
-            </p>
-          </div>
-
-          <div className="help-card">
-            <h3>⚖️ Balance Two Teams</h3>
-            <p>
-              Generate two statistically balanced sides and review the split
-              before using it for match planning.
-            </p>
+            <h3>📷 Player Import</h3>
+            <p>Import player names from supported screenshots, files, and spreadsheets.</p>
           </div>
 
           <div className="help-card">
             <h3>🎯 Single Team Strategy</h3>
-            <p>
-              Select one team and the intended players to generate batting
-              order, bowling plan, player roles, scenarios, and confidence
-              guidance.
-            </p>
-          </div>
-
-          <div className="help-card">
-            <h3>🔄 Shared Player History</h3>
-            <p>
-              Where configured for Surprise Cricket League, matching player
-              history across Surprise 1 and Surprise 2 can be combined for AI
-              strategy analysis.
-            </p>
-          </div>
-
-          <div className="help-card">
-            <h3>📲 Share AI Strategy</h3>
-            <p>
-              Share generated strategy through WhatsApp so captains and
-              players can review batting order, bowling plan, and match
-              recommendations.
-            </p>
+            <p>Generate batting order, bowling plan, roles, scenarios, and confidence guidance.</p>
           </div>
 
           <div className="help-card">
             <h3>✨ AI Match Review</h3>
-            <p>
-              Completed matches can generate AI analysis for match summary,
-              MVP, turning points, momentum, performers, partnerships,
-              pressure moments, and team takeaways.
-            </p>
-          </div>
-
-          <div className="help-card">
-            <h3>⚡ Faster AI Review Loading</h3>
-            <p>
-              The AI Review modal opens immediately and displays its loading
-              state while generation continues. Saved current-version reviews
-              can be reused from cache.
-            </p>
+            <p>Review summary, MVP, turning points, momentum, partnerships, and team takeaways.</p>
           </div>
 
           <div className="help-card">
             <h3>🌧 AI Review + DLS</h3>
             <p>
-              AI Review treats Cric4All&apos;s authoritative DLS-aware match
-              result as non-negotiable and does not declare a winner by simply
-              subtracting the raw innings totals.
+              AI Review uses Cric4All&apos;s authoritative DLS-aware result rather than
+              comparing raw innings totals.
             </p>
           </div>
         </div>
       </details>
 
       <details id="help-tabs" style={{ marginTop: 18 }}>
-        <summary
-          className="help-section-title"
-          style={{ cursor: "pointer", listStyle: "none", userSelect: "none" }}
-        >
+        <summary className="help-section-title" style={{ cursor: "pointer", listStyle: "none", userSelect: "none" }}>
           🧭 Main Tabs &amp; Match History
         </summary>
 
         <div className="help-grid" style={{ marginTop: 12 }}>
-          <div className="help-card">
-            <h3>🏆 Leagues</h3>
-            <p>
-              Manage leagues, series, teams, players, visibility, invite
-              links, public links, roles, and permissions.
-            </p>
-          </div>
-
-          <div className="help-card">
-            <h3>📋 Matches</h3>
-            <p>
-              Use Create, Active, Scheduled, Completed, and authorized Kit
-              workflows for the selected league.
-            </p>
-          </div>
-
-          <div className="help-card">
-            <h3>⚡ Completed History</h3>
-            <p>
-              Completed history renders progressively for better performance.
-              Use Show More to reveal additional older matches.
-            </p>
-          </div>
-
-          <div className="help-card">
-            <h3>📊 Faster Scorecards</h3>
-            <p>
-              Completed scorecards open with a streamlined loading path that
-              avoids duplicate match loads and unnecessary initial stats
-              requests.
-            </p>
-          </div>
-
-          <div className="help-card">
-            <h3>🧹 Duplicate Display Protection</h3>
-            <p>
-              If the same database match ID appears more than once in loaded
-              Completed data, Cric4All renders it once. Different match IDs
-              are never merged simply because the teams/date match.
-            </p>
-          </div>
-
-          <div className="help-card">
-            <h3>🥇 Points</h3>
-            <p>
-              Track played, wins, losses, ties, points, and team standings.
-            </p>
-          </div>
-
-          <div className="help-card">
-            <h3>📊 Stats</h3>
-            <p>
-              View batting, bowling, fielding, captaincy, wicketkeeping,
-              leaderboards, rankings, strike rate, economy, and all-round
-              performance.
-            </p>
-          </div>
-
-          <div className="help-card">
-            <h3>🔐 Access</h3>
-            <p>
-              Configure league members, roles, and permissions for owners,
-              admins, scorers, captains, players, analysts, and viewers.
-            </p>
-          </div>
-
-          <div className="help-card">
-            <h3>🛡 Admin</h3>
-            <p>
-              Owner-only administration includes online users, login history,
-              activity, and audit logs where enabled.
-            </p>
-          </div>
-
-          <div className="help-card">
-            <h3>👤 Account</h3>
-            <p>
-              Use the account menu for account details, shortcuts,
-              preferences, and sign-out.
-            </p>
-          </div>
-        </div>
-      </details>
-
-      <details style={{ marginTop: 18 }}>
-        <summary
-          className="help-section-title"
-          style={{ cursor: "pointer", listStyle: "none", userSelect: "none" }}
-        >
-          📊 Scorecards, Partnerships &amp; Smart Filters
-        </summary>
-
-        <div className="help-grid" style={{ marginTop: 12 }}>
-          <div className="help-card">
-            <h3>🏏 Batting Scorecard</h3>
-            <p>
-              View runs, balls, boundaries, strike rate, and dismissal
-              details. Mobile tables support horizontal viewing where needed.
-            </p>
-          </div>
-
-          <div className="help-card">
-            <h3>🎳 Bowling Scorecard</h3>
-            <p>
-              View overs, maidens, runs, wickets, wides, no-balls, and
-              economy.
-            </p>
-          </div>
-
-          <div className="help-card">
-            <h3>🤝 Partnerships</h3>
-            <p>
-              Track current and completed partnerships with runs, balls, and
-              wicket-ending context.
-            </p>
-          </div>
-
-          <div className="help-card">
-            <h3>💥 Fall of Wickets</h3>
-            <p>
-              Review score, wicket number, batter dismissed, and over for each
-              wicket.
-            </p>
-          </div>
-
-          <div className="help-card">
-            <h3>📌 Mobile Tables</h3>
-            <p>
-              Detailed tables keep critical identifying information readable
-              while supporting horizontal scrolling for additional columns.
-            </p>
-          </div>
-
-          <div className="help-card">
-            <h3>🎛 Smart Filters</h3>
-            <p>
-              Filter by teams, matches, players, status, series, and year
-              across the supported Matches, Points, Stats, and rankings
-              experiences.
-            </p>
-          </div>
-
-          <div className="help-card">
-            <h3>📅 Series &amp; Year</h3>
-            <p>
-              Narrow the dashboard to a tournament, season, year, or selected
-              series where applicable.
-            </p>
-          </div>
-
-          <div className="help-card">
-            <h3>🏏 Match Finder</h3>
-            <p>
-              Match filters use teams, series, status, scores, result, and
-              date information to help locate the correct fixture quickly.
-            </p>
-          </div>
+          <div className="help-card"><h3>🏆 Leagues</h3><p>Manage leagues, series, teams, players, visibility, links, roles, and permissions.</p></div>
+          <div className="help-card"><h3>📋 Matches</h3><p>Use Create, Active, Scheduled, Completed, and authorized Kit workflows.</p></div>
+          <div className="help-card"><h3>⚡ Completed History</h3><p>Completed history renders progressively for better performance.</p></div>
+          <div className="help-card"><h3>📊 Faster Scorecards</h3><p>Completed scorecards open with fewer duplicate or unnecessary requests.</p></div>
+          <div className="help-card"><h3>🥇 Points</h3><p>Track played, wins, losses, ties, points, and standings.</p></div>
+          <div className="help-card"><h3>📊 Stats</h3><p>View batting, bowling, fielding, rankings, leaders, strike rate, and economy.</p></div>
+          <div className="help-card"><h3>🔐 Access</h3><p>Configure league roles, permissions, and team scope.</p></div>
+          <div className="help-card"><h3>🛡 Admin</h3><p>Authorized owners can review user activity, login history, and audit logs.</p></div>
         </div>
       </details>
 
       <details id="help-public" style={{ marginTop: 18 }}>
-        <summary
-          className="help-section-title"
-          style={{ cursor: "pointer", listStyle: "none", userSelect: "none" }}
-        >
+        <summary className="help-section-title" style={{ cursor: "pointer", listStyle: "none", userSelect: "none" }}>
           🌐 Public Leagues &amp; Spectator Experience
         </summary>
 
         <div className="help-grid" style={{ marginTop: 12 }}>
-          <div className="help-card">
-            <h3>🔒 Private</h3>
-            <p>
-              Private leagues are available only to authorized league
-              members.
-            </p>
-          </div>
-
-          <div className="help-card">
-            <h3>🔗 Unlisted</h3>
-            <p>
-              Unlisted leagues can be viewed through their direct public link
-              but do not need to appear in Explore.
-            </p>
-          </div>
-
-          <div className="help-card">
-            <h3>🌐 Public</h3>
-            <p>
-              Public leagues can appear in Explore and are suitable for
-              discoverable spectator experiences.
-            </p>
-          </div>
-
-          <div className="help-card">
-            <h3>🧭 Explore</h3>
-            <p>
-              Discover public leagues and search using supported league,
-              team, series, or year information.
-            </p>
-          </div>
-
-          <div className="help-card">
-            <h3>⭐ Followed Leagues</h3>
-            <p>
-              Follow public leagues for faster return access from the Leagues
-              area.
-            </p>
-          </div>
-
-          <div className="help-card">
-            <h3>📈 Public Points</h3>
-            <p>
-              Public league pages can show current standings and team
-              performance.
-            </p>
-          </div>
-
-          <div className="help-card">
-            <h3>🏆 Public Leaders</h3>
-            <p>
-              Spectators can follow top performers such as leading run
-              scorers, wicket takers, six hitters, strike-rate leaders, and
-              economy leaders.
-            </p>
-          </div>
-
-          <div className="help-card">
-            <h3>📤 Share - Spectator View</h3>
-            <p>
-              Share a live match with score, match state, direct scorecard
-              link, and Cric4All branding.
-            </p>
-          </div>
-
-          <div className="help-card">
-            <h3>📱 Mobile / Android</h3>
-            <p>
-              Cric4All is designed for mobile-friendly match-day use and can
-              also be packaged for Android.
-            </p>
-          </div>
+          <div className="help-card"><h3>🔒 Private</h3><p>Visible only to authorized members.</p></div>
+          <div className="help-card"><h3>🔗 Unlisted</h3><p>Public by direct link without Explore discovery.</p></div>
+          <div className="help-card"><h3>🌐 Public</h3><p>Can appear in Explore.</p></div>
+          <div className="help-card"><h3>🧭 Explore</h3><p>Discover supported public leagues.</p></div>
+          <div className="help-card"><h3>⭐ Followed Leagues</h3><p>Return quickly to leagues a user follows.</p></div>
+          <div className="help-card"><h3>📤 Spectator View</h3><p>Share a live match link with score and Cric4All branding.</p></div>
         </div>
       </details>
 
       <details id="help-admin" style={{ marginTop: 18 }}>
-        <summary
-          className="help-section-title"
-          style={{ cursor: "pointer", listStyle: "none", userSelect: "none" }}
-        >
+        <summary className="help-section-title" style={{ cursor: "pointer", listStyle: "none", userSelect: "none" }}>
           🛡 Admin, Roles &amp; Data Integrity
         </summary>
 
         <div className="help-grid" style={{ marginTop: 12 }}>
-          <div className="help-card">
-            <h3>🟢 Online Users</h3>
-            <p>
-              Authorized owners can review currently active users using
-              heartbeat/last-seen information.
-            </p>
-          </div>
-
-          <div className="help-card">
-            <h3>🕒 Recent Logins</h3>
-            <p>
-              Review recent login activity and user access history where
-              enabled.
-            </p>
-          </div>
-
-          <div className="help-card">
-            <h3>📜 Audit Logs</h3>
-            <p>
-              Audit logging can record sensitive actions such as match edits,
-              deletes, locks, abandons, corrections, and permission changes.
-            </p>
-          </div>
-
-          <div className="help-card">
-            <h3>🔐 Data Integrity</h3>
-            <p>
-              Offline sequence guards, idempotent client event IDs, audit
-              history, completed-match locks, and correction workflows help
-              protect scoring integrity.
-            </p>
-          </div>
-        </div>
-
-        <div className="help-card full">
-          <h3>🔐 Roles &amp; Permissions</h3>
-
-          <p>
-            Access is determined from the signed-in user, league membership,
-            role, explicit permissions, and team mapping. Owners have
-            league-wide oversight. Admins and Scorers can perform the actions
-            granted to them. Captains and Players normally remain team-scoped,
-            while Spectators use public/shared views.
-          </p>
-
-          <div className="help-badges">
-            <span className="badge">OWNER</span>
-            <span className="badge">ADMIN</span>
-            <span className="badge">SCORER</span>
-            <span className="badge">CAPTAIN</span>
-            <span className="badge">PLAYER</span>
-            <span className="badge">SPECTATOR</span>
-          </div>
+          <div className="help-card"><h3>🟢 Online Users</h3><p>Review current user activity where authorized.</p></div>
+          <div className="help-card"><h3>🕒 Recent Logins</h3><p>Review recent access history.</p></div>
+          <div className="help-card"><h3>📜 Audit Logs</h3><p>Trace important league, match, access, and correction actions.</p></div>
+          <div className="help-card"><h3>🔐 Data Integrity</h3><p>Offline guards, event IDs, locks, and audit history help protect score integrity.</p></div>
         </div>
       </details>
 
-      {/* ============================================================
-          PRO TIPS
-          ============================================================ */}
       <div className="help-tip-box" style={{ marginTop: 20 }}>
         <h3>💡 Match-Day Pro Tips</h3>
-
         <ul>
           <li>Use Scorer Mode during live play to minimize scrolling.</li>
-          <li>Complete delivery setup before the first ball of each innings.</li>
-          <li>
-            When offline, keep scoring on the same device and sync before
-            handing scoring to somebody else.
-          </li>
-          <li>
-            Never delete pending offline events just to clear a sync conflict;
-            use Retry Sync after reviewing server state.
-          </li>
-          <li>
-            Cric4All Chase Par is tactical guidance and is not Official DLS.
-          </li>
-          <li>
-            In Official DLS, get revised target/par from the competition&apos;s
-            authorized DLS source rather than guessing.
-          </li>
-          <li>
-            A revised DLS innings allocation is the new total overs, not
-            overs remaining.
-          </li>
-          <li>
-            Resolve final kit custody after the match and then Lock Match once
-            scoring is fully synchronized.
-          </li>
-          <li>
-            A kit suggestion does not replace the current confirmed holder.
-          </li>
-          <li>
-            AI Review should agree with Cric4All&apos;s authoritative final
-            result, including DLS-adjusted matches.
-          </li>
-          <li>
-            Use Share - Spectator View for live public score links.
-          </li>
-          <li>
-            Use Smart Filters when Completed history, Stats, or Points become
-            large.
-          </li>
+          <li>Keep scoring on the same active device while offline.</li>
+          <li>Sync before handing scoring control to another device.</li>
+          <li>Cric4All Chase Par is tactical guidance, not Official DLS.</li>
+          <li>Use authorized Official DLS values rather than guessing.</li>
+          <li>Resolve final kit custody before finalizing match administration.</li>
+          <li>Use Smart Filters when match history or statistics grow large.</li>
         </ul>
       </div>
 
-      {/* ============================================================
-          FAQ - native accordions prevent another huge vertical wall
-          ============================================================ */}
       <section id="help-faq" style={{ marginTop: 20 }}>
         <h3 className="help-section-title">❓ Frequently Asked Questions</h3>
 
-        <div
-          className="help-faq"
-          style={{
-            display: "grid",
-            gap: 8,
-          }}
-        >
+        <div className="help-faq" style={{ display: "grid", gap: 8 }}>
           {[
-            [
-              "Where do I create leagues and teams?",
-              <>Use the <strong>Leagues</strong> tab.</>,
-            ],
-            [
-              "Is Series required?",
-              <>No. Series is optional for friendly or standalone matches.</>,
-            ],
-            [
-              "Why can’t I create a match?",
-              <>
-                Confirm the active league has enough teams/players for the
-                match and that your role has match-creation permission.
-              </>,
-            ],
-            [
-              "What is Scorer Mode?",
-              <>
-                A focused match-day workspace with quick scoring, scoreboard,
-                commentary, setup, offline status, and match-control actions.
-              </>,
-            ],
-            [
-              "Can I score without internet?",
-              <>
-                Yes. Supported scoring actions can continue locally. Cric4All
-                synchronizes queued changes when connectivity returns.
-              </>,
-            ],
-            [
-              "What does Sync Conflict mean?",
-              <>
-                The server changed while the device was offline. Sync pauses
-                to protect data, but local scoring can continue until the
-                conflict is retried/resolved.
-              </>,
-            ],
-            [
-              "Can I undo while offline?",
-              <>
-                Yes for pending local balls, and for supported server-ball
-                cases where Cric4All has a safe pre-delivery snapshot.
-              </>,
-            ],
-            [
-              "Why can’t I Lock Match?",
-              <>
-                All offline changes must be synchronized and no sync conflict
-                can remain before the final lock.
-              </>,
-            ],
-            [
-              "What does Cric4All Par: 18 runs mean?",
-              <>
-                It means the current tactical chase par is 18 runs at that
-                exact match position. A display such as “▲ +4 ahead” means the
-                batting side is four runs above that tactical par.
-              </>,
-            ],
-            [
-              "Is Cric4All Par the same as Official DLS Par?",
-              <>
-                No. Cric4All Chase Par is a strategy indicator. Official DLS
-                Par must come from the competition&apos;s authorized DLS
-                calculation.
-              </>,
-            ],
-            [
-              "Why are DLS Par and Target different?",
-              <>
-                Par is the tie/equivalent score. Target is the score required
-                to win, so a par of 18 commonly corresponds to a target of 19.
-              </>,
-            ],
-            [
-              "Can Cric4All Standard work at 3.3 overs?",
-              <>
-                Yes. Standard mode supports legal-delivery boundaries such as
-                3.1–3.5 using interpolation between adjacent resource-table
-                rows.
-              </>,
-            ],
-            [
-              "Where do Official DLS values come from?",
-              <>
-                Revised overs are set by match officials and the revised
-                target/par comes from the competition&apos;s authorized DLS
-                calculator/source.
-              </>,
-            ],
-            [
-              "What is Revise & Resume in Official DLS?",
-              <>
-                Use it when play will continue. Enter the revised total
-                innings allocation and revised target.
-              </>,
-            ],
-            [
-              "What is End Match Now in Official DLS?",
-              <>
-                Use it when play cannot resume. Enter the official target and
-                official par at the exact suspension point, review the
-                position, and confirm the result.
-              </>,
-            ],
-            [
-              "Why is Scoring hidden after completion?",
-              <>
-                Completed/locked matches are finalized and open through the
-                Scoreboard/Completed workflow instead of normal scoring.
-              </>,
-            ],
-            [
-              "Where do I record the final kit holder?",
-              <>
-                Use the post-match prompt or open{" "}
-                <strong>Matches → Kit</strong>.
-              </>,
-            ],
-            [
-              "Does suggesting a kit carrier change the current holder?",
-              <>
-                No. Current holder changes only when an authorized user
-                records who actually took the kit.
-              </>,
-            ],
-            [
-              "Why does AI Review take longer the first time?",
-              <>
-                A new review may need match analysis/generation. The modal
-                opens immediately while it is being prepared, and current
-                generated reviews can be cached for faster reopening.
-              </>,
-            ],
-            [
-              "Does AI Review understand DLS?",
-              <>
-                Yes. It uses Cric4All&apos;s authoritative DLS-aware result
-                instead of declaring a winner from raw innings totals alone.
-              </>,
-            ],
-            [
-              "Can I share a live match?",
-              <>
-                Yes. Use <strong>Share - Spectator View</strong>.
-              </>,
-            ],
-            [
-              "Can I see who changed important data?",
-              <>
-                Where authorized, use Admin Center audit logs and activity
-                history.
-              </>,
-            ],
+            ["Can I score without internet?", <>Yes. Supported scoring actions can continue locally and synchronize later.</>],
+            ["What does Sync Conflict mean?", <>The server changed while your device was offline. Sync pauses to protect both versions of the match state.</>],
+            ["Can I undo while offline?", <>Yes for pending local deliveries and supported snapshot-backed cases.</>],
+            ["Why can’t I Lock Match?", <>All offline changes must be synchronized and no sync conflict can remain.</>],
+            ["What does Cric4All Par mean?", <>It is the current tactical chase par in runs. “+4 ahead” means the batting side is four runs above that tactical par.</>],
+            ["Is Cric4All Par Official DLS?", <>No. Cric4All Chase Par is a strategy indicator, not an Official DLS par.</>],
+            ["Why are DLS Par and Target different?", <>Par represents the tie/equivalent score; target is the score required to win.</>],
+            ["Can Cric4All Standard work at 3.3 overs?", <>Yes. Standard mode supports legal-delivery positions such as 3.1–3.5 using interpolation.</>],
+            ["Where do Official DLS values come from?", <>From the competition&apos;s authorized DLS source/calculator and match officials.</>],
+            ["Why does AI Review take longer the first time?", <>A new review may require analysis/generation. The modal opens while it is being prepared, and current reviews can be cached.</>],
+            ["Does AI Review understand DLS?", <>Yes. It respects Cric4All&apos;s authoritative DLS-aware match result.</>],
+            ["Where do I record the final kit holder?", <>Use the post-match prompt or open <strong>Matches → Kit</strong>.</>],
           ].map(([question, answer]) => (
             <details
               key={question}
@@ -27113,9 +26378,6 @@ onClick={() => {
 {activeTab === "about" && (
   <Card title="ℹ️ About Cric4All">
     <div className="about-page">
-      {/* ============================================================
-          HERO
-          ============================================================ */}
       <div className="about-hero">
         <div>
           <div className="about-kicker">🏏 Built for real cricket communities</div>
@@ -27123,935 +26385,324 @@ onClick={() => {
           <h2>🏏 Cric4All</h2>
 
           <p>
-            Cric4All is a modern cricket platform for league management,
-            live and offline scoring, DLS/rain workflows, AI match review,
-            AI team planning, public spectator sharing, player statistics,
-            permissions, birthday communication, and fair cricket-kit custody.
+            A connected cricket platform for organizing leagues, scoring matches,
+            handling match-day interruptions, sharing live cricket, understanding
+            performance, and keeping community operations in one place.
           </p>
 
           <div className="release-badge-row">
-            <span className="release-badge">Live Scoring</span>
-            <span className="release-badge">Offline Scoring</span>
-            <span className="release-badge">Automatic Sync</span>
-            <span className="release-badge">DLS / Rain</span>
-            <span className="release-badge">Cric4All Chase Par</span>
-            <span className="release-badge">AI Match Review</span>
-            <span className="release-badge">AI Team Builder</span>
-            <span className="release-badge">AI Match Strategy</span>
-            <span className="release-badge">Spectator Sharing</span>
-            <span className="release-badge">Team Kit Custody</span>
-            <span className="release-badge">Android App</span>
+            <span className="release-badge">Live + Offline Scoring</span>
+            <span className="release-badge">Rain / DLS</span>
+            <span className="release-badge">AI-Powered</span>
+            <span className="release-badge">Public Spectator View</span>
+            <span className="release-badge">League Operations</span>
+            <span className="release-badge">Android Ready</span>
           </div>
         </div>
       </div>
 
       {/* ============================================================
-          COMPACT QUICK NAV
+          EXPLORE CRIC4ALL NAVIGATION
+          - not a tiny pill strip
+          - grid is self-evident on mobile
           ============================================================ */}
       <div
         style={{
-          position: "sticky",
-          top: 0,
-          zIndex: 5,
           marginBottom: 18,
-          padding: "9px 10px",
-          borderRadius: 14,
+          padding: 14,
+          borderRadius: 16,
           border: "1px solid rgba(148, 163, 184, 0.18)",
-          background: "rgba(15, 23, 42, 0.92)",
-          backdropFilter: "blur(10px)",
-          WebkitBackdropFilter: "blur(10px)",
-          overflowX: "auto",
-          overflowY: "hidden",
-          whiteSpace: "nowrap",
+          background: "rgba(15, 23, 42, 0.68)",
         }}
       >
-        {[
-          ["about-mission", "🎯 Mission"],
-          ["about-now", "✨ What Cric4All Does"],
-          ["about-scoring", "⚡ Scoring"],
-          ["about-dls", "🌧 DLS"],
-          ["about-ai", "🤖 AI"],
-          ["about-kit", "🎒 Kit"],
-          ["about-public", "🌐 Public"],
-          ["about-integrity", "🛡 Integrity"],
-          ["about-tech", "⚙️ Technology"],
-          ["about-roadmap", "🛣 Roadmap"],
-        ].map(([id, label]) => (
-          <a
-            key={id}
-            href={`#${id}`}
+        <div style={{ marginBottom: 10 }}>
+          <strong style={{ display: "block", fontSize: 15, lineHeight: 1.2 }}>
+            🧭 Explore Cric4All
+          </strong>
+
+          <span
             style={{
-              display: "inline-block",
-              marginRight: 7,
-              padding: "7px 10px",
-              borderRadius: 999,
-              border: "1px solid rgba(148, 163, 184, 0.20)",
-              textDecoration: "none",
-              color: "inherit",
+              display: "block",
+              marginTop: 3,
               fontSize: 12,
-              fontWeight: 800,
-              lineHeight: 1,
+              opacity: 0.72,
+              lineHeight: 1.35,
             }}
           >
-            {label}
-          </a>
-        ))}
+            A quick look at the platform and what makes it different.
+          </span>
+        </div>
+
+        <div
+          style={{
+            display: "grid",
+            gridTemplateColumns: "repeat(auto-fit, minmax(145px, 1fr))",
+            gap: 8,
+          }}
+        >
+          {[
+            ["about-mission", "🎯 Mission"],
+            ["about-journey", "🏏 Match Journey"],
+            ["about-different", "✨ Why Cric4All"],
+            ["about-people", "👥 Who It’s For"],
+            ["about-platform", "📱 Platform"],
+            ["about-tech", "⚙️ Technology"],
+            ["about-roadmap", "🛣 Roadmap"],
+          ].map(([id, label]) => (
+            <a
+              key={id}
+              href={`#${id}`}
+              style={{
+                display: "flex",
+                alignItems: "center",
+                justifyContent: "center",
+                minHeight: 44,
+                padding: "9px 10px",
+                borderRadius: 11,
+                border: "1px solid rgba(96, 165, 250, 0.24)",
+                background: "rgba(30, 41, 59, 0.72)",
+                textDecoration: "none",
+                color: "inherit",
+                fontSize: 13,
+                fontWeight: 800,
+                lineHeight: 1.2,
+                textAlign: "center",
+                whiteSpace: "normal",
+                overflowWrap: "anywhere",
+              }}
+            >
+              {label}
+            </a>
+          ))}
+        </div>
       </div>
 
-      {/* ============================================================
-          MISSION - ALWAYS VISIBLE
-          ============================================================ */}
       <section id="about-mission">
         <div className="about-card about-mission">
           <h3>🎯 Our Mission</h3>
 
           <p>
-            Cric4All exists to make community cricket easier to organize,
-            score, follow, analyze, and share. It brings match-day operations
-            and league administration into one connected platform without
-            forcing organizers, scorers, captains, players, and spectators to
-            jump between multiple tools.
+            Cric4All makes community cricket easier to organize, score, follow,
+            review, and share. The goal is simple: keep the people running the
+            game focused on cricket instead of juggling disconnected tools.
           </p>
 
           <p>
-            Whether it is a weekend friendly, academy match, tournament,
-            seasonal league, or long-running community competition, Cric4All
-            is designed around practical cricket workflows before, during, and
-            after the match.
+            From a weekend friendly to a full league or tournament, Cric4All is
+            designed around practical workflows before, during, and after the match.
           </p>
         </div>
       </section>
 
-      {/* ============================================================
-          WHAT CRIC4ALL DOES NOW
-          ============================================================ */}
-      <section id="about-now">
-        <h3 className="about-section-title">✨ What Cric4All Helps You Do Today</h3>
+      <section id="about-journey" style={{ marginTop: 20 }}>
+        <h3 className="about-section-title">🏏 One Platform for the Match Journey</h3>
 
-        <div className="about-feature-grid">
-          <div className="about-feature">🏆 League Management</div>
-          <div className="about-feature">📅 Series / Season Management</div>
-          <div className="about-feature">👥 Team & Player Management</div>
-          <div className="about-feature">📋 Match Scheduling</div>
-          <div className="about-feature">🎯 Live Ball-by-Ball Scoring</div>
-          <div className="about-feature">📴 Offline Scoring</div>
-          <div className="about-feature">🔄 Automatic Sync</div>
-          <div className="about-feature">🛡 Sync Conflict Protection</div>
-          <div className="about-feature">↩️ Offline Undo</div>
-          <div className="about-feature">⚡ Scorer Mode</div>
-          <div className="about-feature">🌧 Cric4All Standard DLS</div>
-          <div className="about-feature">📐 Official DLS Workflow</div>
-          <div className="about-feature">📊 Cric4All Chase Par</div>
-          <div className="about-feature">📝 Commentary</div>
-          <div className="about-feature">📊 Scorecards & Match Center</div>
-          <div className="about-feature">🏟 Spectator Sharing</div>
-          <div className="about-feature">🤖 AI Match Review</div>
-          <div className="about-feature">🧠 AI Team Builder</div>
-          <div className="about-feature">🎯 AI Match Strategy</div>
-          <div className="about-feature">✅ Availability Polls</div>
-          <div className="about-feature">📷 Player Import</div>
-          <div className="about-feature">⚖️ Balanced Team Generation</div>
-          <div className="about-feature">📲 WhatsApp Strategy Sharing</div>
-          <div className="about-feature">🎂 Birthday Workflows</div>
-          <div className="about-feature">🎒 Team Kit Custody</div>
-          <div className="about-feature">⚖️ Fair Kit Rotation</div>
-          <div className="about-feature">⏰ Kit Reminders</div>
-          <div className="about-feature">📈 Points Table</div>
-          <div className="about-feature">🏆 Rankings & Leaders</div>
-          <div className="about-feature">🔎 Smart Filters</div>
-          <div className="about-feature">🌐 Public League Pages</div>
-          <div className="about-feature">⭐ Followed Leagues</div>
-          <div className="about-feature">🔐 Role-Based Access</div>
-          <div className="about-feature">🛡 Admin Center</div>
-          <div className="about-feature">📜 Audit Logs</div>
-          <div className="about-feature">🟢 Login Activity</div>
-          <div className="about-feature">📱 Android App</div>
+        <div className="about-workflow-grid">
+          <div>
+            <strong>1. Plan</strong>
+            <p>
+              Organize leagues, series, teams, players, availability, and match strategy.
+            </p>
+          </div>
+
+          <div>
+            <strong>2. Schedule</strong>
+            <p>
+              Create fixtures with configurable overs, wickets, roles, and match settings.
+            </p>
+          </div>
+
+          <div>
+            <strong>3. Score</strong>
+            <p>
+              Score live or offline with a focused match-day workspace and automatic synchronization.
+            </p>
+          </div>
+
+          <div>
+            <strong>4. Adapt</strong>
+            <p>
+              Handle interruptions with rain/DLS workflows and tactical chase context.
+            </p>
+          </div>
+
+          <div>
+            <strong>5. Share</strong>
+            <p>
+              Give spectators live scorecards, commentary, public league pages, standings, and leaders.
+            </p>
+          </div>
+
+          <div>
+            <strong>6. Review</strong>
+            <p>
+              Use scorecards, statistics, rankings, and AI Match Review to understand the game.
+            </p>
+          </div>
+
+          <div>
+            <strong>7. Close the Loop</strong>
+            <p>
+              Finalize the match, confirm kit custody, review activity, and keep the league ready for the next game.
+            </p>
+          </div>
         </div>
       </section>
 
-      {/* ============================================================
-          CURRENT RELEASE
-          ============================================================ */}
-      <details open style={{ marginTop: 20 }}>
-        <summary
-          className="about-section-title"
-          style={{
-            cursor: "pointer",
-            listStyle: "none",
-            userSelect: "none",
-          }}
-        >
-          📦 Current Release
-        </summary>
+      <section id="about-different" style={{ marginTop: 20 }}>
+        <h3 className="about-section-title">✨ What Makes Cric4All Different</h3>
 
-        <div className="about-card" style={{ marginTop: 12 }}>
-          <div className="release-badge-row">
-            <span className="release-badge">MVP 1.0+</span>
-            <span className="release-badge">Live Scoring Ready</span>
-            <span className="release-badge">Offline Scoring Ready</span>
-            <span className="release-badge">DLS Workflows Ready</span>
-            <span className="release-badge">AI Review Ready</span>
-            <span className="release-badge">AI Team Builder Ready</span>
-            <span className="release-badge">Kit Automation Ready</span>
-            <span className="release-badge">Android Ready</span>
+        <div className="about-workflow-grid">
+          <div>
+            <strong>⚡ Match-Day First</strong>
+            <p>
+              Cric4All is built around the scorer&apos;s real workflow, with quick scoring,
+              live context, scorecards, commentary, and match controls in one place.
+            </p>
           </div>
 
-          <p>
-            Cric4All already covers the full match lifecycle: league setup,
-            scheduling, scoring, interruptions, scorecards, result review,
-            public sharing, AI analysis, statistics, administration, and
-            post-match operational follow-up.
-          </p>
+          <div>
+            <strong>📴 Offline Ready</strong>
+            <p>
+              Scoring can continue when the connection drops, with synchronization and
+              conflict protection when connectivity returns.
+            </p>
+          </div>
 
-          <div className="about-list-grid">
-            <span>✅ League creation and visibility controls</span>
-            <span>✅ Series / season management</span>
-            <span>✅ Team creation and editing</span>
-            <span>✅ Player creation and bulk imports</span>
-            <span>✅ Scheduled and editable matches</span>
-            <span>✅ Captains, vice-captains, and wicketkeepers</span>
-            <span>✅ Custom overs, wickets, and bowler limits</span>
-            <span>✅ Live ball-by-ball scoring</span>
-            <span>✅ Wides, no-balls, byes, and leg-byes</span>
-            <span>✅ Wickets, run outs, stumpings, retired hurt</span>
-            <span>✅ Bowler and wicketkeeper changes</span>
-            <span>✅ Striker / non-striker management</span>
-            <span>✅ End innings / end match controls</span>
-            <span>✅ Lock and abandon workflows</span>
-            <span>✅ Offline scoring and local state</span>
-            <span>✅ Automatic reconnect synchronization</span>
-            <span>✅ Sync conflict protection and Retry Sync</span>
-            <span>✅ Offline Undo support</span>
-            <span>✅ Offline innings-transition support</span>
-            <span>✅ Scorer Mode workspace</span>
-            <span>✅ Scoreboard and commentary</span>
-            <span>✅ Partnerships and fall of wickets</span>
-            <span>✅ Mobile-friendly score tables</span>
-            <span>✅ Cric4All Standard rain adjustment</span>
-            <span>✅ Mid-over Standard interruption support</span>
-            <span>✅ Official DLS Revise & Resume</span>
-            <span>✅ Official DLS End Match workflow</span>
-            <span>✅ DLS-aware targets and balls remaining</span>
-            <span>✅ DLS-aware final result labels</span>
-            <span>✅ Cric4All tactical Chase Par</span>
-            <span>✅ Faster Completed-match rendering</span>
-            <span>✅ Faster completed scorecard opening</span>
-            <span>✅ Completed-match duplicate display protection</span>
-            <span>✅ AI Match Review</span>
-            <span>✅ DLS-aware AI Match Review</span>
-            <span>✅ Faster AI Review modal loading</span>
-            <span>✅ AI Team Builder</span>
-            <span>✅ Availability polls</span>
-            <span>✅ Screenshot / spreadsheet / text player import</span>
-            <span>✅ Balanced team generation</span>
-            <span>✅ Single Team Strategy</span>
-            <span>✅ WhatsApp strategy sharing</span>
-            <span>✅ Player birthday workflows</span>
-            <span>✅ Team and shared-league kit custody</span>
-            <span>✅ Fair next-carrier suggestions</span>
-            <span>✅ Post-match kit confirmation</span>
-            <span>✅ Current-holder reminder workflows</span>
-            <span>✅ Kit custody history and rotation standings</span>
-            <span>✅ Points, stats, rankings, and leaders</span>
-            <span>✅ Smart Filters / Context Lens</span>
-            <span>✅ Public / Unlisted / Private leagues</span>
-            <span>✅ Explore and followed leagues</span>
-            <span>✅ Spectator match sharing</span>
-            <span>✅ Role and permission controls</span>
-            <span>✅ Admin Center and audit logs</span>
-            <span>✅ Login activity tracking</span>
-            <span>✅ Android packaging foundation</span>
+          <div>
+            <strong>🌧 Rain-Aware Cricket</strong>
+            <p>
+              Built-in rain adjustment, Official DLS entry workflows, revised-target handling,
+              and chase context support interrupted matches.
+            </p>
+          </div>
+
+          <div>
+            <strong>🤖 Practical AI</strong>
+            <p>
+              AI helps with team balancing, match strategy, and completed-match review without
+              replacing Cric4All&apos;s authoritative match result.
+            </p>
+          </div>
+
+          <div>
+            <strong>🎒 Community Operations</strong>
+            <p>
+              Birthday workflows, fair kit rotation, reminders, and post-match custody help
+              manage the responsibilities around the game—not just the score.
+            </p>
+          </div>
+
+          <div>
+            <strong>🌐 Public Cricket</strong>
+            <p>
+              Public and unlisted league pages, live spectator sharing, standings, and leaders
+              make it easier for families, players, and fans to follow the competition.
+            </p>
           </div>
         </div>
-      </details>
+      </section>
 
-      {/* ============================================================
-          SCORING / OFFLINE
-          ============================================================ */}
-      <details id="about-scoring" style={{ marginTop: 20 }}>
+      <section id="about-people" style={{ marginTop: 20 }}>
+        <h3 className="about-section-title">👥 Built for Cricket Communities</h3>
+
+        <div className="about-workflow-grid">
+          <div>
+            <strong>For Organizers</strong>
+            <p>
+              Manage leagues, scheduling, permissions, public visibility, administration,
+              community workflows, and AI planning.
+            </p>
+          </div>
+
+          <div>
+            <strong>For Scorers</strong>
+            <p>
+              Score live or offline, manage innings/player state, handle rain revisions,
+              synchronize safely, and finalize matches.
+            </p>
+          </div>
+
+          <div>
+            <strong>For Captains</strong>
+            <p>
+              Review availability, AI strategy, live chase context, scorecards, statistics,
+              and post-match analysis.
+            </p>
+          </div>
+
+          <div>
+            <strong>For Players</strong>
+            <p>
+              Follow personal performance, match history, rankings, availability,
+              and team/community information.
+            </p>
+          </div>
+
+          <div>
+            <strong>For Spectators</strong>
+            <p>
+              Follow public leagues, live scores, commentary, scorecards, results,
+              standings, and leaders.
+            </p>
+          </div>
+        </div>
+      </section>
+
+      <details id="about-platform" open style={{ marginTop: 20 }}>
         <summary
           className="about-section-title"
           style={{ cursor: "pointer", listStyle: "none", userSelect: "none" }}
         >
-          ⚡ Scorer Mode, Live Scoring &amp; Offline Match Day
+          📱 Platform
         </summary>
 
         <div className="about-card" style={{ marginTop: 12 }}>
           <p>
-            Scorer Mode is designed to keep the scorer focused on one
-            match-day workspace. It combines scoring controls, live match
-            context, player state, scoreboard, commentary, setup, match
-            controls, connectivity state, and sync status.
+            Cric4All is designed as a responsive cricket application for phones and laptops,
+            with match-day layouts optimized for smaller screens and richer management views
+            available on larger displays.
           </p>
-
-          <div className="about-workflow-grid">
-            <div>
-              <strong>🎯 Fast Scoring</strong>
-              <p>
-                Quick buttons cover runs, extras, wickets, retired-hurt flows,
-                swaps, and undo.
-              </p>
-            </div>
-
-            <div>
-              <strong>🏏 Player State</strong>
-              <p>
-                Striker, non-striker, bowler, and wicketkeeper changes remain
-                synchronized across innings and supported offline flows.
-              </p>
-            </div>
-
-            <div>
-              <strong>📴 Offline Scoring</strong>
-              <p>
-                Keep scoring when connectivity drops. Supported actions are
-                stored locally on the active device.
-              </p>
-            </div>
-
-            <div>
-              <strong>🔄 Automatic Sync</strong>
-              <p>
-                Pending events are replayed when connectivity returns using
-                client-event and server-sequence protection.
-              </p>
-            </div>
-
-            <div>
-              <strong>🛡 Conflict Safety</strong>
-              <p>
-                If the server changes while a device is offline, Cric4All
-                pauses synchronization instead of throwing away local scoring.
-              </p>
-            </div>
-
-            <div>
-              <strong>↩️ Offline Undo</strong>
-              <p>
-                Pending local deliveries can be removed safely, with snapshot
-                support for compatible reconnect undo scenarios.
-              </p>
-            </div>
-
-            <div>
-              <strong>🏁 Innings Transitions</strong>
-              <p>
-                End-first-innings, delivery setup, strike state, and new
-                second-innings player stats are handled without carrying the
-                previous innings&apos; live card values.
-              </p>
-            </div>
-
-            <div>
-              <strong>🔒 Final Lock</strong>
-              <p>
-                Lock Match stays protected until pending local changes are
-                synchronized and any sync conflict is resolved.
-              </p>
-            </div>
-          </div>
 
           <div className="about-highlight-row">
-            <span>🎯 Quick Score Buttons</span>
-            <span>📊 Inline Scoreboard</span>
-            <span>📝 Commentary</span>
-            <span>📋 Match Setup</span>
-            <span>📴 Offline State</span>
-            <span>🔄 Retry Sync</span>
-            <span>↩️ Undo</span>
-            <span>🔒 Match Lock</span>
+            <span>🌐 Web</span>
+            <span>📱 Mobile Friendly</span>
+            <span>🤖 AI Assisted</span>
+            <span>☁️ Cloud Connected</span>
+            <span>📴 Offline Capable</span>
+            <span>🤖 Android Ready</span>
           </div>
         </div>
       </details>
 
-      {/* ============================================================
-          DLS / CHASE PAR
-          ============================================================ */}
-      <details id="about-dls" style={{ marginTop: 20 }}>
-        <summary
-          className="about-section-title"
-          style={{ cursor: "pointer", listStyle: "none", userSelect: "none" }}
-        >
-          🌧 Rain, DLS &amp; Cric4All Chase Par
-        </summary>
-
-        <div className="about-card" style={{ marginTop: 12 }}>
-          <p>
-            Cric4All supports both a built-in Standard rain-adjustment
-            workflow and a separate Official DLS entry workflow. The app keeps
-            tactical Chase Par clearly separate from Official DLS values.
-          </p>
-
-          <div className="about-workflow-grid">
-            <div>
-              <strong>Cric4All Standard</strong>
-              <p>
-                Uses the published Standard resource table and supports
-                legal-delivery interruption points such as 3.1 through 3.5.
-              </p>
-            </div>
-
-            <div>
-              <strong>Ball-Aware Standard</strong>
-              <p>
-                Partial-over resource values are interpolated between adjacent
-                whole-over Standard-table rows rather than forcing scorers to
-                wait until 4.0, 5.0, and so on.
-              </p>
-            </div>
-
-            <div>
-              <strong>Official DLS — Revise &amp; Resume</strong>
-              <p>
-                Enter the revised total innings allocation and revised target
-                supplied by the competition&apos;s authorized DLS source.
-              </p>
-            </div>
-
-            <div>
-              <strong>Official DLS — End Match Now</strong>
-              <p>
-                Enter the official target and official par at the exact
-                suspension point when play cannot resume.
-              </p>
-            </div>
-
-            <div>
-              <strong>Par vs Target</strong>
-              <p>
-                Par represents the tie/equivalent score; target represents the
-                score needed to win. For example, par 18 can correspond to
-                target 19.
-              </p>
-            </div>
-
-            <div>
-              <strong>Cric4All Chase Par</strong>
-              <p>
-                A tactical innings-planning indicator such as{" "}
-                <strong>Par: 18 runs · ▲ +4 ahead</strong>. It is not Official
-                DLS Par.
-              </p>
-            </div>
-
-            <div>
-              <strong>DLS-Aware Completion</strong>
-              <p>
-                Revised target and revised innings allocation are used by the
-                server when determining match completion and balls remaining.
-              </p>
-            </div>
-
-            <div>
-              <strong>DLS-Aware Result</strong>
-              <p>
-                Final rain-adjusted result labels retain{" "}
-                <strong>(D/L Standard)</strong> or <strong>(DLS)</strong> so
-                they are not confused with normal raw-score results.
-              </p>
-            </div>
-          </div>
-        </div>
-      </details>
-
-      {/* ============================================================
-          AI
-          ============================================================ */}
-      <details id="about-ai" style={{ marginTop: 20 }}>
-        <summary
-          className="about-section-title"
-          style={{ cursor: "pointer", listStyle: "none", userSelect: "none" }}
-        >
-          🤖 AI Team Planning, Strategy &amp; Match Review
-        </summary>
-
-        <div className="about-card" style={{ marginTop: 12 }}>
-          <p>
-            Cric4All uses AI before and after the match: helping organizers
-            prepare balanced teams and match plans, then helping players and
-            captains understand how the completed match unfolded.
-          </p>
-
-          <div className="about-workflow-grid">
-            <div>
-              <strong>AI Team Builder</strong>
-              <p>
-                Build two balanced sides using available batting, bowling,
-                all-round, and historical match data.
-              </p>
-            </div>
-
-            <div>
-              <strong>Availability Polls</strong>
-              <p>
-                Confirm who is available before generating the match-day
-                player pool.
-              </p>
-            </div>
-
-            <div>
-              <strong>Smart Player Import</strong>
-              <p>
-                Import player names from screenshots, supported images,
-                spreadsheets, CSV, and text files.
-              </p>
-            </div>
-
-            <div>
-              <strong>Single Team Strategy</strong>
-              <p>
-                Generate batting order, bowling plan, player roles, scenarios,
-                and tactical recommendations for one selected team.
-              </p>
-            </div>
-
-            <div>
-              <strong>Shared Player History</strong>
-              <p>
-                Where configured for Surprise Cricket League, matching player
-                history across Surprise 1 and Surprise 2 can contribute to one
-                strategy profile.
-              </p>
-            </div>
-
-            <div>
-              <strong>WhatsApp Strategy Sharing</strong>
-              <p>
-                Share generated plans with captains and players before the
-                toss or match.
-              </p>
-            </div>
-
-            <div>
-              <strong>AI Match Review</strong>
-              <p>
-                Review summary, MVP, turning points, momentum, partnerships,
-                pressure moments, performers, and team takeaways.
-              </p>
-            </div>
-
-            <div>
-              <strong>Faster Review Loading</strong>
-              <p>
-                The review modal opens immediately while generation runs, and
-                current-version generated reviews can be reused from cache.
-              </p>
-            </div>
-
-            <div>
-              <strong>DLS-Aware AI Review</strong>
-              <p>
-                AI Review respects Cric4All&apos;s authoritative DLS result
-                instead of declaring a winner by simply comparing raw innings
-                totals.
-              </p>
-            </div>
-          </div>
-        </div>
-      </details>
-
-      {/* ============================================================
-          BIRTHDAYS / KIT
-          ============================================================ */}
-      <details id="about-kit" style={{ marginTop: 20 }}>
-        <summary
-          className="about-section-title"
-          style={{ cursor: "pointer", listStyle: "none", userSelect: "none" }}
-        >
-          🎂 Community Features &amp; 🎒 Team Kit Custody
-        </summary>
-
-        <div className="about-card" style={{ marginTop: 12 }}>
-          <p>
-            Cric4All also supports the off-field responsibilities that keep
-            teams organized: birthday communication, kit responsibility,
-            fair carrier rotation, reminders, and post-match custody
-            confirmation.
-          </p>
-
-          <div className="about-workflow-grid">
-            <div>
-              <strong>Birthday Setup</strong>
-              <p>
-                Maintain player birthday, league, contact, and consent
-                information.
-              </p>
-            </div>
-
-            <div>
-              <strong>Birthday Notifications</strong>
-              <p>
-                Configured birthday-day workflows can notify the appropriate
-                player and league recipients.
-              </p>
-            </div>
-
-            <div>
-              <strong>Current Kit Holder</strong>
-              <p>
-                TeamKitState tracks the confirmed current holder separately
-                from any future suggestion.
-              </p>
-            </div>
-
-            <div>
-              <strong>Fair Next Carrier</strong>
-              <p>
-                Suggestions favor eligible players with the lowest completed
-                rotation-turn count.
-              </p>
-            </div>
-
-            <div>
-              <strong>Suggestion ≠ Assignment</strong>
-              <p>
-                Selecting or re-suggesting a player does not replace the
-                current holder. Custody changes only when the actual holder is
-                recorded.
-              </p>
-            </div>
-
-            <div>
-              <strong>Current-Holder Reminders</strong>
-              <p>
-                Configured day-before and approximately two-hours-before
-                reminders go to the confirmed current holder rather than a
-                future suggested carrier.
-              </p>
-            </div>
-
-            <div>
-              <strong>Post-Match Confirmation</strong>
-              <p>
-                The final-holder popup can appear above Scorer Mode when the
-                match finishes. Lock Match provides a fallback if the prompt
-                was missed during a DLS/offline timing transition.
-              </p>
-            </div>
-
-            <div>
-              <strong>Team &amp; Shared Kit</strong>
-              <p>
-                Normal leagues can keep team-specific custody while shared-kit
-                leagues can use one league-wide holder and history.
-              </p>
-            </div>
-
-            <div>
-              <strong>Custody History</strong>
-              <p>
-                Actual holder changes, corrections, and reminder activity are
-                retained separately from live suggestions.
-              </p>
-            </div>
-          </div>
-        </div>
-      </details>
-
-      {/* ============================================================
-          PUBLIC EXPERIENCE
-          ============================================================ */}
-      <details id="about-public" style={{ marginTop: 20 }}>
-        <summary
-          className="about-section-title"
-          style={{ cursor: "pointer", listStyle: "none", userSelect: "none" }}
-        >
-          🌐 Public Cricket Experience
-        </summary>
-
-        <div className="about-card" style={{ marginTop: 12 }}>
-          <p>
-            Cric4All supports public-facing league and match experiences so
-            spectators can follow live scores, results, standings, rankings,
-            leaders, and commentary without requiring scorer access.
-          </p>
-
-          <div className="about-workflow-grid">
-            <div>
-              <strong>Private Leagues</strong>
-              <p>Available only to authorized league members.</p>
-            </div>
-
-            <div>
-              <strong>Unlisted Leagues</strong>
-              <p>Public view by direct link without requiring Explore listing.</p>
-            </div>
-
-            <div>
-              <strong>Public Leagues</strong>
-              <p>Can appear on Explore for wider discovery.</p>
-            </div>
-
-            <div>
-              <strong>Explore</strong>
-              <p>Search and discover public leagues using supported context.</p>
-            </div>
-
-            <div>
-              <strong>Followed Leagues</strong>
-              <p>Return quickly to public leagues a user follows.</p>
-            </div>
-
-            <div>
-              <strong>Spectator View</strong>
-              <p>
-                Share professional live match links with players, families,
-                and fans.
-              </p>
-            </div>
-
-            <div>
-              <strong>Public Standings</strong>
-              <p>Follow points tables and team progress.</p>
-            </div>
-
-            <div>
-              <strong>Public Leaders</strong>
-              <p>
-                View leading run scorers, wicket takers, six hitters, strike
-                rate, economy, and other supported leaderboards.
-              </p>
-            </div>
-          </div>
-        </div>
-      </details>
-
-      {/* ============================================================
-          REAL-WORLD ROLES
-          ============================================================ */}
-      <details style={{ marginTop: 20 }}>
-        <summary
-          className="about-section-title"
-          style={{ cursor: "pointer", listStyle: "none", userSelect: "none" }}
-        >
-          🏟 Built for Real Cricket Roles
-        </summary>
-
-        <div className="about-card" style={{ marginTop: 12 }}>
-          <div className="about-workflow-grid">
-            <div>
-              <strong>For Organizers</strong>
-              <p>
-                Manage leagues, series, teams, scheduling, permissions,
-                visibility, birthdays, kit operations, AI planning, and
-                administration.
-              </p>
-            </div>
-
-            <div>
-              <strong>For Scorers</strong>
-              <p>
-                Score live or offline, manage innings/player state, handle rain
-                revisions, synchronize safely, and finalize results.
-              </p>
-            </div>
-
-            <div>
-              <strong>For Captains</strong>
-              <p>
-                Review player availability, AI strategy, live chase context,
-                scorecards, statistics, and match review.
-              </p>
-            </div>
-
-            <div>
-              <strong>For Players</strong>
-              <p>
-                Follow personal batting, bowling, fielding, rankings,
-                availability, match history, and community workflows.
-              </p>
-            </div>
-
-            <div>
-              <strong>For Spectators</strong>
-              <p>
-                Follow public leagues, live scores, commentary, scorecards,
-                results, standings, and leaders.
-              </p>
-            </div>
-          </div>
-        </div>
-      </details>
-
-      {/* ============================================================
-          ADMIN / INTEGRITY
-          ============================================================ */}
-      <details id="about-integrity" style={{ marginTop: 20 }}>
-        <summary
-          className="about-section-title"
-          style={{ cursor: "pointer", listStyle: "none", userSelect: "none" }}
-        >
-          🛡 Admin, Permissions &amp; Data Integrity
-        </summary>
-
-        <div className="about-card" style={{ marginTop: 12 }}>
-          <p>
-            Cric4All combines role-based access with match-state protections,
-            auditability, and synchronization safeguards so leagues can
-            understand who can do what—and what happened when.
-          </p>
-
-          <div className="about-workflow-grid">
-            <div>
-              <strong>Role-Based Access</strong>
-              <p>
-                Owners, Admins, Scorers, Captains, Players, and Spectators are
-                constrained by league permissions and team scope.
-              </p>
-            </div>
-
-            <div>
-              <strong>Admin Center</strong>
-              <p>
-                Authorized owners can review online users, recent logins, and
-                system activity.
-              </p>
-            </div>
-
-            <div>
-              <strong>Audit Logs</strong>
-              <p>
-                Important match, league, access, lock, abandon, correction,
-                and administrative actions can be traced.
-              </p>
-            </div>
-
-            <div>
-              <strong>Offline Sequence Guards</strong>
-              <p>
-                Server sequences and client event IDs protect reconnect
-                scoring from duplicate/out-of-order writes.
-              </p>
-            </div>
-
-            <div>
-              <strong>Conflict Protection</strong>
-              <p>
-                A device does not silently overwrite newer server state when a
-                match changes while offline.
-              </p>
-            </div>
-
-            <div>
-              <strong>Match Lock</strong>
-              <p>
-                Locking protects finalized scorecards from ordinary scoring
-                changes once synchronization is complete.
-              </p>
-            </div>
-          </div>
-
-          <div className="about-highlight-row">
-            <span>OWNER</span>
-            <span>ADMIN</span>
-            <span>SCORER</span>
-            <span>CAPTAIN</span>
-            <span>PLAYER</span>
-            <span>SPECTATOR</span>
-          </div>
-        </div>
-      </details>
-
-      {/* ============================================================
-          PERFORMANCE / UX
-          ============================================================ */}
-      <details style={{ marginTop: 20 }}>
-        <summary
-          className="about-section-title"
-          style={{ cursor: "pointer", listStyle: "none", userSelect: "none" }}
-        >
-          ⚡ Performance &amp; Match-Day UX
-        </summary>
-
-        <div className="about-card" style={{ marginTop: 12 }}>
-          <div className="about-workflow-grid">
-            <div>
-              <strong>Progressive Completed History</strong>
-              <p>
-                Completed matches render in manageable batches instead of
-                mounting the full history at once.
-              </p>
-            </div>
-
-            <div>
-              <strong>Faster Completed Scorecards</strong>
-              <p>
-                Completed scorecard opening avoids duplicate match loads and
-                unnecessary initial stats requests.
-              </p>
-            </div>
-
-            <div>
-              <strong>Duplicate Display Protection</strong>
-              <p>
-                Repeated data for the same database match ID is rendered only
-                once in Completed history.
-              </p>
-            </div>
-
-            <div>
-              <strong>Faster AI Review</strong>
-              <p>
-                The review modal opens immediately while analysis loads rather
-                than leaving the user waiting on the Completed card.
-              </p>
-            </div>
-
-            <div>
-              <strong>Mobile-First Match Controls</strong>
-              <p>
-                Scoring controls, tables, sheets, scorecards, and navigation
-                are designed to remain usable on narrow match-day devices.
-              </p>
-            </div>
-
-            <div>
-              <strong>Laptop-Friendly Workspaces</strong>
-              <p>
-                Wider views preserve readable cards, score context, and
-                operational controls without forcing mobile-only layouts.
-              </p>
-            </div>
-          </div>
-        </div>
-      </details>
-
-      {/* ============================================================
-          TECHNOLOGY
-          ============================================================ */}
       <details id="about-tech" style={{ marginTop: 20 }}>
         <summary
           className="about-section-title"
           style={{ cursor: "pointer", listStyle: "none", userSelect: "none" }}
         >
-          ⚙️ Built With
+          ⚙️ Technology
         </summary>
 
         <div className="about-card" style={{ marginTop: 12 }}>
           <p>
-            Cric4All combines a modern web stack with cloud database,
-            messaging, AI, mobile packaging, and scheduled automation.
+            Cric4All combines modern web, cloud database, AI, messaging, and mobile-packaging
+            technologies to support reliable cricket workflows.
           </p>
 
           <div className="about-tech-row">
             <span className="badge">Next.js</span>
             <span className="badge">React</span>
-            <span className="badge">Prisma</span>
             <span className="badge">PostgreSQL</span>
+            <span className="badge">Prisma</span>
             <span className="badge">Neon</span>
-            <span className="badge">NextAuth</span>
             <span className="badge">OpenAI</span>
-            <span className="badge">Vercel</span>
             <span className="badge">Twilio</span>
+            <span className="badge">Vercel</span>
             <span className="badge">Capacitor</span>
-            <span className="badge">Google Play</span>
           </div>
         </div>
       </details>
 
-      {/* ============================================================
-          ROADMAP
-          ============================================================ */}
       <details id="about-roadmap" style={{ marginTop: 20 }}>
         <summary
           className="about-section-title"
@@ -28062,40 +26713,32 @@ onClick={() => {
 
         <div className="about-card" style={{ marginTop: 12 }}>
           <p>
-            The roadmap now focuses on expanding the platform beyond features
-            already delivered such as offline scoring, DLS workflows, AI
-            review, and kit automation.
+            The roadmap focuses on expanding public cricket experiences, richer competition
+            formats, deeper analytics, stronger mobile experiences, and additional league tools.
           </p>
 
           <div className="about-list-grid">
-            <span>📱 Expanded match and league push notifications</span>
-            <span>🏆 Tournament brackets and richer competition formats</span>
-            <span>🎥 Match highlights and richer media workflows</span>
+            <span>🏆 Tournament brackets and richer formats</span>
+            <span>🎥 Match highlights and media workflows</span>
             <span>📺 Public scoreboard upgrades</span>
             <span>👥 Public team pages</span>
             <span>🏏 Public player profiles</span>
             <span>📊 Advanced analytics dashboards</span>
-            <span>🔍 Continued SEO upgrades for public cricket pages</span>
-            <span>🎤 Enhanced voice-scoring capabilities</span>
-            <span>📲 Android performance and native UX improvements</span>
+            <span>🔍 Continued public-page SEO improvements</span>
+            <span>🎤 Enhanced voice scoring</span>
+            <span>📲 Android native UX improvements</span>
             <span>🍎 iOS packaging and App Store readiness</span>
-            <span>💳 Premium league and competition tools</span>
+            <span>💳 Premium competition tools</span>
             <span>📤 Scorecard / statistics export options</span>
-            <span>🌦 Deeper interruption and competition-rule configuration</span>
           </div>
         </div>
       </details>
 
-      {/* ============================================================
-          FOOTER
-          ============================================================ */}
       <div className="about-footer" style={{ marginTop: 24 }}>
         <h3>🏏 Cric4All</h3>
 
         <p>
-          Manage Leagues. Build Teams. Plan Strategy. Score Online or Offline.
-          Handle Rain. Share Live Cricket. Review Smarter. Keep the Community
-          Organized.
+          Organize Cricket. Score Anywhere. Adapt to the Match. Share the Game. Review Smarter.
         </p>
 
         <p className="about-copy">© 2026 Cric4All</p>
