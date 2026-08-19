@@ -797,6 +797,13 @@ const [auditLogsLoading, setAuditLogsLoading] = useState(false);
 const [growthData, setGrowthData] = useState(null);
 const [growthLoading, setGrowthLoading] = useState(false);
 const [growthDays, setGrowthDays] = useState(30);
+
+/*
+ * Growth Center can switch between the complete Cric4All activity picture
+ * and genuine external adoption. Internal/test league IDs are excluded only
+ * from EXTERNAL mode.
+ */
+const [growthScope, setGrowthScope] = useState("ALL");
 const [showCorrectionCenter, setShowCorrectionCenter] = useState(false);
 const [correctionType, setCorrectionType] = useState("TRANSFER_BATTER_RUNS");
 const [correctionReason, setCorrectionReason] = useState("");
@@ -1558,6 +1565,8 @@ setSelectedMatchId("");
     if (
       requestedDashboardTab !==
         "scoring" ||
+      activeTab !==
+        "scoring" ||
       !Number.isInteger(
         requestedMatchId
       ) ||
@@ -1646,6 +1655,7 @@ setSelectedMatchId("");
       );
   }, [
     activeLeagueId,
+    activeTab,
     matchDetail?.id,
     matches,
     requestedDashboardTab,
@@ -8276,13 +8286,78 @@ useEffect(() => {
 
 async function selectLeague(league) {
   setShowDeliverySetupModal(false);
-setPendingDeliverySetupAfterStart(false);
-setPendingSecondInningsSetup(false);
-setDeliverySetupReason("");
-  setActiveLeagueId(league.id);
-  setSelectedMatchId("");
-  setMatches([]);
-  setActiveTab("matches");
+  setPendingDeliverySetupAfterStart(false);
+  setPendingSecondInningsSetup(false);
+  setDeliverySetupReason("");
+
+  const leagueId =
+    Number(league?.id);
+
+  if (
+    !Number.isInteger(leagueId) ||
+    leagueId <= 0
+  ) {
+    return;
+  }
+
+  /*
+   * LEAGUE SELECTION IS A MANAGEMENT ACTION
+   * =======================================
+   * Growth Phase 2 can arrive at /dashboard with:
+   *
+   *   ?tab=scoring&leagueId=...&matchId=...
+   *
+   * If those query parameters remain in the URL, the dashboard deep-link
+   * effect can legitimately reopen Scoring after the user later switches to
+   * the Leagues tab and selects another league.
+   *
+   * Selecting a league manually means the user has taken control of
+   * navigation. Clear the stale scoring deep-link and remain on Management.
+   */
+  scoringDeepLinkLoadedRef.current =
+    "";
+
+  setActiveLeagueId(
+    leagueId
+  );
+
+  setSelectedMatchId(
+    ""
+  );
+
+  setMatchDetail(
+    null
+  );
+
+  setScoreboard(
+    null
+  );
+
+  setStats(
+    null
+  );
+
+  setMatches(
+    []
+  );
+
+  setSelectedTeamId(
+    ""
+  );
+
+  setActiveTab(
+    "management"
+  );
+
+  /*
+   * Replace rather than push so Back does not immediately re-enter the stale
+   * scoring deep-link. Keep only the selected league context.
+   */
+  router.replace(
+    `/dashboard?tab=management&leagueId=${encodeURIComponent(
+      String(leagueId)
+    )}`
+  );
 
   fetch("/api/user/preferences", {
     method: "POST",
@@ -8290,11 +8365,20 @@ setDeliverySetupReason("");
       "Content-Type": "application/json"
     },
     body: JSON.stringify({
-      activeLeagueId: league.id,
-      activeMatchId: selectedMatchId
+      activeLeagueId:
+        leagueId,
+      activeMatchId:
+        null
     })
-  });
-  await loadMatches();
+  }).catch(() => {});
+
+  await loadMyLeaguePermissions(
+    leagueId
+  );
+
+  await loadMatches(
+    leagueId
+  );
 }
   const handleLeagueChange = (leagueId) => {
   setActiveLeagueId(leagueId);
@@ -14860,6 +14944,23 @@ const canAddPlayers = Boolean(
   isSuperAdmin ||
     permissions?.canManagePermissions === true ||
     ["OWNER", "ADMIN", "CAPTAIN"].includes(activeLeagueRole)
+);
+
+/*
+ * Player editing must not disappear for league Owners/Admins merely because
+ * an older LeagueMember record does not contain canEditPlayer=true.
+ *
+ * Preserve explicit permission grants for custom roles, while treating
+ * OWNER / ADMIN / permission managers as authoritative management roles.
+ *
+ * Delete remains controlled separately by canDeletePlayer so this does not
+ * broaden destructive access.
+ */
+const canEditPlayers = Boolean(
+  isSuperAdmin ||
+    permissions?.canEditPlayer === true ||
+    permissions?.canManagePermissions === true ||
+    ["OWNER", "ADMIN"].includes(activeLeagueRole)
 );
 
 const activeLeagueSlug = String(
@@ -23586,7 +23687,7 @@ onClick={() => {
           </Link>
         )}
 
-        {permissions?.canEditPlayer && (
+        {canEditPlayers && (
           <button
             type="button"
             className="mini-action-btn"
@@ -23597,7 +23698,7 @@ onClick={() => {
           </button>
         )}
 
-        {permissions?.canEditPlayer && (
+        {canEditPlayers && (
           <button
             type="button"
             className="mini-action-btn"
@@ -23645,7 +23746,7 @@ onClick={() => {
             </Link>
           )}
 
-          {permissions?.canEditPlayer && (
+          {canEditPlayers && (
             <button type="button"   onClick={() => {
     setOpenPlayerActionId(null);
     openEditPlayer(player);
@@ -23655,7 +23756,7 @@ onClick={() => {
             </button>
           )}
 
-          {permissions?.canEditPlayer && (
+          {canEditPlayers && (
             <button
               type="button"
               onClick={() => {
@@ -26764,63 +26865,470 @@ onClick={() => {
 )}
 {activeTab === "admin" && (
   <Card title="🛡️ Admin Center">
-    <section style={{ marginBottom: 18, padding: 16, border: "1px solid rgba(96,165,250,.22)", borderRadius: 18, background: "rgba(15,23,42,.55)" }}>
-      <div style={{ display: "flex", gap: 12, alignItems: "center", justifyContent: "space-between", flexWrap: "wrap", marginBottom: 14 }}>
-        <div>
+    <section
+      style={{
+        marginBottom: 18,
+        padding: 16,
+        border: "1px solid rgba(96,165,250,.22)",
+        borderRadius: 18,
+        background: "rgba(15,23,42,.55)",
+      }}
+    >
+      <div
+        style={{
+          display: "flex",
+          gap: 12,
+          alignItems: "flex-start",
+          justifyContent: "space-between",
+          flexWrap: "wrap",
+          marginBottom: 14,
+        }}
+      >
+        <div style={{ minWidth: 0 }}>
           <h3 style={{ margin: 0 }}>📈 Cric4All Growth Center</h3>
-          <p className="muted" style={{ margin: "5px 0 0" }}>Measure discovery, activation and repeat league usage before spending on acquisition.</p>
+
+          <p
+            className="muted"
+            style={{
+              margin: "5px 0 0",
+              lineHeight: 1.45,
+            }}
+          >
+            Measure discovery, activation and repeat usage with real
+            league-cohort conversion instead of dividing unrelated totals.
+          </p>
         </div>
-        <div style={{ display: "flex", gap: 8, flexWrap: "wrap" }}>
+
+        <div
+          style={{
+            display: "flex",
+            gap: 8,
+            flexWrap: "wrap",
+          }}
+        >
           {[7, 30, 90].map((days) => (
-            <button key={days} type="button" className={`btn ${growthDays === days ? "" : "btn-outline"}`} onClick={() => { setGrowthDays(days); loadGrowthData(days); }}>
+            <button
+              key={days}
+              type="button"
+              className={`btn ${growthDays === days ? "" : "btn-outline"}`}
+              onClick={() => {
+                setGrowthDays(days);
+                loadGrowthData(days);
+              }}
+            >
               {days} days
             </button>
           ))}
         </div>
       </div>
 
+      {/* ----------------------------------------------------------
+          SCOPE SWITCH
+          ----------------------------------------------------------
+          External Only intentionally scopes league adoption/activity.
+          Anonymous landing visitors cannot be honestly assigned to an
+          external league before they create/join one, so acquisition-site
+          metrics remain in the separate Site-wide Acquisition panel below.
+          ---------------------------------------------------------- */}
+      <div
+        style={{
+          display: "grid",
+          gridTemplateColumns: "repeat(2, minmax(0, 1fr))",
+          gap: 8,
+          padding: 5,
+          marginBottom: 14,
+          borderRadius: 13,
+          border: "1px solid rgba(148,163,184,.16)",
+          background: "rgba(2,6,23,.28)",
+        }}
+      >
+        {[
+          ["ALL", "📊 All Activity"],
+          ["EXTERNAL", "🌍 External Only"],
+        ].map(([scope, label]) => {
+          const selected =
+            growthScope === scope;
+
+          return (
+            <button
+              key={scope}
+              type="button"
+              onClick={() => setGrowthScope(scope)}
+              style={{
+                minWidth: 0,
+                minHeight: 42,
+                padding: "9px 10px",
+                borderRadius: 10,
+                border: selected
+                  ? "1px solid rgba(56,189,248,.75)"
+                  : "1px solid transparent",
+                background: selected
+                  ? "linear-gradient(135deg, rgba(37,99,235,.90), rgba(34,193,220,.88))"
+                  : "rgba(15,23,42,.36)",
+                color: "#fff",
+                fontWeight: 900,
+                fontSize: 13,
+                lineHeight: 1.2,
+                cursor: "pointer",
+                overflowWrap: "anywhere",
+              }}
+            >
+              {label}
+            </button>
+          );
+        })}
+      </div>
+
       {growthLoading && !growthData ? (
         <p className="muted">Loading growth analytics...</p>
       ) : growthData ? (
         <>
-          <div style={{ display: "grid", gridTemplateColumns: "repeat(auto-fit, minmax(125px, 1fr))", gap: 10 }}>
-            {[
-              ["Visitors", growthData.all?.visitors ?? 0, "Unique landing visitors"],
-              ["Signups", growthData.all?.signups ?? 0, `${growthData.all?.conversion?.visitorToSignup ?? 0}% of visitors`],
-              ["Leagues", growthData.all?.leagues ?? 0, "New leagues"],
-              ["Matches", growthData.all?.matches ?? 0, `${growthData.all?.conversion?.leagueToMatch ?? 0}% league → match`],
-              ["Started", growthData.all?.startedMatches ?? 0, `${growthData.all?.conversion?.matchToStart ?? 0}% match → start`],
-              ["Completed", growthData.all?.completedMatches ?? 0, `${growthData.all?.conversion?.startToComplete ?? 0}% start → complete`],
-              ["Repeat Leagues", growthData.all?.repeatLeagues ?? 0, "2+ completed matches"],
-            ].map(([label, value, note]) => (
-              <div key={label} style={{ padding: 12, minWidth: 0, borderRadius: 14, border: "1px solid rgba(148,163,184,.16)", background: "rgba(2,6,23,.38)" }}>
-                <span className="muted" style={{ display: "block", fontSize: 12 }}>{label}</span>
-                <strong style={{ display: "block", fontSize: 24, lineHeight: 1.15, marginTop: 5 }}>{value}</strong>
-                <small className="muted" style={{ display: "block", marginTop: 5, overflowWrap: "anywhere" }}>{note}</small>
+          {(() => {
+            const cohort =
+              growthScope === "EXTERNAL"
+                ? growthData.external?.cohort
+                : growthData.all?.cohort;
+
+            const activity =
+              growthScope === "EXTERNAL"
+                ? growthData.external?.activity
+                : growthData.all?.activity;
+
+            const cards =
+              growthScope === "EXTERNAL"
+                ? [
+                    [
+                      "Organizers",
+                      cohort?.organizers ?? 0,
+                      "Owners of new external leagues",
+                    ],
+                    [
+                      "New Leagues",
+                      cohort?.leagues ?? 0,
+                      "External league cohort",
+                    ],
+                    [
+                      "Activated",
+                      cohort?.withMatch ?? 0,
+                      `${cohort?.conversion?.leagueToMatch ?? 0}% created a match`,
+                    ],
+                    [
+                      "Started",
+                      cohort?.started ?? 0,
+                      `${cohort?.conversion?.matchToStart ?? 0}% activated → started`,
+                    ],
+                    [
+                      "Completed",
+                      cohort?.completed ?? 0,
+                      `${cohort?.conversion?.startToComplete ?? 0}% started → completed`,
+                    ],
+                    [
+                      "Repeat",
+                      cohort?.repeat ?? 0,
+                      `${cohort?.conversion?.completeToRepeat ?? 0}% completed → 2+ matches`,
+                    ],
+                  ]
+                : [
+                    [
+                      "Visitors",
+                      growthData.all?.visitors ?? 0,
+                      "Tracked landing visitors",
+                    ],
+                    [
+                      "Signups",
+                      growthData.all?.signups ?? 0,
+                      "New accounts in this period",
+                    ],
+                    [
+                      "New Leagues",
+                      cohort?.leagues ?? 0,
+                      "League cohort",
+                    ],
+                    [
+                      "Activated",
+                      cohort?.withMatch ?? 0,
+                      `${cohort?.conversion?.leagueToMatch ?? 0}% created a match`,
+                    ],
+                    [
+                      "Started",
+                      cohort?.started ?? 0,
+                      `${cohort?.conversion?.matchToStart ?? 0}% activated → started`,
+                    ],
+                    [
+                      "Completed",
+                      cohort?.completed ?? 0,
+                      `${cohort?.conversion?.startToComplete ?? 0}% started → completed`,
+                    ],
+                    [
+                      "Repeat",
+                      cohort?.repeat ?? 0,
+                      `${cohort?.conversion?.completeToRepeat ?? 0}% completed → 2+ matches`,
+                    ],
+                  ];
+
+            return (
+              <>
+                <div
+                  style={{
+                    display: "grid",
+                    gridTemplateColumns:
+                      "repeat(auto-fit, minmax(125px, 1fr))",
+                    gap: 10,
+                  }}
+                >
+                  {cards.map(([label, value, note]) => (
+                    <div
+                      key={label}
+                      style={{
+                        padding: 12,
+                        minWidth: 0,
+                        borderRadius: 14,
+                        border: "1px solid rgba(148,163,184,.16)",
+                        background: "rgba(2,6,23,.38)",
+                      }}
+                    >
+                      <span
+                        className="muted"
+                        style={{
+                          display: "block",
+                          fontSize: 12,
+                        }}
+                      >
+                        {label}
+                      </span>
+
+                      <strong
+                        style={{
+                          display: "block",
+                          fontSize: 24,
+                          lineHeight: 1.15,
+                          marginTop: 5,
+                        }}
+                      >
+                        {value}
+                      </strong>
+
+                      <small
+                        className="muted"
+                        style={{
+                          display: "block",
+                          marginTop: 5,
+                          overflowWrap: "anywhere",
+                          lineHeight: 1.35,
+                        }}
+                      >
+                        {note}
+                      </small>
+                    </div>
+                  ))}
+                </div>
+
+                <div
+                  style={{
+                    marginTop: 12,
+                    padding: 13,
+                    borderRadius: 14,
+                    border:
+                      growthScope === "EXTERNAL"
+                        ? "1px solid rgba(52,211,153,.22)"
+                        : "1px solid rgba(96,165,250,.20)",
+                    background:
+                      growthScope === "EXTERNAL"
+                        ? "rgba(6,78,59,.12)"
+                        : "rgba(30,64,175,.08)",
+                  }}
+                >
+                  <strong>
+                    {growthScope === "EXTERNAL"
+                      ? "🌍 External activity"
+                      : "📊 All match activity"}
+                  </strong>
+
+                  <p
+                    className="muted"
+                    style={{
+                      margin: "7px 0 0",
+                      lineHeight: 1.5,
+                    }}
+                  >
+                    {activity?.matches ?? 0} matches created ·{" "}
+                    {activity?.startedMatches ?? 0} started ·{" "}
+                    {activity?.completedMatches ?? 0} completed ·{" "}
+                    {activity?.repeatLeagues ?? 0} leagues with 2+ completed
+                    matches
+                  </p>
+
+                  <p
+                    className="muted"
+                    style={{
+                      margin: "5px 0 0",
+                      fontSize: 12,
+                      lineHeight: 1.45,
+                    }}
+                  >
+                    Cohort conversion above follows leagues created during the
+                    selected period. This activity line shows raw match volume
+                    during the same period.
+                  </p>
+                </div>
+              </>
+            );
+          })()}
+
+          {/* Site-wide acquisition cannot be honestly assigned to an
+              external league until the visitor creates/joins one. Keep these
+              metrics clearly separate from the External league toggle. */}
+          <div
+            style={{
+              marginTop: 14,
+              paddingTop: 14,
+              borderTop: "1px solid rgba(148,163,184,.14)",
+            }}
+          >
+            <div style={{ marginBottom: 9 }}>
+              <strong
+                style={{
+                  display: "block",
+                  fontSize: 14,
+                }}
+              >
+                📣 Site-wide acquisition channels
+              </strong>
+
+              <span
+                className="muted"
+                style={{
+                  display: "block",
+                  marginTop: 3,
+                  fontSize: 12,
+                  lineHeight: 1.4,
+                }}
+              >
+                These are website/channel metrics and are intentionally not
+                changed by the External league filter.
+              </span>
+            </div>
+
+            <div
+              style={{
+                display: "grid",
+                gridTemplateColumns:
+                  "repeat(auto-fit, minmax(210px, 1fr))",
+                gap: 10,
+              }}
+            >
+              <div
+                style={{
+                  padding: 13,
+                  borderRadius: 14,
+                  border: "1px solid rgba(56,189,248,.2)",
+                  background: "rgba(7,89,133,.12)",
+                }}
+              >
+                <strong>👀 Spectator acquisition</strong>
+
+                <p
+                  className="muted"
+                  style={{
+                    margin: "7px 0 0",
+                    lineHeight: 1.5,
+                  }}
+                >
+                  {growthData.all?.spectatorViews ?? 0} tracked views ·{" "}
+                  {growthData.all?.spectatorCtaClicks ?? 0} CTA clicks ·{" "}
+                  {growthData.all?.conversion?.spectatorToCta ?? 0}% conversion
+                </p>
               </div>
-            ))}
+
+              <div
+                style={{
+                  padding: 13,
+                  borderRadius: 14,
+                  border: "1px solid rgba(167,139,250,.22)",
+                  background: "rgba(76,29,149,.12)",
+                }}
+              >
+                <strong>🏏 Quick Match onboarding</strong>
+
+                <p
+                  className="muted"
+                  style={{
+                    margin: "7px 0 0",
+                    lineHeight: 1.5,
+                  }}
+                >
+                  {growthData.all?.quickMatchViews ?? 0} views ·{" "}
+                  {growthData.all?.quickMatchStarts ?? 0} setup attempts ·{" "}
+                  {growthData.all?.quickMatchCreated ?? 0} matches created
+                </p>
+
+                <p
+                  className="muted"
+                  style={{
+                    margin: "4px 0 0",
+                    lineHeight: 1.45,
+                    fontSize: 12,
+                  }}
+                >
+                  {growthData.all?.conversion?.quickViewToStart ?? 0}% view →
+                  setup ·{" "}
+                  {growthData.all?.conversion?.quickStartToCreated ?? 0}% setup
+                  → match ·{" "}
+                  {growthData.all?.quickMatchAuthClicks ?? 0} auth clicks
+                </p>
+              </div>
+            </div>
           </div>
 
-          <div style={{ marginTop: 12, display: "grid", gridTemplateColumns: "repeat(auto-fit, minmax(210px, 1fr))", gap: 10 }}>
-            <div style={{ padding: 13, borderRadius: 14, border: "1px solid rgba(52,211,153,.2)", background: "rgba(6,78,59,.12)" }}>
-              <strong>🌍 External adoption</strong>
-              <p className="muted" style={{ margin: "7px 0 0", lineHeight: 1.5 }}>
-                {growthData.external?.leagues ?? 0} leagues · {growthData.external?.startedMatches ?? 0} matches started · {growthData.external?.completedMatches ?? 0} completed · {growthData.external?.repeatLeagues ?? 0} repeat leagues
-              </p>
-            </div>
-            <div style={{ padding: 13, borderRadius: 14, border: "1px solid rgba(56,189,248,.2)", background: "rgba(7,89,133,.12)" }}>
-              <strong>👀 Spectator acquisition</strong>
-              <p className="muted" style={{ margin: "7px 0 0", lineHeight: 1.5 }}>
-                {growthData.all?.spectatorViews ?? 0} tracked views · {growthData.all?.spectatorCtaClicks ?? 0} CTA clicks · {growthData.all?.conversion?.spectatorToCta ?? 0}% conversion
-              </p>
-            </div>
-          </div>
-
-          {Array.isArray(growthData.internalLeagueIds) && growthData.internalLeagueIds.length > 0 ? (
-            <p className="muted" style={{ margin: "10px 0 0", fontSize: 12 }}>Internal/test league IDs excluded from External adoption: {growthData.internalLeagueIds.join(", ")}</p>
+          {Array.isArray(growthData.internalLeagueIds) &&
+          growthData.internalLeagueIds.length > 0 ? (
+            <p
+              className="muted"
+              style={{
+                margin: "11px 0 0",
+                fontSize: 12,
+                lineHeight: 1.45,
+              }}
+            >
+              External Only excludes internal/test league IDs:{" "}
+              {growthData.internalLeagueIds.join(", ")}
+            </p>
           ) : (
-            <p className="muted" style={{ margin: "10px 0 0", fontSize: 12 }}>Set GROWTH_INTERNAL_LEAGUE_IDS in your environment to keep your own community/test leagues out of External adoption.</p>
+            <p
+              className="muted"
+              style={{
+                margin: "11px 0 0",
+                fontSize: 12,
+                lineHeight: 1.45,
+              }}
+            >
+              Set GROWTH_INTERNAL_LEAGUE_IDS to keep your community/test
+              leagues out of External Only.
+            </p>
           )}
+
+          <div
+            style={{
+              marginTop: 10,
+              padding: "9px 11px",
+              borderRadius: 11,
+              border: "1px solid rgba(250,204,21,.15)",
+              background: "rgba(113,63,18,.08)",
+            }}
+          >
+            <small
+              className="muted"
+              style={{
+                display: "block",
+                lineHeight: 1.45,
+              }}
+            >
+              ℹ️ Visitor tracking started when Growth Analytics was installed,
+              so older signups cannot be compared reliably with newly tracked
+              visitors. Cohort percentages begin becoming meaningful as new
+              leagues move through the funnel.
+            </small>
+          </div>
         </>
       ) : (
         <p className="muted">Growth analytics are not available yet.</p>

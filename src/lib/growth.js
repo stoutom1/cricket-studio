@@ -17,6 +17,12 @@ export const GROWTH_EVENT_TYPES = new Set([
   "SHARE_SCORECARD",
   "AI_REVIEW_OPENED",
   "AI_TEAM_BUILDER_OPENED",
+
+  // Growth Phase 2 — frictionless first-match onboarding.
+  "QUICK_MATCH_VIEW",
+  "QUICK_MATCH_STARTED",
+  "QUICK_MATCH_AUTH_CLICKED",
+  "QUICK_MATCH_CREATED",
 ]);
 
 function clean(value, max = 180) {
