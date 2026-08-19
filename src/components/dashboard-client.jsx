@@ -2316,6 +2316,128 @@ function buildLiveMatchCenter(scoreboard, preferLocalTarget = false) {
       ? ((runsRequired / ballsRemaining) * 6).toFixed(2)
       : "-";
 
+  /*
+   * CRIC4ALL CHASE PAR
+   * ==================
+   * This is a tactical chase indicator, NOT Official DLS.
+   *
+   * Base progress:
+   *   how much of the innings has been consumed by legal deliveries.
+   *
+   * Wicket pressure:
+   *   wickets consume batting resources, so the par line moves upward as
+   *   wickets are lost. The 0.35 factor is intentionally moderate so one
+   *   early wicket does not make the indicator jump unrealistically.
+   *
+   * At the final legal ball, par naturally converges to target - 1, which is
+   * the tie score in a normal chase.
+   *
+   * Display starts only after the first legal delivery of innings 2.
+   */
+  const configuredMaxWickets =
+    Number(
+      scoreboard
+        ?.match
+        ?.maxWicketsPerInnings ??
+      0
+    );
+
+  const effectiveMaxWickets =
+    configuredMaxWickets > 0
+      ? configuredMaxWickets
+      : 10;
+
+  const ballsUsed =
+    maxBalls > 0
+      ? Math.min(
+          legalBalls,
+          maxBalls
+        )
+      : 0;
+
+  const timeProgress =
+    maxBalls > 0
+      ? Math.min(
+          Math.max(
+            ballsUsed /
+              maxBalls,
+            0
+          ),
+          1
+        )
+      : 0;
+
+  const wicketProgress =
+    effectiveMaxWickets > 0
+      ? Math.min(
+          Math.max(
+            wickets /
+              effectiveMaxWickets,
+            0
+          ),
+          1
+        )
+      : 0;
+
+  const wicketPressureWeight =
+    0.35;
+
+  const resourceProgress =
+    Math.min(
+      1,
+      timeProgress +
+        (
+          1 -
+          timeProgress
+        ) *
+          wicketProgress *
+          wicketPressureWeight
+    );
+
+  const parBase =
+    Math.max(
+      target - 1,
+      0
+    );
+
+  const chasePar =
+    isSecondInnings &&
+    target > 0 &&
+    legalBalls > 0
+      ? Math.min(
+          parBase,
+          Math.max(
+            0,
+            Math.floor(
+              parBase *
+                resourceProgress
+            )
+          )
+        )
+      : null;
+
+  const vsPar =
+    chasePar != null
+      ? runs -
+        chasePar
+      : null;
+
+  const parState =
+    vsPar == null
+      ? ""
+      : vsPar > 0
+        ? "AHEAD"
+        : vsPar < 0
+          ? "BEHIND"
+          : "LEVEL";
+
+  const parDeltaLabel =
+    vsPar == null
+      ? ""
+      : vsPar > 0
+        ? `+${vsPar}`
+        : String(vsPar);
+
   const projected =
     legalBalls > 0 && maxBalls > 0
       ? Math.round((runs / legalBalls) * maxBalls)
@@ -2346,6 +2468,10 @@ function buildLiveMatchCenter(scoreboard, preferLocalTarget = false) {
     target,
     ballsRemaining,
     runsRequired,
+    chasePar,
+    vsPar,
+    parState,
+    parDeltaLabel,
     recentBalls,
     partnershipRuns: currentPartnership?.runs ?? 0,
     partnershipBalls: currentPartnership?.balls ?? 0,
@@ -16100,19 +16226,101 @@ const playerRoleBadge = (row) => {
 
       {liveMatchCenter?.isSecondInnings &&
         liveMatchCenter?.target > 0 && (
-          <div className="msc-v3-chase">
-            <span>
-              Target <b>{liveMatchCenter.target}</b>
-            </span>
+          <>
+            <div className="msc-v3-chase">
+              <span>
+                Target <b>{liveMatchCenter.target}</b>
+              </span>
 
-            <span>
-              Need <b>{liveMatchCenter.runsRequired}</b>
-            </span>
+              <span>
+                Need <b>{liveMatchCenter.runsRequired}</b>
+              </span>
 
-            <span>
-              Balls <b>{liveMatchCenter.ballsRemaining}</b>
-            </span>
-          </div>
+              <span>
+                Balls <b>{liveMatchCenter.ballsRemaining}</b>
+              </span>
+            </div>
+
+            {liveMatchCenter?.chasePar != null && (
+              <div
+                aria-label="Cric4All Chase Par"
+                style={{
+                  margin:
+                    "6px 10px 0",
+                  padding:
+                    "7px 10px",
+                  display:
+                    "grid",
+                  gridTemplateColumns:
+                    "minmax(0, 1fr) minmax(0, 1fr)",
+                  gap:
+                    8,
+                  alignItems:
+                    "center",
+                  borderRadius:
+                    10,
+                  background:
+                    "rgba(15, 23, 42, 0.68)",
+                  border:
+                    "1px solid rgba(148, 163, 184, 0.20)",
+                  fontSize:
+                    12,
+                  lineHeight:
+                    1.15,
+                  overflow:
+                    "hidden",
+                }}
+              >
+                <span
+                  style={{
+                    minWidth:
+                      0,
+                    whiteSpace:
+                      "nowrap",
+                    overflow:
+                      "hidden",
+                    textOverflow:
+                      "ellipsis",
+                  }}
+                >
+                  C4A Par{" "}
+                  <b>
+                    {liveMatchCenter.chasePar}
+                  </b>
+                </span>
+
+                <span
+                  style={{
+                    minWidth:
+                      0,
+                    textAlign:
+                      "right",
+                    fontWeight:
+                      900,
+                    whiteSpace:
+                      "nowrap",
+                    overflow:
+                      "hidden",
+                    textOverflow:
+                      "ellipsis",
+                  }}
+                >
+                  {liveMatchCenter.parState === "AHEAD"
+                    ? "▲ "
+                    : liveMatchCenter.parState === "BEHIND"
+                      ? "▼ "
+                      : "● "}
+                  {liveMatchCenter.parDeltaLabel}
+                  {" "}
+                  {liveMatchCenter.parState === "AHEAD"
+                    ? "Ahead"
+                    : liveMatchCenter.parState === "BEHIND"
+                      ? "Behind"
+                      : "Level"}
+                </span>
+              </div>
+            )}
+          </>
         )}
 
       {/* SEPARATION + RECENT BALLS */}
@@ -16651,11 +16859,89 @@ const playerRoleBadge = (row) => {
         </div>
       </div>
       {liveMatchCenter?.isSecondInnings && liveMatchCenter?.target > 0 && (
-        <div className="tv-chase-mini scorer-chase-wow normal-mobile-chase-strip">
-          <span>Target <b>{liveMatchCenter.target}</b></span>
-          <span>Need <b>{liveMatchCenter.runsRequired}</b></span>
-          <span>Balls <b>{liveMatchCenter.ballsRemaining}</b></span>
-        </div>
+        <>
+          <div className="tv-chase-mini scorer-chase-wow normal-mobile-chase-strip">
+            <span>Target <b>{liveMatchCenter.target}</b></span>
+            <span>Need <b>{liveMatchCenter.runsRequired}</b></span>
+            <span>Balls <b>{liveMatchCenter.ballsRemaining}</b></span>
+          </div>
+
+          {liveMatchCenter?.chasePar != null && (
+            <div
+              aria-label="Cric4All Chase Par"
+              style={{
+                marginTop:
+                  6,
+                display:
+                  "flex",
+                alignItems:
+                  "center",
+                justifyContent:
+                  "center",
+                gap:
+                  14,
+                flexWrap:
+                  "wrap",
+                padding:
+                  "7px 10px",
+                borderRadius:
+                  10,
+                background:
+                  "rgba(15, 23, 42, 0.58)",
+                border:
+                  "1px solid rgba(148, 163, 184, 0.18)",
+                fontSize:
+                  12,
+                lineHeight:
+                  1.15,
+              }}
+            >
+              <span
+                style={{
+                  whiteSpace:
+                    "nowrap",
+                }}
+              >
+                Cric4All Par{" "}
+                <b>
+                  {liveMatchCenter.chasePar}
+                </b>
+              </span>
+
+              <span
+                style={{
+                  whiteSpace:
+                    "nowrap",
+                  fontWeight:
+                    900,
+                }}
+              >
+                {liveMatchCenter.parState === "AHEAD"
+                  ? "▲ "
+                  : liveMatchCenter.parState === "BEHIND"
+                    ? "▼ "
+                    : "● "}
+                {liveMatchCenter.parDeltaLabel}
+                {" vs Par"}
+              </span>
+
+              <small
+                style={{
+                  whiteSpace:
+                    "nowrap",
+                  opacity:
+                    0.72,
+                }}
+              >
+                {liveMatchCenter.parState === "AHEAD"
+                  ? "Ahead"
+                  : liveMatchCenter.parState === "BEHIND"
+                    ? "Behind"
+                    : "Level"}
+              </small>
+            </div>
+          )}
+        </>
       )}
     </>
   )}
