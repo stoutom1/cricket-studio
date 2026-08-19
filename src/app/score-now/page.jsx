@@ -6,10 +6,7 @@ import QuickMatchStarter from "@/components/quick-match-starter";
 export const dynamic = "force-dynamic";
 
 export default async function ScoreNowPage() {
-  const session =
-    await getServerSession(
-      authOptions
-    );
+  const session = await getServerSession(authOptions);
 
   let userContext = {
     signedIn: false,
@@ -18,50 +15,46 @@ export default async function ScoreNowPage() {
     activeLeagueName: "",
   };
 
-  if (
-    session?.user?.email
-  ) {
-    const user =
-      await prisma.user.findUnique({
-        where: {
-          email:
-            session.user.email,
-        },
-        select: {
-          id: true,
-          name: true,
-          activeLeagueId: true,
-          activeLeague: {
-            select: {
-              id: true,
-              name: true,
-            },
-          },
-        },
-      });
+  if (session?.user?.email) {
+    const user = await prisma.user.findUnique({
+      where: {
+        email: session.user.email,
+      },
+      select: {
+        id: true,
+        name: true,
+        activeLeagueId: true,
+      },
+    });
 
     if (user) {
+      let activeLeagueName = "";
+
+      // User has activeLeagueId, but the Prisma User model does not
+      // currently expose an activeLeague relation. Resolve the league
+      // explicitly instead.
+      if (user.activeLeagueId) {
+        const activeLeague = await prisma.league.findUnique({
+          where: {
+            id: Number(user.activeLeagueId),
+          },
+          select: {
+            id: true,
+            name: true,
+          },
+        });
+
+        activeLeagueName = activeLeague?.name || "";
+      }
+
       userContext = {
         signedIn: true,
-        userName:
-          user.name ||
-          session.user.name ||
-          "",
-        activeLeagueId:
-          user.activeLeagueId ||
-          null,
-        activeLeagueName:
-          user.activeLeague?.name ||
-          "",
+        userName: user.name || session.user.name || "",
+        activeLeagueId: user.activeLeagueId || null,
+        activeLeagueName,
       };
     }
   }
 
-  return (
-    <QuickMatchStarter
-      userContext={
-        userContext
-      }
-    />
-  );
+  return <QuickMatchStarter userContext={userContext} />;
 }
