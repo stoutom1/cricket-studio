@@ -174,7 +174,24 @@ if (session?.user?.email && league?.id) {
 }
 
 const leagueForClient = {
-  ...league,
+  ...JSON.parse(
+    JSON.stringify(
+      league
+    )
+  ),
+  id:
+    Number(
+      league.id
+    ),
+  leagueId:
+    Number(
+      league.id
+    ),
+  slug:
+    String(
+      league.slug ||
+      slug
+    ),
   isFollowing,
 };
 
@@ -233,6 +250,11 @@ const leagueForClient = {
       <PublicLeagueViewClient
         league={
           leagueForClient
+        }
+        numericLeagueId={
+          Number(
+            league.id
+          )
         }
       />
     </>

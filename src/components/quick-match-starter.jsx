@@ -413,352 +413,305 @@ export default function QuickMatchStarter({
   }
 
   return (
-    <main className="c4a-quick-page">
+    <main className="qmw-page">
       <GrowthTracker
         eventType="QUICK_MATCH_VIEW"
         oncePerSession={false}
       />
 
-      <div className="c4a-quick-shell">
-        <header className="c4a-quick-topbar">
-          <Link href="/" className="c4a-quick-brand">
+      <div className="qmw-shell">
+        <header className="qmw-topbar">
+          <Link href="/" className="qmw-brand" aria-label="Cric4All home">
             <span aria-hidden="true">🏏</span>
-            <span>Cric4All</span>
+            <strong>Cric4All</strong>
           </Link>
 
-          {userContext?.signedIn ? (
-            <Link href="/dashboard" className="c4a-quick-nav-button">
-              Dashboard
+          <div className="qmw-top-actions">
+            <Link href="/explore" className="qmw-quiet-link">
+              Explore
             </Link>
-          ) : (
-            <Link
-              href="/login?callbackUrl=%2Fscore-now"
-              className="c4a-quick-nav-button"
-            >
-              Sign In
-            </Link>
-          )}
+
+            {userContext?.signedIn ? (
+              <Link href="/dashboard" className="qmw-pill-link">
+                Dashboard
+              </Link>
+            ) : (
+              <Link
+                href="/login?callbackUrl=%2Fscore-now"
+                className="qmw-pill-link"
+              >
+                Sign In
+              </Link>
+            )}
+          </div>
         </header>
 
-        <section className="c4a-quick-layout">
-          <div className="c4a-quick-intro">
-            <div className="c4a-quick-kicker">
-              <span aria-hidden="true">⚡</span>
-              QUICK MATCH
-            </div>
-
-            <h1>Score a cricket match now.</h1>
-
-            <p className="c4a-quick-intro-copy">
-              Enter the two team names and overs. Cric4All creates the setup and
-              sends you straight into the normal scorer workflow.
-            </p>
-
-            <div className="c4a-quick-benefits">
-              {[
-                "📴 Keep scoring if connectivity drops",
-                "🌧 Rain / DLS workflows are available",
-                "📊 Full scorecard and player statistics",
-                "🔗 Share the live match with spectators",
-              ].map((item) => (
-                <div key={item} className="c4a-quick-benefit">
-                  {item}
-                </div>
-              ))}
-            </div>
+        <section className="qmw-intro-bar">
+          <div className="qmw-intro-title">
+            <span className="qmw-kicker">⚡ QUICK MATCH</span>
+            <span className="qmw-divider" aria-hidden="true">•</span>
+            <strong>Score a Match</strong>
           </div>
 
-          <form
-            className="c4a-quick-card"
-            onSubmit={createQuickMatch}
-            noValidate
-          >
-            <div className="c4a-quick-card-head">
-              <div className="c4a-quick-card-icon" aria-hidden="true">
-                🏏
-              </div>
+          <div className="qmw-mini-points" aria-label="Quick match features">
+            <span>📴 Offline-ready</span>
+            <span>🌧 DLS</span>
+            <span>🔗 Live sharing</span>
+          </div>
+        </section>
 
-              <div>
-                <h2>Match Setup</h2>
-                <p>You can change detailed settings later.</p>
-              </div>
+        <form
+          className="qmw-card"
+          onSubmit={createQuickMatch}
+          noValidate
+        >
+          <div className="qmw-card-head">
+            <div>
+              <span className="qmw-card-eyebrow">MATCH SETUP</span>
+              <h1>Set up your match</h1>
+              <p>Enter the basics and go straight to scoring.</p>
             </div>
 
-            {activeLeagueAvailable && (
-              <label className="c4a-active-league-card">
-                <input
-                  className="c4a-active-league-checkbox"
-                  type="checkbox"
-                  checked={Boolean(form.useActiveLeague)}
-                  onChange={(event) =>
-                    update("useActiveLeague", event.target.checked)
-                  }
-                />
+            <span className="qmw-step">1 of 4</span>
+          </div>
 
-                <span className="c4a-active-league-copy">
-                  <strong>Use my active league</strong>
-                  <small>{userContext.activeLeagueName}</small>
-                </span>
-
-                <span
-                  className={`c4a-active-league-state ${
-                    form.useActiveLeague ? "is-selected" : ""
-                  }`}
-                  aria-hidden="true"
-                >
-                  {form.useActiveLeague ? "Selected" : "Optional"}
-                </span>
-              </label>
-            )}
-
-            <div className="c4a-quick-fields">
-              {!form.useActiveLeague && (
-                <label className="c4a-quick-field c4a-quick-field-full">
-                  <span>League / Group</span>
-
-                  <input
-                    value={form.leagueName}
-                    onChange={(event) =>
-                      update("leagueName", event.target.value)
-                    }
-                    maxLength={70}
-                    placeholder="My Cricket League"
-                    autoComplete="organization"
-                  />
-                </label>
-              )}
-
-              <label className="c4a-quick-field">
-                <span>Team 1</span>
-
-                <input
-                  value={form.teamAName}
-                  onChange={(event) =>
-                    update("teamAName", event.target.value)
-                  }
-                  maxLength={60}
-                  placeholder="Team A"
-                  autoComplete="off"
-                />
-              </label>
-
-              <label className="c4a-quick-field">
-                <span>Team 2</span>
-
-                <input
-                  value={form.teamBName}
-                  onChange={(event) =>
-                    update("teamBName", event.target.value)
-                  }
-                  maxLength={60}
-                  placeholder="Team B"
-                  autoComplete="off"
-                />
-              </label>
-            </div>
-
-            <fieldset className="c4a-overs-group">
-              <legend>Overs per innings</legend>
-
-              <div className="c4a-overs-options">
-                {[5, 10, 20].map((overs) => {
-                  const active = Number(form.overs) === overs;
-
-                  return (
-                    <button
-                      key={overs}
-                      type="button"
-                      className={active ? "is-active" : ""}
-                      aria-pressed={active}
-                      onClick={() => update("overs", String(overs))}
-                    >
-                      {overs}
-                    </button>
-                  );
-                })}
-
-                <label
-                  className={`c4a-overs-custom ${
-                    ![5, 10, 20].includes(Number(form.overs))
-                      ? "is-active"
-                      : ""
-                  }`}
-                >
-                  <span>Other</span>
-                  <input
-                    inputMode="numeric"
-                    pattern="[0-9]*"
-                    value={
-                      [5, 10, 20].includes(Number(form.overs))
-                        ? ""
-                        : form.overs
-                    }
-                    onChange={(event) =>
-                      update(
-                        "overs",
-                        event.target.value.replace(/\D/g, "").slice(0, 3)
-                      )
-                    }
-                    onFocus={() => {
-                      if ([5, 10, 20].includes(Number(form.overs))) {
-                        update("overs", "");
-                      }
-                    }}
-                    aria-label="Custom number of overs"
-                    placeholder="15"
-                  />
-                </label>
-              </div>
-            </fieldset>
-
-            <button
-              type="button"
-              className="c4a-player-toggle"
-              aria-expanded={showPlayers}
-              onClick={() => setShowPlayers((previous) => !previous)}
+          {activeLeagueAvailable && (
+            <label
+              className={`qmw-active-league ${
+                form.useActiveLeague ? "is-active" : ""
+              }`}
             >
-              <span>
-                <b aria-hidden="true">{showPlayers ? "−" : "+"}</b>
-                Add player names now
-                <small>(optional)</small>
+              <input
+                type="checkbox"
+                checked={Boolean(form.useActiveLeague)}
+                onChange={(event) =>
+                  update("useActiveLeague", event.target.checked)
+                }
+              />
+
+              <span className="qmw-active-league-copy">
+                <strong>Use active league</strong>
+                <small>{userContext.activeLeagueName}</small>
               </span>
 
-              <span className="c4a-player-toggle-chevron" aria-hidden="true">
-                {showPlayers ? "⌃" : "⌄"}
+              <span className="qmw-active-state">
+                {form.useActiveLeague ? "Using" : "Optional"}
               </span>
-            </button>
+            </label>
+          )}
 
-            {showPlayers && (
-              <div className="c4a-player-panel">
-                <div className="c4a-player-columns">
-                  <label className="c4a-quick-field">
-                    <span>Team 1 players</span>
-                    <small>One name per line or comma separated</small>
-
-                    <textarea
-                      value={form.teamAPlayers}
-                      onChange={(event) =>
-                        update("teamAPlayers", event.target.value)
-                      }
-                      rows={5}
-                      placeholder={"Player 1\nPlayer 2\nPlayer 3"}
-                    />
-                  </label>
-
-                  <label className="c4a-quick-field">
-                    <span>Team 2 players</span>
-                    <small>One name per line or comma separated</small>
-
-                    <textarea
-                      value={form.teamBPlayers}
-                      onChange={(event) =>
-                        update("teamBPlayers", event.target.value)
-                      }
-                      rows={5}
-                      placeholder={"Player 1\nPlayer 2\nPlayer 3"}
-                    />
-                  </label>
-                </div>
-
-                <p className="c4a-player-help">
-                  If you leave player names blank, Cric4All creates two
-                  temporary players per team so the normal delivery setup can
-                  open immediately. You can rename or add players later.
-                </p>
-              </div>
+          <div className="qmw-fields">
+            {!form.useActiveLeague && (
+              <label className="qmw-field qmw-field-league">
+                <span>League / Group</span>
+                <input
+                  value={form.leagueName}
+                  onChange={(event) =>
+                    update("leagueName", event.target.value)
+                  }
+                  maxLength={70}
+                  placeholder="My Cricket League"
+                  autoComplete="organization"
+                />
+              </label>
             )}
 
-            {error && (
-              <div role="alert" className="c4a-quick-error">
-                {error}
+            <label className="qmw-field">
+              <span>Team 1</span>
+              <input
+                value={form.teamAName}
+                onChange={(event) =>
+                  update("teamAName", event.target.value)
+                }
+                maxLength={60}
+                placeholder="Team A"
+                autoComplete="off"
+              />
+            </label>
+
+            <label className="qmw-field">
+              <span>Team 2</span>
+              <input
+                value={form.teamBName}
+                onChange={(event) =>
+                  update("teamBName", event.target.value)
+                }
+                maxLength={60}
+                placeholder="Team B"
+                autoComplete="off"
+              />
+            </label>
+          </div>
+
+          <fieldset className="qmw-overs">
+            <legend>Overs per innings</legend>
+
+            <div className="qmw-over-buttons">
+              {[5, 10, 20].map((overs) => {
+                const active = Number(form.overs) === overs;
+
+                return (
+                  <button
+                    key={overs}
+                    type="button"
+                    className={active ? "is-active" : ""}
+                    aria-pressed={active}
+                    onClick={() => update("overs", String(overs))}
+                  >
+                    {overs}
+                  </button>
+                );
+              })}
+
+              <label
+                className={`qmw-other ${
+                  ![5, 10, 20].includes(Number(form.overs))
+                    ? "is-active"
+                    : ""
+                }`}
+              >
+                <span>Other</span>
+                <input
+                  inputMode="numeric"
+                  pattern="[0-9]*"
+                  value={
+                    [5, 10, 20].includes(Number(form.overs))
+                      ? ""
+                      : form.overs
+                  }
+                  onChange={(event) =>
+                    update(
+                      "overs",
+                      event.target.value.replace(/\D/g, "").slice(0, 3)
+                    )
+                  }
+                  onFocus={() => {
+                    if ([5, 10, 20].includes(Number(form.overs))) {
+                      update("overs", "");
+                    }
+                  }}
+                  aria-label="Custom number of overs"
+                  placeholder="15"
+                />
+              </label>
+            </div>
+          </fieldset>
+
+          <button
+            type="button"
+            className="qmw-player-toggle"
+            aria-expanded={showPlayers}
+            onClick={() => setShowPlayers((previous) => !previous)}
+          >
+            <span>
+              <b aria-hidden="true">{showPlayers ? "−" : "+"}</b>
+              Player names
+              <small>optional</small>
+            </span>
+
+            <span aria-hidden="true">{showPlayers ? "⌃" : "⌄"}</span>
+          </button>
+
+          {showPlayers && (
+            <div className="qmw-player-panel">
+              <div className="qmw-player-grid">
+                <label className="qmw-field">
+                  <span>Team 1 players</span>
+                  <textarea
+                    value={form.teamAPlayers}
+                    onChange={(event) =>
+                      update("teamAPlayers", event.target.value)
+                    }
+                    rows={5}
+                    placeholder={"Player 1\nPlayer 2\nPlayer 3"}
+                  />
+                </label>
+
+                <label className="qmw-field">
+                  <span>Team 2 players</span>
+                  <textarea
+                    value={form.teamBPlayers}
+                    onChange={(event) =>
+                      update("teamBPlayers", event.target.value)
+                    }
+                    rows={5}
+                    placeholder={"Player 1\nPlayer 2\nPlayer 3"}
+                  />
+                </label>
               </div>
-            )}
+            </div>
+          )}
+
+          {error && (
+            <div role="alert" className="qmw-error">
+              {error}
+            </div>
+          )}
+
+          <div className="qmw-action-row">
+            <div className="qmw-next">
+              <span>Next:</span>
+              <strong>Toss</strong>
+              <span>→</span>
+              <strong>Players</strong>
+              <span>→</span>
+              <strong>Score</strong>
+            </div>
 
             <button
               type="submit"
               disabled={saving}
-              className="c4a-quick-submit"
+              className="qmw-submit"
             >
-              {saving
-                ? "Creating your match…"
-                : userContext?.signedIn
-                  ? "🏏 Create Match & Start Scoring"
-                  : "🏏 Continue to Score This Match"}
+              <span>
+                {saving
+                  ? "Creating match…"
+                  : userContext?.signedIn
+                    ? "🏏 Start Scoring"
+                    : "🏏 Continue"}
+              </span>
+              <span aria-hidden="true">→</span>
             </button>
+          </div>
 
-            <p className="c4a-quick-footnote">
-              Detailed roles, powerplay, wicket limits, DLS and other match
-              settings remain available in the normal Cric4All workflow.
-            </p>
+          {authRequired && (
+            <div className="qmw-auth">
+              <strong>One quick step</strong>
+              <p>
+                Sign in or create a free account to continue. Your setup is saved.
+              </p>
 
-            {authRequired && (
-              <div className="c4a-auth-box">
-                <strong>Your match setup is saved on this device.</strong>
+              <div>
+                <Link
+                  href="/login?callbackUrl=%2Fscore-now"
+                  onClick={() =>
+                    trackGrowthEvent("QUICK_MATCH_AUTH_CLICKED", {
+                      source: "SCORE_NOW_LOGIN",
+                    })
+                  }
+                >
+                  Sign In
+                </Link>
 
-                <p>
-                  Sign in or create a free Cric4All account, then return here.
-                  Your team names and overs will still be waiting.
-                </p>
+                <Link
+                  href="/register?next=%2Fscore-now"
+                  className="is-secondary"
+                  onClick={() => {
+                    trackGrowthEvent("QUICK_MATCH_AUTH_CLICKED", {
+                      source: "SCORE_NOW_REGISTER",
+                    });
 
-                <div className="c4a-auth-actions">
-                  <Link
-                    href="/login?callbackUrl=%2Fscore-now"
-                    onClick={() =>
-                      trackGrowthEvent("QUICK_MATCH_AUTH_CLICKED", {
-                        source: "SCORE_NOW_LOGIN",
-                      })
-                    }
-                  >
-                    Sign In
-                  </Link>
-
-                  <Link
-                    href="/register?next=%2Fscore-now"
-                    className="is-secondary"
-                    onClick={() => {
-                      trackGrowthEvent("QUICK_MATCH_AUTH_CLICKED", {
-                        source: "SCORE_NOW_REGISTER",
-                      });
-
-                      trackGrowthEvent("SIGNUP_STARTED", {
-                        source: "SCORE_NOW",
-                      });
-                    }}
-                  >
-                    Create Free Account
-                  </Link>
-                </div>
+                    trackGrowthEvent("SIGNUP_STARTED", {
+                      source: "SCORE_NOW",
+                    });
+                  }}
+                >
+                  Create Account
+                </Link>
               </div>
-            )}
-          </form>
-        </section>
-
-        <section className="c4a-next-steps">
-          <div className="c4a-next-steps-head">
-            <span aria-hidden="true">✓</span>
-            <div>
-              <strong>What happens after Start Scoring?</strong>
-              <small>Four quick steps, then you are live.</small>
             </div>
-          </div>
-
-          <div className="c4a-next-steps-grid">
-            {[
-              ["1", "Setup", "Cric4All creates the league and teams if needed."],
-              ["2", "Toss", "Choose which team bats first."],
-              ["3", "Players", "Select striker, non-striker and bowler."],
-              ["4", "Score", "Record the first delivery."],
-            ].map(([number, title, copy]) => (
-              <article key={number}>
-                <span>{number}</span>
-                <div>
-                  <strong>{title}</strong>
-                  <p>{copy}</p>
-                </div>
-              </article>
-            ))}
-          </div>
-        </section>
+          )}
+        </form>
       </div>
     </main>
   );

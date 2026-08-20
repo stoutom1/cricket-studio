@@ -8,12 +8,25 @@ import prisma from "@/lib/prisma";
 import {
   authOptions,
 } from "@/lib/auth";
-import {
-  resolveLeagueReference,
-} from "@/lib/league-follow-ref";
 
 export const runtime =
   "nodejs";
+
+function parseLeagueId(
+  value
+) {
+  const leagueId =
+    Number(
+      value
+    );
+
+  return Number.isInteger(
+    leagueId
+  ) &&
+    leagueId > 0
+    ? leagueId
+    : null;
+}
 
 async function requireUser() {
   const session =
@@ -68,6 +81,7 @@ async function getState(
     });
 
   return {
+    leagueId,
     followed:
       Boolean(
         follower
@@ -91,32 +105,36 @@ async function getState(
   };
 }
 
-async function resolveRequest(
-  params
-) {
-  const {
-    leagueId:
-      leagueRef,
-  } =
-    await params;
-
-  const league =
-    await resolveLeagueReference(
-      leagueRef
-    );
-
-  return {
-    leagueRef,
-    league,
-  };
-}
-
 export async function GET(
   request,
   {
     params,
   }
 ) {
+  const {
+    leagueId:
+      rawLeagueId,
+  } =
+    await params;
+
+  const leagueId =
+    parseLeagueId(
+      rawLeagueId
+    );
+
+  if (!leagueId) {
+    return NextResponse.json(
+      {
+        error:
+          "A valid numeric league ID is required.",
+      },
+      {
+        status:
+          400,
+      }
+    );
+  }
+
   const user =
     await requireUser();
 
@@ -133,18 +151,22 @@ export async function GET(
     );
   }
 
-  const {
-    league,
-  } =
-    await resolveRequest(
-      params
-    );
+  const leagueExists =
+    await prisma.league.findUnique({
+      where: {
+        id:
+          leagueId,
+      },
+      select: {
+        id: true,
+      },
+    });
 
-  if (!league) {
+  if (!leagueExists) {
     return NextResponse.json(
       {
         error:
-          "The league could not be resolved.",
+          "Cric4All could not find this league.",
       },
       {
         status:
@@ -153,18 +175,12 @@ export async function GET(
     );
   }
 
-  return NextResponse.json({
-    leagueId:
-      league.id,
-    leagueSlug:
-      league.slug,
-    ...(
-      await getState(
-        user.id,
-        league.id
-      )
-    ),
-  });
+  return NextResponse.json(
+    await getState(
+      user.id,
+      leagueId
+    )
+  );
 }
 
 export async function PATCH(
@@ -173,6 +189,30 @@ export async function PATCH(
     params,
   }
 ) {
+  const {
+    leagueId:
+      rawLeagueId,
+  } =
+    await params;
+
+  const leagueId =
+    parseLeagueId(
+      rawLeagueId
+    );
+
+  if (!leagueId) {
+    return NextResponse.json(
+      {
+        error:
+          "A valid numeric league ID is required.",
+      },
+      {
+        status:
+          400,
+      }
+    );
+  }
+
   const user =
     await requireUser();
 
@@ -185,26 +225,6 @@ export async function PATCH(
       {
         status:
           401,
-      }
-    );
-  }
-
-  const {
-    league,
-  } =
-    await resolveRequest(
-      params
-    );
-
-  if (!league) {
-    return NextResponse.json(
-      {
-        error:
-          "The league could not be resolved.",
-      },
-      {
-        status:
-          404,
       }
     );
   }
@@ -215,8 +235,7 @@ export async function PATCH(
         userId_leagueId: {
           userId:
             user.id,
-          leagueId:
-            league.id,
+          leagueId,
         },
       },
       select: {
@@ -280,14 +299,10 @@ export async function PATCH(
   return NextResponse.json({
     success:
       true,
-    leagueId:
-      league.id,
-    leagueSlug:
-      league.slug,
     ...(
       await getState(
         user.id,
-        league.id
+        leagueId
       )
     ),
   });

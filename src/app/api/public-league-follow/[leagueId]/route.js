@@ -8,10 +8,6 @@ import prisma from "@/lib/prisma";
 import {
   authOptions,
 } from "@/lib/auth";
-import {
-  resolveFollowableLeague,
-  resolveLeagueReference,
-} from "@/lib/league-follow-ref";
 
 export const runtime =
   "nodejs";
@@ -39,6 +35,39 @@ async function getCurrentUser() {
   });
 }
 
+function parseLeagueId(
+  value
+) {
+  const leagueId =
+    Number(
+      value
+    );
+
+  return Number.isInteger(
+    leagueId
+  ) &&
+    leagueId > 0
+    ? leagueId
+    : null;
+}
+
+async function getLeague(
+  leagueId
+) {
+  return prisma.league.findUnique({
+    where: {
+      id:
+        leagueId,
+    },
+    select: {
+      id: true,
+      name: true,
+      slug: true,
+      visibility: true,
+    },
+  });
+}
+
 export async function POST(
   request,
   {
@@ -47,9 +76,27 @@ export async function POST(
 ) {
   const {
     leagueId:
-      leagueRef,
+      rawLeagueId,
   } =
     await params;
+
+  const leagueId =
+    parseLeagueId(
+      rawLeagueId
+    );
+
+  if (!leagueId) {
+    return NextResponse.json(
+      {
+        error:
+          "A valid numeric league ID is required.",
+      },
+      {
+        status:
+          400,
+      }
+    );
+  }
 
   const user =
     await getCurrentUser();
@@ -68,15 +115,15 @@ export async function POST(
   }
 
   const league =
-    await resolveFollowableLeague(
-      leagueRef
+    await getLeague(
+      leagueId
     );
 
   if (!league) {
     return NextResponse.json(
       {
         error:
-          "Cric4All could not resolve this league. Refresh the page and try again.",
+          "Cric4All could not find this league.",
       },
       {
         status:
@@ -120,7 +167,6 @@ export async function POST(
     leagueSlug:
       league.slug,
     follower,
-    league,
   });
 }
 
@@ -132,9 +178,27 @@ export async function DELETE(
 ) {
   const {
     leagueId:
-      leagueRef,
+      rawLeagueId,
   } =
     await params;
+
+  const leagueId =
+    parseLeagueId(
+      rawLeagueId
+    );
+
+  if (!leagueId) {
+    return NextResponse.json(
+      {
+        error:
+          "A valid numeric league ID is required.",
+      },
+      {
+        status:
+          400,
+      }
+    );
+  }
 
   const user =
     await getCurrentUser();
@@ -152,36 +216,12 @@ export async function DELETE(
     );
   }
 
-  /*
-   * Do not require PUBLIC/UNLISTED here.
-   * If a followed league later becomes private, the user must still be able
-   * to unfollow it cleanly.
-   */
-  const league =
-    await resolveLeagueReference(
-      leagueRef
-    );
-
-  if (!league) {
-    return NextResponse.json(
-      {
-        error:
-          "The league could not be resolved.",
-      },
-      {
-        status:
-          404,
-      }
-    );
-  }
-
   await prisma.$transaction([
     prisma.leagueAlertDelivery.deleteMany({
       where: {
         userId:
           user.id,
-        leagueId:
-          league.id,
+        leagueId,
       },
     }),
 
@@ -189,8 +229,7 @@ export async function DELETE(
       where: {
         userId:
           user.id,
-        leagueId:
-          league.id,
+        leagueId,
       },
     }),
   ]);
@@ -200,9 +239,6 @@ export async function DELETE(
       true,
     followed:
       false,
-    leagueId:
-      league.id,
-    leagueSlug:
-      league.slug,
+    leagueId,
   });
 }

@@ -176,7 +176,7 @@ function buildPublicStats(matches) {
   return { battingRows, bowlingRows };
 }
 
-export default function PublicLeagueViewClient({ league }) {
+export default function PublicLeagueViewClient({ league, numericLeagueId }) {
   const [activeTab, setActiveTab] = useState("overview");
   const [selectedYear, setSelectedYear] = useState("");
   const [selectedSeriesId, setSelectedSeriesId] = useState("");
@@ -186,14 +186,35 @@ export default function PublicLeagueViewClient({ league }) {
   const [publicLeadersTab, setPublicLeadersTab] = useState("batting");
   const [isFollowing, setIsFollowing] = useState(Boolean(league.isFollowing));
   const [followBusy, setFollowBusy] = useState(false);
+
+  const resolvedLeagueId =
+    Number(
+      numericLeagueId
+    );
+
+  const hasValidLeagueId =
+    Number.isInteger(
+      resolvedLeagueId
+    ) &&
+    resolvedLeagueId > 0;
+
 async function toggleFollowLeague() {
   try {
     setFollowBusy(true);
 
-    const res = await fetch(`/api/leagues/${league.id}/follow`, {
-      method: isFollowing ? "DELETE" : "POST",
-      credentials: "include",
-    });
+    if (!hasValidLeagueId) {
+      throw new Error(
+        "Cric4All did not receive the numeric league ID for this public page."
+      );
+    }
+
+    const res = await fetch(
+      `/api/public-league-follow/${resolvedLeagueId}`,
+      {
+        method: isFollowing ? "DELETE" : "POST",
+        credentials: "include",
+      }
+    );
 
     const data = await res.json().catch(() => ({}));
 
@@ -201,7 +222,11 @@ async function toggleFollowLeague() {
       throw new Error(data.error || "Unable to follow league.");
     }
 
-    setIsFollowing(Boolean(data.followed));
+    setIsFollowing(
+      Boolean(
+        data.followed
+      )
+    );
   } catch (err) {
     alert(err.message);
   } finally {
@@ -377,7 +402,9 @@ return (
               </button>
 
               <LeagueAlertControls
-                leagueId={league.id}
+                leagueId={
+                  resolvedLeagueId
+                }
                 leagueName={league.name}
                 isFollowing={isFollowing}
               />

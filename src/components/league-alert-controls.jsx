@@ -74,11 +74,32 @@ function isStandaloneMode() {
   );
 }
 
+function positiveInteger(
+  value
+) {
+  const numeric =
+    Number(
+      value
+    );
+
+  return Number.isInteger(
+    numeric
+  ) &&
+    numeric > 0
+    ? numeric
+    : null;
+}
+
 export default function LeagueAlertControls({
   leagueId,
   leagueName,
   isFollowing,
 }) {
+  const resolvedLeagueId =
+    positiveInteger(
+      leagueId
+    );
+
   const [
     state,
     setState,
@@ -96,6 +117,53 @@ export default function LeagueAlertControls({
     setMessage,
   ] =
     useState("");
+
+  async function loadAlertState() {
+    if (
+      !isFollowing ||
+      !resolvedLeagueId
+    ) {
+      setState(
+        null
+      );
+      return null;
+    }
+
+    const response =
+      await fetch(
+        `/api/public-league-alerts/${resolvedLeagueId}`,
+        {
+          credentials:
+            "include",
+          cache:
+            "no-store",
+        }
+      );
+
+    const data =
+      await response.json()
+        .catch(
+          () => ({})
+        );
+
+    if (!response.ok) {
+      throw new Error(
+        data?.error ||
+        "Unable to load match alert settings."
+      );
+    }
+
+
+    setState(
+      data
+    );
+
+    return {
+      ...data,
+      leagueId:
+        numericLeagueId,
+    };
+  }
 
   useEffect(
     () => {
@@ -115,7 +183,7 @@ export default function LeagueAlertControls({
         try {
           const response =
             await fetch(
-              `/api/leagues/${leagueId}/alerts`,
+              `/api/public-league-alerts/${resolvedLeagueId}`,
               {
                 credentials:
                   "include",
@@ -134,12 +202,30 @@ export default function LeagueAlertControls({
             response.ok &&
             active
           ) {
+
             setState(
               data
             );
+            setMessage("");
+          } else if (
+            active
+          ) {
+            setMessage(
+              data?.error ||
+              "Unable to load match alert settings."
+            );
           }
-        } catch {
-          // Following remains usable even when alert state cannot load.
+        } catch (
+          error
+        ) {
+          if (
+            active
+          ) {
+            setMessage(
+              error?.message ||
+              "Unable to load match alert settings."
+            );
+          }
         }
       }
 
@@ -151,7 +237,7 @@ export default function LeagueAlertControls({
       };
     },
     [
-      leagueId,
+      resolvedLeagueId,
       isFollowing,
     ]
   );
@@ -165,9 +251,17 @@ export default function LeagueAlertControls({
   async function patchAlerts(
     patch
   ) {
+    if (
+      !resolvedLeagueId
+    ) {
+      throw new Error(
+        "The league identifier is missing."
+      );
+    }
+
     const response =
       await fetch(
-        `/api/leagues/${leagueId}/alerts`,
+        `/api/public-league-alerts/${resolvedLeagueId}`,
         {
           method:
             "PATCH",
@@ -196,6 +290,7 @@ export default function LeagueAlertControls({
         "Unable to update match alerts."
       );
     }
+
 
     setState(
       data
@@ -230,6 +325,19 @@ export default function LeagueAlertControls({
     ) {
       throw new Error(
         "On iPhone, add Cric4All to the Home Screen first, then open it from the Cric4All icon to enable match alerts."
+      );
+    }
+
+    const numericLeagueId =
+      positiveInteger(
+        resolvedLeagueId
+      );
+
+    if (
+      !numericLeagueId
+    ) {
+      throw new Error(
+        "A valid numeric league ID is required for match alerts."
       );
     }
 
@@ -305,6 +413,17 @@ export default function LeagueAlertControls({
             JSON.stringify({
               subscription:
                 subscription.toJSON(),
+
+              /*
+               * Existing Cric4All Web Push registration is league-aware.
+               * Match alerts reuse the same device subscription.
+               *
+               * Do NOT send birthdayPreference here; enabling league match
+               * alerts must never turn birthday alerts on or alter their
+               * existing settings.
+               */
+              leagueId:
+                numericLeagueId,
             }),
         }
       );
@@ -371,9 +490,8 @@ export default function LeagueAlertControls({
       });
 
       /*
-       * Do NOT unsubscribe the browser globally.
-       * The same push subscription may be used by birthday alerts or another
-       * followed league.
+       * Do NOT unsubscribe the browser globally. The same Web Push
+       * subscription may serve birthday notifications or other leagues.
        */
       setMessage(
         `Match alerts are off for ${leagueName}.`
@@ -434,7 +552,9 @@ export default function LeagueAlertControls({
         gap:
           7,
         minWidth:
-          "min(100%, 250px)",
+          0,
+        width:
+          "100%",
       }}
     >
       {!state
@@ -456,10 +576,12 @@ export default function LeagueAlertControls({
               "center",
             minHeight:
               42,
+            width:
+              "100%",
             padding:
-              "9px 13px",
+              "9px 12px",
             borderRadius:
-              12,
+              10,
             border:
               "1px solid rgba(56,189,248,.28)",
             background:
@@ -494,7 +616,7 @@ export default function LeagueAlertControls({
             padding:
               9,
             borderRadius:
-              13,
+              11,
             border:
               "1px solid rgba(52,211,153,.22)",
             background:
@@ -516,7 +638,7 @@ export default function LeagueAlertControls({
             <strong
               style={{
                 fontSize:
-                  12,
+                  11,
               }}
             >
               🔔 Match alerts on
@@ -540,7 +662,7 @@ export default function LeagueAlertControls({
                 opacity:
                   0.78,
                 fontSize:
-                  11,
+                  10,
                 cursor:
                   "pointer",
               }}
@@ -573,9 +695,9 @@ export default function LeagueAlertControls({
                 minWidth:
                   0,
                 padding:
-                  "7px 8px",
+                  "7px 6px",
                 borderRadius:
-                  9,
+                  8,
                 border:
                   "1px solid rgba(148,163,184,.18)",
                 background:
@@ -586,7 +708,7 @@ export default function LeagueAlertControls({
                 color:
                   "inherit",
                 fontSize:
-                  11,
+                  10,
                 fontWeight:
                   800,
                 lineHeight:
@@ -616,9 +738,9 @@ export default function LeagueAlertControls({
                 minWidth:
                   0,
                 padding:
-                  "7px 8px",
+                  "7px 6px",
                 borderRadius:
-                  9,
+                  8,
                 border:
                   "1px solid rgba(148,163,184,.18)",
                 background:
@@ -629,7 +751,7 @@ export default function LeagueAlertControls({
                 color:
                   "inherit",
                 fontSize:
-                  11,
+                  10,
                 fontWeight:
                   800,
                 lineHeight:
@@ -653,10 +775,10 @@ export default function LeagueAlertControls({
           style={{
             display:
               "block",
-            maxWidth:
-              300,
+            width:
+              "100%",
             fontSize:
-              10,
+              9,
             lineHeight:
               1.35,
             overflowWrap:
