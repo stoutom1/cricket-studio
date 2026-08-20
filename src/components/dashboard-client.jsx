@@ -50,6 +50,13 @@ import {
   removeOfflineServerUndo,
   saveOfflineServerUndoSnapshot,
 } from "@/lib/offline-scoring-store";
+import {
+  clearOfflineScoringSession,
+  getOfflineScoringSession,
+  isCompletedMatchStatus,
+  primeOfflineScoringShell,
+  saveOfflineScoringSession,
+} from "@/lib/offline-scoring-resume";
 
 function SuperOverScorecard({ superOver }) {
   if (!superOver?.exists) return null;
@@ -500,6 +507,9 @@ export default function DashboardClient() {
       .trim()
       .toLowerCase();
 
+  const isOfflineResumeRequest =
+    searchParams.get("offlineResume") === "1";
+
   const requestedMatchesSubTab =
     String(
       searchParams.get(
@@ -926,6 +936,172 @@ const activeLeague =
       league.id ===
       Number(activeLeagueId)
   ) || null;
+
+useEffect(() => {
+  if (
+    !selectedMatchId ||
+    activeTab !== "scoring" ||
+    !scoreboard
+  ) {
+    return;
+  }
+
+  const status =
+    scoreboard?.match?.status ||
+    matchDetail?.status ||
+    "";
+
+  if (isCompletedMatchStatus(status)) {
+    clearOfflineScoringSession(selectedMatchId);
+    return;
+  }
+
+  const inningsList =
+    Array.isArray(scoreboard?.innings)
+      ? scoreboard.innings
+      : [];
+
+  const latestInnings =
+    inningsList.length
+      ? inningsList[inningsList.length - 1]
+      : null;
+
+  const scoreText =
+    latestInnings
+      ? `${latestInnings?.teamName || ""} ${
+          latestInnings?.runs ?? 0
+        }/${latestInnings?.wickets ?? 0} (${
+          latestInnings?.oversDisplay || "0.0"
+        } ov)`
+      : "";
+
+  saveOfflineScoringSession({
+    matchId: Number(selectedMatchId),
+    leagueId: Number(activeLeagueId) || null,
+    leagueName:
+      activeLeague?.name ||
+      scoreboard?.match?.leagueName ||
+      "",
+    teamAName:
+      scoreboard?.match?.teamAName ||
+      matchDetail?.teamA?.name ||
+      "",
+    teamBName:
+      scoreboard?.match?.teamBName ||
+      matchDetail?.teamB?.name ||
+      "",
+    scoreText,
+    inningsNo: Number(
+      scoreboard?.currentInnings ||
+      scoreboard?.currentState?.inningsNo ||
+      1
+    ),
+    matchStatus: status,
+  });
+
+  // Prime the authenticated Next.js Dashboard document plus its JS/CSS while
+  // internet is available. The scoring DATA remains in existing IndexedDB.
+  if (
+    typeof navigator !== "undefined" &&
+    navigator.onLine !== false
+  ) {
+    primeOfflineScoringShell().catch(() => {});
+  }
+}, [
+  selectedMatchId,
+  activeTab,
+  activeLeagueId,
+  activeLeague?.name,
+  scoreboard,
+  matchDetail,
+]);
+
+useEffect(() => {
+  if (
+    !selectedMatchId ||
+    activeTab !== "scoring"
+  ) {
+    return;
+  }
+
+  const isOffline = () =>
+    typeof navigator !== "undefined" &&
+    navigator.onLine === false;
+
+  function handleOfflineLinkClick(event) {
+    if (!isOffline()) return;
+
+    const anchor =
+      event.target?.closest?.("a[href]");
+
+    if (!anchor) return;
+
+    const rawHref =
+      anchor.getAttribute("href");
+
+    if (
+      !rawHref ||
+      rawHref.startsWith("#") ||
+      rawHref.startsWith("javascript:")
+    ) {
+      return;
+    }
+
+    try {
+      const target =
+        new URL(anchor.href, window.location.href);
+
+      const sameScorer =
+        target.pathname === "/dashboard" &&
+        target.searchParams.get("tab") === "scoring" &&
+        Number(target.searchParams.get("matchId")) ===
+          Number(selectedMatchId);
+
+      if (sameScorer) return;
+    } catch {
+      return;
+    }
+
+    const leave =
+      window.confirm(
+        "You are offline. Your current match is saved on this device and can be resumed.\n\nLeave scoring?"
+      );
+
+    if (!leave) {
+      event.preventDefault();
+      event.stopPropagation();
+    }
+  }
+
+  function handleBeforeUnload(event) {
+    if (!isOffline()) return;
+    event.preventDefault();
+    event.returnValue = "";
+  }
+
+  document.addEventListener(
+    "click",
+    handleOfflineLinkClick,
+    true
+  );
+  window.addEventListener(
+    "beforeunload",
+    handleBeforeUnload
+  );
+
+  return () => {
+    document.removeEventListener(
+      "click",
+      handleOfflineLinkClick,
+      true
+    );
+    window.removeEventListener(
+      "beforeunload",
+      handleBeforeUnload
+    );
+  };
+}, [selectedMatchId, activeTab]);
+
 useEffect(() => {
   if (activeTab === "scoring") {
     setScoringSubTab("ADVANCED");
@@ -1339,6 +1515,142 @@ useEffect(() => {
 }, [activeLeague]);
 useEffect(() => {
   async function initializeDashboard() {
+    const browserOffline =
+      typeof navigator !== "undefined" &&
+      navigator.onLine === false;
+
+    /*
+     * OFFLINE RESUME BOOTSTRAP
+     * ------------------------
+     * Do not wait for /api/leagues, /api/teams, /api/me, permissions or the
+     * server-backed match list. Those requests cannot succeed while offline
+     * and were the reason the cached Dashboard remained on "Loading...".
+     *
+     * The scorer itself already has the authoritative local match snapshot in
+     * IndexedDB. Here we only create the minimum local Dashboard context needed
+     * to render the scoring tab and let loadSelectedMatch() restore that
+     * snapshot.
+     */
+    if (
+      isOfflineResumeRequest &&
+      requestedDashboardTab === "scoring" &&
+      Number.isInteger(requestedMatchId) &&
+      requestedMatchId > 0
+    ) {
+      const resumeSession =
+        getOfflineScoringSession();
+
+      const offlineLeagueId =
+        Number.isInteger(requestedLeagueId) &&
+        requestedLeagueId > 0
+          ? requestedLeagueId
+          : Number(resumeSession?.leagueId) > 0
+            ? Number(resumeSession.leagueId)
+            : null;
+
+      setDashboardReady(false);
+      setPermissionsLoading(false);
+      setActiveTab("scoring");
+      setScoringSubTab("ADVANCED");
+      setSelectedMatchId(String(requestedMatchId));
+
+      if (offlineLeagueId) {
+        setActiveLeagueId(offlineLeagueId);
+
+        /*
+         * Minimal local league context only. We deliberately do not fabricate
+         * teams, members or admin data. This exists solely so the scorer header
+         * has a meaningful league name while disconnected.
+         */
+        setLeagues((current) => {
+          if (
+            current.some(
+              (league) =>
+                Number(league.id) ===
+                Number(offlineLeagueId)
+            )
+          ) {
+            return current;
+          }
+
+          return [
+            ...current,
+            {
+              id: offlineLeagueId,
+              name:
+                resumeSession?.leagueName ||
+                "Offline League",
+              teams: [],
+              members: [],
+              series: [],
+            },
+          ];
+        });
+      }
+
+      /*
+       * Offline mode gets SCORING-ONLY permissions. We do not expose management
+       * or mutation tabs based on cached assumptions.
+       */
+      setPermissions({
+        canViewDashboard: true,
+        canViewManagement: false,
+        canViewMatches: false,
+        canViewScoring: true,
+        canViewStats: false,
+
+        canCreateLeague: false,
+        canEditLeague: false,
+        canDeleteLeague: false,
+        canManageMembers: false,
+        canManagePermissions: false,
+
+        canCreateTeam: false,
+        canEditTeam: false,
+        canDeleteTeam: false,
+
+        canCreatePlayer: false,
+        canEditPlayer: false,
+        canDeletePlayer: false,
+
+        canCreateMatch: false,
+        canEditMatch: false,
+        canDeleteMatch: false,
+
+        /*
+         * IMPORTANT:
+         * The existing Scorer Mode keypad is rendered behind:
+         *
+         *   permissions?.canScoreMatch
+         *
+         * The earlier offline bootstrap accidentally set `canScore`, which is
+         * not the permission key used by the scorer UI. That restored the
+         * scoreboard but hid every scoring button.
+         *
+         * These capabilities are limited to the already-cached active match;
+         * no admin/league-management permissions are granted offline.
+         */
+        canScoreMatch: true,
+        canEditScore: true,
+        canUndoBall: true,
+        canSwapStrike: true,
+        canRetirePlayer: true,
+
+        canEndMatch: false,
+        canAbandonMatch: false,
+        canLockMatch: false,
+
+        canExportStats: false,
+        canViewAuditLogs: false,
+      });
+
+      setPreferencesLoaded(true);
+      setDashboardReady(true);
+      setError("");
+
+      return;
+    }
+
     try {
       setDashboardReady(false);
 
@@ -1397,8 +1709,23 @@ useEffect(() => {
   if (!activeLeagueId) return;
   if (!["matches", "scoring"].includes(activeTab)) return;
 
+  const browserOffline =
+    typeof navigator !== "undefined" &&
+    navigator.onLine === false;
+
+  if (
+    isOfflineResumeRequest &&
+    activeTab === "scoring"
+  ) {
+    return;
+  }
+
   loadMatches(activeLeagueId);
-}, [activeTab, activeLeagueId]);
+}, [
+  activeTab,
+  activeLeagueId,
+  isOfflineResumeRequest,
+]);
 
 useEffect(() => {
   if (!activeLeagueId) return;
@@ -1579,6 +1906,87 @@ setSelectedMatchId("");
 
   useEffect(() => {
     if (
+      !isOfflineResumeRequest ||
+      requestedDashboardTab !== "scoring" ||
+      activeTab !== "scoring" ||
+      !Number.isInteger(requestedMatchId) ||
+      requestedMatchId <= 0
+    ) {
+      return;
+    }
+
+    /*
+     * `offlineResume=1` is authoritative.
+     * Chrome DevTools Network -> Offline does not reliably make
+     * navigator.onLine false. loadSelectedMatch() is still network-first and
+     * falls back to the existing IndexedDB snapshot when requests fail.
+     */
+    let cancelled = false;
+
+    async function resumeCachedScoring() {
+      try {
+        if (
+          Number.isInteger(requestedLeagueId) &&
+          requestedLeagueId > 0
+        ) {
+          setActiveLeagueId(requestedLeagueId);
+        }
+
+        setSelectedMatchId(String(requestedMatchId));
+        setScoringSubTab("ADVANCED");
+
+        selectedMatchExplicitLoadRef.current =
+          String(requestedMatchId);
+
+        // loadSelectedMatch already contains Cric4All's IndexedDB fallback:
+        // API failure -> getOfflineMatchSnapshot(matchId).
+        const cachedBoard =
+          await loadSelectedMatch(
+            requestedMatchId,
+            {
+              loadDetail: true,
+              loadStatsData: false,
+              syncBallForm: true,
+            }
+          );
+
+        if (cancelled) return;
+
+        if (!cachedBoard) {
+          throw new Error(
+            "No offline scoring snapshot is available for this match on this device."
+          );
+        }
+
+        setError("");
+        setMessage(
+          "📴 Offline scoring restored from this device. New deliveries will stay queued until Cric4All reconnects."
+        );
+      } catch (resumeError) {
+        if (cancelled) return;
+
+        setError(
+          resumeError?.message ||
+          "Unable to restore this offline scoring match."
+        );
+      }
+    }
+
+    resumeCachedScoring();
+
+    return () => {
+      cancelled = true;
+    };
+  }, [
+    isOfflineResumeRequest,
+    requestedDashboardTab,
+    activeTab,
+    requestedLeagueId,
+    requestedMatchId,
+  ]);
+
+  useEffect(() => {
+    if (
       requestedDashboardTab !==
         "scoring" ||
       activeTab !==
@@ -1683,6 +2091,12 @@ setSelectedMatchId("");
   useEffect(() => {
   if (!preferencesLoaded) return;
 
+  if (
+    isOfflineResumeRequest
+  ) {
+    return;
+  }
+
   fetch("/api/user/preferences", {
     method: "POST",
     headers: {
@@ -1696,29 +2110,55 @@ setSelectedMatchId("");
 }, [
   activeLeagueId,
   selectedMatchId,
-  preferencesLoaded
+  preferencesLoaded,
+  isOfflineResumeRequest,
 ]);
 useEffect(() => {
+  const preserveOfflineResumeMatch =
+    isOfflineResumeRequest &&
+    requestedDashboardTab === "scoring" &&
+    Number.isInteger(requestedMatchId) &&
+    requestedMatchId > 0;
+
   if (!activeLeagueId) {
     setShowDeliverySetupModal(false);
-setPendingDeliverySetupAfterStart(false);
-setPendingSecondInningsSetup(false);
-setDeliverySetupReason("");
+    setPendingDeliverySetupAfterStart(false);
+    setPendingSecondInningsSetup(false);
+    setDeliverySetupReason("");
     setMatches([]);
+
+    if (!preserveOfflineResumeMatch) {
+      setSelectedMatchId("");
+      setMatchDetail(null);
+      setScoreboard(null);
+      setStats(null);
+    }
+
+    return;
+  }
+
+  /*
+   * ONLINE:
+   * Preserve the original behavior when the scorer changes leagues.
+   *
+   * OFFLINE RESUME:
+   * activeLeagueId is being restored from the saved local scoring session.
+   * Do NOT erase selectedMatchId / scoreboard immediately after restoring it.
+   */
+  if (!preserveOfflineResumeMatch) {
     setSelectedMatchId("");
     setMatchDetail(null);
     setScoreboard(null);
     setStats(null);
-    return;
+
+    loadMatches();
   }
-
-  setSelectedMatchId("");
-  setMatchDetail(null);
-  setScoreboard(null);
-  setStats(null);
-
-  loadMatches();
-}, [activeLeagueId]);
+}, [
+  activeLeagueId,
+  isOfflineResumeRequest,
+  requestedDashboardTab,
+  requestedMatchId,
+]);
 
 useEffect(() => {
   if (
@@ -2091,8 +2531,23 @@ async function loadMatches(leagueId = activeLeagueId) {
   try {
     if (!leagueId) {
       setMatches([]);
-      setSelectedMatchId("");
+
+      if (!isOfflineResumeRequest) {
+        setSelectedMatchId("");
+      }
+
       return;
+    }
+
+    /*
+     * The explicit resume route is local-first. Do not require the normal
+     * server-backed match list merely to reopen the scorer.
+     */
+    if (
+      isOfflineResumeRequest &&
+      requestedDashboardTab === "scoring"
+    ) {
+      return matches;
     }
 
     const data = await api(
@@ -12959,12 +13414,32 @@ useEffect(() => {
   );
 
   if (!stillExists) {
+    const preserveOfflineResumeMatch =
+      isOfflineResumeRequest &&
+      requestedDashboardTab === "scoring" &&
+      Number(requestedMatchId) === Number(selectedMatchId);
+
+    /*
+     * Offline resume has no server-backed scoringMatches list. The selected
+     * match is restored from IndexedDB, so an empty online list must not be
+     * interpreted as "match no longer exists".
+     */
+    if (preserveOfflineResumeMatch) {
+      return;
+    }
+
     setSelectedMatchId("");
     setMatchDetail(null);
     setScoreboard(null);
     setOptimisticScoreboard(null);
   }
-}, [scoringMatches, selectedMatchId]);
+}, [
+  scoringMatches,
+  selectedMatchId,
+  isOfflineResumeRequest,
+  requestedDashboardTab,
+  requestedMatchId,
+]);
 
 function triggerQuickAction(actionKey, callback) {
   setActiveQuickAction(actionKey);
@@ -14588,12 +15063,26 @@ useEffect(() => {
   );
 
   if (!exists) {
+    // Explicit offline-resume navigation intentionally restores a cached match
+    // even when the server-backed `matches` list is unavailable or empty.
+    if (
+      isOfflineResumeRequest
+    ) {
+      return;
+    }
+
     setSelectedMatchId("");
     setMatchDetail(null);
     setScoreboard(null);
     setOptimisticScoreboard(null);
   }
-}, [contextFilters, activeLeagueId, selectedMatchId, matches]);
+}, [
+  contextFilters,
+  activeLeagueId,
+  selectedMatchId,
+  matches,
+  isOfflineResumeRequest,
+]);
 
 async function handleScoringMatchSelect(matchId) {
   if (!matchId) {

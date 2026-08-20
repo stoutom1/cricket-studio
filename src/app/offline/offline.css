@@ -1,0 +1,145 @@
+.offline-page,
+.offline-page * {
+  box-sizing: border-box;
+}
+
+.offline-page {
+  min-height: calc(100svh - 80px);
+
+  display: grid;
+  place-items: center;
+
+  padding: 20px;
+
+  background:
+    radial-gradient(
+      circle at 50% 0%,
+      rgba(14, 165, 233, 0.08),
+      transparent 28rem
+    ),
+    #020817;
+
+  color: #f8fafc;
+}
+
+.offline-card {
+  width: min(540px, 100%);
+
+  padding: clamp(20px, 5vw, 34px);
+
+  border: 1px solid rgba(96, 165, 250, 0.2);
+  border-radius: 20px;
+
+  background:
+    linear-gradient(
+      145deg,
+      rgba(15, 23, 42, 0.96),
+      rgba(8, 18, 34, 0.96)
+    );
+
+  box-shadow:
+    0 28px 70px rgba(2, 6, 23, 0.4);
+}
+
+.offline-status {
+  display: inline-flex;
+  align-items: center;
+  gap: 7px;
+
+  padding: 6px 10px;
+
+  border-radius: 999px;
+
+  background: rgba(30, 41, 59, 0.62);
+
+  color: #cbd5e1;
+
+  font-size: 10px;
+  font-weight: 900;
+}
+
+.offline-card h1 {
+  margin: 16px 0 18px;
+
+  font-size: clamp(25px, 6vw, 38px);
+  line-height: 1.05;
+  letter-spacing: -0.035em;
+}
+
+.offline-match-card {
+  display: grid;
+  gap: 5px;
+
+  padding: 14px;
+
+  border: 1px solid rgba(56, 189, 248, 0.16);
+  border-radius: 13px;
+
+  background: rgba(2, 6, 23, 0.36);
+}
+
+.offline-match-card > span {
+  color: #7dd3fc;
+
+  font-size: 9px;
+  font-weight: 900;
+  letter-spacing: 0.06em;
+  text-transform: uppercase;
+}
+
+.offline-match-card strong {
+  overflow-wrap: anywhere;
+
+  font-size: 16px;
+  line-height: 1.3;
+}
+
+.offline-match-card small {
+  color: #94a3b8;
+
+  font-size: 11px;
+  line-height: 1.35;
+}
+
+.offline-primary {
+  width: 100%;
+  min-height: 48px;
+
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 9px;
+
+  margin-top: 14px;
+  padding: 10px 14px;
+
+  border: 0;
+  border-radius: 11px;
+
+  background:
+    linear-gradient(
+      135deg,
+      #2563eb,
+      #0ea5e9
+    );
+
+  color: #fff !important;
+
+  text-decoration: none;
+
+  font: inherit;
+  font-size: 12px;
+  font-weight: 900;
+
+  cursor: pointer;
+}
+
+.offline-card > p {
+  margin: 12px 2px 0;
+
+  color: #94a3b8;
+
+  font-size: 11px;
+  line-height: 1.5;
+  text-align: center;
+}
