@@ -7474,7 +7474,19 @@ async function applyQueuedBallLocally({ data, previewBoard, event }) {
 async function syncPendingOfflineBalls(matchId = selectedMatchId) {
   const numericMatchId = Number(matchId);
   if (!numericMatchId || offlineSyncRunningRef.current) return;
-  if (typeof navigator !== "undefined" && navigator.onLine === false) return;
+
+  if (
+    typeof navigator !== "undefined" &&
+    navigator.onLine === false
+  ) {
+    setOfflineSyncState((previous) => ({
+      ...previous,
+      online: false,
+      syncing: false,
+    }));
+
+    return;
+  }
 
   const [
     pendingEvents,
@@ -8602,6 +8614,49 @@ async function syncPendingOfflineBalls(matchId = selectedMatchId) {
       }
     }
 
+    /*
+     * A scorer may record another delivery WHILE this replay pass is running.
+     * That new event was not part of the snapshot captured at the beginning of
+     * this function.
+     *
+     * Re-count IndexedDB BEFORE fetching the server scoreboard. If anything
+     * was appended, keep the local scoreboard intact and drain another pass.
+     * Fetching the server here would temporarily erase the newer local ball.
+     */
+    const remainingPending =
+      await refreshOfflinePendingCount(
+        numericMatchId
+      );
+
+    if (remainingPending > 0) {
+      setOfflineSyncState((previous) => ({
+        ...previous,
+        online: true,
+        pending: remainingPending,
+        syncing: true,
+        conflict: null,
+        lastError: "",
+      }));
+
+      setMessage(
+        `🔵 Synchronizing · ${remainingPending} change${
+          remainingPending === 1 ? "" : "s"
+        } remaining.`
+      );
+
+      /*
+       * Run after this function's finally block releases
+       * offlineSyncRunningRef.
+       */
+      window.setTimeout(() => {
+        void syncPendingOfflineBalls(
+          numericMatchId
+        );
+      }, 75);
+
+      return;
+    }
+
     const refreshedBoard = await loadSelectedMatch(numericMatchId, {
       syncBallForm: true,
     });
@@ -8741,9 +8796,25 @@ data = {
   const clientEventId = createClientEventId();
   let queuedEvent = null;
 
+  /*
+   * RECONNECT SERIALIZATION
+   * -----------------------
+   * If older local scoring changes are still waiting/syncing, this new ball
+   * MUST join the same local queue instead of racing the replay worker with a
+   * direct /api/balls request.
+   */
+  let mustQueueBehindExistingSync = false;
+
   try {
     const clientDeviceId = await getOfflineDeviceId();
     const existingPending = await listPendingOfflineBalls(selectedMatchId);
+
+    mustQueueBehindExistingSync =
+      existingPending.length > 0 ||
+      offlineSyncRunningRef.current ||
+      offlineSyncState.syncing ||
+      Number(offlineSyncState.pending || 0) > 0;
+
     const sameInningsPending = existingPending.filter(
       (event) => Number(event.payload?.inningsNo) === Number(data.inningsNo)
     );
@@ -8811,6 +8882,41 @@ data = {
 
   setIsSavingBall(true);
   setOptimisticScoreboard(previewBoard);
+
+  /*
+   * RECONNECT / ACTIVE-SYNC SCORING
+   * ===============================
+   * The scorer must never be blocked while Cric4All is draining the offline
+   * queue. But the new delivery must NOT be sent directly to the server while
+   * older deliveries are still replaying.
+   *
+   * It has already been placed in IndexedDB above, so apply it locally and let
+   * the single replay chain send it after every earlier change.
+   */
+  if (
+    queuedEvent &&
+    mustQueueBehindExistingSync
+  ) {
+    try {
+      setOfflineSyncState((previous) => ({
+        ...previous,
+        pending: Math.max(
+          Number(previous.pending || 0),
+          1
+        ),
+        lastError: "",
+      }));
+
+      return await applyQueuedBallLocally({
+        data,
+        previewBoard,
+        event: queuedEvent,
+      });
+    } finally {
+      setIsSavingBall(false);
+      setInstantDeliveryStatus("");
+    }
+  }
 
   /*
    * A sync conflict pauses synchronization only.

@@ -8,7 +8,9 @@ import {
 } from "react";
 import {
   buildOfflineScoringResumeUrl,
+  clearOfflineScoringSession,
   getOfflineScoringSession,
+  isCompletedMatchStatus,
   shouldUseOfflineServiceWorker,
 } from "@/lib/offline-scoring-resume";
 import "@/app/offline-resume.css";
@@ -72,9 +74,35 @@ export default function OfflineScoringResumeBanner() {
   const refresh =
     useCallback(
       () => {
-        setSession(
-          getOfflineScoringSession()
-        );
+        const savedSession =
+          getOfflineScoringSession();
+
+        /*
+         * Extra stale-session protection:
+         * completed/locked/abandoned matches must never keep showing a
+         * Resume Match action.
+         *
+         * DashboardClient already clears this when it observes a terminal
+         * match status. This check is only a defensive UI safeguard.
+         */
+        if (
+          savedSession &&
+          isCompletedMatchStatus(
+            savedSession.matchStatus
+          )
+        ) {
+          clearOfflineScoringSession(
+            savedSession.matchId
+          );
+
+          setSession(
+            null
+          );
+        } else {
+          setSession(
+            savedSession
+          );
+        }
 
         setOnline(
           getOnlineState()
@@ -296,13 +324,43 @@ export default function OfflineScoringResumeBanner() {
     }
   }
 
+  /*
+   * ONLINE UX
+   * ---------
+   * Recovery remains available, but it should not visually dominate every
+   * Cric4All screen. Render a compact navigation pill only.
+   */
+  if (online) {
+    return (
+      <a
+        href={resumeUrl}
+        className="offline-resume-online-pill"
+        title={`Resume ${scoreSummary(session)}`}
+        aria-label={`Resume scoring. ${scoreSummary(session)}`}
+      >
+        <span
+          className="offline-resume-online-icon"
+          aria-hidden="true"
+        >
+          🏏
+        </span>
+
+        <span className="offline-resume-online-label">
+          Resume Match
+        </span>
+      </a>
+    );
+  }
+
+  /*
+   * OFFLINE UX
+   * ----------
+   * Offline recovery is important enough to remain prominent because the user
+   * may otherwise believe the active match is inaccessible.
+   */
   return (
     <aside
-      className={`offline-resume-banner ${
-        online
-          ? "is-online"
-          : "is-offline"
-      }`}
+      className="offline-resume-banner is-offline"
       aria-live="polite"
     >
       <div className="offline-resume-copy">
@@ -310,16 +368,12 @@ export default function OfflineScoringResumeBanner() {
           className="offline-resume-icon"
           aria-hidden="true"
         >
-          {online
-            ? "🏏"
-            : "📴"}
+          📴
         </span>
 
         <span className="offline-resume-text">
           <strong>
-            {online
-              ? "Scoring match available"
-              : "Offline scoring is ready"}
+            Offline scoring is ready
           </strong>
 
           <small>
@@ -331,9 +385,7 @@ export default function OfflineScoringResumeBanner() {
       </div>
 
       <a
-        href={
-          resumeUrl
-        }
+        href={resumeUrl}
         className="offline-resume-action"
       >
         Resume scoring
