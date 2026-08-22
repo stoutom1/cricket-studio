@@ -17,6 +17,8 @@ import KitPostMatchPrompt from "@/components/kit/KitPostMatchPrompt";
 import LeagueResourcesShortcut from "@/components/resources/LeagueResourcesShortcut";
 import matchDayNavStyles from "./MatchDayDashboardNav.module.css";
 import playerCardStyles from "./DashboardPlayerCard.module.css";
+import { shareCric4All } from "@/lib/native-share";
+import { openCric4AllLink } from "@/lib/native-links";
 import FollowedLeaguesDrawerContent from "@/components/followed-leagues-drawer-content";
 import {
   cacheOfflineMatchSnapshot,
@@ -4965,18 +4967,49 @@ ${shareUrl}
 `.trim();
 
   try {
-    if (navigator.share) {
-      await navigator.share({
+    const result =
+      await shareCric4All({
         title: `${teamA} vs ${teamB}`,
         text: shareText,
         url: shareUrl,
+        dialogTitle: "Share live Cric4All score",
       });
-    } else {
-      await navigator.clipboard.writeText(shareText);
-      showToast?.("success", "📋 Live score message copied.");
+
+    if (result?.cancelled) {
+      return;
+    }
+
+    if (result?.unsupported) {
+      await navigator.clipboard.writeText(
+        shareText
+      );
+
+      showToast?.(
+        "success",
+        "📋 Live score message copied."
+      );
     }
   } catch (err) {
-    console.error(err);
+    console.error(
+      "Share live score failed:",
+      err
+    );
+
+    try {
+      await navigator.clipboard.writeText(
+        shareText
+      );
+
+      showToast?.(
+        "success",
+        "📋 Live score message copied."
+      );
+    } catch {
+      showToast?.(
+        "error",
+        "Unable to share this live score."
+      );
+    }
   }
 }
 const loadLeagues = async (leagueIdToValidate = null) => {
@@ -16085,22 +16118,45 @@ Follow the live score on Cric4All:
 ${shareUrl}`;
 
   try {
-    if (navigator.share) {
-      await navigator.share({
+    const result =
+      await shareCric4All({
         title: `${match.teamAName} vs ${match.teamBName}`,
         text: shareText,
         url: shareUrl,
+        dialogTitle: "Share scheduled Cric4All match",
       });
 
+    if (result?.cancelled) {
       return;
     }
 
-    await navigator.clipboard.writeText(shareUrl);
-    alert("Match link copied.");
+    if (result?.unsupported) {
+      await navigator.clipboard.writeText(
+        shareUrl
+      );
+
+      alert(
+        "Match link copied."
+      );
+    }
   } catch (error) {
-    if (error?.name !== "AbortError") {
-      console.error("Share scheduled match failed:", error);
-      alert("Unable to share this match right now.");
+    console.error(
+      "Share scheduled match failed:",
+      error
+    );
+
+    try {
+      await navigator.clipboard.writeText(
+        shareUrl
+      );
+
+      alert(
+        "Match link copied."
+      );
+    } catch {
+      alert(
+        "Unable to share this match right now."
+      );
     }
   }
 }
@@ -16127,22 +16183,45 @@ Follow the live score on Cric4All:
 ${shareUrl}`;
 
   try {
-    if (navigator.share) {
-      await navigator.share({
+    const result =
+      await shareCric4All({
         title: `${match.teamAName} vs ${match.teamBName}`,
         text: shareText,
         url: shareUrl,
+        dialogTitle: "Share live Cric4All match",
       });
 
+    if (result?.cancelled) {
       return;
     }
 
-    await navigator.clipboard.writeText(shareUrl);
-    alert("Live match link copied.");
+    if (result?.unsupported) {
+      await navigator.clipboard.writeText(
+        shareUrl
+      );
+
+      alert(
+        "Live match link copied."
+      );
+    }
   } catch (error) {
-    if (error?.name !== "AbortError") {
-      console.error("Share active match failed:", error);
-      alert("Unable to share this match right now.");
+    console.error(
+      "Share active match failed:",
+      error
+    );
+
+    try {
+      await navigator.clipboard.writeText(
+        shareUrl
+      );
+
+      alert(
+        "Live match link copied."
+      );
+    } catch {
+      alert(
+        "Unable to share this match right now."
+      );
     }
   }
 }
@@ -16538,26 +16617,45 @@ async function shareCompletedMatch(match) {
   }).catch(() => {});
 
   try {
-    if (navigator.share) {
-      await navigator.share({
+    const result =
+      await shareCric4All({
         title: `${teamA} vs ${teamB} | Cric4All`,
         text,
         url,
+        dialogTitle: "Share Cric4All match result",
       });
+
+    if (result?.cancelled) {
       return;
     }
 
-    await navigator.clipboard.writeText(`${text}\n${url}`);
-    setMessage("🔗 Match result link copied.");
-    showToast?.("success", "🔗 Match result link copied");
-  } catch (error) {
-    if (error?.name === "AbortError") return;
+    if (result?.unsupported) {
+      await navigator.clipboard.writeText(
+        `${text}\n${url}`
+      );
 
+      setMessage(
+        "🔗 Match result link copied."
+      );
+
+      showToast?.(
+        "success",
+        "🔗 Match result link copied"
+      );
+    }
+  } catch (error) {
     try {
-      await navigator.clipboard.writeText(`${text}\n${url}`);
-      setMessage("🔗 Match result link copied.");
+      await navigator.clipboard.writeText(
+        `${text}\n${url}`
+      );
+
+      setMessage(
+        "🔗 Match result link copied."
+      );
     } catch {
-      setError("Unable to share this match from this browser.");
+      setError(
+        "Unable to share this match from this device."
+      );
     }
   }
 }
@@ -23240,10 +23338,8 @@ const playerRoleBadge = (row) => {
               return;
             }
 
-            window.open(
-              `${window.location.origin}/live/${publicShareCode}`,
-              "_blank",
-              "noopener,noreferrer"
+            void openCric4AllLink(
+              `${window.location.origin}/live/${publicShareCode}`
             );
           };
 

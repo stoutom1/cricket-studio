@@ -113,6 +113,8 @@ model Match {
   status                String               @default("in_progress")
   createdAt             DateTime             @default(now())
   scheduledAt           DateTime?
+  venueName             String?
+  venueAddress          String?
   statusText            String?              @default("LIVE")
   maxOversPerBowler     Int?
   maxWicketsPerInnings  Int?

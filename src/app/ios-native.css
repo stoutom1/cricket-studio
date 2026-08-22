@@ -1,0 +1,51 @@
+:root {
+  --cric4all-safe-top: env(safe-area-inset-top, 0px);
+  --cric4all-safe-right: env(safe-area-inset-right, 0px);
+  --cric4all-safe-bottom: env(safe-area-inset-bottom, 0px);
+  --cric4all-safe-left: env(safe-area-inset-left, 0px);
+}
+
+html.cric4all-ios,
+html.cric4all-ios body {
+  width: 100%;
+  min-height: 100%;
+  overscroll-behavior-y: none;
+}
+
+html.cric4all-ios body {
+  -webkit-text-size-adjust: 100%;
+  -webkit-tap-highlight-color: transparent;
+}
+
+html.cric4all-ios .topbar {
+  padding-top: var(--cric4all-safe-top);
+}
+
+html.cric4all-ios .page-container {
+  padding-left: max(var(--cric4all-safe-left), 0px);
+  padding-right: max(var(--cric4all-safe-right), 0px);
+}
+
+html.cric4all-ios .app-shell {
+  min-height: 100dvh;
+}
+
+html.cric4all-ios .offline-resume-banner.is-offline {
+  bottom: max(12px, var(--cric4all-safe-bottom)) !important;
+}
+
+html.cric4all-ios button,
+html.cric4all-ios a,
+html.cric4all-ios input,
+html.cric4all-ios select,
+html.cric4all-ios textarea {
+  touch-action: manipulation;
+}
+
+@media (max-width: 768px) {
+  html.cric4all-ios input,
+  html.cric4all-ios select,
+  html.cric4all-ios textarea {
+    font-size: max(16px, 1em);
+  }
+}

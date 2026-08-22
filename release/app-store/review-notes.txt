@@ -1,0 +1,25 @@
+Cric4All is a cricket scoring and league-management application.
+
+REVIEW ACCOUNT
+Email: <APPLE_REVIEW_ACCOUNT_EMAIL>
+Password: <APPLE_REVIEW_ACCOUNT_PASSWORD>
+
+REVIEW PATH
+1. Sign in with the review account above.
+2. Open the designated review/test league.
+3. Open Scoring.
+4. Select the designated review match.
+5. Record several deliveries.
+6. Review the scorecard/live match state.
+7. Use Share to open the native iOS share sheet.
+8. From the Account menu, use Enable App Notifications if native push is enabled in this build.
+9. If offline scoring is included in the submitted build, temporarily disable connectivity while remaining in scoring, record deliveries, restore connectivity, and verify synchronization.
+
+IMPORTANT
+- The review account must remain active for the entire review period.
+- The test league/match must contain no private production data.
+- Do not claim a feature here unless it is present and reviewable in the submitted build.
+- If push is enabled, add the exact reviewer-triggerable test notification instructions here.
+
+NATIVE / APP-LIKE VALUE
+Cric4All provides a purpose-built ball-by-ball cricket scoring workflow, offline scoring continuity, reconnect synchronization, native share-sheet integration, and native notification integration when enabled.

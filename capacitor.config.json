@@ -2,8 +2,19 @@
   "appId": "com.cric4all.app",
   "appName": "Cric4All",
   "webDir": "public",
+  "loggingBehavior": "debug",
   "server": {
     "url": "https://cric4all.app",
     "cleartext": false
+  },
+  "ios": {
+    "preferredContentMode": "mobile",
+    "contentInset": "never",
+    "allowsLinkPreview": false,
+    "scrollEnabled": true,
+    "webContentsDebuggingEnabled": false
+  },
+  "android": {
+    "allowMixedContent": false
   }
 }

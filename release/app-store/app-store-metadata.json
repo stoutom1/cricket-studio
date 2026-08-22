@@ -1,0 +1,17 @@
+{
+  "appName": "Cric4All",
+  "subtitle": "Cricket Scoring & Live Matches",
+  "primaryLanguage": "English (U.S.)",
+  "primaryCategory": "Sports",
+  "secondaryCategory": "Utilities",
+  "bundleId": "com.cric4all.app",
+  "version": "1.0",
+  "build": "1",
+  "seller": "VSJ SERV LLC",
+  "marketingUrl": "https://cric4all.app",
+  "privacyPolicyUrl": "https://cric4all.app/privacy",
+  "supportUrl": "https://cric4all.app/contact",
+  "promotionalText": "Score cricket matches, follow live action, manage leagues and teams, and keep match-day information together with Cric4All.",
+  "keywords": "cricket,scoring,scorecard,live score,league,match,teams,players,scorer",
+  "description": "Cric4All brings cricket scoring, live match viewing, league management and match-day tools together in one place.\n\nScore matches ball by ball with support for cricket scoring workflows including innings, extras, wickets, striker rotation, bowling changes, match results and detailed scorecards.\n\nKeep scoring resilient when connectivity is unreliable. Cric4All can preserve supported in-progress scoring data on the device and synchronize queued scoring activity when connectivity returns.\n\nFollow matches through spectator views, share match and live-score links, review completed matches, and keep league and team information organized.\n\nCric4All also includes tools for league administrators and scorers, with features available according to the user's league permissions.\n\nKey capabilities include:\n\u2022 Ball-by-ball cricket scoring\n\u2022 Live spectator scoring views\n\u2022 Offline scoring continuity and reconnect synchronization\n\u2022 Match scorecards and results\n\u2022 League and team management\n\u2022 Player and match statistics\n\u2022 Match sharing\n\u2022 Match and league alerts where enabled\n\u2022 Role-based league access\n\nSome features require an internet connection, an account, league access, or administrator/scorer permissions."
+}

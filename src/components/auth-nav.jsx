@@ -14,6 +14,7 @@ import {
 } from "react";
 import UserHeartbeat from "@/components/user-heartbeat";
 import OfflineScoringResumeBanner from "@/components/offline-scoring-resume-banner";
+import NativeNotificationControl from "@/components/native-notification-control";
 
 const AUTH_HINT_KEY =
   "cric4all.authHint.v2";
@@ -797,6 +798,8 @@ export default function AuthNav() {
               >
                 🗑️ Delete Account
               </Link>
+
+              <NativeNotificationControl />
 
               <button
                 type="button"
