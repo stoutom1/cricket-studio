@@ -74792,3 +74792,97 @@ body:has(.milestone-celebration-overlay)
     justify-content: center !important;
   }
 }
+
+
+/* =========================================================
+   CRIC4ALL — FINAL MOBILE ACCOUNT MODAL SCROLL / SAFARI FIX
+   Rendered through React portal under <body>.
+   Keeps every account action reachable above mobile browser UI.
+========================================================= */
+@media (max-width: 768px) {
+  html:has(.account-modal-portal-backdrop),
+  body:has(.account-modal-portal-backdrop) {
+    overflow: hidden !important;
+    overscroll-behavior: none !important;
+  }
+
+  .account-modal-portal-backdrop {
+    position: fixed !important;
+    inset: 0 !important;
+    z-index: 2147483647 !important;
+
+    width: 100% !important;
+    height: 100svh !important;
+    min-height: 100svh !important;
+    max-height: 100svh !important;
+
+    display: block !important;
+
+    box-sizing: border-box !important;
+    padding:
+      max(8px, env(safe-area-inset-top))
+      8px
+      max(20px, env(safe-area-inset-bottom))
+      8px !important;
+
+    overflow-x: hidden !important;
+    overflow-y: auto !important;
+    -webkit-overflow-scrolling: touch !important;
+    overscroll-behavior-y: contain !important;
+
+    background: rgba(2, 6, 23, 0.94) !important;
+    backdrop-filter: blur(16px) !important;
+  }
+
+  .account-modal-portal-card {
+    position: relative !important;
+    z-index: 1 !important;
+
+    width: min(100%, 430px) !important;
+    max-width: 430px !important;
+
+    height: auto !important;
+    max-height: none !important;
+    min-height: 0 !important;
+
+    margin: 0 auto !important;
+    box-sizing: border-box !important;
+
+    overflow: visible !important;
+
+    padding: 18px 18px
+      calc(28px + env(safe-area-inset-bottom)) !important;
+
+    border-radius: 22px !important;
+  }
+
+  .account-modal-portal-card .account-close-btn {
+    position: sticky !important;
+    top: 0 !important;
+    float: right !important;
+    z-index: 100 !important;
+  }
+
+  .account-modal-portal-card .account-actions {
+    clear: both !important;
+    display: grid !important;
+    grid-template-columns: 1fr !important;
+    width: 100% !important;
+    gap: 10px !important;
+    margin-top: 18px !important;
+    padding-bottom: calc(24px + env(safe-area-inset-bottom)) !important;
+  }
+
+  .account-modal-portal-card .account-primary-action,
+  .account-modal-portal-card .account-secondary-action,
+  .account-modal-portal-card .account-danger-action {
+    width: 100% !important;
+    min-height: 46px !important;
+    box-sizing: border-box !important;
+    flex-shrink: 0 !important;
+  }
+
+  .account-modal-portal-card .account-danger-action {
+    margin-bottom: max(12px, env(safe-area-inset-bottom)) !important;
+  }
+}

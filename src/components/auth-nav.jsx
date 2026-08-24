@@ -12,6 +12,7 @@ import {
   useRef,
   useState,
 } from "react";
+import { createPortal } from "react-dom";
 import UserHeartbeat from "@/components/user-heartbeat";
 import OfflineScoringResumeBanner from "@/components/offline-scoring-resume-banner";
 import NativeNotificationControl from "@/components/native-notification-control";
@@ -668,9 +669,11 @@ export default function AuthNav() {
       </nav>
 
       {showAccountModal &&
-      confirmedAuthenticated && (
-        <div className="account-modal-backdrop">
-          <div className="account-modal">
+      confirmedAuthenticated &&
+      typeof document !== "undefined" &&
+      createPortal(
+        <div className="account-modal-backdrop account-modal-portal-backdrop">
+          <div className="account-modal account-modal-portal-card">
             <button
               type="button"
               className="account-close-btn"
@@ -812,7 +815,8 @@ export default function AuthNav() {
               </button>
             </div>
           </div>
-        </div>
+        </div>,
+        document.body
       )}
     </>
   );
