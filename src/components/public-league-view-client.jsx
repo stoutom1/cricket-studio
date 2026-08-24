@@ -3,6 +3,7 @@
 import { useEffect, useMemo, useRef, useState } from "react";
 import "@/app/spectator-league-v2.css";
 import LeagueAlertControls from "@/components/league-alert-controls";
+import { buildPointsTable as buildSharedPointsTable } from "@/lib/points-table";
 import { shouldExcludePlayerFromLeagueAnalytics } from "@/lib/player-analytics-exclusions";
 import {
   getLeagueAnalyticsPlayerKey,
@@ -377,7 +378,11 @@ async function toggleFollowLeague() {
   }, [matchStatusFilter, liveMatches, scheduledMatches, completedMatches, filteredMatches]);
 
   const pointsTable = useMemo(
-    () => buildPointsTable(filteredMatches, league.teams || []),
+    () =>
+      buildSharedPointsTable({
+        teams: league.teams || [],
+        matches: filteredMatches,
+      }),
     [filteredMatches, league.teams]
   );
 

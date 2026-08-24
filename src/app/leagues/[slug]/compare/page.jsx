@@ -542,6 +542,26 @@ function buildRatings(
   profiles,
   selectedIdentity
 ) {
+  if (
+    Number(
+      selectedIdentity?.stats?.appearances || 0
+    ) <= 0
+  ) {
+    return {
+      batting: null,
+      bowling: null,
+      form: null,
+      overall: null,
+    };
+  }
+
+  // Percentiles must compare only players with at least one scored appearance.
+  profiles = profiles.filter(
+    (profile) =>
+      Number(
+        profile?.stats?.appearances || 0
+      ) > 0
+  );
   const battingValues =
     profiles.map(
       (profile) =>
@@ -1946,7 +1966,7 @@ export default async function ComparePlayersPage({
               </div>
 
               <strong className="pcp-rating">
-                {ratingsA.overall}
+                {ratingsA.overall ?? "—"}
                 <span>
                   /10
                 </span>
@@ -1973,7 +1993,7 @@ export default async function ComparePlayersPage({
 
             <article className="pcp-player pcp-player-right">
               <strong className="pcp-rating">
-                {ratingsB.overall}
+                {ratingsB.overall ?? "—"}
                 <span>
                   /10
                 </span>

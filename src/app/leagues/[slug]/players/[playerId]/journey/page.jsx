@@ -1114,20 +1114,20 @@ function buildJourney({
         : "Steady";
 
   const rating =
-    Number(
-      Math.min(
-        9.8,
-        5 +
-        Math.log10(
-          1 +
-          careerRuns +
-          careerWickets *
-            25 +
-          formImpact
-        ) *
-          1.35
-      ).toFixed(1)
-    );
+    appearances.length > 0
+      ? Number(
+          Math.min(
+            9.8,
+            5 +
+            Math.log10(
+              1 +
+              careerRuns +
+              careerWickets * 25 +
+              formImpact
+            ) * 1.35
+          ).toFixed(1)
+        )
+      : null;
 
   return {
     appearances,
@@ -1408,7 +1408,7 @@ export default async function PlayerJourneyPage({
     });
 
   const shareText =
-    `${identity.name}'s Cric4All Player Journey: ${journey.stats.runs} runs, ${journey.stats.wickets} wickets, ${journey.stats.appearances} appearances and a ${journey.rating}/10 journey rating.`;
+    `${identity.name}'s Cric4All Player Journey: ${journey.stats.runs} runs, ${journey.stats.wickets} wickets, ${journey.stats.appearances} appearances${journey.rating == null ? " and not yet rated." : ` and a ${journey.rating}/10 journey rating.`}`;
 
   return (
     <main className="pj-page">
@@ -1451,7 +1451,7 @@ export default async function PlayerJourneyPage({
                 Journey rating
               </small>
               <strong>
-                {journey.rating}
+                {journey.rating ?? "—"}
               </strong>
               <span>
                 /10

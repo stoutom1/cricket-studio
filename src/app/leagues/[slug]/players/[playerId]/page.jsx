@@ -1628,63 +1628,122 @@ export default async function PublicPlayerPage({
         0
       );
 
-  const battingPercentile =
-    percentileRank(
-      battingScores,
-      battingValue
+  const hasRatedAppearance =
+    Number(stats.appearances || 0) > 0;
+
+  // A player is not rateable until they have at least one scored appearance.
+  // This prevents the percentile baseline (5.0+) from creating phantom ratings
+  // for rostered players who have never played.
+  const activeProfiles =
+    allProfiles.filter(
+      ({ stats: item }) =>
+        Number(item.appearances || 0) > 0
     );
+
+  const activeBattingScores =
+    activeProfiles.map(
+      ({ stats: item }) =>
+        item.runs +
+        item.fours * 2 +
+        item.sixes * 4 +
+        number(item.strikeRate) * 1.4 +
+        item.hundreds * 80 +
+        item.fifties * 30
+    );
+
+  const activeBowlingScores =
+    activeProfiles.map(
+      ({ stats: item }) =>
+        item.wickets * 30 +
+        item.fiveWickets * 100 +
+        item.threeWickets * 35 +
+        (
+          item.legalBowls >= 12
+            ? Math.max(0, 9 - number(item.economy)) * 18
+            : 0
+        )
+    );
+
+  const activeFormScores =
+    activeProfiles.map(
+      ({ stats: item }) =>
+        item.performances
+          .slice(0, 5)
+          .reduce(
+            (sum, performance) =>
+              sum + performance.impact,
+            0
+          )
+    );
+
+  const battingPercentile =
+    hasRatedAppearance
+      ? percentileRank(
+          activeBattingScores,
+          battingValue
+        )
+      : null;
 
   const bowlingPercentile =
-    percentileRank(
-      bowlingScores,
-      bowlingValue
-    );
+    hasRatedAppearance
+      ? percentileRank(
+          activeBowlingScores,
+          bowlingValue
+        )
+      : null;
 
   const formPercentile =
-    percentileRank(
-      formScores,
-      formValue
-    );
+    hasRatedAppearance
+      ? percentileRank(
+          activeFormScores,
+          formValue
+        )
+      : null;
 
   const battingRating =
-    ratingFromPercentile(
-      battingPercentile
-    );
+    hasRatedAppearance
+      ? ratingFromPercentile(
+          battingPercentile
+        )
+      : null;
 
   const bowlingRating =
-    ratingFromPercentile(
-      bowlingPercentile
-    );
+    hasRatedAppearance
+      ? ratingFromPercentile(
+          bowlingPercentile
+        )
+      : null;
 
   const formRating =
-    ratingFromPercentile(
-      formPercentile
-    );
+    hasRatedAppearance
+      ? ratingFromPercentile(
+          formPercentile
+        )
+      : null;
 
   const overallRating =
-    Number(
-      (
-        battingRating *
-          0.42 +
-        bowlingRating *
-          0.38 +
-        formRating *
-          0.2
-      ).toFixed(1)
-    );
+    hasRatedAppearance
+      ? Number(
+          (
+            battingRating * 0.42 +
+            bowlingRating * 0.38 +
+            formRating * 0.2
+          ).toFixed(1)
+        )
+      : null;
 
   const overallPercentile =
-    Math.round(
-      battingPercentile *
-        0.42 +
-        bowlingPercentile *
-          0.38 +
-        formPercentile *
-          0.2
-    );
+    hasRatedAppearance
+      ? Math.round(
+          battingPercentile * 0.42 +
+          bowlingPercentile * 0.38 +
+          formPercentile * 0.2
+        )
+      : null;
 
   const leagueRank =
-    allProfiles
+    hasRatedAppearance
+      ? activeProfiles
       .map(
         (item) => {
           const batting =
@@ -1756,7 +1815,8 @@ export default async function PublicPlayerPage({
           item.playerIds.includes(
             number(playerId)
           )
-      ) + 1;
+      ) + 1
+      : null;
 
   const achievements =
     buildAchievements(
@@ -1854,7 +1914,7 @@ export default async function PublicPlayerPage({
       : "—";
 
   const shareText =
-    `${player.name} on Cric4All: ${stats.runs} runs, ${stats.wickets} wickets, ${overallRating}/10 rating and ${unlocked.length} achievements.`;
+    `${player.name} on Cric4All: ${stats.runs} runs, ${stats.wickets} wickets, ${hasRatedAppearance ? `${overallRating}/10 rating` : "not yet rated"} and ${unlocked.length} achievements.`;
 
   const isPublicForSeo =
     String(
@@ -2010,10 +2070,10 @@ export default async function PublicPlayerPage({
             <div className="spf-rating-card">
               <div className="spf-rating-ring">
                 <strong>
-                  {overallRating}
+                  {hasRatedAppearance ? overallRating : "—"}
                 </strong>
                 <span>
-                  /10
+                  {hasRatedAppearance ? "/10" : ""}
                 </span>
               </div>
 
@@ -2023,15 +2083,18 @@ export default async function PublicPlayerPage({
                 </small>
 
                 <strong>
-                  League rank #{leagueRank}
+                  {hasRatedAppearance
+                    ? `League rank #${leagueRank}`
+                    : "Not rated"}
                 </strong>
 
                 <span>
-                  Top {Math.max(
-                    1,
-                    100 -
-                      overallPercentile
-                  )}%
+                  {hasRatedAppearance
+                    ? `Top ${Math.max(
+                        1,
+                        100 - overallPercentile
+                      )}%`
+                    : "Complete a scored appearance"}
                 </span>
               </div>
             </div>
@@ -2178,7 +2241,7 @@ export default async function PublicPlayerPage({
                       </strong>
 
                       <b>
-                        {rating.value}
+                        {rating.value ?? "—"}
                       </b>
                     </div>
 
@@ -2186,15 +2249,19 @@ export default async function PublicPlayerPage({
                       <span
                         style={{
                           width:
-                            `${rating.percentile}%`,
+                            `${rating.percentile ?? 0}%`,
                         }}
                       />
                     </div>
 
                     <small>
-                      Better than{" "}
-                      {rating.percentile}%{" "}
-                      of active league profiles
+                      {rating.percentile == null
+                        ? "Not rated until first scored appearance"
+                        : <>
+                            Better than{" "}
+                            {rating.percentile}%{" "}
+                            of active league profiles
+                          </>}
                     </small>
                   </article>
                 )
