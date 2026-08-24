@@ -6429,6 +6429,73 @@ const isMatchAbandoned = scoreboard?.match?.status ===  "ABANDONED";
         updatedBoard
       );
 
+      /*
+       * CRITICAL ONLINE-UNDO / OFFLINE-SYNC FIX
+       * ----------------------------------------
+       * A successful server Undo rewinds the authoritative ball sequence.
+       * Keep the offline sequence reference synchronized with the freshly
+       * reloaded server scoreboard; otherwise the next delivery can be sent
+       * with a stale expectedPreviousSequence and create a false sync conflict
+       * even though this device is still online.
+       */
+      offlineServerSequencesRef.current = {
+        matchId:
+          Number(
+            selectedMatchId
+          ),
+
+        1:
+          Number(
+            updatedBoard
+              ?.sync
+              ?.serverSequences
+              ?.[1] ??
+            updatedBoard
+              ?.sync
+              ?.serverSequences
+              ?.["1"] ??
+            0
+          ),
+
+        2:
+          Number(
+            updatedBoard
+              ?.sync
+              ?.serverSequences
+              ?.[2] ??
+            updatedBoard
+              ?.sync
+              ?.serverSequences
+              ?.["2"] ??
+            0
+          ),
+      };
+
+      /*
+       * Reaching this point proves that both the server Undo and the
+       * authoritative scoreboard reload succeeded. Clear only stale sync
+       * warning state so an ordinary online Undo cannot leave Scorer Mode
+       * presenting itself as offline / needing Retry Sync.
+       */
+      setOfflineSyncState(
+        (
+          previous
+        ) => ({
+          ...previous,
+
+          online:
+            typeof navigator === "undefined"
+              ? true
+              : navigator.onLine,
+
+          conflict:
+            null,
+
+          lastError:
+            "",
+        })
+      );
+
       const restoredState =
         undoResult?.restoredState ||
         updatedBoard?.currentState ||
