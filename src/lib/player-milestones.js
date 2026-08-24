@@ -1,4 +1,5 @@
 import prisma from "@/lib/prisma";
+import { shouldExcludePlayerFromLeagueAnalytics } from "@/lib/player-analytics-exclusions";
 
 const SHARED_TEAM_TOKENS =
   new Set([
@@ -197,11 +198,30 @@ export async function resolvePlayerIdentity({
       },
 
       include: {
-        team: true,
+        team: {
+          include: {
+            league: {
+              select: {
+                id: true,
+                name: true,
+                slug: true,
+              },
+            },
+          },
+        },
       },
     });
 
   if (!selected) {
+    return null;
+  }
+
+  if (
+    shouldExcludePlayerFromLeagueAnalytics(
+      selected.team?.league,
+      selected
+    )
+  ) {
     return null;
   }
 

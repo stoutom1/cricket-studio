@@ -16,6 +16,7 @@ import {
 } from "@/lib/auth";
 import PlayerCardActions from "./PlayerCardActions";
 import SeoJsonLd from "@/components/seo-json-ld";
+import { shouldExcludePlayerFromLeagueAnalytics } from "@/lib/player-analytics-exclusions";
 import {
   absoluteCric4AllUrl,
   publicPageRobots,
@@ -1281,7 +1282,11 @@ export async function generateMetadata({
 
   if (
     !league ||
-    !player
+    !player ||
+    shouldExcludePlayerFromLeagueAnalytics(
+      league,
+      player
+    )
   ) {
     return {
       title:
@@ -1456,6 +1461,12 @@ export default async function PublicPlayerPage({
   const identityGroups =
     buildPlayerIdentityGroups(
       rosterPlayers
+    ).filter(
+      (group) =>
+        !shouldExcludePlayerFromLeagueAnalytics(
+          league,
+          group.player
+        )
     );
 
   const selectedIdentityGroup =
@@ -1466,7 +1477,13 @@ export default async function PublicPlayerPage({
         )
     );
 
-  if (!selectedIdentityGroup) {
+  if (
+    !selectedIdentityGroup ||
+    shouldExcludePlayerFromLeagueAnalytics(
+      league,
+      selectedIdentityGroup.player
+    )
+  ) {
     notFound();
   }
 

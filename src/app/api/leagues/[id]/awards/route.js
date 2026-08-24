@@ -7,6 +7,9 @@ import {
   summarizeInningsDetailed,
   getBattingTeamId,
 } from "@/lib/scoring";
+import {
+  shouldExcludePlayerFromLeagueAnalytics,
+} from "@/lib/player-analytics-exclusions";
 
 export const runtime = "nodejs";
 export const dynamic = "force-dynamic";
@@ -989,7 +992,7 @@ function awardFromPlayer({
   };
 }
 
-function calculateBestPartnership(matches) {
+function calculateBestPartnership(matches, isExcludedPlayer = () => false) {
   let best =
     null;
 
@@ -1021,6 +1024,27 @@ function calculateBestPartnership(matches) {
         const partnership of
         summary.partnerships || []
       ) {
+        const playerOne =
+          partnership.batter1 ||
+          partnership.player1Name ||
+          partnership.batter1Name ||
+          partnership.strikerName ||
+          "Batter 1";
+
+        const playerTwo =
+          partnership.batter2 ||
+          partnership.player2Name ||
+          partnership.batter2Name ||
+          partnership.nonStrikerName ||
+          "Batter 2";
+
+        if (
+          isExcludedPlayer(playerOne) ||
+          isExcludedPlayer(playerTwo)
+        ) {
+          continue;
+        }
+
         const runs =
           safeNumber(
             partnership.runs
@@ -1070,27 +1094,8 @@ function calculateBestPartnership(matches) {
              * Keep compatibility with possible future/older field names,
              * but prioritize the actual current fields.
              */
-            playerOne:
-              partnership
-                .batter1 ||
-              partnership
-                .player1Name ||
-              partnership
-                .batter1Name ||
-              partnership
-                .strikerName ||
-              "Batter 1",
-
-            playerTwo:
-              partnership
-                .batter2 ||
-              partnership
-                .player2Name ||
-              partnership
-                .batter2Name ||
-              partnership
-                .nonStrikerName ||
-              "Batter 2",
+            playerOne,
+            playerTwo,
           };
         }
       }
@@ -1422,7 +1427,8 @@ function isLegalBattingDelivery(
 }
 
 function calculateFastestFifty(
-  matches
+  matches,
+  isExcludedPlayer = () => false
 ) {
   let fastest =
     null;
@@ -1501,6 +1507,14 @@ function calculateFastestFifty(
           playerMap.get(
             strikerId
           );
+
+        if (
+          isExcludedPlayer(
+            player?.name || ""
+          )
+        ) {
+          continue;
+        }
 
         const progress =
           addMapValue(
@@ -1632,8 +1646,14 @@ function calculateAwards({
   periodMatches,
   previousPeriodMatches,
   seasonMatches,
+  league,
   periodLabel = "selected period",
 }) {
+  const isExcludedPlayer = (playerName) =>
+    shouldExcludePlayerFromLeagueAnalytics(
+      league,
+      playerName
+    );
   const weeklyMatches =
     periodMatches;
 
@@ -1652,16 +1672,31 @@ function calculateAwards({
   const weeklyPlayers =
     aggregatePlayers(
       weeklyMatches
+    ).filter(
+      (player) =>
+        !isExcludedPlayer(
+          player.playerName
+        )
     );
 
   const previousPlayers =
     aggregatePlayers(
       previousWeekMatches
+    ).filter(
+      (player) =>
+        !isExcludedPlayer(
+          player.playerName
+        )
     );
 
   const seasonPlayers =
     aggregatePlayers(
       seasonMatches
+    ).filter(
+      (player) =>
+        !isExcludedPlayer(
+          player.playerName
+        )
     );
 
   const mvp =
@@ -1752,7 +1787,8 @@ function calculateAwards({
 
   const bestPartnership =
     calculateBestPartnership(
-      weeklyMatches
+      weeklyMatches,
+      isExcludedPlayer
     );
 
   /*
@@ -1762,7 +1798,8 @@ function calculateAwards({
    */
   const fastestFifty =
     calculateFastestFifty(
-      seasonMatches
+      seasonMatches,
+      isExcludedPlayer
     );
 
   return {
@@ -2616,6 +2653,7 @@ export async function GET(
       periodMatches,
       previousPeriodMatches,
       seasonMatches,
+      league,
 
       periodLabel:
         period ===

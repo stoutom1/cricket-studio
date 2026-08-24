@@ -19,6 +19,10 @@ import matchDayNavStyles from "./MatchDayDashboardNav.module.css";
 import playerCardStyles from "./DashboardPlayerCard.module.css";
 import { shareCric4All } from "@/lib/native-share";
 import { openCric4AllLink } from "@/lib/native-links";
+import {
+  filterScoreboardForPlayerAnalytics,
+  shouldExcludePlayerFromLeagueAnalytics,
+} from "@/lib/player-analytics-exclusions";
 import FollowedLeaguesDrawerContent from "@/components/followed-leagues-drawer-content";
 import {
   cacheOfflineMatchSnapshot,
@@ -13676,7 +13680,9 @@ const offlineLocalResultText =
 
 const matchInsights =
   buildMatchInsights(
-    displayScoreboard
+    filterScoreboardForPlayerAnalytics(
+      displayScoreboard
+    )
   );
 
 const dashboardResultText =
@@ -16677,6 +16683,19 @@ const activeLeagueSlug = String(
 ).trim();
 
 function getPlayerCardHref(playerId) {
+  const player = (selectedTeam?.players || []).find(
+    (item) => Number(item.id) === Number(playerId)
+  );
+
+  if (
+    shouldExcludePlayerFromLeagueAnalytics(
+      activeLeague || selectedLeague,
+      player
+    )
+  ) {
+    return "";
+  }
+
   if (!activeLeagueSlug || !playerId) {
     return "";
   }

@@ -74,6 +74,13 @@ const match = await prisma.match.findUnique({
     teamA: { include: { players: true } },
     teamB: { include: { players: true } },
     battingFirstTeam: true,
+    league: {
+      select: {
+        id: true,
+        name: true,
+        slug: true,
+      },
+    },
 
     balls: {
       orderBy: [
@@ -710,6 +717,9 @@ if (canAutoComplete && shouldComplete) {
 const response = {
   match: {
     id: match.id,
+    leagueId: match.league?.id || match.leagueId || null,
+    leagueName: match.league?.name || "",
+    leagueSlug: match.league?.slug || "",
     teamAName: match.teamA.name,
     teamBName: match.teamB.name,
     battingFirstTeamName: match.battingFirstTeam?.name || "Not decided yet",

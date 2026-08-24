@@ -3,6 +3,7 @@ import { NextResponse } from "next/server";
 import prisma from "@/lib/prisma";
 import { authOptions } from "@/lib/auth";
 import { buildMatchStats } from "@/lib/scoring";
+import { filterMatchStatsForLeague } from "@/lib/player-analytics-exclusions";
 
 export const runtime = "nodejs";
 
@@ -48,6 +49,13 @@ export async function GET(request, { params }) {
           },
         },
       },
+      league: {
+        select: {
+          id: true,
+          name: true,
+          slug: true,
+        },
+      },
       balls: {
         orderBy: [
           { inningsNo: "asc" },
@@ -64,7 +72,10 @@ export async function GET(request, { params }) {
     );
   }
 
-  const stats = buildMatchStats(match);
+  const stats = filterMatchStatsForLeague(
+    buildMatchStats(match),
+    match.league
+  );
 
   return NextResponse.json(stats);
 }

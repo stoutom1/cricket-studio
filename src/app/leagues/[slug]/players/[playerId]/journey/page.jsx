@@ -18,6 +18,7 @@ import {
 import {
   selectTopEstablishedRival,
 } from "@/lib/player-rivalry";
+import { shouldExcludePlayerFromLeagueAnalytics } from "@/lib/player-analytics-exclusions";
 
 import JourneyShareButton from "./JourneyShareButton";
 import "@/app/player-journey-final.css";
@@ -415,6 +416,7 @@ function buildJourney({
   identity,
   matches,
   milestones,
+  excludePlayerName = () => false,
 }) {
   const ids =
     new Set(
@@ -977,7 +979,14 @@ function buildJourney({
       candidates:
         Array.from(
           rivalryMap.values()
-        ).map(
+        )
+        .filter(
+          (row) =>
+            !excludePlayerName(
+              rosterLookup.get(row.playerId)?.name || ""
+            )
+        )
+        .map(
           (row) => ({
             playerId:
               row.playerId,
@@ -1254,14 +1263,23 @@ export async function generateMetadata({
         playerId,
     });
 
+  const visibleIdentity =
+    identity &&
+    !shouldExcludePlayerFromLeagueAnalytics(
+      league,
+      identity.name
+    )
+      ? identity
+      : null;
+
   return {
     title:
-      identity
-        ? `${identity.name}'s Player Journey | Cric4All`
+      visibleIdentity
+        ? `${visibleIdentity.name}'s Player Journey | Cric4All`
         : "Player Journey | Cric4All",
     description:
-      identity
-        ? `Explore ${identity.name}'s cricket journey, milestones, seasons, rivals and career story on Cric4All.`
+      visibleIdentity
+        ? `Explore ${visibleIdentity.name}'s cricket journey, milestones, seasons, rivals and career story on Cric4All.`
         : "Explore a Cric4All player journey.",
   };
 }
@@ -1357,7 +1375,13 @@ export default async function PlayerJourneyPage({
         playerId,
     });
 
-  if (!identity) {
+  if (
+    !identity ||
+    shouldExcludePlayerFromLeagueAnalytics(
+      league,
+      identity.name
+    )
+  ) {
     notFound();
   }
 
@@ -1392,6 +1416,11 @@ export default async function PlayerJourneyPage({
       matches:
         league.matches,
       milestones,
+      excludePlayerName: (playerName) =>
+        shouldExcludePlayerFromLeagueAnalytics(
+          league,
+          playerName
+        ),
     });
 
   const shareText =

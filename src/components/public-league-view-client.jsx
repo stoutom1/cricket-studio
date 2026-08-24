@@ -3,6 +3,7 @@
 import { useEffect, useMemo, useRef, useState } from "react";
 import "@/app/spectator-league-v2.css";
 import LeagueAlertControls from "@/components/league-alert-controls";
+import { shouldExcludePlayerFromLeagueAnalytics } from "@/lib/player-analytics-exclusions";
 
 function normalizeStatus(status) {
   return String(status || "SCHEDULED").toUpperCase();
@@ -72,7 +73,7 @@ function buildPointsTable(matches, teams) {
   );
 }
 
-function buildPublicStats(matches) {
+function buildPublicStats(matches, league) {
   const batting = new Map();
   const bowling = new Map();
 
@@ -157,6 +158,13 @@ function buildPublicStats(matches) {
   }
 
   const battingRows = [...batting.values()]
+    .filter(
+      (row) =>
+        !shouldExcludePlayerFromLeagueAnalytics(
+          league,
+          row.playerName
+        )
+    )
     .map((row) => ({
       ...row,
       matches: row.matches.size,
@@ -165,6 +173,13 @@ function buildPublicStats(matches) {
     .sort((a, b) => b.runs - a.runs);
 
   const bowlingRows = [...bowling.values()]
+    .filter(
+      (row) =>
+        !shouldExcludePlayerFromLeagueAnalytics(
+          league,
+          row.playerName
+        )
+    )
     .map((row) => ({
       ...row,
       matches: row.matches.size,
@@ -288,6 +303,13 @@ async function toggleFollowLeague() {
           teamName: team.name,
         }))
       )
+      .filter(
+        (player) =>
+          !shouldExcludePlayerFromLeagueAnalytics(
+            league,
+            player
+          )
+      )
       .filter((player) =>
         [player.name, player.teamName].filter(Boolean).join(" ").toLowerCase().includes(q)
       );
@@ -338,7 +360,7 @@ async function toggleFollowLeague() {
   );
 
   const { battingRows, bowlingRows } = useMemo(
-    () => buildPublicStats(filteredMatches),
+    () => buildPublicStats(filteredMatches, league),
     [filteredMatches]
   );
 

@@ -4,6 +4,10 @@ import { getServerSession } from "next-auth";
 import { authOptions } from "@/lib/auth";
 import { isSuperAdmin } from "@/lib/superAdmin";
 import { buildMatchStats } from "@/lib/scoring";
+import {
+  filterPlayerAnalyticsRows,
+  shouldExcludePlayerFromLeagueAnalytics,
+} from "@/lib/player-analytics-exclusions";
 
 export const runtime = "nodejs";
 
@@ -348,7 +352,15 @@ const matches = await prisma.match.findMany({
 const allStats = matches.map((match) =>
   buildMatchStats(match)
 );
-    const allPlayers = teams.flatMap((team) => team.players || []);
+    const allPlayers = teams
+      .flatMap((team) => team.players || [])
+      .filter(
+        (player) =>
+          !shouldExcludePlayerFromLeagueAnalytics(
+            league,
+            player
+          )
+      );
 
     const playerMap = new Map();
     const statsMap = new Map();
@@ -656,8 +668,14 @@ const rankings = {
     .filter((r) => r.allRounderPoints > 0)
     .sort((a, b) => b.allRounderPoints - a.allRounderPoints)
 };
-const captaincy = mergeCaptaincy(allStats);
-const wicketkeeping = mergeWicketkeeping(allStats);
+const captaincy = filterPlayerAnalyticsRows(
+  mergeCaptaincy(allStats),
+  league
+);
+const wicketkeeping = filterPlayerAnalyticsRows(
+  mergeWicketkeeping(allStats),
+  league
+);
 
 
     return NextResponse.json({

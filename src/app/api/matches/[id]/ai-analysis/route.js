@@ -5,6 +5,7 @@ import {
   summarizeInningsDetailed,
   buildMatchStats,
 } from "@/lib/scoring";
+import { filterMatchStatsForLeague } from "@/lib/player-analytics-exclusions";
 
 export const runtime = "nodejs";
 
@@ -805,7 +806,10 @@ export async function GET(request, { params }) {
       playerMap,
       match.oversPerInnings
     );
-    const stats = buildMatchStats(match);
+    const stats = filterMatchStatsForLeague(
+      buildMatchStats(match),
+      match.league
+    );
     const context = buildVerifiedContext(match, innings1, innings2, stats);
     const fallback = fallbackReview(context);
 

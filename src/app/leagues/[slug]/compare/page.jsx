@@ -1,5 +1,6 @@
 import prisma from "@/lib/prisma";
 import { isMatchEligibleForStats } from "@/lib/stat-match";
+import { shouldExcludePlayerFromLeagueAnalytics } from "@/lib/player-analytics-exclusions";
 import Link from "next/link";
 import {
   notFound,
@@ -1511,6 +1512,13 @@ export default async function ComparePlayersPage({
     buildIdentityGroups(
       rosterPlayers
     )
+      .filter(
+        (identity) =>
+          !shouldExcludePlayerFromLeagueAnalytics(
+            league,
+            identity.name
+          )
+      )
       .sort(
         (left, right) =>
           left.name.localeCompare(
