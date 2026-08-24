@@ -1,5 +1,5 @@
 "use client";
-import { useSession } from "next-auth/react";
+import { signOut, useSession } from "next-auth/react";
 import React, { useEffect, useMemo, useRef, useState } from "react";
 import { EXTRA_TYPES, getPlayerName, WICKET_TYPES, applyBallOutcome, isLegalDelivery } from "@/lib/scoring";
 import "@/app/globals.css";
@@ -687,6 +687,28 @@ const [
 );
 const [me, setMe] = useState(null);
 const [permissionsLoading, setPermissionsLoading] = useState(false);
+
+/*
+ * Keep the logged-in user's permissions separate from the permissions being
+ * edited for another league member. Reusing one state object for both could
+ * make the scorer's own buttons disappear while an admin inspected a member.
+ */
+const [memberPermissions, setMemberPermissions] = useState(null);
+
+/*
+ * A permission object is only valid for the league it was loaded for. This
+ * prevents a canScoreMatch=true value from a previously selected league from
+ * being reused while the next league's permission request is still loading.
+ */
+const permissionsLeagueIdRef = useRef(null);
+
+/* Mobile full-screen scorer account menu. */
+const [showScorerAccountMenu, setShowScorerAccountMenu] = useState(false);
+
+const canScoreCurrentLeague =
+  Boolean(permissions?.canScoreMatch) &&
+  Boolean(activeLeagueId) &&
+  String(permissionsLeagueIdRef.current || "") === String(activeLeagueId);
 const scheduledMatches = matches.filter((m) => normalizeStatus(m.status) === "SCHEDULED");
 const [scoringSubTab, setScoringSubTab] = useState("ADVANCED");
 const [statsSubTab, setStatsSubTab] = useState("BATTING");
@@ -1117,6 +1139,8 @@ useEffect(() => {
   if (!activeLeagueId) return;
 
   if (isSuperAdmin) {
+    permissionsLeagueIdRef.current = String(activeLeagueId);
+
     setPermissions({
         canViewDashboard:  true,
   canViewManagement:  true,
@@ -1411,7 +1435,7 @@ async function loadPermissions(member) {
         latestMember[field] ?? false;
     }
 
-    setPermissions(loadedPermissions);
+    setMemberPermissions(loadedPermissions);
     setShowPermissionModal(true);
   } catch (err) {
     console.error(err);
@@ -1598,6 +1622,10 @@ useEffect(() => {
        * Offline mode gets SCORING-ONLY permissions. We do not expose management
        * or mutation tabs based on cached assumptions.
        */
+      if (offlineLeagueId) {
+        permissionsLeagueIdRef.current = String(offlineLeagueId);
+      }
+
       setPermissions({
         canViewDashboard: true,
         canViewManagement: false,
@@ -4239,21 +4267,21 @@ async function openPermissionEditor(member) {
     }
 
     setSelectedMember(latestMember);
-    setPermissions(loadedPermissions);
+    setMemberPermissions(loadedPermissions);
   } catch (error) {
     setError(error.message);
   }
 }
 function updatePermission(permission, value) {
-  setPermissions((prev) => ({
-    ...prev,
+  setMemberPermissions((prev) => ({
+    ...(prev || {}),
     [permission]: value,
   }));
 }
 
 async function savePermissions(member) {
 
-  if (!selectedMember || !activeLeague?.id) return;
+  if (!selectedMember || !activeLeague?.id || !memberPermissions) return;
 
   try {
     const response = await fetch(
@@ -4266,11 +4294,11 @@ async function savePermissions(member) {
         body: JSON.stringify({
           memberId: selectedMember.id,
           email: selectedMember.user?.email,
-          role: permissions.role,
+          role: memberPermissions?.role || selectedMember.role || "VIEWER",
           ...Object.fromEntries(
             PERMISSION_FIELDS.map((field) => [
               field,
-              permissions[field] ?? false,
+              memberPermissions?.[field] ?? false,
             ])
           ),
         }),
@@ -4287,7 +4315,7 @@ async function savePermissions(member) {
 
     const updatedMember = data.member || {
       ...selectedMember,
-      ...permissions,
+      ...(memberPermissions || {}),
     };
 
     setLeagues((prev) =>
@@ -4309,6 +4337,7 @@ async function savePermissions(member) {
     );
 
     setSelectedMember(updatedMember);
+    setMemberPermissions(null);
     setShowPermissionModal(false);
     setMessage("✅ Role and permissions updated successfully");
   } catch (error) {
@@ -7138,6 +7167,16 @@ wicketNote: ballForm.wicketNote || null
   }
 }
 
+
+async function handleScorerSignOut() {
+  setShowScorerAccountMenu(false);
+  setScorerDrawer(null);
+  setScorerMode(false);
+
+  await signOut({
+    callbackUrl: "/",
+  });
+}
 
 function getOfflineStatusLabel() {
   if (offlineSyncState.conflict) {
@@ -11636,6 +11675,8 @@ async function handleRetiredHurtSubmit() {
 async function loadMyLeaguePermissions(leagueId) {
   if (!leagueId) return;
 
+  const requestedLeagueId = String(leagueId);
+
   try {
     setPermissionsLoading(true);
 
@@ -11643,53 +11684,61 @@ async function loadMyLeaguePermissions(leagueId) {
       `/api/leagues/${leagueId}/permissions/me`
     );
 
+    permissionsLeagueIdRef.current = requestedLeagueId;
     setPermissions(data.permissions);
   } catch (err) {
     console.error(err);
 
     const browserIsOffline =
-      typeof navigator !==
-        "undefined" &&
-      navigator.onLine ===
-        false;
+      typeof navigator !== "undefined" &&
+      navigator.onLine === false;
 
-    const retryableOfflineFailure =
+    const status = Number(err?.status || 0);
+
+    const retryablePermissionFailure =
       browserIsOffline ||
-      isOfflineRetryableError(
-        err
-      );
+      isOfflineRetryableError(err) ||
+      status === 0 ||
+      status === 408 ||
+      status === 425 ||
+      status === 429 ||
+      status >= 500;
+
+    const cachedPermissionsBelongToThisLeague =
+      String(permissionsLeagueIdRef.current || "") ===
+      requestedLeagueId;
 
     /*
-     * IMPORTANT:
-     * Keep the last successfully loaded permissions while offline.
-     *
-     * Scorer Mode renders its scoring buttons behind:
-     *   permissions?.canScoreMatch
-     *
-     * Clearing permissions on a harmless offline fetch failure caused the
-     * entire scoring keypad to disappear after a few seconds.
+     * A temporary network/API problem is not a permission revocation. If this
+     * exact league already had a successfully loaded permission object, keep
+     * it so authorized scorers do not suddenly lose their keypad mid-match.
      */
     if (
-      retryableOfflineFailure
+      retryablePermissionFailure &&
+      cachedPermissionsBelongToThisLeague &&
+      permissions
     ) {
-      setOfflineSyncState(
-        (
-          previous
-        ) => ({
+      if (browserIsOffline) {
+        setOfflineSyncState((previous) => ({
           ...previous,
-          online:
-            false,
-        })
-      );
+          online: false,
+        }));
+      }
 
       return;
     }
 
     const selected = leagues.find(
-      (l) => String(l.id) === String(leagueId)
+      (league) => String(league.id) === requestedLeagueId
     );
 
-    if (selected?.isFollowing && !selected?.role && !selected?.membershipRole) {
+    if (
+      selected?.isFollowing &&
+      !selected?.role &&
+      !selected?.membershipRole
+    ) {
+      permissionsLeagueIdRef.current = requestedLeagueId;
+
       setPermissions({
         canViewDashboard: true,
         canViewStats: true,
@@ -11707,10 +11756,17 @@ async function loadMyLeaguePermissions(leagueId) {
         canEditScore: false,
         canUndoBall: false,
       });
-    } else {
-      setPermissions(null);
-      setError(err.message);
+
+      return;
     }
+
+    /*
+     * Do not carry a different league's permission state into this league.
+     * 401/403 and other non-retryable responses remain authoritative.
+     */
+    permissionsLeagueIdRef.current = requestedLeagueId;
+    setPermissions(null);
+    setError(err.message);
   } finally {
     setPermissionsLoading(false);
   }
@@ -14329,6 +14385,44 @@ useEffect(() => {
     window.scrollTo(0, scrollY);
   };
 }, [isMobile, scorerMode]);
+
+useEffect(() => {
+  if (!scorerMode) {
+    setShowScorerAccountMenu(false);
+  }
+}, [scorerMode]);
+
+/*
+ * If the server positively resolves the active league and scoring permission
+ * is no longer present, leave full-screen Scorer Mode immediately. This avoids
+ * a blank, body-locked screen after a real permission revocation.
+ */
+useEffect(() => {
+  if (!scorerMode || permissionsLoading || !activeLeagueId) {
+    return;
+  }
+
+  const permissionResolvedForActiveLeague =
+    String(permissionsLeagueIdRef.current || "") ===
+    String(activeLeagueId);
+
+  if (
+    permissionResolvedForActiveLeague &&
+    !permissions?.canScoreMatch
+  ) {
+    setShowScorerAccountMenu(false);
+    setScorerDrawer(null);
+    setScorerMode(false);
+    setError(
+      "Scoring access is not enabled for this account in the selected league."
+    );
+  }
+}, [
+  scorerMode,
+  permissionsLoading,
+  activeLeagueId,
+  permissions?.canScoreMatch,
+]);
 
 function handleVoiceCommand(command) {
   const text = String(command || "").toLowerCase().trim();
@@ -18355,7 +18449,8 @@ const playerRoleBadge = (row) => {
   right={
     selectedMatchId &&
     !isSelectedMatchCompleted &&
-    !isMobile ? (
+    !isMobile &&
+    canScoreCurrentLeague ? (
       <div className="advanced-scoring-actions">
         <span
           style={{
@@ -18415,17 +18510,32 @@ const playerRoleBadge = (row) => {
           </small>
         </div>
 
-        <button
-          type="button"
-          className="mobile-scoring-launch-btn"
-          onClick={() => {
-            setScorerDrawer(null);
-            setScorerMode(true);
-          }}
-        >
-          Start Scoring
-          <b>›</b>
-        </button>
+        {permissionsLoading && !canScoreCurrentLeague ? (
+          <button
+            type="button"
+            className="mobile-scoring-launch-btn"
+            disabled
+          >
+            Checking access…
+          </button>
+        ) : canScoreCurrentLeague ? (
+          <button
+            type="button"
+            className="mobile-scoring-launch-btn"
+            onClick={() => {
+              setScorerDrawer(null);
+              setShowScorerAccountMenu(false);
+              setScorerMode(true);
+            }}
+          >
+            Start Scoring
+            <b>›</b>
+          </button>
+        ) : (
+          <div className="mobile-scoring-access-note">
+            🔒 Scoring access is not enabled for this account.
+          </div>
+        )}
       </section>
     </>
   )}
@@ -18531,7 +18641,7 @@ const playerRoleBadge = (row) => {
     </button>
   </div>
 )}
-{isMobile && scorerMode && liveMatchCenter && (
+{isMobile && scorerMode && canScoreCurrentLeague && liveMatchCenter && (
   <div className="mobile-scorer-overlay-v3">
     <section
       className="mobile-scorer-cockpit-v3"
@@ -18559,18 +18669,74 @@ const playerRoleBadge = (row) => {
           </div>
         </div>
 
-        <button
-          type="button"
-          className="msc-v3-exit"
-          onClick={() => {
-            setScorerDrawer(null);
-            setScorerMode(false);
-            setScoringSubTab("ADVANCED");
-          }}
-        >
-          ✕ Exit
-        </button>
+        <div className="msc-v3-header-actions">
+          <button
+            type="button"
+            className="msc-v3-account"
+            onClick={() =>
+              setShowScorerAccountMenu((previous) => !previous)
+            }
+            aria-expanded={showScorerAccountMenu}
+            aria-label="Open account menu"
+          >
+            👤 Account
+          </button>
+
+          <button
+            type="button"
+            className="msc-v3-exit"
+            onClick={() => {
+              setShowScorerAccountMenu(false);
+              setScorerDrawer(null);
+              setScorerMode(false);
+              setScoringSubTab("ADVANCED");
+            }}
+          >
+            ✕ Exit
+          </button>
+        </div>
       </header>
+
+      {showScorerAccountMenu && (
+        <div
+          className="msc-v3-account-backdrop"
+          onClick={() => setShowScorerAccountMenu(false)}
+        >
+          <div
+            className="msc-v3-account-panel"
+            role="dialog"
+            aria-modal="true"
+            aria-label="Cric4All account"
+            onClick={(event) => event.stopPropagation()}
+          >
+            <div className="msc-v3-account-title">
+              <span>👤</span>
+              <div>
+                <strong>
+                  {session?.user?.name || "Cric4All Account"}
+                </strong>
+                <small>{session?.user?.email || "Signed in"}</small>
+              </div>
+            </div>
+
+            <button
+              type="button"
+              className="msc-v3-account-close"
+              onClick={() => setShowScorerAccountMenu(false)}
+            >
+              Continue Scoring
+            </button>
+
+            <button
+              type="button"
+              className="msc-v3-account-signout"
+              onClick={handleScorerSignOut}
+            >
+              Sign Out
+            </button>
+          </div>
+        </div>
+      )}
 
       <div className="msc-v3-status">
         {error ||
@@ -18943,7 +19109,7 @@ const playerRoleBadge = (row) => {
             🎯 Select striker, non-striker and bowler
           </button>
         ) : (
-          permissions?.canScoreMatch && (
+          canScoreCurrentLeague && (
             <>
               <div className="msc-v3-keypad">
                 {[0, 1, 2, 3, 4, 6].map((run) => (
@@ -19530,7 +19696,7 @@ const playerRoleBadge = (row) => {
     </div>
   </div>
 )}  
-{permissions?.canScoreMatch && (
+{canScoreCurrentLeague && (
   <div className="scorer-actions-panel mobile-original-actions-panel normal-mobile-scoring-actions">
 <div className="quick-actions scorer-run-buttons scorer-mobile-pad">
   {[0, 1, 2, 3, 4, 6].map((run) => (
@@ -19612,7 +19778,7 @@ const playerRoleBadge = (row) => {
             </small>
           </div>
 
-          {permissions?.canScoreMatch ? (
+          {canScoreCurrentLeague ? (
             <button
               type="button"
               className="btn scoring-btn scoring-btn-primary scorer-start-super-over-btn"
@@ -19651,7 +19817,7 @@ const playerRoleBadge = (row) => {
 
           {isEffectiveMatchCompleted &&
             !isMatchLocked &&
-            permissions?.canScoreMatch && (
+            canScoreCurrentLeague && (
             <>
               {isOfflineMatchCompleted && (
                 <small
@@ -19724,7 +19890,7 @@ const playerRoleBadge = (row) => {
 )}
       </div>
 
-{permissions?.canScoreMatch  && (isMobile ? (
+{canScoreCurrentLeague && (isMobile ? (
   <>
     <button
   type="button"
@@ -22354,7 +22520,7 @@ const playerRoleBadge = (row) => {
       </div>
     </section>
 
-    {!permissions?.canScoreMatch ? (
+    {!canScoreCurrentLeague ? (
       <div className="permission-warning">
         👉 You do not have permission to create a match.
       </div>
@@ -22452,7 +22618,7 @@ const playerRoleBadge = (row) => {
                   </button>
 
                   <div className="pro-active-actions">
-                    {permissions?.canScoreMatch && (
+                    {canScoreCurrentLeague && (
                       <button
                         type="button"
                         className={`start-match-btn ${
@@ -22685,7 +22851,7 @@ const playerRoleBadge = (row) => {
 
         {/* Actions */}
         <div className="mobile-wow-actions">
-          {permissions?.canScoreMatch && (
+          {canScoreCurrentLeague && (
             <button
               type="button"
               className={`mobile-wow-primary ${
@@ -22814,7 +22980,7 @@ const playerRoleBadge = (row) => {
       {selectedMatchId &&
         isEffectiveMatchCompleted &&
         !isMatchLocked &&
-        permissions?.canScoreMatch && (
+        canScoreCurrentLeague && (
           <div
             className="post-match-kit-lock-banner"
             style={{
@@ -22984,7 +23150,7 @@ const playerRoleBadge = (row) => {
                     </div>
 
                     <div className="pro-scheduled-actions">
-                      {permissions?.canScoreMatch && (
+                      {canScoreCurrentLeague && (
                         <button
                           type="button"
                           className="start-match-btn"
@@ -23181,7 +23347,7 @@ const playerRoleBadge = (row) => {
 
         {/* Actions */}
         <div className="mobile-wow-actions scheduled-actions">
-          {permissions?.canScoreMatch && (
+          {canScoreCurrentLeague && (
             <button
               type="button"
               className="mobile-wow-primary"
@@ -23493,7 +23659,7 @@ const playerRoleBadge = (row) => {
                   </b>
                 </button>
               )}
-              {permissions?.canScoreMatch && (
+              {canScoreCurrentLeague && (
                 <button
                   type="button"
                   className="completed-action-btn"
@@ -23525,7 +23691,7 @@ const playerRoleBadge = (row) => {
               )}
 
               {(
-                permissions?.canScoreMatch ||
+                canScoreCurrentLeague ||
                 permissions?.canEditMatch ||
                 permissions?.canManagePermissions
               ) && (
@@ -24021,10 +24187,10 @@ const playerRoleBadge = (row) => {
                       </button>
                     )}
                   </div>
-                  {(permissions?.canScoreMatch ||
+                  {(canScoreCurrentLeague ||
                     permissions?.canDeleteMatch) && (
                     <div className="mobile-completed-secondary-actions">
-                      {permissions?.canScoreMatch && (
+                      {canScoreCurrentLeague && (
                         <button
                           type="button"
                           onClick={() =>
@@ -24054,7 +24220,7 @@ const playerRoleBadge = (row) => {
                       )}
 
                       {(
-                        permissions?.canScoreMatch ||
+                        canScoreCurrentLeague ||
                         permissions?.canEditMatch ||
                         permissions?.canManagePermissions
                       ) && (
@@ -27312,7 +27478,7 @@ onClick={() => {
             </label>
 
             <select
-              value={permissions.role || "VIEWER"}
+              value={memberPermissions?.role || selectedMember.role || "VIEWER"}
               onChange={(e) =>
                 updatePermission("role", e.target.value)
               }
@@ -27369,7 +27535,7 @@ onClick={() => {
       <label className="permission-item">
         <input
           type="checkbox"
-          checked={permissions.canViewManagement ?? false}
+          checked={memberPermissions?.canViewManagement ?? false}
           onChange={(e) =>
             updatePermission(
               "canViewManagement",
@@ -27383,7 +27549,7 @@ onClick={() => {
       <label className="permission-item">
         <input
           type="checkbox"
-          checked={permissions.canViewDashboard ?? false}
+          checked={memberPermissions?.canViewDashboard ?? false}
           onChange={(e) =>
             updatePermission(
               "canViewDashboard",
@@ -27397,7 +27563,7 @@ onClick={() => {
       <label className="permission-item">
         <input
           type="checkbox"
-          checked={permissions.canViewMatches ?? false}
+          checked={memberPermissions?.canViewMatches ?? false}
           onChange={(e) =>
             updatePermission(
               "canViewMatches",
@@ -27411,7 +27577,7 @@ onClick={() => {
       <label className="permission-item">
         <input
           type="checkbox"
-          checked={permissions.canViewScoring ?? false}
+          checked={memberPermissions?.canViewScoring ?? false}
           onChange={(e) =>
             updatePermission(
               "canViewScoring",
@@ -27425,7 +27591,7 @@ onClick={() => {
       <label className="permission-item">
         <input
           type="checkbox"
-          checked={permissions.canViewStats ?? false}
+          checked={memberPermissions?.canViewStats ?? false}
           onChange={(e) =>
             updatePermission(
               "canViewStats",
@@ -27440,7 +27606,7 @@ onClick={() => {
       <label className="permission-item">
         <input
           type="checkbox"
-          checked={permissions.canCreateMatch ?? false}
+          checked={memberPermissions?.canCreateMatch ?? false}
           onChange={(e) =>
             updatePermission(
               "canCreateMatch",
@@ -27454,7 +27620,7 @@ onClick={() => {
       <label className="permission-item">
         <input
           type="checkbox"
-          checked={permissions.canEditMatch ?? false}
+          checked={memberPermissions?.canEditMatch ?? false}
           onChange={(e) =>
             updatePermission(
               "canEditMatch",
@@ -27468,7 +27634,7 @@ onClick={() => {
       <label className="permission-item">
         <input
           type="checkbox"
-          checked={permissions.canDeleteMatch ?? false}
+          checked={memberPermissions?.canDeleteMatch ?? false}
           onChange={(e) =>
             updatePermission(
               "canDeleteMatch",
@@ -27482,7 +27648,7 @@ onClick={() => {
       <label className="permission-item">
         <input
           type="checkbox"
-          checked={permissions.canScoreMatch ?? false}
+          checked={memberPermissions?.canScoreMatch ?? false}
           onChange={(e) =>
             updatePermission(
               "canScoreMatch",
@@ -27496,7 +27662,7 @@ onClick={() => {
       <label className="permission-item">
         <input
           type="checkbox"
-          checked={permissions.canEditScore ?? false}
+          checked={memberPermissions?.canEditScore ?? false}
           onChange={(e) =>
             updatePermission(
               "canEditScore",
@@ -27510,7 +27676,7 @@ onClick={() => {
       <label className="permission-item">
         <input
           type="checkbox"
-          checked={permissions.canUndoBall ?? false}
+          checked={memberPermissions?.canUndoBall ?? false}
           onChange={(e) =>
             updatePermission(
               "canUndoBall",
@@ -27524,7 +27690,7 @@ onClick={() => {
       <label className="permission-item">
         <input
           type="checkbox"
-          checked={permissions.canSwapStrike ?? false}
+          checked={memberPermissions?.canSwapStrike ?? false}
           onChange={(e) =>
             updatePermission(
               "canSwapStrike",
@@ -27538,7 +27704,7 @@ onClick={() => {
       <label className="permission-item">
         <input
           type="checkbox"
-          checked={permissions.canRetirePlayer ?? false}
+          checked={memberPermissions?.canRetirePlayer ?? false}
           onChange={(e) =>
             updatePermission(
               "canRetirePlayer",
@@ -27552,7 +27718,7 @@ onClick={() => {
         <label className="permission-item">
         <input
           type="checkbox"
-          checked={permissions.canCreateTeam ?? false}
+          checked={memberPermissions?.canCreateTeam ?? false}
           onChange={(e) =>
             updatePermission(
               "canCreateTeam",
@@ -27566,7 +27732,7 @@ onClick={() => {
         <label className="permission-item">
         <input
           type="checkbox"
-          checked={permissions.canEditTeam ?? false}
+          checked={memberPermissions?.canEditTeam ?? false}
           onChange={(e) =>
             updatePermission(
               "canEditTeam",
@@ -27580,7 +27746,7 @@ onClick={() => {
         <label className="permission-item">
         <input
           type="checkbox"
-          checked={permissions.canDeleteTeam ?? false}
+          checked={memberPermissions?.canDeleteTeam ?? false}
           onChange={(e) =>
             updatePermission(
               "canDeleteTeam",
@@ -27594,7 +27760,7 @@ onClick={() => {
         <label className="permission-item">
         <input
           type="checkbox"
-          checked={permissions.canCreatePlayer ?? false}
+          checked={memberPermissions?.canCreatePlayer ?? false}
           onChange={(e) =>
             updatePermission(
               "canCreatePlayer",
@@ -27608,7 +27774,7 @@ onClick={() => {
         <label className="permission-item">
         <input
           type="checkbox"
-          checked={permissions.canDeletePlayer ?? false}
+          checked={memberPermissions?.canDeletePlayer ?? false}
           onChange={(e) =>
             updatePermission(
               "canDeletePlayer",
@@ -27622,7 +27788,7 @@ onClick={() => {
         <label className="permission-item">
         <input
           type="checkbox"
-          checked={permissions.canEditPlayer ?? false}
+          checked={memberPermissions?.canEditPlayer ?? false}
           onChange={(e) =>
             updatePermission(
               "canEditPlayer",
@@ -27636,7 +27802,7 @@ onClick={() => {
         <label className="permission-item">
         <input
           type="checkbox"
-          checked={permissions.canCreateLeague ?? false}
+          checked={memberPermissions?.canCreateLeague ?? false}
           onChange={(e) =>
             updatePermission(
               "canCreateLeague",
@@ -27650,7 +27816,7 @@ onClick={() => {
         <label className="permission-item">
         <input
           type="checkbox"
-          checked={permissions.canEditLeague ?? false}
+          checked={memberPermissions?.canEditLeague ?? false}
           onChange={(e) =>
             updatePermission(
               "canEditLeague",
@@ -27664,7 +27830,7 @@ onClick={() => {
         <label className="permission-item">
         <input
           type="checkbox"
-          checked={permissions.canDeleteLeague ?? false}
+          checked={memberPermissions?.canDeleteLeague ?? false}
           onChange={(e) =>
             updatePermission(
               "canDeleteLeague",
@@ -27678,7 +27844,7 @@ onClick={() => {
         <label className="permission-item">
         <input
           type="checkbox"
-          checked={permissions.canEndMatch ?? false}
+          checked={memberPermissions?.canEndMatch ?? false}
           onChange={(e) =>
             updatePermission(
               "canEndMatch",
@@ -27692,7 +27858,7 @@ onClick={() => {
         <label className="permission-item">
         <input
           type="checkbox"
-          checked={permissions.canAbandonMatch ?? false}
+          checked={memberPermissions?.canAbandonMatch ?? false}
           onChange={(e) =>
             updatePermission(
               "canAbandonMatch",
@@ -27706,7 +27872,7 @@ onClick={() => {
         <label className="permission-item">
         <input
           type="checkbox"
-          checked={permissions.canLockMatch ?? false}
+          checked={memberPermissions?.canLockMatch ?? false}
           onChange={(e) =>
             updatePermission(
               "canLockMatch",
@@ -27720,7 +27886,7 @@ onClick={() => {
         <label className="permission-item">
         <input
           type="checkbox"
-          checked={permissions.canManageMembers ?? false}
+          checked={memberPermissions?.canManageMembers ?? false}
           onChange={(e) =>
             updatePermission(
               "canManageMembers",
@@ -27734,7 +27900,7 @@ onClick={() => {
         <label className="permission-item">
         <input
           type="checkbox"
-          checked={permissions.canManagePermissions ?? false}
+          checked={memberPermissions?.canManagePermissions ?? false}
           onChange={(e) =>
             updatePermission(
               "canManagePermissions",
