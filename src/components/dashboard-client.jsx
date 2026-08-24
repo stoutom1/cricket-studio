@@ -25,6 +25,11 @@ import {
 } from "@/lib/player-analytics-exclusions";
 import FollowedLeaguesDrawerContent from "@/components/followed-leagues-drawer-content";
 import {
+  ROLE_LABELS,
+  getAllowedInviteRoles,
+  getRolePermissionDefaults,
+} from "@/lib/league-role-permissions";
+import {
   cacheOfflineMatchSnapshot,
   createClientEventId,
   getLastPendingOfflineBall,
@@ -581,6 +586,12 @@ export default function DashboardClient() {
   const [leagueForm, setLeagueForm] = useState({name: ""});
   const [selectedPlayerTeamId, setSelectedPlayerTeamId] = useState("");
   const [showLeagueModal, setShowLeagueModal] = useState(false);
+  const [showEditLeagueModal, setShowEditLeagueModal] = useState(false);
+  const [editLeagueSaving, setEditLeagueSaving] = useState(false);
+  const [editLeagueForm, setEditLeagueForm] = useState({
+    name: "",
+    visibility: "PRIVATE",
+  });
   const [pendingNonBallEvent, setPendingNonBallEvent] = useState(false);
   const [selectedTeamId, setSelectedTeamId] = useState("");
   const [expandedLeagueId, setExpandedLeagueId] = useState(null);
@@ -705,6 +716,11 @@ const permissionsLeagueIdRef = useRef(null);
 /* Mobile full-screen scorer account menu. */
 const [showScorerAccountMenu, setShowScorerAccountMenu] = useState(false);
 
+/* Role-bound league invitation composer. */
+const [showInviteRoleModal, setShowInviteRoleModal] = useState(false);
+const [selectedInviteRole, setSelectedInviteRole] = useState("VIEWER");
+const [inviteGenerating, setInviteGenerating] = useState(false);
+
 const canScoreCurrentLeague =
   Boolean(permissions?.canScoreMatch) &&
   Boolean(activeLeagueId) &&
@@ -757,6 +773,17 @@ const [offlineSyncState, setOfflineSyncState] = useState({
   conflict: null,
   lastError: "",
 });
+
+/*
+ * `offlineResume=1` identifies the Resume Match navigation, but it does not
+ * mean the device is still offline. A scorer can reconnect first and then tap
+ * Resume Match. Only use the reduced IndexedDB-only dashboard bootstrap when
+ * the browser is actually offline. When online, keep the resume deep link but
+ * load the complete server-backed league and match lists.
+ */
+const isTrueOfflineResume =
+  isOfflineResumeRequest &&
+  offlineSyncState.online === false;
 const [offlineLocalMatchComplete, setOfflineLocalMatchComplete] = useState(false);
 const offlineSyncRunningRef = useRef(false);
 const offlineServerSequencesRef = useRef({
@@ -1562,7 +1589,7 @@ useEffect(() => {
      * snapshot.
      */
     if (
-      isOfflineResumeRequest &&
+      isTrueOfflineResume &&
       requestedDashboardTab === "scoring" &&
       Number.isInteger(requestedMatchId) &&
       requestedMatchId > 0
@@ -1748,7 +1775,7 @@ useEffect(() => {
     navigator.onLine === false;
 
   if (
-    isOfflineResumeRequest &&
+    isTrueOfflineResume &&
     activeTab === "scoring"
   ) {
     return;
@@ -1758,7 +1785,7 @@ useEffect(() => {
 }, [
   activeTab,
   activeLeagueId,
-  isOfflineResumeRequest,
+  isTrueOfflineResume,
 ]);
 
 useEffect(() => {
@@ -1940,7 +1967,7 @@ setSelectedMatchId("");
 
   useEffect(() => {
     if (
-      !isOfflineResumeRequest ||
+      !isTrueOfflineResume ||
       requestedDashboardTab !== "scoring" ||
       activeTab !== "scoring" ||
       !Number.isInteger(requestedMatchId) ||
@@ -1950,10 +1977,9 @@ setSelectedMatchId("");
     }
 
     /*
-     * `offlineResume=1` is authoritative.
-     * Chrome DevTools Network -> Offline does not reliably make
-     * navigator.onLine false. loadSelectedMatch() is still network-first and
-     * falls back to the existing IndexedDB snapshot when requests fail.
+     * This path is only for a true offline resume. If the scorer has already
+     * reconnected, normal dashboard initialization loads all leagues/matches
+     * and the scoring deep link below still opens the requested match.
      */
     let cancelled = false;
 
@@ -2012,7 +2038,7 @@ setSelectedMatchId("");
       cancelled = true;
     };
   }, [
-    isOfflineResumeRequest,
+    isTrueOfflineResume,
     requestedDashboardTab,
     activeTab,
     requestedLeagueId,
@@ -2126,7 +2152,7 @@ setSelectedMatchId("");
   if (!preferencesLoaded) return;
 
   if (
-    isOfflineResumeRequest
+    isTrueOfflineResume
   ) {
     return;
   }
@@ -2145,11 +2171,11 @@ setSelectedMatchId("");
   activeLeagueId,
   selectedMatchId,
   preferencesLoaded,
-  isOfflineResumeRequest,
+  isTrueOfflineResume,
 ]);
 useEffect(() => {
   const preserveOfflineResumeMatch =
-    isOfflineResumeRequest &&
+    isTrueOfflineResume &&
     requestedDashboardTab === "scoring" &&
     Number.isInteger(requestedMatchId) &&
     requestedMatchId > 0;
@@ -2189,7 +2215,7 @@ useEffect(() => {
   }
 }, [
   activeLeagueId,
-  isOfflineResumeRequest,
+  isTrueOfflineResume,
   requestedDashboardTab,
   requestedMatchId,
 ]);
@@ -2566,7 +2592,7 @@ async function loadMatches(leagueId = activeLeagueId) {
     if (!leagueId) {
       setMatches([]);
 
-      if (!isOfflineResumeRequest) {
+      if (!isTrueOfflineResume) {
         setSelectedMatchId("");
       }
 
@@ -2578,7 +2604,7 @@ async function loadMatches(leagueId = activeLeagueId) {
      * server-backed match list merely to reopen the scorer.
      */
     if (
-      isOfflineResumeRequest &&
+      isTrueOfflineResume &&
       requestedDashboardTab === "scoring"
     ) {
       return matches;
@@ -5363,6 +5389,99 @@ const league = await api("/api/leagues", {
     await refreshAll();
   } catch (err) {
     setError(err.message);
+  }
+}
+
+function openEditLeagueModal(league = activeLeague) {
+  if (!league) {
+    setError("Please select a league first.");
+    return;
+  }
+
+  if (!(isSuperAdmin || permissions?.canEditLeague)) {
+    setError("You do not have permission to edit this league.");
+    return;
+  }
+
+  setEditLeagueForm({
+    name: String(league.name || ""),
+    visibility: String(league.visibility || "PRIVATE").toUpperCase(),
+  });
+  setError("");
+  setShowEditLeagueModal(true);
+}
+
+async function handleUpdateLeague() {
+  if (!activeLeague?.id || editLeagueSaving) {
+    return;
+  }
+
+  const name = String(editLeagueForm.name || "").trim();
+  const visibility = String(editLeagueForm.visibility || "PRIVATE")
+    .trim()
+    .toUpperCase();
+
+  if (!name) {
+    setError("League name is required.");
+    return;
+  }
+
+  if (!["PRIVATE", "UNLISTED", "PUBLIC"].includes(visibility)) {
+    setError("Please select a valid league visibility.");
+    return;
+  }
+
+  try {
+    setEditLeagueSaving(true);
+    setError("");
+
+    const response = await fetch(`/api/leagues/${activeLeague.id}`, {
+      method: "PATCH",
+      headers: {
+        "Content-Type": "application/json",
+      },
+      body: JSON.stringify({
+        action: "UPDATE_LEAGUE",
+        name,
+        visibility,
+      }),
+    });
+
+    const data = await response.json();
+
+    if (!response.ok) {
+      throw new Error(data?.error || "Failed to update league");
+    }
+
+    const activeId = String(activeLeague.id);
+    const updatedLeagues = await loadLeagues(activeId);
+    const refreshedLeague = (updatedLeagues || []).find(
+      (league) => String(league.id) === activeId
+    );
+
+    if (refreshedLeague) {
+      setActiveLeagueId(activeId);
+      setLeagueName(refreshedLeague.name || "");
+    }
+
+    setShowEditLeagueModal(false);
+    setMessage(
+      visibility === "PUBLIC"
+        ? `✅ ${name} is now a public league.`
+        : visibility === "UNLISTED"
+          ? `✅ ${name} is now unlisted and viewable by link.`
+          : `✅ ${name} is now private.`
+    );
+    showToast(
+      "success",
+      visibility === "PUBLIC"
+        ? "🌍 League is now public"
+        : "✅ League settings updated"
+    );
+  } catch (error) {
+    setError(error?.message || "Failed to update league");
+  } finally {
+    setEditLeagueSaving(false);
   }
 }
 
@@ -11685,7 +11804,20 @@ async function loadMyLeaguePermissions(leagueId) {
     );
 
     permissionsLeagueIdRef.current = requestedLeagueId;
-    setPermissions(data.permissions);
+
+    /*
+     * Keep the authoritative league role returned by /permissions/me together
+     * with the Boolean permission flags.  Captain/Scorer invite visibility is
+     * role-driven; dropping data.role here caused activeLeagueRole to become
+     * blank for accounts whose league-list payload did not also include
+     * membershipRole.
+     */
+    setPermissions({
+      ...(data.permissions || {}),
+      role: String(data.role || data.permissions?.role || "").trim().toUpperCase(),
+      isOwner: data.isOwner === true,
+      isMember: data.isMember !== false,
+    });
   } catch (err) {
     console.error(err);
 
@@ -11771,22 +11903,51 @@ async function loadMyLeaguePermissions(leagueId) {
     setPermissionsLoading(false);
   }
 }
-async function generateInviteLink(leagueId) {
-  const res = await api(
-    `/api/leagues/${leagueId}/invite`,
-    {
-      method: "POST"
-    }
-  );
-  const data = res;
+async function generateInviteLink(leagueId, role = selectedInviteRole) {
+  if (!leagueId || inviteGenerating) return;
 
-  await navigator.clipboard.writeText(
-    data.inviteLink)
+  if (!allowedInviteRolesForCurrentUser.includes(role)) {
+    setError("Your current league role cannot create this type of invitation.");
+    return;
+  }
 
-  showToast(
-    "success",
-    "Registration link copied"
-  );
+  if (
+    role === "OWNER" &&
+    typeof window !== "undefined" &&
+    !window.confirm(
+      "Owner access grants the highest league privileges, including member and permission management. Create this Owner invite link?"
+    )
+  ) {
+    return;
+  }
+
+  try {
+    setInviteGenerating(true);
+    setError("");
+
+    const data = await api(
+      `/api/leagues/${leagueId}/invite`,
+      {
+        method: "POST",
+        body: JSON.stringify({ role }),
+      }
+    );
+
+    await navigator.clipboard.writeText(data.inviteLink);
+
+    setShowInviteRoleModal(false);
+    setMessage(
+      `✅ ${data.roleLabel || ROLE_LABELS[role] || role} invite link copied.`
+    );
+    showToast(
+      "success",
+      `✅ ${data.roleLabel || ROLE_LABELS[role] || role} invite link copied`
+    );
+  } catch (inviteError) {
+    setError(inviteError?.message || "Unable to create invitation link.");
+  } finally {
+    setInviteGenerating(false);
+  }
 }
 function showPostMatchKitPrompt(result) {
   const nextAction =
@@ -13681,7 +13842,7 @@ useEffect(() => {
 
   if (!stillExists) {
     const preserveOfflineResumeMatch =
-      isOfflineResumeRequest &&
+      isTrueOfflineResume &&
       requestedDashboardTab === "scoring" &&
       Number(requestedMatchId) === Number(selectedMatchId);
 
@@ -13702,7 +13863,7 @@ useEffect(() => {
 }, [
   scoringMatches,
   selectedMatchId,
-  isOfflineResumeRequest,
+  isTrueOfflineResume,
   requestedDashboardTab,
   requestedMatchId,
 ]);
@@ -15372,7 +15533,7 @@ useEffect(() => {
     // Explicit offline-resume navigation intentionally restores a cached match
     // even when the server-backed `matches` list is unavailable or empty.
     if (
-      isOfflineResumeRequest
+      isTrueOfflineResume
     ) {
       return;
     }
@@ -15387,7 +15548,7 @@ useEffect(() => {
   activeLeagueId,
   selectedMatchId,
   matches,
-  isOfflineResumeRequest,
+  isTrueOfflineResume,
 ]);
 
 async function handleScoringMatchSelect(matchId) {
@@ -16653,6 +16814,28 @@ const activeLeagueRole =
   )
     .trim()
     .toUpperCase();
+
+const allowedInviteRolesForCurrentUser = getAllowedInviteRoles({
+  role: activeLeagueRole,
+  permissions,
+  isSuperAdmin,
+});
+
+function openInviteRoleComposer() {
+  if (!activeLeague || !allowedInviteRolesForCurrentUser.length) {
+    setError("Your current league role cannot create member invitation links.");
+    return;
+  }
+
+  const firstAllowedRole = allowedInviteRolesForCurrentUser[0];
+
+  setSelectedInviteRole((currentRole) =>
+    allowedInviteRolesForCurrentUser.includes(currentRole)
+      ? currentRole
+      : firstAllowedRole
+  );
+  setShowInviteRoleModal(true);
+}
 
 /*
  * Add Players access is intentionally narrower than canCreatePlayer.
@@ -24610,11 +24793,22 @@ const playerRoleBadge = (row) => {
         <strong>Create League</strong>
       </button>
 
-      {activeLeague && (
+      {activeLeague && (isSuperAdmin || permissions?.canEditLeague) && (
         <button
           type="button"
           className="league-action-secondary"
-          onClick={() => generateInviteLink(activeLeague.id)}
+          onClick={() => openEditLeagueModal(activeLeague)}
+        >
+          <span aria-hidden="true">✏️</span>
+          <strong>Edit League</strong>
+        </button>
+      )}
+
+      {activeLeague && allowedInviteRolesForCurrentUser.length > 0 && (
+        <button
+          type="button"
+          className="league-action-secondary"
+          onClick={openInviteRoleComposer}
         >
           <span aria-hidden="true">🔗</span>
           <strong>Invite</strong>
@@ -25085,19 +25279,37 @@ const playerRoleBadge = (row) => {
         </div>
 
         <div className="mlcc-quick-actions">
-          <button
-            type="button"
-            onClick={() => generateInviteLink(activeLeague.id)}
-          >
-            <span className="mlcc-action-icon" aria-hidden="true">
-              🔗
-            </span>
+          {(isSuperAdmin || permissions?.canEditLeague) && (
+            <button
+              type="button"
+              onClick={() => openEditLeagueModal(activeLeague)}
+            >
+              <span className="mlcc-action-icon" aria-hidden="true">
+                ✏️
+              </span>
 
-            <span>
-              <strong>Invite</strong>
-              <small>Add league members</small>
-            </span>
-          </button>
+              <span>
+                <strong>Edit League</strong>
+                <small>Name & visibility</small>
+              </span>
+            </button>
+          )}
+
+          {allowedInviteRolesForCurrentUser.length > 0 && (
+            <button
+              type="button"
+              onClick={openInviteRoleComposer}
+            >
+              <span className="mlcc-action-icon" aria-hidden="true">
+                🔗
+              </span>
+
+              <span>
+                <strong>Invite</strong>
+                <small>Choose role & copy link</small>
+              </span>
+            </button>
+          )}
 
           {activeLeague.visibility !== "PRIVATE" &&
             activeLeague.slug && (
@@ -27393,18 +27605,21 @@ onClick={() => {
     league administrators.
   </div>
 
-  <div
-
-  >
-    <button
-      className="btn"
-      disabled={!activeLeague}
-      onClick={() =>
-        generateInviteLink(activeLeague.id)
-      }
-    >
-      📋 Copy Registration Link
-    </button>
+  <div style={{ marginTop: 12 }}>
+    {allowedInviteRolesForCurrentUser.length > 0 ? (
+      <button
+        type="button"
+        className="btn"
+        disabled={!activeLeague}
+        onClick={openInviteRoleComposer}
+      >
+        🔗 Create Role Invite
+      </button>
+    ) : (
+      <div className="permission-warning" style={{ margin: 0 }}>
+        🔒 Your current league role cannot create member invitation links.
+      </div>
+    )}
   </div>
 </div>
       <label>
@@ -29187,6 +29402,102 @@ onClick={() => {
           🔄 Refresh Activity
         </button>
   </Card>
+)}
+{showEditLeagueModal && activeLeague && (
+  <div className="league-modal-backdrop">
+    <div
+      className="modal-card app-modal-card"
+      role="dialog"
+      aria-modal="true"
+      aria-labelledby="edit-league-title"
+    >
+      <div className="league-modal-header">
+        <div>
+          <h3 id="edit-league-title">✏️ Edit League</h3>
+          <p>
+            Update the league name or control who can view the league.
+          </p>
+        </div>
+
+        <button
+          type="button"
+          className="icon-btn"
+          disabled={editLeagueSaving}
+          onClick={() => setShowEditLeagueModal(false)}
+        >
+          ✕
+        </button>
+      </div>
+
+      <div className="league-modal-body">
+        <label className="league-label" htmlFor="edit-league-name">
+          League Name
+        </label>
+
+        <input
+          id="edit-league-name"
+          className="league-input"
+          type="text"
+          value={editLeagueForm.name}
+          onChange={(event) =>
+            setEditLeagueForm((previous) => ({
+              ...previous,
+              name: event.target.value,
+            }))
+          }
+          disabled={editLeagueSaving}
+          autoFocus
+        />
+      </div>
+
+      <div className="league-modal-body">
+        <label htmlFor="edit-league-visibility">
+          <span>League Visibility</span>
+
+          <select
+            id="edit-league-visibility"
+            value={editLeagueForm.visibility}
+            onChange={(event) =>
+              setEditLeagueForm((previous) => ({
+                ...previous,
+                visibility: event.target.value,
+              }))
+            }
+            disabled={editLeagueSaving}
+          >
+            <option value="PRIVATE">🔒 Private - Members only</option>
+            <option value="UNLISTED">🔗 Unlisted - Anyone with link can view</option>
+            <option value="PUBLIC">🌐 Public - Everyone can view</option>
+          </select>
+
+          <small className="field-help">
+            Public leagues can be discovered by everyone. Unlisted leagues are
+            viewable by anyone with the link. Private leagues remain members-only.
+          </small>
+        </label>
+      </div>
+
+      <div className="league-modal-actions">
+        <button
+          type="button"
+          className="btn btn-outline"
+          disabled={editLeagueSaving}
+          onClick={() => setShowEditLeagueModal(false)}
+        >
+          Cancel
+        </button>
+
+        <button
+          type="button"
+          className="btn"
+          disabled={editLeagueSaving || !editLeagueForm.name.trim()}
+          onClick={handleUpdateLeague}
+        >
+          {editLeagueSaving ? "Saving…" : "💾 Save League"}
+        </button>
+      </div>
+    </div>
+  </div>
 )}
 {showLeagueModal && (
   <div className="league-modal-backdrop">
@@ -35288,6 +35599,130 @@ setBallForm((previous) => ({
           );
         }}
       />
+    </div>,
+    document.body
+  )}
+{showInviteRoleModal &&
+  activeLeague &&
+  typeof document !== "undefined" &&
+  createPortal(
+    <div
+      role="presentation"
+      onMouseDown={(event) => {
+        if (event.target === event.currentTarget && !inviteGenerating) {
+          setShowInviteRoleModal(false);
+        }
+      }}
+      style={{
+        position: "fixed",
+        inset: 0,
+        zIndex: 2147482500,
+        background: "rgba(2,6,23,.72)",
+        display: "grid",
+        placeItems: "center",
+        padding: 16,
+      }}
+    >
+      <section
+        role="dialog"
+        aria-modal="true"
+        aria-label="Create league invitation"
+        style={{
+          width: "min(560px, 100%)",
+          maxHeight: "88vh",
+          overflowY: "auto",
+          borderRadius: 16,
+          padding: 20,
+          background: "#0f172a",
+          color: "#f8fafc",
+          border: "1px solid rgba(148,163,184,.35)",
+          boxShadow: "0 24px 70px rgba(0,0,0,.45)",
+        }}
+      >
+        <div style={{ display: "flex", justifyContent: "space-between", gap: 16 }}>
+          <div>
+            <small style={{ opacity: 0.75 }}>Invite member to</small>
+            <h3 style={{ margin: "4px 0 0" }}>{activeLeague.name}</h3>
+          </div>
+
+          <button
+            type="button"
+            className="btn btn-outline"
+            disabled={inviteGenerating}
+            onClick={() => setShowInviteRoleModal(false)}
+            aria-label="Close invite dialog"
+          >
+            ✕
+          </button>
+        </div>
+
+        <p style={{ marginBottom: 16, opacity: 0.86 }}>
+          The selected role is securely bound to the invite link. The recipient cannot change it.
+        </p>
+
+        <label style={{ display: "block" }}>
+          <strong>Role</strong>
+          <select
+            value={selectedInviteRole}
+            onChange={(event) => setSelectedInviteRole(event.target.value)}
+            style={{ width: "100%", marginTop: 8 }}
+          >
+            {allowedInviteRolesForCurrentUser.map((role) => (
+              <option key={role} value={role}>
+                {ROLE_LABELS[role] || role}
+              </option>
+            ))}
+          </select>
+        </label>
+
+        {selectedInviteRole === "OWNER" && (
+          <div className="permission-warning" style={{ marginTop: 12 }}>
+            ⚠️ Owner is the highest league role. Only share this link with a trusted co-owner.
+          </div>
+        )}
+
+        <div
+          style={{
+            marginTop: 16,
+            padding: 14,
+            borderRadius: 12,
+            background: "rgba(148,163,184,.12)",
+          }}
+        >
+          <strong>Default permissions</strong>
+          <div style={{ marginTop: 8, display: "grid", gap: 5, fontSize: 13 }}>
+            {Object.entries(getRolePermissionDefaults(selectedInviteRole))
+              .filter(([, enabled]) => enabled === true)
+              .map(([permission]) => (
+                <span key={permission}>
+                  ✓ {permission.replace(/^can/, "").replace(/([A-Z])/g, " $1").trim()}
+                </span>
+              ))}
+          </div>
+        </div>
+
+        <div style={{ display: "flex", gap: 10, marginTop: 18, flexWrap: "wrap" }}>
+          <button
+            type="button"
+            className="btn"
+            disabled={inviteGenerating}
+            onClick={() => generateInviteLink(activeLeague.id, selectedInviteRole)}
+          >
+            {inviteGenerating
+              ? "Creating…"
+              : `📋 Copy ${ROLE_LABELS[selectedInviteRole] || selectedInviteRole} Invite Link`}
+          </button>
+
+          <button
+            type="button"
+            className="btn btn-outline"
+            disabled={inviteGenerating}
+            onClick={() => setShowInviteRoleModal(false)}
+          >
+            Cancel
+          </button>
+        </div>
+      </section>
     </div>,
     document.body
   )}

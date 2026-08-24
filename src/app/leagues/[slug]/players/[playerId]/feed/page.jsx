@@ -19,15 +19,10 @@ import {
   selectTopEstablishedRival,
 } from "@/lib/player-rivalry";
 import { shouldExcludePlayerFromLeagueAnalytics } from "@/lib/player-analytics-exclusions";
+import { getSurpriseIdentityKey } from "@/lib/surprise-player-identity";
 
 import FeedShareButton from "./FeedShareButton";
 import "@/app/player-home-feed.css";
-
-const SHARED_TEAM_TOKENS =
-  new Set([
-    "surprise1",
-    "surprise2",
-  ]);
 
 const BOWLER_WICKET_EXCLUSIONS =
   new Set([
@@ -221,41 +216,20 @@ async function canViewLeague({
   );
 }
 
-function isSharedTeam(
-  player
-) {
-  return SHARED_TEAM_TOKENS.has(
-    token(
-      player.teamName
-    )
-  );
-}
-
 function identityKey(
-  player
+  player,
+  league
 ) {
-  const playerToken =
-    token(
-      player.name
-    );
-
-  if (
-    isSharedTeam(
-      player
-    ) &&
-    playerToken
-  ) {
-    return `shared:surprise-1-2:${playerToken}`;
-  }
-
-  return `player:${number(
-    player.id
-  )}`;
+  return getSurpriseIdentityKey(
+    player,
+    league
+  );
 }
 
 function resolveIdentity({
   rosterPlayers,
   selectedPlayerId,
+  league,
 }) {
   const selected =
     rosterPlayers.find(
@@ -274,14 +248,16 @@ function resolveIdentity({
 
   const key =
     identityKey(
-      selected
+      selected,
+      league
     );
 
   const players =
     rosterPlayers.filter(
       (player) =>
         identityKey(
-          player
+          player,
+          league
         ) === key
     );
 
@@ -435,6 +411,7 @@ function buildFeed({
   identity,
   matches,
   milestones,
+  league,
   excludePlayerName = () => false,
 }) {
   const playerIds =
@@ -925,7 +902,11 @@ function buildFeed({
           })
         ),
       getIdentityKey:
-        identityKey,
+        (player) =>
+          identityKey(
+            player,
+            league
+          ),
     });
 
   const nextMatch =
@@ -1284,6 +1265,7 @@ export async function generateMetadata({
       rosterPlayers,
       selectedPlayerId:
         playerId,
+      league,
     });
 
   const visibleIdentity =
@@ -1396,6 +1378,7 @@ export default async function PlayerHomeFeedPage({
       rosterPlayers,
       selectedPlayerId:
         playerId,
+      league,
     });
 
   if (
@@ -1448,6 +1431,7 @@ export default async function PlayerHomeFeedPage({
       matches:
         league.matches,
       milestones,
+      league,
       excludePlayerName: (playerName) =>
         shouldExcludePlayerFromLeagueAnalytics(
           league,

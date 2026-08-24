@@ -4,6 +4,10 @@ import { useEffect, useMemo, useRef, useState } from "react";
 import "@/app/spectator-league-v2.css";
 import LeagueAlertControls from "@/components/league-alert-controls";
 import { shouldExcludePlayerFromLeagueAnalytics } from "@/lib/player-analytics-exclusions";
+import {
+  getLeagueAnalyticsPlayerKey,
+  isSurpriseCricketLeague,
+} from "@/lib/surprise-player-identity";
 
 function normalizeStatus(status) {
   return String(status || "SCHEDULED").toUpperCase();
@@ -81,12 +85,24 @@ function buildPublicStats(matches, league) {
     for (const ball of match.balls || []) {
       const strikerId = Number(ball.strikerId);
       const bowlerId = Number(ball.bowlerId);
+      const strikerName = ball.striker?.name || `Player ${strikerId}`;
+      const bowlerName = ball.bowler?.name || `Player ${bowlerId}`;
+      const strikerKey = getLeagueAnalyticsPlayerKey({
+        league,
+        playerId: strikerId,
+        playerName: strikerName,
+      });
+      const bowlerKey = getLeagueAnalyticsPlayerKey({
+        league,
+        playerId: bowlerId,
+        playerName: bowlerName,
+      });
 
       if (strikerId) {
-        if (!batting.has(strikerId)) {
-          batting.set(strikerId, {
+        if (!batting.has(strikerKey)) {
+          batting.set(strikerKey, {
             playerId: strikerId,
-            playerName: ball.striker?.name || `Player ${strikerId}`,
+            playerName: strikerName,
             teamName: ball.striker?.team?.name || "",
             runs: 0,
             balls: 0,
@@ -96,7 +112,7 @@ function buildPublicStats(matches, league) {
           });
         }
 
-        const row = batting.get(strikerId);
+        const row = batting.get(strikerKey);
         row.matches.add(match.id);
         row.runs += Number(ball.runsOffBat || 0);
 
@@ -113,10 +129,10 @@ function buildPublicStats(matches, league) {
       }
 
       if (bowlerId) {
-        if (!bowling.has(bowlerId)) {
-          bowling.set(bowlerId, {
+        if (!bowling.has(bowlerKey)) {
+          bowling.set(bowlerKey, {
             playerId: bowlerId,
-            playerName: ball.bowler?.name || `Player ${bowlerId}`,
+            playerName: bowlerName,
             teamName: ball.bowler?.team?.name || "",
             balls: 0,
             runs: 0,
@@ -126,7 +142,7 @@ function buildPublicStats(matches, league) {
           });
         }
 
-        const row = bowling.get(bowlerId);
+        const row = bowling.get(bowlerKey);
         row.matches.add(match.id);
 
         const chargedRuns =
@@ -199,6 +215,12 @@ export default function PublicLeagueViewClient({ league, numericLeagueId }) {
   const [publicSearch, setPublicSearch] = useState("");
   const [publicStatsTab, setPublicStatsTab] = useState("batting");
   const [publicLeadersTab, setPublicLeadersTab] = useState("batting");
+  const [leagueStats, setLeagueStats] = useState(null);
+  const [leagueStatsLoading, setLeagueStatsLoading] = useState(false);
+  const [leagueStatsError, setLeagueStatsError] = useState("");
+  const [leagueAwards, setLeagueAwards] = useState(null);
+  const [leagueAwardsLoading, setLeagueAwardsLoading] = useState(false);
+  const [leagueAwardsError, setLeagueAwardsError] = useState("");
   const [isFollowing, setIsFollowing] = useState(Boolean(league.isFollowing));
   const [followBusy, setFollowBusy] = useState(false);
 
@@ -359,9 +381,25 @@ async function toggleFollowLeague() {
     [filteredMatches, league.teams]
   );
 
-  const { battingRows, bowlingRows } = useMemo(
-    () => buildPublicStats(filteredMatches, league),
+  /*
+   * Statistical eligibility is intentionally stricter than match-history
+   * eligibility. Abandoned/cancelled/no-result/live/scheduled matches may
+   * remain visible in the public match lists, but must never contribute
+   * partial player performance to career statistics.
+   */
+  const statsEligibleMatches = useMemo(
+    () =>
+      filteredMatches.filter((match) =>
+        ["COMPLETED", "COMPLETED_LOCKED", "COMPLETED_CORRECTED"].includes(
+          normalizeStatus(match?.status)
+        )
+      ),
     [filteredMatches]
+  );
+
+  const { battingRows, bowlingRows } = useMemo(
+    () => buildPublicStats(statsEligibleMatches, league),
+    [statsEligibleMatches]
   );
 
   const topRunScorer = battingRows[0];
@@ -373,6 +411,81 @@ async function toggleFollowLeague() {
   const bestEconomy = [...bowlingRows]
     .filter((p) => p.balls >= 6)
     .sort((a, b) => Number(a.economy) - Number(b.economy))[0];
+
+  useEffect(() => {
+    let cancelled = false;
+
+    async function loadLeagueStats() {
+      if (!hasValidLeagueId) return;
+
+      try {
+        setLeagueStatsLoading(true);
+        setLeagueStatsError("");
+
+        const response = await fetch(
+          `/api/leagues/${resolvedLeagueId}/stats`,
+          { cache: "no-store" }
+        );
+        const data = await response.json().catch(() => ({}));
+
+        if (!response.ok) {
+          throw new Error(data?.error || "Unable to load league statistics.");
+        }
+
+        if (!cancelled) setLeagueStats(data);
+      } catch (error) {
+        if (!cancelled) {
+          setLeagueStatsError(error?.message || "Unable to load league statistics.");
+        }
+      } finally {
+        if (!cancelled) setLeagueStatsLoading(false);
+      }
+    }
+
+    loadLeagueStats();
+    return () => { cancelled = true; };
+  }, [hasValidLeagueId, resolvedLeagueId]);
+
+  useEffect(() => {
+    let cancelled = false;
+
+    async function loadLeagueAwards() {
+      if (!hasValidLeagueId) return;
+
+      try {
+        setLeagueAwardsLoading(true);
+        setLeagueAwardsError("");
+
+        const params = new URLSearchParams();
+        if (selectedSeriesId) {
+          params.set("seriesId", String(selectedSeriesId));
+        } else {
+          params.set("period", "MONTH");
+        }
+
+        const response = await fetch(
+          `/api/leagues/${resolvedLeagueId}/awards?${params.toString()}`,
+          { cache: "no-store" }
+        );
+        const data = await response.json().catch(() => ({}));
+
+        if (!response.ok) {
+          throw new Error(data?.error || "Unable to load league awards.");
+        }
+
+        if (!cancelled) setLeagueAwards(data);
+      } catch (error) {
+        if (!cancelled) {
+          setLeagueAwardsError(error?.message || "Unable to load league awards.");
+        }
+      } finally {
+        if (!cancelled) setLeagueAwardsLoading(false);
+      }
+    }
+
+    loadLeagueAwards();
+    return () => { cancelled = true; };
+  }, [hasValidLeagueId, resolvedLeagueId, selectedSeriesId]);
 
 return (
     <main className="slp-page">
@@ -606,28 +719,46 @@ return (
             <section className="slp-section">
               <SectionHeader
                 eyebrow="Player performance"
-                title="Statistics"
-                description="Batting and bowling numbers from selected matches"
+                title="Statistics & Awards"
+                description="League-wide completed-match batting, bowling, fielding, captaincy, wicketkeeping, rankings and awards"
               />
 
               <SegmentedControl
                 value={publicStatsTab}
                 onChange={setPublicStatsTab}
                 items={[
-                  ["batting", "Batting", battingRows.length],
-                  ["bowling", "Bowling", bowlingRows.length],
+                  ["batting", "Batting", leagueStats?.batting?.length || battingRows.length],
+                  ["bowling", "Bowling", leagueStats?.bowling?.length || bowlingRows.length],
+                  ["fielding", "Fielding", leagueStats?.fielding?.length || 0],
+                  ["captaincy", "Captaincy", leagueStats?.captaincy?.length || 0],
+                  ["wicketkeeping", "Keeping", leagueStats?.wicketkeeping?.length || 0],
+                  ["rankings", "Rankings", null],
+                  ["awards", "Awards", leagueAwards?.awards?.length || 0],
                 ]}
               />
 
-              {battingRows.length === 0 && bowlingRows.length === 0 ? (
-                <EmptyState
-                  title="No statistics yet"
-                  message="Statistics will appear after balls are scored."
-                />
+              {leagueStatsLoading && publicStatsTab !== "awards" ? (
+                <EmptyState title="Loading statistics" message="Building the completed-match league statistics..." />
+              ) : leagueStatsError && publicStatsTab !== "awards" ? (
+                <EmptyState title="Statistics unavailable" message={leagueStatsError} />
               ) : publicStatsTab === "batting" ? (
-                <StatsTable type="batting" rows={battingRows} />
+                <DashboardStatsTable type="batting" rows={leagueStats?.batting || battingRows} />
+              ) : publicStatsTab === "bowling" ? (
+                <DashboardStatsTable type="bowling" rows={leagueStats?.bowling || bowlingRows} />
+              ) : publicStatsTab === "fielding" ? (
+                <DashboardStatsTable type="fielding" rows={leagueStats?.fielding || []} />
+              ) : publicStatsTab === "captaincy" ? (
+                <DashboardStatsTable type="captaincy" rows={leagueStats?.captaincy || []} />
+              ) : publicStatsTab === "wicketkeeping" ? (
+                <DashboardStatsTable type="wicketkeeping" rows={leagueStats?.wicketkeeping || []} />
+              ) : publicStatsTab === "rankings" ? (
+                <PublicRankings rankings={leagueStats?.rankings} />
+              ) : leagueAwardsLoading ? (
+                <EmptyState title="Loading awards" message="Calculating league awards from completed matches..." />
+              ) : leagueAwardsError ? (
+                <EmptyState title="Awards unavailable" message={leagueAwardsError} />
               ) : (
-                <StatsTable type="bowling" rows={bowlingRows} />
+                <PublicAwards awardsData={leagueAwards} />
               )}
             </section>
           )}
@@ -1348,6 +1479,108 @@ function StatsTable({ type, rows }) {
           ))}
         </tbody>
       </table>
+    </div>
+  );
+}
+
+function DashboardStatsTable({ type, rows = [] }) {
+  if (!rows.length) {
+    return <EmptyState title="No statistics yet" message="No qualifying completed-match statistics are available." />;
+  }
+
+  const headers = {
+    batting: ["#", "Player", "Team", "M", "Inn", "Runs", "HS", "Avg", "SR", "4s", "6s"],
+    bowling: ["#", "Player", "Team", "M", "Overs", "Runs", "Wkts", "Best", "Avg", "SR", "Eco", "Dots"],
+    fielding: ["#", "Player", "Team", "M", "Catches", "Run outs", "Stumpings", "Assists", "Total"],
+    captaincy: ["#", "Captain", "Team", "Played", "Won", "Lost", "Win %"],
+    wicketkeeping: ["#", "Wicketkeeper", "Team", "Catches", "Stumpings", "Run outs", "Total"],
+  }[type] || ["#", "Player"];
+
+  return (
+    <div className="slp-table-wrap">
+      <table className="slp-table">
+        <thead><tr>{headers.map((header) => <th key={header}>{header}</th>)}</tr></thead>
+        <tbody>
+          {rows.map((row, index) => {
+            const playerName = row.playerName || row.name || "Unknown player";
+            const teamName = row.teamName || "—";
+            return (
+              <tr key={`${row.playerId || playerName}-${index}`}>
+                <td><span className="slp-rank">{index + 1}</span></td>
+                <td><span className="slp-table-team"><span className="slp-avatar">{getInitials(playerName)}</span><strong>{playerName}</strong></span></td>
+                <td>{teamName}</td>
+                {type === "batting" && <><td>{row.matches ?? 0}</td><td>{row.battingInnings ?? 0}</td><td><strong>{row.runs ?? 0}</strong></td><td>{row.highestScore ?? 0}</td><td>{row.average ?? "0.00"}</td><td>{row.strikeRate ?? "0.00"}</td><td>{row.fours ?? 0}</td><td>{row.sixes ?? 0}</td></>}
+                {type === "bowling" && <><td>{row.matches ?? 0}</td><td>{row.bowlingOvers ?? row.overs ?? "0.0"}</td><td>{row.bowlingRuns ?? row.runs ?? 0}</td><td><strong>{row.wickets ?? 0}</strong></td><td>{row.bestBowling ?? "-"}</td><td>{row.bowlingAverage ?? "0.00"}</td><td>{row.bowlingStrikeRate ?? "0.00"}</td><td>{row.economy ?? "0.00"}</td><td>{row.dots ?? 0}</td></>}
+                {type === "fielding" && <><td>{row.matches ?? 0}</td><td>{row.catches ?? 0}</td><td>{row.runOuts ?? 0}</td><td>{row.stumpings ?? 0}</td><td>{row.assists ?? 0}</td><td><strong>{row.fieldingTotal ?? 0}</strong></td></>}
+                {type === "captaincy" && <><td>{row.played ?? 0}</td><td>{row.won ?? 0}</td><td>{row.lost ?? 0}</td><td><strong>{row.played ? ((Number(row.won || 0) / Number(row.played)) * 100).toFixed(1) : "0.0"}%</strong></td></>}
+                {type === "wicketkeeping" && <><td>{row.catches ?? 0}</td><td>{row.stumpings ?? 0}</td><td>{row.runOuts ?? 0}</td><td><strong>{Number(row.catches || 0) + Number(row.stumpings || 0) + Number(row.runOuts || 0)}</strong></td></>}
+              </tr>
+            );
+          })}
+        </tbody>
+      </table>
+    </div>
+  );
+}
+
+function PublicRankings({ rankings }) {
+  if (!rankings) {
+    return <EmptyState title="No rankings yet" message="Rankings will appear after completed matches." />;
+  }
+
+  const groups = [
+    ["Top run scorers", rankings.topRunScorers, (row) => `${row.runs || 0} runs`],
+    ["Top wicket takers", rankings.topWicketTakers, (row) => `${row.wickets || 0} wickets`],
+    ["Best strike rate", rankings.bestStrikeRate, (row) => `${row.strikeRate || "0.00"} SR`],
+    ["Best economy", rankings.bestEconomy, (row) => `${row.economy || "0.00"} eco`],
+    ["Most sixes", rankings.mostSixes, (row) => `${row.sixes || 0} sixes`],
+    ["Most catches", rankings.mostCatches, (row) => `${row.catches || 0} catches`],
+    ["Best all-rounders", rankings.bestAllRounders, (row) => `${row.allRounderPoints || 0} pts`],
+  ];
+
+  return (
+    <div className="slp-ranking-grid">
+      {groups.map(([title, rows, value]) => (
+        <article className="slp-ranking-card" key={title}>
+          <h3>{title}</h3>
+          {(rows || []).slice(0, 5).map((row, index) => (
+            <div className="slp-ranking-row" key={`${title}-${row.playerId}-${index}`}>
+              <span>{index + 1}</span>
+              <strong>{row.playerName}</strong>
+              <small>{row.teamName || "—"}</small>
+              <b>{value(row)}</b>
+            </div>
+          ))}
+        </article>
+      ))}
+    </div>
+  );
+}
+
+function PublicAwards({ awardsData }) {
+  const awards = awardsData?.awards || [];
+  const team = awardsData?.teamOfWeek || [];
+  const periodLabel = awardsData?.selectedSeries?.name || (awardsData?.period?.type === "MONTH" ? "Current month" : "Current period");
+
+  if (!awards.length) {
+    return <EmptyState title="No awards yet" message="Awards will appear after qualifying completed matches." />;
+  }
+
+  return (
+    <div>
+      <div className="slp-awards-context"><strong>🏆 {periodLabel}</strong><span>{awardsData?.counts?.periodMatches || 0} qualifying matches</span></div>
+      <div className="slp-awards-grid">
+        {awards.filter((award) => award.available !== false || award.alwaysVisible).map((award) => (
+          <article className="slp-award-card" key={award.key}>
+            <span className="slp-award-icon">{award.icon || "🏆"}</span>
+            <div><small>{award.title}</small><h3>{award.playerName || "Awaiting data"}</h3><em>{award.teamName || "—"}</em></div>
+            <strong>{award.value || "—"}</strong>
+            <p>{award.subtitle || ""}</p>
+            {award.explanation ? <details><summary>How calculated</summary><p>{award.explanation}</p></details> : null}
+          </article>
+        ))}
+      </div>
+      {team.length ? <div className="slp-team-award"><h3>👥 Team of {awardsData?.period?.type === "SERIES" ? "Series" : "Period"}</h3><div>{team.map((player) => <span key={`${player.playerId}-${player.role}`}>{player.playerName}<small>{player.role}</small></span>)}</div></div> : null}
     </div>
   );
 }

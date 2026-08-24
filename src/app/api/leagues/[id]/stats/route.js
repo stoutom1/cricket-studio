@@ -8,6 +8,11 @@ import {
   filterPlayerAnalyticsRows,
   shouldExcludePlayerFromLeagueAnalytics,
 } from "@/lib/player-analytics-exclusions";
+import {
+  getLeagueAnalyticsPlayerKey,
+  isSurpriseCricketLeague,
+  normalizeSurprisePlayerName,
+} from "@/lib/surprise-player-identity";
 
 export const runtime = "nodejs";
 
@@ -150,14 +155,12 @@ function ensurePlayer(statsMap, player) {
 
   return statsMap.get(player.id);
 }
-function playerStatsKey(player, shouldMergePlayersByName) {
-  if (shouldMergePlayersByName) {
-    return String(player.name || "")
-      .trim()
-      .toLowerCase();
-  }
-
-  return String(player.id);
+function playerStatsKey(player, league) {
+  return getLeagueAnalyticsPlayerKey({
+    league,
+    playerId: player?.id,
+    playerName: player?.name,
+  });
 }
 function getKeeperForBall(match, ball, keeperChanges = []) {
   const inningsNo = Number(ball.inningsNo);
@@ -207,18 +210,23 @@ function getKeeperForBall(match, ball, keeperChanges = []) {
     ? Number(match.teamAWicketKeeperId)
     : Number(match.teamBWicketKeeperId);
 }
-function mergeCaptaincy(allStats) {
+function mergeCaptaincy(allStats, league) {
   const map = new Map();
 
   for (const stat of allStats) {
     for (const row of stat.captaincy || []) {
-      const key = Number(row.playerId);
+      const key = getLeagueAnalyticsPlayerKey({
+        league,
+        playerId: row.playerId,
+        playerName: row.playerName,
+      });
 
       if (!map.has(key)) {
         map.set(key, {
-          playerId: key,
+          playerId: row.playerId,
           playerName: row.playerName,
           teamName: row.teamName,
+          teamNames: new Set(row.teamName ? [row.teamName] : []),
           played: 0,
           won: 0,
           lost: 0,
@@ -227,28 +235,36 @@ function mergeCaptaincy(allStats) {
 
       const existing = map.get(key);
 
+      if (row.teamName) existing.teamNames.add(row.teamName);
+      existing.teamName = [...existing.teamNames].join(" / ") || existing.teamName || "";
+
       existing.played += Number(row.played || 0);
       existing.won += Number(row.won || 0);
       existing.lost += Number(row.lost || 0);
     }
   }
 
-  return [...map.values()].sort(
-    (a, b) => b.won - a.won || b.played - a.played
-  );
+  return [...map.values()]
+    .map(({ teamNames, ...row }) => row)
+    .sort((a, b) => b.won - a.won || b.played - a.played);
 }
-function mergeWicketkeeping(allStats) {
+function mergeWicketkeeping(allStats, league) {
   const map = new Map();
 
   for (const stat of allStats) {
     for (const row of stat.wicketkeeping || []) {
-      const key = Number(row.playerId);
+      const key = getLeagueAnalyticsPlayerKey({
+        league,
+        playerId: row.playerId,
+        playerName: row.playerName,
+      });
 
       if (!map.has(key)) {
         map.set(key, {
-          playerId: key,
+          playerId: row.playerId,
           playerName: row.playerName,
           teamName: row.teamName,
+          teamNames: new Set(row.teamName ? [row.teamName] : []),
           catches: 0,
           stumpings: 0,
           runOuts: 0,
@@ -258,6 +274,9 @@ function mergeWicketkeeping(allStats) {
 
       const existing = map.get(key);
 
+      if (row.teamName) existing.teamNames.add(row.teamName);
+      existing.teamName = [...existing.teamNames].join(" / ") || existing.teamName || "";
+
       existing.catches += Number(row.catches || 0);
       existing.stumpings += Number(row.stumpings || 0);
       existing.runOuts += Number(row.runOuts || 0);
@@ -265,20 +284,13 @@ function mergeWicketkeeping(allStats) {
     }
   }
 
-  return [...map.values()].sort(
-    (a, b) => b.dismissals - a.dismissals
-  );
+  return [...map.values()]
+    .map(({ teamNames, ...row }) => row)
+    .sort((a, b) => b.dismissals - a.dismissals);
 }
 export async function GET(req, { params }) {
   try {
     const session = await getServerSession(authOptions);
-
-    if (!session?.user?.email) {
-      return NextResponse.json(
-        { error: "Unauthorized" },
-        { status: 401 }
-      );
-    }
 
     const { id } = await params;
     const leagueId = Number(id);
@@ -295,32 +307,35 @@ export async function GET(req, { params }) {
 });
 
 const shouldMergePlayersByName =
-  league?.name?.trim().toLowerCase() ===
-  "surprise cricket league";
+  isSurpriseCricketLeague(league);
 
-    const user = await prisma.user.findUnique({
-      where: { email: session.user.email }
-    });
-
-    if (!user) {
-      return NextResponse.json(
-        { error: "User not found" },
-        { status: 404 }
+    const publicReadAllowed =
+      ["PUBLIC", "UNLISTED"].includes(
+        String(league?.visibility || "PRIVATE").toUpperCase()
       );
-    }
 
-    const membership = await prisma.leagueMember.findFirst({
-      where: {
-        leagueId,
-        userId: user.id
-      }
-    });
-  const superAdmin = isSuperAdmin(session);
+    const user = session?.user?.email
+      ? await prisma.user.findUnique({
+          where: { email: session.user.email }
+        })
+      : null;
 
-    if (!superAdmin && !membership) {
+    const membership = user
+      ? await prisma.leagueMember.findFirst({
+          where: {
+            leagueId,
+            userId: user.id
+          }
+        })
+      : null;
+
+    const superAdmin =
+      Boolean(session) && isSuperAdmin(session);
+
+    if (!publicReadAllowed && !superAdmin && !membership) {
       return NextResponse.json(
-        { error: "You do not have access to this league" },
-        { status: 403 }
+        { error: session ? "You do not have access to this league" : "Unauthorized" },
+        { status: session ? 403 : 401 }
       );
     }
 
@@ -366,16 +381,15 @@ const allStats = matches.map((match) =>
     const statsMap = new Map();
 
 for (const player of allPlayers) {
-  const key = playerStatsKey(player, shouldMergePlayersByName);
+  const key = playerStatsKey(player, league);
 
   if (!statsMap.has(key)) {
     statsMap.set(key, {
       playerId: key,
       playerName: player.name,
       teamId: player.teamId,
-      teamName: shouldMergePlayersByName
-        ? "Surprise 1 / Surprise 2"
-        : player.team?.name || "",
+      teamName: player.team?.name || "",
+      teamNames: new Set(player.team?.name ? [player.team.name] : []),
 
       matchesSet: new Set(),
 
@@ -402,7 +416,13 @@ for (const player of allPlayers) {
     });
   }
 
-  playerMap.set(Number(player.id), statsMap.get(key));
+  const mergedPlayer = statsMap.get(key);
+  if (player.team?.name) {
+    mergedPlayer.teamNames.add(player.team.name);
+    mergedPlayer.teamName = [...mergedPlayer.teamNames].join(" / ");
+  }
+
+  playerMap.set(Number(player.id), mergedPlayer);
 }
 
     /*
@@ -594,7 +614,10 @@ const assistant = playerMap.get(Number(ball.assistantFielderId));
         playerId: row.playerId,
         playerName: row.playerName,
         teamId: row.teamId,
-        teamName: row.teamName,
+        teamName:
+          row.teamNames instanceof Set && row.teamNames.size
+            ? [...row.teamNames].join(" / ")
+            : row.teamName || "",
         matches: matchesPlayed,
 
         battingInnings: row.battingInnings,
@@ -669,11 +692,11 @@ const rankings = {
     .sort((a, b) => b.allRounderPoints - a.allRounderPoints)
 };
 const captaincy = filterPlayerAnalyticsRows(
-  mergeCaptaincy(allStats),
+  mergeCaptaincy(allStats, league),
   league
 );
 const wicketkeeping = filterPlayerAnalyticsRows(
-  mergeWicketkeeping(allStats),
+  mergeWicketkeeping(allStats, league),
   league
 );
 

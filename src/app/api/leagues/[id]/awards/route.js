@@ -10,6 +10,9 @@ import {
 import {
   shouldExcludePlayerFromLeagueAnalytics,
 } from "@/lib/player-analytics-exclusions";
+import {
+  getLeagueAnalyticsPlayerKey,
+} from "@/lib/surprise-player-identity";
 
 export const runtime = "nodejs";
 export const dynamic = "force-dynamic";
@@ -105,14 +108,12 @@ function rounded(value, digits = 2) {
   );
 }
 
-function playerKey(playerId, playerName) {
-  return playerId
-    ? `ID:${playerId}`
-    : `NAME:${String(
-        playerName || ""
-      )
-        .trim()
-        .toLowerCase()}`;
+function playerKey(playerId, playerName, league = null) {
+  return getLeagueAnalyticsPlayerKey({
+    league,
+    playerId,
+    playerName,
+  });
 }
 
 function addMapValue(map, key, factory) {
@@ -212,6 +213,50 @@ function buildPlayerMap(match) {
   return map;
 }
 
+function resolveStatRowIdentity(row, playerMap) {
+  const rosterPlayer =
+    playerMap.get(Number(row?.playerId || 0));
+
+  return {
+    playerId:
+      rosterPlayer?.id ||
+      row?.playerId ||
+      null,
+    playerName:
+      rosterPlayer?.name ||
+      row?.playerName ||
+      "Unknown player",
+    teamId:
+      rosterPlayer?.teamId ||
+      row?.teamId ||
+      null,
+    teamName:
+      rosterPlayer?.teamName ||
+      row?.teamName ||
+      "",
+  };
+}
+
+function rememberPlayerTeam(item, identity) {
+  if (!item || !identity) return;
+
+  if (!(item.teamNames instanceof Set)) {
+    item.teamNames = new Set();
+  }
+
+  if (identity.teamName) {
+    item.teamNames.add(identity.teamName);
+  }
+
+  if (!item.teamId && identity.teamId) {
+    item.teamId = Number(identity.teamId);
+  }
+
+  if (identity.playerName && identity.playerName !== "Unknown player") {
+    item.playerName = identity.playerName;
+  }
+}
+
 function winningTeamId(match) {
   const playerMap =
     buildPlayerMap(match);
@@ -263,7 +308,7 @@ function winningTeamId(match) {
   return null;
 }
 
-function aggregatePlayers(matches) {
+function aggregatePlayers(matches, league) {
   const players =
     new Map();
 
@@ -274,17 +319,30 @@ function aggregatePlayers(matches) {
     const stats =
       buildMatchStats(match);
 
+    const playerMap =
+      buildPlayerMap(match);
+
     const matchPlayers =
       new Set();
+
+    const matchPlayerTeamIds =
+      new Map();
 
     for (
       const row of
       stats.batting || []
     ) {
+      const identity =
+        resolveStatRowIdentity(
+          row,
+          playerMap
+        );
+
       const key =
         playerKey(
-          row.playerId,
-          row.playerName
+          identity.playerId,
+          identity.playerName,
+          league
         );
 
       const item =
@@ -293,8 +351,10 @@ function aggregatePlayers(matches) {
           key,
           () => ({
             ...playerIdentity(
-              row
+              identity
             ),
+
+            teamNames: new Set(),
 
             matches: 0,
             battingInnings: 0,
@@ -324,17 +384,17 @@ function aggregatePlayers(matches) {
           })
         );
 
-      item.playerName =
-        row.playerName ||
-        item.playerName;
+      rememberPlayerTeam(
+        item,
+        identity
+      );
 
-      item.teamId =
-        row.teamId ||
-        item.teamId;
-
-      item.teamName =
-        row.teamName ||
-        item.teamName;
+      if (identity.teamId) {
+        matchPlayerTeamIds.set(
+          key,
+          Number(identity.teamId)
+        );
+      }
 
       item.battingInnings += 1;
       item.runs +=
@@ -396,10 +456,17 @@ function aggregatePlayers(matches) {
       const row of
       stats.bowling || []
     ) {
+      const identity =
+        resolveStatRowIdentity(
+          row,
+          playerMap
+        );
+
       const key =
         playerKey(
-          row.playerId,
-          row.playerName
+          identity.playerId,
+          identity.playerName,
+          league
         );
 
       const item =
@@ -408,8 +475,10 @@ function aggregatePlayers(matches) {
           key,
           () => ({
             ...playerIdentity(
-              row
+              identity
             ),
+
+            teamNames: new Set(),
 
             matches: 0,
             battingInnings: 0,
@@ -439,17 +508,17 @@ function aggregatePlayers(matches) {
           })
         );
 
-      item.playerName =
-        row.playerName ||
-        item.playerName;
+      rememberPlayerTeam(
+        item,
+        identity
+      );
 
-      item.teamId =
-        row.teamId ||
-        item.teamId;
-
-      item.teamName =
-        row.teamName ||
-        item.teamName;
+      if (identity.teamId) {
+        matchPlayerTeamIds.set(
+          key,
+          Number(identity.teamId)
+        );
+      }
 
       const wickets =
         safeNumber(
@@ -533,9 +602,6 @@ function aggregatePlayers(matches) {
     const fielding =
       new Map();
 
-    const playerMap =
-      buildPlayerMap(match);
-
     for (
       const ball of
       match.balls || []
@@ -583,9 +649,10 @@ function aggregatePlayers(matches) {
 
         const key =
           playerKey(
-            player.id,
-            player.name
-          );
+          player.id,
+          player.name,
+          league
+        );
 
         const row =
           addMapValue(
@@ -653,9 +720,10 @@ function aggregatePlayers(matches) {
         if (keeper) {
           const key =
             playerKey(
-              keeper.id,
-              keeper.name
-            );
+          keeper.id,
+          keeper.name,
+          league
+        );
 
           const row =
             addMapValue(
@@ -731,6 +799,18 @@ function aggregatePlayers(matches) {
           })
         );
 
+      rememberPlayerTeam(
+        item,
+        row
+      );
+
+      if (row.teamId) {
+        matchPlayerTeamIds.set(
+          key,
+          Number(row.teamId)
+        );
+      }
+
       item.catches +=
         row.catches;
       item.runOuts +=
@@ -791,10 +871,14 @@ function aggregatePlayers(matches) {
 
       item.matches += 1;
 
+      const matchTeamId =
+        matchPlayerTeamIds.get(key) ||
+        item.teamId;
+
       if (
         winnerId &&
         Number(
-          item.teamId
+          matchTeamId
         ) ===
           Number(
             winnerId
@@ -881,8 +965,24 @@ function aggregatePlayers(matches) {
             : 0
         );
 
+      const resolvedTeamNames =
+        item.teamNames instanceof Set
+          ? [...item.teamNames].filter(Boolean)
+          : [];
+
+      const { teamNames, ...serializableItem } =
+        item;
+
       return {
-        ...item,
+        ...serializableItem,
+
+        teamName:
+          resolvedTeamNames.length
+            ? resolvedTeamNames.join(" / ")
+            : serializableItem.teamName || "Unknown team",
+
+        teamNames:
+          resolvedTeamNames,
 
         battingAverage:
           rounded(
@@ -1108,6 +1208,7 @@ function calculateBestPartnership(matches, isExcludedPlayer = () => false) {
 function calculateMostImproved({
   currentPlayers,
   previousPlayers,
+  league,
 }) {
   const previousMap =
     new Map(
@@ -1115,7 +1216,8 @@ function calculateMostImproved({
         (player) => [
           playerKey(
             player.playerId,
-            player.playerName
+            player.playerName,
+            league
           ),
           player,
         ]
@@ -1130,7 +1232,8 @@ function calculateMostImproved({
             previousMap.get(
               playerKey(
                 player.playerId,
-                player.playerName
+                player.playerName,
+                league
               )
             );
 
@@ -1197,7 +1300,7 @@ function calculateMostImproved({
   return candidates[0] || null;
 }
 
-function calculateTeamOfWeek(players) {
+function calculateTeamOfWeek(players, league) {
   if (!players.length) {
     return [];
   }
@@ -1218,7 +1321,8 @@ function calculateTeamOfWeek(players) {
     const key =
       playerKey(
         player.playerId,
-        player.playerName
+        player.playerName,
+        league
       );
 
     if (used.has(key)) {
@@ -1671,7 +1775,8 @@ function calculateAwards({
 
   const weeklyPlayers =
     aggregatePlayers(
-      weeklyMatches
+      weeklyMatches,
+      league
     ).filter(
       (player) =>
         !isExcludedPlayer(
@@ -1681,7 +1786,8 @@ function calculateAwards({
 
   const previousPlayers =
     aggregatePlayers(
-      previousWeekMatches
+      previousWeekMatches,
+      league
     ).filter(
       (player) =>
         !isExcludedPlayer(
@@ -1691,7 +1797,8 @@ function calculateAwards({
 
   const seasonPlayers =
     aggregatePlayers(
-      seasonMatches
+      seasonMatches,
+      league
     ).filter(
       (player) =>
         !isExcludedPlayer(
@@ -1783,6 +1890,7 @@ function calculateAwards({
         weeklyPlayers,
 
       previousPlayers,
+      league,
     });
 
   const bestPartnership =
@@ -2040,7 +2148,8 @@ function calculateAwards({
 
     teamOfWeek:
       calculateTeamOfWeek(
-        weeklyPlayers
+        weeklyPlayers,
+        league
       ),
 
     weeklyLeaders: {
@@ -2106,20 +2215,6 @@ export async function GET(
     await getServerSession(
       authOptions
     );
-
-  if (
-    !session?.user?.email
-  ) {
-    return NextResponse.json(
-      {
-        error:
-          "Unauthorized",
-      },
-      {
-        status: 401,
-      }
-    );
-  }
 
   const { id } =
     await params;
@@ -2231,117 +2326,78 @@ export async function GET(
       "SERIES";
   }
 
-  const user =
-    await prisma.user
-      .findUnique({
-        where: {
-          email:
-            session.user.email,
-        },
+  const accessLeague =
+    await prisma.league.findUnique({
+      where: { id: leagueId },
+      select: { visibility: true },
+    });
 
-        select: {
-          id: true,
-        },
-      });
-
-  if (!user) {
+  if (!accessLeague) {
     return NextResponse.json(
-      {
-        error:
-          "User not found.",
-      },
-      {
-        status: 404,
-      }
+      { error: "League not found." },
+      { status: 404 }
     );
   }
 
+  const publicReadAllowed =
+    ["PUBLIC", "UNLISTED"].includes(
+      String(accessLeague.visibility || "PRIVATE").toUpperCase()
+    );
+
+  const user =
+    session?.user?.email
+      ? await prisma.user.findUnique({
+          where: { email: session.user.email },
+          select: { id: true },
+        })
+      : null;
+
   const league =
-    await prisma.league
-      .findUnique({
-        where: {
-          id:
-            leagueId,
+    await prisma.league.findUnique({
+      where: { id: leagueId },
+      select: {
+        id: true,
+        name: true,
+        ownerId: true,
+        createdAt: true,
+        visibility: true,
+        series: {
+          orderBy: [{ year: "desc" }, { name: "asc" }],
+          select: { id: true, name: true, year: true, status: true },
         },
-
-        select: {
-          id: true,
-          name: true,
-          ownerId: true,
-          createdAt: true,
-
-          series: {
-            orderBy: [
-              {
-                year:
-                  "desc",
-              },
-
-              {
-                name:
-                  "asc",
-              },
-            ],
-
-            select: {
-              id: true,
-              name: true,
-              year: true,
-              status: true,
+        members: user
+          ? {
+              where: { userId: user.id },
+              select: { id: true, canViewStats: true },
+            }
+          : {
+              where: { id: -1 },
+              select: { id: true, canViewStats: true },
             },
-          },
-
-          members: {
-            where: {
-              userId:
-                user.id,
-            },
-
-            select: {
-              id: true,
-              canViewStats:
-                true,
-            },
-          },
-        },
-      });
+      },
+    });
 
   if (!league) {
     return NextResponse.json(
-      {
-        error:
-          "League not found.",
-      },
-      {
-        status: 404,
-      }
+      { error: "League not found." },
+      { status: 404 }
     );
   }
 
   const isOwner =
-    league.ownerId ===
-    user.id;
+    Boolean(user) &&
+    league.ownerId === user.id;
 
-  const member =
-    league.members[0] ||
-    null;
+  const member = league.members[0] || null;
 
   if (
+    !publicReadAllowed &&
     !isOwner &&
-    (
-      !member ||
-      member.canViewStats !==
-        true
-    )
+    (!member || member.canViewStats !== true)
   ) {
     return NextResponse.json(
-      {
-        error:
-          "You do not have permission to view league awards.",
-      },
-      {
-        status: 403,
-      }
+      { error: session ? "You do not have permission to view league awards." : "Unauthorized" },
+      { status: session ? 403 : 401 }
     );
   }
 

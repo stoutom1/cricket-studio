@@ -18,6 +18,10 @@ import PlayerCardActions from "./PlayerCardActions";
 import SeoJsonLd from "@/components/seo-json-ld";
 import { shouldExcludePlayerFromLeagueAnalytics } from "@/lib/player-analytics-exclusions";
 import {
+  getSurpriseIdentityKey,
+  isSurpriseCricketLeague,
+} from "@/lib/surprise-player-identity";
+import {
   absoluteCric4AllUrl,
   publicPageRobots,
 } from "@/lib/seo";
@@ -188,63 +192,18 @@ function safeDivide(
 }
 
 /*
- * SHARED SURPRISE 1 / SURPRISE 2 PLAYER IDENTITIES
- *
- * Surprise 1 and Surprise 2 keep separate roster rows, but a player with the
- * same normalized name in those two teams represents one real player profile.
- *
- * The identity is resolved from the roster, not from match participation.
- * Therefore, opening Trinadh from Surprise 1 still combines his Surprise 2
- * statistics even when the Surprise 1 Player row has never appeared in a
- * scored match.
- *
- * The merge is intentionally limited to Surprise 1 and Surprise 2. Players
- * with the same name in unrelated teams remain separate profiles.
+ * Surprise Cricket League uses one player identity across every team in the
+ * league. Other leagues keep Player.id identities unchanged.
  */
-const SHARED_ROSTER_TEAM_TOKENS =
-  new Set([
-    "surprise1",
-    "surprise2",
-  ]);
-
-function identityToken(value) {
-  return String(value || "")
-    .trim()
-    .toLowerCase()
-    .replace(/[^a-z0-9]/g, "");
+function getPlayerIdentityKey(player, league) {
+  return getSurpriseIdentityKey(player, league);
 }
 
-function isSharedRosterTeam(player) {
-  return SHARED_ROSTER_TEAM_TOKENS.has(
-    identityToken(
-      player?.teamName
-    )
-  );
-}
-
-function getPlayerIdentityKey(player) {
-  const playerNameToken =
-    identityToken(
-      player?.name
-    );
-
-  if (
-    isSharedRosterTeam(player) &&
-    playerNameToken
-  ) {
-    return `shared:surprise-1-2:${playerNameToken}`;
-  }
-
-  return `player:${number(
-    player?.id
-  )}`;
-}
-
-function buildPlayerIdentityGroups(rosterPlayers) {
+function buildPlayerIdentityGroups(rosterPlayers, league) {
   const groups = new Map();
 
   for (const rosterPlayer of rosterPlayers) {
-    const key = getPlayerIdentityKey(rosterPlayer);
+    const key = getPlayerIdentityKey(rosterPlayer, league);
     const existing = groups.get(key);
 
     if (existing) {
@@ -1270,7 +1229,8 @@ export async function generateMetadata({
 
   const metadataGroup =
     buildPlayerIdentityGroups(
-      metadataRosterPlayers
+      metadataRosterPlayers,
+      league
     ).find((group) =>
       group.playerIds.includes(
         number(playerId)
@@ -1460,7 +1420,8 @@ export default async function PublicPlayerPage({
 
   const identityGroups =
     buildPlayerIdentityGroups(
-      rosterPlayers
+      rosterPlayers,
+      league
     ).filter(
       (group) =>
         !shouldExcludePlayerFromLeagueAnalytics(
@@ -2003,7 +1964,7 @@ export default async function PublicPlayerPage({
                   Cric4All player card
                   {player.combinedProfile && (
                     <span className="spf-combined-profile-badge">
-                      Combined Surprise 1 + Surprise 2
+                      Combined Surprise Cricket League
                     </span>
                   )}
                 </p>

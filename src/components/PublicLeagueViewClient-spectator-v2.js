@@ -337,9 +337,25 @@ async function toggleFollowLeague() {
     [filteredMatches, league.teams]
   );
 
-  const { battingRows, bowlingRows } = useMemo(
-    () => buildPublicStats(filteredMatches),
+  /*
+   * Statistical eligibility is intentionally stricter than match-history
+   * eligibility. Abandoned/cancelled/no-result/live/scheduled matches may
+   * remain visible in the public match lists, but must never contribute
+   * partial player performance to career statistics.
+   */
+  const statsEligibleMatches = useMemo(
+    () =>
+      filteredMatches.filter((match) =>
+        ["COMPLETED", "COMPLETED_LOCKED", "COMPLETED_CORRECTED"].includes(
+          normalizeStatus(match?.status)
+        )
+      ),
     [filteredMatches]
+  );
+
+  const { battingRows, bowlingRows } = useMemo(
+    () => buildPublicStats(statsEligibleMatches),
+    [statsEligibleMatches]
   );
 
   const topRunScorer = battingRows[0];

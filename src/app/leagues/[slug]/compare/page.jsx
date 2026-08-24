@@ -1,6 +1,7 @@
 import prisma from "@/lib/prisma";
 import { isMatchEligibleForStats } from "@/lib/stat-match";
 import { shouldExcludePlayerFromLeagueAnalytics } from "@/lib/player-analytics-exclusions";
+import { getSurpriseIdentityKey } from "@/lib/surprise-player-identity";
 import Link from "next/link";
 import {
   notFound,
@@ -16,12 +17,6 @@ import {
 import CompareShareButton from "./CompareShareButton";
 import "@/app/player-compare-final.css";
 import "@/app/player-compare-purpose.css";
-
-const SHARED_TEAM_TOKENS =
-  new Set([
-    "surprise1",
-    "surprise2",
-  ]);
 
 const BOWLER_WICKET_EXCLUSIONS =
   new Set([
@@ -85,40 +80,19 @@ function initials(name) {
   );
 }
 
-function isSharedTeam(
-  player
+function identityKey(
+  player,
+  league
 ) {
-  return SHARED_TEAM_TOKENS.has(
-    token(
-      player.teamName
-    )
+  return getSurpriseIdentityKey(
+    player,
+    league
   );
 }
 
-function identityKey(
-  player
-) {
-  const nameToken =
-    token(
-      player.name
-    );
-
-  if (
-    isSharedTeam(
-      player
-    ) &&
-    nameToken
-  ) {
-    return `shared:surprise-1-2:${nameToken}`;
-  }
-
-  return `player:${number(
-    player.id
-  )}`;
-}
-
 function buildIdentityGroups(
-  rosterPlayers
+  rosterPlayers,
+  league
 ) {
   const groups =
     new Map();
@@ -129,7 +103,8 @@ function buildIdentityGroups(
   ) {
     const key =
       identityKey(
-        player
+        player,
+        league
       );
 
     if (
@@ -1510,7 +1485,8 @@ export default async function ComparePlayersPage({
 
   const identities =
     buildIdentityGroups(
-      rosterPlayers
+      rosterPlayers,
+      league
     )
       .filter(
         (identity) =>

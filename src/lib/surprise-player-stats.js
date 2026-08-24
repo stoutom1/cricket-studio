@@ -1,8 +1,3 @@
-const SURPRISE_TEAM_NAMES = new Set([
-  "surprise 1",
-  "surprise 2",
-]);
-
 function normalizeText(value) {
   return String(value || "")
     .trim()
@@ -24,10 +19,6 @@ export function isSurpriseCricketLeague(league) {
     slug === "surprise-cricket-league" ||
     name === "surprise cricket league"
   );
-}
-
-function isSurpriseTeam(teamName) {
-  return SURPRISE_TEAM_NAMES.has(normalizeText(teamName));
 }
 
 /**
@@ -63,7 +54,7 @@ function uniqueStrings(values) {
 
 /**
  * Combines batting rows belonging to the same named player
- * in Surprise 1 and Surprise 2.
+ * across every team in Surprise Cricket League.
  */
 export function combineSurpriseBattingRows(
   rows = [],
@@ -77,15 +68,6 @@ export function combineSurpriseBattingRows(
   const untouched = [];
 
   for (const row of rows) {
-    /*
-     * Only merge Surprise 1 and Surprise 2.
-     * Other teams remain completely unchanged.
-     */
-    if (!isSurpriseTeam(row.teamName)) {
-      untouched.push(row);
-      continue;
-    }
-
     const playerKey =
       createSurprisePlayerKey(row.playerName);
 
@@ -186,7 +168,7 @@ export function combineSurpriseBattingRows(
 
 /**
  * Combines bowling rows belonging to the same named player
- * in Surprise 1 and Surprise 2.
+ * across every team in Surprise Cricket League.
  */
 export function combineSurpriseBowlingRows(
   rows = [],
@@ -200,11 +182,6 @@ export function combineSurpriseBowlingRows(
   const untouched = [];
 
   for (const row of rows) {
-    if (!isSurpriseTeam(row.teamName)) {
-      untouched.push(row);
-      continue;
-    }
-
     const playerKey =
       createSurprisePlayerKey(row.playerName);
 

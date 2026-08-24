@@ -13,26 +13,19 @@ export async function POST(request, { params }) {
 
     if (!session?.user?.email) {
       return NextResponse.json(
-        { error: "Unauthorized" },
+        { error: "Sign in is required to accept this invitation." },
         { status: 401 }
       );
     }
 
     const { token } = await params;
 
-    if (!token) {
-      return NextResponse.json(
-        { error: "Invite token is required" },
-        { status: 400 }
-      );
-    }
-
-    const user = await prisma.user.findUnique({
+    const currentUser = await prisma.user.findUnique({
       where: { email: session.user.email },
       select: { id: true, email: true },
     });
 
-    if (!user) {
+    if (!currentUser) {
       return NextResponse.json(
         {
           error: "Complete your Cric4All profile before accepting this invitation.",
@@ -44,13 +37,13 @@ export async function POST(request, { params }) {
 
     const result = await claimLeagueInviteForUser({
       token,
-      userId: user.id,
-      userEmail: user.email,
+      userId: currentUser.id,
+      userEmail: currentUser.email,
     });
 
     return NextResponse.json(result);
   } catch (error) {
-    console.error("League registration error:", error);
+    console.error("Accept league invite failed:", error);
 
     if (error instanceof LeagueInviteClaimError) {
       return NextResponse.json(
@@ -60,7 +53,7 @@ export async function POST(request, { params }) {
     }
 
     return NextResponse.json(
-      { error: "Failed to register for league" },
+      { error: "Unable to accept invitation." },
       { status: 500 }
     );
   }

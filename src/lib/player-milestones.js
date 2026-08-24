@@ -1,11 +1,10 @@
 import prisma from "@/lib/prisma";
 import { shouldExcludePlayerFromLeagueAnalytics } from "@/lib/player-analytics-exclusions";
-
-const SHARED_TEAM_TOKENS =
-  new Set([
-    "surprise1",
-    "surprise2",
-  ]);
+import {
+  getSurpriseIdentityKey,
+  isSurpriseCricketLeague,
+  normalizeSurprisePlayerToken,
+} from "@/lib/surprise-player-identity";
 
 const BOWLER_WICKET_EXCLUSIONS =
   new Set([
@@ -73,14 +72,6 @@ function token(value) {
       /[^a-z0-9]/g,
       ""
     );
-}
-
-function isSharedTeamName(
-  teamName
-) {
-  return SHARED_TEAM_TOKENS.has(
-    token(teamName)
-  );
 }
 
 function isLegalBallFaced(
@@ -226,7 +217,7 @@ export async function resolvePlayerIdentity({
   }
 
   const selectedNameToken =
-    token(
+    normalizeSurprisePlayerToken(
       selected.name
     );
 
@@ -235,8 +226,8 @@ export async function resolvePlayerIdentity({
   ];
 
   if (
-    isSharedTeamName(
-      selected.team?.name
+    isSurpriseCricketLeague(
+      selected.team?.league
     ) &&
     selectedNameToken
   ) {
@@ -248,15 +239,6 @@ export async function resolvePlayerIdentity({
               number(
                 leagueId
               ),
-
-            name: {
-              in: [
-                "Surprise 1",
-                "Surprise1",
-                "Surprise 2",
-                "Surprise2",
-              ],
-            },
           },
         },
 
@@ -268,13 +250,10 @@ export async function resolvePlayerIdentity({
     players =
       sharedCandidates.filter(
         (candidate) =>
-          token(
+          normalizeSurprisePlayerToken(
             candidate.name
           ) ===
-          selectedNameToken &&
-          isSharedTeamName(
-            candidate.team?.name
-          )
+          selectedNameToken
       );
   }
 
@@ -299,7 +278,7 @@ export async function resolvePlayerIdentity({
 
     identityKey:
       shared
-        ? `shared:surprise-1-2:${selectedNameToken}`
+        ? `shared:surprise-league:${selectedNameToken}`
         : `player:${number(
             selected.id
           )}`,

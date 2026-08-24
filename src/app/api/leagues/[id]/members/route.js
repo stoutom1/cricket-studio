@@ -3,6 +3,11 @@ import { getServerSession } from "next-auth";
 
 import prisma from "@/lib/prisma";
 import { authOptions } from "@/lib/auth";
+import {
+  getAllowedInviteRoles,
+  getRolePermissionDefaults,
+  normalizeLeagueRole,
+} from "@/lib/league-role-permissions";
 
 export async function GET(
   request,
@@ -117,7 +122,32 @@ export async function POST(
     body.email?.trim()?.toLowerCase();
 
   const role =
-    body.role || "VIEWER";
+    normalizeLeagueRole(body.role || "VIEWER");
+
+  const isSuperAdmin =
+    String(currentUser.email || "").toLowerCase() ===
+    "surprisecricket11@gmail.com";
+
+  const effectiveRole =
+    league.ownerId === currentUser.id
+      ? "OWNER"
+      : membership?.role || "VIEWER";
+
+  const allowedRoles = getAllowedInviteRoles({
+    role: effectiveRole,
+    permissions: membership,
+    isSuperAdmin,
+  });
+
+  if (!allowedRoles.includes(role)) {
+    return NextResponse.json(
+      { error: "Your current league access cannot assign that role." },
+      { status: 403 }
+    );
+  }
+
+  const rolePermissions =
+    getRolePermissionDefaults(role);
 
   if (!email) {
     return NextResponse.json(
@@ -168,7 +198,8 @@ export async function POST(
       data: {
         userId: user.id,
         leagueId,
-        role
+        role,
+        ...rolePermissions,
       }
     });
 

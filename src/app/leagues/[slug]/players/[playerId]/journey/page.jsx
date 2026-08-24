@@ -19,15 +19,10 @@ import {
   selectTopEstablishedRival,
 } from "@/lib/player-rivalry";
 import { shouldExcludePlayerFromLeagueAnalytics } from "@/lib/player-analytics-exclusions";
+import { getSurpriseIdentityKey } from "@/lib/surprise-player-identity";
 
 import JourneyShareButton from "./JourneyShareButton";
 import "@/app/player-journey-final.css";
-
-const SHARED_TEAM_TOKENS =
-  new Set([
-    "surprise1",
-    "surprise2",
-  ]);
 
 const BOWLER_WICKET_EXCLUSIONS =
   new Set([
@@ -206,41 +201,20 @@ async function canViewLeague({
   );
 }
 
-function isSharedTeam(
-  player
-) {
-  return SHARED_TEAM_TOKENS.has(
-    token(
-      player.teamName
-    )
-  );
-}
-
 function identityKey(
-  player
+  player,
+  league
 ) {
-  const playerToken =
-    token(
-      player.name
-    );
-
-  if (
-    isSharedTeam(
-      player
-    ) &&
-    playerToken
-  ) {
-    return `shared:surprise-1-2:${playerToken}`;
-  }
-
-  return `player:${number(
-    player.id
-  )}`;
+  return getSurpriseIdentityKey(
+    player,
+    league
+  );
 }
 
 function resolveIdentity({
   rosterPlayers,
   selectedPlayerId,
+  league,
 }) {
   const selected =
     rosterPlayers.find(
@@ -259,14 +233,16 @@ function resolveIdentity({
 
   const key =
     identityKey(
-      selected
+      selected,
+      league
     );
 
   const players =
     rosterPlayers.filter(
       (player) =>
         identityKey(
-          player
+          player,
+          league
         ) === key
     );
 
@@ -416,6 +392,7 @@ function buildJourney({
   identity,
   matches,
   milestones,
+  league,
   excludePlayerName = () => false,
 }) {
   const ids =
@@ -972,7 +949,7 @@ function buildJourney({
   /*
    * Player Journey and My Feed now share one canonical established-rival
    * engine. This prevents the two pages from naming different career rivals.
-   * Surprise 1 + Surprise 2 opponent identities are merged by identityKey.
+   * Surprise Cricket League opponent identities are merged by identityKey.
    */
   const biggestRival =
     selectTopEstablishedRival({
@@ -1005,7 +982,11 @@ function buildJourney({
           })
         ),
       getIdentityKey:
-        identityKey,
+        (player) =>
+          identityKey(
+            player,
+            league
+          ),
     });
 
   const timeline =
@@ -1261,6 +1242,7 @@ export async function generateMetadata({
       rosterPlayers,
       selectedPlayerId:
         playerId,
+      league,
     });
 
   const visibleIdentity =
@@ -1373,6 +1355,7 @@ export default async function PlayerJourneyPage({
       rosterPlayers,
       selectedPlayerId:
         playerId,
+      league,
     });
 
   if (
@@ -1416,6 +1399,7 @@ export default async function PlayerJourneyPage({
       matches:
         league.matches,
       milestones,
+      league,
       excludePlayerName: (playerName) =>
         shouldExcludePlayerFromLeagueAnalytics(
           league,
@@ -1896,7 +1880,7 @@ export default async function PlayerJourneyPage({
           </section>
 
           <footer className="pj-footer">
-            Player Journey is generated from recorded Cric4All deliveries, active milestones and shared Surprise 1 + Surprise 2 identity rules.
+            Player Journey is generated from recorded Cric4All deliveries, active milestones and shared Surprise Cricket League identity rules.
           </footer>
         </div>
       </section>

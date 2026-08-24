@@ -10,6 +10,7 @@ import {
   SMS_CONSENT_TEXT,
   SMS_CONSENT_VERSION,
 } from "@/lib/compliance/sms-consent";
+import { claimLeagueInviteForUser } from "@/lib/league-invite-claim";
 
 export async function POST(req) {
   try {
@@ -20,7 +21,13 @@ const {
   password,
   smsPhoneNumber,
   smsOptIn,
+  inviteToken,
+  invite,
+  token,
 } = body;
+
+const registrationInviteToken =
+  String(inviteToken || invite || token || "").trim();
 
 
     if (!name || !email || !password) {
@@ -152,13 +159,38 @@ smsConsentVersion:
 
     await recordGrowthEvent({ eventType: "SIGNUP_COMPLETED", userId: user.id, source: "REGISTER_API", path: "/register" });
 
+    let inviteResult = null;
+    let inviteWarning = "";
+
+    if (registrationInviteToken) {
+      try {
+        inviteResult = await claimLeagueInviteForUser({
+          token: registrationInviteToken,
+          userId: user.id,
+          userEmail: user.email,
+        });
+      } catch (inviteError) {
+        console.error("Registration invite assignment failed:", inviteError);
+        inviteWarning =
+          inviteError?.message ||
+          "Your account was created, but the league invitation could not be applied.";
+      }
+    }
+
     await sendWelcomeEmail(
       user.email,
       user.name || "User",
     );
+
     return NextResponse.json({
       success: true,
-      userId: user.id
+      userId: user.id,
+      inviteApplied: Boolean(inviteResult?.success),
+      leagueId: inviteResult?.leagueId || null,
+      leagueName: inviteResult?.leagueName || null,
+      role: inviteResult?.role || null,
+      roleLabel: inviteResult?.roleLabel || null,
+      inviteWarning: inviteWarning || null,
     });
   } catch (error) {
     console.error(error);
