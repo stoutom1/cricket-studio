@@ -74348,3 +74348,153 @@ body:has(.milestone-celebration-overlay)
       calc(8px + env(safe-area-inset-bottom)) !important;
   }
 }
+/* =========================================================
+   CRIC4ALL — MOBILE SCORER STABILITY FIX
+   Prevent viewport resizing / clipped recent balls / lost
+   bottom scoring controls after wicket and modal workflows.
+========================================================= */
+
+@media (max-width: 760px) {
+
+  /*
+   * Use the stable mobile viewport rather than a constantly
+   * changing dynamic viewport.
+   *
+   * This prevents browser chrome / modal transitions from
+   * making Scorer Mode appear to grow and shrink.
+   */
+  .mobile-scorer-overlay-v3 {
+    position: fixed !important;
+    inset: 0 !important;
+
+    width: 100% !important;
+
+    height: 100svh !important;
+    min-height: 100svh !important;
+    max-height: 100svh !important;
+
+    box-sizing: border-box !important;
+
+    overflow: hidden !important;
+  }
+
+
+  /*
+   * IMPORTANT:
+   * Restore the grid layout that was designed to protect
+   * the scoring controls.
+   *
+   * A later flex rule was overriding this.
+   */
+  .mobile-scorer-cockpit-v3 {
+    display: grid !important;
+
+    grid-template-rows:
+      auto                 /* score header */
+      auto                 /* status */
+      auto                 /* offline status */
+      auto                 /* players */
+      auto                 /* metrics */
+      auto                 /* chase / par if present */
+      auto                 /* delivery heading */
+      minmax(58px, 1fr)    /* recent balls */
+      auto !important;     /* scoring controls */
+
+    gap: 5px !important;
+
+    width: 100% !important;
+    height: 100% !important;
+    min-height: 0 !important;
+    max-height: 100% !important;
+
+    box-sizing: border-box !important;
+
+    overflow-x: hidden !important;
+    overflow-y: auto !important;
+
+    overscroll-behavior: contain !important;
+    -webkit-overflow-scrolling: touch;
+  }
+
+
+  /*
+   * Never allow Recent Balls to collapse to almost zero.
+   */
+  .msc-v3-recent-simple {
+    width: 100% !important;
+
+    min-width: 0 !important;
+    min-height: 58px !important;
+    max-height: 72px !important;
+
+    flex-shrink: 0 !important;
+
+    overflow: hidden !important;
+  }
+
+
+  .msc-v3-recent-simple-strip {
+    width: 100% !important;
+    min-width: 0 !important;
+    min-height: 44px !important;
+
+    overflow-x: auto !important;
+    overflow-y: hidden !important;
+
+    flex-wrap: nowrap !important;
+
+    -webkit-overflow-scrolling: touch;
+    scrollbar-width: none;
+  }
+
+
+  .msc-v3-recent-simple-strip::-webkit-scrollbar {
+    display: none;
+  }
+
+
+  /*
+   * The actual delivery controls must never be sacrificed
+   * when another section grows.
+   */
+  .msc-v3-control-zone {
+    width: 100% !important;
+
+    min-width: 0 !important;
+    min-height: max-content !important;
+
+    flex: none !important;
+    flex-shrink: 0 !important;
+
+    align-self: stretch !important;
+
+    margin: 0 !important;
+  }
+
+
+  /*
+   * Keep keypad rows dimensionally stable while the score,
+   * batter names or status message changes.
+   */
+  .msc-v3-keypad,
+  .msc-v3-safety,
+  .msc-v3-tools {
+    flex-shrink: 0 !important;
+  }
+
+
+  /*
+   * Prevent unusually long player/status text from widening
+   * or reflowing the whole scorer.
+   */
+  .msc-v3-header,
+  .msc-v3-status,
+  .msc-v3-players,
+  .msc-v3-player,
+  .msc-v3-metrics,
+  .msc-v3-chase,
+  .msc-v3-delivery-head,
+  .msc-v3-control-zone {
+    min-width: 0 !important;
+  }
+}
