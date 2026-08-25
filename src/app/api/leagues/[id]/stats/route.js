@@ -295,6 +295,42 @@ export async function GET(req, { params }) {
     const { id } = await params;
     const leagueId = Number(id);
 
+    const requestUrl =
+      new URL(
+        req.url
+      );
+
+    const rawSeriesIds =
+      String(
+        requestUrl.searchParams.get(
+          "seriesIds"
+        ) ||
+        ""
+      )
+        .trim();
+
+    const forceEmptySeriesContext =
+      rawSeriesIds.toLowerCase() ===
+      "none";
+
+    const requestedSeriesIds =
+      forceEmptySeriesContext
+        ? []
+        : rawSeriesIds
+            .split(",")
+            .map((value) =>
+              Number(
+                value
+              )
+            )
+            .filter(
+              (value) =>
+                Number.isInteger(
+                  value
+                ) &&
+                value > 0
+            );
+
     if (!leagueId || Number.isNaN(leagueId)) {
       return NextResponse.json(
         { error: "Invalid league id" },
@@ -353,6 +389,22 @@ const shouldMergePlayersByName =
 const matches = await prisma.match.findMany({
   where: {
     leagueId: Number(leagueId),
+
+    ...(forceEmptySeriesContext
+      ? {
+          id: {
+            in: [],
+          },
+        }
+      : requestedSeriesIds.length
+        ? {
+            seriesId: {
+              in:
+                requestedSeriesIds,
+            },
+          }
+        : {}),
+
     status: {
       in: ["COMPLETED", "COMPLETED_LOCKED", "COMPLETED_CORRECTED"],
     },
@@ -703,6 +755,13 @@ const wicketkeeping = filterPlayerAnalyticsRows(
 
     return NextResponse.json({
       leagueId,
+
+      context: {
+        seriesIds:
+          requestedSeriesIds,
+        forceEmptySeriesContext,
+      },
+
       matchesCount: eligibleMatches.length,
       batting,
       bowling,

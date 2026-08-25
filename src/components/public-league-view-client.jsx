@@ -81,6 +81,57 @@ function buildPointsTable(matches, teams) {
 function buildPublicStats(matches, league) {
   const batting = new Map();
   const bowling = new Map();
+  const fielding = new Map();
+
+  /*
+   * Fielding relations are intentionally resolved from the league roster
+   * instead of requiring additional Prisma includes on every public ball.
+   * This keeps the public page payload stable while still letting Leaders use
+   * the same filtered completed matches as Batting and Bowling.
+   */
+  const playerDirectory = new Map();
+
+  for (const team of league?.teams || []) {
+    for (const player of team?.players || []) {
+      playerDirectory.set(
+        Number(player.id),
+        {
+          playerId: Number(player.id),
+          playerName: player.name || `Player ${player.id}`,
+          teamName: team.name || "",
+        }
+      );
+    }
+  }
+
+  function ensureFieldingRow(playerId) {
+    const numericPlayerId = Number(playerId);
+    if (!numericPlayerId) return null;
+
+    const player = playerDirectory.get(numericPlayerId);
+    const playerName = player?.playerName || `Player ${numericPlayerId}`;
+
+    const key = getLeagueAnalyticsPlayerKey({
+      league,
+      playerId: numericPlayerId,
+      playerName,
+    });
+
+    if (!fielding.has(key)) {
+      fielding.set(key, {
+        playerId: numericPlayerId,
+        playerName,
+        teamName: player?.teamName || "",
+        catches: 0,
+        runOuts: 0,
+        stumpings: 0,
+        assists: 0,
+        matches: new Set(),
+      });
+    }
+
+    return fielding.get(key);
+  }
 
   for (const match of matches || []) {
     for (const ball of match.balls || []) {
@@ -171,6 +222,50 @@ function buildPublicStats(matches, league) {
           row.wickets += 1;
         }
       }
+
+      const fielderRow =
+        ensureFieldingRow(
+          ball.fielderId
+        );
+
+      if (fielderRow) {
+        const wicketType =
+          String(
+            ball.wicketType ||
+            ""
+          )
+            .trim()
+            .toUpperCase();
+
+        if (wicketType === "CAUGHT") {
+          fielderRow.catches += 1;
+          fielderRow.matches.add(match.id);
+        } else if (wicketType === "RUN_OUT") {
+          fielderRow.runOuts += 1;
+          fielderRow.matches.add(match.id);
+        } else if (wicketType === "STUMPED") {
+          fielderRow.stumpings += 1;
+          fielderRow.matches.add(match.id);
+        }
+      }
+
+      const assistantRow =
+        String(
+          ball.wicketType ||
+          ""
+        )
+          .trim()
+          .toUpperCase() ===
+          "RUN_OUT"
+          ? ensureFieldingRow(
+              ball.assistantFielderId
+            )
+          : null;
+
+      if (assistantRow) {
+        assistantRow.assists += 1;
+        assistantRow.matches.add(match.id);
+      }
     }
   }
 
@@ -205,7 +300,118 @@ function buildPublicStats(matches, league) {
     }))
     .sort((a, b) => b.wickets - a.wickets || Number(a.economy) - Number(b.economy));
 
-  return { battingRows, bowlingRows };
+  const fieldingRows = [...fielding.values()]
+    .filter(
+      (row) =>
+        !shouldExcludePlayerFromLeagueAnalytics(
+          league,
+          row.playerName
+        )
+    )
+    .map((row) => ({
+      ...row,
+      matches: row.matches.size,
+      fieldingTotal:
+        Number(row.catches || 0) +
+        Number(row.runOuts || 0) +
+        Number(row.stumpings || 0) +
+        Number(row.assists || 0),
+    }))
+    .filter((row) => row.fieldingTotal > 0)
+    .sort(
+      (a, b) =>
+        b.fieldingTotal - a.fieldingTotal ||
+        b.catches - a.catches ||
+        b.runOuts - a.runOuts
+    );
+
+  /*
+   * Use the same Cric4All impact weights as /api/leagues/[id]/stats:
+   * runs + 25 per wicket + 10 per catch/run-out/stumping + 5 per assist.
+   *
+   * Merge by the league analytics identity key so Surprise Cricket League's
+   * combined-player exception remains consistent across all leader categories.
+   */
+  const allRound = new Map();
+
+  function mergeImpactRow(source, type) {
+    for (const row of source || []) {
+      const key = getLeagueAnalyticsPlayerKey({
+        league,
+        playerId: row.playerId,
+        playerName: row.playerName,
+      });
+
+      if (!allRound.has(key)) {
+        allRound.set(key, {
+          playerId: row.playerId,
+          playerName: row.playerName,
+          teamName: row.teamName || "",
+          matches: 0,
+          runs: 0,
+          wickets: 0,
+          catches: 0,
+          runOuts: 0,
+          stumpings: 0,
+          assists: 0,
+          fieldingTotal: 0,
+        });
+      }
+
+      const target = allRound.get(key);
+
+      if (!target.teamName && row.teamName) {
+        target.teamName = row.teamName;
+      }
+
+      target.matches = Math.max(
+        Number(target.matches || 0),
+        Number(row.matches || 0)
+      );
+
+      if (type === "batting") {
+        target.runs = Number(row.runs || 0);
+      } else if (type === "bowling") {
+        target.wickets = Number(row.wickets || 0);
+      } else if (type === "fielding") {
+        target.catches = Number(row.catches || 0);
+        target.runOuts = Number(row.runOuts || 0);
+        target.stumpings = Number(row.stumpings || 0);
+        target.assists = Number(row.assists || 0);
+        target.fieldingTotal = Number(row.fieldingTotal || 0);
+      }
+    }
+  }
+
+  mergeImpactRow(battingRows, "batting");
+  mergeImpactRow(bowlingRows, "bowling");
+  mergeImpactRow(fieldingRows, "fielding");
+
+  const allRoundRows = [...allRound.values()]
+    .map((row) => ({
+      ...row,
+      allRounderPoints:
+        Number(row.runs || 0) +
+        Number(row.wickets || 0) * 25 +
+        Number(row.catches || 0) * 10 +
+        Number(row.runOuts || 0) * 10 +
+        Number(row.stumpings || 0) * 10 +
+        Number(row.assists || 0) * 5,
+    }))
+    .filter((row) => row.allRounderPoints > 0)
+    .sort(
+      (a, b) =>
+        b.allRounderPoints - a.allRounderPoints ||
+        b.runs - a.runs ||
+        b.wickets - a.wickets
+    );
+
+  return {
+    battingRows,
+    bowlingRows,
+    fieldingRows,
+    allRoundRows,
+  };
 }
 
 export default function PublicLeagueViewClient({ league, numericLeagueId }) {
@@ -402,20 +608,165 @@ async function toggleFollowLeague() {
     [filteredMatches]
   );
 
-  const { battingRows, bowlingRows } = useMemo(
+  const {
+    battingRows,
+    bowlingRows,
+    fieldingRows,
+    allRoundRows,
+  } = useMemo(
     () => buildPublicStats(statsEligibleMatches, league),
-    [statsEligibleMatches]
+    [statsEligibleMatches, league]
   );
 
-  const topRunScorer = battingRows[0];
-  const topWicketTaker = bowlingRows[0];
-  const topSixHitter = [...battingRows].sort((a, b) => b.sixes - a.sixes)[0];
-  const bestStrikeRate = [...battingRows]
+  /*
+   * Leaders uses the same league Stats API as Dashboard once it has loaded.
+   * Local rows are only a loading fallback, preventing Explore and Dashboard
+   * from drifting into separate definitions of runs, wickets or impact.
+   */
+  const leaderBattingRows =
+    leagueStats?.batting ||
+    battingRows;
+
+  const leaderBowlingRows =
+    leagueStats?.bowling ||
+    bowlingRows;
+
+  const leaderFieldingRows =
+    leagueStats?.fielding ||
+    fieldingRows;
+
+  const leaderAllRoundRows =
+    leagueStats
+      ?.rankings
+      ?.bestAllRounders ||
+    allRoundRows;
+
+  const topRunScorer = leaderBattingRows[0];
+  const topWicketTaker = leaderBowlingRows[0];
+
+  /*
+   * Leaders is intentionally a "best-of" experience rather than another copy
+   * of the Stats tables. Each tile answers one quick spectator question and
+   * uses only completed-match data already calculated for this public view.
+   */
+  const topSixHitter = [...leaderBattingRows]
+    .filter((p) => Number(p.sixes || 0) > 0)
+    .sort((a, b) => b.sixes - a.sixes || b.runs - a.runs)[0];
+
+  const topFourHitter = [...leaderBattingRows]
+    .filter((p) => Number(p.fours || 0) > 0)
+    .sort((a, b) => b.fours - a.fours || b.runs - a.runs)[0];
+
+  const bestStrikeRate = [...leaderBattingRows]
     .filter((p) => p.balls >= 5)
-    .sort((a, b) => Number(b.strikeRate) - Number(a.strikeRate))[0];
-  const bestEconomy = [...bowlingRows]
+    .sort((a, b) => Number(b.strikeRate) - Number(a.strikeRate) || b.runs - a.runs)[0];
+
+  const bestRunsPerMatch = [...leaderBattingRows]
+    .filter((p) => p.matches >= 1 && p.runs > 0)
+    .map((p) => ({
+      ...p,
+      runsPerMatch: p.runs / p.matches,
+    }))
+    .sort((a, b) => b.runsPerMatch - a.runsPerMatch || b.runs - a.runs)[0];
+
+  const bestEconomy = [...leaderBowlingRows]
     .filter((p) => p.balls >= 6)
-    .sort((a, b) => Number(a.economy) - Number(b.economy))[0];
+    .sort((a, b) => Number(a.economy) - Number(b.economy) || b.wickets - a.wickets)[0];
+
+  const topDotBowler = [...leaderBowlingRows]
+    .filter((p) => Number(p.dots || 0) > 0)
+    .sort((a, b) => b.dots - a.dots || b.wickets - a.wickets)[0];
+
+  const bestBowlingStrikeRate = [...leaderBowlingRows]
+    .filter((p) => p.wickets > 0 && p.balls >= 6)
+    .map((p) => ({
+      ...p,
+      bowlingStrikeRate: p.balls / p.wickets,
+    }))
+    .sort(
+      (a, b) =>
+        a.bowlingStrikeRate - b.bowlingStrikeRate ||
+        b.wickets - a.wickets
+    )[0];
+
+  const bowlingWorkhorse = [...leaderBowlingRows]
+    .filter((p) => p.balls > 0)
+    .sort((a, b) => b.balls - a.balls || b.wickets - a.wickets)[0];
+
+  const topFielder = leaderFieldingRows[0];
+
+  const safestHands = [...leaderFieldingRows]
+    .filter((p) => p.catches > 0)
+    .sort((a, b) => b.catches - a.catches || b.fieldingTotal - a.fieldingTotal)[0];
+
+  const runOutSpecialist = [...leaderFieldingRows]
+    .filter((p) => p.runOuts > 0)
+    .sort((a, b) => b.runOuts - a.runOuts || b.fieldingTotal - a.fieldingTotal)[0];
+
+  const assistLeader = [...leaderFieldingRows]
+    .filter((p) => p.assists > 0)
+    .sort((a, b) => b.assists - a.assists || b.fieldingTotal - a.fieldingTotal)[0];
+
+  const stumpingLeader = [...leaderFieldingRows]
+    .filter((p) => p.stumpings > 0)
+    .sort((a, b) => b.stumpings - a.stumpings || b.fieldingTotal - a.fieldingTotal)[0];
+
+  const topImpactPlayer = leaderAllRoundRows[0];
+
+  const balancedForce = [...leaderAllRoundRows]
+    .filter((p) => p.runs > 0 && p.wickets > 0)
+    .map((p) => ({
+      ...p,
+      twoWayPoints:
+        Number(p.runs || 0) +
+        Number(p.wickets || 0) * 25,
+    }))
+    .sort(
+      (a, b) =>
+        b.twoWayPoints - a.twoWayPoints ||
+        b.allRounderPoints - a.allRounderPoints
+    )[0];
+
+  const threeDimensionalPlayer = [...leaderAllRoundRows]
+    .filter(
+      (p) =>
+        p.runs > 0 &&
+        p.wickets > 0 &&
+        p.fieldingTotal > 0
+    )
+    .sort(
+      (a, b) =>
+        b.allRounderPoints - a.allRounderPoints
+    )[0];
+
+  const bestImpactPerMatch = [...leaderAllRoundRows]
+    .filter((p) => p.matches >= 2)
+    .map((p) => ({
+      ...p,
+      impactPerMatch:
+        p.allRounderPoints /
+        p.matches,
+    }))
+    .sort(
+      (a, b) =>
+        b.impactPerMatch - a.impactPerMatch ||
+        b.allRounderPoints - a.allRounderPoints
+    )[0];
+
+  const completePackage = [...leaderAllRoundRows]
+    .map((p) => ({
+      ...p,
+      disciplines:
+        Number(p.runs > 0) +
+        Number(p.wickets > 0) +
+        Number(p.fieldingTotal > 0),
+    }))
+    .filter((p) => p.disciplines >= 2)
+    .sort(
+      (a, b) =>
+        b.disciplines - a.disciplines ||
+        b.allRounderPoints - a.allRounderPoints
+    )[0];
 
   useEffect(() => {
     let cancelled = false;
@@ -427,8 +778,52 @@ async function toggleFollowLeague() {
         setLeagueStatsLoading(true);
         setLeagueStatsError("");
 
+        const leaderSeriesIds =
+          selectedSeriesId
+            ? [
+                Number(
+                  selectedSeriesId
+                ),
+              ]
+            : selectedYear
+              ? (league.series || [])
+                  .filter(
+                    (series) =>
+                      Number(series.year) ===
+                      Number(selectedYear)
+                  )
+                  .map(
+                    (series) =>
+                      Number(series.id)
+                  )
+                  .filter(
+                    (value) =>
+                      Number.isInteger(value) &&
+                      value > 0
+                  )
+              : [];
+
+        const statsQuery =
+          new URLSearchParams();
+
+        if (leaderSeriesIds.length) {
+          statsQuery.set(
+            "seriesIds",
+            leaderSeriesIds.join(",")
+          );
+        } else if (selectedYear) {
+          statsQuery.set(
+            "seriesIds",
+            "none"
+          );
+        }
+
         const response = await fetch(
-          `/api/leagues/${resolvedLeagueId}/stats`,
+          `/api/leagues/${resolvedLeagueId}/stats${
+            statsQuery.toString()
+              ? `?${statsQuery.toString()}`
+              : ""
+          }`,
           { cache: "no-store" }
         );
         const data = await response.json().catch(() => ({}));
@@ -449,7 +844,13 @@ async function toggleFollowLeague() {
 
     loadLeagueStats();
     return () => { cancelled = true; };
-  }, [hasValidLeagueId, resolvedLeagueId]);
+  }, [
+    hasValidLeagueId,
+    resolvedLeagueId,
+    selectedSeriesId,
+    selectedYear,
+    league.series,
+  ]);
 
   useEffect(() => {
     let cancelled = false;
@@ -782,51 +1183,239 @@ return (
                 items={[
                   ["batting", "Batting", null],
                   ["bowling", "Bowling", null],
+                  ["fielding", "Fielding", null],
+                  ["allround", "All-Round", null],
                 ]}
               />
 
-              {!topRunScorer && !topWicketTaker ? (
+              {!topRunScorer &&
+              !topWicketTaker &&
+              !topFielder ? (
                 <EmptyState
                   title="No leaders yet"
-                  message="Leaders will appear after scoring begins."
+                  message="Leaders will appear after qualifying completed-match performances."
                 />
               ) : publicLeadersTab === "batting" ? (
-                <div className="slp-leaders">
-                  <LeaderRow
-                    rank="01"
-                    label="Most runs"
-                    row={topRunScorer}
-                    value={`${topRunScorer?.runs || 0} runs`}
+                <LeaderShowcase
+                  accent="batting"
+                  hero={{
+                    eyebrow: "Orange cap",
+                    icon: "🏏",
+                    label: "Run machine",
+                    row: topRunScorer,
+                    value: `${topRunScorer?.runs || 0}`,
+                    unit: "runs",
+                    detail: topRunScorer
+                      ? `${topRunScorer.matches} match${topRunScorer.matches === 1 ? "" : "es"} · ${topRunScorer.balls} balls`
+                      : "",
+                  }}
+                  cards={[
+                    {
+                      icon: "🚀",
+                      label: "Power hitter",
+                      hint: "Most sixes",
+                      row: topSixHitter,
+                      value: topSixHitter?.sixes || 0,
+                      unit: "sixes",
+                    },
+                    {
+                      icon: "⚡",
+                      label: "Boundary boss",
+                      hint: "Most fours",
+                      row: topFourHitter,
+                      value: topFourHitter?.fours || 0,
+                      unit: "fours",
+                    },
+                    {
+                      icon: "🔥",
+                      label: "Accelerator",
+                      hint: "Best SR · min 5 balls",
+                      row: bestStrikeRate,
+                      value: bestStrikeRate?.strikeRate || "0.00",
+                      unit: "SR",
+                    },
+                    {
+                      icon: "📈",
+                      label: "Match impact",
+                      hint: "Best runs per match",
+                      row: bestRunsPerMatch,
+                      value: bestRunsPerMatch?.runsPerMatch?.toFixed(1) || "0.0",
+                      unit: "runs/match",
+                    },
+                  ]}
+                />
+              ) : publicLeadersTab === "bowling" ? (
+                <LeaderShowcase
+                  accent="bowling"
+                  hero={{
+                    eyebrow: "Purple cap",
+                    icon: "🎯",
+                    label: "Wicket hunter",
+                    row: topWicketTaker,
+                    value: `${topWicketTaker?.wickets || 0}`,
+                    unit: "wickets",
+                    detail: topWicketTaker
+                      ? `${topWicketTaker.overs} overs · ${topWicketTaker.economy} economy`
+                      : "",
+                  }}
+                  cards={[
+                    {
+                      icon: "🔒",
+                      label: "Run stopper",
+                      hint: "Best economy · min 1 over",
+                      row: bestEconomy,
+                      value: bestEconomy?.economy || "0.00",
+                      unit: "economy",
+                    },
+                    {
+                      icon: "⚪",
+                      label: "Dot-ball king",
+                      hint: "Most dot balls",
+                      row: topDotBowler,
+                      value: topDotBowler?.dots || 0,
+                      unit: "dots",
+                    },
+                    {
+                      icon: "💥",
+                      label: "Strike threat",
+                      hint: "Fewest balls per wicket",
+                      row: bestBowlingStrikeRate,
+                      value: bestBowlingStrikeRate?.bowlingStrikeRate?.toFixed(1) || "0.0",
+                      unit: "balls/wkt",
+                    },
+                    {
+                      icon: "💪",
+                      label: "Workhorse",
+                      hint: "Most legal deliveries",
+                      row: bowlingWorkhorse,
+                      value: bowlingWorkhorse?.overs || "0.0",
+                      unit: "overs",
+                    },
+                  ]}
+                />
+              ) : publicLeadersTab === "fielding" ? (
+                topFielder ? (
+                  <LeaderShowcase
+                    accent="fielding"
+                    hero={{
+                      eyebrow: "Fielding crown",
+                      icon: "🧤",
+                      label: "Fielding MVP",
+                      row: topFielder,
+                      value: `${topFielder.fieldingTotal || 0}`,
+                      unit: "contributions",
+                      detail:
+                        `${topFielder.catches || 0} catches · ` +
+                        `${topFielder.runOuts || 0} run-outs · ` +
+                        `${topFielder.stumpings || 0} stumpings · ` +
+                        `${topFielder.assists || 0} assists`,
+                    }}
+                    cards={[
+                      {
+                        icon: "🤲",
+                        label: "Safe hands",
+                        hint: "Most catches",
+                        row: safestHands,
+                        value: safestHands?.catches || 0,
+                        unit: "catches",
+                      },
+                      {
+                        icon: "🎯",
+                        label: "Run-out specialist",
+                        hint: "Most direct run-outs",
+                        row: runOutSpecialist,
+                        value: runOutSpecialist?.runOuts || 0,
+                        unit: "run-outs",
+                      },
+                      {
+                        icon: "🤝",
+                        label: "Assist king",
+                        hint: "Most run-out assists",
+                        row: assistLeader,
+                        value: assistLeader?.assists || 0,
+                        unit: "assists",
+                      },
+                      {
+                        icon: "⚡",
+                        label: "Glove work",
+                        hint: "Most stumpings",
+                        row: stumpingLeader,
+                        value: stumpingLeader?.stumpings || 0,
+                        unit: "stumpings",
+                      },
+                    ]}
                   />
-                  <LeaderRow
-                    rank="02"
-                    label="Most sixes"
-                    row={topSixHitter}
-                    value={`${topSixHitter?.sixes || 0} sixes`}
+                ) : (
+                  <EmptyState
+                    title="No fielding leaders yet"
+                    message="Catches, run-outs, assists and stumpings will appear after qualifying completed matches."
                   />
-                  <LeaderRow
-                    rank="03"
-                    label="Best strike rate"
-                    row={bestStrikeRate}
-                    value={`${bestStrikeRate?.strikeRate || "0.00"} SR`}
-                  />
-                </div>
+                )
+              ) : topImpactPlayer ? (
+                <LeaderShowcase
+                  accent="allround"
+                  hero={{
+                    eyebrow: "Impact crown",
+                    icon: "🌟",
+                    label: "Impact player",
+                    row: topImpactPlayer,
+                    value: `${topImpactPlayer.allRounderPoints || 0}`,
+                    unit: "impact pts",
+                    detail:
+                      `${topImpactPlayer.runs || 0} runs · ` +
+                      `${topImpactPlayer.wickets || 0} wickets · ` +
+                      `${topImpactPlayer.fieldingTotal || 0} fielding`,
+                  }}
+                  cards={[
+                    {
+                      icon: "⚔️",
+                      label: "Balanced force",
+                      hint: "Runs + wickets impact",
+                      row: balancedForce,
+                      value: balancedForce
+                        ? `${balancedForce.runs}R · ${balancedForce.wickets}W`
+                        : "—",
+                      unit: "two-way",
+                    },
+                    {
+                      icon: "🧩",
+                      label: "Three-dimensional",
+                      hint: "Batting + bowling + fielding",
+                      row: threeDimensionalPlayer,
+                      value: threeDimensionalPlayer?.allRounderPoints || 0,
+                      unit: "impact pts",
+                    },
+                    {
+                      icon: "📊",
+                      label: "Impact rate",
+                      hint: "Best impact per match · min 2",
+                      row: bestImpactPerMatch,
+                      value: bestImpactPerMatch?.impactPerMatch?.toFixed(1) || "0.0",
+                      unit: "pts/match",
+                    },
+                    {
+                      icon: "💎",
+                      label: "Complete package",
+                      hint: "Contributing disciplines",
+                      row: completePackage,
+                      value: completePackage?.disciplines || 0,
+                      unit: "disciplines",
+                    },
+                  ]}
+                />
               ) : (
-                <div className="slp-leaders">
-                  <LeaderRow
-                    rank="01"
-                    label="Most wickets"
-                    row={topWicketTaker}
-                    value={`${topWicketTaker?.wickets || 0} wickets`}
-                  />
-                  <LeaderRow
-                    rank="02"
-                    label="Best economy"
-                    row={bestEconomy}
-                    value={`${bestEconomy?.economy || "0.00"} economy`}
-                  />
-                </div>
+                <EmptyState
+                  title="No all-round leaders yet"
+                  message="All-round impact appears after players contribute across qualifying completed matches."
+                />
               )}
+
+              <p className="slp-leader-footnote">
+                Leaders use completed matches in the selected season and series.
+                All-Round impact follows Cric4All's existing weighting: runs +
+                25 per wicket + 10 per catch/run-out/stumping + 5 per assist.
+                Qualification minimums are shown where applicable.
+              </p>
             </section>
           )}
 
@@ -1590,18 +2179,85 @@ function PublicAwards({ awardsData }) {
   );
 }
 
-function LeaderRow({ rank, label, row, value }) {
+function LeaderShowcase({ hero, cards, accent }) {
+  const visibleCards = (cards || []).filter((card) => card?.row);
+
   return (
-    <article className="slp-leader-row">
-      <span className="slp-leader-rank">{rank}</span>
-      <span className="slp-avatar">{getInitials(row?.playerName || "?")}</span>
-      <span>
-        <small>{label}</small>
-        <strong>{row?.playerName || "No data yet"}</strong>
-        <em>{row?.teamName || "Statistics pending"}</em>
-      </span>
-      <b>{value}</b>
-    </article>
+    <div className={`slp-leader-showcase slp-leader-showcase--${accent}`}>
+      <article className="slp-leader-hero">
+        <div className="slp-leader-hero-top">
+          <span className="slp-leader-kicker">{hero.eyebrow}</span>
+          <span className="slp-leader-hero-icon" aria-hidden="true">
+            {hero.icon}
+          </span>
+        </div>
+
+        <div className="slp-leader-hero-body">
+          <span className="slp-leader-hero-avatar">
+            {getInitials(hero.row?.playerName || "?")}
+          </span>
+
+          <div className="slp-leader-hero-player">
+            <small>{hero.label}</small>
+            <strong title={hero.row?.playerName || ""}>
+              {hero.row?.playerName || "No data yet"}
+            </strong>
+            <em title={hero.row?.teamName || ""}>
+              {hero.row?.teamName || "Statistics pending"}
+            </em>
+          </div>
+
+          <div className="slp-leader-hero-value">
+            <strong>{hero.value}</strong>
+            <span>{hero.unit}</span>
+          </div>
+        </div>
+
+        {hero.detail ? (
+          <div className="slp-leader-hero-detail">{hero.detail}</div>
+        ) : null}
+      </article>
+
+      {visibleCards.length ? (
+        <div className="slp-leader-card-grid">
+          {visibleCards.map((card) => (
+            <article
+              className="slp-leader-card"
+              key={`${card.label}-${card.row?.playerId || card.row?.playerName}`}
+            >
+              <div className="slp-leader-card-head">
+                <span className="slp-leader-card-icon" aria-hidden="true">
+                  {card.icon}
+                </span>
+                <div>
+                  <small>{card.label}</small>
+                  <em>{card.hint}</em>
+                </div>
+              </div>
+
+              <div className="slp-leader-card-player">
+                <span className="slp-avatar">
+                  {getInitials(card.row?.playerName || "?")}
+                </span>
+                <div>
+                  <strong title={card.row?.playerName || ""}>
+                    {card.row?.playerName || "No data yet"}
+                  </strong>
+                  <em title={card.row?.teamName || ""}>
+                    {card.row?.teamName || "Statistics pending"}
+                  </em>
+                </div>
+              </div>
+
+              <div className="slp-leader-card-value">
+                <strong>{card.value}</strong>
+                <span>{card.unit}</span>
+              </div>
+            </article>
+          ))}
+        </div>
+      ) : null}
+    </div>
   );
 }
 

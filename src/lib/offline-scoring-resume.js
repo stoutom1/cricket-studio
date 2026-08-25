@@ -54,6 +54,21 @@ function safePositiveInteger(
     : null;
 }
 
+function normalizeOwnerKey(
+  value
+) {
+  const normalized =
+    String(
+      value ||
+      ""
+    )
+      .trim();
+
+  return normalized
+    ? normalized
+    : null;
+}
+
 export function buildOfflineScoringResumeUrl(
   session
 ) {
@@ -168,6 +183,11 @@ export function getOfflineScoringSession() {
           parsed
             ?.leagueId
         ),
+      ownerKey:
+        normalizeOwnerKey(
+          parsed
+            ?.ownerKey
+        ),
     };
   } catch (
     error
@@ -199,8 +219,33 @@ export function saveOfflineScoringSession(
     return null;
   }
 
+  const existingSession =
+    getOfflineScoringSession();
+
+  const requestedOwnerKey =
+    normalizeOwnerKey(
+      session?.ownerKey
+    );
+
+  const preservedOwnerKey =
+    existingSession &&
+    Number(
+      existingSession.matchId
+    ) ===
+      Number(
+        matchId
+      )
+      ? normalizeOwnerKey(
+          existingSession.ownerKey
+        )
+      : null;
+
   const next = {
     matchId,
+
+    ownerKey:
+      requestedOwnerKey ||
+      preservedOwnerKey,
 
     leagueId:
       safePositiveInteger(
@@ -282,6 +327,116 @@ export function saveOfflineScoringSession(
   }
 
   return next;
+}
+
+/*
+ * Attach or refresh ownership of a browser-saved resume session.
+ *
+ * This is intentionally separate from saveOfflineScoringSession() so existing
+ * scoring callers do not need authentication plumbing. The authenticated
+ * Resume banner calls this only in response to a fresh same-tab scoring-session
+ * event, which proves the current signed-in user is actively producing that
+ * saved state.
+ *
+ * force=true is used for a fresh scoring event so a shared-device handoff can
+ * safely transfer ownership when the new authenticated scorer actually saves
+ * the same match. Merely logging in never transfers ownership.
+ */
+export function setOfflineScoringSessionOwner(
+  ownerKey,
+  matchId = null,
+  {
+    force = false,
+  } = {}
+) {
+  if (
+    !canUseBrowserStorage()
+  ) {
+    return null;
+  }
+
+  const normalizedOwnerKey =
+    normalizeOwnerKey(
+      ownerKey
+    );
+
+  if (!normalizedOwnerKey) {
+    return null;
+  }
+
+  const current =
+    getOfflineScoringSession();
+
+  if (!current) {
+    return null;
+  }
+
+  const expectedMatchId =
+    safePositiveInteger(
+      matchId
+    );
+
+  if (
+    expectedMatchId &&
+    Number(
+      current.matchId
+    ) !==
+      Number(
+        expectedMatchId
+      )
+  ) {
+    return null;
+  }
+
+  const currentOwnerKey =
+    normalizeOwnerKey(
+      current.ownerKey
+    );
+
+  if (
+    currentOwnerKey &&
+    currentOwnerKey !==
+      normalizedOwnerKey &&
+    !force
+  ) {
+    return current;
+  }
+
+  const next = {
+    ...current,
+    ownerKey:
+      normalizedOwnerKey,
+  };
+
+  try {
+    window.localStorage.setItem(
+      STORAGE_KEY,
+      JSON.stringify(
+        next
+      )
+    );
+
+    window.dispatchEvent(
+      new CustomEvent(
+        "cric4all:offline-scoring-session-owner",
+        {
+          detail:
+            next,
+        }
+      )
+    );
+
+    return next;
+  } catch (
+    error
+  ) {
+    console.warn(
+      "[OFFLINE_RESUME_OWNER_SAVE_FAILED]",
+      error
+    );
+
+    return null;
+  }
 }
 
 export function clearOfflineScoringSession(

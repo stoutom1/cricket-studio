@@ -70,6 +70,77 @@ import {
   saveOfflineScoringSession,
 } from "@/lib/offline-scoring-resume";
 
+
+function DashboardLeaderShowcase({
+  accent = "batting",
+  hero,
+  cards = [],
+}) {
+  const safeCards = (cards || []).filter(Boolean);
+
+  return (
+    <section
+      className={`dashboard-leader-showcase dashboard-leader-showcase--${accent}`}
+      aria-label={`${hero?.label || "League"} leaders`}
+    >
+      <article className="dashboard-leader-hero">
+        <div className="dashboard-leader-hero-copy">
+          <span className="dashboard-leader-eyebrow">
+            {hero?.icon} {hero?.eyebrow}
+          </span>
+          <strong>{hero?.label}</strong>
+          <span className="dashboard-leader-player">
+            {hero?.row?.playerName || "No qualifier yet"}
+          </span>
+          <small>
+            {hero?.row?.teamName || ""}
+          </small>
+        </div>
+
+        <div className="dashboard-leader-hero-value">
+          <strong>{hero?.value ?? "—"}</strong>
+          <span>{hero?.unit || ""}</span>
+          {hero?.detail ? <small>{hero.detail}</small> : null}
+        </div>
+      </article>
+
+      <div className="dashboard-leader-grid">
+        {safeCards.map((item, index) => (
+          <article
+            className="dashboard-leader-card"
+            key={`${item.label}-${item.row?.playerId ?? item.row?.playerName ?? index}`}
+          >
+            <div className="dashboard-leader-card-top">
+              <span className="dashboard-leader-card-icon">{item.icon}</span>
+              <span>
+                <strong>{item.label}</strong>
+                <small>{item.hint}</small>
+              </span>
+            </div>
+
+            {item.row ? (
+              <>
+                <div className="dashboard-leader-card-player">
+                  <strong>{item.row.playerName}</strong>
+                  <small>{item.row.teamName || ""}</small>
+                </div>
+                <div className="dashboard-leader-card-value">
+                  <strong>{item.value}</strong>
+                  <span>{item.unit}</span>
+                </div>
+              </>
+            ) : (
+              <div className="dashboard-leader-card-empty">
+                No qualifier yet
+              </div>
+            )}
+          </article>
+        ))}
+      </div>
+    </section>
+  );
+}
+
 function SuperOverScorecard({ superOver }) {
   if (!superOver?.exists) return null;
 
@@ -777,6 +848,7 @@ const canScoreCurrentLeague =
 const scheduledMatches = matches.filter((m) => normalizeStatus(m.status) === "SCHEDULED");
 const [scoringSubTab, setScoringSubTab] = useState("ADVANCED");
 const [statsSubTab, setStatsSubTab] = useState("BATTING");
+const [dashboardLeadersTab, setDashboardLeadersTab] = useState("BATTING");
 const [leagueStats, setLeagueStats] = useState(null);
 const [awardsData, setAwardsData] = useState(null);
 const [awardsLoading, setAwardsLoading] = useState(false);
@@ -2487,12 +2559,45 @@ async function handleCreateLeague() {
   setShowLeagueModal(false);
   setLeagueName("");
 }
-async function loadLeagueStats(leagueId = activeLeagueId) {
+async function loadLeagueStats(
+  leagueId = activeLeagueId,
+  options = {}
+) {
   if (!leagueId) return;
+
+  const requestedSeriesIds =
+    (
+      options.seriesIds ??
+      contextFilters?.seriesIds ??
+      []
+    )
+      .map(Number)
+      .filter(
+        (value) =>
+          Number.isInteger(value) &&
+          value > 0
+      );
+
+  const query =
+    new URLSearchParams();
+
+  if (requestedSeriesIds.length) {
+    query.set(
+      "seriesIds",
+      requestedSeriesIds.join(",")
+    );
+  }
+
+  const statsUrl =
+    `/api/leagues/${leagueId}/stats${
+      query.toString()
+        ? `?${query.toString()}`
+        : ""
+    }`;
 
   try {
     setLeagueStatsLoading(true);
-    const data = await api(`/api/leagues/${leagueId}/stats`);
+    const data = await api(statsUrl);
     setLeagueStats(data);
   } catch (err) {
     console.error("Load league stats failed:", err);
@@ -15192,6 +15297,231 @@ const filteredCaptaincy = combinedCaptaincy.filter(playerPassesContextFilters);
 const filteredWicketkeeping =
   combinedWicketkeeping.filter(playerPassesContextFilters);
 
+/*
+ * DASHBOARD LEADERS
+ * =================
+ * These calculations intentionally reuse the already-loaded league Stats API
+ * rows. That keeps Dashboard -> Stats -> Leaders aligned with the detailed
+ * Batting/Bowling/Fielding records and avoids a second scoring engine.
+ *
+ * The current Smart Filters are applied first, so Leaders always reflects the
+ * same team/player/series context the signed-in user is viewing.
+ */
+const dashboardTopRunScorer = [...filteredBatting]
+  .filter((row) => Number(row.runs || 0) > 0)
+  .sort(
+    (a, b) =>
+      Number(b.runs || 0) - Number(a.runs || 0) ||
+      Number(b.strikeRate || 0) - Number(a.strikeRate || 0)
+  )[0];
+
+const dashboardTopSixHitter = [...filteredBatting]
+  .filter((row) => Number(row.sixes || 0) > 0)
+  .sort(
+    (a, b) =>
+      Number(b.sixes || 0) - Number(a.sixes || 0) ||
+      Number(b.runs || 0) - Number(a.runs || 0)
+  )[0];
+
+const dashboardTopFourHitter = [...filteredBatting]
+  .filter((row) => Number(row.fours || 0) > 0)
+  .sort(
+    (a, b) =>
+      Number(b.fours || 0) - Number(a.fours || 0) ||
+      Number(b.runs || 0) - Number(a.runs || 0)
+  )[0];
+
+const dashboardBestStrikeRate = [...filteredBatting]
+  .filter((row) => Number(row.balls || 0) >= 5)
+  .sort(
+    (a, b) =>
+      Number(b.strikeRate || 0) - Number(a.strikeRate || 0) ||
+      Number(b.runs || 0) - Number(a.runs || 0)
+  )[0];
+
+const dashboardBestRunsPerMatch = [...filteredBatting]
+  .filter((row) => Number(row.matches || 0) > 0)
+  .map((row) => ({
+    ...row,
+    runsPerMatch:
+      Number(row.runs || 0) /
+      Math.max(1, Number(row.matches || 0)),
+  }))
+  .sort(
+    (a, b) =>
+      b.runsPerMatch - a.runsPerMatch ||
+      Number(b.runs || 0) - Number(a.runs || 0)
+  )[0];
+
+const dashboardTopWicketTaker = [...filteredBowling]
+  .filter((row) => Number(row.wickets || 0) > 0)
+  .sort(
+    (a, b) =>
+      Number(b.wickets || 0) - Number(a.wickets || 0) ||
+      Number(a.economy || 0) - Number(b.economy || 0)
+  )[0];
+
+const dashboardBestEconomy = [...filteredBowling]
+  .filter((row) => Number(row.bowlingBalls || 0) >= 6)
+  .sort(
+    (a, b) =>
+      Number(a.economy || 0) - Number(b.economy || 0) ||
+      Number(b.wickets || 0) - Number(a.wickets || 0)
+  )[0];
+
+const dashboardTopDotBowler = [...filteredBowling]
+  .filter((row) => Number(row.dots || 0) > 0)
+  .sort(
+    (a, b) =>
+      Number(b.dots || 0) - Number(a.dots || 0) ||
+      Number(b.wickets || 0) - Number(a.wickets || 0)
+  )[0];
+
+const dashboardBestBowlingStrikeRate = [...filteredBowling]
+  .filter(
+    (row) =>
+      Number(row.wickets || 0) > 0 &&
+      Number(row.bowlingBalls || 0) > 0
+  )
+  .sort(
+    (a, b) =>
+      Number(a.bowlingStrikeRate || 0) -
+        Number(b.bowlingStrikeRate || 0) ||
+      Number(b.wickets || 0) - Number(a.wickets || 0)
+  )[0];
+
+const dashboardBowlingWorkhorse = [...filteredBowling]
+  .filter((row) => Number(row.bowlingBalls || 0) > 0)
+  .sort(
+    (a, b) =>
+      Number(b.bowlingBalls || 0) - Number(a.bowlingBalls || 0) ||
+      Number(b.wickets || 0) - Number(a.wickets || 0)
+  )[0];
+
+const dashboardTopFielder = [...filteredFielding]
+  .filter((row) => Number(row.fieldingTotal || 0) > 0)
+  .sort(
+    (a, b) =>
+      Number(b.fieldingTotal || 0) - Number(a.fieldingTotal || 0) ||
+      Number(b.catches || 0) - Number(a.catches || 0)
+  )[0];
+
+const dashboardSafestHands = [...filteredFielding]
+  .filter((row) => Number(row.catches || 0) > 0)
+  .sort(
+    (a, b) =>
+      Number(b.catches || 0) - Number(a.catches || 0) ||
+      Number(b.fieldingTotal || 0) - Number(a.fieldingTotal || 0)
+  )[0];
+
+const dashboardRunOutSpecialist = [...filteredFielding]
+  .filter((row) => Number(row.runOuts || 0) > 0)
+  .sort(
+    (a, b) =>
+      Number(b.runOuts || 0) - Number(a.runOuts || 0) ||
+      Number(b.fieldingTotal || 0) - Number(a.fieldingTotal || 0)
+  )[0];
+
+const dashboardAssistLeader = [...filteredFielding]
+  .filter((row) => Number(row.assists || 0) > 0)
+  .sort(
+    (a, b) =>
+      Number(b.assists || 0) - Number(a.assists || 0) ||
+      Number(b.fieldingTotal || 0) - Number(a.fieldingTotal || 0)
+  )[0];
+
+const dashboardStumpingLeader = [...filteredFielding]
+  .filter((row) => Number(row.stumpings || 0) > 0)
+  .sort(
+    (a, b) =>
+      Number(b.stumpings || 0) - Number(a.stumpings || 0) ||
+      Number(b.fieldingTotal || 0) - Number(a.fieldingTotal || 0)
+  )[0];
+
+/*
+ * IMPORTANT:
+ * All-Round must use the complete player rows already merged by the league
+ * Stats API. Surprise Cricket League can use name-based analytics identities,
+ * so converting those identities to Number in the browser can collapse
+ * unrelated players into one record and inherit another player's wickets.
+ */
+const dashboardAllRoundRows =
+  (
+    leagueStats
+      ?.rankings
+      ?.bestAllRounders ||
+    []
+  )
+    .filter(
+      playerPassesContextFilters
+    );
+
+const dashboardTopImpactPlayer =
+  dashboardAllRoundRows[0];
+
+const dashboardBalancedForce = [...dashboardAllRoundRows]
+  .filter(
+    (row) =>
+      Number(row.runs || 0) > 0 &&
+      Number(row.wickets || 0) > 0
+  )
+  .map((row) => ({
+    ...row,
+    twoWayPoints:
+      Number(row.runs || 0) +
+      Number(row.wickets || 0) * 25,
+  }))
+  .sort(
+    (a, b) =>
+      b.twoWayPoints - a.twoWayPoints ||
+      Number(b.allRounderPoints || 0) -
+        Number(a.allRounderPoints || 0)
+  )[0];
+
+const dashboardThreeDimensionalPlayer = [...dashboardAllRoundRows]
+  .filter(
+    (row) =>
+      Number(row.runs || 0) > 0 &&
+      Number(row.wickets || 0) > 0 &&
+      Number(row.fieldingTotal || 0) > 0
+  )
+  .sort(
+    (a, b) =>
+      Number(b.allRounderPoints || 0) -
+      Number(a.allRounderPoints || 0)
+  )[0];
+
+const dashboardBestImpactPerMatch = [...dashboardAllRoundRows]
+  .filter((row) => Number(row.matches || 0) >= 2)
+  .map((row) => ({
+    ...row,
+    impactPerMatch:
+      Number(row.allRounderPoints || 0) /
+      Math.max(1, Number(row.matches || 0)),
+  }))
+  .sort(
+    (a, b) =>
+      b.impactPerMatch - a.impactPerMatch ||
+      Number(b.allRounderPoints || 0) -
+        Number(a.allRounderPoints || 0)
+  )[0];
+
+const dashboardCompletePackage = [...dashboardAllRoundRows]
+  .map((row) => ({
+    ...row,
+    disciplines:
+      Number(Number(row.runs || 0) > 0) +
+      Number(Number(row.wickets || 0) > 0) +
+      Number(Number(row.fieldingTotal || 0) > 0),
+  }))
+  .filter((row) => row.disciplines >= 2)
+  .sort(
+    (a, b) =>
+      b.disciplines - a.disciplines ||
+      Number(b.allRounderPoints || 0) -
+        Number(a.allRounderPoints || 0)
+  )[0];
+
 const filteredPointsTable =
   pointsTable?.filter(pointsPassesContextFilters) || [];
 
@@ -16266,8 +16596,20 @@ useEffect(() => {
   if (activeTab !== "stats") return;
   if (!activeLeagueId) return;
 
-  loadLeagueStats(activeLeagueId);
-}, [dashboardReady, activeTab, activeLeagueId]);
+  loadLeagueStats(
+    activeLeagueId,
+    {
+      seriesIds:
+        contextFilters?.seriesIds ||
+        [],
+    }
+  );
+}, [
+  dashboardReady,
+  activeTab,
+  activeLeagueId,
+  contextFilters?.seriesIds?.join(","),
+]);
 
 function safeSetJsonState(setter) {
   return (next) => {
@@ -26777,6 +27119,14 @@ onClick={() => {
 
         <button
           type="button"
+          className={statsSubTab === "LEADERS" ? "active" : ""}
+          onClick={() => setStatsSubTab("LEADERS")}
+        >
+          🌟 Leaders
+        </button>
+
+        <button
+          type="button"
           className={statsSubTab === "RANKINGS" ? "active" : ""}
           onClick={() => setStatsSubTab("RANKINGS")}
         >
@@ -26929,6 +27279,633 @@ onClick={() => {
     )}
   </Card>
 )}
+<style jsx global>{`
+  .dashboard-leaders-intro {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 14px;
+    margin-bottom: 14px;
+    padding: 12px 14px;
+    border: 1px solid rgba(96, 165, 250, 0.18);
+    border-radius: 14px;
+    background: rgba(8, 22, 42, 0.62);
+  }
+
+  .dashboard-leaders-intro > div {
+    min-width: 0;
+    display: grid;
+    gap: 3px;
+  }
+
+  .dashboard-leaders-intro strong {
+    color: #f8fbff;
+    font-size: 14px;
+  }
+
+  .dashboard-leaders-intro span {
+    color: #9fb2ca;
+    font-size: 12px;
+    line-height: 1.4;
+  }
+
+  .dashboard-leaders-live-badge {
+    flex: 0 0 auto;
+    padding: 6px 9px;
+    border: 1px solid rgba(52, 211, 153, 0.32);
+    border-radius: 999px;
+    color: #9ff5d3 !important;
+    background: rgba(16, 185, 129, 0.1);
+    font-size: 10px !important;
+    font-weight: 800;
+    text-transform: uppercase;
+    letter-spacing: 0.04em;
+  }
+
+  .dashboard-leaders-tabs {
+    display: grid;
+    grid-template-columns: repeat(4, minmax(0, 1fr));
+    gap: 8px;
+    margin-bottom: 14px;
+  }
+
+  .dashboard-leaders-tabs button {
+    min-width: 0;
+    min-height: 42px;
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    gap: 7px;
+    padding: 9px 10px;
+    border: 1px solid rgba(113, 146, 184, 0.34);
+    border-radius: 11px;
+    color: #aebed1;
+    background: rgba(8, 22, 42, 0.68);
+    font: inherit;
+    font-size: 12px;
+    font-weight: 800;
+    cursor: pointer;
+    white-space: nowrap;
+  }
+
+  .dashboard-leaders-tabs button:hover {
+    border-color: rgba(96, 165, 250, 0.58);
+    color: #fff;
+  }
+
+  .dashboard-leaders-tabs button.active {
+    border-color: rgba(56, 189, 248, 0.72);
+    color: #fff;
+    background: linear-gradient(
+      135deg,
+      rgba(37, 99, 235, 0.82),
+      rgba(14, 116, 144, 0.74)
+    );
+    box-shadow: 0 8px 24px rgba(14, 116, 144, 0.14);
+  }
+
+  .dashboard-leader-showcase {
+    display: grid;
+    gap: 12px;
+  }
+
+  .dashboard-leader-hero {
+    min-width: 0;
+    display: flex;
+    align-items: stretch;
+    justify-content: space-between;
+    gap: 18px;
+    padding: 18px;
+    border: 1px solid rgba(96, 165, 250, 0.24);
+    border-radius: 16px;
+    overflow: hidden;
+    background:
+      radial-gradient(circle at 88% 14%, rgba(249, 115, 22, 0.15), transparent 34%),
+      linear-gradient(135deg, rgba(34, 30, 30, 0.94), rgba(7, 20, 35, 0.96));
+  }
+
+  .dashboard-leader-showcase--bowling .dashboard-leader-hero {
+    background:
+      radial-gradient(circle at 88% 14%, rgba(139, 92, 246, 0.18), transparent 34%),
+      linear-gradient(135deg, rgba(35, 26, 52, 0.94), rgba(7, 20, 35, 0.96));
+  }
+
+  .dashboard-leader-showcase--fielding .dashboard-leader-hero {
+    background:
+      radial-gradient(circle at 88% 14%, rgba(16, 185, 129, 0.17), transparent 34%),
+      linear-gradient(135deg, rgba(13, 48, 50, 0.94), rgba(7, 20, 35, 0.96));
+  }
+
+  .dashboard-leader-showcase--allround .dashboard-leader-hero {
+    background:
+      radial-gradient(circle at 88% 14%, rgba(245, 158, 11, 0.18), transparent 34%),
+      linear-gradient(135deg, rgba(54, 39, 22, 0.94), rgba(7, 20, 35, 0.96));
+  }
+
+  .dashboard-leader-hero-copy {
+    min-width: 0;
+    display: grid;
+    align-content: center;
+    gap: 5px;
+  }
+
+  .dashboard-leader-eyebrow {
+    color: #7dd3fc;
+    font-size: 10px;
+    font-weight: 900;
+    text-transform: uppercase;
+    letter-spacing: 0.08em;
+  }
+
+  .dashboard-leader-hero-copy > strong {
+    color: #dbeafe;
+    font-size: 12px;
+    text-transform: uppercase;
+    letter-spacing: 0.04em;
+  }
+
+  .dashboard-leader-player {
+    max-width: 100%;
+    overflow: hidden;
+    color: #fff;
+    font-size: clamp(20px, 2.4vw, 30px);
+    font-weight: 900;
+    line-height: 1.08;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+  }
+
+  .dashboard-leader-hero-copy small {
+    overflow: hidden;
+    color: #9fb2ca;
+    font-size: 11px;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+  }
+
+  .dashboard-leader-hero-value {
+    flex: 0 0 auto;
+    min-width: 145px;
+    display: grid;
+    align-content: center;
+    justify-items: end;
+    gap: 2px;
+    text-align: right;
+  }
+
+  .dashboard-leader-hero-value > strong {
+    color: #fff;
+    font-size: clamp(28px, 3.4vw, 42px);
+    line-height: 1;
+  }
+
+  .dashboard-leader-hero-value > span {
+    color: #7dd3fc;
+    font-size: 11px;
+    font-weight: 900;
+    text-transform: uppercase;
+  }
+
+  .dashboard-leader-hero-value small {
+    max-width: 230px;
+    margin-top: 4px;
+    color: #9fb2ca;
+    font-size: 10px;
+    line-height: 1.35;
+  }
+
+  .dashboard-leader-grid {
+    display: grid;
+    grid-template-columns: repeat(4, minmax(0, 1fr));
+    gap: 10px;
+  }
+
+  .dashboard-leader-card {
+    min-width: 0;
+    display: grid;
+    align-content: space-between;
+    gap: 13px;
+    min-height: 150px;
+    padding: 14px;
+    border: 1px solid rgba(113, 146, 184, 0.26);
+    border-radius: 14px;
+    background: linear-gradient(
+      180deg,
+      rgba(17, 40, 68, 0.9),
+      rgba(8, 23, 41, 0.94)
+    );
+  }
+
+  .dashboard-leader-card-top {
+    min-width: 0;
+    display: flex;
+    align-items: flex-start;
+    gap: 9px;
+  }
+
+  .dashboard-leader-card-icon {
+    flex: 0 0 auto;
+    font-size: 18px;
+  }
+
+  .dashboard-leader-card-top > span:last-child {
+    min-width: 0;
+    display: grid;
+    gap: 2px;
+  }
+
+  .dashboard-leader-card-top strong {
+    color: #f8fbff;
+    font-size: 12px;
+    line-height: 1.2;
+  }
+
+  .dashboard-leader-card-top small {
+    color: #7890aa;
+    font-size: 9px;
+    line-height: 1.25;
+  }
+
+  .dashboard-leader-card-player {
+    min-width: 0;
+    display: grid;
+    gap: 2px;
+  }
+
+  .dashboard-leader-card-player strong,
+  .dashboard-leader-card-player small {
+    overflow: hidden;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+  }
+
+  .dashboard-leader-card-player strong {
+    color: #dcecff;
+    font-size: 13px;
+  }
+
+  .dashboard-leader-card-player small {
+    color: #7890aa;
+    font-size: 9px;
+  }
+
+  .dashboard-leader-card-value {
+    display: flex;
+    align-items: baseline;
+    gap: 5px;
+  }
+
+  .dashboard-leader-card-value strong {
+    color: #fff;
+    font-size: 20px;
+  }
+
+  .dashboard-leader-card-value span {
+    color: #7dd3fc;
+    font-size: 9px;
+    font-weight: 800;
+    text-transform: uppercase;
+  }
+
+  .dashboard-leader-card-empty,
+  .dashboard-leaders-empty {
+    color: #7890aa;
+    font-size: 12px;
+  }
+
+  .dashboard-leaders-empty {
+    padding: 24px 14px;
+    border: 1px dashed rgba(113, 146, 184, 0.28);
+    border-radius: 14px;
+    text-align: center;
+    background: rgba(8, 22, 42, 0.45);
+  }
+
+  .dashboard-leaders-footnote {
+    margin: 13px 2px 0;
+    color: #7188a2;
+    font-size: 10px;
+    line-height: 1.45;
+  }
+
+  @media (max-width: 900px) {
+    .dashboard-leader-grid {
+      grid-template-columns: repeat(2, minmax(0, 1fr));
+    }
+  }
+
+  @media (max-width: 640px) {
+    .dashboard-leaders-intro {
+      align-items: flex-start;
+    }
+
+    .dashboard-leaders-live-badge {
+      display: none;
+    }
+
+    .dashboard-leaders-tabs {
+      grid-template-columns: repeat(2, minmax(0, 1fr));
+    }
+
+    .dashboard-leader-hero {
+      display: grid;
+      gap: 14px;
+      padding: 15px;
+    }
+
+    .dashboard-leader-hero-value {
+      min-width: 0;
+      justify-items: start;
+      text-align: left;
+    }
+
+    .dashboard-leader-hero-value small {
+      max-width: none;
+    }
+
+    .dashboard-leader-player,
+    .dashboard-leader-hero-copy small {
+      white-space: normal;
+      overflow-wrap: anywhere;
+    }
+
+    .dashboard-leader-grid {
+      grid-template-columns: repeat(2, minmax(0, 1fr));
+      gap: 8px;
+    }
+
+    .dashboard-leader-card {
+      min-height: 142px;
+      padding: 12px;
+    }
+  }
+
+  @media (max-width: 390px) {
+    .dashboard-leader-grid {
+      grid-template-columns: 1fr;
+    }
+  }
+`}</style>
+
+{statsSubTab === "LEADERS" && (
+  <Card title="🌟 League Leaders">
+    <div className="dashboard-leaders-intro">
+      <div>
+        <strong>Standout performers</strong>
+        <span>
+          Quick league bragging rights from the same records shown in Stats.
+        </span>
+      </div>
+      <span className="dashboard-leaders-live-badge">Stats-powered</span>
+    </div>
+
+    <div
+      className="dashboard-leaders-tabs"
+      role="tablist"
+      aria-label="League leader category"
+    >
+      {[
+        ["BATTING", "🏏", "Batting"],
+        ["BOWLING", "🎯", "Bowling"],
+        ["FIELDING", "🧤", "Fielding"],
+        ["ALLROUND", "🌟", "All-Round"],
+      ].map(([key, icon, label]) => (
+        <button
+          key={key}
+          type="button"
+          role="tab"
+          aria-selected={dashboardLeadersTab === key}
+          className={dashboardLeadersTab === key ? "active" : ""}
+          onClick={() => setDashboardLeadersTab(key)}
+        >
+          <span>{icon}</span>
+          {label}
+        </button>
+      ))}
+    </div>
+
+    {dashboardLeadersTab === "BATTING" ? (
+      dashboardTopRunScorer ? (
+        <DashboardLeaderShowcase
+          accent="batting"
+          hero={{
+            eyebrow: "Orange cap",
+            icon: "🏏",
+            label: "Run machine",
+            row: dashboardTopRunScorer,
+            value: dashboardTopRunScorer.runs,
+            unit: "runs",
+            detail: `${dashboardTopRunScorer.matches || 0} matches · ${dashboardTopRunScorer.balls || 0} balls`,
+          }}
+          cards={[
+            {
+              icon: "🚀",
+              label: "Power hitter",
+              hint: "Most sixes",
+              row: dashboardTopSixHitter,
+              value: dashboardTopSixHitter?.sixes || 0,
+              unit: "sixes",
+            },
+            {
+              icon: "⚡",
+              label: "Boundary boss",
+              hint: "Most fours",
+              row: dashboardTopFourHitter,
+              value: dashboardTopFourHitter?.fours || 0,
+              unit: "fours",
+            },
+            {
+              icon: "🔥",
+              label: "Accelerator",
+              hint: "Best SR · min 5 balls",
+              row: dashboardBestStrikeRate,
+              value: dashboardBestStrikeRate?.strikeRate || "0.00",
+              unit: "SR",
+            },
+            {
+              icon: "📈",
+              label: "Match impact",
+              hint: "Best runs per match",
+              row: dashboardBestRunsPerMatch,
+              value: dashboardBestRunsPerMatch?.runsPerMatch?.toFixed(1) || "0.0",
+              unit: "runs/match",
+            },
+          ]}
+        />
+      ) : (
+        <div className="dashboard-leaders-empty">
+          No qualifying batting leaders yet.
+        </div>
+      )
+    ) : dashboardLeadersTab === "BOWLING" ? (
+      dashboardTopWicketTaker ? (
+        <DashboardLeaderShowcase
+          accent="bowling"
+          hero={{
+            eyebrow: "Purple cap",
+            icon: "🎯",
+            label: "Wicket hunter",
+            row: dashboardTopWicketTaker,
+            value: dashboardTopWicketTaker.wickets,
+            unit: "wickets",
+            detail: `${dashboardTopWicketTaker.bowlingOvers || "0.0"} overs · ${dashboardTopWicketTaker.economy || "0.00"} economy`,
+          }}
+          cards={[
+            {
+              icon: "🔒",
+              label: "Run stopper",
+              hint: "Best economy · min 1 over",
+              row: dashboardBestEconomy,
+              value: dashboardBestEconomy?.economy || "0.00",
+              unit: "economy",
+            },
+            {
+              icon: "⚪",
+              label: "Dot-ball king",
+              hint: "Most dot balls",
+              row: dashboardTopDotBowler,
+              value: dashboardTopDotBowler?.dots || 0,
+              unit: "dots",
+            },
+            {
+              icon: "💥",
+              label: "Strike threat",
+              hint: "Fewest balls per wicket",
+              row: dashboardBestBowlingStrikeRate,
+              value: dashboardBestBowlingStrikeRate?.bowlingStrikeRate || "0.0",
+              unit: "balls/wkt",
+            },
+            {
+              icon: "💪",
+              label: "Workhorse",
+              hint: "Most legal deliveries",
+              row: dashboardBowlingWorkhorse,
+              value: dashboardBowlingWorkhorse?.bowlingOvers || "0.0",
+              unit: "overs",
+            },
+          ]}
+        />
+      ) : (
+        <div className="dashboard-leaders-empty">
+          No qualifying bowling leaders yet.
+        </div>
+      )
+    ) : dashboardLeadersTab === "FIELDING" ? (
+      dashboardTopFielder ? (
+        <DashboardLeaderShowcase
+          accent="fielding"
+          hero={{
+            eyebrow: "Fielding crown",
+            icon: "🧤",
+            label: "Fielding MVP",
+            row: dashboardTopFielder,
+            value: dashboardTopFielder.fieldingTotal,
+            unit: "contributions",
+            detail: `${dashboardTopFielder.catches || 0} catches · ${dashboardTopFielder.runOuts || 0} run-outs · ${dashboardTopFielder.stumpings || 0} stumpings · ${dashboardTopFielder.assists || 0} assists`,
+          }}
+          cards={[
+            {
+              icon: "🤲",
+              label: "Safe hands",
+              hint: "Most catches",
+              row: dashboardSafestHands,
+              value: dashboardSafestHands?.catches || 0,
+              unit: "catches",
+            },
+            {
+              icon: "🎯",
+              label: "Run-out specialist",
+              hint: "Most direct run-outs",
+              row: dashboardRunOutSpecialist,
+              value: dashboardRunOutSpecialist?.runOuts || 0,
+              unit: "run-outs",
+            },
+            {
+              icon: "🤝",
+              label: "Assist king",
+              hint: "Most run-out assists",
+              row: dashboardAssistLeader,
+              value: dashboardAssistLeader?.assists || 0,
+              unit: "assists",
+            },
+            {
+              icon: "⚡",
+              label: "Glove work",
+              hint: "Most stumpings",
+              row: dashboardStumpingLeader,
+              value: dashboardStumpingLeader?.stumpings || 0,
+              unit: "stumpings",
+            },
+          ]}
+        />
+      ) : (
+        <div className="dashboard-leaders-empty">
+          No qualifying fielding leaders yet.
+        </div>
+      )
+    ) : dashboardTopImpactPlayer ? (
+      <DashboardLeaderShowcase
+        accent="allround"
+        hero={{
+          eyebrow: "Impact crown",
+          icon: "🌟",
+          label: "Impact player",
+          row: dashboardTopImpactPlayer,
+          value: dashboardTopImpactPlayer.allRounderPoints,
+          unit: "impact pts",
+          detail: `${dashboardTopImpactPlayer.runs || 0} runs · ${dashboardTopImpactPlayer.wickets || 0} wickets · ${dashboardTopImpactPlayer.fieldingTotal || 0} fielding`,
+        }}
+        cards={[
+          {
+            icon: "⚔️",
+            label: "Balanced force",
+            hint: "Runs + wickets impact",
+            row: dashboardBalancedForce,
+            value: dashboardBalancedForce
+              ? `${dashboardBalancedForce.runs}R · ${dashboardBalancedForce.wickets}W`
+              : "—",
+            unit: "two-way",
+          },
+          {
+            icon: "🧩",
+            label: "Three-dimensional",
+            hint: "Batting + bowling + fielding",
+            row: dashboardThreeDimensionalPlayer,
+            value: dashboardThreeDimensionalPlayer?.allRounderPoints || 0,
+            unit: "impact pts",
+          },
+          {
+            icon: "📊",
+            label: "Impact rate",
+            hint: "Best impact per match · min 2",
+            row: dashboardBestImpactPerMatch,
+            value: dashboardBestImpactPerMatch?.impactPerMatch?.toFixed(1) || "0.0",
+            unit: "pts/match",
+          },
+          {
+            icon: "💎",
+            label: "Complete package",
+            hint: "Contributing disciplines",
+            row: dashboardCompletePackage,
+            value: dashboardCompletePackage?.disciplines || 0,
+            unit: "disciplines",
+          },
+        ]}
+      />
+    ) : (
+      <div className="dashboard-leaders-empty">
+        No qualifying all-round leaders yet.
+      </div>
+    )}
+
+    <p className="dashboard-leaders-footnote">
+      Leaders use the same league Stats data and Smart Filters shown on this
+      dashboard. All-Round impact follows Cric4All&apos;s existing weighting:
+      runs + 25 per wicket + 10 per catch/run-out/stumping + 5 per assist.
+    </p>
+  </Card>
+)}
+
 {statsSubTab === "RANKINGS" && (
   <Card title="🏆 Rankings Hub">
     <div className="ranking-category-tabs">

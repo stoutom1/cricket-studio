@@ -11,6 +11,7 @@ import {
   clearOfflineScoringSession,
   getOfflineScoringSession,
   isCompletedMatchStatus,
+  setOfflineScoringSessionOwner,
   shouldUseOfflineServiceWorker,
 } from "@/lib/offline-scoring-resume";
 import "@/app/offline-resume.css";
@@ -104,7 +105,9 @@ function scoreSummary(
   );
 }
 
-export default function OfflineScoringResumeBanner() {
+export default function OfflineScoringResumeBanner({
+  ownerKey = "",
+}) {
   const [
     session,
     setSession,
@@ -129,6 +132,13 @@ export default function OfflineScoringResumeBanner() {
       null
     );
 
+  const normalizedOwnerKey =
+    String(
+      ownerKey ||
+      ""
+    )
+      .trim();
+
   const refresh =
     useCallback(
       () => {
@@ -139,9 +149,6 @@ export default function OfflineScoringResumeBanner() {
          * Extra stale-session protection:
          * completed/locked/abandoned matches must never keep showing a
          * Resume Match action.
-         *
-         * DashboardClient already clears this when it observes a terminal
-         * match status. This check is only a defensive UI safeguard.
          */
         if (
           savedSession &&
@@ -156,9 +163,33 @@ export default function OfflineScoringResumeBanner() {
           setSession(
             null
           );
-        } else {
+        } else if (
+          !savedSession ||
+          !normalizedOwnerKey
+        ) {
           setSession(
-            savedSession
+            null
+          );
+        } else {
+          const savedOwnerKey =
+            String(
+              savedSession.ownerKey ||
+              ""
+            )
+              .trim();
+
+          /*
+           * Security/UX rule:
+           * - ownerless legacy sessions are not automatically adopted at login;
+           * - another user's session remains saved but invisible;
+           * - only a session owned by this confirmed signed-in user is shown.
+           */
+          setSession(
+            savedOwnerKey &&
+            savedOwnerKey ===
+              normalizedOwnerKey
+              ? savedSession
+              : null
           );
         }
 
@@ -168,12 +199,7 @@ export default function OfflineScoringResumeBanner() {
 
         /*
          * On Dashboard, do NOT trust localStorage/query-string league state.
-         * DashboardClient validates the selected league against /api/leagues
-         * and publishes the authoritative result with
-         * cric4all:active-league-changed.
-         *
-         * This prevents an old account's saved league from briefly exposing
-         * Resume Match to a user who no longer belongs to that league.
+         * DashboardClient publishes the authoritative accessible league.
          */
         if (
           typeof window !==
@@ -188,7 +214,9 @@ export default function OfflineScoringResumeBanner() {
           getDashboardActiveLeagueId()
         );
       },
-      []
+      [
+        normalizedOwnerKey,
+      ]
     );
 
   useEffect(
@@ -217,6 +245,41 @@ export default function OfflineScoringResumeBanner() {
         };
 
       const handleSession =
+        (event) => {
+          /*
+           * A same-tab fresh save event means the current authenticated user is
+           * actively producing this scoring state. This is the only time an
+           * ownerless or previously-owned same-match session may be claimed.
+           *
+           * Merely logging in never claims a legacy session.
+           */
+          const eventMatchId =
+            Number(
+              event?.detail
+                ?.matchId
+            );
+
+          if (
+            normalizedOwnerKey &&
+            Number.isInteger(
+              eventMatchId
+            ) &&
+            eventMatchId > 0
+          ) {
+            setOfflineScoringSessionOwner(
+              normalizedOwnerKey,
+              eventMatchId,
+              {
+                force:
+                  true,
+              }
+            );
+          }
+
+          refresh();
+        };
+
+      const handleOwnerUpdate =
         () => refresh();
 
       const handleActiveLeague =
@@ -255,6 +318,11 @@ export default function OfflineScoringResumeBanner() {
       window.addEventListener(
         "cric4all:offline-scoring-session",
         handleSession
+      );
+
+      window.addEventListener(
+        "cric4all:offline-scoring-session-owner",
+        handleOwnerUpdate
       );
 
       window.addEventListener(
@@ -369,6 +437,11 @@ export default function OfflineScoringResumeBanner() {
         window.removeEventListener(
           "cric4all:offline-scoring-session",
           handleSession
+        );
+
+        window.removeEventListener(
+          "cric4all:offline-scoring-session-owner",
+          handleOwnerUpdate
         );
 
         window.removeEventListener(

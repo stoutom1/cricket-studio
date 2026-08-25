@@ -499,6 +499,28 @@ export default function AuthNav() {
     );
 
   /*
+   * Resume Match ownership must come only from a confirmed authenticated
+   * NextAuth session. Never use cachedUser/displayUser for authorization.
+   *
+   * Prefer the stable database user id. Email is a compatibility fallback for
+   * auth providers/session shapes that do not expose user.id.
+   */
+  const resumeOwnerKey =
+    confirmedAuthenticated
+      ? String(
+          liveSession?.user?.id
+            ? `id:${liveSession.user.id}`
+            : liveSession?.user?.email
+              ? `email:${String(
+                  liveSession.user.email
+                )
+                  .trim()
+                  .toLowerCase()}`
+              : ""
+        )
+      : "";
+
+  /*
    * If we have a remembered authenticated identity, never flash a false
    * "Sign In" merely because the NextAuth hook is stale after an outage.
    */
@@ -578,7 +600,14 @@ export default function AuthNav() {
         </div>
 
         <div className="auth-nav-resume-slot">
-          <OfflineScoringResumeBanner />
+          {confirmedAuthenticated &&
+          resumeOwnerKey ? (
+            <OfflineScoringResumeBanner
+              ownerKey={
+                resumeOwnerKey
+              }
+            />
+          ) : null}
         </div>
 
         <div className="auth-nav-right">

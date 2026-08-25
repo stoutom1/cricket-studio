@@ -1526,3 +1526,381 @@
 
 /* Explore: dashboard-grade statistics + awards */
 .slp-ranking-grid,.slp-awards-grid{display:grid;grid-template-columns:repeat(auto-fit,minmax(250px,1fr));gap:12px;margin-top:16px}.slp-ranking-card,.slp-award-card,.slp-team-award,.slp-awards-context{border:1px solid rgba(83,144,214,.28);border-radius:14px;background:rgba(8,30,58,.72);padding:14px}.slp-ranking-card h3,.slp-team-award h3{margin:0 0 10px}.slp-ranking-row{display:grid;grid-template-columns:24px minmax(0,1fr) auto;gap:4px 8px;align-items:center;padding:8px 0;border-top:1px solid rgba(255,255,255,.07)}.slp-ranking-row:first-of-type{border-top:0}.slp-ranking-row strong{overflow:hidden;text-overflow:ellipsis;white-space:nowrap}.slp-ranking-row small{grid-column:2;color:#8fa9c7}.slp-ranking-row b{grid-row:1/3;grid-column:3;align-self:center;color:#73f0c0}.slp-awards-context{display:flex;justify-content:space-between;gap:12px;align-items:center;margin-top:14px}.slp-awards-context span{color:#91a8c4;font-size:12px}.slp-award-card{display:grid;grid-template-columns:auto minmax(0,1fr) auto;gap:10px;align-items:start}.slp-award-icon{font-size:22px}.slp-award-card small{display:block;color:#8fb1da;text-transform:uppercase;font-weight:800;font-size:10px}.slp-award-card h3{margin:3px 0 1px;font-size:16px}.slp-award-card em{color:#9cb0c9;font-style:normal;font-size:12px}.slp-award-card>strong{color:#7ff2bf;white-space:nowrap}.slp-award-card>p,.slp-award-card details{grid-column:2/4;margin:0;color:#b7c7da;font-size:12px}.slp-award-card summary{cursor:pointer;color:#7eb1e8}.slp-team-award{margin-top:14px}.slp-team-award>div{display:flex;flex-wrap:wrap;gap:8px}.slp-team-award span{display:flex;flex-direction:column;border:1px solid rgba(255,255,255,.08);border-radius:10px;padding:8px 10px}.slp-team-award small{color:#8fa9c7;margin-top:2px}@media(max-width:760px){.slp-ranking-grid,.slp-awards-grid{grid-template-columns:1fr}.slp-awards-context{align-items:flex-start;flex-direction:column}.slp-award-card{grid-template-columns:auto minmax(0,1fr)}.slp-award-card>strong{grid-column:2}.slp-award-card>p,.slp-award-card details{grid-column:1/3}}
+
+
+/* ==========================================================================
+   LEADERS SHOWCASE
+   A compact "best-of" layer for spectators. This deliberately does not mirror
+   the Stats tables; it highlights category winners with glanceable context.
+   ========================================================================== */
+
+.slp-leader-showcase {
+  margin-top: 16px;
+  min-width: 0;
+}
+
+.slp-leader-hero {
+  position: relative;
+  overflow: hidden;
+  min-width: 0;
+  padding: 20px;
+  border: 1px solid var(--slp-line);
+  border-radius: 16px;
+  background:
+    radial-gradient(circle at 88% 16%, rgba(25, 135, 220, 0.16), transparent 34%),
+    linear-gradient(135deg, rgba(18, 39, 63, 0.92), rgba(7, 20, 35, 0.96));
+}
+
+.slp-leader-showcase--bowling .slp-leader-hero {
+  background:
+    radial-gradient(circle at 88% 16%, rgba(126, 96, 214, 0.16), transparent 34%),
+    linear-gradient(135deg, rgba(24, 31, 56, 0.94), rgba(7, 20, 35, 0.96));
+}
+
+.slp-leader-hero-top,
+.slp-leader-card-head,
+.slp-leader-card-player {
+  display: flex;
+  align-items: center;
+}
+
+.slp-leader-hero-top {
+  justify-content: space-between;
+  gap: 12px;
+}
+
+.slp-leader-kicker {
+  display: inline-flex;
+  align-items: center;
+  min-width: 0;
+  padding: 5px 9px;
+  border: 1px solid rgba(77, 174, 239, 0.28);
+  border-radius: 999px;
+  color: #82c9f7;
+  background: rgba(15, 89, 139, 0.18);
+  font-size: 9px;
+  font-weight: 900;
+  letter-spacing: 0.08em;
+  line-height: 1;
+  text-transform: uppercase;
+}
+
+.slp-leader-hero-icon {
+  flex: 0 0 auto;
+  font-size: 24px;
+  line-height: 1;
+}
+
+.slp-leader-hero-body {
+  display: grid;
+  grid-template-columns: auto minmax(0, 1fr) auto;
+  align-items: center;
+  gap: 14px;
+  min-width: 0;
+  margin-top: 17px;
+}
+
+.slp-leader-hero-avatar {
+  display: grid;
+  place-items: center;
+  width: 48px;
+  height: 48px;
+  flex: 0 0 auto;
+  border: 1px solid rgba(95, 190, 250, 0.3);
+  border-radius: 50%;
+  color: #dff3ff;
+  background: rgba(13, 84, 132, 0.58);
+  font-size: 15px;
+  font-weight: 900;
+}
+
+.slp-leader-hero-player,
+.slp-leader-card-player > div,
+.slp-leader-card-head > div {
+  min-width: 0;
+}
+
+.slp-leader-hero-player small,
+.slp-leader-hero-player strong,
+.slp-leader-hero-player em,
+.slp-leader-card small,
+.slp-leader-card strong,
+.slp-leader-card em {
+  display: block;
+}
+
+.slp-leader-hero-player small {
+  color: #7691ad;
+  font-size: 9px;
+  font-weight: 800;
+  letter-spacing: 0.04em;
+  text-transform: uppercase;
+}
+
+.slp-leader-hero-player strong {
+  overflow: hidden;
+  margin-top: 3px;
+  color: #f6fbff;
+  font-size: clamp(16px, 2.2vw, 21px);
+  line-height: 1.15;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.slp-leader-hero-player em {
+  overflow: hidden;
+  margin-top: 4px;
+  color: #7e9abb;
+  font-size: 11px;
+  font-style: normal;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.slp-leader-hero-value {
+  min-width: 88px;
+  text-align: right;
+}
+
+.slp-leader-hero-value strong {
+  display: block;
+  color: #ffffff;
+  font-size: clamp(25px, 4vw, 36px);
+  font-weight: 950;
+  line-height: 0.95;
+  white-space: nowrap;
+}
+
+.slp-leader-hero-value span {
+  display: block;
+  margin-top: 5px;
+  color: #75c8fb;
+  font-size: 10px;
+  font-weight: 800;
+  text-transform: uppercase;
+  white-space: nowrap;
+}
+
+.slp-leader-hero-detail {
+  margin-top: 14px;
+  padding-top: 12px;
+  border-top: 1px solid rgba(112, 148, 181, 0.18);
+  color: #7890aa;
+  font-size: 10px;
+  font-weight: 700;
+}
+
+.slp-leader-card-grid {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: 10px;
+  margin-top: 10px;
+}
+
+.slp-leader-card {
+  display: grid;
+  grid-template-rows: auto 1fr auto;
+  min-width: 0;
+  min-height: 166px;
+  padding: 15px;
+  border: 1px solid var(--slp-line);
+  border-radius: 13px;
+  background: rgba(8, 23, 40, 0.74);
+}
+
+.slp-leader-card-head {
+  gap: 9px;
+  min-width: 0;
+}
+
+.slp-leader-card-icon {
+  display: grid;
+  place-items: center;
+  width: 30px;
+  height: 30px;
+  flex: 0 0 auto;
+  border: 1px solid rgba(89, 157, 208, 0.2);
+  border-radius: 9px;
+  background: rgba(19, 75, 116, 0.18);
+  font-size: 14px;
+}
+
+.slp-leader-card-head small {
+  overflow: hidden;
+  color: #a9c3dc;
+  font-size: 10px;
+  font-weight: 900;
+  line-height: 1.15;
+  text-overflow: ellipsis;
+  text-transform: uppercase;
+  white-space: nowrap;
+}
+
+.slp-leader-card-head em {
+  overflow: hidden;
+  margin-top: 3px;
+  color: #607891;
+  font-size: 9px;
+  font-style: normal;
+  line-height: 1.2;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.slp-leader-card-player {
+  gap: 9px;
+  min-width: 0;
+  margin-top: 14px;
+}
+
+.slp-leader-card-player .slp-avatar {
+  flex: 0 0 auto;
+}
+
+.slp-leader-card-player strong {
+  overflow: hidden;
+  color: #eaf4fd;
+  font-size: 12px;
+  line-height: 1.2;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.slp-leader-card-player em {
+  overflow: hidden;
+  margin-top: 3px;
+  color: #7088a2;
+  font-size: 9px;
+  font-style: normal;
+  line-height: 1.2;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.slp-leader-card-value {
+  display: flex;
+  align-items: baseline;
+  gap: 6px;
+  min-width: 0;
+  margin-top: 14px;
+}
+
+.slp-leader-card-value strong {
+  color: #ffffff;
+  font-size: 22px;
+  font-weight: 950;
+  line-height: 1;
+}
+
+.slp-leader-card-value span {
+  overflow: hidden;
+  color: #76a8cd;
+  font-size: 9px;
+  font-weight: 800;
+  text-overflow: ellipsis;
+  text-transform: uppercase;
+  white-space: nowrap;
+}
+
+.slp-leader-footnote {
+  margin: 12px 0 0;
+  color: #60758d;
+  font-size: 9px;
+  line-height: 1.45;
+}
+
+@media (min-width: 900px) {
+  .slp-leader-card-grid {
+    grid-template-columns: repeat(4, minmax(0, 1fr));
+  }
+}
+
+@media (max-width: 560px) {
+  .slp-leader-hero {
+    padding: 16px;
+    border-radius: 14px;
+  }
+
+  .slp-leader-hero-body {
+    grid-template-columns: auto minmax(0, 1fr);
+    gap: 11px;
+  }
+
+  .slp-leader-hero-avatar {
+    width: 42px;
+    height: 42px;
+    font-size: 13px;
+  }
+
+  .slp-leader-hero-value {
+    grid-column: 1 / -1;
+    display: flex;
+    align-items: baseline;
+    gap: 7px;
+    min-width: 0;
+    padding-top: 11px;
+    border-top: 1px solid rgba(112, 148, 181, 0.15);
+    text-align: left;
+  }
+
+  .slp-leader-hero-value strong {
+    font-size: 28px;
+  }
+
+  .slp-leader-hero-value span {
+    margin-top: 0;
+  }
+
+  .slp-leader-card-grid {
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+  }
+
+  .slp-leader-card {
+    min-height: 158px;
+    padding: 13px;
+  }
+}
+
+@media (max-width: 360px) {
+  .slp-leader-card-grid {
+    grid-template-columns: 1fr;
+  }
+
+  .slp-leader-card {
+    min-height: 0;
+  }
+}
+
+
+/* Fielding / All-Round Leaders accents */
+.slp-leader-showcase--fielding .slp-leader-hero {
+  background:
+    radial-gradient(circle at 88% 16%, rgba(29, 185, 142, 0.16), transparent 34%),
+    linear-gradient(135deg, rgba(13, 48, 50, 0.94), rgba(7, 20, 35, 0.96));
+}
+
+.slp-leader-showcase--allround .slp-leader-hero {
+  background:
+    radial-gradient(circle at 88% 16%, rgba(237, 177, 54, 0.17), transparent 34%),
+    linear-gradient(135deg, rgba(54, 39, 22, 0.94), rgba(7, 20, 35, 0.96));
+}
+
+/*
+ * Four leader categories must remain unmistakable on phones. Using an equal
+ * grid avoids text overflow and tiny wrapped pills while preserving the shared
+ * SegmentedControl component everywhere else.
+ */
+@media (max-width: 560px) {
+  .slp-section:has(.slp-leader-showcase) > .slp-segments,
+  .slp-section:has(.slp-leader-footnote) > .slp-segments {
+    display: grid;
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+  }
+
+  .slp-section:has(.slp-leader-showcase) > .slp-segments button,
+  .slp-section:has(.slp-leader-footnote) > .slp-segments button {
+    justify-content: center;
+    min-width: 0;
+    white-space: nowrap;
+  }
+}
