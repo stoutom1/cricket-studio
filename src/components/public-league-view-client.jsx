@@ -19,6 +19,9 @@ import {
   buildTeamDNA,
 } from "@/lib/team-dna";
 import {
+  buildTeamRivalries,
+} from "@/lib/team-rivalries";
+import {
   buildPreMatchCenter,
 } from "@/lib/pre-match-center";
 import {
@@ -453,6 +456,7 @@ export default function PublicLeagueViewClient({ league, numericLeagueId }) {
   const [publicRecordsTab, setPublicRecordsTab] = useState("all");
   const [publicMilestonesTab, setPublicMilestonesTab] = useState("recent");
   const [publicDnaTeamId, setPublicDnaTeamId] = useState("all");
+  const [publicRivalryKey, setPublicRivalryKey] = useState("");
   const [publicPreviewMatchId, setPublicPreviewMatchId] = useState("");
   const [shareCardBusyId, setShareCardBusyId] = useState("");
   const [shareCardNotice, setShareCardNotice] = useState("");
@@ -704,6 +708,29 @@ async function toggleFollowLeague() {
               Number(team.teamId) === Number(publicDnaTeamId)
           ),
     [teamDNA.teams, publicDnaTeamId]
+  );
+
+  const teamRivalries = useMemo(
+    () =>
+      buildTeamRivalries({
+        matches: filteredMatches,
+        league,
+      }),
+    [filteredMatches, league]
+  );
+
+  const selectedRivalry = useMemo(
+    () =>
+      teamRivalries.rivalries.find(
+        (rivalry) =>
+          rivalry.key === publicRivalryKey
+      ) ||
+      teamRivalries.rivalries[0] ||
+      null,
+    [
+      teamRivalries.rivalries,
+      publicRivalryKey,
+    ]
   );
 
   const preMatchCenter = useMemo(
@@ -1282,6 +1309,7 @@ return (
             ["pulse", "Player Pulse"],
             ["records", "Records"],
             ["milestones", "Milestones"],
+            ["rivalries", "Rivalries"],
             ["dna", "Team DNA"],
             ["digest", "Digest"],
             ["share", "Share"],
@@ -2013,6 +2041,79 @@ return (
                   contributions and scored match appearances are counted from
                   completed matches only. Abandoned matches and excluded
                   analytics players do not contribute.
+                </p>
+              </div>
+            </section>
+          )}
+
+          {activeTab === "rivalries" && (
+            <section className="slp-section">
+              <SectionHeader
+                eyebrow="Head-to-head history"
+                title="Team Rivalry Center"
+                description={`${teamRivalries.rivalryCount} rivalry matchup${teamRivalries.rivalryCount === 1 ? "" : "s"} · ${teamRivalries.completedMatches} completed match${teamRivalries.completedMatches === 1 ? "" : "es"} in this view`}
+              />
+
+              {teamRivalries.rivalries.length ? (
+                <>
+                  <div className="slp-rivalry-toolbar">
+                    <label>
+                      <span>Rivalry matchup</span>
+                      <select
+                        value={
+                          publicRivalryKey ||
+                          selectedRivalry?.key ||
+                          ""
+                        }
+                        onChange={(event) =>
+                          setPublicRivalryKey(event.target.value)
+                        }
+                      >
+                        {teamRivalries.rivalries.map((rivalry) => (
+                          <option
+                            key={rivalry.key}
+                            value={rivalry.key}
+                          >
+                            {rivalry.teamA.teamName} vs {rivalry.teamB.teamName}
+                            {" · "}
+                            {rivalry.meetings} meeting{rivalry.meetings === 1 ? "" : "s"}
+                          </option>
+                        ))}
+                      </select>
+                    </label>
+
+                    <span className="slp-rivalry-scope">
+                      {selectedSeriesId
+                        ? "Series rivalry"
+                        : selectedYear
+                          ? `Season ${selectedYear}`
+                          : "All-time rivalry"}
+                    </span>
+                  </div>
+
+                  {selectedRivalry ? (
+                    <TeamRivalryCenter
+                      rivalry={selectedRivalry}
+                    />
+                  ) : null}
+                </>
+              ) : (
+                <EmptyState
+                  title="No rivalry history yet"
+                  message="The Rivalry Center appears after two teams have at least one qualifying completed meeting in the selected Season/Series view."
+                />
+              )}
+
+              <div className="slp-rivalry-note">
+                <span aria-hidden="true">⚔️</span>
+                <p>
+                  <strong>Completed meetings only</strong>
+                  Head-to-head player leaders use the same Cric4All analytics
+                  exclusions as Stats and Player Pulse. Bowler wickets exclude
+                  run-outs, retired dismissals and no-ball wickets. Where an
+                  official result string is unavailable, Cric4All uses the
+                  recorded innings totals and labels the difference as a score
+                  gap rather than inventing a formal victory margin.
                 </p>
               </div>
             </section>
@@ -3321,6 +3422,411 @@ function PreMatchPreview({
             </strong>
           </div>
         </article>
+      </div>
+
+      <PreMatchIntelligence
+        preview={preview}
+      />
+    </div>
+  );
+}
+
+function PreMatchIntelligence({
+  preview,
+}) {
+  const intelligence =
+    preview.intelligence || {};
+  const edges =
+    intelligence.matchupEdges || [];
+  const watchList =
+    intelligence.watchList || [];
+
+  const teamARecent =
+    preview.teamA?.recent || {};
+  const teamBRecent =
+    preview.teamB?.recent || {};
+
+  return (
+    <section className="slp-preview-intelligence">
+      <div className="slp-preview-intelligence-head">
+        <div>
+          <small>🔮 Pre-match intelligence 2.0</small>
+          <strong>What to watch</strong>
+        </div>
+
+        <span>Evidence-based</span>
+      </div>
+
+      <div className="slp-preview-intel-grid">
+        <article className="slp-preview-intel-card">
+          <small>🔥 Rivalry momentum</small>
+          <strong>
+            {intelligence.rivalryStreak
+              ? `${intelligence.rivalryStreak.teamName} · ${intelligence.rivalryStreak.wins} straight`
+              : "No active rivalry streak"}
+          </strong>
+          <p>
+            {intelligence.rivalryStreak
+              ? "Consecutive completed head-to-head wins"
+              : "The latest meetings do not form a current winning streak"}
+          </p>
+        </article>
+
+        <article className="slp-preview-intel-card">
+          <small>📊 Recent-results edge</small>
+          <strong>
+            {preview.teamAName}{" "}
+            {intelligence.recentFormScore?.teamA ?? 0}
+            {" — "}
+            {intelligence.recentFormScore?.teamB ?? 0}{" "}
+            {preview.teamBName}
+          </strong>
+          <p>
+            2 points per win · 1 per tie across the last five qualifying results
+          </p>
+        </article>
+
+        <article className="slp-preview-intel-card">
+          <small>🏏 In-form batter</small>
+          <strong>
+            {[
+              teamARecent.batter,
+              teamBRecent.batter,
+            ]
+              .filter(Boolean)
+              .sort(
+                (a, b) =>
+                  Number(b.runs || 0) -
+                  Number(a.runs || 0)
+              )[0]?.playerName ||
+              "No recent batting leader"}
+          </strong>
+          <p>
+            {(() => {
+              const player = [
+                teamARecent.batter,
+                teamBRecent.batter,
+              ]
+                .filter(Boolean)
+                .sort(
+                  (a, b) =>
+                    Number(b.runs || 0) -
+                    Number(a.runs || 0)
+                )[0];
+
+              return player
+                ? `${player.runs} recent runs · SR ${Number(player.strikeRate || 0).toFixed(1)}`
+                : "Needs more recent completed batting data";
+            })()}
+          </p>
+        </article>
+
+        <article className="slp-preview-intel-card">
+          <small>🎯 In-form bowler</small>
+          <strong>
+            {[
+              teamARecent.bowler,
+              teamBRecent.bowler,
+            ]
+              .filter(Boolean)
+              .sort(
+                (a, b) =>
+                  Number(b.wickets || 0) -
+                  Number(a.wickets || 0)
+              )[0]?.playerName ||
+              "No recent bowling leader"}
+          </strong>
+          <p>
+            {(() => {
+              const player = [
+                teamARecent.bowler,
+                teamBRecent.bowler,
+              ]
+                .filter(Boolean)
+                .sort(
+                  (a, b) =>
+                    Number(b.wickets || 0) -
+                    Number(a.wickets || 0)
+                )[0];
+
+              return player
+                ? `${player.wickets} recent wicket${player.wickets === 1 ? "" : "s"} · Econ ${Number(player.economy || 0).toFixed(2)}`
+                : "Needs more recent bowler-credited wickets";
+            })()}
+          </p>
+        </article>
+      </div>
+
+      {edges.length ? (
+        <div className="slp-preview-edges">
+          <div className="slp-preview-edges-title">
+            <small>Matchup edges</small>
+            <strong>Where the numbers separate the teams</strong>
+          </div>
+
+          <div>
+            {edges.map((edge) => (
+              <article
+                key={`${edge.label}-${edge.teamName}`}
+              >
+                <span>{edge.icon}</span>
+                <p>
+                  <small>{edge.label}</small>
+                  <strong>{edge.teamName}</strong>
+                  <em>
+                    {edge.value} · {edge.detail}
+                  </em>
+                </p>
+              </article>
+            ))}
+          </div>
+        </div>
+      ) : null}
+
+      <div className="slp-preview-watchlist">
+        <div>
+          <small>Broadcast notes</small>
+          <strong>Four things to watch</strong>
+        </div>
+
+        <ol>
+          {watchList.map((note, index) => (
+            <li key={`${index}-${note}`}>
+              <span>
+                {String(index + 1).padStart(2, "0")}
+              </span>
+              <p>{note}</p>
+            </li>
+          ))}
+        </ol>
+      </div>
+
+      <p className="slp-preview-intel-disclaimer">
+        Cric4All describes historical and recent performance evidence only.
+        This is not a win probability or prediction.
+      </p>
+    </section>
+  );
+}
+
+function RivalryTeam({
+  team,
+  side,
+}) {
+  return (
+    <div className={`slp-rivalry-team is-${side}`}>
+      <span className="slp-rivalry-avatar">
+        {getInitials(team.teamName)}
+      </span>
+
+      <div>
+        <strong>{team.teamName}</strong>
+        <small>{team.wins} head-to-head win{team.wins === 1 ? "" : "s"}</small>
+      </div>
+    </div>
+  );
+}
+
+function RivalrySpotlight({
+  icon,
+  label,
+  value,
+  detail,
+}) {
+  return (
+    <article className="slp-rivalry-spotlight">
+      <span aria-hidden="true">{icon}</span>
+      <p>
+        <small>{label}</small>
+        <strong>{value}</strong>
+        <em>{detail}</em>
+      </p>
+    </article>
+  );
+}
+
+function TeamRivalryCenter({
+  rivalry,
+}) {
+  const leader =
+    rivalry.teamA.wins === rivalry.teamB.wins
+      ? null
+      : rivalry.teamA.wins > rivalry.teamB.wins
+        ? rivalry.teamA
+        : rivalry.teamB;
+
+  return (
+    <div className="slp-rivalry-shell">
+      <div className="slp-rivalry-score">
+        <RivalryTeam
+          team={rivalry.teamA}
+          side="a"
+        />
+
+        <div className="slp-rivalry-score-center">
+          <small>Head to head</small>
+          <strong>
+            {rivalry.teamA.wins}
+            <span> — </span>
+            {rivalry.teamB.wins}
+          </strong>
+          <p>
+            {rivalry.meetings} meeting{rivalry.meetings === 1 ? "" : "s"}
+            {rivalry.ties ? ` · ${rivalry.ties} tied` : ""}
+          </p>
+
+          {leader ? (
+            <em>
+              {leader.teamName} leads by{" "}
+              {Math.abs(
+                rivalry.teamA.wins -
+                rivalry.teamB.wins
+              )}
+            </em>
+          ) : (
+            <em>Rivalry level</em>
+          )}
+        </div>
+
+        <RivalryTeam
+          team={rivalry.teamB}
+          side="b"
+        />
+      </div>
+
+      <div className="slp-rivalry-spotlights">
+        <RivalrySpotlight
+          icon="🔥"
+          label="Current streak"
+          value={
+            rivalry.currentStreak
+              ? `${rivalry.currentStreak.teamName} · ${rivalry.currentStreak.wins}`
+              : "No active win streak"
+          }
+          detail={
+            rivalry.currentStreak
+              ? `${rivalry.currentStreak.wins} consecutive head-to-head win${rivalry.currentStreak.wins === 1 ? "" : "s"}`
+              : "Latest result was tied or the sequence is level"
+          }
+        />
+
+        <RivalrySpotlight
+          icon="📈"
+          label="Highest team total"
+          value={
+            rivalry.highestTotal
+              ? `${rivalry.highestTotal.runs}/${rivalry.highestTotal.wickets}`
+              : "No scored total"
+          }
+          detail={
+            rivalry.highestTotal
+              ? `${rivalry.highestTotal.teamName} · ${rivalry.highestTotal.legalBalls} legal balls`
+              : "Needs ball-by-ball scoring data"
+          }
+        />
+
+        <RivalrySpotlight
+          icon="😮"
+          label="Closest score gap"
+          value={
+            rivalry.closestFinish
+              ? `${rivalry.closestFinish.scoreGap} run${rivalry.closestFinish.scoreGap === 1 ? "" : "s"}`
+              : "No non-tied gap"
+          }
+          detail={
+            rivalry.closestFinish
+              ? `${rivalry.closestFinish.label} · ${rivalry.closestFinish.dateLabel}`
+              : "No comparable two-innings finish"
+          }
+        />
+
+        <RivalrySpotlight
+          icon="💥"
+          label="Biggest score gap"
+          value={
+            rivalry.biggestWin
+              ? `${rivalry.biggestWin.scoreGap} runs`
+              : "No scored gap"
+          }
+          detail={
+            rivalry.biggestWin
+              ? `${rivalry.biggestWin.winnerTeamName} · ${rivalry.biggestWin.dateLabel}`
+              : "No comparable two-innings result"
+          }
+        />
+      </div>
+
+      <div className="slp-rivalry-player-grid">
+        <article>
+          <span>🏏</span>
+          <div>
+            <small>Rivalry run leader</small>
+            <strong>
+              {rivalry.topBatter?.playerName || "No batter leader yet"}
+            </strong>
+            <p>
+              {rivalry.topBatter
+                ? `${rivalry.topBatter.runs} runs · SR ${rivalry.topBatter.strikeRate.toFixed(1)} · ${rivalry.topBatter.teamName}`
+                : "Needs completed batting data"}
+            </p>
+          </div>
+        </article>
+
+        <article>
+          <span>🎯</span>
+          <div>
+            <small>Rivalry wicket leader</small>
+            <strong>
+              {rivalry.topBowler?.playerName || "No bowling leader yet"}
+            </strong>
+            <p>
+              {rivalry.topBowler
+                ? `${rivalry.topBowler.wickets} wickets · Econ ${rivalry.topBowler.economy.toFixed(2)} · ${rivalry.topBowler.teamName}`
+                : "Needs bowler-credited wickets"}
+            </p>
+          </div>
+        </article>
+      </div>
+
+      <div className="slp-rivalry-history">
+        <div className="slp-rivalry-history-head">
+          <div>
+            <small>Recent history</small>
+            <strong>Last five meetings</strong>
+          </div>
+          <span>Most recent first</span>
+        </div>
+
+        {rivalry.recent.length ? (
+          <div className="slp-rivalry-results">
+            {rivalry.recent.map((meeting) => {
+              const content = (
+                <>
+                  <span>{meeting.dateLabel}</span>
+                  <strong>{meeting.label}</strong>
+                  <p>{meeting.result}</p>
+                </>
+              );
+
+              return meeting.href ? (
+                <a
+                  key={meeting.matchId}
+                  href={meeting.href}
+                >
+                  {content}
+                </a>
+              ) : (
+                <div key={meeting.matchId}>
+                  {content}
+                </div>
+              );
+            })}
+          </div>
+        ) : (
+          <p className="slp-rivalry-empty">
+            No completed meetings available.
+          </p>
+        )}
       </div>
     </div>
   );

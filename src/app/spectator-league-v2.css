@@ -5355,3 +5355,752 @@
     text-align: left;
   }
 }
+
+
+/* =========================================================
+   TEAM RIVALRY CENTER
+========================================================= */
+
+.slp-rivalry-toolbar {
+  display: flex;
+  align-items: end;
+  justify-content: space-between;
+  gap: 14px;
+  margin-bottom: 13px;
+}
+
+.slp-rivalry-toolbar label {
+  min-width: 0;
+  display: grid;
+  gap: 5px;
+}
+
+.slp-rivalry-toolbar label > span {
+  color: #6f89a1;
+  font-size: 8px;
+  font-weight: 900;
+  letter-spacing: 0.05em;
+  text-transform: uppercase;
+}
+
+.slp-rivalry-toolbar select {
+  min-width: 360px;
+  max-width: min(72vw, 540px);
+  min-height: 39px;
+  padding: 7px 36px 7px 11px;
+  border: 1px solid rgba(94, 148, 193, 0.3);
+  border-radius: 10px;
+  color: #edf8ff;
+  background: rgba(7, 23, 40, 0.85);
+  font: inherit;
+  font-size: 10px;
+  font-weight: 850;
+}
+
+.slp-rivalry-scope {
+  flex: 0 0 auto;
+  padding: 6px 9px;
+  border: 1px solid rgba(244, 114, 182, 0.24);
+  border-radius: 999px;
+  color: #f2a8cc;
+  background: rgba(219, 39, 119, 0.07);
+  font-size: 8px;
+  font-weight: 900;
+  text-transform: uppercase;
+  white-space: nowrap;
+}
+
+.slp-rivalry-shell {
+  overflow: hidden;
+  border: 1px solid rgba(101, 142, 179, 0.2);
+  border-radius: 16px;
+  background:
+    linear-gradient(
+      155deg,
+      rgba(13, 35, 59, 0.94),
+      rgba(7, 21, 37, 0.99)
+    );
+}
+
+.slp-rivalry-score {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr) 210px minmax(0, 1fr);
+  align-items: center;
+  gap: 12px;
+  padding: 18px;
+  border-bottom: 1px solid rgba(102, 142, 177, 0.14);
+  background:
+    radial-gradient(
+      circle at 50% 0%,
+      rgba(219, 39, 119, 0.11),
+      transparent 42%
+    );
+}
+
+.slp-rivalry-team {
+  min-width: 0;
+  display: flex;
+  align-items: center;
+  gap: 11px;
+}
+
+.slp-rivalry-team.is-b {
+  flex-direction: row-reverse;
+  text-align: right;
+}
+
+.slp-rivalry-avatar {
+  flex: 0 0 44px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 44px;
+  height: 44px;
+  padding: 0;
+  border: 1px solid rgba(89, 168, 221, 0.27);
+  border-radius: 12px;
+  color: #e8f8ff;
+  background: rgba(14, 82, 125, 0.4);
+  font-size: 12px;
+  font-weight: 950;
+  line-height: 1;
+  text-align: center;
+}
+
+.slp-rivalry-team > div {
+  min-width: 0;
+}
+
+.slp-rivalry-team strong,
+.slp-rivalry-team small {
+  display: block;
+  overflow-wrap: anywhere;
+}
+
+.slp-rivalry-team strong {
+  color: #fff;
+  font-size: 15px;
+  line-height: 1.2;
+}
+
+.slp-rivalry-team small {
+  margin-top: 3px;
+  color: #718ba3;
+  font-size: 8px;
+}
+
+.slp-rivalry-score-center {
+  min-width: 0;
+  text-align: center;
+}
+
+.slp-rivalry-score-center > small {
+  color: #718ba4;
+  font-size: 8px;
+  font-weight: 900;
+  text-transform: uppercase;
+}
+
+.slp-rivalry-score-center > strong {
+  display: block;
+  margin-top: 6px;
+  color: #fff;
+  font-size: 34px;
+  line-height: 1;
+}
+
+.slp-rivalry-score-center > strong span {
+  color: #5e7891;
+  font-size: 20px;
+}
+
+.slp-rivalry-score-center > p,
+.slp-rivalry-score-center > em {
+  display: block;
+  margin: 6px 0 0;
+  font-size: 8px;
+  line-height: 1.35;
+}
+
+.slp-rivalry-score-center > p {
+  color: #748ba1;
+}
+
+.slp-rivalry-score-center > em {
+  color: #e6a9c8;
+  font-style: normal;
+  font-weight: 850;
+}
+
+.slp-rivalry-spotlights {
+  display: grid;
+  grid-template-columns: repeat(4, minmax(0, 1fr));
+  gap: 8px;
+  padding: 12px;
+}
+
+.slp-rivalry-spotlight {
+  min-width: 0;
+  display: flex;
+  align-items: flex-start;
+  gap: 8px;
+  padding: 10px;
+  border: 1px solid rgba(95, 135, 169, 0.14);
+  border-radius: 10px;
+  background: rgba(7, 22, 39, 0.52);
+}
+
+.slp-rivalry-spotlight > span {
+  flex: 0 0 auto;
+  font-size: 16px;
+}
+
+.slp-rivalry-spotlight p {
+  min-width: 0;
+  margin: 0;
+}
+
+.slp-rivalry-spotlight small,
+.slp-rivalry-spotlight strong,
+.slp-rivalry-spotlight em {
+  display: block;
+}
+
+.slp-rivalry-spotlight small {
+  color: #677f96;
+  font-size: 7px;
+  font-weight: 900;
+  text-transform: uppercase;
+}
+
+.slp-rivalry-spotlight strong {
+  margin-top: 2px;
+  color: #eef7ff;
+  font-size: 11px;
+  line-height: 1.25;
+  overflow-wrap: anywhere;
+}
+
+.slp-rivalry-spotlight em {
+  margin-top: 2px;
+  color: #70879d;
+  font-size: 8px;
+  font-style: normal;
+  line-height: 1.35;
+  overflow-wrap: anywhere;
+}
+
+.slp-rivalry-player-grid {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: 8px;
+  padding: 0 12px 12px;
+}
+
+.slp-rivalry-player-grid article {
+  min-width: 0;
+  display: flex;
+  align-items: flex-start;
+  gap: 9px;
+  padding: 11px;
+  border: 1px solid rgba(96, 136, 170, 0.15);
+  border-radius: 10px;
+  background: rgba(8, 24, 41, 0.58);
+}
+
+.slp-rivalry-player-grid article > span {
+  flex: 0 0 auto;
+  font-size: 18px;
+}
+
+.slp-rivalry-player-grid article > div {
+  min-width: 0;
+}
+
+.slp-rivalry-player-grid small,
+.slp-rivalry-player-grid strong,
+.slp-rivalry-player-grid p {
+  display: block;
+}
+
+.slp-rivalry-player-grid small {
+  color: #688198;
+  font-size: 7px;
+  font-weight: 900;
+  text-transform: uppercase;
+}
+
+.slp-rivalry-player-grid strong {
+  margin-top: 2px;
+  color: #eef7ff;
+  font-size: 12px;
+  overflow-wrap: anywhere;
+}
+
+.slp-rivalry-player-grid p {
+  margin: 3px 0 0;
+  color: #71889f;
+  font-size: 8px;
+  line-height: 1.35;
+  overflow-wrap: anywhere;
+}
+
+.slp-rivalry-history {
+  margin: 0 12px 12px;
+  padding: 12px;
+  border: 1px solid rgba(96, 136, 171, 0.14);
+  border-radius: 11px;
+  background: rgba(7, 22, 39, 0.46);
+}
+
+.slp-rivalry-history-head {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 9px;
+  margin-bottom: 8px;
+}
+
+.slp-rivalry-history-head small,
+.slp-rivalry-history-head strong {
+  display: block;
+}
+
+.slp-rivalry-history-head small {
+  color: #657d94;
+  font-size: 7px;
+  font-weight: 900;
+  text-transform: uppercase;
+}
+
+.slp-rivalry-history-head strong {
+  margin-top: 2px;
+  color: #eaf4fc;
+  font-size: 11px;
+}
+
+.slp-rivalry-history-head > span {
+  color: #647d94;
+  font-size: 7px;
+}
+
+.slp-rivalry-results {
+  display: grid;
+  gap: 6px;
+}
+
+.slp-rivalry-results > a,
+.slp-rivalry-results > div {
+  min-width: 0;
+  display: grid;
+  grid-template-columns: 88px minmax(0, 1fr) minmax(0, 1.2fr);
+  align-items: center;
+  gap: 9px;
+  padding: 9px;
+  border: 1px solid rgba(93, 132, 165, 0.11);
+  border-radius: 8px;
+  color: inherit;
+  background: rgba(8, 24, 41, 0.45);
+  text-decoration: none;
+}
+
+.slp-rivalry-results span {
+  color: #668098;
+  font-size: 7px;
+  font-weight: 850;
+}
+
+.slp-rivalry-results strong {
+  color: #dcebf6;
+  font-size: 9px;
+  overflow-wrap: anywhere;
+}
+
+.slp-rivalry-results p {
+  margin: 0;
+  color: #738ba1;
+  font-size: 8px;
+  line-height: 1.3;
+  overflow-wrap: anywhere;
+}
+
+.slp-rivalry-note {
+  display: flex;
+  align-items: flex-start;
+  gap: 9px;
+  margin-top: 10px;
+  padding: 11px 13px;
+  border: 1px solid rgba(94, 134, 168, 0.13);
+  border-radius: 10px;
+  background: rgba(8, 22, 39, 0.45);
+}
+
+.slp-rivalry-note p {
+  margin: 0;
+  color: #6b8299;
+  font-size: 8px;
+  line-height: 1.5;
+}
+
+.slp-rivalry-note strong {
+  display: block;
+  margin-bottom: 2px;
+  color: #8fa8bd;
+}
+
+.slp-rivalry-empty {
+  margin: 0;
+  color: #6b8299;
+  font-size: 8px;
+}
+
+@media (max-width: 980px) {
+  .slp-rivalry-score {
+    grid-template-columns: 1fr;
+  }
+
+  .slp-rivalry-score-center {
+    order: -1;
+    padding-bottom: 5px;
+  }
+
+  .slp-rivalry-team,
+  .slp-rivalry-team.is-b {
+    justify-content: center;
+    flex-direction: row;
+    text-align: left;
+  }
+
+  .slp-rivalry-spotlights {
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+  }
+}
+
+@media (max-width: 700px) {
+  .slp-rivalry-toolbar {
+    display: block;
+  }
+
+  .slp-rivalry-toolbar select {
+    width: 100%;
+    min-width: 0;
+    max-width: 100%;
+  }
+
+  .slp-rivalry-scope {
+    display: inline-flex;
+    margin-top: 8px;
+  }
+
+  .slp-rivalry-player-grid {
+    grid-template-columns: 1fr;
+  }
+
+  .slp-rivalry-results > a,
+  .slp-rivalry-results > div {
+    grid-template-columns: 1fr;
+    gap: 3px;
+  }
+}
+
+@media (max-width: 460px) {
+  .slp-rivalry-spotlights {
+    grid-template-columns: 1fr;
+  }
+
+  .slp-rivalry-score {
+    padding: 14px 12px;
+  }
+
+  .slp-rivalry-team,
+  .slp-rivalry-team.is-b {
+    justify-content: flex-start;
+  }
+}
+
+
+/* =========================================================
+   PRE-MATCH INTELLIGENCE 2.0
+========================================================= */
+
+.slp-preview-intelligence {
+  margin: 0 12px 12px;
+  padding: 13px;
+  border: 1px solid rgba(99, 144, 181, 0.17);
+  border-radius: 12px;
+  background:
+    radial-gradient(
+      circle at 92% 0%,
+      rgba(124, 58, 237, 0.09),
+      transparent 36%
+    ),
+    rgba(7, 22, 39, 0.5);
+}
+
+.slp-preview-intelligence-head {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 10px;
+  margin-bottom: 9px;
+}
+
+.slp-preview-intelligence-head > div {
+  min-width: 0;
+}
+
+.slp-preview-intelligence-head small,
+.slp-preview-intelligence-head strong {
+  display: block;
+}
+
+.slp-preview-intelligence-head small {
+  color: #8c7fe2;
+  font-size: 8px;
+  font-weight: 900;
+  letter-spacing: 0.04em;
+  text-transform: uppercase;
+}
+
+.slp-preview-intelligence-head strong {
+  margin-top: 2px;
+  color: #eef7ff;
+  font-size: 13px;
+}
+
+.slp-preview-intelligence-head > span {
+  flex: 0 0 auto;
+  padding: 5px 8px;
+  border: 1px solid rgba(52, 211, 153, 0.2);
+  border-radius: 999px;
+  color: #9de6ca;
+  background: rgba(16, 185, 129, 0.06);
+  font-size: 7px;
+  font-weight: 900;
+  text-transform: uppercase;
+}
+
+.slp-preview-intel-grid {
+  display: grid;
+  grid-template-columns: repeat(4, minmax(0, 1fr));
+  gap: 7px;
+}
+
+.slp-preview-intel-card {
+  min-width: 0;
+  padding: 10px;
+  border: 1px solid rgba(94, 134, 168, 0.14);
+  border-radius: 9px;
+  background: rgba(8, 24, 41, 0.6);
+}
+
+.slp-preview-intel-card small,
+.slp-preview-intel-card strong,
+.slp-preview-intel-card p {
+  display: block;
+}
+
+.slp-preview-intel-card small {
+  color: #6d849a;
+  font-size: 7px;
+  font-weight: 900;
+  text-transform: uppercase;
+}
+
+.slp-preview-intel-card strong {
+  margin-top: 3px;
+  color: #f2f9ff;
+  font-size: 10px;
+  line-height: 1.3;
+  overflow-wrap: anywhere;
+}
+
+.slp-preview-intel-card p {
+  margin: 4px 0 0;
+  color: #71889d;
+  font-size: 8px;
+  line-height: 1.4;
+  overflow-wrap: anywhere;
+}
+
+.slp-preview-edges {
+  margin-top: 9px;
+  padding: 10px;
+  border: 1px solid rgba(93, 134, 168, 0.12);
+  border-radius: 10px;
+  background: rgba(8, 23, 39, 0.44);
+}
+
+.slp-preview-edges-title small,
+.slp-preview-edges-title strong {
+  display: block;
+}
+
+.slp-preview-edges-title small {
+  color: #687f96;
+  font-size: 7px;
+  font-weight: 900;
+  text-transform: uppercase;
+}
+
+.slp-preview-edges-title strong {
+  margin-top: 2px;
+  color: #dfeef9;
+  font-size: 10px;
+}
+
+.slp-preview-edges > div:last-child {
+  display: grid;
+  grid-template-columns: repeat(3, minmax(0, 1fr));
+  gap: 6px;
+  margin-top: 8px;
+}
+
+.slp-preview-edges article {
+  min-width: 0;
+  display: flex;
+  align-items: flex-start;
+  gap: 7px;
+  padding: 8px;
+  border: 1px solid rgba(94, 133, 166, 0.11);
+  border-radius: 8px;
+  background: rgba(7, 21, 37, 0.43);
+}
+
+.slp-preview-edges article > span {
+  flex: 0 0 auto;
+}
+
+.slp-preview-edges p {
+  min-width: 0;
+  margin: 0;
+}
+
+.slp-preview-edges small,
+.slp-preview-edges strong,
+.slp-preview-edges em {
+  display: block;
+}
+
+.slp-preview-edges small {
+  color: #61798f;
+  font-size: 7px;
+  font-weight: 900;
+  text-transform: uppercase;
+}
+
+.slp-preview-edges strong {
+  margin-top: 2px;
+  color: #e6f2fb;
+  font-size: 9px;
+  overflow-wrap: anywhere;
+}
+
+.slp-preview-edges em {
+  margin-top: 2px;
+  color: #6f879d;
+  font-size: 7px;
+  font-style: normal;
+  line-height: 1.35;
+  overflow-wrap: anywhere;
+}
+
+.slp-preview-watchlist {
+  display: grid;
+  grid-template-columns: 150px minmax(0, 1fr);
+  gap: 10px;
+  margin-top: 9px;
+  padding: 10px;
+  border: 1px solid rgba(94, 134, 168, 0.12);
+  border-radius: 10px;
+  background: rgba(7, 22, 39, 0.45);
+}
+
+.slp-preview-watchlist > div > small,
+.slp-preview-watchlist > div > strong {
+  display: block;
+}
+
+.slp-preview-watchlist > div > small {
+  color: #697f96;
+  font-size: 7px;
+  font-weight: 900;
+  text-transform: uppercase;
+}
+
+.slp-preview-watchlist > div > strong {
+  margin-top: 2px;
+  color: #dcebf7;
+  font-size: 10px;
+}
+
+.slp-preview-watchlist ol {
+  display: grid;
+  gap: 5px;
+  margin: 0;
+  padding: 0;
+  list-style: none;
+}
+
+.slp-preview-watchlist li {
+  min-width: 0;
+  display: grid;
+  grid-template-columns: 22px minmax(0, 1fr);
+  align-items: start;
+  gap: 7px;
+}
+
+.slp-preview-watchlist li > span {
+  display: grid;
+  place-items: center;
+  width: 22px;
+  height: 22px;
+  border-radius: 50%;
+  color: #82bde5;
+  background: rgba(40, 101, 145, 0.23);
+  font-size: 7px;
+  font-weight: 950;
+}
+
+.slp-preview-watchlist li p {
+  margin: 2px 0 0;
+  color: #768da3;
+  font-size: 8px;
+  line-height: 1.4;
+}
+
+.slp-preview-intel-disclaimer {
+  margin: 9px 0 0;
+  color: #60778d;
+  font-size: 7px;
+  line-height: 1.4;
+}
+
+@media (max-width: 980px) {
+  .slp-preview-intel-grid {
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+  }
+
+  .slp-preview-edges > div:last-child {
+    grid-template-columns: 1fr;
+  }
+}
+
+@media (max-width: 640px) {
+  .slp-preview-intelligence {
+    margin-inline: 9px;
+    padding: 10px;
+  }
+
+  .slp-preview-intel-grid {
+    grid-template-columns: 1fr;
+  }
+
+  .slp-preview-watchlist {
+    grid-template-columns: 1fr;
+  }
+
+  .slp-preview-intelligence-head {
+    align-items: flex-start;
+  }
+}

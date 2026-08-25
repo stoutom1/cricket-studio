@@ -354,6 +354,301 @@ function getTeamName(teams, teamId) {
   );
 }
 
+function teamMatches(completedMatches, teamId, limit = 5) {
+  return completedMatches
+    .filter(
+      (match) =>
+        Number(match?.teamAId || match?.teamA?.id) === Number(teamId) ||
+        Number(match?.teamBId || match?.teamB?.id) === Number(teamId)
+    )
+    .sort((a, b) => completedTime(b) - completedTime(a))
+    .slice(0, limit);
+}
+
+function recentPlayerFormForTeam({
+  completedMatches,
+  teams,
+  league,
+  teamId,
+}) {
+  const recentMatches = teamMatches(
+    completedMatches,
+    teamId,
+    5
+  );
+
+  const rows = buildPlayerWatch({
+    completedMatches: recentMatches,
+    teams,
+    league,
+  })
+    .filter(
+      (player) =>
+        Number(player.teamId) === Number(teamId)
+    );
+
+  const batter =
+    [...rows]
+      .filter((player) => player.runs > 0)
+      .sort(
+        (a, b) =>
+          b.runs - a.runs ||
+          b.strikeRate - a.strikeRate
+      )[0] || null;
+
+  const bowler =
+    [...rows]
+      .filter((player) => player.wickets > 0)
+      .sort(
+        (a, b) =>
+          b.wickets - a.wickets ||
+          a.economy - b.economy
+      )[0] || null;
+
+  return {
+    matchesConsidered: recentMatches.length,
+    batter,
+    bowler,
+  };
+}
+
+function headToHeadStreak(headToHeadMatches, teamAId, teamBId) {
+  const newestFirst = [...headToHeadMatches]
+    .sort((a, b) => completedTime(b) - completedTime(a));
+
+  if (!newestFirst.length) {
+    return null;
+  }
+
+  const newest = newestFirst[0];
+
+  if (isTied(newest)) {
+    return null;
+  }
+
+  const winnerId = Number(getWinnerTeamId(newest));
+
+  if (
+    winnerId !== Number(teamAId) &&
+    winnerId !== Number(teamBId)
+  ) {
+    return null;
+  }
+
+  let count = 0;
+
+  for (const match of newestFirst) {
+    if (
+      isTied(match) ||
+      Number(getWinnerTeamId(match)) !== winnerId
+    ) {
+      break;
+    }
+
+    count += 1;
+  }
+
+  return {
+    teamId: winnerId,
+    wins: count,
+  };
+}
+
+function formScore(form = []) {
+  return form.reduce((score, result) => {
+    if (result === "W") return score + 2;
+    if (result === "T") return score + 1;
+    return score;
+  }, 0);
+}
+
+function buildMatchupEdges({
+  teamAName,
+  teamBName,
+  teamADna,
+  teamBDna,
+}) {
+  const edges = [];
+
+  function addEdge({
+    icon,
+    label,
+    teamName,
+    value,
+    detail,
+  }) {
+    edges.push({
+      icon,
+      label,
+      teamName,
+      value,
+      detail,
+    });
+  }
+
+  if (teamADna && teamBDna) {
+    const battingGap =
+      Number(teamADna.battingRunRate || 0) -
+      Number(teamBDna.battingRunRate || 0);
+
+    if (Math.abs(battingGap) >= 0.25) {
+      const stronger =
+        battingGap > 0
+          ? {
+              name: teamAName,
+              dna: teamADna,
+            }
+          : {
+              name: teamBName,
+              dna: teamBDna,
+            };
+
+      addEdge({
+        icon: "⚡",
+        label: "Batting tempo edge",
+        teamName: stronger.name,
+        value: `${Number(stronger.dna.battingRunRate || 0).toFixed(2)} RPO`,
+        detail: "Higher completed-match scoring rate in this view",
+      });
+    }
+
+    const economyGap =
+      Number(teamADna.bowlingEconomy || 0) -
+      Number(teamBDna.bowlingEconomy || 0);
+
+    if (Math.abs(economyGap) >= 0.25) {
+      const stronger =
+        economyGap < 0
+          ? {
+              name: teamAName,
+              dna: teamADna,
+            }
+          : {
+              name: teamBName,
+              dna: teamBDna,
+            };
+
+      addEdge({
+        icon: "🔒",
+        label: "Run-control edge",
+        teamName: stronger.name,
+        value: `${Number(stronger.dna.bowlingEconomy || 0).toFixed(2)} econ`,
+        detail: "Lower completed-match bowling economy",
+      });
+    }
+
+    const wicketGap =
+      Number(teamADna.wicketsPerBowlingInnings || 0) -
+      Number(teamBDna.wicketsPerBowlingInnings || 0);
+
+    if (Math.abs(wicketGap) >= 0.5) {
+      const stronger =
+        wicketGap > 0
+          ? {
+              name: teamAName,
+              dna: teamADna,
+            }
+          : {
+              name: teamBName,
+              dna: teamBDna,
+            };
+
+      addEdge({
+        icon: "🎯",
+        label: "Wicket-pressure edge",
+        teamName: stronger.name,
+        value: `${Number(stronger.dna.wicketsPerBowlingInnings || 0).toFixed(1)} wkts/inn`,
+        detail: "Higher wicket-taking rate per bowling innings",
+      });
+    }
+  }
+
+  return edges.slice(0, 3);
+}
+
+function buildWatchList({
+  teamAName,
+  teamBName,
+  teamAForm,
+  teamBForm,
+  teamARecent,
+  teamBRecent,
+  streak,
+  teamAWins,
+  teamBWins,
+  edges,
+}) {
+  const notes = [];
+
+  if (streak?.wins >= 2) {
+    notes.push(
+      `${streak.teamName} enters with ${streak.wins} consecutive head-to-head wins.`
+    );
+  } else if (teamAWins !== teamBWins && teamAWins + teamBWins > 0) {
+    const leader =
+      teamAWins > teamBWins
+        ? teamAName
+        : teamBName;
+
+    notes.push(
+      `${leader} holds the current head-to-head lead.`
+    );
+  }
+
+  const scoreA = formScore(teamAForm);
+  const scoreB = formScore(teamBForm);
+
+  if (Math.abs(scoreA - scoreB) >= 2) {
+    notes.push(
+      `${scoreA > scoreB ? teamAName : teamBName} has the stronger recent results profile.`
+    );
+  }
+
+  const hotBatter =
+    [teamARecent?.batter, teamBRecent?.batter]
+      .filter(Boolean)
+      .sort(
+        (a, b) =>
+          Number(b.runs || 0) -
+          Number(a.runs || 0)
+      )[0] || null;
+
+  if (hotBatter) {
+    notes.push(
+      `${hotBatter.playerName} is the in-form batter with ${hotBatter.runs} runs across the recent sample.`
+    );
+  }
+
+  const hotBowler =
+    [teamARecent?.bowler, teamBRecent?.bowler]
+      .filter(Boolean)
+      .sort(
+        (a, b) =>
+          Number(b.wickets || 0) -
+          Number(a.wickets || 0)
+      )[0] || null;
+
+  if (hotBowler) {
+    notes.push(
+      `${hotBowler.playerName} brings the strongest recent bowling return with ${hotBowler.wickets} wicket${hotBowler.wickets === 1 ? "" : "s"}.`
+    );
+  }
+
+  if (edges?.[0]) {
+    notes.push(
+      `${edges[0].teamName} owns the clearest statistical edge: ${edges[0].label.toLowerCase()}.`
+    );
+  }
+
+  if (!notes.length) {
+    notes.push(
+      "The available completed-match evidence does not show a clear pre-match edge yet."
+    );
+  }
+
+  return notes.slice(0, 4);
+}
+
 function playerWatchForTeam(playerRows, teamId) {
   const teamPlayers = playerRows.filter(
     (player) => Number(player.teamId) === Number(teamId)
@@ -442,6 +737,77 @@ export function buildPreMatchCenter({
     const teamBName =
       match?.teamB?.name || getTeamName(teams, teamBId);
 
+    const teamAForm =
+      recentFormForTeam(completedMatches, teamAId);
+    const teamBForm =
+      recentFormForTeam(completedMatches, teamBId);
+
+    const teamADna =
+      teamDNA.find(
+        (team) => Number(team.teamId) === teamAId
+      ) || null;
+
+    const teamBDna =
+      teamDNA.find(
+        (team) => Number(team.teamId) === teamBId
+      ) || null;
+
+    const recentTeamA =
+      recentPlayerFormForTeam({
+        completedMatches,
+        teams,
+        league,
+        teamId: teamAId,
+      });
+
+    const recentTeamB =
+      recentPlayerFormForTeam({
+        completedMatches,
+        teams,
+        league,
+        teamId: teamBId,
+      });
+
+    const h2hStreak =
+      headToHeadStreak(
+        headToHeadMatches,
+        teamAId,
+        teamBId
+      );
+
+    const rivalryStreak =
+      h2hStreak
+        ? {
+            ...h2hStreak,
+            teamName:
+              Number(h2hStreak.teamId) === teamAId
+                ? teamAName
+                : teamBName,
+          }
+        : null;
+
+    const matchupEdges =
+      buildMatchupEdges({
+        teamAName,
+        teamBName,
+        teamADna,
+        teamBDna,
+      });
+
+    const watchList =
+      buildWatchList({
+        teamAName,
+        teamBName,
+        teamAForm,
+        teamBForm,
+        teamARecent: recentTeamA,
+        teamBRecent: recentTeamB,
+        streak: rivalryStreak,
+        teamAWins,
+        teamBWins,
+        edges: matchupEdges,
+      });
+
     return {
       matchId: Number(match.id),
       teamAId,
@@ -472,23 +838,29 @@ export function buildPreMatchCenter({
       teamA: {
         teamId: teamAId,
         teamName: teamAName,
-        form: recentFormForTeam(completedMatches, teamAId),
-        dna:
-          teamDNA.find(
-            (team) => Number(team.teamId) === teamAId
-          ) || null,
+        form: teamAForm,
+        dna: teamADna,
         watch: playerWatchForTeam(playerRows, teamAId),
+        recent: recentTeamA,
       },
 
       teamB: {
         teamId: teamBId,
         teamName: teamBName,
-        form: recentFormForTeam(completedMatches, teamBId),
-        dna:
-          teamDNA.find(
-            (team) => Number(team.teamId) === teamBId
-          ) || null,
+        form: teamBForm,
+        dna: teamBDna,
         watch: playerWatchForTeam(playerRows, teamBId),
+        recent: recentTeamB,
+      },
+
+      intelligence: {
+        rivalryStreak,
+        matchupEdges,
+        watchList,
+        recentFormScore: {
+          teamA: formScore(teamAForm),
+          teamB: formScore(teamBForm),
+        },
       },
 
       href:
