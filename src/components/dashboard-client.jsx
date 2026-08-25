@@ -25110,31 +25110,40 @@ const playerRoleBadge = (row) => {
   )}
 
   <div className="league-resource-tool-slot dashboard-tool-card-shell dashboard-tool-resource-shell">
-    <LeagueResourcesShortcut
-      leagueId={activeLeagueId}
-      leagueName={
-        activeLeague?.name ||
-        "Active league"
+    <Link
+      href={
+        activeLeagueId
+          ? `/leagues/${activeLeagueId}/resources`
+          : "#"
       }
-    />
-
-    <div
-      className="league-resource-desktop-display"
-      aria-hidden="true"
+      className="league-resource-single-link"
+      aria-label="Open Resources"
+      aria-disabled={!activeLeagueId}
+      onClick={(event) => {
+        if (!activeLeagueId) {
+          event.preventDefault();
+        }
+      }}
     >
-      <span className="league-resource-desktop-icon">
+      <span
+        className="league-resource-single-icon"
+        aria-hidden="true"
+      >
         📚
       </span>
 
-      <strong className="league-resource-desktop-title">
+      <strong className="league-resource-single-title">
         Resources
       </strong>
 
-      <span className="league-resource-desktop-action">
+      <span
+        className="league-resource-single-action"
+        aria-hidden="true"
+      >
         <span>+</span>
         <span>⌄</span>
       </span>
-    </div>
+    </Link>
   </div>
 
 </div>
