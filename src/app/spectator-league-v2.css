@@ -4758,3 +4758,600 @@
     width: 100%;
   }
 }
+
+
+/* =========================================================
+   PLAYER PULSE — RANKINGS / FORM / STREAKS / TEAM OF WEEK
+========================================================= */
+.slp-pulse-block { margin-top: 12px; }
+.slp-pulse-toolbar { display:flex; align-items:center; justify-content:space-between; gap:12px; margin-bottom:10px; }
+.slp-pulse-toolbar .slp-segments { flex:1 1 auto; min-width:0; }
+.slp-pulse-toolbar > span { flex:0 0 auto; color:#718ba3; font-size:8px; font-weight:800; }
+.slp-ranking-list { display:grid; gap:6px; }
+.slp-ranking-row { min-width:0; display:grid; grid-template-columns:48px 36px minmax(0,1fr) 110px 82px; align-items:center; gap:9px; padding:9px 11px; border:1px solid rgba(94,137,174,.16); border-radius:10px; background:rgba(8,24,41,.58); }
+.slp-ranking-number { color:#79b9e8; font-size:12px; font-weight:950; }
+.slp-ranking-avatar,.slp-form-card-head>span,.slp-team-week-avatar { display:grid; place-items:center; width:34px; height:34px; border:1px solid rgba(79,157,216,.25); border-radius:10px; color:#eaf8ff; background:rgba(17,82,125,.35); font-size:10px; font-weight:950; }
+.slp-ranking-player { min-width:0; }
+.slp-ranking-player strong,.slp-ranking-player small { display:block; overflow-wrap:anywhere; }
+.slp-ranking-player strong { color:#f5faff; font-size:11px; }
+.slp-ranking-player small { margin-top:2px; color:#6e879e; font-size:8px; }
+.slp-ranking-points,.slp-ranking-move { text-align:right; }
+.slp-ranking-points strong,.slp-ranking-points small,.slp-ranking-move strong,.slp-ranking-move small { display:block; }
+.slp-ranking-points strong { color:#fff; font-size:13px; }
+.slp-ranking-points small,.slp-ranking-move small { color:#647d94; font-size:7px; }
+.slp-ranking-move strong { font-size:11px; }
+.slp-ranking-move.is-up strong { color:#7ee2b8; }
+.slp-ranking-move.is-down strong { color:#fca5a5; }
+.slp-ranking-move.is-flat strong { color:#91a6b9; }
+.slp-form-grid { display:grid; grid-template-columns:repeat(2,minmax(0,1fr)); gap:9px; margin-top:12px; }
+.slp-form-card { min-width:0; padding:13px; border:1px solid rgba(95,136,172,.18); border-radius:13px; background:linear-gradient(155deg,rgba(13,38,63,.9),rgba(7,22,39,.97)); }
+.slp-form-card-head { min-width:0; display:grid; grid-template-columns:auto minmax(0,1fr) auto; align-items:center; gap:9px; }
+.slp-form-card-head>div { min-width:0; }
+.slp-form-card-head strong,.slp-form-card-head small { display:block; overflow-wrap:anywhere; }
+.slp-form-card-head strong { color:#fff; font-size:12px; }
+.slp-form-card-head small { margin-top:2px; color:#70889f; font-size:8px; }
+.slp-form-card-head em { padding:5px 7px; border-radius:999px; font-size:7px; font-style:normal; font-weight:900; text-transform:uppercase; }
+.slp-form-card-head em.is-improving { color:#9af0ca; background:rgba(16,185,129,.1); border:1px solid rgba(52,211,153,.2); }
+.slp-form-card-head em.is-cooling { color:#ffc0c0; background:rgba(239,68,68,.09); border:1px solid rgba(248,113,113,.18); }
+.slp-form-card-head em.is-stable,.slp-form-card-head em.is-building { color:#a9c9e6; background:rgba(59,130,246,.08); border:1px solid rgba(96,165,250,.17); }
+.slp-form-balls { display:grid; grid-template-columns:repeat(5,minmax(0,1fr)); gap:5px; margin-top:10px; }
+.slp-form-balls>div { min-width:0; padding:7px 5px; border:1px solid rgba(92,132,166,.13); border-radius:8px; background:rgba(7,22,39,.52); text-align:center; }
+.slp-form-balls strong,.slp-form-balls span { display:block; white-space:nowrap; }
+.slp-form-balls strong { color:#edf7ff; font-size:9px; }
+.slp-form-balls span { margin-top:2px; color:#698198; font-size:7px; }
+.slp-form-summary { display:grid; grid-template-columns:repeat(3,minmax(0,1fr)); gap:6px; margin-top:8px; }
+.slp-form-summary>span { padding:7px; border-radius:8px; background:rgba(8,24,41,.52); }
+.slp-form-summary small,.slp-form-summary strong { display:block; }
+.slp-form-summary small { color:#657e95; font-size:7px; }
+.slp-form-summary strong { margin-top:2px; color:#fff; font-size:11px; }
+.slp-form-card>p { margin:8px 0 0; color:#71879d; font-size:8px; }
+.slp-streak-grid { display:grid; grid-template-columns:repeat(3,minmax(0,1fr)); gap:8px; margin-top:12px; }
+.slp-streak-card { min-width:0; display:grid; grid-template-columns:auto minmax(0,1fr) auto; gap:9px; align-items:center; padding:12px; border:1px solid rgba(100,140,175,.17); border-radius:12px; background:rgba(8,24,41,.58); }
+.slp-streak-icon { font-size:19px; }
+.slp-streak-card>div:nth-child(2) { min-width:0; }
+.slp-streak-card small,.slp-streak-card strong,.slp-streak-card em { display:block; overflow-wrap:anywhere; }
+.slp-streak-card small { color:#6d869e; font-size:7px; font-weight:900; text-transform:uppercase; }
+.slp-streak-card>div:nth-child(2)>strong { margin-top:2px; color:#fff; font-size:11px; }
+.slp-streak-card em { margin-top:2px; color:#698198; font-size:8px; font-style:normal; }
+.slp-streak-count { text-align:right; }
+.slp-streak-count strong { color:#fff; font-size:22px; line-height:1; }
+.slp-streak-count span { color:#71a8d1; font-size:7px; }
+.slp-streak-card>p { grid-column:1/-1; margin:0; padding-top:7px; border-top:1px solid rgba(95,134,168,.11); color:#6e849a; font-size:8px; }
+.slp-team-week-shell { margin-top:12px; border:1px solid rgba(96,140,177,.19); border-radius:14px; overflow:hidden; background:rgba(8,23,40,.56); }
+.slp-team-week-head { display:flex; align-items:center; justify-content:space-between; gap:12px; padding:14px; border-bottom:1px solid rgba(98,138,173,.13); background:linear-gradient(145deg,rgba(45,34,73,.5),rgba(13,38,63,.55)); }
+.slp-team-week-head>div { min-width:0; }
+.slp-team-week-head small,.slp-team-week-head strong,.slp-team-week-head div>span { display:block; }
+.slp-team-week-head small { color:#7d8fb0; font-size:7px; text-transform:uppercase; font-weight:900; }
+.slp-team-week-head strong { margin-top:3px; color:#fff; font-size:17px; }
+.slp-team-week-head div>span { margin-top:3px; color:#71889f; font-size:8px; }
+.slp-team-week-head>span { flex:0 0 auto; color:#ffd47a; font-size:9px; font-weight:900; }
+.slp-team-week-grid { display:grid; grid-template-columns:repeat(2,minmax(0,1fr)); gap:1px; background:rgba(95,134,168,.12); }
+.slp-team-week-player { min-width:0; display:grid; grid-template-columns:28px 34px minmax(0,1fr) auto; align-items:center; gap:8px; padding:10px; background:#08182a; }
+.slp-team-week-no { color:#56718a; font-size:8px; font-weight:900; }
+.slp-team-week-player>div:nth-child(3) { min-width:0; }
+.slp-team-week-player>div:nth-child(3)>strong,.slp-team-week-player>div:nth-child(3)>small { display:block; overflow-wrap:anywhere; }
+.slp-team-week-player>div:nth-child(3)>strong { color:#eef8ff; font-size:10px; }
+.slp-team-week-player>div:nth-child(3)>small { margin-top:2px; color:#6b8399; font-size:7px; }
+.slp-team-week-stats { text-align:right; }
+.slp-team-week-stats strong,.slp-team-week-stats span { display:block; white-space:nowrap; }
+.slp-team-week-stats strong { color:#dff2ff; font-size:9px; }
+.slp-team-week-stats span { margin-top:2px; color:#688098; font-size:7px; }
+.slp-pulse-note { display:flex; align-items:flex-start; gap:9px; margin-top:10px; padding:10px 12px; border:1px solid rgba(92,132,166,.13); border-radius:10px; background:rgba(8,22,39,.44); }
+.slp-pulse-note p { margin:0; color:#6c8298; font-size:8px; line-height:1.5; }
+.slp-pulse-note strong { display:block; margin-bottom:2px; color:#8fa7bc; }
+@media (max-width:900px){ .slp-streak-grid{grid-template-columns:repeat(2,minmax(0,1fr));}.slp-team-week-grid{grid-template-columns:1fr;} }
+@media (max-width:700px){ .slp-pulse-toolbar{display:block;}.slp-pulse-toolbar>span{display:block;margin-top:7px;}.slp-ranking-row{grid-template-columns:38px 32px minmax(0,1fr) 70px;}.slp-ranking-move{grid-column:3/5;display:flex;justify-content:space-between;align-items:center;padding-top:5px;border-top:1px solid rgba(94,133,167,.1);}.slp-form-grid{grid-template-columns:1fr;}.slp-streak-grid{grid-template-columns:1fr;} }
+@media (max-width:430px){ .slp-ranking-row{grid-template-columns:34px minmax(0,1fr) 64px;}.slp-ranking-avatar{display:none;}.slp-form-balls{grid-template-columns:repeat(5,minmax(48px,1fr));overflow-x:auto;}.slp-form-card-head{grid-template-columns:auto minmax(0,1fr);}.slp-form-card-head em{grid-column:1/-1;justify-self:start;}.slp-form-summary{grid-template-columns:1fr;}.slp-team-week-player{grid-template-columns:24px 32px minmax(0,1fr);}.slp-team-week-stats{grid-column:2/4;text-align:left;padding-top:5px;border-top:1px solid rgba(94,133,167,.1);}.slp-team-week-stats strong,.slp-team-week-stats span{white-space:normal;} }
+
+
+/* =========================================================
+   PLAYER PULSE — FORM COMPLETENESS + CLEAR STREAK NAMES
+========================================================= */
+
+.slp-form-center {
+  margin-top: 12px;
+}
+
+.slp-form-toolbar {
+  display: flex;
+  align-items: end;
+  justify-content: space-between;
+  gap: 12px;
+  margin-bottom: 10px;
+  padding: 10px 11px;
+  border: 1px solid rgba(94, 136, 170, 0.15);
+  border-radius: 11px;
+  background: rgba(8, 23, 40, 0.48);
+}
+
+.slp-form-toolbar label {
+  min-width: 0;
+  flex: 1 1 auto;
+  display: grid;
+  gap: 5px;
+}
+
+.slp-form-toolbar label > span {
+  color: #6d879f;
+  font-size: 8px;
+  font-weight: 900;
+  letter-spacing: 0.04em;
+  text-transform: uppercase;
+}
+
+.slp-form-toolbar input {
+  width: min(360px, 100%);
+  min-height: 36px;
+  padding: 7px 10px;
+  border: 1px solid rgba(91, 145, 187, 0.26);
+  border-radius: 9px;
+  outline: none;
+  color: #ecf7ff;
+  background: rgba(6, 20, 35, 0.88);
+  font: inherit;
+  font-size: 10px;
+}
+
+.slp-form-toolbar input:focus {
+  border-color: rgba(69, 164, 229, 0.62);
+  box-shadow: 0 0 0 2px rgba(37, 133, 201, 0.1);
+}
+
+.slp-form-count {
+  flex: 0 0 auto;
+  color: #708aa2;
+  font-size: 8px;
+  font-weight: 850;
+  white-space: nowrap;
+}
+
+.slp-streak-explainer {
+  display: block;
+  margin-top: 5px;
+  color: #7890a6;
+  font-size: 7px;
+  line-height: 1.35;
+  overflow-wrap: anywhere;
+}
+
+/* Long, descriptive streak names should remain readable. */
+.slp-streak-card small {
+  white-space: normal !important;
+  overflow-wrap: anywhere !important;
+}
+
+@media (max-width: 700px) {
+  .slp-form-toolbar {
+    align-items: stretch;
+    flex-direction: column;
+  }
+
+  .slp-form-toolbar input {
+    width: 100%;
+  }
+
+  .slp-form-count {
+    white-space: normal;
+  }
+}
+
+
+/* =========================================================
+   PLAYER PULSE — ACHIEVEMENTS + PROGRESS
+========================================================= */
+
+.slp-pulse-player-search {
+  display: flex;
+  align-items: end;
+  justify-content: space-between;
+  gap: 12px;
+  margin-bottom: 12px;
+}
+
+.slp-pulse-player-search label {
+  min-width: 0;
+  display: grid;
+  gap: 5px;
+}
+
+.slp-pulse-player-search label > span {
+  color: #6f89a1;
+  font-size: 8px;
+  font-weight: 900;
+  letter-spacing: 0.04em;
+  text-transform: uppercase;
+}
+
+.slp-pulse-player-search input {
+  width: min(320px, 72vw);
+  min-height: 38px;
+  padding: 8px 11px;
+  border: 1px solid rgba(91, 143, 187, 0.3);
+  border-radius: 10px;
+  color: #edf8ff;
+  background: rgba(7, 23, 40, 0.8);
+  font: inherit;
+  font-size: 10px;
+  outline: none;
+}
+
+.slp-pulse-player-search > span {
+  flex: 0 0 auto;
+  color: #708aa2;
+  font-size: 9px;
+}
+
+.slp-achievement-grid,
+.slp-progress-grid {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: 10px;
+}
+
+.slp-achievement-player,
+.slp-progress-card {
+  min-width: 0;
+  padding: 14px;
+  border: 1px solid rgba(96, 139, 176, 0.19);
+  border-radius: 14px;
+  background:
+    linear-gradient(
+      155deg,
+      rgba(14, 37, 62, 0.94),
+      rgba(7, 22, 39, 0.98)
+    );
+}
+
+.slp-achievement-player-head,
+.slp-progress-card-head {
+  min-width: 0;
+  display: grid;
+  grid-template-columns: auto minmax(0, 1fr) auto;
+  align-items: center;
+  gap: 9px;
+}
+
+.slp-achievement-player-head > span,
+.slp-progress-card-head > span {
+  display: grid;
+  place-items: center;
+  width: 34px;
+  height: 34px;
+  border: 1px solid rgba(79, 160, 215, 0.25);
+  border-radius: 9px;
+  color: #e9f8ff;
+  background: rgba(14, 80, 121, 0.36);
+  font-size: 10px;
+  font-weight: 950;
+}
+
+.slp-achievement-player-head > div,
+.slp-progress-card-head > div {
+  min-width: 0;
+}
+
+.slp-achievement-player-head strong,
+.slp-achievement-player-head small,
+.slp-progress-card-head strong,
+.slp-progress-card-head small {
+  display: block;
+  overflow-wrap: anywhere;
+}
+
+.slp-achievement-player-head strong,
+.slp-progress-card-head strong {
+  color: #fff;
+  font-size: 12px;
+}
+
+.slp-achievement-player-head small,
+.slp-progress-card-head small {
+  margin-top: 2px;
+  color: #6f89a2;
+  font-size: 8px;
+}
+
+.slp-achievement-player-head > em,
+.slp-progress-card-head > em {
+  flex: 0 0 auto;
+  color: #7fc7eb;
+  font-size: 8px;
+  font-style: normal;
+  font-weight: 900;
+  text-align: right;
+}
+
+.slp-achievement-headline {
+  display: flex;
+  align-items: flex-start;
+  gap: 9px;
+  margin-top: 11px;
+  padding: 10px;
+  border: 1px solid rgba(96, 165, 250, 0.18);
+  border-radius: 10px;
+  background: rgba(30, 73, 110, 0.12);
+}
+
+.slp-achievement-headline.is-elite {
+  border-color: rgba(245, 158, 11, 0.27);
+  background:
+    linear-gradient(
+      145deg,
+      rgba(93, 61, 16, 0.18),
+      rgba(8, 24, 41, 0.48)
+    );
+}
+
+.slp-achievement-headline > span {
+  flex: 0 0 auto;
+  font-size: 20px;
+}
+
+.slp-achievement-headline p {
+  min-width: 0;
+  margin: 0;
+}
+
+.slp-achievement-headline small,
+.slp-achievement-headline strong,
+.slp-achievement-headline em {
+  display: block;
+}
+
+.slp-achievement-headline small {
+  color: #6f8ba4;
+  font-size: 7px;
+  font-weight: 900;
+  text-transform: uppercase;
+}
+
+.slp-achievement-headline strong {
+  margin-top: 2px;
+  color: #f7fbff;
+  font-size: 11px;
+}
+
+.slp-achievement-headline em {
+  margin-top: 2px;
+  color: #7890a6;
+  font-size: 8px;
+  font-style: normal;
+}
+
+.slp-achievement-badges {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: 6px;
+  margin-top: 9px;
+}
+
+.slp-achievement-badge {
+  min-width: 0;
+  display: flex;
+  align-items: center;
+  gap: 7px;
+  padding: 8px;
+  border: 1px solid rgba(95, 135, 170, 0.15);
+  border-radius: 9px;
+  background: rgba(7, 22, 39, 0.5);
+}
+
+.slp-achievement-badge.is-elite {
+  border-color: rgba(245, 158, 11, 0.2);
+  background: rgba(245, 158, 11, 0.05);
+}
+
+.slp-achievement-badge > span {
+  flex: 0 0 auto;
+  font-size: 15px;
+}
+
+.slp-achievement-badge p {
+  min-width: 0;
+  margin: 0;
+}
+
+.slp-achievement-badge strong,
+.slp-achievement-badge small {
+  display: block;
+  overflow-wrap: anywhere;
+}
+
+.slp-achievement-badge strong {
+  color: #e6f2fb;
+  font-size: 9px;
+}
+
+.slp-achievement-badge small {
+  margin-top: 1px;
+  color: #687f95;
+  font-size: 7px;
+  text-transform: uppercase;
+}
+
+.slp-progress-toolbar {
+  display: flex;
+  align-items: end;
+  justify-content: space-between;
+  gap: 12px;
+}
+
+.slp-progress-toolbar .slp-pulse-player-search {
+  flex: 1 1 auto;
+}
+
+.slp-progress-scope {
+  flex: 0 0 auto;
+  margin-bottom: 12px;
+  padding: 6px 9px;
+  border: 1px solid rgba(52, 211, 153, 0.2);
+  border-radius: 999px;
+  color: #98e7c8;
+  background: rgba(16, 185, 129, 0.07);
+  font-size: 8px;
+  font-weight: 900;
+  text-transform: uppercase;
+}
+
+.slp-progress-current {
+  display: grid;
+  grid-template-columns: repeat(4, minmax(0, 1fr));
+  gap: 6px;
+  margin-top: 11px;
+}
+
+.slp-progress-current > span {
+  min-width: 0;
+  padding: 8px;
+  border: 1px solid rgba(93, 133, 168, 0.13);
+  border-radius: 9px;
+  background: rgba(7, 22, 39, 0.48);
+}
+
+.slp-progress-current small,
+.slp-progress-current strong {
+  display: block;
+}
+
+.slp-progress-current small {
+  color: #688199;
+  font-size: 7px;
+  text-transform: uppercase;
+}
+
+.slp-progress-current strong {
+  margin-top: 2px;
+  color: #f0f8ff;
+  font-size: 13px;
+}
+
+.slp-progress-metrics {
+  display: grid;
+  gap: 8px;
+  margin-top: 10px;
+}
+
+.slp-progress-metric {
+  padding: 9px;
+  border: 1px solid rgba(93, 134, 168, 0.13);
+  border-radius: 9px;
+  background: rgba(7, 22, 39, 0.44);
+}
+
+.slp-progress-metric > div:first-child {
+  min-width: 0;
+  display: grid;
+  grid-template-columns: auto minmax(0, 1fr) auto;
+  align-items: center;
+  gap: 8px;
+}
+
+.slp-progress-metric > div:first-child > span {
+  font-size: 15px;
+}
+
+.slp-progress-metric p {
+  min-width: 0;
+  margin: 0;
+}
+
+.slp-progress-metric small,
+.slp-progress-metric strong {
+  display: block;
+}
+
+.slp-progress-metric small {
+  color: #687f96;
+  font-size: 7px;
+  text-transform: uppercase;
+}
+
+.slp-progress-metric strong {
+  margin-top: 1px;
+  color: #e4f0f9;
+  font-size: 10px;
+}
+
+.slp-progress-metric em {
+  color: #75a6c8;
+  font-size: 8px;
+  font-style: normal;
+  white-space: nowrap;
+}
+
+.slp-progress-track {
+  height: 6px;
+  margin-top: 7px;
+  overflow: hidden;
+  border-radius: 999px;
+  background: rgba(69, 101, 130, 0.2);
+}
+
+.slp-progress-track > span {
+  display: block;
+  height: 100%;
+  border-radius: inherit;
+  background:
+    linear-gradient(
+      90deg,
+      #2563eb,
+      #14b8a6
+    );
+}
+
+.slp-progress-next {
+  margin: 9px 0 0;
+  color: #70889f;
+  font-size: 8px;
+}
+
+.slp-progress-next strong {
+  color: #a7c7de;
+}
+
+@media (max-width: 900px) {
+  .slp-achievement-grid,
+  .slp-progress-grid {
+    grid-template-columns: 1fr;
+  }
+}
+
+@media (max-width: 680px) {
+  .slp-progress-toolbar,
+  .slp-pulse-player-search {
+    display: block;
+  }
+
+  .slp-pulse-player-search input {
+    width: 100%;
+  }
+
+  .slp-pulse-player-search > span,
+  .slp-progress-scope {
+    display: inline-flex;
+    margin-top: 8px;
+  }
+}
+
+@media (max-width: 500px) {
+  .slp-achievement-badges {
+    grid-template-columns: 1fr;
+  }
+
+  .slp-progress-current {
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+  }
+
+  .slp-achievement-player-head,
+  .slp-progress-card-head {
+    grid-template-columns: auto minmax(0, 1fr);
+  }
+
+  .slp-achievement-player-head > em,
+  .slp-progress-card-head > em {
+    grid-column: 1 / -1;
+    padding-top: 7px;
+    border-top: 1px solid rgba(95, 133, 166, 0.12);
+    text-align: left;
+  }
+}

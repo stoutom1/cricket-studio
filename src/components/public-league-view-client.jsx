@@ -30,6 +30,9 @@ import {
   copyWeeklyLeagueDigest,
   shareWeeklyLeagueDigest,
 } from "@/lib/weekly-league-digest";
+import {
+  buildPlayerPerformanceCenter,
+} from "@/lib/player-performance-center";
 
 function normalizeStatus(status) {
   return String(status || "SCHEDULED").toUpperCase();
@@ -443,6 +446,10 @@ export default function PublicLeagueViewClient({ league, numericLeagueId }) {
   const [publicSearch, setPublicSearch] = useState("");
   const [publicStatsTab, setPublicStatsTab] = useState("batting");
   const [publicLeadersTab, setPublicLeadersTab] = useState("batting");
+  const [publicPulseTab, setPublicPulseTab] = useState("rankings");
+  const [publicRankingCategory, setPublicRankingCategory] = useState("overall");
+  const [publicFormSearch, setPublicFormSearch] = useState("");
+  const [publicPulsePlayerSearch, setPublicPulsePlayerSearch] = useState("");
   const [publicRecordsTab, setPublicRecordsTab] = useState("all");
   const [publicMilestonesTab, setPublicMilestonesTab] = useState("recent");
   const [publicDnaTeamId, setPublicDnaTeamId] = useState("all");
@@ -635,6 +642,15 @@ async function toggleFollowLeague() {
         )
       ),
     [filteredMatches]
+  );
+
+  const playerPerformanceCenter = useMemo(
+    () =>
+      buildPlayerPerformanceCenter(
+        statsEligibleMatches,
+        league
+      ),
+    [statsEligibleMatches, league]
   );
 
   const leagueRecords = useMemo(
@@ -1263,6 +1279,7 @@ return (
             ["points", "Standings"],
             ["stats", "Stats"],
             ["leaders", "Leaders"],
+            ["pulse", "Player Pulse"],
             ["records", "Records"],
             ["milestones", "Milestones"],
             ["dna", "Team DNA"],
@@ -1714,6 +1731,82 @@ return (
                 25 per wicket + 10 per catch/run-out/stumping + 5 per assist.
                 Qualification minimums are shown where applicable.
               </p>
+            </section>
+          )}
+
+          {activeTab === "pulse" && (
+            <section className="slp-section">
+              <SectionHeader
+                eyebrow="Player intelligence"
+                title="Player Pulse"
+                description={`${playerPerformanceCenter.playerCount} players · ${playerPerformanceCenter.completedMatches} completed match${playerPerformanceCenter.completedMatches === 1 ? "" : "es"} in this view`}
+              />
+
+              <SegmentedControl
+                value={publicPulseTab}
+                onChange={setPublicPulseTab}
+                items={[
+                  ["rankings", "Rankings", null],
+                  ["form", "Form", null],
+                  ["streaks", "Streaks", null],
+                  ["achievements", "Achievements", null],
+                  ["progress", "Progress", null],
+                  ["team", "Team of Week", null],
+                ]}
+              />
+
+              {publicPulseTab === "rankings" ? (
+                <PlayerPulseRankings
+                  rankings={playerPerformanceCenter.rankings}
+                  category={publicRankingCategory}
+                  onCategoryChange={setPublicRankingCategory}
+                />
+              ) : publicPulseTab === "form" ? (
+                <PlayerFormCenter
+                  rows={playerPerformanceCenter.form}
+                  search={publicFormSearch}
+                  onSearchChange={setPublicFormSearch}
+                />
+              ) : publicPulseTab === "streaks" ? (
+                <PlayerStreakCenter
+                  rows={playerPerformanceCenter.streaks}
+                />
+              ) : publicPulseTab === "achievements" ? (
+                <PlayerAchievementCenter
+                  rows={playerPerformanceCenter.achievements}
+                  search={publicPulsePlayerSearch}
+                  onSearchChange={setPublicPulsePlayerSearch}
+                />
+              ) : publicPulseTab === "progress" ? (
+                <PlayerProgressCenter
+                  rows={playerPerformanceCenter.progress}
+                  search={publicPulsePlayerSearch}
+                  onSearchChange={setPublicPulsePlayerSearch}
+                  scopeLabel={
+                    selectedSeriesId
+                      ? "Selected series"
+                      : selectedYear
+                        ? `Season ${selectedYear}`
+                        : "Current league view"
+                  }
+                />
+              ) : (
+                <TeamOfWeekCenter
+                  data={playerPerformanceCenter.teamOfWeek}
+                />
+              )}
+
+              <div className="slp-pulse-note">
+                <span aria-hidden="true">🧠</span>
+                <p>
+                  <strong>One performance engine</strong>
+                  Rankings, form, streaks, achievements, progress and Team
+                  of the Week all use the same completed-match ball data and
+                  existing Cric4All player exclusions. Ranking movement
+                  compares the current table with the table before the most
+                  recent completed match.
+                </p>
+              </div>
             </section>
           )}
 
@@ -2357,6 +2450,552 @@ return (
         </div>
       </section>
     </main>
+  );
+}
+
+function PlayerPulseRankings({
+  rankings,
+  category,
+  onCategoryChange,
+}) {
+  const rows = rankings?.[category] || [];
+
+  return (
+    <div className="slp-pulse-block">
+      <div className="slp-pulse-toolbar">
+        <SegmentedControl
+          value={category}
+          onChange={onCategoryChange}
+          items={[
+            ["overall", "Overall", null],
+            ["batting", "Batting", null],
+            ["bowling", "Bowling", null],
+            ["fielding", "Fielding", null],
+          ]}
+        />
+        <span>Rank movement updates after every completed match</span>
+      </div>
+
+      {rows.length ? (
+        <div className="slp-ranking-list">
+          {rows.slice(0, 12).map((row) => (
+            <article className="slp-ranking-row" key={`${category}-${row.key}`}>
+              <span className="slp-ranking-number">#{row.rank}</span>
+              <span className="slp-ranking-avatar">{getInitials(row.playerName)}</span>
+              <div className="slp-ranking-player">
+                <strong>{row.playerName}</strong>
+                <small>{row.teamName || "League player"}</small>
+              </div>
+              <div className="slp-ranking-points">
+                <strong>{Math.round(row.rankingPoints)}</strong>
+                <small>ranking pts</small>
+              </div>
+              <div className={`slp-ranking-move ${row.movement > 0 ? "is-up" : row.movement < 0 ? "is-down" : "is-flat"}`}>
+                <strong>
+                  {row.movement === null
+                    ? "NEW"
+                    : row.movement > 0
+                      ? `↑${row.movement}`
+                      : row.movement < 0
+                        ? `↓${Math.abs(row.movement)}`
+                        : "—"}
+                </strong>
+                <small>best #{row.careerBestRank}</small>
+              </div>
+            </article>
+          ))}
+        </div>
+      ) : (
+        <EmptyState
+          title="No qualifying ranking yet"
+          message="Rankings appear once completed-match performances exist for this category."
+        />
+      )}
+    </div>
+  );
+}
+
+function PlayerFormCenter({
+  rows,
+  search,
+  onSearchChange,
+}) {
+  const normalizedSearch = String(search || "")
+    .trim()
+    .toLowerCase();
+
+  const visibleRows = (rows || []).filter((row) => {
+    if (!normalizedSearch) return true;
+
+    return [
+      row.playerName,
+      row.teamName,
+    ].some((value) =>
+      String(value || "")
+        .toLowerCase()
+        .includes(normalizedSearch)
+    );
+  });
+
+  if (!rows?.length) {
+    return (
+      <EmptyState
+        title="No recent player form yet"
+        message="Form appears after completed scoring performances are available."
+      />
+    );
+  }
+
+  return (
+    <div className="slp-form-center">
+      <div className="slp-form-toolbar">
+        <label>
+          <span>Find player</span>
+          <input
+            type="search"
+            value={search}
+            onChange={(event) =>
+              onSearchChange(event.target.value)
+            }
+            placeholder="Search player or team"
+          />
+        </label>
+
+        <span className="slp-form-count">
+          {visibleRows.length} of {rows.length} qualifying players
+        </span>
+      </div>
+
+      {visibleRows.length ? (
+        <div className="slp-form-grid">
+          {visibleRows.map((row) => (
+            <article className="slp-form-card" key={row.key}>
+              <div className="slp-form-card-head">
+                <span>{getInitials(row.playerName)}</span>
+                <div>
+                  <strong>{row.playerName}</strong>
+                  <small>{row.teamName || "League player"}</small>
+                </div>
+                <em className={`is-${row.trend.toLowerCase()}`}>
+                  {row.trend}
+                </em>
+              </div>
+
+              <div className="slp-form-balls">
+                {row.lastFive.map((match) => (
+                  <div
+                    key={`${row.key}-${match.matchId}`}
+                    title={match.matchLabel}
+                  >
+                    <strong>{match.runs}R</strong>
+                    <span>
+                      {match.wickets}W · {match.fieldingTotal}F
+                    </span>
+                  </div>
+                ))}
+              </div>
+
+              <div className="slp-form-summary">
+                <span>
+                  <small>Last 5 runs</small>
+                  <strong>{row.lastFiveRuns}</strong>
+                </span>
+                <span>
+                  <small>Last 5 wickets</small>
+                  <strong>{row.lastFiveWickets}</strong>
+                </span>
+                <span>
+                  <small>Form score</small>
+                  <strong>{row.formScore.toFixed(1)}</strong>
+                </span>
+              </div>
+
+              {row.best ? (
+                <p>
+                  <strong>Best recent:</strong>{" "}
+                  {row.best.runs}R · {row.best.wickets}W ·{" "}
+                  {row.best.fieldingTotal}F
+                </p>
+              ) : null}
+            </article>
+          ))}
+        </div>
+      ) : (
+        <EmptyState
+          title="No matching player"
+          message="Try another player or team name. All qualifying players remain available in Form."
+        />
+      )}
+    </div>
+  );
+}
+
+function PlayerStreakCenter({ rows }) {
+  return rows?.length ? (
+    <div className="slp-streak-grid">
+      {rows.map((row) => (
+        <article className="slp-streak-card" key={row.id}>
+          <span className="slp-streak-icon">{row.icon}</span>
+          <div>
+            <small>{row.type}</small>
+            <strong>{row.playerName}</strong>
+            <em>{row.teamName || "League player"}</em>
+            {row.description ? (
+              <span className="slp-streak-explainer">
+                {row.description}
+              </span>
+            ) : null}
+          </div>
+          <div className="slp-streak-count">
+            <strong>{row.current}</strong>
+            <span>current</span>
+          </div>
+          <p>
+            Career best: <strong>{row.best}</strong>
+          </p>
+        </article>
+      ))}
+    </div>
+  ) : (
+    <EmptyState
+      title="No active streaks yet"
+      message="Current batting and wicket-taking streaks appear as players build consecutive qualifying performances."
+    />
+  );
+}
+
+function PlayerPulseSearch({
+  search,
+  onSearchChange,
+  count,
+  total,
+  placeholder = "Search player or team",
+}) {
+  return (
+    <div className="slp-pulse-player-search">
+      <label>
+        <span>Find player</span>
+        <input
+          type="search"
+          value={search}
+          onChange={(event) =>
+            onSearchChange(event.target.value)
+          }
+          placeholder={placeholder}
+        />
+      </label>
+
+      <span>
+        {count} of {total} players
+      </span>
+    </div>
+  );
+}
+
+function PlayerAchievementCenter({
+  rows,
+  search,
+  onSearchChange,
+}) {
+  const normalized = String(search || "")
+    .trim()
+    .toLowerCase();
+
+  const visible = (rows || []).filter((row) => {
+    if (!normalized) return true;
+
+    return [
+      row.playerName,
+      row.teamName,
+      ...(row.badges || []).map((badge) => badge.title),
+    ].some((value) =>
+      String(value || "")
+        .toLowerCase()
+        .includes(normalized)
+    );
+  });
+
+  if (!rows?.length) {
+    return (
+      <EmptyState
+        title="No achievements earned yet"
+        message="Badges appear automatically as players reach qualifying batting, bowling, fielding, all-round and appearance achievements."
+      />
+    );
+  }
+
+  return (
+    <div className="slp-achievement-center">
+      <PlayerPulseSearch
+        search={search}
+        onSearchChange={onSearchChange}
+        count={visible.length}
+        total={rows.length}
+      />
+
+      {visible.length ? (
+        <div className="slp-achievement-grid">
+          {visible.map((row) => (
+            <article
+              className="slp-achievement-player"
+              key={row.key}
+            >
+              <div className="slp-achievement-player-head">
+                <span>
+                  {getInitials(row.playerName)}
+                </span>
+
+                <div>
+                  <strong>{row.playerName}</strong>
+                  <small>
+                    {row.teamName || "League player"}
+                  </small>
+                </div>
+
+                <em>
+                  {row.badgeCount} badge
+                  {row.badgeCount === 1 ? "" : "s"}
+                </em>
+              </div>
+
+              {row.headline ? (
+                <div
+                  className={`slp-achievement-headline is-${row.headline.tier}`}
+                >
+                  <span>{row.headline.icon}</span>
+                  <p>
+                    <small>Featured achievement</small>
+                    <strong>{row.headline.title}</strong>
+                    <em>{row.headline.description}</em>
+                  </p>
+                </div>
+              ) : null}
+
+              <div className="slp-achievement-badges">
+                {row.badges.map((badge) => (
+                  <div
+                    className={`slp-achievement-badge is-${badge.tier}`}
+                    key={`${row.key}-${badge.id}`}
+                    title={badge.description}
+                  >
+                    <span>{badge.icon}</span>
+                    <p>
+                      <strong>{badge.title}</strong>
+                      <small>{badge.category}</small>
+                    </p>
+                  </div>
+                ))}
+              </div>
+            </article>
+          ))}
+        </div>
+      ) : (
+        <EmptyState
+          title="No matching achievement"
+          message="Search by player, team or badge name."
+        />
+      )}
+    </div>
+  );
+}
+
+function PlayerProgressCenter({
+  rows,
+  search,
+  onSearchChange,
+  scopeLabel,
+}) {
+  const normalized = String(search || "")
+    .trim()
+    .toLowerCase();
+
+  const visible = (rows || []).filter((row) => {
+    if (!normalized) return true;
+
+    return [
+      row.playerName,
+      row.teamName,
+    ].some((value) =>
+      String(value || "")
+        .toLowerCase()
+        .includes(normalized)
+    );
+  });
+
+  if (!rows?.length) {
+    return (
+      <EmptyState
+        title="No player progress yet"
+        message="Progress appears once completed-match performances exist in this league view."
+      />
+    );
+  }
+
+  return (
+    <div className="slp-progress-center">
+      <div className="slp-progress-toolbar">
+        <PlayerPulseSearch
+          search={search}
+          onSearchChange={onSearchChange}
+          count={visible.length}
+          total={rows.length}
+        />
+
+        <span className="slp-progress-scope">
+          {scopeLabel}
+        </span>
+      </div>
+
+      {visible.length ? (
+        <div className="slp-progress-grid">
+          {visible.map((row) => (
+            <article
+              className="slp-progress-card"
+              key={row.key}
+            >
+              <div className="slp-progress-card-head">
+                <span>
+                  {getInitials(row.playerName)}
+                </span>
+
+                <div>
+                  <strong>{row.playerName}</strong>
+                  <small>
+                    {row.teamName || "League player"}
+                  </small>
+                </div>
+
+                {row.nearest ? (
+                  <em>
+                    {Math.round(row.nearest.progress)}%
+                    {" "}
+                    to next
+                  </em>
+                ) : (
+                  <em>All listed landmarks reached</em>
+                )}
+              </div>
+
+              <div className="slp-progress-current">
+                <span>
+                  <small>Runs</small>
+                  <strong>{row.runs}</strong>
+                </span>
+                <span>
+                  <small>Wickets</small>
+                  <strong>{row.wickets}</strong>
+                </span>
+                <span>
+                  <small>Fielding</small>
+                  <strong>{row.fielding}</strong>
+                </span>
+                <span>
+                  <small>Appearances</small>
+                  <strong>{row.matches}</strong>
+                </span>
+              </div>
+
+              <div className="slp-progress-metrics">
+                {row.metrics.map((metric) => (
+                  <div
+                    className="slp-progress-metric"
+                    key={`${row.key}-${metric.metric}`}
+                  >
+                    <div>
+                      <span>{metric.icon}</span>
+                      <p>
+                        <small>{metric.label}</small>
+                        <strong>
+                          {metric.complete
+                            ? `${metric.current}`
+                            : `${metric.current} / ${metric.target}`}
+                        </strong>
+                      </p>
+
+                      <em>
+                        {metric.complete
+                          ? "Landmark ladder complete"
+                          : `${metric.remaining} to next`}
+                      </em>
+                    </div>
+
+                    <div className="slp-progress-track">
+                      <span
+                        style={{
+                          width: `${Math.max(
+                            3,
+                            metric.progress
+                          )}%`,
+                        }}
+                      />
+                    </div>
+                  </div>
+                ))}
+              </div>
+
+              {row.nearest ? (
+                <p className="slp-progress-next">
+                  <strong>Closest landmark:</strong>{" "}
+                  {row.nearest.remaining}{" "}
+                  {row.nearest.metric} to{" "}
+                  {row.nearest.target}
+                </p>
+              ) : null}
+            </article>
+          ))}
+        </div>
+      ) : (
+        <EmptyState
+          title="No matching player"
+          message="Try another player or team name."
+        />
+      )}
+    </div>
+  );
+}
+
+function TeamOfWeekCenter({ data }) {
+  const lineup = data?.lineup || [];
+
+  return (
+    <div className="slp-team-week-shell">
+      <div className="slp-team-week-head">
+        <div>
+          <small>Recent seven-day competition window</small>
+          <strong>Cric4All XI of the Week</strong>
+          <span>{data?.windowLabel || "No completed match window"}</span>
+        </div>
+        <span>⭐ {lineup.length} selected</span>
+      </div>
+
+      {lineup.length ? (
+        <div className="slp-team-week-grid">
+          {lineup.map((player, index) => (
+            <article className="slp-team-week-player" key={player.key}>
+              <span className="slp-team-week-no">{String(index + 1).padStart(2, "0")}</span>
+              <span className="slp-team-week-avatar">{getInitials(player.playerName)}</span>
+              <div>
+                <strong>
+                  {player.playerName}
+                  {player.captain ? " (C)" : ""}
+                  {player.wicketkeeper ? " (WK)" : ""}
+                </strong>
+                <small>{player.teamName || "League player"} · {player.role}</small>
+              </div>
+              <div className="slp-team-week-stats">
+                <strong>{player.runs}R · {player.wickets}W</strong>
+                <span>{player.fieldingTotal} fielding · {Math.round(player.selectionScore)} pts</span>
+              </div>
+            </article>
+          ))}
+        </div>
+      ) : (
+        <EmptyState
+          title="No Team of the Week yet"
+          message="The XI is selected from the most recent seven-day window containing completed scored matches."
+        />
+      )}
+    </div>
   );
 }
 
