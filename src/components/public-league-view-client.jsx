@@ -18,6 +18,18 @@ import {
 import {
   buildTeamDNA,
 } from "@/lib/team-dna";
+import {
+  buildPreMatchCenter,
+} from "@/lib/pre-match-center";
+import {
+  buildShareCardCatalog,
+  shareCric4AllCard,
+} from "@/lib/share-cards";
+import {
+  buildWeeklyLeagueDigest,
+  copyWeeklyLeagueDigest,
+  shareWeeklyLeagueDigest,
+} from "@/lib/weekly-league-digest";
 
 function normalizeStatus(status) {
   return String(status || "SCHEDULED").toUpperCase();
@@ -434,6 +446,11 @@ export default function PublicLeagueViewClient({ league, numericLeagueId }) {
   const [publicRecordsTab, setPublicRecordsTab] = useState("all");
   const [publicMilestonesTab, setPublicMilestonesTab] = useState("recent");
   const [publicDnaTeamId, setPublicDnaTeamId] = useState("all");
+  const [publicPreviewMatchId, setPublicPreviewMatchId] = useState("");
+  const [shareCardBusyId, setShareCardBusyId] = useState("");
+  const [shareCardNotice, setShareCardNotice] = useState("");
+  const [digestBusyAction, setDigestBusyAction] = useState("");
+  const [digestNotice, setDigestNotice] = useState("");
   const [leagueStats, setLeagueStats] = useState(null);
   const [leagueStatsLoading, setLeagueStatsLoading] = useState(false);
   const [leagueStatsError, setLeagueStatsError] = useState("");
@@ -673,6 +690,37 @@ async function toggleFollowLeague() {
     [teamDNA.teams, publicDnaTeamId]
   );
 
+  const preMatchCenter = useMemo(
+    () =>
+      buildPreMatchCenter({
+        matches: filteredMatches,
+        teams: league.teams || [],
+        league,
+        teamDNA: teamDNA.teams,
+      }),
+    [
+      filteredMatches,
+      league.teams,
+      league,
+      teamDNA.teams,
+    ]
+  );
+
+  const selectedPreview = useMemo(
+    () =>
+      preMatchCenter.previews.find(
+        (preview) =>
+          Number(preview.matchId) ===
+          Number(publicPreviewMatchId)
+      ) ||
+      preMatchCenter.previews[0] ||
+      null,
+    [
+      preMatchCenter.previews,
+      publicPreviewMatchId,
+    ]
+  );
+
   const {
     battingRows,
     bowlingRows,
@@ -832,6 +880,119 @@ async function toggleFollowLeague() {
         b.disciplines - a.disciplines ||
         b.allRounderPoints - a.allRounderPoints
     )[0];
+
+  const weeklyDigest = useMemo(
+    () =>
+      buildWeeklyLeagueDigest({
+        matches: filteredMatches,
+        league,
+        pointsTable,
+        leagueMilestones,
+        leagueRecords,
+      }),
+    [
+      filteredMatches,
+      league,
+      pointsTable,
+      leagueMilestones,
+      leagueRecords,
+    ]
+  );
+
+  async function handleDigestAction(action) {
+    try {
+      setDigestBusyAction(action);
+      setDigestNotice("");
+
+      if (action === "copy") {
+        await copyWeeklyLeagueDigest(
+          weeklyDigest
+        );
+
+        setDigestNotice(
+          "Weekly digest copied."
+        );
+
+        return;
+      }
+
+      const result =
+        await shareWeeklyLeagueDigest(
+          weeklyDigest,
+          league?.name
+        );
+
+      setDigestNotice(
+        result.mode === "shared"
+          ? "Share sheet opened."
+          : result.mode === "copied"
+            ? "Weekly digest copied."
+            : "Sharing is unavailable in this browser."
+      );
+    } catch (error) {
+      if (error?.name !== "AbortError") {
+        setDigestNotice(
+          error?.message ||
+          "Unable to share the weekly digest."
+        );
+      }
+    } finally {
+      setDigestBusyAction("");
+    }
+  }
+
+  const shareCards = useMemo(
+    () =>
+      buildShareCardCatalog({
+        league,
+        topRunScorer,
+        topWicketTaker,
+        topFielder,
+        topImpactPlayer,
+        leagueRecords,
+        leagueMilestones,
+        selectedYear,
+        selectedSeriesId,
+      }),
+    [
+      league,
+      topRunScorer,
+      topWicketTaker,
+      topFielder,
+      topImpactPlayer,
+      leagueRecords,
+      leagueMilestones,
+      selectedYear,
+      selectedSeriesId,
+    ]
+  );
+
+  async function handleShareCard(card) {
+    try {
+      setShareCardBusyId(card.id);
+      setShareCardNotice("");
+
+      const result =
+        await shareCric4AllCard(card);
+
+      setShareCardNotice(
+        result.mode === "shared"
+          ? "Share sheet opened."
+          : result.mode === "downloaded"
+            ? "PNG saved. Share caption copied when permitted."
+            : "Sharing is unavailable in this browser."
+      );
+    } catch (error) {
+      if (error?.name !== "AbortError") {
+        setShareCardNotice(
+          error?.message ||
+          "Unable to generate this share card."
+        );
+      }
+    } finally {
+      setShareCardBusyId("");
+    }
+  }
 
   useEffect(() => {
     let cancelled = false;
@@ -1097,6 +1258,7 @@ return (
         <nav className="slp-tabs" aria-label="League sections">
           {[
             ["overview", "Overview"],
+            ["preview", "Match Preview"],
             ["matches", "Matches"],
             ["points", "Standings"],
             ["stats", "Stats"],
@@ -1104,6 +1266,8 @@ return (
             ["records", "Records"],
             ["milestones", "Milestones"],
             ["dna", "Team DNA"],
+            ["digest", "Digest"],
+            ["share", "Share"],
             ["teams", "Teams"],
           ].map(([key, label]) => (
             <button
@@ -1130,6 +1294,72 @@ return (
               leagueSlug={league.slug}
               openTab={openTab}
             />
+          )}
+
+          {activeTab === "preview" && (
+            <section className="slp-section">
+              <SectionHeader
+                eyebrow="Pre-match center"
+                title="Match Preview"
+                description={`${preMatchCenter.scheduledCount} upcoming match${preMatchCenter.scheduledCount === 1 ? "" : "es"} · ${preMatchCenter.completedContextMatches} completed match${preMatchCenter.completedContextMatches === 1 ? "" : "es"} of context`}
+              />
+
+              {preMatchCenter.previews.length ? (
+                <>
+                  <div className="slp-preview-toolbar">
+                    <label>
+                      <span>Upcoming fixture</span>
+                      <select
+                        value={
+                          publicPreviewMatchId ||
+                          selectedPreview?.matchId ||
+                          ""
+                        }
+                        onChange={(event) =>
+                          setPublicPreviewMatchId(event.target.value)
+                        }
+                      >
+                        {preMatchCenter.previews.map((preview) => (
+                          <option
+                            key={preview.matchId}
+                            value={preview.matchId}
+                          >
+                            {preview.teamAName} vs {preview.teamBName}
+                          </option>
+                        ))}
+                      </select>
+                    </label>
+
+                    <span className="slp-preview-scope">
+                      {selectedSeriesId
+                        ? "Series context"
+                        : selectedYear
+                          ? `Season ${selectedYear}`
+                          : "League context"}
+                    </span>
+                  </div>
+
+                  {selectedPreview ? (
+                    <PreMatchPreview preview={selectedPreview} />
+                  ) : null}
+                </>
+              ) : (
+                <EmptyState
+                  title="No upcoming fixture to preview"
+                  message="The Pre-Match Center appears when a scheduled match exists in the selected Season/Series."
+                />
+              )}
+
+              <div className="slp-preview-note">
+                <span aria-hidden="true">🔎</span>
+                <p>
+                  <strong>Evidence, not prediction</strong>
+                  Cric4All uses completed matches for head-to-head, recent
+                  form, Team DNA and players to watch. It does not invent a
+                  win probability or claim to know who will win.
+                </p>
+              </div>
+            </section>
           )}
 
           {activeTab === "matches" && (
@@ -1810,6 +2040,286 @@ return (
             </section>
           )}
 
+          {activeTab === "digest" && (
+            <section className="slp-section">
+              <SectionHeader
+                eyebrow="This week in Cric4All"
+                title="7-Day League Digest"
+                description={`A compact league recap for ${weeklyDigest.rangeLabel}`}
+              />
+
+              {digestNotice ? (
+                <div className="slp-digest-notice">
+                  {digestNotice}
+                </div>
+              ) : null}
+
+              <div className="slp-digest-hero">
+                <div>
+                  <span>📅 {weeklyDigest.rangeLabel}</span>
+                  <h3>
+                    {weeklyDigest.completedCount
+                      ? `${weeklyDigest.completedCount} completed match${weeklyDigest.completedCount === 1 ? "" : "es"} in the last 7 days`
+                      : "A quiet seven days — no completed matches"}
+                  </h3>
+                  <p>
+                    The digest uses only completed-match scoring data for
+                    weekly performances, with current standings and the next
+                    scheduled fixture added as league context.
+                  </p>
+                </div>
+
+                <div className="slp-digest-actions">
+                  <button
+                    type="button"
+                    disabled={Boolean(digestBusyAction)}
+                    onClick={() =>
+                      handleDigestAction("copy")
+                    }
+                  >
+                    {digestBusyAction === "copy"
+                      ? "Copying…"
+                      : "📋 Copy digest"}
+                  </button>
+
+                  <button
+                    type="button"
+                    className="is-primary"
+                    disabled={Boolean(digestBusyAction)}
+                    onClick={() =>
+                      handleDigestAction("share")
+                    }
+                  >
+                    {digestBusyAction === "share"
+                      ? "Opening…"
+                      : "📤 Share digest"}
+                  </button>
+                </div>
+              </div>
+
+              <div className="slp-digest-metrics">
+                <DigestMetric
+                  icon="🥇"
+                  label="Table leader"
+                  value={
+                    weeklyDigest.tableLeader?.teamName ||
+                    "No table yet"
+                  }
+                  detail={
+                    weeklyDigest.tableLeader
+                      ? `${weeklyDigest.tableLeader.played || 0} played · ${weeklyDigest.tableLeader.points || 0} pts`
+                      : "Standings will appear after results"
+                  }
+                />
+
+                <DigestMetric
+                  icon="🏏"
+                  label="Top batter"
+                  value={
+                    weeklyDigest.topBatter?.playerName ||
+                    "No weekly leader"
+                  }
+                  detail={
+                    weeklyDigest.topBatter
+                      ? `${weeklyDigest.topBatter.runs} runs · SR ${weeklyDigest.topBatter.strikeRate.toFixed(1)}`
+                      : "No completed batting performance this week"
+                  }
+                />
+
+                <DigestMetric
+                  icon="🎯"
+                  label="Top bowler"
+                  value={
+                    weeklyDigest.topBowler?.playerName ||
+                    "No weekly leader"
+                  }
+                  detail={
+                    weeklyDigest.topBowler
+                      ? `${weeklyDigest.topBowler.wickets} wickets · Econ ${weeklyDigest.topBowler.economy.toFixed(2)}`
+                      : "No bowler-credited wickets this week"
+                  }
+                />
+
+                <DigestMetric
+                  icon="🌟"
+                  label="Performance of the week"
+                  value={
+                    weeklyDigest.performanceOfWeek?.playerName ||
+                    "No standout yet"
+                  }
+                  detail={
+                    weeklyDigest.performanceOfWeek
+                      ? `${weeklyDigest.performanceOfWeek.impact} impact pts · ${weeklyDigest.performanceOfWeek.runs}R · ${weeklyDigest.performanceOfWeek.wickets}W · ${weeklyDigest.performanceOfWeek.fielding} fielding`
+                      : "Calculated after completed weekly performances"
+                  }
+                />
+              </div>
+
+              <div className="slp-digest-detail-grid">
+                <article className="slp-digest-panel">
+                  <div className="slp-digest-panel-head">
+                    <div>
+                      <small>Scoreboard</small>
+                      <strong>Results this week</strong>
+                    </div>
+                    <span>{weeklyDigest.completedCount}</span>
+                  </div>
+
+                  {weeklyDigest.matchResults.length ? (
+                    <div className="slp-digest-results">
+                      {weeklyDigest.matchResults.map((result) => (
+                        result.href ? (
+                          <a
+                            key={result.matchId}
+                            href={result.href}
+                          >
+                            <span>{result.dateLabel}</span>
+                            <strong>{result.label}</strong>
+                            <p>{result.result}</p>
+                          </a>
+                        ) : (
+                          <div key={result.matchId}>
+                            <span>{result.dateLabel}</span>
+                            <strong>{result.label}</strong>
+                            <p>{result.result}</p>
+                          </div>
+                        )
+                      ))}
+                    </div>
+                  ) : (
+                    <p className="slp-digest-empty">
+                      No completed matches in the rolling seven-day window.
+                    </p>
+                  )}
+                </article>
+
+                <article className="slp-digest-panel">
+                  <div className="slp-digest-panel-head">
+                    <div>
+                      <small>League moments</small>
+                      <strong>Worth sharing</strong>
+                    </div>
+                    <span>✨</span>
+                  </div>
+
+                  <div className="slp-digest-moments">
+                    <DigestMoment
+                      icon="🏅"
+                      label="Newest milestone"
+                      title={
+                        weeklyDigest.milestoneThisWeek
+                          ? `${weeklyDigest.milestoneThisWeek.playerName} · ${weeklyDigest.milestoneThisWeek.title}`
+                          : "No milestone reached this week"
+                      }
+                      detail={
+                        weeklyDigest.milestoneThisWeek?.matchLabel ||
+                        "Milestones will appear automatically when crossed."
+                      }
+                    />
+
+                    <DigestMoment
+                      icon="📚"
+                      label="Record-book spotlight"
+                      title={
+                        weeklyDigest.recordSpotlight
+                          ? `${weeklyDigest.recordSpotlight.title} · ${weeklyDigest.recordSpotlight.value}`
+                          : "No league record yet"
+                      }
+                      detail={
+                        weeklyDigest.recordSpotlight
+                          ? `${weeklyDigest.recordSpotlight.holder}${weeklyDigest.recordSpotlight.teamName ? ` · ${weeklyDigest.recordSpotlight.teamName}` : ""}`
+                          : "Records appear after qualifying completed matches."
+                      }
+                    />
+
+                    <DigestMoment
+                      icon="📍"
+                      label="Coming next"
+                      title={
+                        weeklyDigest.upcoming?.label ||
+                        "No upcoming fixture scheduled"
+                      }
+                      detail={
+                        weeklyDigest.upcoming
+                          ? `${weeklyDigest.upcoming.dateLabel} · ${weeklyDigest.upcoming.venue}`
+                          : "Create the next match to add it to the digest."
+                      }
+                      href={weeklyDigest.upcoming?.href}
+                    />
+                  </div>
+                </article>
+              </div>
+
+              <div className="slp-digest-preview">
+                <div>
+                  <span>💬</span>
+                  <p>
+                    <small>Share-ready text</small>
+                    <strong>Exactly what gets copied or shared</strong>
+                  </p>
+                </div>
+
+                <pre>{weeklyDigest.text}</pre>
+              </div>
+
+              <div className="slp-digest-note">
+                <span aria-hidden="true">🛡️</span>
+                <p>
+                  <strong>No duplicate stats engine</strong>
+                  Weekly performance numbers are calculated directly from the
+                  same completed ball-by-ball match data and follow the
+                  existing Cric4All analytics exclusions. Run-outs and retired
+                  dismissals are not credited as bowler wickets.
+                </p>
+              </div>
+            </section>
+          )}
+
+          {activeTab === "share" && (
+            <section className="slp-section">
+              <SectionHeader
+                eyebrow="Share Cric4All"
+                title="Share Cards"
+                description="Turn league performances into polished square cards for WhatsApp, Messages and social sharing."
+              />
+
+              {shareCardNotice ? (
+                <div className="slp-share-notice">
+                  {shareCardNotice}
+                </div>
+              ) : null}
+
+              {shareCards.length ? (
+                <div className="slp-share-card-grid">
+                  {shareCards.map((card) => (
+                    <ShareCardPreview
+                      key={card.id}
+                      card={card}
+                      busy={shareCardBusyId === card.id}
+                      onShare={handleShareCard}
+                    />
+                  ))}
+                </div>
+              ) : (
+                <EmptyState
+                  title="No share cards yet"
+                  message="Share cards appear automatically after qualifying leaders, records or milestones exist."
+                />
+              )}
+
+              <div className="slp-share-note">
+                <span aria-hidden="true">📲</span>
+                <p>
+                  <strong>Ready for phones and laptops</strong>
+                  Supported phones open the native Share sheet with a
+                  1080×1080 PNG. Browsers without file sharing save the PNG
+                  instead and copy the Cric4All caption when clipboard access
+                  is allowed.
+                </p>
+              </div>
+            </section>
+          )}
+
           {activeTab === "teams" && (
             <section className="slp-section">
               <SectionHeader
@@ -1847,6 +2357,333 @@ return (
         </div>
       </section>
     </main>
+  );
+}
+
+function DigestMetric({
+  icon,
+  label,
+  value,
+  detail,
+}) {
+  return (
+    <article className="slp-digest-metric">
+      <span aria-hidden="true">{icon}</span>
+
+      <div>
+        <small>{label}</small>
+        <strong>{value}</strong>
+        <p>{detail}</p>
+      </div>
+    </article>
+  );
+}
+
+function DigestMoment({
+  icon,
+  label,
+  title,
+  detail,
+  href,
+}) {
+  const content = (
+    <>
+      <span aria-hidden="true">{icon}</span>
+
+      <p>
+        <small>{label}</small>
+        <strong>{title}</strong>
+        <em>{detail}</em>
+      </p>
+    </>
+  );
+
+  return href ? (
+    <a
+      className="slp-digest-moment"
+      href={href}
+    >
+      {content}
+    </a>
+  ) : (
+    <div className="slp-digest-moment">
+      {content}
+    </div>
+  );
+}
+
+function ShareCardPreview({
+  card,
+  busy,
+  onShare,
+}) {
+  return (
+    <article
+      className={`slp-share-card slp-share-card--${card.accent}`}
+    >
+      <div className="slp-share-card-brand">
+        <strong>🏏 Cric4All</strong>
+        <span>{card.scope}</span>
+      </div>
+
+      <div className="slp-share-card-body">
+        <small>
+          {card.icon} {card.eyebrow}
+        </small>
+
+        <h3>{card.title}</h3>
+
+        <div className="slp-share-card-player">
+          <strong>{card.name}</strong>
+          {card.team ? (
+            <span>{card.team}</span>
+          ) : null}
+        </div>
+
+        <div className="slp-share-card-value">
+          {card.value}
+        </div>
+
+        <p>{card.detail}</p>
+      </div>
+
+      <div className="slp-share-card-footer">
+        <span>{card.leagueName}</span>
+
+        <button
+          type="button"
+          disabled={busy}
+          onClick={() =>
+            onShare(card)
+          }
+        >
+          {busy
+            ? "Generating…"
+            : "📤 Share card"}
+        </button>
+      </div>
+    </article>
+  );
+}
+
+function PreviewForm({
+  form = [],
+}) {
+  return (
+    <div className="slp-preview-form">
+      {form.length ? (
+        form.map((result, index) => (
+          <span
+            className={`is-${String(result).toLowerCase()}`}
+            key={`${result}-${index}`}
+          >
+            {result}
+          </span>
+        ))
+      ) : (
+        <em>No recent form</em>
+      )}
+    </div>
+  );
+}
+
+function PreviewTeamPanel({
+  team,
+  side,
+}) {
+  const dna = team.dna;
+
+  return (
+    <article className={`slp-preview-team is-${side}`}>
+      <div className="slp-preview-team-head">
+        <span className="slp-preview-avatar">
+          {getInitials(team.teamName)}
+        </span>
+
+        <div>
+          <small>{side === "a" ? "Team A" : "Team B"}</small>
+          <strong>{team.teamName}</strong>
+        </div>
+      </div>
+
+      <div className="slp-preview-team-form">
+        <small>Recent form</small>
+        <PreviewForm form={team.form} />
+      </div>
+
+      <div className="slp-preview-dna-mini">
+        <div>
+          <small>Win rate</small>
+          <strong>
+            {dna ? `${dna.winPct.toFixed(0)}%` : "—"}
+          </strong>
+        </div>
+
+        <div>
+          <small>Batting RR</small>
+          <strong>
+            {dna ? dna.battingRunRate.toFixed(2) : "—"}
+          </strong>
+        </div>
+
+        <div>
+          <small>Bowling econ</small>
+          <strong>
+            {dna ? dna.bowlingEconomy.toFixed(2) : "—"}
+          </strong>
+        </div>
+      </div>
+
+      <div className="slp-preview-watch">
+        <small>Players to watch</small>
+
+        <div>
+          <span>🏏</span>
+          <p>
+            <strong>
+              {team.watch?.batter?.playerName || "No batting leader yet"}
+            </strong>
+            <em>
+              {team.watch?.batter
+                ? `${team.watch.batter.runs} runs · SR ${team.watch.batter.strikeRate.toFixed(1)}`
+                : "Needs more completed-match evidence"}
+            </em>
+          </p>
+        </div>
+
+        <div>
+          <span>🎯</span>
+          <p>
+            <strong>
+              {team.watch?.bowler?.playerName || "No bowling leader yet"}
+            </strong>
+            <em>
+              {team.watch?.bowler
+                ? `${team.watch.bowler.wickets} wickets · Econ ${team.watch.bowler.economy.toFixed(2)}`
+                : "Needs more completed-match evidence"}
+            </em>
+          </p>
+        </div>
+      </div>
+
+      {dna?.strengths?.length ? (
+        <div className="slp-preview-traits">
+          {dna.strengths.slice(0, 2).map((trait) => (
+            <span key={`${team.teamId}-${trait.label}`}>
+              {trait.icon} {trait.label}
+            </span>
+          ))}
+        </div>
+      ) : null}
+    </article>
+  );
+}
+
+function PreMatchPreview({
+  preview,
+}) {
+  const h2h = preview.headToHead;
+
+  return (
+    <div className="slp-preview-shell">
+      <div className="slp-preview-fixture">
+        <div>
+          <small>{preview.seriesName}</small>
+          <strong>
+            {preview.teamAName}
+            <span> vs </span>
+            {preview.teamBName}
+          </strong>
+          <p>
+            {preview.scheduledLabel}
+            {" · "}
+            {preview.venue}
+          </p>
+        </div>
+
+        {preview.href ? (
+          <a href={preview.href}>
+            Open Match Center →
+          </a>
+        ) : null}
+      </div>
+
+      <div className="slp-preview-matchup">
+        <PreviewTeamPanel
+          team={preview.teamA}
+          side="a"
+        />
+
+        <div className="slp-preview-h2h">
+          <small>Head to head</small>
+
+          <strong>
+            {h2h.teamAWins}
+            <span> — </span>
+            {h2h.teamBWins}
+          </strong>
+
+          <p>
+            {h2h.matches} previous meeting{h2h.matches === 1 ? "" : "s"}
+            {h2h.ties ? ` · ${h2h.ties} tied` : ""}
+          </p>
+
+          <div className="slp-preview-h2h-names">
+            <span>{preview.teamAName}</span>
+            <span>{preview.teamBName}</span>
+          </div>
+        </div>
+
+        <PreviewTeamPanel
+          team={preview.teamB}
+          side="b"
+        />
+      </div>
+
+      <div className="slp-preview-context-grid">
+        <article>
+          <span>🕘</span>
+          <div>
+            <small>Last meeting</small>
+            <strong>
+              {h2h.lastMeeting?.result || "First recorded meeting"}
+            </strong>
+          </div>
+        </article>
+
+        <article>
+          <span>🏃</span>
+          <div>
+            <small>Chasing</small>
+            <strong>
+              {preview.teamA.dna?.chaseAttempts
+                ? `${preview.teamAName}: ${preview.teamA.dna.chaseWinPct.toFixed(0)}%`
+                : `${preview.teamAName}: no sample`}
+              {" · "}
+              {preview.teamB.dna?.chaseAttempts
+                ? `${preview.teamBName}: ${preview.teamB.dna.chaseWinPct.toFixed(0)}%`
+                : `${preview.teamBName}: no sample`}
+            </strong>
+          </div>
+        </article>
+
+        <article>
+          <span>🛡️</span>
+          <div>
+            <small>Defending</small>
+            <strong>
+              {preview.teamA.dna?.defendAttempts
+                ? `${preview.teamAName}: ${preview.teamA.dna.defendWinPct.toFixed(0)}%`
+                : `${preview.teamAName}: no sample`}
+              {" · "}
+              {preview.teamB.dna?.defendAttempts
+                ? `${preview.teamBName}: ${preview.teamB.dna.defendWinPct.toFixed(0)}%`
+                : `${preview.teamBName}: no sample`}
+            </strong>
+          </div>
+        </article>
+      </div>
+    </div>
   );
 }
 

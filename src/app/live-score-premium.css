@@ -3698,3 +3698,94 @@
     grid-template-columns: 1fr;
   }
 }
+
+
+/* =========================================================
+   SPECTATOR LIVE VIEW 2.0 — DESKTOP CARD PROPORTION FIX
+   The Broadcast Intelligence block lives inside the narrower
+   left score column. Four cards across made them tall and
+   skinny. Desktop now uses a balanced 2 × 2 composition.
+========================================================= */
+
+/* Laptop / desktop */
+@media (min-width: 901px) {
+  .live-score-final .live-broadcast-center {
+    padding: 12px !important;
+  }
+
+  .live-score-final .live-broadcast-heading {
+    margin-bottom: 9px !important;
+  }
+
+  .live-score-final .live-broadcast-grid {
+    grid-template-columns: repeat(2, minmax(0, 1fr)) !important;
+    gap: 8px !important;
+  }
+
+  .live-score-final .live-broadcast-card {
+    min-height: 88px !important;
+    padding: 10px 11px !important;
+    gap: 4px !important;
+    border-radius: 10px !important;
+  }
+
+  .live-score-final .live-broadcast-card small {
+    font-size: 8px !important;
+    line-height: 1.2 !important;
+  }
+
+  .live-score-final .live-broadcast-card strong {
+    margin-top: 1px !important;
+    font-size: 14px !important;
+    line-height: 1.18 !important;
+  }
+
+  .live-score-final .live-broadcast-card span {
+    font-size: 8.5px !important;
+    line-height: 1.3 !important;
+  }
+
+  .live-score-final .live-broadcast-card p {
+    margin-top: 1px !important;
+    font-size: 8.5px !important;
+    line-height: 1.35 !important;
+  }
+}
+
+/*
+ * Medium widths keep the same 2 × 2 arrangement. This avoids the
+ * awkward transition where four narrow cards appear before the
+ * tablet breakpoint.
+ */
+@media (min-width: 641px) and (max-width: 900px) {
+  .live-score-final .live-broadcast-grid {
+    grid-template-columns: repeat(2, minmax(0, 1fr)) !important;
+  }
+
+  .live-score-final .live-broadcast-card {
+    min-height: 86px !important;
+  }
+}
+
+/*
+ * Phones also remain 2 × 2 when there is enough room, but use
+ * smaller padding and typography so the block stays compact.
+ */
+@media (min-width: 361px) and (max-width: 640px) {
+  .live-score-final .live-broadcast-grid {
+    grid-template-columns: repeat(2, minmax(0, 1fr)) !important;
+    gap: 7px !important;
+  }
+
+  .live-score-final .live-broadcast-card {
+    min-height: 0 !important;
+    padding: 9px !important;
+  }
+}
+
+/* Very narrow phones safely fall back to one column. */
+@media (max-width: 360px) {
+  .live-score-final .live-broadcast-grid {
+    grid-template-columns: 1fr !important;
+  }
+}
