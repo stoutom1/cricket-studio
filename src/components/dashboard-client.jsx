@@ -597,6 +597,49 @@ export default function DashboardClient() {
   const [selectedTeamId, setSelectedTeamId] = useState("");
   const [expandedLeagueId, setExpandedLeagueId] = useState(null);
   const [activeLeagueId, setActiveLeagueId] = useState("");
+
+  /*
+   * Keep the globally rendered Resume Match control synchronized with the
+   * league currently selected on the Dashboard. The resume banner lives in
+   * AuthNav (RootLayout), so it cannot read this component's React state
+   * directly. Persisting + publishing the value gives it a safe, minimal
+   * cross-component signal without coupling the scoring UI to the header.
+   */
+  useEffect(() => {
+    if (typeof window === "undefined") {
+      return;
+    }
+
+    const numericLeagueId = Number(activeLeagueId);
+    const validLeagueId =
+      Number.isInteger(numericLeagueId) &&
+      numericLeagueId > 0
+        ? numericLeagueId
+        : null;
+
+    if (validLeagueId) {
+      window.localStorage.setItem(
+        "activeLeagueId",
+        String(validLeagueId)
+      );
+    } else {
+      window.localStorage.removeItem(
+        "activeLeagueId"
+      );
+    }
+
+    window.dispatchEvent(
+      new CustomEvent(
+        "cric4all:active-league-changed",
+        {
+          detail: {
+            leagueId: validLeagueId,
+          },
+        }
+      )
+    );
+  }, [activeLeagueId]);
+
   const [activeTab, setActiveTab] = useState("management");
   const [permissions, setPermissions] = useState(null);
   const [showControls, setShowControls] = useState(false);

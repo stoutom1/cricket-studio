@@ -24,6 +24,56 @@ function getOnlineState() {
   );
 }
 
+function getDashboardActiveLeagueId() {
+  if (
+    typeof window ===
+      "undefined"
+  ) {
+    return null;
+  }
+
+  try {
+    const current =
+      new URL(
+        window.location.href
+      );
+
+    const queryLeagueId =
+      Number(
+        current.searchParams.get(
+          "leagueId"
+        )
+      );
+
+    if (
+      Number.isInteger(
+        queryLeagueId
+      ) &&
+      queryLeagueId > 0
+    ) {
+      return queryLeagueId;
+    }
+
+    const storedLeagueId =
+      Number(
+        window.localStorage.getItem(
+          "activeLeagueId"
+        )
+      );
+
+    return (
+      Number.isInteger(
+        storedLeagueId
+      ) &&
+      storedLeagueId > 0
+    )
+      ? storedLeagueId
+      : null;
+  } catch {
+    return null;
+  }
+}
+
 function scoreSummary(
   session
 ) {
@@ -71,6 +121,14 @@ export default function OfflineScoringResumeBanner() {
       true
     );
 
+  const [
+    activeLeagueId,
+    setActiveLeagueId,
+  ] =
+    useState(
+      null
+    );
+
   const refresh =
     useCallback(
       () => {
@@ -107,6 +165,10 @@ export default function OfflineScoringResumeBanner() {
         setOnline(
           getOnlineState()
         );
+
+        setActiveLeagueId(
+          getDashboardActiveLeagueId()
+        );
       },
       []
     );
@@ -128,13 +190,18 @@ export default function OfflineScoringResumeBanner() {
           if (
             !event.key ||
             event.key ===
-              "cric4all.offlineScoringSession.v1"
+              "cric4all.offlineScoringSession.v1" ||
+            event.key ===
+              "activeLeagueId"
           ) {
             refresh();
           }
         };
 
       const handleSession =
+        () => refresh();
+
+      const handleActiveLeague =
         () => refresh();
 
       window.addEventListener(
@@ -155,6 +222,11 @@ export default function OfflineScoringResumeBanner() {
       window.addEventListener(
         "cric4all:offline-scoring-session",
         handleSession
+      );
+
+      window.addEventListener(
+        "cric4all:active-league-changed",
+        handleActiveLeague
       );
 
       if (
@@ -265,6 +337,11 @@ export default function OfflineScoringResumeBanner() {
           "cric4all:offline-scoring-session",
           handleSession
         );
+
+        window.removeEventListener(
+          "cric4all:active-league-changed",
+          handleActiveLeague
+        );
       };
     },
     [
@@ -286,6 +363,33 @@ export default function OfflineScoringResumeBanner() {
     );
 
   if (!session) {
+    return null;
+  }
+
+  /*
+   * League-aware Resume Match visibility:
+   *
+   * The Dashboard is intentionally league-scoped. A resumable match from
+   * another league must not look like it belongs to the league currently
+   * selected in League Management. Outside /dashboard, keep the existing
+   * global recovery behavior unchanged.
+   */
+  if (
+    typeof window !==
+      "undefined" &&
+    window.location.pathname ===
+      "/dashboard" &&
+    Number.isInteger(
+      Number(activeLeagueId)
+    ) &&
+    Number(activeLeagueId) > 0 &&
+    Number.isInteger(
+      Number(session.leagueId)
+    ) &&
+    Number(session.leagueId) > 0 &&
+    Number(activeLeagueId) !==
+      Number(session.leagueId)
+  ) {
     return null;
   }
 
