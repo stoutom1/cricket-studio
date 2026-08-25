@@ -24973,25 +24973,32 @@ const playerRoleBadge = (row) => {
           </span>
 
           <div>
-            <strong>
-              Player Inactivity Alerts
+            <strong className="league-tool-single-line-title">
+              Player Activity
             </strong>
 
-            <small>
-              60-day SMS review notice
+            <small className="league-tool-single-line-subtitle">
+              60-day SMS review
             </small>
           </div>
         </div>
 
-        <span className="league-tool-action">
-          {showPlayerInactivitySettings
-            ? "Close"
-            : "Open"}
+        <span
+          className="league-tool-action league-tool-disclosure-action"
+          aria-hidden="true"
+          title={
+            showPlayerInactivitySettings
+              ? "Close Player Inactivity Alerts"
+              : "Open Player Inactivity Alerts"
+          }
+        >
+          <span className="league-tool-disclosure-label">
+            {showPlayerInactivitySettings
+              ? "−"
+              : "+"}
+          </span>
 
-          <span
-            className="league-tool-chevron"
-            aria-hidden="true"
-          >
+          <span className="league-tool-chevron">
             {showPlayerInactivitySettings
               ? "⌃"
               : "⌄"}
@@ -25019,27 +25026,28 @@ const playerRoleBadge = (row) => {
           </span>
 
           <div>
-            <strong>
+            <strong className="league-tool-single-line-title">
               Birthdays
             </strong>
-
-            <small>
-              {canManageBirthdayTools
-                ? "Dates & reminders"
-                : "Events & celebrations"}
-            </small>
           </div>
         </div>
 
-        <span className="league-tool-action">
-          {showBirthdayLeagueToolSettings
-            ? "Close"
-            : "Open"}
+        <span
+          className="league-tool-action league-tool-disclosure-action"
+          aria-hidden="true"
+          title={
+            showBirthdayLeagueToolSettings
+              ? "Close Birthday tools"
+              : "Open Birthday tools"
+          }
+        >
+          <span className="league-tool-disclosure-label">
+            {showBirthdayLeagueToolSettings
+              ? "−"
+              : "+"}
+          </span>
 
-          <span
-            className="league-tool-chevron"
-            aria-hidden="true"
-          >
+          <span className="league-tool-chevron">
             {showBirthdayLeagueToolSettings
               ? "⌃"
               : "⌄"}
@@ -25084,12 +25092,18 @@ const playerRoleBadge = (row) => {
           🏏
         </span>
 
-        <strong>
+        <strong className="league-tool-single-line-title league-tool-overlay-title">
           Kit Tracking
         </strong>
 
-        <span className="dashboard-tool-card-overlay-action">
-          Open
+        <span className="dashboard-tool-card-overlay-action league-tool-disclosure-action">
+          <span className="league-tool-disclosure-label">
+            +
+          </span>
+
+          <span className="league-tool-chevron">
+            ⌄
+          </span>
         </span>
       </div>
     </div>
@@ -25112,12 +25126,18 @@ const playerRoleBadge = (row) => {
         📚
       </span>
 
-      <strong>
+      <strong className="league-tool-single-line-title league-tool-overlay-title resources-visible-label">
         Resources
       </strong>
 
-      <span className="dashboard-tool-card-overlay-action">
-        Open
+      <span className="dashboard-tool-card-overlay-action league-tool-disclosure-action">
+        <span className="league-tool-disclosure-label">
+          +
+        </span>
+
+        <span className="league-tool-chevron">
+          ⌄
+        </span>
       </span>
     </div>
   </div>
@@ -25543,7 +25563,7 @@ const playerRoleBadge = (row) => {
           <span>
             <strong>League tools</strong>
             <small>
-              Resources · birthdays · kit · discovery
+              Inactivity · resources · birthdays · kit · discovery
             </small>
           </span>
         </span>
@@ -25607,6 +25627,7 @@ const playerRoleBadge = (row) => {
         </div>
 
         {(
+          canManagePlayerInactivityAlerts ||
           canViewBirthdayTools ||
           canViewLeagueKitShortcut
         ) && (
@@ -25615,6 +25636,68 @@ const playerRoleBadge = (row) => {
               mobileKitStyles.mobileLeagueTools
             }
           >
+            {canManagePlayerInactivityAlerts &&
+              activeLeagueId && (
+                <details
+                  className={`${mobileKitStyles.mobileBirthdaySection} mobile-player-inactivity-section`}
+                >
+                  <summary>
+                    <span
+                      className={
+                        mobileKitStyles.mobileToolSummaryMain
+                      }
+                    >
+                      <span
+                        className={
+                          mobileKitStyles.mobileToolIcon
+                        }
+                        aria-hidden="true"
+                      >
+                        📵
+                      </span>
+
+                      <span
+                        className={
+                          mobileKitStyles.mobileToolCopy
+                        }
+                      >
+                        <strong>
+                          Player Inactivity Alerts
+                        </strong>
+
+                        <small>
+                          60-day SMS review notice
+                        </small>
+                      </span>
+                    </span>
+
+                    <span
+                      className={`${mobileKitStyles.mobileToolToggle} mobile-tool-chevron-only`}
+                      aria-hidden="true"
+                    >
+                      <b>⌄</b>
+                    </span>
+                  </summary>
+
+                  <div
+                    className={
+                      mobileKitStyles.mobileBirthdayContent
+                    }
+                  >
+                    <PlayerInactivityAlertSettings
+                      leagueId={
+                        activeLeagueId
+                      }
+                      leagueName={
+                        activeLeague?.name ||
+                        selectedLeague?.name ||
+                        "Active league"
+                      }
+                    />
+                  </div>
+                </details>
+              )}
+
             {canViewBirthdayTools && (
               <details
                 className={
