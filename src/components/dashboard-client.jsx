@@ -1770,26 +1770,120 @@ useEffect(() => {
       const res = await fetch("/api/me");
       const meData = await res.json();
 
-      const preferredLeagueId =
+      /*
+       * Never trust a saved/requested league id by itself. A user may have
+       * been unregistered from that league since their preference was saved,
+       * or a different account may be using the same browser.
+       *
+       * /api/leagues is the authoritative list of leagues this CURRENT user
+       * can access. Only choose an id that still exists in that response.
+       */
+      const accessibleLeagues =
+        Array.isArray(
+          loadedLeagues
+        )
+          ? loadedLeagues
+          : [];
+
+      const requestedCandidate =
         Number.isInteger(
           requestedLeagueId
         ) &&
         requestedLeagueId > 0
-          ? requestedLeagueId
-          : meData?.activeLeagueId
-            ? Number(
-                meData.activeLeagueId
+          ? Number(
+              requestedLeagueId
+            )
+          : null;
+
+      const savedCandidate =
+        Number(
+          meData?.activeLeagueId
+        );
+
+      const hasAccessibleLeague =
+        (leagueId) =>
+          Number.isInteger(
+            Number(
+              leagueId
+            )
+          ) &&
+          Number(
+            leagueId
+          ) > 0 &&
+          accessibleLeagues.some(
+            (league) =>
+              Number(
+                league.id
+              ) ===
+              Number(
+                leagueId
               )
-            : loadedLeagues?.[0]?.id
+          );
+
+      const preferredLeagueId =
+        hasAccessibleLeague(
+          requestedCandidate
+        )
+          ? requestedCandidate
+          : hasAccessibleLeague(
+                savedCandidate
+              )
+            ? savedCandidate
+            : accessibleLeagues?.[0]
+                ?.id
               ? Number(
-                  loadedLeagues[0].id
+                  accessibleLeagues[0].id
                 )
               : null;
 
       if (preferredLeagueId) {
-        setActiveLeagueId(preferredLeagueId);
-        await loadMyLeaguePermissions(preferredLeagueId);
-        await loadMatches(preferredLeagueId);
+        setActiveLeagueId(
+          preferredLeagueId
+        );
+
+        await loadMyLeaguePermissions(
+          preferredLeagueId
+        );
+
+        await loadMatches(
+          preferredLeagueId
+        );
+      } else {
+        /*
+         * No current league membership/access. Clear every league-scoped
+         * selection so stale preferences cannot trigger /stats,
+         * /permissions/me or /matches calls for a league the user no longer
+         * belongs to.
+         */
+        setActiveLeagueId(
+          null
+        );
+        setSelectedTeamId(
+          ""
+        );
+        setSelectedPlayerTeamId(
+          ""
+        );
+        setSelectedMatchId(
+          ""
+        );
+        setMatches(
+          []
+        );
+        setMatchDetail(
+          null
+        );
+        setScoreboard(
+          null
+        );
+        setLeagueStats(
+          null
+        );
+        setPermissions(
+          null
+        );
+        permissionsLeagueIdRef.current =
+          null;
       }
 
       if (

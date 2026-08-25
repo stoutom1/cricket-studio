@@ -166,6 +166,24 @@ export default function OfflineScoringResumeBanner() {
           getOnlineState()
         );
 
+        /*
+         * On Dashboard, do NOT trust localStorage/query-string league state.
+         * DashboardClient validates the selected league against /api/leagues
+         * and publishes the authoritative result with
+         * cric4all:active-league-changed.
+         *
+         * This prevents an old account's saved league from briefly exposing
+         * Resume Match to a user who no longer belongs to that league.
+         */
+        if (
+          typeof window !==
+            "undefined" &&
+          window.location.pathname ===
+            "/dashboard"
+        ) {
+          return;
+        }
+
         setActiveLeagueId(
           getDashboardActiveLeagueId()
         );
@@ -202,7 +220,22 @@ export default function OfflineScoringResumeBanner() {
         () => refresh();
 
       const handleActiveLeague =
-        () => refresh();
+        (event) => {
+          const nextLeagueId =
+            Number(
+              event?.detail
+                ?.leagueId
+            );
+
+          setActiveLeagueId(
+            Number.isInteger(
+              nextLeagueId
+            ) &&
+            nextLeagueId > 0
+              ? nextLeagueId
+              : null
+          );
+        };
 
       window.addEventListener(
         "online",
@@ -369,28 +402,50 @@ export default function OfflineScoringResumeBanner() {
   /*
    * League-aware Resume Match visibility:
    *
-   * The Dashboard is intentionally league-scoped. A resumable match from
-   * another league must not look like it belongs to the league currently
-   * selected in League Management. Outside /dashboard, keep the existing
-   * global recovery behavior unchanged.
+   * The Dashboard is intentionally league-scoped. Resume Match is shown
+   * only when BOTH sides have a valid league id and they are the same.
+   *
+   * This intentionally hides a stale browser-saved resume session when:
+   * - the signed-in user is not a member of any league,
+   * - the Dashboard has no active league yet,
+   * - the saved session has no league id, or
+   * - the saved match belongs to another league.
+   *
+   * Outside /dashboard, keep the existing global offline-recovery behavior
+   * unchanged.
    */
   if (
     typeof window !==
       "undefined" &&
     window.location.pathname ===
-      "/dashboard" &&
-    Number.isInteger(
-      Number(activeLeagueId)
-    ) &&
-    Number(activeLeagueId) > 0 &&
-    Number.isInteger(
-      Number(session.leagueId)
-    ) &&
-    Number(session.leagueId) > 0 &&
-    Number(activeLeagueId) !==
-      Number(session.leagueId)
+      "/dashboard"
   ) {
-    return null;
+    const dashboardLeagueId =
+      Number(activeLeagueId);
+
+    const savedLeagueId =
+      Number(session.leagueId);
+
+    const hasDashboardLeague =
+      Number.isInteger(
+        dashboardLeagueId
+      ) &&
+      dashboardLeagueId > 0;
+
+    const hasSavedLeague =
+      Number.isInteger(
+        savedLeagueId
+      ) &&
+      savedLeagueId > 0;
+
+    if (
+      !hasDashboardLeague ||
+      !hasSavedLeague ||
+      dashboardLeagueId !==
+        savedLeagueId
+    ) {
+      return null;
+    }
   }
 
   /*
