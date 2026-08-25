@@ -17018,6 +17018,30 @@ const canUnregisterLeagueMembers = Boolean(
   activeLeagueRole === "OWNER"
 );
 
+/*
+ * Keep the Leagues tab and League Management content in sync.
+ * Some older/custom LeagueMember records can legitimately have individual
+ * management capabilities even when canViewManagement is absent/false.
+ * In that situation hiding the tab while rendering the management panel is
+ * confusing and makes the active tab look missing.
+ */
+const canShowManagementTab = Boolean(
+  isSuperAdmin ||
+  permissions?.canViewManagement === true ||
+  permissions?.canCreateLeague === true ||
+  permissions?.canEditLeague === true ||
+  permissions?.canDeleteLeague === true ||
+  permissions?.canManageMembers === true ||
+  permissions?.canManagePermissions === true ||
+  permissions?.canCreateTeam === true ||
+  permissions?.canEditTeam === true ||
+  permissions?.canDeleteTeam === true ||
+  permissions?.canCreatePlayer === true ||
+  permissions?.canEditPlayer === true ||
+  permissions?.canDeletePlayer === true ||
+  ["OWNER", "ADMIN", "CAPTAIN"].includes(activeLeagueRole)
+);
+
 function openInviteRoleComposer() {
   if (!activeLeague || !allowedInviteRolesForCurrentUser.length) {
     setError("Your current league role cannot create member invitation links.");
@@ -17561,7 +17585,7 @@ return (
   </div>
 ) : (
   <>
-      {permissions?.canViewManagement && (
+      {canShowManagementTab && (
         <button
           className={`dashboard-tab ${
             activeTab === "management"
@@ -24803,7 +24827,7 @@ const playerRoleBadge = (row) => {
 </Card>
   </div> 
 )}
-{activeTab === "management" && (
+{activeTab === "management" && canShowManagementTab && (
   <div className="management-page">
     <Card title="🏏 League Management">
       <div className="mgmt-clean-shell">
