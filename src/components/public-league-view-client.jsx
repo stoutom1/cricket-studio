@@ -15,6 +15,9 @@ import {
 import {
   buildLeagueMilestones,
 } from "@/lib/league-milestones";
+import {
+  buildTeamDNA,
+} from "@/lib/team-dna";
 
 function normalizeStatus(status) {
   return String(status || "SCHEDULED").toUpperCase();
@@ -430,6 +433,7 @@ export default function PublicLeagueViewClient({ league, numericLeagueId }) {
   const [publicLeadersTab, setPublicLeadersTab] = useState("batting");
   const [publicRecordsTab, setPublicRecordsTab] = useState("all");
   const [publicMilestonesTab, setPublicMilestonesTab] = useState("recent");
+  const [publicDnaTeamId, setPublicDnaTeamId] = useState("all");
   const [leagueStats, setLeagueStats] = useState(null);
   const [leagueStatsLoading, setLeagueStatsLoading] = useState(false);
   const [leagueStatsError, setLeagueStatsError] = useState("");
@@ -647,6 +651,26 @@ async function toggleFollowLeague() {
         league
       ),
     [statsEligibleMatches, league]
+  );
+
+  const teamDNA = useMemo(
+    () =>
+      buildTeamDNA({
+        matches: statsEligibleMatches,
+        teams: league.teams || [],
+      }),
+    [statsEligibleMatches, league.teams]
+  );
+
+  const visibleTeamDNA = useMemo(
+    () =>
+      publicDnaTeamId === "all"
+        ? teamDNA.teams
+        : teamDNA.teams.filter(
+            (team) =>
+              Number(team.teamId) === Number(publicDnaTeamId)
+          ),
+    [teamDNA.teams, publicDnaTeamId]
   );
 
   const {
@@ -1079,6 +1103,7 @@ return (
             ["leaders", "Leaders"],
             ["records", "Records"],
             ["milestones", "Milestones"],
+            ["dna", "Team DNA"],
             ["teams", "Teams"],
           ].map(([key, label]) => (
             <button
@@ -1670,6 +1695,121 @@ return (
             </section>
           )}
 
+          {activeTab === "dna" && (
+            <section className="slp-section">
+              <SectionHeader
+                eyebrow="Team intelligence"
+                title="Team DNA"
+                description={`${teamDNA.activeTeamCount} active teams · ${teamDNA.completedMatches} completed match${teamDNA.completedMatches === 1 ? "" : "es"} in this view`}
+              />
+
+              <div className="slp-dna-toolbar">
+                <label>
+                  <span>Team</span>
+                  <select
+                    value={publicDnaTeamId}
+                    onChange={(event) =>
+                      setPublicDnaTeamId(event.target.value)
+                    }
+                  >
+                    <option value="all">All teams</option>
+                    {teamDNA.teams.map((team) => (
+                      <option
+                        key={team.teamId}
+                        value={team.teamId}
+                      >
+                        {team.teamName}
+                      </option>
+                    ))}
+                  </select>
+                </label>
+
+                <span className="slp-dna-scope">
+                  {selectedSeriesId
+                    ? "Series DNA"
+                    : selectedYear
+                      ? `Season ${selectedYear}`
+                      : "All-time team profile"}
+                </span>
+              </div>
+
+              {visibleTeamDNA.length ? (
+                <div className="slp-dna-grid">
+                  {visibleTeamDNA.map((team, index) => (
+                    <TeamDnaCard
+                      key={team.teamId}
+                      team={team}
+                      featured={
+                        publicDnaTeamId !== "all" || index === 0
+                      }
+                    />
+                  ))}
+                </div>
+              ) : (
+                <EmptyState
+                  title="No Team DNA yet"
+                  message="Team DNA appears after completed scored matches provide enough batting, bowling and match-result evidence."
+                />
+              )}
+
+              <div className="slp-dna-league-baseline">
+                <div>
+                  <span>📊</span>
+                  <p>
+                    <small>League batting tempo</small>
+                    <strong>
+                      {teamDNA.leagueAverages.battingRunRate.toFixed(2)}
+                    </strong>
+                    <em>runs/over</em>
+                  </p>
+                </div>
+
+                <div>
+                  <span>🎯</span>
+                  <p>
+                    <small>League bowling economy</small>
+                    <strong>
+                      {teamDNA.leagueAverages.bowlingEconomy.toFixed(2)}
+                    </strong>
+                    <em>runs/over</em>
+                  </p>
+                </div>
+
+                <div>
+                  <span>⚪</span>
+                  <p>
+                    <small>League dot-ball rate</small>
+                    <strong>
+                      {teamDNA.leagueAverages.dotBallPct.toFixed(0)}%
+                    </strong>
+                    <em>legal balls</em>
+                  </p>
+                </div>
+
+                <div>
+                  <span>🚀</span>
+                  <p>
+                    <small>League boundary reliance</small>
+                    <strong>
+                      {teamDNA.leagueAverages.boundaryRunPct.toFixed(0)}%
+                    </strong>
+                    <em>runs from 4s/6s</em>
+                  </p>
+                </div>
+              </div>
+
+              <div className="slp-dna-note">
+                <span aria-hidden="true">🧬</span>
+                <p>
+                  <strong>Evidence-based profile</strong>
+                  DNA labels compare each team with league averages from the
+                  same Season/Series filter. They are descriptive cricket
+                  signals, not predictions or manually assigned ratings.
+                </p>
+              </div>
+            </section>
+          )}
+
           {activeTab === "teams" && (
             <section className="slp-section">
               <SectionHeader
@@ -1707,6 +1847,170 @@ return (
         </div>
       </section>
     </main>
+  );
+}
+
+function TeamDnaCard({
+  team,
+  featured = false,
+}) {
+  return (
+    <article
+      className={`slp-dna-card ${
+        featured ? "is-featured" : ""
+      }`}
+    >
+      <div className="slp-dna-card-head">
+        <span className="slp-dna-team-avatar">
+          {getInitials(team.teamName)}
+        </span>
+
+        <div>
+          <small>Team profile</small>
+          <strong>{team.teamName}</strong>
+          <span>
+            {team.matches} match{team.matches === 1 ? "" : "es"} ·{" "}
+            {team.wins}W {team.losses}L {team.ties}T
+          </span>
+        </div>
+
+        <div className="slp-dna-win-rate">
+          <strong>{team.winPct.toFixed(0)}%</strong>
+          <span>win rate</span>
+        </div>
+      </div>
+
+      <div className="slp-dna-form">
+        <small>Recent form</small>
+        <div>
+          {team.recent.length ? (
+            team.recent.map((result, index) => (
+              <span
+                className={`is-${String(result).toLowerCase()}`}
+                key={`${team.teamId}-${result}-${index}`}
+              >
+                {result}
+              </span>
+            ))
+          ) : (
+            <em>No completed form yet</em>
+          )}
+        </div>
+      </div>
+
+      <div className="slp-dna-metrics">
+        <div>
+          <span>⚡</span>
+          <small>Batting RR</small>
+          <strong>{team.battingRunRate.toFixed(2)}</strong>
+        </div>
+
+        <div>
+          <span>📈</span>
+          <small>Avg score</small>
+          <strong>{team.avgScore.toFixed(1)}</strong>
+        </div>
+
+        <div>
+          <span>🚀</span>
+          <small>Boundary runs</small>
+          <strong>{team.boundaryRunPct.toFixed(0)}%</strong>
+        </div>
+
+        <div>
+          <span>🔒</span>
+          <small>Bowling econ</small>
+          <strong>{team.bowlingEconomy.toFixed(2)}</strong>
+        </div>
+
+        <div>
+          <span>⚪</span>
+          <small>Dot balls</small>
+          <strong>{team.dotBallPct.toFixed(0)}%</strong>
+        </div>
+
+        <div>
+          <span>🎯</span>
+          <small>Wkts/innings</small>
+          <strong>{team.wicketsPerBowlingInnings.toFixed(1)}</strong>
+        </div>
+      </div>
+
+      <div className="slp-dna-situations">
+        <div>
+          <small>🏃 Chasing</small>
+          <strong>
+            {team.chaseAttempts
+              ? `${team.chaseWins}/${team.chaseAttempts}`
+              : "No data"}
+          </strong>
+          <span>
+            {team.chaseAttempts
+              ? `${team.chaseWinPct.toFixed(0)}% win rate`
+              : "Awaiting chase sample"}
+          </span>
+        </div>
+
+        <div>
+          <small>🛡️ Defending</small>
+          <strong>
+            {team.defendAttempts
+              ? `${team.defendWins}/${team.defendAttempts}`
+              : "No data"}
+          </strong>
+          <span>
+            {team.defendAttempts
+              ? `${team.defendWinPct.toFixed(0)}% win rate`
+              : "Awaiting defend sample"}
+          </span>
+        </div>
+      </div>
+
+      <div className="slp-dna-traits">
+        <div>
+          <small>Team identity</small>
+          <div>
+            {team.strengths.map((trait) => (
+              <span
+                className={`is-${trait.tone}`}
+                key={`${team.teamId}-${trait.label}`}
+                title={trait.detail}
+              >
+                {trait.icon} {trait.label}
+              </span>
+            ))}
+          </div>
+        </div>
+
+        {team.watch.length ? (
+          <div className="slp-dna-watch">
+            <small>Watch area</small>
+            <div>
+              {team.watch.map((trait) => (
+                <span
+                  key={`${team.teamId}-${trait.label}`}
+                  title={trait.detail}
+                >
+                  {trait.icon} {trait.label}
+                </span>
+              ))}
+            </div>
+          </div>
+        ) : null}
+      </div>
+
+      <details className="slp-dna-evidence">
+        <summary>Why Cric4All describes the team this way</summary>
+        <div>
+          {[...team.strengths, ...team.watch].map((trait) => (
+            <p key={`${team.teamId}-evidence-${trait.label}`}>
+              <strong>{trait.icon} {trait.label}</strong>
+              <span>{trait.detail}</span>
+            </p>
+          ))}
+        </div>
+      </details>
+    </article>
   );
 }
 
