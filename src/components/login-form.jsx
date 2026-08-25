@@ -7,6 +7,30 @@ import { signIn } from "next-auth/react";
 import { Eye, EyeOff } from "lucide-react";
 import { QRCodeCanvas } from "qrcode.react";
 
+
+function extractInviteToken(callbackUrl) {
+  try {
+    if (!callbackUrl) {
+      return "";
+    }
+
+    const url = new URL(
+      callbackUrl,
+      "https://cric4all.app"
+    );
+
+    const match = url.pathname.match(
+      /^\/invite\/([^/]+)(?:\/join)?\/?$/
+    );
+
+    return match?.[1]
+      ? decodeURIComponent(match[1])
+      : "";
+  } catch {
+    return "";
+  }
+}
+
 export default function LoginForm({ callbackUrl = "/dashboard" }) {
   const router = useRouter();
 
@@ -15,12 +39,7 @@ export default function LoginForm({ callbackUrl = "/dashboard" }) {
   const [error, setError] = useState("");
   const [loading, setLoading] = useState(false);
   const [showPassword, setShowPassword] = useState(false);
-
- async function handleSubmit(e) {
-  e.preventDefault();
-
-  setError("");
-  setLoading(true);
+  const [verificationRequired, setVerificationRequired] = useState(false);
 
   const safeCallbackUrl =
     callbackUrl &&
@@ -30,15 +49,44 @@ export default function LoginForm({ callbackUrl = "/dashboard" }) {
       ? callbackUrl
       : "/dashboard";
 
+ async function handleSubmit(e) {
+  e.preventDefault();
+
+  setError("");
+  setVerificationRequired(false);
+  setLoading(true);
+
+  const inviteToken =
+    extractInviteToken(
+      safeCallbackUrl
+    );
+
   try {
 const result = await signIn("credentials", {
-  email,
+  email:
+    email.trim().toLowerCase(),
   password,
+  inviteToken:
+    inviteToken || undefined,
   redirect: false,
   callbackUrl: safeCallbackUrl,
 });
 
 if (!result?.ok) {
+  const verificationError =
+    String(result?.error || "")
+      .includes(
+        "EMAIL_NOT_VERIFIED"
+      );
+
+  if (verificationError) {
+    setVerificationRequired(true);
+    setError(
+      "Your password is correct, but this Cric4All account still needs email verification."
+    );
+    return;
+  }
+
   setError("Invalid email or password");
   return;
 }
@@ -157,6 +205,23 @@ window.location.href = result.url || safeCallbackUrl;
               </div>
 
               {error && <div className="error">{error}</div>}
+
+              {verificationRequired && (
+                <Link
+                  href={`/verify-email?status=pending&email=${encodeURIComponent(
+                    email.trim().toLowerCase()
+                  )}&callbackUrl=${encodeURIComponent(
+                    safeCallbackUrl
+                  )}&emailSent=1`}
+                  style={{
+                    display: "inline-block",
+                    marginTop: 8,
+                    fontWeight: 800,
+                  }}
+                >
+                  Verify email / resend verification →
+                </Link>
+              )}
 
               <button type="submit" className="login-submit-btn" disabled={loading}>
                 {loading ? "Signing in..." : "Sign In"}

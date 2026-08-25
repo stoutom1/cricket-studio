@@ -724,6 +724,7 @@ const [leagueImportErrors, setLeagueImportErrors] = useState([]);
 const [leagueImportSaving, setLeagueImportSaving] = useState(false);
 const [leagueImportResult, setLeagueImportResult] = useState(null);
 const [memberSearch, setMemberSearch] = useState("");
+const [unregisteringMemberId, setUnregisteringMemberId] = useState(null);
 const [matchesSubTab, setMatchesSubTab] = useState("ACTIVE");
 
 /*
@@ -4418,6 +4419,105 @@ async function savePermissions(member) {
     setError(error.message);
   }
 }
+async function handleUnregisterLeagueMember(
+  member
+) {
+  if (
+    !activeLeague?.id ||
+    !member?.userId ||
+    unregisteringMemberId
+  ) {
+    return;
+  }
+
+  if (
+    !canUnregisterLeagueMembers
+  ) {
+    setError(
+      "Only the Cric4All Super Admin or a league Owner can unregister league members."
+    );
+    return;
+  }
+
+  const memberName =
+    member.user?.name ||
+    member.user?.email ||
+    "this user";
+
+  const confirmation =
+    window.confirm(
+      `Unregister ${memberName} from ${activeLeague.name}?\n\nThis removes only this league membership. The user's Cric4All account, completed-match history, scores, statistics, and memberships in other leagues will be preserved.`
+    );
+
+  if (!confirmation) {
+    return;
+  }
+
+  setError("");
+  setMessage("");
+  setUnregisteringMemberId(
+    member.id
+  );
+
+  try {
+    const result =
+      await api(
+        `/api/leagues/${activeLeague.id}/members?userId=${encodeURIComponent(member.userId)}`,
+        {
+          method:
+            "DELETE",
+        }
+      );
+
+    setLeagues((previous) =>
+      previous.map((league) =>
+        Number(league.id) ===
+        Number(activeLeague.id)
+          ? {
+              ...league,
+              members:
+                (league.members || []).filter(
+                  (existingMember) =>
+                    Number(existingMember.id) !==
+                    Number(member.id)
+                ),
+            }
+          : league
+      )
+    );
+
+    setSelectedMember(
+      null
+    );
+    setMemberPermissions(
+      null
+    );
+    setShowPermissionModal(
+      false
+    );
+
+    setMessage(
+      `✅ ${result?.message || `${memberName} was unregistered from ${activeLeague.name}.`}`
+    );
+
+    showToast(
+      "success",
+      `✅ ${memberName} unregistered from league`
+    );
+  } catch (
+    error
+  ) {
+    setError(
+      error?.message ||
+      "Unable to unregister league member."
+    );
+  } finally {
+    setUnregisteringMemberId(
+      null
+    );
+  }
+}
+
 const PERMISSION_FIELDS = [
   "canViewDashboard",
   "canViewManagement",
@@ -16913,6 +17013,11 @@ const allowedInviteRolesForCurrentUser = getAllowedInviteRoles({
   isSuperAdmin,
 });
 
+const canUnregisterLeagueMembers = Boolean(
+  isSuperAdmin ||
+  activeLeagueRole === "OWNER"
+);
+
 function openInviteRoleComposer() {
   if (!activeLeague || !allowedInviteRolesForCurrentUser.length) {
     setError("Your current league role cannot create member invitation links.");
@@ -28042,15 +28147,55 @@ onClick={() => {
               </option>
             </select>
 
-            <button
-              className="btn"
-              onClick={() =>
-                        //openPermissionEditor(selectedMember)
-                        loadPermissions(selectedMember)
-                      }
-            >
-              🔐 Edit Permissions
-            </button>
+            <div className="member-management-actions">
+              <button
+                className="btn"
+                onClick={() =>
+                  loadPermissions(
+                    selectedMember
+                  )
+                }
+              >
+                🔐 Edit Permissions
+              </button>
+
+              {canUnregisterLeagueMembers &&
+                String(
+                  selectedMember.userId ||
+                    ""
+                ) !==
+                  String(
+                    activeLeague.ownerId ||
+                      ""
+                  ) && (
+                  <button
+                    type="button"
+                    className="member-unregister-btn"
+                    disabled={
+                      Number(
+                        unregisteringMemberId
+                      ) ===
+                      Number(
+                        selectedMember.id
+                      )
+                    }
+                    onClick={() =>
+                      handleUnregisterLeagueMember(
+                        selectedMember
+                      )
+                    }
+                  >
+                    {Number(
+                      unregisteringMemberId
+                    ) ===
+                    Number(
+                      selectedMember.id
+                    )
+                      ? "Unregistering…"
+                      : "🚪 Unregister from League"}
+                  </button>
+                )}
+            </div>
           </div>
         </>
       )}

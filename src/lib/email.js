@@ -16,7 +16,7 @@ export async function sendWelcomeEmail(
       to: email,
 
       subject:
-        "Welcome to Cricket Studio 🏏",
+        "Welcome to Cric4All 🏏",
 
 html: `
 <div style="font-family:Arial,sans-serif;background:#f4f7fb;padding:40px 20px;">
@@ -122,7 +122,7 @@ export async function sendResetPasswordEmail(
       to: email,
 
       subject:
-        "Reset your Cricket Studio password",
+        "Reset your Cric4All password",
 
 html: `
 <div style="font-family:Arial,sans-serif;background:#f4f7fb;padding:40px 20px;">
@@ -203,4 +203,79 @@ html: `
     });
 
 
+}
+export async function sendEmailVerificationEmail(
+  email,
+  name,
+  verificationLink,
+  {
+    leagueName = null,
+    roleLabel = null,
+  } = {}
+) {
+  const safeName = String(name || "there")
+    .replace(/</g, "&lt;")
+    .replace(/>/g, "&gt;");
+
+  const inviteContext =
+    leagueName
+      ? `
+        <div style="margin:20px 0;padding:14px 16px;background:#eff6ff;border:1px solid #bfdbfe;border-radius:10px;color:#1e3a8a;">
+          <strong>League invitation preserved</strong><br/>
+          ${String(leagueName).replace(/</g, "&lt;").replace(/>/g, "&gt;")}${
+            roleLabel
+              ? ` · ${String(roleLabel).replace(/</g, "&lt;").replace(/>/g, "&gt;")}`
+              : ""
+          }
+          <br/><span style="font-size:13px;">Your invitation will be applied automatically after your email is verified, as long as the invitation is still valid.</span>
+        </div>
+      `
+      : "";
+
+  return resend.emails.send({
+    from: process.env.EMAIL_FROM,
+    to: email,
+    subject: "Verify your Cric4All email address 🏏",
+    html: `
+      <div style="font-family:Arial,sans-serif;background:#f4f7fb;padding:40px 20px;">
+        <div style="max-width:600px;margin:auto;background:#ffffff;border-radius:16px;overflow:hidden;border:1px solid #e5e7eb;">
+          <div style="background:#0f172a;padding:30px;text-align:center;">
+            <h1 style="margin:0;color:#ffffff;">🏏 Cric4All</h1>
+            <p style="color:#cbd5e1;margin:10px 0 0;">Verify your account to continue</p>
+          </div>
+
+          <div style="padding:36px;">
+            <h2 style="margin-top:0;color:#111827;">Hi ${safeName},</h2>
+
+            <p style="color:#374151;font-size:16px;line-height:1.6;">
+              Please verify that you own this email address to finish creating your Cric4All account.
+            </p>
+
+            ${inviteContext}
+
+            <div style="text-align:center;margin:34px 0;">
+              <a
+                href="${verificationLink}"
+                style="display:inline-block;background:#16a34a;color:white;padding:14px 26px;text-decoration:none;border-radius:9px;font-weight:bold;"
+              >
+                Verify my Cric4All account
+              </a>
+            </div>
+
+            <div style="background:#f8fafc;border-left:4px solid #0ea5e9;padding:15px;border-radius:8px;color:#334155;line-height:1.5;">
+              This verification link expires in 24 hours. If you did not create a Cric4All account, you can safely ignore this email.
+            </div>
+
+            <p style="margin-top:28px;color:#64748b;font-size:13px;line-height:1.6;">
+              For your security, Cric4All never asks you to send your password by email.
+            </p>
+          </div>
+
+          <div style="background:#f8fafc;padding:18px;text-align:center;color:#6b7280;font-size:13px;">
+            © 2026 Cric4All · cric4all.app
+          </div>
+        </div>
+      </div>
+    `,
+  });
 }

@@ -1,15 +1,20 @@
 "use client";
 
 import { useEffect, useState } from "react";
+import { useSession } from "next-auth/react";
 
 export default function LeaguePermissions({
   leagueId
 }) {
+  const { data: session } =
+    useSession();
   const [members, setMembers] = useState([]);
   const [loading, setLoading] =
     useState(true);
   const [saving, setSaving] =
     useState(false);
+  const [unregisteringUserId, setUnregisteringUserId] =
+    useState(null);
 
   async function loadMembers() {
     try {
@@ -133,6 +138,118 @@ export default function LeaguePermissions({
     );
   }
 
+  const sessionEmail =
+    String(
+      session?.user?.email ||
+      ""
+    )
+      .trim()
+      .toLowerCase();
+
+  const currentMember =
+    members.find(
+      (member) =>
+        String(
+          member.user?.email ||
+          ""
+        )
+          .trim()
+          .toLowerCase() ===
+        sessionEmail
+    ) ||
+    null;
+
+  const canUnregisterMembers =
+    sessionEmail ===
+      "surprisecricket11@gmail.com" ||
+    String(
+      currentMember?.role ||
+      ""
+    ).toUpperCase() ===
+      "OWNER";
+
+  async function unregisterMember(
+    member
+  ) {
+    if (
+      !canUnregisterMembers ||
+      !member?.userId ||
+      unregisteringUserId
+    ) {
+      return;
+    }
+
+    const name =
+      member.user?.name ||
+      member.user?.email ||
+      "this user";
+
+    if (
+      !window.confirm(
+        `Unregister ${name} from this league?\n\nThe Cric4All account and all historical scores/statistics will be preserved.`
+      )
+    ) {
+      return;
+    }
+
+    try {
+      setUnregisteringUserId(
+        member.userId
+      );
+
+      const response =
+        await fetch(
+          `/api/leagues/${leagueId}/members?userId=${encodeURIComponent(member.userId)}`,
+          {
+            method:
+              "DELETE",
+          }
+        );
+
+      const data =
+        await response
+          .json()
+          .catch(
+            () => ({})
+          );
+
+      if (!response.ok) {
+        throw new Error(
+          data?.error ||
+          "Unable to unregister league member."
+        );
+      }
+
+      setMembers((previous) =>
+        previous.filter(
+          (existing) =>
+            String(
+              existing.userId
+            ) !==
+            String(
+              member.userId
+            )
+        )
+      );
+
+      alert(
+        data?.message ||
+        `${name} was unregistered from the league.`
+      );
+    } catch (
+      error
+    ) {
+      alert(
+        error?.message ||
+        "Unable to unregister league member."
+      );
+    } finally {
+      setUnregisteringUserId(
+        null
+      );
+    }
+  }
+
   if (loading) {
     return <p>Loading members...</p>;
   }
@@ -251,17 +368,68 @@ export default function LeaguePermissions({
               </div>
             ))}
 
-            <button
-              className="btn"
-              disabled={saving}
-              onClick={() =>
-                savePermissions(
-                  member
-                )
-              }
+            <div
+              style={{
+                display:
+                  "flex",
+                flexWrap:
+                  "wrap",
+                gap:
+                  10,
+                marginTop:
+                  12,
+              }}
             >
-              Save Permissions
-            </button>
+              <button
+                className="btn"
+                disabled={saving}
+                onClick={() =>
+                  savePermissions(
+                    member
+                  )
+                }
+              >
+                Save Permissions
+              </button>
+
+              {canUnregisterMembers &&
+                String(
+                  member.user?.email ||
+                  ""
+                )
+                  .trim()
+                  .toLowerCase() !==
+                  sessionEmail && (
+                  <button
+                    type="button"
+                    className="member-unregister-btn"
+                    disabled={
+                      String(
+                        unregisteringUserId ||
+                        ""
+                      ) ===
+                      String(
+                        member.userId
+                      )
+                    }
+                    onClick={() =>
+                      unregisterMember(
+                        member
+                      )
+                    }
+                  >
+                    {String(
+                      unregisteringUserId ||
+                      ""
+                    ) ===
+                    String(
+                      member.userId
+                    )
+                      ? "Unregistering…"
+                      : "🚪 Unregister from League"}
+                  </button>
+                )}
+            </div>
           </div>
         )
       )}

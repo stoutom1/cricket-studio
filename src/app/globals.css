@@ -77546,3 +77546,65 @@ body:has(.milestone-celebration-overlay)
     display: none !important;
   }
 }
+
+/* =========================================================
+   LEAGUE MEMBER UNREGISTER ACTION
+   Scoped to the Permissions member card only.
+========================================================= */
+.member-management-actions {
+  display: flex;
+  align-items: center;
+  flex-wrap: wrap;
+  gap: 10px;
+  margin-top: 12px;
+}
+
+.member-management-actions > button {
+  min-height: 40px;
+}
+
+.member-unregister-btn {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 6px;
+  min-height: 40px;
+  padding: 9px 13px;
+  border: 1px solid rgba(248, 113, 113, 0.48);
+  border-radius: 9px;
+  background: rgba(127, 29, 29, 0.16);
+  color: #fecaca;
+  font: inherit;
+  font-size: 13px;
+  font-weight: 800;
+  line-height: 1.2;
+  white-space: nowrap;
+  cursor: pointer;
+  box-sizing: border-box;
+}
+
+.member-unregister-btn:hover:not(:disabled) {
+  background: rgba(153, 27, 27, 0.28);
+  border-color: rgba(248, 113, 113, 0.72);
+}
+
+.member-unregister-btn:disabled {
+  opacity: 0.58;
+  cursor: not-allowed;
+}
+
+@media (max-width: 760px) {
+  .member-management-actions {
+    display: grid;
+    grid-template-columns: minmax(0, 1fr);
+    gap: 8px;
+    width: 100%;
+  }
+
+  .member-management-actions > button,
+  .member-unregister-btn {
+    width: 100%;
+    min-width: 0;
+    white-space: normal;
+  }
+}

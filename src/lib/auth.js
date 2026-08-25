@@ -6,6 +6,11 @@ import GitHubProvider from "next-auth/providers/github";
 import FacebookProvider from "next-auth/providers/facebook";
 import TwitterProvider from "next-auth/providers/twitter";
 import DiscordProvider from "next-auth/providers/discord";
+import {
+  isEmailVerifiedForLogin,
+  normalizeEmailAddress,
+  preservePendingInviteForUser,
+} from "@/lib/email-verification";
 
 export const authOptions = {
   providers: [
@@ -13,7 +18,8 @@ export const authOptions = {
       name: "Credentials",
       credentials: {
         email: { label: "Email", type: "email" },
-        password: { label: "Password", type: "password" }
+        password: { label: "Password", type: "password" },
+        inviteToken: { label: "Invite Token", type: "text" },
       },
 async authorize(credentials) {
   try {
@@ -24,10 +30,15 @@ async authorize(credentials) {
       return null;
     }
 
+    const normalizedEmail =
+      normalizeEmailAddress(
+        credentials.email
+      );
+
     const user =
       await prisma.user.findUnique({
         where: {
-          email: credentials.email,
+          email: normalizedEmail,
         },
       });
 
@@ -52,31 +63,82 @@ async authorize(credentials) {
     if (!valid) {
       return null;
     }
+
+    const verified =
+      await isEmailVerifiedForLogin(
+        user.id,
+        user.email
+      );
+
+    if (!verified) {
+      /*
+       * The password was correct, so it is safe to preserve the invite that
+       * brought this user to login. This lets an existing unverified account
+       * leave the browser, verify from email on another device, and still
+       * receive the intended role after verification.
+       */
+      if (credentials?.inviteToken) {
+        try {
+          await preservePendingInviteForUser({
+            userId: user.id,
+            email: user.email,
+            token: credentials.inviteToken,
+          });
+        } catch (inviteError) {
+          console.error(
+            "Unable to preserve pending invite during unverified login:",
+            inviteError
+          );
+        }
+      }
+
+      const verificationError =
+        new Error(
+          "EMAIL_NOT_VERIFIED"
+        );
+
+      verificationError.code =
+        "EMAIL_NOT_VERIFIED";
+
+      throw verificationError;
+    }
+
     const now = new Date();
 
-await prisma.user.update({
-  where: { id: user.id },
-  data: {
-    lastLoginAt: now,
-    lastSeenAt: now,
-  },
-});
+    await prisma.user.update({
+      where: { id: user.id },
+      data: {
+        lastLoginAt: now,
+        lastSeenAt: now,
+      },
+    });
 
-await prisma.loginHistory.create({
-  data: {
-    userId: user.id,
-    email: user.email,
-    name: user.name || user.email,
-    loginAt: now,
-  },
-});
-return {
-  id: String(user.id),
-  email: user.email,
-  name: user.name || user.email,
-};
+    await prisma.loginHistory.create({
+      data: {
+        userId: user.id,
+        email: user.email,
+        name:
+          user.name || user.email,
+        loginAt: now,
+      },
+    });
 
+    return {
+      id: String(user.id),
+      email: user.email,
+      name:
+        user.name || user.email,
+    };
   } catch (error) {
+    if (
+      error?.message ===
+        "EMAIL_NOT_VERIFIED" ||
+      error?.code ===
+        "EMAIL_NOT_VERIFIED"
+    ) {
+      throw error;
+    }
+
     console.error(
       "Authorize error:",
       error
