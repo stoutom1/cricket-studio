@@ -76912,3 +76912,558 @@ body:has(.milestone-celebration-overlay)
     color: #f8fafc !important;
   }
 }
+
+/* =========================================================
+   FINAL LAPTOP RESOURCES LABEL — DEDICATED DISPLAY LAYER
+   This no longer depends on the older shared overlay rules.
+========================================================= */
+@media (min-width: 769px) {
+  .management-page .league-resource-tool-slot {
+    position: relative !important;
+  }
+
+  .management-page
+    .league-resource-tool-slot
+    > .dashboard-tool-card-overlay {
+    display: none !important;
+  }
+
+  .management-page
+    .league-resource-tool-slot
+    > a {
+    position: absolute !important;
+    inset: 0 !important;
+    z-index: 3 !important;
+    width: 100% !important;
+    height: 100% !important;
+    opacity: 0 !important;
+  }
+
+  .management-page
+    .league-resource-tool-slot
+    .league-resource-desktop-display {
+    position: absolute !important;
+    inset: 0 !important;
+    z-index: 2 !important;
+    display: grid !important;
+    grid-template-columns: 27px minmax(0, 1fr) 25px !important;
+    align-items: center !important;
+    gap: 6px !important;
+    width: 100% !important;
+    height: 48px !important;
+    padding: 6px 7px !important;
+    box-sizing: border-box !important;
+    pointer-events: none !important;
+    visibility: visible !important;
+    opacity: 1 !important;
+  }
+
+  .management-page
+    .league-resource-tool-slot
+    .league-resource-desktop-icon {
+    display: grid !important;
+    place-items: center !important;
+    width: 27px !important;
+    height: 27px !important;
+    min-width: 27px !important;
+    border-radius: 7px !important;
+    background: rgba(30, 82, 137, 0.62) !important;
+    line-height: 1 !important;
+  }
+
+  .management-page
+    .league-resource-tool-slot
+    .league-resource-desktop-title {
+    display: block !important;
+    min-width: 0 !important;
+    margin: 0 !important;
+    padding: 0 !important;
+    color: #f8fafc !important;
+    font-size: 10px !important;
+    font-weight: 900 !important;
+    line-height: 1.08 !important;
+    white-space: nowrap !important;
+    overflow: hidden !important;
+    text-overflow: ellipsis !important;
+    visibility: visible !important;
+    opacity: 1 !important;
+  }
+
+  .management-page
+    .league-resource-tool-slot
+    .league-resource-desktop-action {
+    display: inline-grid !important;
+    grid-template-columns: auto auto !important;
+    place-items: center !important;
+    gap: 0 !important;
+    width: 25px !important;
+    height: 25px !important;
+    min-width: 25px !important;
+    border: 1px solid rgba(96, 165, 250, 0.38) !important;
+    border-radius: 999px !important;
+    background: rgba(37, 99, 235, 0.13) !important;
+    color: #dbeafe !important;
+    font-size: 8px !important;
+    font-weight: 900 !important;
+    line-height: 1 !important;
+  }
+}
+
+/* =========================================================
+   FINAL MOBILE PLAYER INACTIVITY FORM
+   Isolated from desktop form/grid rules.
+========================================================= */
+@media (max-width: 760px) {
+  .management-page .mobile-player-inactivity-section {
+    overflow: hidden !important;
+    width: 100% !important;
+    border-radius: 16px !important;
+  }
+
+  .management-page
+    .mobile-player-inactivity-section
+    > summary {
+    min-height: 72px !important;
+    padding: 11px 12px !important;
+    gap: 10px !important;
+  }
+
+  .management-page
+    .mobile-player-inactivity-section
+    .mobile-tool-chevron-only {
+    display: grid !important;
+    place-items: center !important;
+    flex: 0 0 34px !important;
+    width: 34px !important;
+    height: 34px !important;
+    min-width: 34px !important;
+    padding: 0 !important;
+    border: 1px solid rgba(96, 165, 250, 0.42) !important;
+    border-radius: 999px !important;
+    background: rgba(37, 99, 235, 0.16) !important;
+  }
+
+  .management-page
+    .mobile-player-inactivity-section
+    > div {
+    padding: 12px !important;
+    border-top: 1px solid rgba(79, 119, 185, 0.25) !important;
+    background: rgba(6, 16, 31, 0.48) !important;
+  }
+
+  .management-page
+    .mobile-player-inactivity-section
+    .player-inactivity-setting {
+    display: grid !important;
+    grid-template-columns: minmax(0, 1fr) !important;
+    gap: 12px !important;
+    width: 100% !important;
+    min-width: 0 !important;
+    margin: 0 !important;
+    padding: 0 !important;
+    overflow: visible !important;
+  }
+
+  .management-page
+    .mobile-player-inactivity-section
+    .player-inactivity-setting-intro {
+    display: grid !important;
+    grid-template-columns: minmax(0, 1fr) auto !important;
+    align-items: start !important;
+    gap: 10px !important;
+    width: 100% !important;
+    margin: 0 !important;
+    padding: 0 !important;
+  }
+
+  .management-page
+    .mobile-player-inactivity-section
+    .player-inactivity-setting-intro > div {
+    min-width: 0 !important;
+  }
+
+  .management-page
+    .mobile-player-inactivity-section
+    .player-inactivity-setting-intro strong {
+    display: block !important;
+    margin: 0 !important;
+    color: #f8fafc !important;
+    font-size: 14px !important;
+    line-height: 1.25 !important;
+  }
+
+  .management-page
+    .mobile-player-inactivity-section
+    .player-inactivity-setting-intro p {
+    margin: 4px 0 0 !important;
+    color: #9fb0c7 !important;
+    font-size: 11.5px !important;
+    line-height: 1.45 !important;
+  }
+
+  .management-page
+    .mobile-player-inactivity-section
+    .player-inactivity-policy-badge {
+    align-self: start !important;
+    padding: 5px 8px !important;
+    font-size: 10px !important;
+    white-space: nowrap !important;
+  }
+
+  .management-page
+    .mobile-player-inactivity-section
+    .player-inactivity-policy-note,
+  .management-page
+    .mobile-player-inactivity-section
+    .player-inactivity-sample,
+  .management-page
+    .mobile-player-inactivity-section
+    .player-inactivity-preview {
+    display: grid !important;
+    grid-template-columns: minmax(0, 1fr) !important;
+    gap: 7px !important;
+    width: 100% !important;
+    margin: 0 !important;
+    padding: 11px !important;
+    border: 1px solid rgba(100, 145, 215, 0.2) !important;
+    border-radius: 12px !important;
+    background: rgba(12, 27, 49, 0.72) !important;
+    box-sizing: border-box !important;
+  }
+
+  .management-page
+    .mobile-player-inactivity-section
+    .player-inactivity-policy-note > strong {
+    font-size: 12px !important;
+    line-height: 1.2 !important;
+    white-space: normal !important;
+  }
+
+  .management-page
+    .mobile-player-inactivity-section
+    .player-inactivity-policy-note > span {
+    color: #9fb0c7 !important;
+    font-size: 11px !important;
+    line-height: 1.45 !important;
+  }
+
+  .management-page
+    .mobile-player-inactivity-section
+    .player-inactivity-setting-form {
+    display: grid !important;
+    grid-template-columns: minmax(0, 1fr) !important;
+    gap: 11px !important;
+    width: 100% !important;
+    min-width: 0 !important;
+    margin: 0 !important;
+    padding: 0 !important;
+  }
+
+  .management-page
+    .mobile-player-inactivity-section
+    .player-inactivity-inline-check {
+    display: flex !important;
+    flex-direction: row !important;
+    align-items: flex-start !important;
+    justify-content: flex-start !important;
+    gap: 9px !important;
+    width: 100% !important;
+    min-width: 0 !important;
+    min-height: 0 !important;
+    margin: 0 !important;
+    padding: 10px 11px !important;
+    border: 1px solid rgba(100, 145, 215, 0.2) !important;
+    border-radius: 11px !important;
+    background: rgba(14, 31, 56, 0.75) !important;
+    box-sizing: border-box !important;
+    text-align: left !important;
+  }
+
+  .management-page
+    .mobile-player-inactivity-section
+    .player-inactivity-inline-check
+    > input[type="checkbox"] {
+    appearance: auto !important;
+    -webkit-appearance: checkbox !important;
+    position: static !important;
+    flex: 0 0 18px !important;
+    width: 18px !important;
+    height: 18px !important;
+    min-width: 18px !important;
+    margin: 1px 0 0 !important;
+    padding: 0 !important;
+    transform: none !important;
+    accent-color: #38bdf8 !important;
+  }
+
+  .management-page
+    .mobile-player-inactivity-section
+    .player-inactivity-inline-check
+    > span {
+    display: block !important;
+    flex: 1 1 auto !important;
+    min-width: 0 !important;
+    margin: 0 !important;
+    padding: 0 !important;
+    color: #e5edf8 !important;
+    font-size: 11.5px !important;
+    line-height: 1.4 !important;
+    text-align: left !important;
+  }
+
+  .management-page
+    .mobile-player-inactivity-section
+    .player-inactivity-inline-check
+    > span strong,
+  .management-page
+    .mobile-player-inactivity-section
+    .player-inactivity-inline-check
+    > span small {
+    display: inline !important;
+    margin: 0 !important;
+    padding: 0 !important;
+    line-height: inherit !important;
+  }
+
+  .management-page
+    .mobile-player-inactivity-section
+    .player-inactivity-inline-check
+    > span strong {
+    color: #f8fafc !important;
+    font-weight: 800 !important;
+  }
+
+  .management-page
+    .mobile-player-inactivity-section
+    .player-inactivity-inline-check
+    > span small {
+    color: #9fb0c7 !important;
+    font-size: 10.5px !important;
+  }
+
+  .management-page
+    .mobile-player-inactivity-section
+    .player-inactivity-field {
+    display: grid !important;
+    grid-template-columns: minmax(0, 1fr) !important;
+    gap: 6px !important;
+    width: 100% !important;
+    min-width: 0 !important;
+    margin: 0 !important;
+    padding: 0 !important;
+  }
+
+  .management-page
+    .mobile-player-inactivity-section
+    .player-inactivity-field > span {
+    color: #e7eef8 !important;
+    font-size: 12px !important;
+    font-weight: 800 !important;
+  }
+
+  .management-page
+    .mobile-player-inactivity-section
+    .player-inactivity-field input,
+  .management-page
+    .mobile-player-inactivity-section
+    .player-inactivity-sample select {
+    width: 100% !important;
+    min-width: 0 !important;
+    height: 44px !important;
+    min-height: 44px !important;
+    padding: 9px 11px !important;
+    border: 1px solid rgba(92, 142, 229, 0.42) !important;
+    border-radius: 10px !important;
+    background: rgba(3, 10, 23, 0.92) !important;
+    color: #f8fafc !important;
+    font-size: 13px !important;
+    box-sizing: border-box !important;
+  }
+
+  .management-page
+    .mobile-player-inactivity-section
+    .player-inactivity-field small,
+  .management-page
+    .mobile-player-inactivity-section
+    .player-inactivity-preview-hint,
+  .management-page
+    .mobile-player-inactivity-section
+    .player-inactivity-access-note {
+    margin: 0 !important;
+    color: #8fa3bd !important;
+    font-size: 10.5px !important;
+    line-height: 1.4 !important;
+  }
+
+  .management-page
+    .mobile-player-inactivity-section
+    .player-inactivity-sample-heading {
+    display: grid !important;
+    grid-template-columns: minmax(0, 1fr) !important;
+    gap: 8px !important;
+    width: 100% !important;
+  }
+
+  .management-page
+    .mobile-player-inactivity-section
+    .player-inactivity-sample-heading > label {
+    display: grid !important;
+    grid-template-columns: minmax(0, 1fr) !important;
+    gap: 5px !important;
+    width: 100% !important;
+  }
+
+  .management-page
+    .mobile-player-inactivity-section
+    .player-inactivity-message-card {
+    width: 100% !important;
+    min-width: 0 !important;
+    margin: 0 !important;
+    padding: 10px !important;
+    border: 1px solid rgba(56, 189, 248, 0.17) !important;
+    border-radius: 10px !important;
+    background: rgba(2, 8, 20, 0.72) !important;
+    box-sizing: border-box !important;
+  }
+
+  .management-page
+    .mobile-player-inactivity-section
+    .player-inactivity-message-card p {
+    margin: 0 0 7px !important;
+    font-size: 11px !important;
+    line-height: 1.45 !important;
+  }
+
+  .management-page
+    .mobile-player-inactivity-section
+    .player-inactivity-message-card p:last-child {
+    margin-bottom: 0 !important;
+  }
+
+  .management-page
+    .mobile-player-inactivity-section
+    .player-inactivity-actions {
+    display: grid !important;
+    grid-template-columns: minmax(0, 1fr) !important;
+    gap: 8px !important;
+    width: 100% !important;
+    margin: 0 !important;
+    padding: 0 !important;
+  }
+
+  .management-page
+    .mobile-player-inactivity-section
+    .player-inactivity-actions > button {
+    appearance: none !important;
+    -webkit-appearance: none !important;
+    display: flex !important;
+    align-items: center !important;
+    justify-content: center !important;
+    width: 100% !important;
+    min-width: 0 !important;
+    min-height: 44px !important;
+    margin: 0 !important;
+    padding: 10px 12px !important;
+    border: 1px solid rgba(75, 148, 255, 0.58) !important;
+    border-radius: 11px !important;
+    background: linear-gradient(135deg, #2563eb, #1686d9) !important;
+    color: #ffffff !important;
+    box-shadow: 0 7px 16px rgba(24, 94, 196, 0.18) !important;
+    font-size: 12px !important;
+    font-weight: 900 !important;
+    line-height: 1.2 !important;
+    text-align: center !important;
+    text-decoration: none !important;
+    cursor: pointer !important;
+    box-sizing: border-box !important;
+  }
+
+  .management-page
+    .mobile-player-inactivity-section
+    .player-inactivity-actions > button.secondary {
+    border-color: rgba(106, 142, 193, 0.42) !important;
+    background: rgba(25, 43, 70, 0.94) !important;
+    color: #f1f5f9 !important;
+    box-shadow: none !important;
+  }
+
+  .management-page
+    .mobile-player-inactivity-section
+    .player-inactivity-actions > button:disabled {
+    opacity: 0.48 !important;
+    cursor: not-allowed !important;
+    box-shadow: none !important;
+  }
+
+  .management-page
+    .mobile-player-inactivity-section
+    .player-inactivity-error,
+  .management-page
+    .mobile-player-inactivity-section
+    .player-inactivity-message {
+    width: 100% !important;
+    margin: 0 !important;
+    padding: 10px 11px !important;
+    border-radius: 10px !important;
+    font-size: 11px !important;
+    line-height: 1.4 !important;
+    box-sizing: border-box !important;
+  }
+
+  .management-page
+    .mobile-player-inactivity-section
+    .player-inactivity-preview-heading,
+  .management-page
+    .mobile-player-inactivity-section
+    .player-inactivity-preview-row {
+    display: flex !important;
+    align-items: flex-start !important;
+    justify-content: space-between !important;
+    gap: 9px !important;
+    width: 100% !important;
+  }
+
+  .management-page
+    .mobile-player-inactivity-section
+    .player-inactivity-preview-row {
+    padding: 9px 0 !important;
+    border-top: 1px solid rgba(135, 160, 199, 0.12) !important;
+  }
+}
+
+/* =========================================================
+   FINAL FIX — LAPTOP RESOURCES MUST RENDER EXACTLY ONCE
+   The LeagueResourcesShortcut remains the real clickable layer,
+   but its own visual label is hidden. The dedicated display layer
+   above it is the only visible Resources label.
+========================================================= */
+@media (min-width: 769px) {
+  .management-page
+    .league-resource-tool-slot
+    > :not(.league-resource-desktop-display) {
+    position: absolute !important;
+    inset: 0 !important;
+    z-index: 3 !important;
+    width: 100% !important;
+    height: 100% !important;
+    opacity: 0 !important;
+  }
+
+  .management-page
+    .league-resource-tool-slot
+    > .league-resource-desktop-display {
+    z-index: 2 !important;
+    opacity: 1 !important;
+    visibility: visible !important;
+    pointer-events: none !important;
+  }
+
+  .management-page
+    .league-resource-tool-slot
+    > .league-resource-desktop-display
+    .league-resource-desktop-title {
+    display: block !important;
+    opacity: 1 !important;
+    visibility: visible !important;
+  }
+}

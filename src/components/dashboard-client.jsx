@@ -25119,25 +25119,20 @@ const playerRoleBadge = (row) => {
     />
 
     <div
-      className="dashboard-tool-card-overlay"
+      className="league-resource-desktop-display"
       aria-hidden="true"
     >
-      <span className="dashboard-tool-card-overlay-icon">
+      <span className="league-resource-desktop-icon">
         📚
       </span>
 
-      <strong className="league-tool-single-line-title league-tool-overlay-title resources-visible-label">
+      <strong className="league-resource-desktop-title">
         Resources
       </strong>
 
-      <span className="dashboard-tool-card-overlay-action league-tool-disclosure-action">
-        <span className="league-tool-disclosure-label">
-          +
-        </span>
-
-        <span className="league-tool-chevron">
-          ⌄
-        </span>
+      <span className="league-resource-desktop-action">
+        <span>+</span>
+        <span>⌄</span>
       </span>
     </div>
   </div>
