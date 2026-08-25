@@ -17113,28 +17113,13 @@ const canUnregisterLeagueMembers = Boolean(
 );
 
 /*
- * Keep the Leagues tab and League Management content in sync.
- * Some older/custom LeagueMember records can legitimately have individual
- * management capabilities even when canViewManagement is absent/false.
- * In that situation hiding the tab while rendering the management panel is
- * confusing and makes the active tab look missing.
+ * The Leagues tab is the universal entry point for every authenticated
+ * Cric4All user. A user must be able to open League Management even when
+ * they do not belong to any league yet, because this is where they create
+ * their first league. League-specific actions inside the page remain guarded
+ * by activeLeagueId and the existing permission checks.
  */
-const canShowManagementTab = Boolean(
-  isSuperAdmin ||
-  permissions?.canViewManagement === true ||
-  permissions?.canCreateLeague === true ||
-  permissions?.canEditLeague === true ||
-  permissions?.canDeleteLeague === true ||
-  permissions?.canManageMembers === true ||
-  permissions?.canManagePermissions === true ||
-  permissions?.canCreateTeam === true ||
-  permissions?.canEditTeam === true ||
-  permissions?.canDeleteTeam === true ||
-  permissions?.canCreatePlayer === true ||
-  permissions?.canEditPlayer === true ||
-  permissions?.canDeletePlayer === true ||
-  ["OWNER", "ADMIN", "CAPTAIN"].includes(activeLeagueRole)
-);
+const canShowManagementTab = true;
 
 function openInviteRoleComposer() {
   if (!activeLeague || !allowedInviteRolesForCurrentUser.length) {

@@ -62,23 +62,29 @@ export default function HomePage() {
               from one cricket platform.
             </p>
 
-            <div className="home-actions-lite">
+            <div className="home-actions-lite home-action-grid">
               <Link
                 href="/score-now"
-                className="home-primary"
-                style={{
-                  textAlign: "center",
-                }}
+                className="home-action-card home-primary"
               >
-                🏏 Score a Match Free
+                <span className="home-action-icon" aria-hidden="true">🏏</span>
+                <span className="home-action-label">Score a Match</span>
               </Link>
 
-              <Link href="/dashboard" className="home-secondary">
-                Open Dashboard
+              <Link
+                href="/login"
+                className="home-action-card home-signin-cta"
+              >
+                <span className="home-action-icon" aria-hidden="true">🔐</span>
+                <span className="home-action-label">Sign In</span>
               </Link>
 
-              <Link href="/login" className="home-secondary">
-                Sign In
+              <Link
+                href="/dashboard"
+                className="home-action-card home-dashboard-cta"
+              >
+                <span className="home-action-icon" aria-hidden="true">📊</span>
+                <span className="home-action-label">Open Dashboard</span>
               </Link>
             </div>
 
