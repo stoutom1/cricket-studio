@@ -1631,17 +1631,35 @@ export default async function PublicPlayerPage({
   const hasRatedAppearance =
     Number(stats.appearances || 0) > 0;
 
-  // A player is not rateable until they have at least one scored appearance.
-  // This prevents the percentile baseline (5.0+) from creating phantom ratings
-  // for rostered players who have never played.
-  const activeProfiles =
+  const hasBattingSample =
+    Number(stats.balls || 0) > 0;
+
+  const hasBowlingSample =
+    Number(stats.legalBowls || 0) > 0;
+
+  // Each discipline is ranked only against players who actually participated
+  // in that discipline. A rostered player with 0 balls faced or 0 legal balls
+  // must not receive a percentile-derived 5.x/6.x rating.
+  const activeBattingProfiles =
+    allProfiles.filter(
+      ({ stats: item }) =>
+        Number(item.balls || 0) > 0
+    );
+
+  const activeBowlingProfiles =
+    allProfiles.filter(
+      ({ stats: item }) =>
+        Number(item.legalBowls || 0) > 0
+    );
+
+  const activeFormProfiles =
     allProfiles.filter(
       ({ stats: item }) =>
         Number(item.appearances || 0) > 0
     );
 
   const activeBattingScores =
-    activeProfiles.map(
+    activeBattingProfiles.map(
       ({ stats: item }) =>
         item.runs +
         item.fours * 2 +
@@ -1652,20 +1670,23 @@ export default async function PublicPlayerPage({
     );
 
   const activeBowlingScores =
-    activeProfiles.map(
+    activeBowlingProfiles.map(
       ({ stats: item }) =>
         item.wickets * 30 +
         item.fiveWickets * 100 +
         item.threeWickets * 35 +
         (
           item.legalBowls >= 12
-            ? Math.max(0, 9 - number(item.economy)) * 18
+            ? Math.max(
+                0,
+                9 - number(item.economy)
+              ) * 18
             : 0
         )
     );
 
   const activeFormScores =
-    activeProfiles.map(
+    activeFormProfiles.map(
       ({ stats: item }) =>
         item.performances
           .slice(0, 5)
@@ -1677,7 +1698,7 @@ export default async function PublicPlayerPage({
     );
 
   const battingPercentile =
-    hasRatedAppearance
+    hasBattingSample
       ? percentileRank(
           activeBattingScores,
           battingValue
@@ -1685,7 +1706,7 @@ export default async function PublicPlayerPage({
       : null;
 
   const bowlingPercentile =
-    hasRatedAppearance
+    hasBowlingSample
       ? percentileRank(
           activeBowlingScores,
           bowlingValue
@@ -1701,14 +1722,14 @@ export default async function PublicPlayerPage({
       : null;
 
   const battingRating =
-    hasRatedAppearance
+    hasBattingSample
       ? ratingFromPercentile(
           battingPercentile
         )
       : null;
 
   const bowlingRating =
-    hasRatedAppearance
+    hasBowlingSample
       ? ratingFromPercentile(
           bowlingPercentile
         )
@@ -1721,102 +1742,197 @@ export default async function PublicPlayerPage({
         )
       : null;
 
+  const ratingComponents = [
+    {
+      value: battingRating,
+      percentile: battingPercentile,
+      weight: 0.42,
+    },
+    {
+      value: bowlingRating,
+      percentile: bowlingPercentile,
+      weight: 0.38,
+    },
+    {
+      value: formRating,
+      percentile: formPercentile,
+      weight: 0.2,
+    },
+  ].filter(
+    (component) =>
+      Number.isFinite(component.value) &&
+      Number.isFinite(component.percentile)
+  );
+
+  const ratingWeight =
+    ratingComponents.reduce(
+      (sum, component) =>
+        sum + component.weight,
+      0
+    );
+
   const overallRating =
-    hasRatedAppearance
+    ratingWeight > 0
       ? Number(
           (
-            battingRating * 0.42 +
-            bowlingRating * 0.38 +
-            formRating * 0.2
+            ratingComponents.reduce(
+              (sum, component) =>
+                sum +
+                component.value *
+                  component.weight,
+              0
+            ) /
+            ratingWeight
           ).toFixed(1)
         )
       : null;
 
   const overallPercentile =
-    hasRatedAppearance
+    ratingWeight > 0
       ? Math.round(
-          battingPercentile * 0.42 +
-          bowlingPercentile * 0.38 +
-          formPercentile * 0.2
+          ratingComponents.reduce(
+            (sum, component) =>
+              sum +
+              component.percentile *
+                component.weight,
+            0
+          ) /
+            ratingWeight
         )
       : null;
 
-  const leagueRank =
-    hasRatedAppearance
-      ? activeProfiles
-      .map(
-        (item) => {
-          const batting =
-            item.stats.runs +
-            item.stats
-              .fours *
-              2 +
-            item.stats
-              .sixes *
-              4 +
-            number(
-              item.stats
-                .strikeRate
-            ) *
-              1.4 +
-            item.stats
-              .hundreds *
-              80 +
-            item.stats
-              .fifties *
-              30;
+  function calculateProfileOverallRating(
+    itemStats
+  ) {
+    const itemBattingValue =
+      itemStats.runs +
+      itemStats.fours * 2 +
+      itemStats.sixes * 4 +
+      number(itemStats.strikeRate) * 1.4 +
+      itemStats.hundreds * 80 +
+      itemStats.fifties * 30;
 
-          const bowling =
-            item.stats
-              .wickets *
-              30 +
-            item.stats
-              .fiveWickets *
-              100 +
-            item.stats
-              .threeWickets *
-              35;
+    const itemBowlingValue =
+      itemStats.wickets * 30 +
+      itemStats.fiveWickets * 100 +
+      itemStats.threeWickets * 35 +
+      (
+        itemStats.legalBowls >= 12
+          ? Math.max(
+              0,
+              9 - number(itemStats.economy)
+            ) * 18
+          : 0
+      );
 
-          const form =
-            item.stats
-              .performances
-              .slice(0, 5)
-              .reduce(
-                (
-                  sum,
-                  performance
-                ) =>
-                  sum +
-                  performance
-                    .impact,
-                0
-              );
+    const itemFormValue =
+      itemStats.performances
+        .slice(0, 5)
+        .reduce(
+          (sum, performance) =>
+            sum + performance.impact,
+          0
+        );
 
-          return {
-            playerIds:
-              item.playerIds,
-            score:
-              batting *
-                0.42 +
-              bowling *
-                0.38 +
-              form *
-                0.2,
-          };
-        }
-      )
-      .sort(
-        (left, right) =>
-          right.score -
-          left.score
-      )
-      .findIndex(
-        (item) =>
-          item.playerIds.includes(
-            number(playerId)
+    const parts = [];
+
+    if (
+      Number(itemStats.balls || 0) > 0
+    ) {
+      parts.push({
+        rating: ratingFromPercentile(
+          percentileRank(
+            activeBattingScores,
+            itemBattingValue
           )
-      ) + 1
-      : null;
+        ),
+        weight: 0.42,
+      });
+    }
+
+    if (
+      Number(itemStats.legalBowls || 0) > 0
+    ) {
+      parts.push({
+        rating: ratingFromPercentile(
+          percentileRank(
+            activeBowlingScores,
+            itemBowlingValue
+          )
+        ),
+        weight: 0.38,
+      });
+    }
+
+    if (
+      Number(itemStats.appearances || 0) > 0
+    ) {
+      parts.push({
+        rating: ratingFromPercentile(
+          percentileRank(
+            activeFormScores,
+            itemFormValue
+          )
+        ),
+        weight: 0.2,
+      });
+    }
+
+    const weight = parts.reduce(
+      (sum, part) =>
+        sum + part.weight,
+      0
+    );
+
+    if (!weight) {
+      return null;
+    }
+
+    return Number(
+      (
+        parts.reduce(
+          (sum, part) =>
+            sum +
+            part.rating *
+              part.weight,
+          0
+        ) /
+        weight
+      ).toFixed(1)
+    );
+  }
+
+  const leagueRank =
+    overallRating == null
+      ? null
+      : allProfiles
+          .map(
+            (item) => ({
+              playerIds:
+                item.playerIds,
+              score:
+                calculateProfileOverallRating(
+                  item.stats
+                ),
+            })
+          )
+          .filter(
+            (item) =>
+              Number.isFinite(
+                item.score
+              )
+          )
+          .sort(
+            (left, right) =>
+              right.score -
+              left.score
+          )
+          .findIndex(
+            (item) =>
+              item.playerIds.includes(
+                number(playerId)
+              )
+          ) + 1;
 
   const achievements =
     buildAchievements(

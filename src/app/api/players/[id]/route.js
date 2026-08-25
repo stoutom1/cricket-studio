@@ -3,6 +3,8 @@ import { NextResponse } from "next/server";
 import prisma from "@/lib/prisma";
 import { authOptions } from "@/lib/auth";
 import { logAudit } from "@/lib/audit";
+import { isSuperAdmin } from "@/lib/superAdmin";
+import { PLAYER_ROSTER_ARCHIVED_ACTION } from "@/lib/player-roster-archive";
 
 export const runtime = "nodejs";
 
@@ -363,70 +365,432 @@ export async function PATCH(request, { params }) {
   }
 }
 
-export async function DELETE(request, { params }) {
-  const session = await getServerSession(authOptions);
-  if (!session) {
-    return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
-  }
+export async function DELETE(
+  request,
+  { params }
+) {
+  try {
+    const session =
+      await getServerSession(
+        authOptions
+      );
 
-  const { id } = await params;
-  const playerId = Number(id);
-  if (!id) {
-    return NextResponse.json({ error: "Invalid player id" }, { status: 400 });
-  }
-
-  const player = await prisma.player.findUnique({
-    where: { id: playerId }
-  });
-
-  if (!player) {
-    return NextResponse.json({ error: "Player not found" }, { status: 404 });
-  }
-
-  const ballUsageCount = await prisma.ball.count({
-    where: {
-      OR: [
-        { strikerId: playerId },
-        { nonStrikerId: playerId },
-        { bowlerId: playerId },
-        { dismissedPlayerId: playerId },
-        { newBatterId: playerId }
-      ]
+    if (
+      !session?.user?.email
+    ) {
+      return NextResponse.json(
+        {
+          error:
+            "Unauthorized",
+        },
+        {
+          status:
+            401,
+        }
+      );
     }
-  });
 
-  if (ballUsageCount > 0) {
+    const { id } =
+      await params;
+
+    const playerId =
+      Number(
+        id
+      );
+
+    if (
+      !Number.isInteger(
+        playerId
+      ) ||
+      playerId <= 0
+    ) {
+      return NextResponse.json(
+        {
+          error:
+            "Invalid player id",
+        },
+        {
+          status:
+            400,
+        }
+      );
+    }
+
+    const player =
+      await prisma.player.findUnique({
+        where: {
+          id:
+            playerId,
+        },
+        include: {
+          team: {
+            include: {
+              league:
+                true,
+            },
+          },
+        },
+      });
+
+    if (!player) {
+      return NextResponse.json(
+        {
+          error:
+            "Player not found",
+        },
+        {
+          status:
+            404,
+        }
+      );
+    }
+
+    const league =
+      player.team?.league ||
+      null;
+
+    const leagueId =
+      Number(
+        league?.id ||
+        player.team?.leagueId ||
+        0
+      );
+
+    if (
+      !leagueId
+    ) {
+      return NextResponse.json(
+        {
+          error:
+            "Player league could not be resolved.",
+        },
+        {
+          status:
+            400,
+        }
+      );
+    }
+
+    const currentUser =
+      await prisma.user.findUnique({
+        where: {
+          email:
+            session.user.email,
+        },
+        select: {
+          id:
+            true,
+        },
+      });
+
+    if (!currentUser) {
+      return NextResponse.json(
+        {
+          error:
+            "User account not found.",
+        },
+        {
+          status:
+            404,
+        }
+      );
+    }
+
+    const superAdmin =
+      isSuperAdmin(
+        session
+      );
+
+    const membership =
+      await prisma.leagueMember.findUnique({
+        where: {
+          userId_leagueId: {
+            userId:
+              currentUser.id,
+            leagueId,
+          },
+        },
+        select: {
+          role:
+            true,
+          canDeletePlayer:
+            true,
+        },
+      });
+
+    const isOwner =
+      String(
+        league?.ownerId ||
+          ""
+      ) ===
+        String(
+          currentUser.id
+        ) ||
+      String(
+        membership?.role ||
+          ""
+      ).toUpperCase() ===
+        "OWNER";
+
+    const hasDeletePermission =
+      membership?.canDeletePlayer ===
+      true;
+
+    if (
+      !superAdmin &&
+      !isOwner &&
+      !hasDeletePermission
+    ) {
+      return NextResponse.json(
+        {
+          error:
+            "You do not have permission to delete this player.",
+        },
+        {
+          status:
+            403,
+        }
+      );
+    }
+
+    /*
+     * Owner / Super Admin deletion is deliberately implemented as a
+     * roster archive. The Player row remains in the database so historical
+     * balls, scorecards, player cards and career statistics keep their
+     * original player identity.
+     */
+    if (
+      superAdmin ||
+      isOwner
+    ) {
+      const existingArchive =
+        await prisma.auditLog.findFirst({
+          where: {
+            leagueId,
+            action:
+              PLAYER_ROSTER_ARCHIVED_ACTION,
+            entityType:
+              "PLAYER",
+            playerId,
+          },
+          select: {
+            id:
+              true,
+          },
+        });
+
+      if (
+        !existingArchive
+      ) {
+        await logAudit({
+          action:
+            PLAYER_ROSTER_ARCHIVED_ACTION,
+          entityType:
+            "PLAYER",
+          entityId:
+            playerId,
+          leagueId,
+          teamId:
+            player.teamId,
+          playerId,
+          actor:
+            session.user,
+          description:
+            `Player "${player.name}" was removed from the active roster of team "${player.team?.name || "Unknown Team"}" while historical match data was preserved.`,
+          beforeData: {
+            id:
+              player.id,
+            name:
+              player.name,
+            teamId:
+              player.teamId,
+            teamName:
+              player.team?.name ||
+              null,
+            leagueId,
+            leagueName:
+              league?.name ||
+              null,
+          },
+          afterData: {
+            rosterArchived:
+              true,
+            archivedPlayerId:
+              playerId,
+          },
+          request,
+        });
+      }
+
+      return NextResponse.json({
+        success:
+          true,
+        archived:
+          true,
+        historicalDataPreserved:
+          true,
+        message:
+          "Player removed from the active roster. Historical match data and statistics were preserved.",
+      });
+    }
+
+    /*
+     * Preserve the old physical-delete behavior for a non-owner member who
+     * has explicit canDeletePlayer permission, but only when no historical
+     * scoring or match-role references exist.
+     */
+    const [
+      ballUsageCount,
+      matchRoleUsageCount,
+    ] =
+      await Promise.all([
+        prisma.ball.count({
+          where: {
+            OR: [
+              {
+                strikerId:
+                  playerId,
+              },
+              {
+                nonStrikerId:
+                  playerId,
+              },
+              {
+                bowlerId:
+                  playerId,
+              },
+              {
+                dismissedPlayerId:
+                  playerId,
+              },
+              {
+                newBatterId:
+                  playerId,
+              },
+              {
+                fielderId:
+                  playerId,
+              },
+            ],
+          },
+        }),
+
+        prisma.match.count({
+          where: {
+            OR: [
+              {
+                teamACaptainId:
+                  playerId,
+              },
+              {
+                teamBCaptainId:
+                  playerId,
+              },
+              {
+                teamAViceCaptainId:
+                  playerId,
+              },
+              {
+                teamBViceCaptainId:
+                  playerId,
+              },
+              {
+                teamAWicketKeeperId:
+                  playerId,
+              },
+              {
+                teamBWicketKeeperId:
+                  playerId,
+              },
+            ],
+          },
+        }),
+      ]);
+
+    if (
+      ballUsageCount > 0 ||
+      matchRoleUsageCount > 0
+    ) {
+      return NextResponse.json(
+        {
+          error:
+            "This player has historical match data. Only the league Owner or Cric4All Super Admin can remove the player while preserving that history.",
+        },
+        {
+          status:
+            409,
+        }
+      );
+    }
+
+    await prisma.player.delete({
+      where: {
+        id:
+          playerId,
+      },
+    });
+
+    await logAudit({
+      action:
+        "PLAYER_DELETED",
+      entityType:
+        "PLAYER",
+      entityId:
+        playerId,
+      leagueId,
+      teamId:
+        player.teamId,
+      playerId,
+      actor:
+        session.user,
+      description:
+        `Player "${player.name}" was permanently deleted from team "${player.team?.name || "Unknown Team"}" because no historical match references existed.`,
+      beforeData: {
+        id:
+          player.id,
+        name:
+          player.name,
+        teamId:
+          player.teamId,
+        teamName:
+          player.team?.name ||
+          null,
+        leagueId,
+        leagueName:
+          league?.name ||
+          null,
+      },
+      afterData:
+        null,
+      request,
+    });
+
+    return NextResponse.json({
+      success:
+        true,
+      archived:
+        false,
+      message:
+        "Player deleted successfully.",
+    });
+  } catch (error) {
+    console.error(
+      "[PLAYER_DELETE_FAILED]",
+      error
+    );
+
     return NextResponse.json(
-      { error: "Cannot delete player because the player is used in match scoring data. Delete related matches first." },
-      { status: 400 }
+      {
+        error:
+          error instanceof Error
+            ? error.message
+            : "Unable to delete player.",
+      },
+      {
+        status:
+          500,
+      }
     );
   }
-
-  const team = await prisma.team.findUnique({
-    where: { id: player.teamId }
-  });
-  const league = await prisma.league.findUnique({
-    where: { id: team?.leagueId }
-  });
-  await prisma.player.delete({
-    where: { id: playerId }
-  });
-  await logAudit({
-    action: "PLAYER_DELETED",
-    entityType: "PLAYER",
-    entityId: playerId,
-    leagueId: team?.leagueId || null,
-    teamId: team?.id || null,
-    playerId,
-    actor: session?.user,
-    description: `Player "${player.name}" was deleted from team "${team?.name || "Unknown Team"}"
-    within league "${league?.name || "Unknown League"}".`,
-    beforeData: player,
-    afterData: null,
-    request,
-  });
-  return NextResponse.json({
-    success: true,
-    message: "Player deleted successfully"
-  });
 }
+

@@ -1774,7 +1774,7 @@ export default async function PlayerJourneyPage({
                         journey.biggestRival.evidenceConfidence *
                           100
                       )}% evidence`
-                    : "A career rival appears only after repeated evidence: at least 2 direct matches and 6 legal balls, or 2 direct dismissals."
+                    : "A career rival appears only after repeated evidence: at least 3 direct matches plus 12 legal balls, or at least 3 direct matches plus 2 dismissals and 6 legal balls."
                 }
                 href={
                   journey.biggestRival

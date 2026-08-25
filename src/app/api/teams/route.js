@@ -4,6 +4,7 @@ import prisma from "@/lib/prisma";
 import { authOptions } from "@/lib/auth";
 import { isSuperAdmin } from "@/lib/superAdmin";
 import { logAudit } from "@/lib/audit";
+import { getArchivedPlayerIds, filterArchivedPlayers } from "@/lib/player-roster-archive";
 
 export const runtime = "nodejs";
 
@@ -59,7 +60,51 @@ export async function GET() {
       }
     });
 
-    return NextResponse.json(teams);
+    const archivedByLeague =
+      new Map();
+
+    const activeTeams =
+      [];
+
+    for (
+      const team
+      of teams
+    ) {
+      const leagueId =
+        Number(
+          team.league?.id ||
+          team.leagueId ||
+          0
+        );
+
+      if (
+        !archivedByLeague.has(
+          leagueId
+        )
+      ) {
+        archivedByLeague.set(
+          leagueId,
+          await getArchivedPlayerIds(
+            leagueId
+          )
+        );
+      }
+
+      activeTeams.push({
+        ...team,
+        players:
+          filterArchivedPlayers(
+            team.players,
+            archivedByLeague.get(
+              leagueId
+            )
+          ),
+      });
+    }
+
+    return NextResponse.json(
+      activeTeams
+    );
   } catch (error) {
     console.error("GET teams error:", error);
 

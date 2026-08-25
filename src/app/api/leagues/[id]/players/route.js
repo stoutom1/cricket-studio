@@ -3,6 +3,7 @@ import { getServerSession } from "next-auth";
 
 import prisma from "@/lib/prisma";
 import { authOptions } from "@/lib/auth";
+import { getArchivedPlayerIds, filterArchivedPlayers } from "@/lib/player-roster-archive";
 
 export const runtime = "nodejs";
 
@@ -116,10 +117,21 @@ export async function GET(request, { params }) {
       },
     });
 
+    const archivedPlayerIds =
+      await getArchivedPlayerIds(
+        leagueId
+      );
+
     const uniquePlayers = new Map();
 
     for (const team of teams) {
-      for (const player of team.players) {
+      for (
+        const player
+        of filterArchivedPlayers(
+          team.players,
+          archivedPlayerIds
+        )
+      ) {
         const playerId = Number(player.id);
 
         const playerWhatsAppNumber =

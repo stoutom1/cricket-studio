@@ -9,9 +9,12 @@ import {
 } from "next/navigation";
 
 import {
+  isEmergingDirectRivalry,
+  isEmergingRivalry,
   isEstablishedDirectRivalry,
   isEstablishedRivalry,
   isNotableBattingMatchup,
+  rivalryEvidenceConfidence,
 } from "@/lib/player-rivalry";
 
 import CompareShareButton from "./CompareShareButton";
@@ -542,11 +545,25 @@ function buildRatings(
   profiles,
   selectedIdentity
 ) {
-  if (
+  const selectedStats =
+    selectedIdentity?.stats || {};
+
+  const hasAppearance =
     Number(
-      selectedIdentity?.stats?.appearances || 0
-    ) <= 0
-  ) {
+      selectedStats.appearances || 0
+    ) > 0;
+
+  const hasBattingSample =
+    Number(
+      selectedStats.balls || 0
+    ) > 0;
+
+  const hasBowlingSample =
+    Number(
+      selectedStats.legalBowls || 0
+    ) > 0;
+
+  if (!hasAppearance) {
     return {
       batting: null,
       bowling: null,
@@ -555,36 +572,49 @@ function buildRatings(
     };
   }
 
-  // Percentiles must compare only players with at least one scored appearance.
-  profiles = profiles.filter(
-    (profile) =>
-      Number(
-        profile?.stats?.appearances || 0
-      ) > 0
-  );
+  const battingProfiles =
+    profiles.filter(
+      (profile) =>
+        Number(
+          profile?.stats?.balls || 0
+        ) > 0
+    );
+
+  const bowlingProfiles =
+    profiles.filter(
+      (profile) =>
+        Number(
+          profile?.stats
+            ?.legalBowls || 0
+        ) > 0
+    );
+
+  const formProfiles =
+    profiles.filter(
+      (profile) =>
+        Number(
+          profile?.stats
+            ?.appearances || 0
+        ) > 0
+    );
+
   const battingValues =
-    profiles.map(
+    battingProfiles.map(
       (profile) =>
         profile.stats.runs +
-        profile.stats.fours *
-          2 +
-        profile.stats.sixes *
-          4 +
+        profile.stats.fours * 2 +
+        profile.stats.sixes * 4 +
         number(
-          profile.stats
-            .strikeRate
-        ) *
-          1.4
+          profile.stats.strikeRate
+        ) * 1.4
     );
 
   const bowlingValues =
-    profiles.map(
+    bowlingProfiles.map(
       (profile) =>
-        profile.stats.wickets *
-          30 +
+        profile.stats.wickets * 30 +
         (
-          profile.stats
-            .legalBowls >=
+          profile.stats.legalBowls >=
           12
             ? Math.max(
                 0,
@@ -593,58 +623,41 @@ function buildRatings(
                     profile.stats
                       .economy
                   )
-              ) *
-              18
+              ) * 18
             : 0
         )
     );
 
   const formValues =
-    profiles.map(
+    formProfiles.map(
       (profile) =>
-        profile.stats
-          .formImpact
+        profile.stats.formImpact
     );
 
   const battingValue =
-    selectedIdentity.stats
-      .runs +
-    selectedIdentity.stats
-      .fours *
-      2 +
-    selectedIdentity.stats
-      .sixes *
-      4 +
+    selectedStats.runs +
+    selectedStats.fours * 2 +
+    selectedStats.sixes * 4 +
     number(
-      selectedIdentity.stats
-        .strikeRate
-    ) *
-      1.4;
+      selectedStats.strikeRate
+    ) * 1.4;
 
   const bowlingValue =
-    selectedIdentity.stats
-      .wickets *
-      30 +
+    selectedStats.wickets * 30 +
     (
-      selectedIdentity.stats
-        .legalBowls >=
-      12
+      selectedStats.legalBowls >= 12
         ? Math.max(
             0,
             9 -
               number(
-                selectedIdentity
-                  .stats
-                  .economy
+                selectedStats.economy
               )
-          ) *
-          18
+          ) * 18
         : 0
     );
 
   const formValue =
-    selectedIdentity.stats
-      .formImpact;
+    selectedStats.formImpact;
 
   function percentile(
     values,
@@ -677,7 +690,7 @@ function buildRatings(
   }
 
   function rating(
-    value
+    percentileValue
   ) {
     return Number(
       (
@@ -686,7 +699,7 @@ function buildRatings(
           0,
           Math.min(
             100,
-            value
+            percentileValue
           )
         ) *
           0.045
@@ -695,20 +708,24 @@ function buildRatings(
   }
 
   const batting =
-    rating(
-      percentile(
-        battingValues,
-        battingValue
-      )
-    );
+    hasBattingSample
+      ? rating(
+          percentile(
+            battingValues,
+            battingValue
+          )
+        )
+      : null;
 
   const bowling =
-    rating(
-      percentile(
-        bowlingValues,
-        bowlingValue
-      )
-    );
+    hasBowlingSample
+      ? rating(
+          percentile(
+            bowlingValues,
+            bowlingValue
+          )
+        )
+      : null;
 
   const form =
     rating(
@@ -718,21 +735,55 @@ function buildRatings(
       )
     );
 
+  const components = [
+    {
+      value: batting,
+      weight: 0.42,
+    },
+    {
+      value: bowling,
+      weight: 0.38,
+    },
+    {
+      value: form,
+      weight: 0.2,
+    },
+  ].filter(
+    (component) =>
+      Number.isFinite(
+        component.value
+      )
+  );
+
+  const totalWeight =
+    components.reduce(
+      (sum, component) =>
+        sum + component.weight,
+      0
+    );
+
   return {
     batting,
     bowling,
     form,
     overall:
-      Number(
-        (
-          batting *
-            0.42 +
-          bowling *
-            0.38 +
-          form *
-            0.2
-        ).toFixed(1)
-      ),
+      totalWeight > 0
+        ? Number(
+            (
+              components.reduce(
+                (
+                  sum,
+                  component
+                ) =>
+                  sum +
+                  component.value *
+                    component.weight,
+                0
+              ) /
+              totalWeight
+            ).toFixed(1)
+          )
+        : null,
   };
 }
 
@@ -960,6 +1011,15 @@ function buildMatchups({
                 row.dismissals,
             });
 
+          const isEmerging =
+            isEmergingRivalry({
+              matches,
+              balls:
+                row.balls,
+              dismissals:
+                row.dismissals,
+            });
+
           const isNotable =
             isNotableBattingMatchup({
               matches,
@@ -973,21 +1033,17 @@ function buildMatchups({
 
           const isQualified =
             isEstablished ||
+            isEmerging ||
             isNotable;
 
           const confidence =
-            Math.min(
-              1,
-              (
-                row.balls /
-                  18 +
-                matches /
-                  4 +
-                row.dismissals /
-                  3
-              ) /
-                3
-            );
+            rivalryEvidenceConfidence({
+              matches,
+              balls:
+                row.balls,
+              dismissals:
+                row.dismissals,
+            });
 
           const impact =
             row.runs +
@@ -1001,7 +1057,9 @@ function buildMatchups({
           const matchupCategory =
             isEstablished
               ? "ESTABLISHED_RIVALRY"
-              : "NOTABLE_MATCHUP";
+              : isEmerging
+                ? "EMERGING_MATCHUP"
+                : "NOTABLE_MATCHUP";
 
           return {
             ...row,
@@ -1010,6 +1068,13 @@ function buildMatchups({
             matchupCategory,
             confidence,
             rivalryScore:
+              (
+                isEstablished
+                  ? 1000
+                  : isEmerging
+                    ? 500
+                    : 100
+              ) +
               impact *
                 (
                   0.45 +
@@ -1054,7 +1119,7 @@ function buildMatchups({
           const matches =
             row.matchIds.size;
 
-          const isQualified =
+          const isEstablished =
             isEstablishedRivalry({
               matches,
               balls:
@@ -1063,19 +1128,27 @@ function buildMatchups({
                 row.wickets,
             });
 
+          const isEmerging =
+            isEmergingRivalry({
+              matches,
+              balls:
+                row.balls,
+              dismissals:
+                row.wickets,
+            });
+
+          const isQualified =
+            isEstablished ||
+            isEmerging;
+
           const confidence =
-            Math.min(
-              1,
-              (
-                row.balls /
-                  18 +
-                matches /
-                  4 +
-                row.wickets /
-                  3
-              ) /
-                3
-            );
+            rivalryEvidenceConfidence({
+              matches,
+              balls:
+                row.balls,
+              dismissals:
+                row.wickets,
+            });
 
           const economy =
             row.balls
@@ -1096,8 +1169,19 @@ function buildMatchups({
             ...row,
             matches,
             isQualified,
+            isEstablished,
+            isEmerging,
+            matchupCategory:
+              isEstablished
+                ? "ESTABLISHED_RIVALRY"
+                : "EMERGING_MATCHUP",
             confidence,
             rivalryScore:
+              (
+                isEstablished
+                  ? 1000
+                  : 500
+              ) +
               impact *
                 (
                   0.45 +
@@ -1317,10 +1401,9 @@ function rivalryBetween({
     bDismissals;
 
   /*
-   * Direct rivalry is shown as established only after repeat evidence.
-   * Qualification:
-   * - at least two shared matches and twelve legal head-to-head balls, OR
-   * - at least two direct bowler-attributed dismissals.
+   * Direct rivalry is established only after recurrence + sample strength.
+   * A tiny but dramatic sample (for example 2 dismissals in 3 balls across
+   * 2 matches) is an Emerging Matchup, not a permanent career rivalry.
    */
   const hasStrongSingleMatchBattingEvidence =
     sharedMatchCount ===
@@ -1348,12 +1431,22 @@ function rivalryBetween({
       totalDismissals,
     });
 
+  const isEmerging =
+    isEmergingDirectRivalry({
+      matches:
+        sharedMatchCount,
+      totalBalls,
+      totalDismissals,
+    });
+
   const isNotable =
     !isEstablished &&
+    !isEmerging &&
     hasStrongSingleMatchBattingEvidence;
 
   const hasMeaningfulMatchup =
     isEstablished ||
+    isEmerging ||
     isNotable;
 
   const confidence =
@@ -1388,6 +1481,7 @@ function rivalryBetween({
       sharedMatchCount,
     totalBalls,
     isEstablished,
+    isEmerging,
     isNotable,
     hasMeaningfulMatchup,
     confidence,
@@ -1418,7 +1512,11 @@ function rivalryBetween({
         ? "Not enough history"
         : aScore ===
             bScore
-          ? "Tied rivalry"
+          ? (
+              isEstablished
+                ? "Tied rivalry"
+                : "Tied matchup"
+            )
           : aScore >
               bScore
             ? playerA.name
@@ -2122,9 +2220,11 @@ export default async function ComparePlayersPage({
                 <span>
                   {directRivalry.isEstablished
                     ? "Rivalry leader"
-                    : directRivalry.isNotable
-                      ? "Notable matchup leader"
-                      : "Matchup status"}
+                    : directRivalry.isEmerging
+                      ? "Emerging matchup advantage"
+                      : directRivalry.isNotable
+                        ? "Notable matchup leader"
+                        : "Matchup status"}
                 </span>
                 <strong>
                   {directRivalry.matches
@@ -2134,9 +2234,11 @@ export default async function ComparePlayersPage({
                 <small>
                   {directRivalry.isEstablished
                     ? `${directRivalry.confidence}% evidence confidence`
-                    : directRivalry.isNotable
-                      ? `${directRivalry.confidence}% confidence · strong single-match batting evidence`
-                      : `Needs repeated interaction — currently ${directRivalry.confidence}% confidence`}
+                    : directRivalry.isEmerging
+                      ? `${directRivalry.confidence}% confidence · meaningful early evidence, but not enough history for an established rivalry`
+                      : directRivalry.isNotable
+                        ? `${directRivalry.confidence}% confidence · strong single-match batting evidence`
+                        : `Needs repeated interaction — currently ${directRivalry.confidence}% confidence`}
                 </small>
               </div>
 
@@ -2168,7 +2270,7 @@ export default async function ComparePlayersPage({
                 </h2>
               </div>
               <span>
-                Established rivalries + notable batting matchups
+                Established rivalries + emerging/notable matchups
               </span>
             </div>
 
@@ -2306,7 +2408,10 @@ function MatchupPanel({
                         {row.matchupCategory ===
                         "ESTABLISHED_RIVALRY"
                           ? "⚔ Established rivalry"
-                          : "🔥 Notable batting matchup"}
+                          : row.matchupCategory ===
+                              "EMERGING_MATCHUP"
+                            ? "🌱 Emerging matchup"
+                            : "🔥 Notable batting matchup"}
                       </small>
                     </b>
                   ) : (
@@ -2314,6 +2419,12 @@ function MatchupPanel({
                       {row.wickets} wickets
                       <small>
                         {row.overs} overs · {row.economy} econ
+                      </small>
+                      <small>
+                        {row.matchupCategory ===
+                        "ESTABLISHED_RIVALRY"
+                          ? "⚔ Established rivalry"
+                          : "🌱 Emerging matchup"}
                       </small>
                     </b>
                   )}
@@ -2325,7 +2436,7 @@ function MatchupPanel({
         <p className="pcp-no-data">
           {type === "batting"
             ? "No qualifying batting matchup yet."
-            : "No qualifying bowling rivalry yet."}
+            : "No qualifying bowling matchup yet."}
         </p>
       )}
     </article>

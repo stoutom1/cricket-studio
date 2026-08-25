@@ -4,9 +4,13 @@
    Product rules:
    - ESTABLISHED RIVALRY is career-level and must be identical wherever it
      is shown (My Feed / Player Journey / Compare qualification).
-   - NOTABLE MATCHUP may come from one strong batting spell and belongs to
-     Compare Players, not the permanent career-rival label.
-   - Surprise 1 + Surprise 2 duplicate player identities can be merged by
+   - EMERGING MATCHUP highlights meaningful early head-to-head evidence
+     without promoting a tiny sample into a permanent career rivalry.
+   - NOTABLE BATTING MATCHUP may come from one exceptional batting spell
+     and belongs to Compare Players, not the permanent career-rival label.
+   - Player reputation, role labels, or Cric4All ratings never determine
+     rivalry. Only recorded direct head-to-head evidence does.
+   - Surprise Cricket League duplicate player identities can be merged by
      passing the page's existing identityKey(player) function.
    ========================================================= */
 
@@ -56,6 +60,16 @@ function normalizeMatchIds(candidate) {
   return new Set();
 }
 
+/*
+ * Career-level rivalry requires BOTH recurrence and a meaningful amount of
+ * direct interaction. Two dismissals in three balls across two matches are
+ * important, but they are an emerging matchup — not yet an established
+ * career rivalry.
+ *
+ * Established when:
+ *   A) >= 3 direct matches AND >= 12 legal balls, OR
+ *   B) >= 3 direct matches AND >= 2 dismissals AND >= 6 legal balls.
+ */
 export function isEstablishedRivalry({
   matches,
   balls,
@@ -65,12 +79,53 @@ export function isEstablishedRivalry({
   const legalBalls = number(balls);
   const directDismissals = number(dismissals);
 
+  if (matchCount < 3) {
+    return false;
+  }
+
+  return (
+    legalBalls >= 12 ||
+    (
+      directDismissals >= 2 &&
+      legalBalls >= 6
+    )
+  );
+}
+
+/*
+ * Emerging matchup: repeated direct evidence exists, but the sample has not
+ * reached career-rivalry strength. This tier is useful in Compare Players
+ * and matchup panels without polluting "Biggest established rival".
+ */
+export function isEmergingRivalry({
+  matches,
+  balls,
+  dismissals,
+}) {
+  if (
+    isEstablishedRivalry({
+      matches,
+      balls,
+      dismissals,
+    })
+  ) {
+    return false;
+  }
+
+  const matchCount = number(matches);
+  const legalBalls = number(balls);
+  const directDismissals = number(dismissals);
+
   return (
     (
       matchCount >= 2 &&
       legalBalls >= 6
     ) ||
-    directDismissals >= 2
+    (
+      matchCount >= 2 &&
+      directDismissals >= 2 &&
+      legalBalls >= 3
+    )
   );
 }
 
@@ -90,6 +145,10 @@ export function isNotableBattingMatchup({
     return false;
   }
 
+  /*
+   * A one-off batting spell may still be worth surfacing as "notable",
+   * but it is intentionally not a career rivalry.
+   */
   return (
     number(balls) >= 8 ||
     number(runs) >= 20
@@ -103,17 +162,17 @@ export function rivalryEvidenceConfidence({
 }) {
   const confidence =
     Math.min(
-      number(balls) / 18,
+      number(balls) / 24,
       1
     ) * 0.5 +
     Math.min(
       number(matches) / 4,
       1
-    ) * 0.3 +
+    ) * 0.35 +
     Math.min(
       number(dismissals) / 3,
       1
-    ) * 0.2;
+    ) * 0.15;
 
   return Math.min(
     1,
@@ -134,14 +193,14 @@ export function establishedRivalryScore({
     });
 
   /*
-   * Runs are intentionally NOT part of the established-rival score.
-   * A single explosive batting spell belongs to Notable Matchup. A career
-   * rivalry is ranked by repeated direct evidence and dismissals.
+   * Established-rival ranking prioritizes recurrence and sample strength.
+   * Dismissals remain important, but cannot overpower a tiny sample because
+   * qualification already requires recurrence + minimum legal balls.
    */
   const baseScore =
-    number(balls) +
-    number(dismissals) * 22 +
-    number(matches) * 6;
+    number(matches) * 10 +
+    number(balls) * 1.25 +
+    number(dismissals) * 14;
 
   return (
     baseScore *
@@ -199,7 +258,6 @@ function mergeCandidates({
     if (candidatePlayerId) {
       row.playerIds.add(candidatePlayerId);
 
-      /* Stable representative/canonical link target. */
       if (
         !row.playerId ||
         candidatePlayerId < row.playerId
@@ -237,6 +295,7 @@ export function buildEstablishedRivalries({
   })
     .map((row) => {
       const matchCount = row.matchIds.size;
+
       const isEstablished =
         isEstablishedRivalry({
           matches: matchCount,
@@ -280,10 +339,10 @@ export function buildEstablishedRivalries({
           left.rivalryScore ||
         right.matchCount -
           left.matchCount ||
-        right.dismissals -
-          left.dismissals ||
         right.balls -
           left.balls ||
+        right.dismissals -
+          left.dismissals ||
         left.playerId -
           right.playerId
     );
@@ -296,16 +355,61 @@ export function selectTopEstablishedRival(options) {
   );
 }
 
+/*
+ * Direct two-player rivalry considers both batting directions together.
+ * It intentionally uses a slightly larger total-ball threshold because the
+ * sample is pooled across both directions.
+ */
 export function isEstablishedDirectRivalry({
   matches,
   totalBalls,
   totalDismissals,
 }) {
+  const matchCount = number(matches);
+  const balls = number(totalBalls);
+  const dismissals = number(totalDismissals);
+
+  if (matchCount < 3) {
+    return false;
+  }
+
+  return (
+    balls >= 18 ||
+    (
+      dismissals >= 2 &&
+      balls >= 8
+    )
+  );
+}
+
+export function isEmergingDirectRivalry({
+  matches,
+  totalBalls,
+  totalDismissals,
+}) {
+  if (
+    isEstablishedDirectRivalry({
+      matches,
+      totalBalls,
+      totalDismissals,
+    })
+  ) {
+    return false;
+  }
+
+  const matchCount = number(matches);
+  const balls = number(totalBalls);
+  const dismissals = number(totalDismissals);
+
   return (
     (
-      number(matches) >= 2 &&
-      number(totalBalls) >= 12
+      matchCount >= 2 &&
+      balls >= 8
     ) ||
-    number(totalDismissals) >= 2
+    (
+      matchCount >= 2 &&
+      dismissals >= 2 &&
+      balls >= 3
+    )
   );
 }

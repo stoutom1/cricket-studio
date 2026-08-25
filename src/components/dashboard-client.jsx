@@ -9,6 +9,7 @@ import {formatMatchDateTime,getMatchTimelineText,} from "@/lib/date";
 import { buildMatchInsights } from "@/lib/match-insights";
 import { createPortal } from "react-dom";
 import BirthdayPushSettings from "@/components/BirthdayPushSettings";
+import PlayerInactivityAlertSettings from "@/components/PlayerInactivityAlertSettings";
 import TeamKitManagement from "@/components/kit/TeamKitManagement";
 import Link from "next/link";
 import LeagueKitShortcut from "@/components/kit/LeagueKitShortcut";
@@ -720,6 +721,10 @@ const [showScorerAccountMenu, setShowScorerAccountMenu] = useState(false);
 const [showInviteRoleModal, setShowInviteRoleModal] = useState(false);
 const [selectedInviteRole, setSelectedInviteRole] = useState("VIEWER");
 const [inviteGenerating, setInviteGenerating] = useState(false);
+
+/* Owner/Super Admin player inactivity settings panel. */
+const [showPlayerInactivitySettings, setShowPlayerInactivitySettings] = useState(false);
+const [showBirthdayLeagueToolSettings, setShowBirthdayLeagueToolSettings] = useState(false);
 
 const canScoreCurrentLeague =
   Boolean(permissions?.canScoreMatch) &&
@@ -5948,22 +5953,66 @@ if (refreshedLeague) {
   }
 };
 
-  async function handleDeletePlayer(playerId, playerName) {
-    if (!confirm(`Delete player "${playerName}"?`)) return;
+  async function handleDeletePlayer(
+    playerId,
+    playerName
+  ) {
+    const privilegedRemoval =
+      Boolean(
+        isSuperAdmin ||
+        activeLeagueRole ===
+          "OWNER"
+      );
+
+    const confirmationText =
+      privilegedRemoval
+        ? `Remove player "${playerName}" from the active roster?\n\nIf this player has historical match data, Cric4All will preserve that history and remove the player only from active roster workflows.`
+        : `Delete player "${playerName}"?`;
+
+    if (
+      !confirm(
+        confirmationText
+      )
+    ) {
+      return;
+    }
 
     setMessage("");
     setError("");
 
     try {
-      await api(`/api/players/${playerId}`, {
-        method: "DELETE"
-      });
+      const result =
+        await api(
+          `/api/players/${playerId}`,
+          {
+            method:
+              "DELETE",
+          }
+        );
+
       await refreshPlayerLists();
-      setMessage("🗑️ Player deleted");
-      showToast("success", "✅ Player deleted");
+
+      const successMessage =
+        result?.archived
+          ? "🗑️ Player removed from active roster; historical match data preserved."
+          : "🗑️ Player deleted";
+
+      setMessage(
+        successMessage
+      );
+
+      showToast(
+        "success",
+        result?.archived
+          ? "✅ Player removed from active roster"
+          : "✅ Player deleted"
+      );
+
       await refreshAll();
     } catch (err) {
-      setError(err.message);
+      setError(
+        err.message
+      );
     }
   }
 
@@ -17115,6 +17164,22 @@ const canManageBirthdayTools =
     )
   );
 
+const canManagePlayerInactivityAlerts =
+  Boolean(
+    isSuperAdmin ||
+    activeLeagueRole ===
+      "OWNER"
+  );
+
+const canDeletePlayers =
+  Boolean(
+    isSuperAdmin ||
+    activeLeagueRole ===
+      "OWNER" ||
+    permissions?.canDeletePlayer ===
+      true
+  );
+
 const canViewLeagueKitShortcut =
   Boolean(
     isSuperAdmin ||
@@ -24890,9 +24955,64 @@ const playerRoleBadge = (row) => {
       </details>
     </div>
 <div className="league-tools-shell">
+  {canManagePlayerInactivityAlerts && activeLeagueId && (
+    <div className="league-tool-panel player-inactivity-tool">
+      <button
+        type="button"
+        className="league-tool-summary player-inactivity-summary-button"
+        aria-expanded={showPlayerInactivitySettings}
+        onClick={() =>
+          setShowPlayerInactivitySettings(
+            (current) => !current
+          )
+        }
+      >
+        <div className="league-tool-summary-main">
+          <span className="league-tool-icon">
+            📵
+          </span>
+
+          <div>
+            <strong>
+              Player Inactivity Alerts
+            </strong>
+
+            <small>
+              60-day SMS review notice
+            </small>
+          </div>
+        </div>
+
+        <span className="league-tool-action">
+          {showPlayerInactivitySettings
+            ? "Close"
+            : "Open"}
+
+          <span
+            className="league-tool-chevron"
+            aria-hidden="true"
+          >
+            {showPlayerInactivitySettings
+              ? "⌃"
+              : "⌄"}
+          </span>
+        </span>
+      </button>
+    </div>
+  )}
+
   {canViewBirthdayTools && (
-    <details className="league-tool-panel birthday-tool">
-      <summary className="league-tool-summary">
+    <div className="league-tool-panel birthday-tool league-tool-compact-card">
+      <button
+        type="button"
+        className="league-tool-summary league-tool-summary-button"
+        aria-expanded={showBirthdayLeagueToolSettings}
+        onClick={() =>
+          setShowBirthdayLeagueToolSettings(
+            (current) => !current
+          )
+        }
+      >
         <div className="league-tool-summary-main">
           <span className="league-tool-icon">
             🎂
@@ -24912,53 +25032,21 @@ const playerRoleBadge = (row) => {
         </div>
 
         <span className="league-tool-action">
-          <span className="league-tool-action-collapsed">
-            Open
-          </span>
+          {showBirthdayLeagueToolSettings
+            ? "Close"
+            : "Open"}
 
-          <span className="league-tool-action-open">
-            Close
-          </span>
-
-          <span className="league-tool-chevron">
-            ⌄
+          <span
+            className="league-tool-chevron"
+            aria-hidden="true"
+          >
+            {showBirthdayLeagueToolSettings
+              ? "⌃"
+              : "⌄"}
           </span>
         </span>
-      </summary>
-
-      <div className="league-tool-content">
-        {canManageBirthdayTools ? (
-          <BirthdayPushSettings
-            leagueId={
-              activeLeagueId
-            }
-          />
-        ) : (
-          <div className="birthday-readonly-shortcut">
-            <span aria-hidden="true">
-              👁️
-            </span>
-
-            <div>
-              <strong>
-                Birthday events — view only
-              </strong>
-
-              <small>
-                You can view the Birthday Center and today’s birthdays. Add, edit, delete, notification, and sharing controls remain disabled.
-              </small>
-            </div>
-
-            <Link
-              href={`/leagues/${activeLeagueId}/birthdays`}
-              className="birthday-readonly-shortcut-link"
-            >
-              Open Birthday Center →
-            </Link>
-          </div>
-        )}
-      </div>
-    </details>
+      </button>
+    </div>
   )}
 
   {canViewLeagueKitShortcut && (
@@ -25033,7 +25121,111 @@ const playerRoleBadge = (row) => {
       </span>
     </div>
   </div>
+
 </div>
+
+  {canManagePlayerInactivityAlerts &&
+    activeLeagueId &&
+    showPlayerInactivitySettings && (
+      <section
+        className="league-tool-expanded-panel player-inactivity-expanded-panel"
+        aria-label="Player inactivity alert settings"
+      >
+        <div className="league-tool-expanded-panel-heading">
+          <div>
+            <strong>
+              📵 Player Inactivity Alerts
+            </strong>
+            <small>
+              60-day SMS review notice
+            </small>
+          </div>
+
+          <button
+            type="button"
+            onClick={() =>
+              setShowPlayerInactivitySettings(false)
+            }
+          >
+            Close
+          </button>
+        </div>
+
+        <PlayerInactivityAlertSettings
+          leagueId={
+            activeLeagueId
+          }
+          leagueName={
+            activeLeague?.name ||
+            selectedLeague?.name ||
+            "Active league"
+          }
+        />
+      </section>
+    )}
+
+  {canViewBirthdayTools &&
+    activeLeagueId &&
+    showBirthdayLeagueToolSettings && (
+      <section
+        className="league-tool-expanded-panel birthday-expanded-panel"
+        aria-label="Birthday settings"
+      >
+        <div className="league-tool-expanded-panel-heading">
+          <div>
+            <strong>
+              🎂 Birthdays
+            </strong>
+            <small>
+              {canManageBirthdayTools
+                ? "Dates & reminders"
+                : "Events & celebrations"}
+            </small>
+          </div>
+
+          <button
+            type="button"
+            onClick={() =>
+              setShowBirthdayLeagueToolSettings(false)
+            }
+          >
+            Close
+          </button>
+        </div>
+
+        {canManageBirthdayTools ? (
+          <BirthdayPushSettings
+            leagueId={
+              activeLeagueId
+            }
+          />
+        ) : (
+          <div className="birthday-readonly-shortcut">
+            <span aria-hidden="true">
+              👁️
+            </span>
+
+            <div>
+              <strong>
+                Birthday events — view only
+              </strong>
+
+              <small>
+                You can view the Birthday Center and today’s birthdays. Add, edit, delete, notification, and sharing controls remain disabled.
+              </small>
+            </div>
+
+            <Link
+              href={`/leagues/${activeLeagueId}/birthdays`}
+              className="birthday-readonly-shortcut-link"
+            >
+              Open Birthday Center →
+            </Link>
+          </div>
+        )}
+      </section>
+    )}
+
   </div>
 
   {/* Mobile-only state-aware experience */}
@@ -26030,7 +26222,7 @@ onClick={() => {
           </button>
         )}
 
-        {permissions?.canDeletePlayer && (
+        {canDeletePlayers && (
           <button
             type="button"
             className="player-delete-btn"
@@ -26088,7 +26280,7 @@ onClick={() => {
             </button>
           )}
 
-          {permissions?.canDeletePlayer && (
+          {canDeletePlayers && (
             <button
               type="button"
               className="danger"

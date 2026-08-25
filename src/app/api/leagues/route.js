@@ -7,6 +7,7 @@ export const dynamic = "force-dynamic";
 import { logAudit } from "@/lib/audit";
 import { slugify } from "@/lib/slug";
 import { recordGrowthEvent } from "@/lib/growth";
+import { filterArchivedPlayersFromTeams } from "@/lib/player-roster-archive";
 
 export async function GET() {
   const session =
@@ -77,8 +78,24 @@ const leagues = await prisma.league.findMany({
   }
 });
 
+  const leaguesWithActiveRosters =
+    await Promise.all(
+      leagues.map(
+        async (
+          league
+        ) => ({
+          ...league,
+          teams:
+            await filterArchivedPlayersFromTeams(
+              league.teams,
+              league.id
+            ),
+        })
+      )
+    );
+
   return NextResponse.json(
-    leagues
+    leaguesWithActiveRosters
   );
 }
 

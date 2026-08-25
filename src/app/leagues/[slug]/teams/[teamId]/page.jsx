@@ -7,6 +7,7 @@ import {
   absoluteCric4AllUrl,
   publicPageRobots,
 } from "@/lib/seo";
+import { getArchivedPlayerIds, filterArchivedPlayers } from "@/lib/player-roster-archive";
 
 function normalizeStatus(status) {
   return String(status || "SCHEDULED").toUpperCase();
@@ -134,7 +135,19 @@ export default async function PublicTeamPage({ params }) {
     notFound();
   }
 
-  const team = league.teams[0];
+  const archivedPlayerIds =
+    await getArchivedPlayerIds(
+      league.id
+    );
+
+  const team = {
+    ...league.teams[0],
+    players:
+      filterArchivedPlayers(
+        league.teams[0]?.players,
+        archivedPlayerIds
+      ),
+  };
 
   const teamMatches = league.matches.filter(
     (match) =>

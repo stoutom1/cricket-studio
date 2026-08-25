@@ -13,6 +13,7 @@ import {
   absoluteCric4AllUrl,
   publicPageRobots,
 } from "@/lib/seo";
+import { getArchivedPlayerIds, filterArchivedPlayers } from "@/lib/player-roster-archive";
 
 export async function generateMetadata({ params }) {
   const { slug } = await params;
@@ -148,6 +149,23 @@ balls: {
   if (!league) {
     notFound();
   }
+
+  const archivedPlayerIds =
+    await getArchivedPlayerIds(
+      league.id
+    );
+
+  league.teams =
+    (league.teams || []).map(
+      (team) => ({
+        ...team,
+        players:
+          filterArchivedPlayers(
+            team.players,
+            archivedPlayerIds
+          ),
+      })
+    );
 
   const session = await getServerSession(authOptions);
 
