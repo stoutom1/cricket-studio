@@ -10,6 +10,9 @@ import {
   buildPublicMatchResult,
 } from "@/lib/public-match-result";
 import {
+  buildPostMatchExperience,
+} from "@/lib/post-match-experience";
+import {
   absoluteCric4AllUrl,
   publicPageRobots,
   seoDate,
@@ -73,8 +76,16 @@ export async function generateMetadata({ params }) {
           id: numericMatchId,
         },
         include: {
-          teamA: true,
-          teamB: true,
+          teamA: {
+            include: {
+              players: true,
+            },
+          },
+          teamB: {
+            include: {
+              players: true,
+            },
+          },
           series: true,
           balls: true,
         },
@@ -194,8 +205,16 @@ export default async function PublicMatchPage({ params }) {
           id: numericMatchId,
         },
         include: {
-          teamA: true,
-          teamB: true,
+          teamA: {
+            include: {
+              players: true,
+            },
+          },
+          teamB: {
+            include: {
+              players: true,
+            },
+          },
           series: true,
           balls: true,
         },
@@ -220,14 +239,26 @@ export default async function PublicMatchPage({ params }) {
       match
     );
 
-  const matchInfoItems = [
-    ["League", league.name],
-    ["Series", match.series?.name || "No Series"],
-    ["Status", formatStatus(status)],
-    ["Venue", match.venueName || "Not set"],
-    ["Address", match.venueAddress || "Not set"],
-    ["Scorecard", match.shareCode ? "Available" : "Not shared yet"],
-  ];
+  const postMatchExperience =
+    buildPostMatchExperience({
+      match,
+      league,
+    });
+
+  const matchDateLabel =
+    new Intl.DateTimeFormat(
+      "en-US",
+      {
+        month: "short",
+        day: "numeric",
+        year: "numeric",
+      }
+    ).format(
+      new Date(
+        match.scheduledAt ||
+          match.createdAt
+      )
+    );
 
   const isPublic =
     String(
@@ -506,135 +537,219 @@ export default async function PublicMatchPage({ params }) {
           </div>
         </header>
 
-        <section className="smp-score-band" aria-label="Match score summary">
+        <section
+          className="smp-score-band smp-score-band--compact"
+          aria-label="Match score summary"
+        >
           <div>
             <span>Total runs</span>
             <strong>{totalRuns}</strong>
           </div>
-
           <div>
             <span>Overs</span>
             <strong>{overs}</strong>
           </div>
-
           <div>
             <span>Wickets</span>
             <strong>{totalWickets}</strong>
           </div>
-
           <div>
             <span>Scorecard</span>
             <strong>{match.shareCode ? "Available" : "Pending"}</strong>
           </div>
         </section>
 
-        <div className="smp-content">
-          <section className="smp-main-column">
-            <div className="smp-section-heading">
+        <section
+          className="smp-match-meta-strip"
+          aria-label="Match details"
+        >
+          <div>
+            <span aria-hidden="true">🏆</span>
+            <p>
+              <small>Competition</small>
+              <strong>{match.series?.name || league.name}</strong>
+            </p>
+          </div>
+
+          <div>
+            <span aria-hidden="true">📅</span>
+            <p>
+              <small>Date</small>
+              <strong>{matchDateLabel}</strong>
+            </p>
+          </div>
+
+          <div>
+            <span aria-hidden="true">📍</span>
+            <p>
+              <small>Venue</small>
+              <strong>
+                {match.venueName ||
+                  match.venueAddress ||
+                  "Not set"}
+              </strong>
+            </p>
+          </div>
+
+          <div>
+            <span aria-hidden="true">✅</span>
+            <p>
+              <small>Status</small>
+              <strong>{formatStatus(status)}</strong>
+            </p>
+          </div>
+        </section>
+
+        {postMatchExperience ? (
+          <section
+            className="smp-post-match smp-post-match--compact"
+            aria-labelledby="smp-post-match-title"
+          >
+            <div className="smp-post-match-heading smp-post-match-heading--compact">
               <div>
-                <p>Match center</p>
-                <h2>Match overview</h2>
+                <p>🏆 Match Intelligence</p>
+                <h2 id="smp-post-match-title">
+                  The performances that shaped the match
+                </h2>
+                <span>
+                  Awards, turning points and the story of the game — calculated
+                  from completed-match scoring data.
+                </span>
               </div>
-              <span>Everything a spectator needs at a glance</span>
+
+              <span className="smp-post-match-badge">
+                Cric4All
+              </span>
             </div>
 
-            <div className="smp-overview-list">
-              <div>
-                <span>Status</span>
-                <strong>{formatStatus(status)}</strong>
-                <small>Current match state</small>
-              </div>
+            <article className="smp-story-feature">
+              <span className="smp-story-feature-icon" aria-hidden="true">
+                📝
+              </span>
 
               <div>
-                <span>Series</span>
-                <strong>{match.series?.name || "No Series"}</strong>
-                <small>
-                  {match.series?.year
-                    ? `Season ${match.series.year}`
-                    : "Competition details"}
-                </small>
+                <small>Post-match story</small>
+                <strong>{matchResultText}</strong>
+                <p>{postMatchExperience.story}</p>
               </div>
+            </article>
 
-              <div>
-                <span>Venue</span>
-                <strong>
-                  {match.venueName ||
-                    match.venueAddress ||
-                    "Not set"}
-                </strong>
-                <small>
-                  {match.venueAddress ||
-                    "Physical venue has not been added yet"}
-                </small>
-              </div>
+            <div className="smp-match-awards-grid smp-match-awards-grid--compact">
+              {postMatchExperience.awards.map((award) => (
+                <article
+                  className={`smp-match-award smp-match-award--compact smp-match-award--${award.key.toLowerCase()}`}
+                  key={award.key}
+                >
+                  <div className="smp-match-award-top">
+                    <span
+                      className="smp-match-award-icon"
+                      aria-hidden="true"
+                    >
+                      {award.icon}
+                    </span>
 
-              <div>
-                <span>Total runs</span>
-                <strong>{totalRuns}</strong>
-                <small>Runs recorded in this match</small>
-              </div>
+                    <div>
+                      <small>{award.title}</small>
+                      <strong>{award.playerName}</strong>
+                      <em>{award.teamName || "League player"}</em>
+                    </div>
+                  </div>
 
-              <div>
-                <span>Overs</span>
-                <strong>{overs}</strong>
-                <small>Calculated from legal deliveries</small>
-              </div>
+                  <div className="smp-match-award-value">
+                    {award.value}
+                  </div>
 
-              <div>
-                <span>Wickets</span>
-                <strong>{totalWickets}</strong>
-                <small>Retired hurt excluded</small>
-              </div>
+                  <p>{award.subtitle}</p>
+
+                  <details>
+                    <summary>How calculated</summary>
+                    <p>{award.explanation}</p>
+                  </details>
+                </article>
+              ))}
+            </div>
+
+            <div className="smp-match-intelligence-grid smp-match-intelligence-grid--compact">
+              {postMatchExperience.bestPartnership ? (
+                <article className="smp-match-intelligence-card">
+                  <span aria-hidden="true">🤝</span>
+                  <div>
+                    <small>Best partnership</small>
+                    <strong>
+                      {postMatchExperience.bestPartnership.playerNames.join(
+                        " & "
+                      )}
+                    </strong>
+                    <p>
+                      {postMatchExperience.bestPartnership.runs} runs
+                      {" · "}
+                      {postMatchExperience.bestPartnership.balls} legal balls
+                      {postMatchExperience.bestPartnership.teamName
+                        ? ` · ${postMatchExperience.bestPartnership.teamName}`
+                        : ""}
+                    </p>
+                  </div>
+                </article>
+              ) : null}
+
+              {postMatchExperience.turningPoint ? (
+                <article className="smp-match-intelligence-card">
+                  <span aria-hidden="true">⚡</span>
+                  <div>
+                    <small>Turning point</small>
+                    <strong>
+                      Innings {postMatchExperience.turningPoint.inningsNo} · Over{" "}
+                      {postMatchExperience.turningPoint.overNumber}
+                    </strong>
+                    <p>
+                      {postMatchExperience.turningPoint.runs} runs
+                      {" · "}
+                      {postMatchExperience.turningPoint.wickets} wicket
+                      {postMatchExperience.turningPoint.wickets === 1 ? "" : "s"}
+                      {" · "}
+                      {postMatchExperience.turningPoint.boundaries} boundaries
+                    </p>
+                  </div>
+                </article>
+              ) : null}
             </div>
 
             {match.shareCode ? (
-              <section className="smp-scorecard-panel">
+              <div className="smp-scorecard-cta">
                 <div>
-                  <p>Live scorecard</p>
-                  <h2>Follow every delivery</h2>
-                  <span>
-                    Open the spectator scorecard for live scoring, innings details,
-                    and ball-by-ball updates.
-                  </span>
+                  <span aria-hidden="true">📺</span>
+                  <p>
+                    <small>Ball-by-ball scorecard</small>
+                    <strong>Want the full innings detail?</strong>
+                  </p>
                 </div>
 
                 <a href={`/live/${match.shareCode}`}>
-                  View live scorecard
+                  Open scorecard
                   <span aria-hidden="true">→</span>
                 </a>
-              </section>
-            ) : (
-              <section className="smp-empty">
-                <span aria-hidden="true">—</span>
-                <div>
-                  <strong>No scorecard yet</strong>
-                  <p>This match has not been scored or shared yet.</p>
-                </div>
-              </section>
-            )}
+              </div>
+            ) : null}
           </section>
-
-          <aside className="smp-side-column">
-            <section className="smp-story">
-              <p>Match status</p>
+        ) : (
+          <section className="smp-live-summary">
+            <div>
+              <p>Match center</p>
               <h2>{matchResultText}</h2>
               <span>
-                This public match page updates from the league scoring data and
-                gives spectators a direct path to the live scorecard whenever it
-                is available.
+                Match intelligence and awards appear automatically after the
+                match is completed.
               </span>
-            </section>
+            </div>
 
-            <section className="smp-info-list">
-              {matchInfoItems.map(([label, value]) => (
-                <div key={label}>
-                  <span>{label}</span>
-                  <strong>{value}</strong>
-                </div>
-              ))}
-            </section>
-          </aside>
-        </div>
+            {match.shareCode ? (
+              <a href={`/live/${match.shareCode}`}>
+                Open scorecard
+                <span aria-hidden="true">→</span>
+              </a>
+            ) : null}
+          </section>
+        )}
       </section>
       </main>
     </>

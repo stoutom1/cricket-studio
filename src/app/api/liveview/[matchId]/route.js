@@ -12,6 +12,556 @@ import {
   latestDlsState,
 } from "@/lib/dls-standard";
 
+function normalizeLiveWicketType(
+  value
+) {
+  return String(
+    value ||
+    ""
+  )
+    .trim()
+    .toUpperCase();
+}
+
+function isBowlerCreditedLiveWicket(
+  ball
+) {
+  if (!ball?.isWicket) {
+    return false;
+  }
+
+  const wicketType =
+    normalizeLiveWicketType(
+      ball.wicketType
+    );
+
+  if (
+    [
+      "RUN_OUT",
+      "RETIRED_OUT",
+      "RETIRED_HURT",
+    ].includes(
+      wicketType
+    )
+  ) {
+    return false;
+  }
+
+  return (
+    String(
+      ball.extraType ||
+      ""
+    )
+      .trim()
+      .toUpperCase() !==
+    "NOBALL"
+  );
+}
+
+function buildLiveBroadcastIntelligence({
+  currentInningsBalls,
+  currentSummary,
+  playerMap,
+}) {
+  const currentState =
+    currentSummary?.currentState ||
+    null;
+
+  if (
+    !currentState ||
+    !currentInningsBalls?.length
+  ) {
+    return null;
+  }
+
+  const strikerId =
+    Number(
+      currentState.strikerId
+    ) ||
+    null;
+
+  const bowlerId =
+    Number(
+      currentState.bowlerId
+    ) ||
+    null;
+
+  const currentPartnership =
+    [
+      ...(currentSummary?.partnerships ||
+        []),
+    ]
+      .reverse()
+      .find(
+        (row) =>
+          row?.ongoing
+      ) ||
+    null;
+
+  let matchupRuns =
+    0;
+  let matchupBalls =
+    0;
+  let matchupDismissals =
+    0;
+
+  if (
+    strikerId &&
+    bowlerId
+  ) {
+    for (
+      const ball
+      of currentInningsBalls
+    ) {
+      if (
+        Number(
+          ball.strikerId
+        ) !==
+          strikerId ||
+        Number(
+          ball.bowlerId
+        ) !==
+          bowlerId
+      ) {
+        continue;
+      }
+
+      matchupRuns +=
+        Number(
+          ball.runsOffBat ||
+          0
+        );
+
+      if (
+        Boolean(
+          ball.legalDelivery
+        ) &&
+        String(
+          ball.extraType ||
+          ""
+        )
+          .trim()
+          .toUpperCase() !==
+          "WIDE" &&
+        String(
+          ball.extraType ||
+          ""
+        )
+          .trim()
+          .toUpperCase() !==
+          "NOBALL"
+      ) {
+        matchupBalls +=
+          1;
+      }
+
+      if (
+        Number(
+          ball.dismissedPlayerId
+        ) ===
+          strikerId &&
+        isBowlerCreditedLiveWicket(
+          ball
+        )
+      ) {
+        matchupDismissals +=
+          1;
+      }
+    }
+  }
+
+  const legalRecent =
+    [
+      ...currentInningsBalls,
+    ]
+      .reverse()
+      .filter(
+        (ball) =>
+          Boolean(
+            ball.legalDelivery
+          )
+      )
+      .slice(
+        0,
+        18
+      );
+
+  const phaseRuns =
+    legalRecent.reduce(
+      (sum, ball) =>
+        sum +
+        Number(
+          ball.totalRuns ||
+          0
+        ),
+      0
+    );
+
+  const phaseWickets =
+    legalRecent.reduce(
+      (sum, ball) =>
+        sum +
+        (
+          ball.isWicket &&
+          normalizeLiveWicketType(
+            ball.wicketType
+          ) !==
+            "RETIRED_HURT"
+            ? 1
+            : 0
+        ),
+      0
+    );
+
+  const phaseBoundaries =
+    legalRecent.reduce(
+      (sum, ball) =>
+        sum +
+        (
+          [
+            4,
+            6,
+          ].includes(
+            Number(
+              ball.runsOffBat ||
+              0
+            )
+          )
+            ? 1
+            : 0
+        ),
+      0
+    );
+
+  let phaseLabel =
+    "Balanced phase";
+  let phaseTone =
+    "balanced";
+
+  if (
+    legalRecent.length >=
+      6 &&
+    (
+      phaseWickets >=
+        2 ||
+      phaseRuns <=
+        Math.ceil(
+          legalRecent.length *
+            0.65
+        )
+    )
+  ) {
+    phaseLabel =
+      "Bowling pressure";
+    phaseTone =
+      "bowling";
+  } else if (
+    legalRecent.length >=
+      6 &&
+    (
+      phaseRuns >=
+        Math.ceil(
+          legalRecent.length *
+            1.35
+        ) ||
+      phaseBoundaries >=
+        3
+    )
+  ) {
+    phaseLabel =
+      "Batting surge";
+    phaseTone =
+      "batting";
+  }
+
+  function nextBattingMilestone(
+    runs
+  ) {
+    const milestones =
+      [
+        50,
+        100,
+        150,
+        200,
+      ];
+
+    return milestones.find(
+      (target) =>
+        Number(
+          runs ||
+          0
+        ) <
+        target
+    ) ||
+    null;
+  }
+
+  function nextBowlingMilestone(
+    wickets
+  ) {
+    const milestones =
+      [
+        3,
+        5,
+      ];
+
+    return milestones.find(
+      (target) =>
+        Number(
+          wickets ||
+          0
+        ) <
+        target
+    ) ||
+    null;
+  }
+
+  const milestoneCandidates =
+    [];
+
+  const strikerRuns =
+    Number(
+      currentState
+        ?.strikerStats
+        ?.runs ||
+        0
+    );
+
+  const strikerTarget =
+    nextBattingMilestone(
+      strikerRuns
+    );
+
+  if (
+    strikerId &&
+    strikerTarget &&
+    strikerTarget -
+      strikerRuns <=
+      15
+  ) {
+    milestoneCandidates.push({
+      type:
+        "batting",
+      icon:
+        "🏏",
+      playerId:
+        strikerId,
+      playerName:
+        currentState.strikerName ||
+        playerMap
+          ?.get(
+            strikerId
+          )
+          ?.name ||
+        "Batter",
+      current:
+        strikerRuns,
+      target:
+        strikerTarget,
+      remaining:
+        strikerTarget -
+        strikerRuns,
+      label:
+        `${strikerTarget} runs`,
+    });
+  }
+
+  const nonStrikerId =
+    Number(
+      currentState.nonStrikerId
+    ) ||
+    null;
+
+  const nonStrikerRuns =
+    Number(
+      currentState
+        ?.nonStrikerStats
+        ?.runs ||
+        0
+    );
+
+  const nonStrikerTarget =
+    nextBattingMilestone(
+      nonStrikerRuns
+    );
+
+  if (
+    nonStrikerId &&
+    nonStrikerTarget &&
+    nonStrikerTarget -
+      nonStrikerRuns <=
+      15
+  ) {
+    milestoneCandidates.push({
+      type:
+        "batting",
+      icon:
+        "🏏",
+      playerId:
+        nonStrikerId,
+      playerName:
+        currentState.nonStrikerName ||
+        playerMap
+          ?.get(
+            nonStrikerId
+          )
+          ?.name ||
+        "Batter",
+      current:
+        nonStrikerRuns,
+      target:
+        nonStrikerTarget,
+      remaining:
+        nonStrikerTarget -
+        nonStrikerRuns,
+      label:
+        `${nonStrikerTarget} runs`,
+    });
+  }
+
+  const bowlerWickets =
+    Number(
+      currentState
+        ?.bowlerStats
+        ?.wickets ||
+        0
+    );
+
+  const bowlerTarget =
+    nextBowlingMilestone(
+      bowlerWickets
+    );
+
+  if (
+    bowlerId &&
+    bowlerTarget &&
+    bowlerTarget -
+      bowlerWickets <=
+      2
+  ) {
+    milestoneCandidates.push({
+      type:
+        "bowling",
+      icon:
+        "🎯",
+      playerId:
+        bowlerId,
+      playerName:
+        currentState.bowlerName ||
+        playerMap
+          ?.get(
+            bowlerId
+          )
+          ?.name ||
+        "Bowler",
+      current:
+        bowlerWickets,
+      target:
+        bowlerTarget,
+      remaining:
+        bowlerTarget -
+        bowlerWickets,
+      label:
+        `${bowlerTarget} wickets`,
+    });
+  }
+
+  milestoneCandidates.sort(
+    (a, b) =>
+      a.remaining -
+        b.remaining ||
+      a.playerName.localeCompare(
+        b.playerName
+      )
+  );
+
+  return {
+    partnership:
+      currentPartnership
+        ? {
+            batter1:
+              currentPartnership.batter1,
+            batter2:
+              currentPartnership.batter2,
+            runs:
+              Number(
+                currentPartnership.runs ||
+                0
+              ),
+            balls:
+              Number(
+                currentPartnership.balls ||
+                0
+              ),
+          }
+        : null,
+
+    matchup:
+      strikerId &&
+      bowlerId
+        ? {
+            batterId:
+              strikerId,
+            batterName:
+              currentState.strikerName ||
+              playerMap
+                ?.get(
+                  strikerId
+                )
+                ?.name ||
+              "Batter",
+            bowlerId,
+            bowlerName:
+              currentState.bowlerName ||
+              playerMap
+                ?.get(
+                  bowlerId
+                )
+                ?.name ||
+              "Bowler",
+            runs:
+              matchupRuns,
+            balls:
+              matchupBalls,
+            dismissals:
+              matchupDismissals,
+            strikeRate:
+              matchupBalls >
+              0
+                ? (
+                    (
+                      matchupRuns /
+                      matchupBalls
+                    ) *
+                    100
+                  ).toFixed(
+                    1
+                  )
+                : "0.0",
+          }
+        : null,
+
+    phase: {
+      legalBalls:
+        legalRecent.length,
+      runs:
+        phaseRuns,
+      wickets:
+        phaseWickets,
+      boundaries:
+        phaseBoundaries,
+      label:
+        phaseLabel,
+      tone:
+        phaseTone,
+    },
+
+    milestone:
+      milestoneCandidates[0] ||
+      null,
+  };
+}
+
 function normalizeBattingStatsForRetiredHurt(battingStats, balls) {
   const retiredHurtIds = new Set();
 
@@ -659,6 +1209,16 @@ const currentInningsBalls = match.balls.filter(
       null,
   };
 
+const broadcast =
+  buildLiveBroadcastIntelligence({
+    currentInningsBalls,
+    currentSummary:
+      currentInningsNo === 2
+        ? innings2Summary
+        : innings1Summary,
+    playerMap,
+  });
+
 return NextResponse.json({
   match: {
     id: match.id,
@@ -710,6 +1270,8 @@ return NextResponse.json({
     innings2Summary.legalBalls > 0
       ? innings2Summary.currentState
       : innings1Summary.currentState,
+
+  broadcast,
 
   recentBalls,
 

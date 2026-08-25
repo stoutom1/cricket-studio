@@ -9,6 +9,12 @@ import {
   getLeagueAnalyticsPlayerKey,
   isSurpriseCricketLeague,
 } from "@/lib/surprise-player-identity";
+import {
+  buildLeagueRecords,
+} from "@/lib/league-records";
+import {
+  buildLeagueMilestones,
+} from "@/lib/league-milestones";
 
 function normalizeStatus(status) {
   return String(status || "SCHEDULED").toUpperCase();
@@ -422,6 +428,8 @@ export default function PublicLeagueViewClient({ league, numericLeagueId }) {
   const [publicSearch, setPublicSearch] = useState("");
   const [publicStatsTab, setPublicStatsTab] = useState("batting");
   const [publicLeadersTab, setPublicLeadersTab] = useState("batting");
+  const [publicRecordsTab, setPublicRecordsTab] = useState("all");
+  const [publicMilestonesTab, setPublicMilestonesTab] = useState("recent");
   const [leagueStats, setLeagueStats] = useState(null);
   const [leagueStatsLoading, setLeagueStatsLoading] = useState(false);
   const [leagueStatsError, setLeagueStatsError] = useState("");
@@ -606,6 +614,39 @@ async function toggleFollowLeague() {
         )
       ),
     [filteredMatches]
+  );
+
+  const leagueRecords = useMemo(
+    () =>
+      buildLeagueRecords(
+        statsEligibleMatches,
+        league
+      ),
+    [statsEligibleMatches, league]
+  );
+
+  const visibleRecords = useMemo(
+    () =>
+      publicRecordsTab === "all"
+        ? leagueRecords.records
+        : leagueRecords.records.filter(
+            (record) =>
+              String(record.category || "").toLowerCase() ===
+              publicRecordsTab
+          ),
+    [
+      leagueRecords.records,
+      publicRecordsTab,
+    ]
+  );
+
+  const leagueMilestones = useMemo(
+    () =>
+      buildLeagueMilestones(
+        statsEligibleMatches,
+        league
+      ),
+    [statsEligibleMatches, league]
   );
 
   const {
@@ -1036,6 +1077,8 @@ return (
             ["points", "Standings"],
             ["stats", "Stats"],
             ["leaders", "Leaders"],
+            ["records", "Records"],
+            ["milestones", "Milestones"],
             ["teams", "Teams"],
           ].map(([key, label]) => (
             <button
@@ -1419,6 +1462,214 @@ return (
             </section>
           )}
 
+          {activeTab === "records" && (
+            <section className="slp-section">
+              <SectionHeader
+                eyebrow="History book"
+                title="League Records"
+                description={`${leagueRecords.recordCount} records from ${leagueRecords.completedMatches} completed match${leagueRecords.completedMatches === 1 ? "" : "es"} in this view`}
+              />
+
+              <div className="slp-records-toolbar">
+                <SegmentedControl
+                  value={publicRecordsTab}
+                  onChange={setPublicRecordsTab}
+                  items={[
+                    ["all", "All", leagueRecords.records.length],
+                    [
+                      "player",
+                      "Player",
+                      leagueRecords.records.filter(
+                        (record) => record.category === "Player"
+                      ).length,
+                    ],
+                    [
+                      "partnership",
+                      "Partnership",
+                      leagueRecords.records.filter(
+                        (record) => record.category === "Partnership"
+                      ).length,
+                    ],
+                    [
+                      "team",
+                      "Team",
+                      leagueRecords.records.filter(
+                        (record) => record.category === "Team"
+                      ).length,
+                    ],
+                    [
+                      "match",
+                      "Match",
+                      leagueRecords.records.filter(
+                        (record) => record.category === "Match"
+                      ).length,
+                    ],
+                  ]}
+                />
+
+                <span className="slp-records-scope">
+                  {selectedSeriesId
+                    ? "Series records"
+                    : selectedYear
+                      ? `Season ${selectedYear}`
+                      : "All-time league records"}
+                </span>
+              </div>
+
+              {visibleRecords.length === 0 ? (
+                <EmptyState
+                  title="No qualifying records yet"
+                  message="Records appear from completed scored matches in the selected season or series."
+                />
+              ) : (
+                <>
+                  <div className="slp-record-hero-grid">
+                    {visibleRecords.slice(0, 2).map((record, index) => (
+                      <RecordCard
+                        key={record.id}
+                        record={record}
+                        featured
+                        rank={index + 1}
+                      />
+                    ))}
+                  </div>
+
+                  {visibleRecords.length > 2 ? (
+                    <div className="slp-record-grid">
+                      {visibleRecords.slice(2).map((record, index) => (
+                        <RecordCard
+                          key={record.id}
+                          record={record}
+                          rank={index + 3}
+                        />
+                      ))}
+                    </div>
+                  ) : null}
+                </>
+              )}
+
+              <div className="slp-records-note">
+                <span aria-hidden="true">📚</span>
+                <p>
+                  <strong>How records work</strong>
+                  Records use only completed, completed locked and completed
+                  corrected matches in the current Season/Series filter.
+                  Abandoned matches and excluded analytics players do not
+                  contribute.
+                </p>
+              </div>
+            </section>
+          )}
+
+          {activeTab === "milestones" && (
+            <section className="slp-section">
+              <SectionHeader
+                eyebrow="Career landmarks"
+                title="Milestone Center"
+                description={`${leagueMilestones.playerCount} players · ${leagueMilestones.completedMatches} completed match${leagueMilestones.completedMatches === 1 ? "" : "es"} in this view`}
+              />
+
+              <div className="slp-milestones-summary">
+                <div>
+                  <span>🏏</span>
+                  <small>Run milestones</small>
+                  <strong>{leagueMilestones.achievedByMetric.runs || 0}</strong>
+                </div>
+
+                <div>
+                  <span>🎯</span>
+                  <small>Wicket milestones</small>
+                  <strong>{leagueMilestones.achievedByMetric.wickets || 0}</strong>
+                </div>
+
+                <div>
+                  <span>🧤</span>
+                  <small>Fielding milestones</small>
+                  <strong>{leagueMilestones.achievedByMetric.fielding || 0}</strong>
+                </div>
+
+                <div>
+                  <span>🎽</span>
+                  <small>Appearance milestones</small>
+                  <strong>{leagueMilestones.achievedByMetric.appearances || 0}</strong>
+                </div>
+              </div>
+
+              <div className="slp-milestones-tabs">
+                <SegmentedControl
+                  value={publicMilestonesTab}
+                  onChange={setPublicMilestonesTab}
+                  items={[
+                    [
+                      "recent",
+                      "Recently achieved",
+                      leagueMilestones.recentAchievements.length,
+                    ],
+                    [
+                      "next",
+                      "Next up",
+                      leagueMilestones.nextUp.length,
+                    ],
+                  ]}
+                />
+
+                <span className="slp-milestones-scope">
+                  {selectedSeriesId
+                    ? "Series milestones"
+                    : selectedYear
+                      ? `Season ${selectedYear}`
+                      : "All-time career milestones"}
+                </span>
+              </div>
+
+              {publicMilestonesTab === "recent" ? (
+                leagueMilestones.recentAchievements.length ? (
+                  <div className="slp-milestone-achievements">
+                    {leagueMilestones.recentAchievements.map(
+                      (milestone, index) => (
+                        <MilestoneAchievementCard
+                          key={milestone.id}
+                          milestone={milestone}
+                          featured={index < 2}
+                        />
+                      )
+                    )}
+                  </div>
+                ) : (
+                  <EmptyState
+                    title="No milestones reached yet"
+                    message="Career milestones appear automatically as players cross runs, wickets, fielding and appearance landmarks."
+                  />
+                )
+              ) : leagueMilestones.nextUp.length ? (
+                <div className="slp-milestone-next-grid">
+                  {leagueMilestones.nextUp.map((milestone) => (
+                    <MilestoneProgressCard
+                      key={milestone.id}
+                      milestone={milestone}
+                    />
+                  ))}
+                </div>
+              ) : (
+                <EmptyState
+                  title="No upcoming milestones yet"
+                  message="Players will appear here as they move closer to their next career landmark."
+                />
+              )}
+
+              <div className="slp-milestones-note">
+                <span aria-hidden="true">✨</span>
+                <p>
+                  <strong>Automatic Cric4All milestones</strong>
+                  Runs, bowler-credited wickets, recorded fielding
+                  contributions and scored match appearances are counted from
+                  completed matches only. Abandoned matches and excluded
+                  analytics players do not contribute.
+                </p>
+              </div>
+            </section>
+          )}
+
           {activeTab === "teams" && (
             <section className="slp-section">
               <SectionHeader
@@ -1456,6 +1707,203 @@ return (
         </div>
       </section>
     </main>
+  );
+}
+
+function MilestoneAchievementCard({
+  milestone,
+  featured = false,
+}) {
+  const content = (
+    <>
+      <div className="slp-milestone-achievement-top">
+        <span
+          className="slp-milestone-achievement-icon"
+          aria-hidden="true"
+        >
+          {milestone.icon}
+        </span>
+
+        <div>
+          <small>Milestone achieved</small>
+          <strong>{milestone.title}</strong>
+        </div>
+
+        <span className="slp-milestone-check" aria-label="Achieved">
+          ✓
+        </span>
+      </div>
+
+      <div className="slp-milestone-player">
+        <strong>{milestone.playerName}</strong>
+        <span>{milestone.teamName || "League player"}</span>
+      </div>
+
+      <div className="slp-milestone-total">
+        <strong>{milestone.threshold}</strong>
+        <span>{milestone.metric}</span>
+      </div>
+
+      <div className="slp-milestone-match">
+        <small>
+          {milestone.dateLabel || "Completed match"}
+        </small>
+        <strong>{milestone.matchLabel}</strong>
+      </div>
+
+      {milestone.href ? (
+        <span className="slp-milestone-view">
+          View milestone match →
+        </span>
+      ) : null}
+    </>
+  );
+
+  const className =
+    `slp-milestone-achievement ${
+      featured ? "is-featured" : ""
+    }`;
+
+  return milestone.href ? (
+    <a
+      className={className}
+      href={milestone.href}
+    >
+      {content}
+    </a>
+  ) : (
+    <article className={className}>
+      {content}
+    </article>
+  );
+}
+
+function MilestoneProgressCard({
+  milestone,
+}) {
+  return (
+    <article className="slp-milestone-progress">
+      <div className="slp-milestone-progress-head">
+        <span aria-hidden="true">
+          {milestone.icon}
+        </span>
+
+        <div>
+          <strong>{milestone.playerName}</strong>
+          <small>{milestone.teamName || "League player"}</small>
+        </div>
+
+        <b>{Math.round(milestone.progress)}%</b>
+      </div>
+
+      <div className="slp-milestone-progress-target">
+        <span>{milestone.label}</span>
+        <strong>
+          {milestone.current} / {milestone.target}
+        </strong>
+      </div>
+
+      <div
+        className="slp-milestone-progress-track"
+        aria-label={`${milestone.progress}% toward ${milestone.target} ${milestone.shortLabel}`}
+      >
+        <span
+          style={{
+            width: `${Math.max(
+              3,
+              milestone.progress
+            )}%`,
+          }}
+        />
+      </div>
+
+      <p>
+        <strong>{milestone.remaining}</strong>{" "}
+        {milestone.shortLabel} to the next landmark
+      </p>
+    </article>
+  );
+}
+
+function RecordCard({
+  record,
+  featured = false,
+  rank,
+}) {
+  const content = (
+    <>
+      <div className="slp-record-card-top">
+        <span
+          className="slp-record-icon"
+          aria-hidden="true"
+        >
+          {record.icon}
+        </span>
+
+        <div>
+          <small>
+            {record.category} record
+          </small>
+          <strong>
+            {record.title}
+          </strong>
+        </div>
+
+        <span className="slp-record-rank">
+          #{String(rank).padStart(2, "0")}
+        </span>
+      </div>
+
+      <div className="slp-record-value">
+        {record.value}
+      </div>
+
+      <div className="slp-record-holder">
+        <strong title={record.holder}>
+          {record.holder}
+        </strong>
+        {record.teamName ? (
+          <span title={record.teamName}>
+            {record.teamName}
+          </span>
+        ) : null}
+      </div>
+
+      <p>{record.detail}</p>
+
+      {record.matchLabel ? (
+        <div className="slp-record-match">
+          <span>Recorded in</span>
+          <strong title={record.matchLabel}>
+            {record.matchLabel}
+          </strong>
+        </div>
+      ) : null}
+
+      {record.href ? (
+        <span className="slp-record-link">
+          View match →
+        </span>
+      ) : null}
+    </>
+  );
+
+  const className =
+    `slp-record-card slp-record-card--${record.accent} ${
+      featured ? "is-featured" : ""
+    }`;
+
+  return record.href ? (
+    <a
+      className={className}
+      href={record.href}
+    >
+      {content}
+    </a>
+  ) : (
+    <article className={className}>
+      {content}
+    </article>
   );
 }
 

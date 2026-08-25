@@ -469,6 +469,249 @@ function getTopBatter(scoreboard) {
     )[0];
 }
 
+function LiveBroadcastIntelligence({
+  broadcast,
+  currentInnings,
+  chaseRunsNeeded,
+  ballsLeft,
+  requiredRate,
+  currentRate,
+}) {
+  if (!broadcast) {
+    return null;
+  }
+
+  const partnership =
+    broadcast.partnership;
+  const matchup =
+    broadcast.matchup;
+  const milestone =
+    broadcast.milestone;
+  const phase =
+    broadcast.phase;
+
+  let pressureLabel =
+    "Match building";
+  let pressureTone =
+    "balanced";
+  let pressureDetail =
+    currentInnings === 2
+      ? "Chase pressure will update as the equation changes."
+      : "First innings pressure will update with the scoring phase.";
+
+  if (
+    currentInnings === 2 &&
+    chaseRunsNeeded !== null &&
+    Number(ballsLeft) > 0
+  ) {
+    const rrr =
+      Number(
+        requiredRate ||
+        0
+      );
+    const crr =
+      Number(
+        currentRate ||
+        0
+      );
+
+    if (
+      rrr >=
+        crr + 2 ||
+      Number(ballsLeft) <=
+        18
+    ) {
+      pressureLabel =
+        "High-pressure chase";
+      pressureTone =
+        "high";
+    } else if (
+      rrr >
+      crr
+    ) {
+      pressureLabel =
+        "Chase tightening";
+      pressureTone =
+        "medium";
+    } else {
+      pressureLabel =
+        "Chase under control";
+      pressureTone =
+        "low";
+    }
+
+    pressureDetail =
+      `Need ${chaseRunsNeeded} from ${ballsLeft} balls · RRR ${requiredRate || "—"}`;
+  } else if (
+    phase?.tone ===
+    "batting"
+  ) {
+    pressureLabel =
+      "Batting momentum";
+    pressureTone =
+      "low";
+    pressureDetail =
+      `${phase.runs} runs from the last ${phase.legalBalls} legal balls`;
+  } else if (
+    phase?.tone ===
+    "bowling"
+  ) {
+    pressureLabel =
+      "Bowling squeeze";
+    pressureTone =
+      "high";
+    pressureDetail =
+      `${phase.wickets} wicket${phase.wickets === 1 ? "" : "s"} in the last ${phase.legalBalls} legal balls`;
+  }
+
+  return (
+    <section
+      className="live-broadcast-center"
+      aria-label="Broadcast intelligence"
+    >
+      <div className="live-broadcast-heading">
+        <div>
+          <span>
+            📡 Broadcast intelligence
+          </span>
+          <strong>
+            Live match context
+          </strong>
+        </div>
+
+        <em>
+          Auto-updating
+        </em>
+      </div>
+
+      <div className="live-broadcast-grid">
+        <article className="live-broadcast-card">
+          <small>
+            🤝 Partnership
+          </small>
+
+          {partnership ? (
+            <>
+              <strong>
+                {partnership.runs} runs
+              </strong>
+
+              <span>
+                {partnership.balls} balls
+              </span>
+
+              <p>
+                {partnership.batter1}
+                {" & "}
+                {partnership.batter2}
+              </p>
+            </>
+          ) : (
+            <p>
+              New partnership forming
+            </p>
+          )}
+        </article>
+
+        <article className="live-broadcast-card">
+          <small>
+            ⚔️ Batter vs bowler
+          </small>
+
+          {matchup ? (
+            <>
+              <strong>
+                {matchup.runs} from{" "}
+                {matchup.balls}
+              </strong>
+
+              <span>
+                SR {matchup.strikeRate}
+                {matchup.dismissals
+                  ? ` · ${matchup.dismissals} dismissal${matchup.dismissals === 1 ? "" : "s"}`
+                  : ""}
+              </span>
+
+              <p>
+                {matchup.batterName}
+                {" vs "}
+                {matchup.bowlerName}
+              </p>
+            </>
+          ) : (
+            <p>
+              Matchup data building
+            </p>
+          )}
+        </article>
+
+        <article className="live-broadcast-card">
+          <small>
+            ✨ Milestone watch
+          </small>
+
+          {milestone ? (
+            <>
+              <strong>
+                {milestone.remaining} to go
+              </strong>
+
+              <span>
+                {milestone.current}
+                {" / "}
+                {milestone.target}
+              </span>
+
+              <p>
+                {milestone.icon}{" "}
+                {milestone.playerName}
+                {" → "}
+                {milestone.label}
+              </p>
+            </>
+          ) : (
+            <>
+              <strong>
+                No milestone imminent
+              </strong>
+              <p>
+                Watches 50/100+ scores and 3/5-wicket marks
+              </p>
+            </>
+          )}
+        </article>
+
+        <article
+          className={`live-broadcast-card live-broadcast-pressure is-${pressureTone}`}
+        >
+          <small>
+            🌡 Match pressure
+          </small>
+
+          <strong>
+            {pressureLabel}
+          </strong>
+
+          {phase ? (
+            <span>
+              {phase.label}
+              {" · "}
+              {phase.runs} runs
+              {phase.wickets
+                ? ` · ${phase.wickets} wicket${phase.wickets === 1 ? "" : "s"}`
+                : ""}
+            </span>
+          ) : null}
+
+          <p>
+            {pressureDetail}
+          </p>
+        </article>
+      </div>
+    </section>
+  );
+}
+
 function getBestBowler(scoreboard) {
   const rows =
     scoreboard?.innings?.flatMap(
@@ -1738,6 +1981,17 @@ const liveStatusText =
             value={bowlerValue}
           />
         </section>
+
+        {!isMatchFinished ? (
+          <LiveBroadcastIntelligence
+            broadcast={scoreboard?.broadcast}
+            currentInnings={scoreboard?.currentInnings}
+            chaseRunsNeeded={chaseRunsNeeded}
+            ballsLeft={ballsLeft}
+            requiredRate={requiredRate}
+            currentRate={rateTrend.crr}
+          />
+        ) : null}
 
         {recentBalls.length > 0 ? (
           <div className="live-recent-section">

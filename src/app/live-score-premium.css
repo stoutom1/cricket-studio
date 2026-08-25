@@ -3499,3 +3499,202 @@
     min-height: 56px;
   }
 }
+
+/* =========================================================
+   SPECTATOR LIVE VIEW 2.0 — BROADCAST INTELLIGENCE
+   Compact live context only; existing score, CRR/RRR,
+   current-player, recent-ball and scorecard sections remain.
+========================================================= */
+
+.live-score-final .live-broadcast-center {
+  margin-top: 12px;
+  padding: 13px;
+  border: 1px solid rgba(93, 156, 210, 0.2);
+  border-radius: 14px;
+  background:
+    linear-gradient(
+      160deg,
+      rgba(11, 31, 53, 0.9),
+      rgba(7, 21, 37, 0.96)
+    );
+}
+
+.live-score-final .live-broadcast-heading {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 12px;
+  margin-bottom: 10px;
+}
+
+.live-score-final .live-broadcast-heading > div {
+  min-width: 0;
+  display: grid;
+  gap: 2px;
+}
+
+.live-score-final .live-broadcast-heading span {
+  color: #70bdf1;
+  font-size: 9px;
+  font-weight: 900;
+  letter-spacing: 0.06em;
+  text-transform: uppercase;
+}
+
+.live-score-final .live-broadcast-heading strong {
+  color: #f4f9ff;
+  font-size: 13px;
+}
+
+.live-score-final .live-broadcast-heading em {
+  flex: 0 0 auto;
+  padding: 5px 8px;
+  border: 1px solid rgba(52, 211, 153, 0.26);
+  border-radius: 999px;
+  color: #8beac5;
+  background: rgba(16, 185, 129, 0.08);
+  font-size: 8px;
+  font-style: normal;
+  font-weight: 900;
+  text-transform: uppercase;
+  white-space: nowrap;
+}
+
+.live-score-final .live-broadcast-grid {
+  display: grid;
+  grid-template-columns: repeat(4, minmax(0, 1fr));
+  gap: 8px;
+}
+
+.live-score-final .live-broadcast-card {
+  min-width: 0;
+  display: grid;
+  align-content: start;
+  gap: 5px;
+  min-height: 118px;
+  padding: 11px;
+  border: 1px solid rgba(99, 142, 181, 0.2);
+  border-radius: 11px;
+  background: rgba(9, 26, 44, 0.78);
+}
+
+.live-score-final .live-broadcast-card small,
+.live-score-final .live-broadcast-card strong,
+.live-score-final .live-broadcast-card span,
+.live-score-final .live-broadcast-card p {
+  display: block;
+  min-width: 0;
+}
+
+.live-score-final .live-broadcast-card small {
+  color: #7692ae;
+  font-size: 8px;
+  font-weight: 900;
+  letter-spacing: 0.03em;
+  text-transform: uppercase;
+}
+
+.live-score-final .live-broadcast-card strong {
+  margin-top: 2px;
+  color: #fff;
+  font-size: 15px;
+  line-height: 1.15;
+  overflow-wrap: anywhere;
+}
+
+.live-score-final .live-broadcast-card span {
+  color: #79bce8;
+  font-size: 9px;
+  font-weight: 800;
+  line-height: 1.35;
+  overflow-wrap: anywhere;
+}
+
+.live-score-final .live-broadcast-card p {
+  margin: 2px 0 0;
+  color: #8399b0;
+  font-size: 9px;
+  line-height: 1.4;
+  overflow-wrap: anywhere;
+}
+
+.live-score-final .live-broadcast-pressure.is-high {
+  border-color: rgba(248, 113, 113, 0.28);
+  background:
+    linear-gradient(
+      160deg,
+      rgba(66, 24, 31, 0.52),
+      rgba(9, 26, 44, 0.82)
+    );
+}
+
+.live-score-final .live-broadcast-pressure.is-medium {
+  border-color: rgba(245, 158, 11, 0.28);
+  background:
+    linear-gradient(
+      160deg,
+      rgba(63, 43, 19, 0.48),
+      rgba(9, 26, 44, 0.82)
+    );
+}
+
+.live-score-final .live-broadcast-pressure.is-low {
+  border-color: rgba(52, 211, 153, 0.25);
+  background:
+    linear-gradient(
+      160deg,
+      rgba(15, 58, 49, 0.48),
+      rgba(9, 26, 44, 0.82)
+    );
+}
+
+@media (max-width: 900px) {
+  .live-score-final .live-broadcast-grid {
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+  }
+
+  .live-score-final .live-broadcast-card {
+    min-height: 108px;
+  }
+}
+
+@media (max-width: 540px) {
+  .live-score-final .live-broadcast-center {
+    margin-top: 9px;
+    padding: 10px;
+    border-radius: 12px;
+  }
+
+  .live-score-final .live-broadcast-heading {
+    margin-bottom: 8px;
+  }
+
+  .live-score-final .live-broadcast-heading em {
+    display: none;
+  }
+
+  .live-score-final .live-broadcast-grid {
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+    gap: 7px;
+  }
+
+  .live-score-final .live-broadcast-card {
+    min-height: 0;
+    padding: 9px;
+  }
+
+  .live-score-final .live-broadcast-card strong {
+    font-size: 13px;
+  }
+
+  .live-score-final .live-broadcast-card span,
+  .live-score-final .live-broadcast-card p {
+    font-size: 8px;
+  }
+}
+
+@media (max-width: 360px) {
+  .live-score-final .live-broadcast-grid {
+    grid-template-columns: 1fr;
+  }
+}

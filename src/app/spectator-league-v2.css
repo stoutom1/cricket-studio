@@ -1904,3 +1904,965 @@
     white-space: nowrap;
   }
 }
+
+
+/* =========================================================
+   LEAGUE RECORDS CENTER
+   Distinct from Stats (tables) and Leaders (current standout
+   performers): Records celebrates historic single-match and
+   single-innings achievements.
+========================================================= */
+
+.slp-records-toolbar {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 14px;
+  margin-bottom: 16px;
+}
+
+.slp-records-toolbar .slp-segments {
+  min-width: 0;
+  flex: 1 1 auto;
+}
+
+.slp-records-scope {
+  flex: 0 0 auto;
+  padding: 6px 9px;
+  border: 1px solid rgba(91, 160, 216, 0.25);
+  border-radius: 999px;
+  color: #7eb8e5;
+  background: rgba(16, 64, 101, 0.14);
+  font-size: 9px;
+  font-weight: 900;
+  letter-spacing: 0.04em;
+  text-transform: uppercase;
+  white-space: nowrap;
+}
+
+.slp-record-hero-grid,
+.slp-record-grid {
+  display: grid;
+  gap: 10px;
+}
+
+.slp-record-hero-grid {
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+}
+
+.slp-record-grid {
+  grid-template-columns: repeat(4, minmax(0, 1fr));
+  margin-top: 10px;
+}
+
+.slp-record-card {
+  position: relative;
+  min-width: 0;
+  display: grid;
+  align-content: start;
+  gap: 11px;
+  min-height: 194px;
+  padding: 15px;
+  overflow: hidden;
+  border: 1px solid rgba(100, 137, 176, 0.24);
+  border-radius: 14px;
+  color: inherit;
+  background:
+    linear-gradient(
+      160deg,
+      rgba(16, 39, 66, 0.92),
+      rgba(8, 22, 39, 0.97)
+    );
+  text-decoration: none;
+  transition:
+    transform 0.16s ease,
+    border-color 0.16s ease,
+    box-shadow 0.16s ease;
+}
+
+.slp-record-card:hover {
+  transform: translateY(-2px);
+  border-color: rgba(82, 161, 226, 0.52);
+  box-shadow: 0 14px 28px rgba(0, 0, 0, 0.18);
+}
+
+.slp-record-card.is-featured {
+  min-height: 218px;
+  padding: 18px;
+}
+
+.slp-record-card--gold {
+  background:
+    radial-gradient(
+      circle at 90% 8%,
+      rgba(245, 158, 11, 0.17),
+      transparent 35%
+    ),
+    linear-gradient(
+      160deg,
+      rgba(49, 38, 22, 0.95),
+      rgba(8, 22, 39, 0.97)
+    );
+}
+
+.slp-record-card--purple {
+  background:
+    radial-gradient(
+      circle at 90% 8%,
+      rgba(139, 92, 246, 0.16),
+      transparent 35%
+    ),
+    linear-gradient(
+      160deg,
+      rgba(37, 28, 54, 0.95),
+      rgba(8, 22, 39, 0.97)
+    );
+}
+
+.slp-record-card--green {
+  background:
+    radial-gradient(
+      circle at 90% 8%,
+      rgba(16, 185, 129, 0.14),
+      transparent 35%
+    ),
+    linear-gradient(
+      160deg,
+      rgba(15, 47, 46, 0.95),
+      rgba(8, 22, 39, 0.97)
+    );
+}
+
+.slp-record-card--orange,
+.slp-record-card--red {
+  background:
+    radial-gradient(
+      circle at 90% 8%,
+      rgba(249, 115, 22, 0.15),
+      transparent 35%
+    ),
+    linear-gradient(
+      160deg,
+      rgba(52, 31, 25, 0.95),
+      rgba(8, 22, 39, 0.97)
+    );
+}
+
+.slp-record-card--blue {
+  background:
+    radial-gradient(
+      circle at 90% 8%,
+      rgba(59, 130, 246, 0.15),
+      transparent 35%
+    ),
+    linear-gradient(
+      160deg,
+      rgba(17, 43, 70, 0.95),
+      rgba(8, 22, 39, 0.97)
+    );
+}
+
+.slp-record-card-top {
+  min-width: 0;
+  display: grid;
+  grid-template-columns: auto minmax(0, 1fr) auto;
+  align-items: center;
+  gap: 9px;
+}
+
+.slp-record-icon {
+  display: grid;
+  place-items: center;
+  width: 32px;
+  height: 32px;
+  border: 1px solid rgba(91, 160, 216, 0.21);
+  border-radius: 9px;
+  background: rgba(18, 73, 111, 0.18);
+  font-size: 16px;
+}
+
+.slp-record-card-top > div {
+  min-width: 0;
+}
+
+.slp-record-card-top small,
+.slp-record-card-top strong {
+  display: block;
+}
+
+.slp-record-card-top small {
+  color: #6f8ca7;
+  font-size: 8px;
+  font-weight: 900;
+  letter-spacing: 0.05em;
+  text-transform: uppercase;
+}
+
+.slp-record-card-top strong {
+  overflow: hidden;
+  margin-top: 2px;
+  color: #e8f2fc;
+  font-size: 10px;
+  line-height: 1.2;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.slp-record-rank {
+  color: #4e6984;
+  font-size: 9px;
+  font-weight: 900;
+}
+
+.slp-record-value {
+  color: #fff;
+  font-size: 27px;
+  font-weight: 950;
+  line-height: 1;
+  letter-spacing: -0.025em;
+  white-space: nowrap;
+}
+
+.slp-record-card.is-featured .slp-record-value {
+  font-size: clamp(31px, 4vw, 42px);
+}
+
+.slp-record-holder {
+  min-width: 0;
+  display: grid;
+  gap: 2px;
+}
+
+.slp-record-holder strong,
+.slp-record-holder span {
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.slp-record-holder strong {
+  color: #f4f8fd;
+  font-size: 13px;
+}
+
+.slp-record-card.is-featured .slp-record-holder strong {
+  font-size: 16px;
+}
+
+.slp-record-holder span {
+  color: #6f88a3;
+  font-size: 9px;
+}
+
+.slp-record-card > p {
+  min-height: 27px;
+  margin: 0;
+  color: #849ab2;
+  font-size: 9px;
+  line-height: 1.45;
+}
+
+.slp-record-match {
+  min-width: 0;
+  padding-top: 9px;
+  border-top: 1px solid rgba(110, 145, 177, 0.13);
+}
+
+.slp-record-match span,
+.slp-record-match strong {
+  display: block;
+}
+
+.slp-record-match span {
+  color: #567089;
+  font-size: 8px;
+  font-weight: 800;
+  text-transform: uppercase;
+}
+
+.slp-record-match strong {
+  overflow: hidden;
+  margin-top: 2px;
+  color: #8da7bf;
+  font-size: 9px;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.slp-record-link {
+  align-self: end;
+  color: #70b9ee;
+  font-size: 9px;
+  font-weight: 900;
+}
+
+.slp-records-note {
+  display: flex;
+  align-items: flex-start;
+  gap: 10px;
+  margin-top: 12px;
+  padding: 12px 14px;
+  border: 1px solid rgba(94, 137, 176, 0.16);
+  border-radius: 12px;
+  background: rgba(8, 22, 39, 0.56);
+}
+
+.slp-records-note > span {
+  flex: 0 0 auto;
+}
+
+.slp-records-note p {
+  margin: 0;
+  color: #6e839a;
+  font-size: 9px;
+  line-height: 1.5;
+}
+
+.slp-records-note strong {
+  display: block;
+  margin-bottom: 2px;
+  color: #93a9bf;
+  font-size: 9px;
+}
+
+@media (max-width: 1000px) {
+  .slp-record-grid {
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+  }
+}
+
+@media (max-width: 700px) {
+  .slp-records-toolbar {
+    display: block;
+  }
+
+  .slp-records-toolbar .slp-segments {
+    display: grid;
+    grid-template-columns: repeat(3, minmax(0, 1fr));
+    gap: 6px;
+  }
+
+  .slp-records-toolbar .slp-segments button {
+    min-width: 0;
+    justify-content: center;
+    white-space: nowrap;
+  }
+
+  .slp-records-scope {
+    display: inline-flex;
+    margin-top: 9px;
+  }
+
+  .slp-record-hero-grid {
+    grid-template-columns: 1fr;
+  }
+
+  .slp-record-grid {
+    display: flex;
+    gap: 9px;
+    margin-inline: -18px;
+    padding-inline: 18px;
+    padding-bottom: 5px;
+    overflow-x: auto;
+    overscroll-behavior-inline: contain;
+    scroll-snap-type: x mandatory;
+    scrollbar-width: none;
+  }
+
+  .slp-record-grid::-webkit-scrollbar {
+    display: none;
+  }
+
+  .slp-record-grid .slp-record-card {
+    flex: 0 0 min(82vw, 290px);
+    min-height: 188px;
+    scroll-snap-align: start;
+  }
+
+  .slp-record-card.is-featured {
+    min-height: 0;
+  }
+}
+
+@media (max-width: 390px) {
+  .slp-records-toolbar .slp-segments {
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+  }
+
+  .slp-record-grid .slp-record-card {
+    flex-basis: 84vw;
+  }
+}
+
+
+/* =========================================================
+   RECORDS CENTER — FULL TEXT / NO ELLIPSIS FIX
+   Every record label, holder and match reference must remain
+   readable on laptop and mobile. Cards grow vertically rather
+   than hiding content.
+========================================================= */
+
+.slp-record-grid {
+  grid-template-columns:
+    repeat(
+      auto-fit,
+      minmax(
+        min(220px, 100%),
+        1fr
+      )
+    ) !important;
+}
+
+/* Record title */
+.slp-record-card-top strong {
+  overflow: visible !important;
+  text-overflow: clip !important;
+  white-space: normal !important;
+  overflow-wrap: anywhere;
+  word-break: normal;
+}
+
+/* Player / partnership / team holder */
+.slp-record-holder strong,
+.slp-record-holder span {
+  overflow: visible !important;
+  text-overflow: clip !important;
+  white-space: normal !important;
+  overflow-wrap: anywhere;
+  word-break: normal;
+}
+
+/* Match in which the record occurred */
+.slp-record-match strong {
+  overflow: visible !important;
+  text-overflow: clip !important;
+  white-space: normal !important;
+  overflow-wrap: anywhere;
+  word-break: normal;
+}
+
+/* Supporting text should never be constrained by a fixed card height. */
+.slp-record-card,
+.slp-record-card.is-featured {
+  min-height: 0 !important;
+  height: auto !important;
+}
+
+/* Keep the value itself intact while allowing long units/details around it. */
+.slp-record-value {
+  max-width: 100%;
+  white-space: normal !important;
+  overflow-wrap: anywhere;
+}
+
+/* Give the heading area enough room for two-line record names. */
+.slp-record-card-top {
+  align-items: start !important;
+}
+
+.slp-record-card-top > div {
+  min-width: 0;
+}
+
+/*
+ * On medium laptop/tablet widths, three comfortable cards are preferable
+ * to four narrow cards with crushed text.
+ */
+@media (min-width: 701px) and (max-width: 1180px) {
+  .slp-record-grid {
+    grid-template-columns:
+      repeat(
+        3,
+        minmax(0, 1fr)
+      ) !important;
+  }
+}
+
+/*
+ * Mobile keeps the horizontal swipe treatment, but every card can grow
+ * vertically so no title/player/match name is clipped.
+ */
+@media (max-width: 700px) {
+  .slp-record-grid .slp-record-card {
+    min-height: 0 !important;
+    height: auto !important;
+  }
+
+  .slp-record-card-top strong,
+  .slp-record-holder strong,
+  .slp-record-holder span,
+  .slp-record-match strong {
+    white-space: normal !important;
+    overflow: visible !important;
+    text-overflow: clip !important;
+    overflow-wrap: anywhere;
+  }
+
+  .slp-record-card > p {
+    min-height: 0 !important;
+  }
+}
+
+@media (max-width: 390px) {
+  .slp-record-card {
+    padding: 13px !important;
+  }
+}
+
+
+/* =========================================================
+   MILESTONE CENTER
+   Celebrates achieved career landmarks and shows what is
+   coming next without duplicating Stats/Leaders/Records.
+========================================================= */
+
+.slp-milestones-summary {
+  display: grid;
+  grid-template-columns: repeat(4, minmax(0, 1fr));
+  gap: 8px;
+  margin-bottom: 14px;
+}
+
+.slp-milestones-summary > div {
+  min-width: 0;
+  display: grid;
+  grid-template-columns: auto minmax(0, 1fr) auto;
+  align-items: center;
+  gap: 8px;
+  padding: 11px 12px;
+  border: 1px solid rgba(91, 139, 180, 0.2);
+  border-radius: 12px;
+  background: rgba(8, 22, 39, 0.68);
+}
+
+.slp-milestones-summary > div > span {
+  font-size: 16px;
+}
+
+.slp-milestones-summary small {
+  overflow: hidden;
+  color: #738ca6;
+  font-size: 8px;
+  font-weight: 800;
+  line-height: 1.2;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.slp-milestones-summary strong {
+  color: #f6fbff;
+  font-size: 17px;
+}
+
+.slp-milestones-tabs {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 12px;
+  margin-bottom: 14px;
+}
+
+.slp-milestones-tabs .slp-segments {
+  min-width: 0;
+  flex: 1 1 auto;
+}
+
+.slp-milestones-scope {
+  flex: 0 0 auto;
+  padding: 6px 9px;
+  border: 1px solid rgba(139, 92, 246, 0.28);
+  border-radius: 999px;
+  color: #c1a8ff;
+  background: rgba(109, 40, 217, 0.1);
+  font-size: 9px;
+  font-weight: 900;
+  letter-spacing: 0.04em;
+  text-transform: uppercase;
+  white-space: nowrap;
+}
+
+.slp-milestone-achievements {
+  display: grid;
+  grid-template-columns: repeat(4, minmax(0, 1fr));
+  gap: 9px;
+}
+
+.slp-milestone-achievement {
+  min-width: 0;
+  display: grid;
+  align-content: start;
+  gap: 12px;
+  min-height: 192px;
+  padding: 14px;
+  overflow: hidden;
+  border: 1px solid rgba(109, 146, 181, 0.23);
+  border-radius: 14px;
+  color: inherit;
+  background:
+    radial-gradient(
+      circle at 90% 8%,
+      rgba(139, 92, 246, 0.12),
+      transparent 35%
+    ),
+    linear-gradient(
+      160deg,
+      rgba(19, 38, 65, 0.94),
+      rgba(8, 22, 39, 0.98)
+    );
+  text-decoration: none;
+}
+
+.slp-milestone-achievement.is-featured {
+  min-height: 214px;
+  border-color: rgba(245, 184, 66, 0.32);
+  background:
+    radial-gradient(
+      circle at 90% 8%,
+      rgba(245, 158, 11, 0.16),
+      transparent 35%
+    ),
+    linear-gradient(
+      160deg,
+      rgba(48, 37, 23, 0.96),
+      rgba(8, 22, 39, 0.98)
+    );
+}
+
+.slp-milestone-achievement:hover {
+  border-color: rgba(107, 174, 230, 0.5);
+}
+
+.slp-milestone-achievement-top {
+  min-width: 0;
+  display: grid;
+  grid-template-columns: auto minmax(0, 1fr) auto;
+  align-items: start;
+  gap: 9px;
+}
+
+.slp-milestone-achievement-icon {
+  display: grid;
+  place-items: center;
+  width: 31px;
+  height: 31px;
+  border: 1px solid rgba(105, 164, 212, 0.2);
+  border-radius: 9px;
+  background: rgba(18, 77, 116, 0.18);
+  font-size: 15px;
+}
+
+.slp-milestone-achievement-top > div {
+  min-width: 0;
+}
+
+.slp-milestone-achievement-top small,
+.slp-milestone-achievement-top strong {
+  display: block;
+}
+
+.slp-milestone-achievement-top small {
+  color: #718da8;
+  font-size: 8px;
+  font-weight: 900;
+  text-transform: uppercase;
+  letter-spacing: 0.04em;
+}
+
+.slp-milestone-achievement-top strong {
+  margin-top: 2px;
+  color: #f4f9fe;
+  font-size: 11px;
+  line-height: 1.25;
+  overflow-wrap: anywhere;
+}
+
+.slp-milestone-check {
+  display: grid;
+  place-items: center;
+  width: 21px;
+  height: 21px;
+  border: 1px solid rgba(52, 211, 153, 0.32);
+  border-radius: 50%;
+  color: #8ff1c8;
+  background: rgba(16, 185, 129, 0.1);
+  font-size: 10px;
+  font-weight: 900;
+}
+
+.slp-milestone-player {
+  min-width: 0;
+  display: grid;
+  gap: 2px;
+}
+
+.slp-milestone-player strong,
+.slp-milestone-player span {
+  overflow-wrap: anywhere;
+}
+
+.slp-milestone-player strong {
+  color: #fff;
+  font-size: 14px;
+}
+
+.slp-milestone-player span {
+  color: #7089a3;
+  font-size: 9px;
+}
+
+.slp-milestone-total {
+  display: flex;
+  align-items: baseline;
+  gap: 7px;
+}
+
+.slp-milestone-total strong {
+  color: #fff;
+  font-size: 26px;
+  font-weight: 950;
+  line-height: 1;
+}
+
+.slp-milestone-total span {
+  color: #7ab4df;
+  font-size: 9px;
+  font-weight: 900;
+  text-transform: uppercase;
+}
+
+.slp-milestone-match {
+  min-width: 0;
+  padding-top: 9px;
+  border-top: 1px solid rgba(109, 145, 177, 0.13);
+}
+
+.slp-milestone-match small,
+.slp-milestone-match strong {
+  display: block;
+}
+
+.slp-milestone-match small {
+  color: #56718b;
+  font-size: 8px;
+}
+
+.slp-milestone-match strong {
+  margin-top: 2px;
+  color: #8ea8c0;
+  font-size: 9px;
+  line-height: 1.3;
+  overflow-wrap: anywhere;
+}
+
+.slp-milestone-view {
+  color: #72b9ed;
+  font-size: 9px;
+  font-weight: 900;
+}
+
+.slp-milestone-next-grid {
+  display: grid;
+  grid-template-columns: repeat(3, minmax(0, 1fr));
+  gap: 9px;
+}
+
+.slp-milestone-progress {
+  min-width: 0;
+  display: grid;
+  gap: 11px;
+  padding: 14px;
+  border: 1px solid rgba(102, 141, 178, 0.22);
+  border-radius: 14px;
+  background:
+    linear-gradient(
+      160deg,
+      rgba(15, 37, 63, 0.93),
+      rgba(8, 22, 39, 0.97)
+    );
+}
+
+.slp-milestone-progress-head {
+  min-width: 0;
+  display: grid;
+  grid-template-columns: auto minmax(0, 1fr) auto;
+  align-items: center;
+  gap: 9px;
+}
+
+.slp-milestone-progress-head > span {
+  font-size: 18px;
+}
+
+.slp-milestone-progress-head > div {
+  min-width: 0;
+}
+
+.slp-milestone-progress-head strong,
+.slp-milestone-progress-head small {
+  display: block;
+  overflow-wrap: anywhere;
+}
+
+.slp-milestone-progress-head strong {
+  color: #f6fbff;
+  font-size: 12px;
+}
+
+.slp-milestone-progress-head small {
+  margin-top: 2px;
+  color: #6f88a2;
+  font-size: 9px;
+}
+
+.slp-milestone-progress-head b {
+  color: #8ac8f4;
+  font-size: 11px;
+}
+
+.slp-milestone-progress-target {
+  display: flex;
+  align-items: baseline;
+  justify-content: space-between;
+  gap: 9px;
+}
+
+.slp-milestone-progress-target span {
+  color: #7993ad;
+  font-size: 9px;
+}
+
+.slp-milestone-progress-target strong {
+  color: #e6f1fb;
+  font-size: 12px;
+  white-space: nowrap;
+}
+
+.slp-milestone-progress-track {
+  height: 7px;
+  overflow: hidden;
+  border-radius: 999px;
+  background: rgba(70, 103, 135, 0.22);
+}
+
+.slp-milestone-progress-track > span {
+  display: block;
+  height: 100%;
+  border-radius: inherit;
+  background:
+    linear-gradient(
+      90deg,
+      #2563eb,
+      #22c1c3
+    );
+}
+
+.slp-milestone-progress > p {
+  margin: 0;
+  color: #7289a1;
+  font-size: 9px;
+}
+
+.slp-milestone-progress > p strong {
+  color: #bcd9ef;
+}
+
+.slp-milestones-note {
+  display: flex;
+  align-items: flex-start;
+  gap: 10px;
+  margin-top: 12px;
+  padding: 12px 14px;
+  border: 1px solid rgba(102, 141, 178, 0.16);
+  border-radius: 12px;
+  background: rgba(8, 22, 39, 0.55);
+}
+
+.slp-milestones-note p {
+  margin: 0;
+  color: #6e849c;
+  font-size: 9px;
+  line-height: 1.5;
+}
+
+.slp-milestones-note strong {
+  display: block;
+  margin-bottom: 2px;
+  color: #91a8bf;
+}
+
+@media (max-width: 1050px) {
+  .slp-milestone-achievements {
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+  }
+
+  .slp-milestone-next-grid {
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+  }
+}
+
+@media (max-width: 760px) {
+  .slp-milestones-summary {
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+  }
+
+  .slp-milestones-tabs {
+    display: block;
+  }
+
+  .slp-milestones-tabs .slp-segments {
+    display: grid;
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+  }
+
+  .slp-milestones-tabs .slp-segments button {
+    min-width: 0;
+    justify-content: center;
+  }
+
+  .slp-milestones-scope {
+    display: inline-flex;
+    margin-top: 9px;
+  }
+
+  .slp-milestone-achievements {
+    display: flex;
+    gap: 9px;
+    margin-inline: -18px;
+    padding-inline: 18px;
+    padding-bottom: 5px;
+    overflow-x: auto;
+    overscroll-behavior-inline: contain;
+    scroll-snap-type: x mandatory;
+    scrollbar-width: none;
+  }
+
+  .slp-milestone-achievements::-webkit-scrollbar {
+    display: none;
+  }
+
+  .slp-milestone-achievement {
+    flex: 0 0 min(82vw, 292px);
+    min-height: 0;
+    scroll-snap-align: start;
+  }
+
+  .slp-milestone-achievement.is-featured {
+    min-height: 0;
+  }
+}
+
+@media (max-width: 520px) {
+  .slp-milestone-next-grid {
+    grid-template-columns: 1fr;
+  }
+}
+
+@media (max-width: 390px) {
+  .slp-milestones-summary {
+    grid-template-columns: 1fr;
+  }
+
+  .slp-milestone-achievement {
+    flex-basis: 84vw;
+  }
+}
