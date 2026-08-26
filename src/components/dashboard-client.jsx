@@ -568,6 +568,27 @@ function isRecentBallLegal(ball) {
 
 
 
+function formatPersonalMatchDateTime(value) {
+  if (!value) return "";
+
+  const date = new Date(value);
+
+  if (Number.isNaN(date.getTime())) {
+    return "";
+  }
+
+  /*
+   * This runs in the browser, so the match is displayed in the user's
+   * local timezone instead of the Vercel/server runtime timezone.
+   */
+  return new Intl.DateTimeFormat(undefined, {
+    month: "short",
+    day: "numeric",
+    hour: "numeric",
+    minute: "2-digit",
+  }).format(date);
+}
+
 function PersonalCricketDashboard({
   data,
   loading,
@@ -854,7 +875,17 @@ function PersonalCricketDashboard({
                   : "No scheduled match"}
               </strong>
             </div>
-            {nextMatch?.dateLabel ? (
+            {nextMatch?.scheduledAt ? (
+              <span>
+                {formatPersonalMatchDateTime(
+                  nextMatch.scheduledAt
+                )}
+              </span>
+            ) : nextMatch?.dateLabel ? (
+              /*
+               * Backward-compatible fallback while an older API response
+               * may still be in the browser cache during deployment.
+               */
               <span>{nextMatch.dateLabel}</span>
             ) : null}
           </div>

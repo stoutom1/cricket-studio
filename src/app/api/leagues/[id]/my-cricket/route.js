@@ -106,26 +106,6 @@ async function linkedPlayersForUser({
   );
 }
 
-function formatMatchDate(match) {
-  const value =
-    match?.scheduledAt ||
-    match?.matchDate ||
-    match?.createdAt;
-
-  if (!value) return "";
-
-  const date = new Date(value);
-
-  if (Number.isNaN(date.getTime())) return "";
-
-  return new Intl.DateTimeFormat("en-US", {
-    month: "short",
-    day: "numeric",
-    hour: "numeric",
-    minute: "2-digit",
-  }).format(date);
-}
-
 export async function GET(request, { params }) {
   try {
     const { id } = await params;
@@ -383,6 +363,12 @@ export async function GET(request, { params }) {
           ? nextMatch.teamB
           : nextMatch.teamA;
 
+      const scheduledValue =
+        nextMatch.scheduledAt ||
+        nextMatch.matchDate ||
+        nextMatch.createdAt ||
+        null;
+
       nextMatchPayload = {
         id: nextMatch.id,
         teamAName: nextMatch.teamA?.name || "Team A",
@@ -392,7 +378,15 @@ export async function GET(request, { params }) {
           nextMatch.venue ||
           nextMatch.location ||
           "",
-        dateLabel: formatMatchDate(nextMatch),
+        /*
+         * Do not format this timestamp in the API/server runtime.
+         * Vercel/server timezone can differ from the user's browser timezone.
+         * The client formats this ISO timestamp for display.
+         */
+        scheduledAt:
+          scheduledValue
+            ? new Date(scheduledValue).toISOString()
+            : null,
       };
     }
 
