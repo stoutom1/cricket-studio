@@ -19,6 +19,7 @@ import LeagueResourcesShortcut from "@/components/resources/LeagueResourcesShort
 import matchDayNavStyles from "./MatchDayDashboardNav.module.css";
 import playerCardStyles from "./DashboardPlayerCard.module.css";
 import personalCricketStyles from "./PersonalCricketDashboard.module.css";
+import personalDashboardStyles from "./PersonalDashboardSnapshot.module.css";
 import PlayerAccountLinker from "@/components/PlayerAccountLinker";
 import { shareCric4All } from "@/lib/native-share";
 import { openCric4AllLink } from "@/lib/native-links";
@@ -587,6 +588,345 @@ function formatPersonalMatchDateTime(value) {
     hour: "numeric",
     minute: "2-digit",
   }).format(date);
+}
+
+function getPersonalDashboardFormLabel(form) {
+  const score = Number(form?.formScore || 0);
+  const trend = String(form?.trend || "")
+    .trim()
+    .toUpperCase();
+
+  if (score >= 75) {
+    return { icon: "🔥", label: "Excellent", tone: "hot" };
+  }
+  if (trend === "IMPROVING") {
+    return { icon: "📈", label: "Improving", tone: "good" };
+  }
+  if (trend === "STABLE") {
+    return { icon: "✅", label: "Stable", tone: "steady" };
+  }
+  if (trend === "COOLING") {
+    return { icon: "🧊", label: "Cooling", tone: "cool" };
+  }
+  return { icon: "🌱", label: "Building", tone: "building" };
+}
+
+function formatPersonalDashboardNextMatch(value) {
+  if (!value) return "";
+  const date = new Date(value);
+  if (Number.isNaN(date.getTime())) return "";
+
+  return new Intl.DateTimeFormat(undefined, {
+    weekday: "short",
+    month: "short",
+    day: "numeric",
+    hour: "numeric",
+    minute: "2-digit",
+  }).format(date);
+}
+
+function PersonalDashboardSnapshot({
+  data,
+  loading,
+  leagueName,
+  onOpenYourCricket,
+}) {
+  /*
+   * Mobile-only behavior:
+   * Your Cricket always starts collapsed whenever this landing snapshot mounts.
+   * Desktop ignores this state entirely through CSS and remains fully expanded.
+   */
+  const [mobileExpanded, setMobileExpanded] = useState(false);
+  if (loading) {
+    return (
+      <section
+        className={`${personalDashboardStyles.shell} ${personalDashboardStyles.loading}`}
+        aria-label="Your Cricket loading"
+      >
+        <span className={personalDashboardStyles.loadingIcon}>🏏</span>
+        <div>
+          <strong>Loading Your Cricket</strong>
+          <small>Building your personal snapshot from completed-match data.</small>
+        </div>
+      </section>
+    );
+  }
+
+  if (!data?.linked) {
+    return (
+      <section
+        className={`${personalDashboardStyles.shell} ${personalDashboardStyles.unlinked}`}
+        aria-label="Link your player profile"
+      >
+        <div className={personalDashboardStyles.unlinkedCopy}>
+          <span>👤</span>
+          <div>
+            <small>🎯 PERSONAL DASHBOARD</small>
+            <strong>Make Cric4All yours</strong>
+            <p>
+              Link your player profile in <b>{leagueName || "this league"}</b> to see
+              your runs, rankings, form, milestones and next match here.
+            </p>
+          </div>
+        </div>
+
+        <button type="button" onClick={onOpenYourCricket}>
+          🔗 Link Player Profile
+        </button>
+      </section>
+    );
+  }
+
+  const career = data.career || {};
+  const battingRank = data.rankings?.batting || null;
+  const form = data.form || {};
+  const nearest = data.progress?.nearest || null;
+  const nextMatch = data.nextMatch || null;
+  const formLabel = getPersonalDashboardFormLabel(form);
+  const rankMovement = Number(battingRank?.movement || 0);
+  const nextDate = formatPersonalDashboardNextMatch(nextMatch?.scheduledAt);
+
+  return (
+    <section
+      className={`${personalDashboardStyles.shell} ${
+        mobileExpanded
+          ? personalDashboardStyles.mobileExpanded
+          : personalDashboardStyles.mobileCollapsed
+      }`}
+      aria-label="Your Cricket personal dashboard"
+    >
+      <div className={personalDashboardStyles.topRow}>
+        <div className={personalDashboardStyles.identity}>
+          <span className={personalDashboardStyles.avatar}>
+            {String(data.playerName || "?")
+              .trim()
+              .charAt(0)
+              .toUpperCase()}
+          </span>
+
+          <div>
+            <small>🎯 YOUR CRICKET</small>
+            <strong>
+              Welcome back, {data.playerName || "Player"}
+            </strong>
+            <p>
+              {data.teamNames?.join(" / ") || "League player"}
+              {leagueName ? ` · ${leagueName}` : ""}
+            </p>
+          </div>
+        </div>
+
+        <div className={personalDashboardStyles.headerActions}>
+          <button
+            type="button"
+            className={personalDashboardStyles.openButton}
+            onClick={onOpenYourCricket}
+          >
+            View full Your Cricket
+            <span aria-hidden="true">→</span>
+          </button>
+
+          <button
+            type="button"
+            className={personalDashboardStyles.mobileToggle}
+            aria-expanded={mobileExpanded}
+            onClick={() =>
+              setMobileExpanded((current) => !current)
+            }
+          >
+            <span aria-hidden="true">
+              {mobileExpanded ? "▴" : "▾"}
+            </span>
+            {mobileExpanded
+              ? "Collapse Your Cricket"
+              : "Expand Your Cricket"}
+          </button>
+        </div>
+      </div>
+
+      <div className={personalDashboardStyles.mobileSummary}>
+        <span>
+          <b>{career.runs ?? 0}</b> runs
+        </span>
+
+        <span>
+          Batting{" "}
+          <b>
+            {battingRank?.rank
+              ? `#${battingRank.rank}`
+              : "—"}
+          </b>
+        </span>
+
+        <span>
+          {formLabel.icon} <b>{formLabel.label}</b>
+        </span>
+      </div>
+
+      <div className={personalDashboardStyles.expandableBody}>
+        <div className={personalDashboardStyles.statStrip}>
+          {[
+            ["🏏", "Runs", career.runs ?? 0],
+            ["🎯", "Wickets", career.wickets ?? 0],
+            ["🧤", "Fielding", career.fielding ?? 0],
+            ["🎽", "Matches", career.matches ?? 0],
+          ].map(([icon, label, value]) => (
+            <article key={label}>
+              <span>{icon}</span>
+              <div>
+                <strong>{value}</strong>
+                <small>{label}</small>
+              </div>
+            </article>
+          ))}
+        </div>
+
+        <div className={personalDashboardStyles.intelligenceGrid}>
+          <article className={personalDashboardStyles.intelligenceCard}>
+            <div className={personalDashboardStyles.intelligenceIcon}>
+              🏆
+            </div>
+
+            <div>
+              <small>League batting rank</small>
+              <strong>
+                {battingRank?.rank
+                  ? `#${battingRank.rank}`
+                  : "Not ranked yet"}
+              </strong>
+
+              {battingRank?.rank ? (
+                <p
+                  className={
+                    rankMovement > 0
+                      ? personalDashboardStyles.positive
+                      : rankMovement < 0
+                        ? personalDashboardStyles.negative
+                        : ""
+                  }
+                >
+                  {battingRank.isNew
+                    ? "NEW"
+                    : rankMovement > 0
+                      ? `↑${rankMovement} since previous ranking`
+                      : rankMovement < 0
+                        ? `↓${Math.abs(rankMovement)} since previous ranking`
+                        : "No ranking change"}
+                </p>
+              ) : (
+                <p>
+                  Qualify through completed-match performances.
+                </p>
+              )}
+            </div>
+          </article>
+
+          <article className={personalDashboardStyles.intelligenceCard}>
+            <div className={personalDashboardStyles.intelligenceIcon}>
+              📅
+            </div>
+
+            <div>
+              <small>Next match</small>
+              <strong>
+                {nextMatch
+                  ? nextDate || "Scheduled"
+                  : "No match scheduled"}
+              </strong>
+              <p>
+                {nextMatch
+                  ? nextMatch.opponentName
+                    ? `vs ${nextMatch.opponentName}`
+                    : `${nextMatch.teamAName} vs ${nextMatch.teamBName}`
+                  : "Your linked team has no future scheduled fixture."}
+              </p>
+            </div>
+          </article>
+
+          <article className={personalDashboardStyles.intelligenceCard}>
+            <div className={personalDashboardStyles.intelligenceIcon}>
+              🎯
+            </div>
+
+            <div>
+              <small>Next landmark</small>
+              <strong>
+                {nearest
+                  ? `${nearest.remaining} ${String(
+                      nearest.label ||
+                        nearest.metric ||
+                        ""
+                    ).toLowerCase()} to ${nearest.target}`
+                  : "Landmarks complete"}
+              </strong>
+              <p>
+                {nearest
+                  ? `${nearest.current} / ${nearest.target} ${String(
+                      nearest.label ||
+                        nearest.metric ||
+                        ""
+                    ).toLowerCase()}`
+                  : "No configured landmark currently pending."}
+              </p>
+            </div>
+          </article>
+
+          <article
+            className={`${personalDashboardStyles.intelligenceCard} ${
+              personalDashboardStyles[
+                `tone_${formLabel.tone}`
+              ] || ""
+            }`}
+          >
+            <div className={personalDashboardStyles.intelligenceIcon}>
+              {formLabel.icon}
+            </div>
+
+            <div>
+              <small>Current form</small>
+              <strong>{formLabel.label}</strong>
+              <p>
+                Rating {Number(form.formScore || 0).toFixed(1)}
+                {Number(form.lastFiveRuns || 0) ||
+                Number(form.lastFiveWickets || 0)
+                  ? ` · ${form.lastFiveRuns || 0} runs · ${form.lastFiveWickets || 0} wickets in last 5`
+                  : " · Build form through completed appearances"}
+              </p>
+            </div>
+          </article>
+        </div>
+
+        {(data.teamOfWeek?.selected ||
+          data.achievements?.length) && (
+          <div className={personalDashboardStyles.highlights}>
+            {data.teamOfWeek?.selected ? (
+              <span>
+                ⭐ Team of the Week
+                {data.teamOfWeek?.captain ? " · Captain" : ""}
+                {data.teamOfWeek?.wicketkeeper ? " · WK" : ""}
+              </span>
+            ) : null}
+
+            {data.achievements?.length ? (
+              <span>
+                🏅 {data.achievements.length} achievement
+                {data.achievements.length === 1 ? "" : "s"} earned
+              </span>
+            ) : null}
+          </div>
+        )}
+
+        <button
+          type="button"
+          className={personalDashboardStyles.mobileFullButton}
+          onClick={onOpenYourCricket}
+        >
+          View full Your Cricket
+          <span aria-hidden="true">→</span>
+        </button>
+      </div>
+    </section>
+  );
 }
 
 function PersonalCricketDashboard({
@@ -25699,6 +26039,24 @@ const playerRoleBadge = (row) => {
 )}
 {activeTab === "management" && canShowManagementTab && (
   <div className="management-page">
+    {activeLeagueId ? (
+      <PersonalDashboardSnapshot
+        data={myCricket}
+        loading={myCricketLoading}
+        leagueName={
+          leagues.find(
+            (league) => Number(league.id) === Number(activeLeagueId)
+          )?.name || ""
+        }
+        onOpenYourCricket={() => {
+          setStatsSubTab("MY_CRICKET");
+          setActiveTab("stats");
+          loadMyCricket(activeLeagueId);
+          loadLeagueStats(activeLeagueId);
+        }}
+      />
+    ) : null}
+
     <Card title="🏏 League Management">
       <div className="mgmt-clean-shell">
 

@@ -1,0 +1,335 @@
+.shell {
+  min-width: 0;
+  display: grid;
+  gap: 11px;
+  margin-bottom: 13px;
+  padding: 14px;
+  border: 1px solid rgba(88, 157, 202, 0.21);
+  border-radius: 16px;
+  background: radial-gradient(circle at 92% 0%, rgba(14, 165, 233, 0.12), transparent 34%), linear-gradient(150deg, rgba(12, 37, 61, 0.98), rgba(7, 21, 38, 0.99));
+  box-shadow: 0 12px 35px rgba(0,0,0,.16), inset 0 1px 0 rgba(255,255,255,.025);
+}
+.topRow { min-width:0; display:flex; align-items:center; justify-content:space-between; gap:14px; }
+.identity { min-width:0; display:flex; align-items:center; gap:10px; }
+.avatar { flex:0 0 43px; display:grid; place-items:center; width:43px; height:43px; border:1px solid rgba(88,192,231,.31); border-radius:12px; color:#eefaff; background:linear-gradient(145deg,rgba(17,107,156,.72),rgba(17,72,116,.72)); font-size:16px; font-weight:950; }
+.identity>div { min-width:0; }
+.identity small,.identity strong,.identity p { display:block; margin:0; }
+.identity small { color:#5cccf2; font-size:8px; font-weight:950; letter-spacing:.055em; }
+.identity strong { margin-top:2px; color:#f5fbff; font-size:15px; line-height:1.2; overflow-wrap:anywhere; }
+.identity p { margin-top:3px; color:#7890a6; font-size:8px; line-height:1.35; overflow-wrap:anywhere; }
+.openButton,.unlinked>button { flex:0 0 auto; min-height:35px; padding:7px 10px; border:1px solid rgba(57,189,233,.32); border-radius:9px; color:#e9faff; background:rgba(12,95,139,.35); font:inherit; font-size:8px; font-weight:900; cursor:pointer; }
+.openButton { display:inline-flex; align-items:center; gap:7px; white-space:nowrap; }
+.statStrip { display:grid; grid-template-columns:repeat(4,minmax(0,1fr)); gap:7px; }
+.statStrip article { min-width:0; display:flex; align-items:center; gap:8px; padding:9px 10px; border:1px solid rgba(94,137,170,.12); border-radius:10px; background:rgba(7,24,41,.5); }
+.statStrip article>span { flex:0 0 auto; font-size:15px; }
+.statStrip strong,.statStrip small { display:block; }
+.statStrip strong { color:#f1f8fd; font-size:14px; line-height:1; }
+.statStrip small { margin-top:2px; color:#6d879e; font-size:7px; font-weight:850; text-transform:uppercase; }
+.intelligenceGrid { display:grid; grid-template-columns:repeat(4,minmax(0,1fr)); gap:7px; }
+.intelligenceCard { min-width:0; display:grid; grid-template-columns:auto minmax(0,1fr); align-items:start; gap:8px; padding:10px; border:1px solid rgba(93,135,169,.13); border-radius:10px; background:rgba(7,23,40,.56); }
+.intelligenceIcon { display:grid; place-items:center; width:27px; height:27px; border-radius:8px; background:rgba(24,83,120,.25); font-size:13px; }
+.intelligenceCard>div:last-child { min-width:0; }
+.intelligenceCard small,.intelligenceCard strong,.intelligenceCard p { display:block; margin:0; }
+.intelligenceCard small { color:#6c849a; font-size:7px; font-weight:900; text-transform:uppercase; }
+.intelligenceCard strong { margin-top:2px; color:#edf7fd; font-size:10px; line-height:1.3; overflow-wrap:anywhere; }
+.intelligenceCard p { margin-top:3px; color:#6f879e; font-size:7px; line-height:1.4; overflow-wrap:anywhere; }
+.positive { color:#65dba7!important; }
+.negative { color:#f29b9b!important; }
+.tone_hot { border-color:rgba(245,158,11,.2); }
+.tone_good { border-color:rgba(52,211,153,.18); }
+.tone_cool { border-color:rgba(96,165,250,.18); }
+.highlights { display:flex; flex-wrap:wrap; gap:6px; }
+.highlights span { padding:5px 8px; border:1px solid rgba(92,145,183,.15); border-radius:999px; color:#9cc6df; background:rgba(11,47,72,.32); font-size:7px; font-weight:850; }
+.loading { display:flex; align-items:center; gap:10px; }
+.loadingIcon { flex:0 0 auto; font-size:21px; }
+.loading strong,.loading small { display:block; }
+.loading strong { color:#eaf5fd; font-size:11px; }
+.loading small { margin-top:2px; color:#70889e; font-size:8px; }
+.unlinked { display:flex; align-items:center; justify-content:space-between; gap:13px; }
+.unlinkedCopy { min-width:0; display:flex; align-items:center; gap:10px; }
+.unlinkedCopy>span { flex:0 0 auto; font-size:23px; }
+.unlinkedCopy>div { min-width:0; }
+.unlinkedCopy small,.unlinkedCopy strong,.unlinkedCopy p { display:block; margin:0; }
+.unlinkedCopy small { color:#65c8ee; font-size:7px; font-weight:950; }
+.unlinkedCopy strong { margin-top:2px; color:#eef8ff; font-size:12px; }
+.unlinkedCopy p { margin-top:3px; color:#71899f; font-size:8px; line-height:1.4; }
+@media (max-width:1000px) { .intelligenceGrid { grid-template-columns:repeat(2,minmax(0,1fr)); } }
+@media (max-width:760px) {
+  .shell { gap:13px; margin-bottom:14px; padding:14px; border-radius:15px; }
+  .topRow,.unlinked { align-items:stretch; flex-direction:column; }
+  .identity { align-items:flex-start; }
+  .avatar { flex-basis:46px; width:46px; height:46px; font-size:18px; }
+  .identity small { font-size:10px; }
+  .identity strong { margin-top:3px; font-size:18px; line-height:1.2; }
+  .identity p { margin-top:4px; font-size:11px; line-height:1.45; }
+  .openButton,.unlinked>button { width:100%; min-height:44px; justify-content:center; font-size:12px; border-radius:11px; }
+  .statStrip { grid-template-columns:repeat(2,minmax(0,1fr)); gap:8px; }
+  .statStrip article { min-height:68px; padding:11px; border-radius:11px; }
+  .statStrip article>span { font-size:20px; }
+  .statStrip strong { font-size:21px; }
+  .statStrip small { margin-top:3px; font-size:10px; }
+  .intelligenceGrid { grid-template-columns:1fr; gap:8px; }
+  .intelligenceCard { gap:10px; padding:12px; border-radius:11px; }
+  .intelligenceIcon { width:36px; height:36px; font-size:18px; }
+  .intelligenceCard small { font-size:10px; }
+  .intelligenceCard strong { margin-top:3px; font-size:15px; line-height:1.3; }
+  .intelligenceCard p { margin-top:4px; font-size:11px; line-height:1.45; }
+  .highlights { gap:7px; }
+  .highlights span { padding:7px 9px; font-size:10px; }
+  .unlinkedCopy { align-items:flex-start; }
+  .unlinkedCopy>span { font-size:27px; }
+  .unlinkedCopy small { font-size:9px; }
+  .unlinkedCopy strong { margin-top:3px; font-size:16px; }
+  .unlinkedCopy p { margin-top:4px; font-size:11px; line-height:1.5; }
+  .loading strong { font-size:14px; }
+  .loading small { margin-top:3px; font-size:11px; }
+}
+
+
+/* =========================================================
+   MOBILE-ONLY COLLAPSIBLE YOUR CRICKET LANDING SNAPSHOT
+   Desktop/laptop layout remains expanded and unchanged.
+========================================================= */
+
+.headerActions {
+  flex: 0 0 auto;
+}
+
+.mobileToggle,
+.mobileSummary,
+.mobileFullButton {
+  display: none;
+}
+
+.expandableBody {
+  display: grid;
+  gap: 11px;
+}
+
+@media (max-width: 760px) {
+  /*
+   * On phones the snapshot is intentionally compact by default.
+   * The React state starts false on every mount, therefore the section
+   * always returns to collapsed when the Dashboard landing view remounts.
+   */
+  .shell {
+    gap: 10px;
+    padding: 12px;
+  }
+
+  .topRow {
+    gap: 10px;
+  }
+
+  .identity {
+    align-items: center;
+    gap: 10px;
+  }
+
+  .avatar {
+    flex: 0 0 42px;
+    width: 42px;
+    height: 42px;
+    font-size: 17px;
+    border-radius: 11px;
+  }
+
+  .identity small {
+    font-size: 10px;
+    line-height: 1.2;
+  }
+
+  .identity strong {
+    margin-top: 2px;
+    font-size: 16px;
+    line-height: 1.25;
+  }
+
+  .identity p {
+    margin-top: 3px;
+    font-size: 11px;
+    line-height: 1.4;
+  }
+
+  .headerActions {
+    width: 100%;
+  }
+
+  /*
+   * The full-navigation button is kept out of the collapsed header.
+   * It remains available after expansion.
+   */
+  .openButton {
+    display: none;
+  }
+
+  .mobileToggle {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 7px;
+    width: 100%;
+    min-height: 42px;
+    padding: 8px 11px;
+    border: 1px solid rgba(74, 179, 224, 0.3);
+    border-radius: 10px;
+    color: #e8f8ff;
+    background: rgba(13, 82, 122, 0.34);
+    font: inherit;
+    font-size: 12px;
+    font-weight: 900;
+    cursor: pointer;
+  }
+
+  .mobileToggle > span {
+    font-size: 14px;
+    line-height: 1;
+  }
+
+  /*
+   * Useful information remains visible while collapsed so the header is
+   * compact without becoming empty or cryptic.
+   */
+  .mobileSummary {
+    display: flex;
+    align-items: center;
+    flex-wrap: wrap;
+    gap: 6px;
+  }
+
+  .mobileSummary > span {
+    display: inline-flex;
+    align-items: center;
+    min-height: 29px;
+    padding: 5px 8px;
+    border: 1px solid rgba(93, 138, 173, 0.15);
+    border-radius: 999px;
+    color: #8fa9bd;
+    background: rgba(7, 24, 41, 0.48);
+    font-size: 10px;
+    line-height: 1.2;
+    white-space: nowrap;
+  }
+
+  .mobileSummary b {
+    color: #e9f6fd;
+    font-weight: 900;
+  }
+
+  /*
+   * This is the actual collapse. It applies on mobile only.
+   * Desktop always displays .expandableBody regardless of component state.
+   */
+  .mobileCollapsed .expandableBody {
+    display: none;
+  }
+
+  .mobileExpanded .expandableBody {
+    display: grid;
+    gap: 10px;
+  }
+
+  .mobileExpanded .mobileSummary {
+    display: none;
+  }
+
+  .mobileFullButton {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 7px;
+    width: 100%;
+    min-height: 44px;
+    padding: 9px 11px;
+    border: 1px solid rgba(57, 189, 233, 0.32);
+    border-radius: 11px;
+    color: #e9faff;
+    background: rgba(12, 95, 139, 0.35);
+    font: inherit;
+    font-size: 12px;
+    font-weight: 900;
+    cursor: pointer;
+  }
+
+  /*
+   * Expanded content remains readable rather than reverting to desktop's
+   * intentionally compact typography.
+   */
+  .statStrip {
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+    gap: 8px;
+  }
+
+  .statStrip article {
+    min-height: 62px;
+    padding: 10px;
+  }
+
+  .statStrip article > span {
+    font-size: 19px;
+  }
+
+  .statStrip strong {
+    font-size: 20px;
+  }
+
+  .statStrip small {
+    margin-top: 3px;
+    font-size: 10px;
+  }
+
+  .intelligenceGrid {
+    grid-template-columns: 1fr;
+    gap: 8px;
+  }
+
+  .intelligenceCard {
+    grid-template-columns: 34px minmax(0, 1fr);
+    gap: 9px;
+    padding: 11px;
+  }
+
+  .intelligenceIcon {
+    width: 34px;
+    height: 34px;
+    font-size: 17px;
+  }
+
+  .intelligenceCard small {
+    font-size: 10px;
+    line-height: 1.2;
+  }
+
+  .intelligenceCard strong {
+    margin-top: 3px;
+    font-size: 14px;
+    line-height: 1.3;
+  }
+
+  .intelligenceCard p {
+    margin-top: 4px;
+    font-size: 11px;
+    line-height: 1.45;
+  }
+
+  .highlights {
+    gap: 7px;
+  }
+
+  .highlights span {
+    padding: 7px 9px;
+    font-size: 10px;
+    line-height: 1.3;
+  }
+}
+
+@media (max-width: 390px) {
+  .mobileSummary {
+    gap: 5px;
+  }
+
+  .mobileSummary > span {
+    padding-inline: 7px;
+    font-size: 9.5px;
+  }
+}
