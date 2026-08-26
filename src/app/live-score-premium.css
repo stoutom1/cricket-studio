@@ -5955,3 +5955,373 @@ body:has(.live-tv-mode) {
     max-height: 58px !important;
   }
 }
+
+
+/* =========================================================
+   CRIC4ALL — TV MODE 2.0 LAPTOP FINAL LAYOUT
+   DESKTOP / LAPTOP ONLY (>= 901px)
+   Mobile is intentionally untouched.
+
+   This pass removes nested desktop width calculations entirely:
+   - one bounded 12-column main grid
+   - no right-side rail that can escape the viewport
+   - balanced vertical use of the screen
+   - Last 12 Balls always visible
+========================================================= */
+
+@media (min-width: 901px) {
+  .live-tv-mode,
+  .tv2-shell,
+  .tv2-shell * {
+    box-sizing: border-box !important;
+  }
+
+  .live-tv-mode {
+    inset: 0 !important;
+    width: 100vw !important;
+    max-width: 100vw !important;
+    height: 100vh !important;
+    max-height: 100vh !important;
+    overflow: hidden !important;
+  }
+
+  .tv2-shell {
+    width: 100vw !important;
+    max-width: 100vw !important;
+    height: 100vh !important;
+    max-height: 100vh !important;
+    overflow: hidden !important;
+    padding: 12px 14px !important;
+    gap: 10px !important;
+
+    grid-template-rows:
+      38px
+      minmax(190px, 25vh)
+      minmax(0, 1fr)
+      minmax(74px, 9vh) !important;
+  }
+
+  .tv2-topbar,
+  .tv2-score-hero,
+  .tv2-main-grid,
+  .tv2-ball-footer {
+    width: 100% !important;
+    max-width: 100% !important;
+    min-width: 0 !important;
+  }
+
+  .tv2-topbar {
+    grid-template-columns:
+      minmax(190px, 0.9fr)
+      minmax(260px, 1.25fr)
+      minmax(110px, 0.55fr) !important;
+  }
+
+  .tv2-match-name {
+    min-width: 0 !important;
+    overflow-wrap: anywhere !important;
+  }
+
+  .tv2-score-hero {
+    height: 100% !important;
+    min-height: 0 !important;
+    grid-template-columns:
+      minmax(170px, 0.9fr)
+      minmax(280px, 1.35fr)
+      minmax(170px, 0.9fr) !important;
+    gap: 18px !important;
+    padding: 14px 18px !important;
+  }
+
+  .tv2-score-block {
+    width: 100% !important;
+    min-width: 0 !important;
+  }
+
+  .tv2-score-block strong {
+    font-size: clamp(62px, 7.4vw, 118px) !important;
+  }
+
+  /*
+   * MAIN FIX:
+   * left/right wrapper elements no longer participate in desktop sizing.
+   * Their children become direct children of one bounded 12-column grid.
+   */
+  .tv2-main-grid {
+    display: grid !important;
+    grid-template-columns:
+      repeat(12, minmax(0, 1fr)) !important;
+    grid-template-rows:
+      minmax(64px, 0.72fr)
+      minmax(145px, 1.9fr)
+      minmax(82px, 0.88fr) !important;
+    gap: 9px !important;
+    min-height: 0 !important;
+    height: 100% !important;
+    overflow: hidden !important;
+    align-content: stretch !important;
+  }
+
+  .tv2-left-column,
+  .tv2-right-column {
+    display: contents !important;
+  }
+
+  /* row 1 */
+  .tv2-current-players {
+    grid-column: 1 / -1 !important;
+    grid-row: 1 !important;
+    width: 100% !important;
+    min-width: 0 !important;
+    min-height: 0 !important;
+    height: 100% !important;
+
+    display: grid !important;
+    grid-template-columns:
+      repeat(3, minmax(0, 1fr)) !important;
+    gap: 9px !important;
+  }
+
+  .tv2-player {
+    width: 100% !important;
+    min-width: 0 !important;
+    min-height: 0 !important;
+    height: 100% !important;
+    padding: 9px 11px !important;
+    overflow: hidden !important;
+  }
+
+  .tv2-player strong,
+  .tv2-player span {
+    overflow-wrap: anywhere !important;
+  }
+
+  /* row 2 */
+  .tv2-broadcast-grid {
+    grid-column: 1 / -1 !important;
+    grid-row: 2 !important;
+
+    width: 100% !important;
+    min-width: 0 !important;
+    min-height: 0 !important;
+    max-height: none !important;
+    height: 100% !important;
+
+    display: grid !important;
+    grid-template-columns:
+      repeat(4, minmax(0, 1fr)) !important;
+    grid-template-rows:
+      minmax(0, 1fr) !important;
+    gap: 9px !important;
+  }
+
+  .tv2-metric,
+  .tv2-pressure {
+    width: 100% !important;
+    min-width: 0 !important;
+    min-height: 0 !important;
+    max-height: none !important;
+    height: 100% !important;
+    padding: 13px 14px !important;
+    justify-content: center !important;
+    overflow: hidden !important;
+  }
+
+  .tv2-metric small,
+  .tv2-pressure-head small {
+    font-size: clamp(9px, 0.68vw, 11px) !important;
+  }
+
+  .tv2-metric strong {
+    margin-top: 5px !important;
+    font-size: clamp(16px, 1.18vw, 21px) !important;
+    line-height: 1.18 !important;
+  }
+
+  .tv2-metric span,
+  .tv2-pressure p {
+    margin-top: 5px !important;
+    font-size: clamp(10px, 0.76vw, 13px) !important;
+    line-height: 1.35 !important;
+  }
+
+  .tv2-pressure-head strong {
+    font-size: clamp(15px, 1.08vw, 19px) !important;
+  }
+
+  .tv2-pressure-track {
+    height: 8px !important;
+    margin-top: 10px !important;
+  }
+
+  /* row 3 — exactly 6/6 columns. Nothing can clip off the right side. */
+  .tv2-spotlight {
+    grid-column: 1 / 7 !important;
+    grid-row: 3 !important;
+  }
+
+  .tv2-phase {
+    grid-column: 7 / -1 !important;
+    grid-row: 3 !important;
+  }
+
+  .tv2-spotlight,
+  .tv2-phase {
+    width: 100% !important;
+    min-width: 0 !important;
+    min-height: 0 !important;
+    max-height: none !important;
+    height: 100% !important;
+    padding: 10px 12px !important;
+    overflow: hidden !important;
+  }
+
+  .tv2-spotlight {
+    display: grid !important;
+    grid-template-columns:
+      44px minmax(0, 1fr) !important;
+    grid-template-rows:
+      auto auto auto !important;
+    column-gap: 10px !important;
+    align-items: center !important;
+    justify-items: stretch !important;
+    text-align: left !important;
+  }
+
+  .tv2-spotlight > small {
+    grid-column: 1 / -1 !important;
+    font-size: 9px !important;
+  }
+
+  .tv2-spotlight-avatar {
+    grid-column: 1 !important;
+    grid-row: 2 / span 2 !important;
+    width: 40px !important;
+    height: 40px !important;
+    margin: 2px 0 0 !important;
+    font-size: 17px !important;
+  }
+
+  .tv2-spotlight > strong {
+    grid-column: 2 !important;
+    grid-row: 2 !important;
+    margin: 2px 0 0 !important;
+    font-size: 14px !important;
+  }
+
+  .tv2-spotlight > span {
+    grid-column: 2 !important;
+    grid-row: 3 !important;
+    margin: 1px 0 0 !important;
+    font-size: 10px !important;
+  }
+
+  .tv2-phase {
+    display: grid !important;
+    grid-template-columns:
+      minmax(150px, 0.8fr)
+      minmax(0, 1.45fr) !important;
+    grid-template-rows:
+      auto auto !important;
+    column-gap: 12px !important;
+    align-items: center !important;
+    text-align: left !important;
+  }
+
+  .tv2-phase > small {
+    grid-column: 1 !important;
+    grid-row: 1 !important;
+    align-self: end !important;
+    font-size: 9px !important;
+  }
+
+  .tv2-phase > strong {
+    grid-column: 1 !important;
+    grid-row: 2 !important;
+    align-self: start !important;
+    margin-top: 2px !important;
+    font-size: 14px !important;
+  }
+
+  .tv2-phase > div {
+    grid-column: 2 !important;
+    grid-row: 1 / span 2 !important;
+    width: 100% !important;
+    min-width: 0 !important;
+    margin: 0 !important;
+  }
+
+  .tv2-phase > div span {
+    min-width: 0 !important;
+    padding: 7px 5px !important;
+    font-size: 9px !important;
+  }
+
+  .tv2-phase > div b {
+    font-size: 15px !important;
+  }
+
+  /* bottom rail */
+  .tv2-ball-footer {
+    height: 100% !important;
+    min-height: 0 !important;
+    max-height: none !important;
+    align-self: stretch !important;
+    overflow: hidden !important;
+  }
+
+  .tv2-ball-strip {
+    width: 100% !important;
+    min-width: 0 !important;
+    grid-template-columns:
+      repeat(12, minmax(24px, 1fr)) !important;
+    gap: 6px !important;
+  }
+
+  .tv2-ball {
+    width: min(100%, 44px) !important;
+    max-width: 44px !important;
+    justify-self: center !important;
+  }
+}
+
+/*
+ * Short laptop windows: same architecture, just denser.
+ */
+@media (min-width: 901px) and (max-height: 760px) {
+  .tv2-shell {
+    padding: 9px 12px !important;
+    gap: 7px !important;
+    grid-template-rows:
+      34px
+      minmax(120px, 20vh)
+      minmax(0, 1fr)
+      58px !important;
+  }
+
+  .tv2-score-block strong {
+    font-size: clamp(48px, 6vw, 82px) !important;
+  }
+
+  .tv2-main-grid {
+    grid-template-rows:
+      minmax(54px, 0.65fr)
+      minmax(108px, 1.65fr)
+      minmax(66px, 0.75fr) !important;
+    gap: 7px !important;
+  }
+
+  .tv2-player {
+    padding: 6px 9px !important;
+  }
+
+  .tv2-metric,
+  .tv2-pressure {
+    padding: 9px 10px !important;
+  }
+
+  .tv2-spotlight,
+  .tv2-phase {
+    padding: 7px 9px !important;
+  }
+}
