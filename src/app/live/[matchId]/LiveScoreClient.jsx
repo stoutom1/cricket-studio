@@ -1010,6 +1010,396 @@ function SuperOverLiveDetails({ superOver, compact = false }) {
   );
 }
 
+function getTvPressureModel({
+  currentInnings,
+  chaseRunsNeeded,
+  ballsLeft,
+  requiredRate,
+  currentRate,
+  latestInnings,
+  broadcast,
+}) {
+  let score = 38;
+  let label = "Building";
+  let tone = "building";
+  let detail = "The innings is still developing.";
+
+  const recentWickets = Number(
+    broadcast?.phase?.wickets || 0
+  );
+
+  if (
+    Number(currentInnings) === 2 &&
+    chaseRunsNeeded !== null &&
+    Number(ballsLeft) > 0
+  ) {
+    const rrr = Number(requiredRate || 0);
+    const crr = Number(currentRate || 0);
+    const rateGap = rrr - crr;
+
+    score =
+      38 +
+      Math.max(-15, Math.min(30, rateGap * 9)) +
+      (Number(ballsLeft) <= 36 ? 8 : 0) +
+      (Number(ballsLeft) <= 18 ? 12 : 0) +
+      (Number(ballsLeft) <= 6 ? 12 : 0) +
+      recentWickets * 6;
+
+    if (score >= 82) {
+      label = "Extreme";
+      tone = "extreme";
+    } else if (score >= 65) {
+      label = "High";
+      tone = "high";
+    } else if (score >= 45) {
+      label = "Rising";
+      tone = "rising";
+    } else {
+      label = "Controlled";
+      tone = "controlled";
+    }
+
+    detail =
+      `Need ${chaseRunsNeeded} from ${ballsLeft} balls · ` +
+      `RRR ${requiredRate || "—"} vs CRR ${currentRate || "—"}`;
+  } else {
+    const wickets = Number(latestInnings?.wickets || 0);
+    const phaseRuns = Number(broadcast?.phase?.runs || 0);
+    const phaseBalls = Number(broadcast?.phase?.legalBalls || 0);
+
+    score =
+      30 +
+      Math.min(28, wickets * 4) +
+      Math.min(18, recentWickets * 8) +
+      (phaseBalls >= 12 && phaseRuns < 12 ? 10 : 0);
+
+    if (score >= 72) {
+      label = "High";
+      tone = "high";
+    } else if (score >= 50) {
+      label = "Building";
+      tone = "rising";
+    } else {
+      label = "Settled";
+      tone = "controlled";
+    }
+
+    detail = broadcast?.phase?.label
+      ? `${broadcast.phase.label} · ${phaseRuns} runs, ${recentWickets} wickets in recent phase`
+      : "First-innings pressure updates with wickets and recent scoring.";
+  }
+
+  const normalized = Math.max(
+    8,
+    Math.min(96, Math.round(score))
+  );
+
+  return {
+    score: normalized,
+    label,
+    tone,
+    detail,
+  };
+}
+
+function TvMetric({
+  label,
+  value,
+  detail,
+  accent = false,
+}) {
+  return (
+    <article
+      className={`tv2-metric ${
+        accent ? "is-accent" : ""
+      }`}
+    >
+      <small>{label}</small>
+      <strong>{value}</strong>
+      {detail ? <span>{detail}</span> : null}
+    </article>
+  );
+}
+
+function SpectatorTvMode({
+  scoreboard,
+  latestInnings,
+  recentBalls,
+  chaseRunsNeeded,
+  ballsLeft,
+  requiredRate,
+  currentRate,
+  strikerValue,
+  nonStrikerValue,
+  bowlerValue,
+  liveStatusText,
+  pressure,
+  event,
+  onExit,
+}) {
+  const broadcast = scoreboard?.broadcast || {};
+  const partnership = broadcast?.partnership;
+  const matchup = broadcast?.matchup;
+  const milestone = broadcast?.milestone;
+  const currentState = scoreboard?.currentState || {};
+
+  const orderedBalls = [...(recentBalls || [])].reverse();
+
+  const spotlightName =
+    milestone?.playerName ||
+    currentState?.strikerName ||
+    currentState?.bowlerName ||
+    "Player";
+
+  const spotlightDetail =
+    milestone
+      ? `${milestone.icon || "✨"} ${milestone.remaining} to ${milestone.label}`
+      : currentState?.strikerName
+        ? `${strikerValue || "At the crease"} · striker`
+        : bowlerValue || "Live player";
+
+  return (
+    <section
+      className="tv2-shell"
+      aria-label="Cric4All Spectator TV Mode"
+    >
+      <header className="tv2-topbar">
+        <div>
+          <span className="tv2-live-dot" />
+          <strong>CRIC4ALL LIVE</strong>
+          <small>TV MODE 2.0</small>
+        </div>
+
+        <div className="tv2-match-name">
+          {scoreboard?.match?.teamAName || "Team A"}
+          <span>vs</span>
+          {scoreboard?.match?.teamBName || "Team B"}
+        </div>
+
+        <button
+          type="button"
+          onClick={onExit}
+          className="tv2-exit"
+        >
+          ✕ Exit TV
+        </button>
+      </header>
+
+      <div className="tv2-score-hero">
+        <div className="tv2-team-block">
+          <small>BATTING</small>
+          <strong>
+            {latestInnings?.teamName || "Current innings"}
+          </strong>
+          <span>{liveStatusText}</span>
+        </div>
+
+        <div className="tv2-score-block">
+          <strong>
+            {latestInnings
+              ? `${latestInnings.runs}/${latestInnings.wickets}`
+              : "—"}
+          </strong>
+          <span>
+            {latestInnings?.oversDisplay || "0.0"} OV
+          </span>
+        </div>
+
+        <div className="tv2-equation-block">
+          {scoreboard?.currentInnings === 2 &&
+          chaseRunsNeeded !== null ? (
+            <>
+              <small>CHASE</small>
+              <strong>
+                {chaseRunsNeeded} off {ballsLeft ?? "—"}
+              </strong>
+              <span>Required rate {requiredRate || "—"}</span>
+            </>
+          ) : (
+            <>
+              <small>CURRENT RATE</small>
+              <strong>{currentRate || "0.00"}</strong>
+              <span>
+                Target{" "}
+                {scoreboard?.summary?.target || "—"}
+              </span>
+            </>
+          )}
+        </div>
+      </div>
+
+      <div className="tv2-main-grid">
+        <div className="tv2-left-column">
+          <section className="tv2-current-players">
+            <article className="tv2-player is-striker">
+              <small>🏏 STRIKER</small>
+              <strong>
+                {currentState?.strikerName || "—"}
+              </strong>
+              <span>{strikerValue || "—"}</span>
+            </article>
+
+            <article className="tv2-player">
+              <small>🏃 NON-STRIKER</small>
+              <strong>
+                {currentState?.nonStrikerName || "—"}
+              </strong>
+              <span>{nonStrikerValue || "—"}</span>
+            </article>
+
+            <article className="tv2-player is-bowler">
+              <small>🎯 BOWLER</small>
+              <strong>
+                {currentState?.bowlerName || "—"}
+              </strong>
+              <span>{bowlerValue || "—"}</span>
+            </article>
+          </section>
+
+          <section className="tv2-broadcast-grid">
+            <TvMetric
+              label="🤝 Current partnership"
+              value={
+                partnership
+                  ? `${partnership.runs} runs`
+                  : "Building"
+              }
+              detail={
+                partnership
+                  ? `${partnership.batter1} & ${partnership.batter2} · ${partnership.balls} balls`
+                  : "Partnership data will appear after play develops"
+              }
+            />
+
+            <TvMetric
+              label="⚔ Batter vs bowler"
+              value={
+                matchup
+                  ? `${matchup.runs} off ${matchup.balls}`
+                  : "Building"
+              }
+              detail={
+                matchup
+                  ? `${matchup.batterName} vs ${matchup.bowlerName} · SR ${matchup.strikeRate}`
+                  : "Matchup data is building"
+              }
+            />
+
+            <TvMetric
+              label="✨ Milestone watch"
+              value={
+                milestone
+                  ? `${milestone.remaining} to go`
+                  : "No milestone imminent"
+              }
+              detail={
+                milestone
+                  ? `${milestone.playerName} → ${milestone.label}`
+                  : "Watching 50/100 scores and 3/5-wicket marks"
+              }
+              accent={Boolean(milestone)}
+            />
+
+            <article
+              className={`tv2-pressure is-${pressure.tone}`}
+            >
+              <div className="tv2-pressure-head">
+                <small>⚡ MATCH PRESSURE</small>
+                <strong>{pressure.label}</strong>
+              </div>
+
+              <div className="tv2-pressure-track">
+                <span
+                  style={{
+                    width: `${pressure.score}%`,
+                  }}
+                />
+              </div>
+
+              <p>{pressure.detail}</p>
+            </article>
+          </section>
+        </div>
+
+        <aside className="tv2-right-column">
+          <section className="tv2-spotlight">
+            <small>🌟 PLAYER SPOTLIGHT</small>
+            <div className="tv2-spotlight-avatar">
+              {String(spotlightName)
+                .trim()
+                .charAt(0)
+                .toUpperCase()}
+            </div>
+            <strong>{spotlightName}</strong>
+            <span>{spotlightDetail}</span>
+          </section>
+
+          <section className="tv2-phase">
+            <small>📡 LIVE PHASE</small>
+            <strong>
+              {broadcast?.phase?.label || "Match building"}
+            </strong>
+            <div>
+              <span>
+                <b>{broadcast?.phase?.runs ?? 0}</b>
+                Runs
+              </span>
+              <span>
+                <b>{broadcast?.phase?.wickets ?? 0}</b>
+                Wkts
+              </span>
+              <span>
+                <b>{broadcast?.phase?.boundaries ?? 0}</b>
+                Boundaries
+              </span>
+            </div>
+          </section>
+        </aside>
+      </div>
+
+      <footer className="tv2-ball-footer">
+        <div className="tv2-ball-label">
+          <small>LAST 12 BALLS</small>
+          <strong>Latest →</strong>
+        </div>
+
+        <div className="tv2-ball-strip">
+          {orderedBalls.length ? (
+            orderedBalls.map((ball, index) => {
+              const display = getBallDisplay(ball.label);
+
+              return (
+                <b
+                  key={ball.id || index}
+                  className={`tv2-ball is-${display.type}`}
+                >
+                  {display.text}
+                </b>
+              );
+            })
+          ) : (
+            <span className="tv2-no-balls">
+              Waiting for the first delivery
+            </span>
+          )}
+        </div>
+      </footer>
+
+      {event ? (
+        <div
+          className={`tv2-event-overlay is-${event.type}`}
+          key={event.key}
+          role="status"
+        >
+          <span>{event.icon}</span>
+          <strong>{event.title}</strong>
+          <p>{event.detail}</p>
+        </div>
+      ) : null}
+    </section>
+  );
+}
+
 export default function LiveScoreClient({
   matchId,
 }) {
@@ -1036,6 +1426,12 @@ export default function LiveScoreClient({
 
   const [tvMode, setTvMode] =
     useState(false);
+  const [tvEvent, setTvEvent] =
+    useState(null);
+
+  const tvLastBallRef = useRef(null);
+  const tvPreviousStatsRef = useRef(null);
+  const tvEventTimerRef = useRef(null);
 
   const [
     isRefreshing,
@@ -1527,6 +1923,16 @@ const liveStatusText =
   const recentBalls =
     scoreboard?.recentBalls?.slice(-12) || [];
 
+  const tvPressure = getTvPressureModel({
+    currentInnings: scoreboard?.currentInnings,
+    chaseRunsNeeded,
+    ballsLeft,
+    requiredRate,
+    currentRate: rateTrend.crr,
+    latestInnings,
+    broadcast: scoreboard?.broadcast,
+  });
+
   function toggleInnings(inningsNo) {
     setCollapsedInnings((previous) => ({
       ...previous,
@@ -1594,6 +2000,210 @@ const liveStatusText =
     });
   }
 
+  async function openTvMode() {
+    setTvMode(true);
+
+    try {
+      if (
+        document.documentElement?.requestFullscreen &&
+        !document.fullscreenElement
+      ) {
+        await document.documentElement.requestFullscreen();
+      }
+    } catch {
+      /*
+       * Fullscreen can be blocked by browser/embedded WebView policy.
+       * TV Mode still works as an in-page full-screen fixed layout.
+       */
+    }
+  }
+
+  async function closeTvMode() {
+    setTvMode(false);
+    setTvEvent(null);
+
+    try {
+      if (
+        document.fullscreenElement &&
+        document.exitFullscreen
+      ) {
+        await document.exitFullscreen();
+      }
+    } catch {
+      // Safe fallback: leaving TV state still restores normal live view.
+    }
+  }
+
+  useEffect(() => {
+    function handleFullscreenChange() {
+      if (
+        tvMode &&
+        !document.fullscreenElement
+      ) {
+        setTvMode(false);
+      }
+    }
+
+    document.addEventListener(
+      "fullscreenchange",
+      handleFullscreenChange
+    );
+
+    return () => {
+      document.removeEventListener(
+        "fullscreenchange",
+        handleFullscreenChange
+      );
+    };
+  }, [tvMode]);
+
+  useEffect(() => {
+    if (!tvMode || !scoreboard) {
+      return;
+    }
+
+    const newestBall =
+      scoreboard?.recentBalls?.[0] || null;
+
+    const currentStats = {
+      strikerId:
+        scoreboard?.currentState?.strikerId || null,
+      strikerName:
+        scoreboard?.currentState?.strikerName || "",
+      strikerRuns: Number(
+        scoreboard?.currentState?.strikerStats?.runs || 0
+      ),
+      bowlerId:
+        scoreboard?.currentState?.bowlerId || null,
+      bowlerName:
+        scoreboard?.currentState?.bowlerName || "",
+      bowlerWickets: Number(
+        scoreboard?.currentState?.bowlerStats?.wickets || 0
+      ),
+    };
+
+    const previous =
+      tvPreviousStatsRef.current;
+
+    let nextEvent = null;
+
+    if (
+      previous &&
+      previous.strikerId === currentStats.strikerId
+    ) {
+      const battingMarks = [50, 100, 150, 200];
+
+      const crossed = battingMarks.find(
+        (mark) =>
+          previous.strikerRuns < mark &&
+          currentStats.strikerRuns >= mark
+      );
+
+      if (crossed) {
+        nextEvent = {
+          key: `bat-${currentStats.strikerId}-${crossed}-${Date.now()}`,
+          type: "milestone",
+          icon: crossed >= 100 ? "💯" : "✨",
+          title: `${crossed} RUN MILESTONE`,
+          detail: `${currentStats.strikerName} reaches ${crossed}`,
+        };
+      }
+    }
+
+    if (
+      !nextEvent &&
+      previous &&
+      previous.bowlerId === currentStats.bowlerId
+    ) {
+      const bowlingMarks = [3, 5];
+
+      const crossed = bowlingMarks.find(
+        (mark) =>
+          previous.bowlerWickets < mark &&
+          currentStats.bowlerWickets >= mark
+      );
+
+      if (crossed) {
+        nextEvent = {
+          key: `bowl-${currentStats.bowlerId}-${crossed}-${Date.now()}`,
+          type: "milestone",
+          icon: crossed >= 5 ? "🔥" : "🎯",
+          title: `${crossed}-WICKET MILESTONE`,
+          detail: `${currentStats.bowlerName} reaches ${crossed} wickets`,
+        };
+      }
+    }
+
+    if (
+      !nextEvent &&
+      newestBall?.id &&
+      tvLastBallRef.current &&
+      String(newestBall.id) !==
+        String(tvLastBallRef.current)
+    ) {
+      const display = getBallDisplay(
+        newestBall.label
+      );
+
+      if (display.type === "wicket") {
+        nextEvent = {
+          key: `wicket-${newestBall.id}-${Date.now()}`,
+          type: "wicket",
+          icon: "☝️",
+          title: "WICKET!",
+          detail:
+            newestBall.label ||
+            "A wicket has fallen",
+        };
+      } else if (
+        display.type === "six"
+      ) {
+        nextEvent = {
+          key: `six-${newestBall.id}-${Date.now()}`,
+          type: "boundary",
+          icon: "🚀",
+          title: "SIX!",
+          detail:
+            scoreboard?.currentState?.strikerName ||
+            "Maximum",
+        };
+      }
+    }
+
+    if (newestBall?.id) {
+      tvLastBallRef.current =
+        newestBall.id;
+    }
+
+    tvPreviousStatsRef.current =
+      currentStats;
+
+    if (nextEvent) {
+      setTvEvent(nextEvent);
+
+      if (tvEventTimerRef.current) {
+        window.clearTimeout(
+          tvEventTimerRef.current
+        );
+      }
+
+      tvEventTimerRef.current =
+        window.setTimeout(() => {
+          setTvEvent(null);
+        }, 4200);
+    }
+  }, [scoreboard, tvMode]);
+
+  useEffect(() => {
+    return () => {
+      if (tvEventTimerRef.current) {
+        window.clearTimeout(
+          tvEventTimerRef.current
+        );
+      }
+    };
+  }, []);
+
   async function refreshNow() {
     try {
       setIsRefreshing(true);
@@ -1632,18 +2242,24 @@ const liveStatusText =
         tvMode ? "live-tv-mode" : ""
       }`}
     >
-      {tvMode ? (
-        <button
-          type="button"
-          className="live-tv-exit-btn"
-          onClick={() =>
-            setTvMode(false)
-          }
-        >
-          ✕ Exit TV Mode
-        </button>
-      ) : null}
-{!isMatchFinished ? (
+{tvMode && !isMatchFinished ? (
+      <SpectatorTvMode
+        scoreboard={scoreboard}
+        latestInnings={latestInnings}
+        recentBalls={recentBalls}
+        chaseRunsNeeded={chaseRunsNeeded}
+        ballsLeft={ballsLeft}
+        requiredRate={requiredRate}
+        currentRate={rateTrend.crr}
+        strikerValue={strikerValue}
+        nonStrikerValue={nonStrikerValue}
+        bowlerValue={bowlerValue}
+        liveStatusText={liveStatusText}
+        pressure={tvPressure}
+        event={tvEvent}
+        onExit={closeTvMode}
+      />
+) : !isMatchFinished ? (
       <section
         className="live-primary-card live-primary-card-compact"
         aria-label="Live match summary"
@@ -1694,7 +2310,7 @@ const liveStatusText =
 
         <button
           type="button"
-          onClick={() => setTvMode(true)}
+          onClick={openTvMode}
           className="live-inline-action"
           aria-label="Open TV mode"
           title="Open TV mode"
