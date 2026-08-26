@@ -4428,3 +4428,794 @@ body:has(.live-tv-mode) {
     grid-template-columns: repeat(6, minmax(0, 1fr));
   }
 }
+
+
+/* =========================================================
+   CRIC4ALL — TV MODE 2.0 RESPONSIVE FIT HOTFIX
+   Fixes:
+   - desktop/right-column clipping
+   - height overflow on laptop screens
+   - mobile card overlap
+   - mobile readability
+   - horizontal overflow on all viewport sizes
+
+   IMPORTANT:
+   These rules intentionally come AFTER the original TV Mode 2.0 rules.
+========================================================= */
+
+/* ---------- universal sizing safety ---------- */
+
+.live-tv-mode,
+.live-tv-mode *,
+.live-tv-mode *::before,
+.live-tv-mode *::after {
+  box-sizing: border-box;
+}
+
+.live-tv-mode {
+  width: 100dvw !important;
+  max-width: 100dvw !important;
+  height: 100dvh !important;
+  max-height: 100dvh !important;
+  overflow: hidden !important;
+}
+
+.tv2-shell {
+  width: 100% !important;
+  max-width: 100% !important;
+  height: 100% !important;
+  max-height: 100% !important;
+  min-width: 0 !important;
+  min-height: 0 !important;
+  padding:
+    clamp(12px, 1.25vw, 22px)
+    clamp(14px, 1.4vw, 24px) !important;
+  gap: clamp(8px, 1vh, 13px) !important;
+  overflow: hidden !important;
+}
+
+.tv2-shell > *,
+.tv2-main-grid > *,
+.tv2-left-column > *,
+.tv2-right-column > *,
+.tv2-current-players > *,
+.tv2-broadcast-grid > * {
+  min-width: 0 !important;
+}
+
+/* ---------- desktop/laptop: fit everything inside one screen ---------- */
+
+@media (min-width: 901px) {
+  .tv2-shell {
+    grid-template-rows:
+      minmax(38px, auto)
+      minmax(128px, 18.5vh)
+      minmax(0, 1fr)
+      minmax(70px, 9.5vh) !important;
+  }
+
+  .tv2-topbar {
+    width: 100%;
+    grid-template-columns:
+      minmax(180px, 0.9fr)
+      minmax(260px, 1.3fr)
+      minmax(120px, 0.7fr) !important;
+    gap: clamp(8px, 1vw, 16px) !important;
+  }
+
+  .tv2-topbar > div:first-child {
+    min-width: 0;
+    flex-wrap: wrap;
+  }
+
+  .tv2-topbar > div:first-child strong {
+    font-size: clamp(13px, 1.08vw, 19px) !important;
+  }
+
+  .tv2-match-name {
+    font-size: clamp(17px, 1.55vw, 27px) !important;
+    white-space: normal;
+  }
+
+  .tv2-exit {
+    min-height: 36px !important;
+    padding: 6px 11px !important;
+    font-size: clamp(9px, 0.72vw, 12px) !important;
+  }
+
+  .tv2-score-hero {
+    width: 100%;
+    min-width: 0;
+    min-height: 0 !important;
+    height: 100%;
+    grid-template-columns:
+      minmax(160px, 1fr)
+      minmax(250px, 1.3fr)
+      minmax(160px, 1fr) !important;
+    gap: clamp(10px, 1.8vw, 28px) !important;
+    padding:
+      clamp(10px, 1.25vh, 16px)
+      clamp(14px, 1.4vw, 22px) !important;
+    border-radius: clamp(12px, 1vw, 18px) !important;
+  }
+
+  .tv2-score-block {
+    min-width: 0 !important;
+    width: 100%;
+  }
+
+  .tv2-score-block strong {
+    font-size: clamp(56px, 7.2vw, 116px) !important;
+    line-height: 0.86 !important;
+  }
+
+  .tv2-score-block span {
+    margin-top: 8px !important;
+    font-size: clamp(13px, 1.1vw, 19px) !important;
+  }
+
+  .tv2-team-block strong,
+  .tv2-equation-block strong {
+    font-size: clamp(17px, 1.55vw, 26px) !important;
+  }
+
+  .tv2-team-block span,
+  .tv2-equation-block span {
+    margin-top: 4px !important;
+    font-size: clamp(9px, 0.78vw, 13px) !important;
+  }
+
+  .tv2-main-grid {
+    width: 100%;
+    height: 100%;
+    min-width: 0;
+    min-height: 0;
+    grid-template-columns:
+      minmax(0, 3.25fr)
+      minmax(190px, 0.8fr) !important;
+    gap: clamp(8px, 0.9vw, 13px) !important;
+    overflow: hidden;
+  }
+
+  .tv2-left-column,
+  .tv2-right-column {
+    height: 100%;
+    min-height: 0;
+    overflow: hidden;
+  }
+
+  .tv2-left-column {
+    grid-template-rows:
+      minmax(62px, auto)
+      minmax(0, 1fr) !important;
+    gap: clamp(7px, 0.75vh, 10px) !important;
+  }
+
+  .tv2-current-players {
+    gap: clamp(7px, 0.7vw, 10px) !important;
+  }
+
+  .tv2-player {
+    min-height: 0;
+    padding:
+      clamp(8px, 0.8vw, 12px) !important;
+    border-radius: 11px !important;
+  }
+
+  .tv2-player small {
+    font-size: clamp(7px, 0.6vw, 10px) !important;
+  }
+
+  .tv2-player strong {
+    margin-top: 2px !important;
+    font-size: clamp(14px, 1.2vw, 21px) !important;
+  }
+
+  .tv2-player span {
+    margin-top: 2px !important;
+    font-size: clamp(10px, 0.82vw, 14px) !important;
+  }
+
+  .tv2-broadcast-grid {
+    height: 100%;
+    min-height: 0;
+    grid-template-columns:
+      repeat(2, minmax(0, 1fr)) !important;
+    grid-template-rows:
+      repeat(2, minmax(0, 1fr)) !important;
+    gap: clamp(7px, 0.7vw, 10px) !important;
+  }
+
+  .tv2-metric,
+  .tv2-pressure {
+    height: 100%;
+    min-height: 0;
+    padding:
+      clamp(9px, 0.9vw, 13px) !important;
+    border-radius: 11px !important;
+    overflow: hidden;
+  }
+
+  .tv2-metric small,
+  .tv2-pressure-head small {
+    font-size: clamp(7px, 0.57vw, 10px) !important;
+  }
+
+  .tv2-metric strong {
+    margin-top: 3px !important;
+    font-size: clamp(14px, 1.15vw, 20px) !important;
+  }
+
+  .tv2-metric span,
+  .tv2-pressure p {
+    margin-top: 3px !important;
+    font-size: clamp(8px, 0.67vw, 12px) !important;
+    line-height: 1.3 !important;
+  }
+
+  .tv2-pressure-head strong {
+    font-size: clamp(13px, 1vw, 18px) !important;
+  }
+
+  .tv2-pressure-track {
+    height: 7px !important;
+    margin-top: 7px !important;
+  }
+
+  .tv2-right-column {
+    grid-template-rows:
+      minmax(0, 1.08fr)
+      minmax(0, 0.92fr) !important;
+    gap: clamp(7px, 0.7vw, 10px) !important;
+  }
+
+  .tv2-spotlight,
+  .tv2-phase {
+    height: 100%;
+    min-height: 0;
+    padding:
+      clamp(8px, 0.8vw, 12px) !important;
+    border-radius: 11px !important;
+    overflow: hidden;
+  }
+
+  .tv2-spotlight-avatar {
+    width: clamp(42px, 4vw, 64px) !important;
+    height: clamp(42px, 4vw, 64px) !important;
+    margin-top: 6px !important;
+    font-size: clamp(18px, 1.8vw, 29px) !important;
+  }
+
+  .tv2-spotlight > small,
+  .tv2-phase > small {
+    font-size: clamp(7px, 0.56vw, 9px) !important;
+  }
+
+  .tv2-spotlight > strong,
+  .tv2-phase > strong {
+    margin-top: 5px !important;
+    font-size: clamp(13px, 1vw, 18px) !important;
+  }
+
+  .tv2-spotlight > span {
+    margin-top: 3px !important;
+    font-size: clamp(8px, 0.65vw, 11px) !important;
+  }
+
+  .tv2-phase > div {
+    gap: 4px !important;
+    margin-top: 7px !important;
+  }
+
+  .tv2-phase > div span {
+    padding: 5px 3px !important;
+    font-size: clamp(6.5px, 0.5vw, 9px) !important;
+  }
+
+  .tv2-phase > div b {
+    font-size: clamp(11px, 0.85vw, 15px) !important;
+  }
+
+  .tv2-ball-footer {
+    width: 100%;
+    height: 100%;
+    min-height: 0;
+    grid-template-columns:
+      minmax(78px, auto)
+      minmax(0, 1fr) !important;
+    gap: clamp(8px, 0.8vw, 12px) !important;
+    padding:
+      clamp(7px, 0.8vh, 10px)
+      clamp(10px, 1vw, 14px) !important;
+    border-radius: 11px !important;
+    overflow: hidden;
+  }
+
+  .tv2-ball-strip {
+    width: 100%;
+    grid-template-columns:
+      repeat(12, minmax(24px, 1fr)) !important;
+    gap: clamp(4px, 0.4vw, 7px) !important;
+  }
+
+  .tv2-ball {
+    width: 100%;
+    max-width: 48px;
+    justify-self: center;
+    font-size: clamp(8px, 0.65vw, 12px) !important;
+  }
+}
+
+/*
+ * Short laptops / browser windows.
+ * Keep the entire clubhouse dashboard visible without vertical clipping.
+ */
+@media (min-width: 901px) and (max-height: 760px) {
+  .tv2-shell {
+    padding: 10px 14px !important;
+    gap: 7px !important;
+    grid-template-rows:
+      34px
+      minmax(112px, 17vh)
+      minmax(0, 1fr)
+      60px !important;
+  }
+
+  .tv2-score-block strong {
+    font-size: clamp(48px, 6.3vw, 88px) !important;
+  }
+
+  .tv2-score-block span {
+    margin-top: 5px !important;
+  }
+
+  .tv2-player {
+    padding: 7px 9px !important;
+  }
+
+  .tv2-metric,
+  .tv2-pressure,
+  .tv2-spotlight,
+  .tv2-phase {
+    padding: 7px 9px !important;
+  }
+
+  .tv2-spotlight-avatar {
+    width: 38px !important;
+    height: 38px !important;
+    font-size: 17px !important;
+  }
+}
+
+/* ---------- tablet / phone ---------- */
+
+@media (max-width: 900px) {
+  html:has(.live-tv-mode),
+  body:has(.live-tv-mode) {
+    overflow: hidden !important;
+  }
+
+  .live-tv-mode {
+    overflow: hidden !important;
+  }
+
+  .tv2-shell {
+    display: block !important;
+    width: 100% !important;
+    max-width: 100% !important;
+    height: 100dvh !important;
+    max-height: 100dvh !important;
+    padding:
+      max(10px, env(safe-area-inset-top))
+      10px
+      max(18px, env(safe-area-inset-bottom)) !important;
+    overflow-x: hidden !important;
+    overflow-y: auto !important;
+    overscroll-behavior: contain;
+    -webkit-overflow-scrolling: touch;
+  }
+
+  .tv2-topbar,
+  .tv2-score-hero,
+  .tv2-main-grid,
+  .tv2-left-column,
+  .tv2-current-players,
+  .tv2-broadcast-grid,
+  .tv2-right-column,
+  .tv2-ball-footer {
+    position: static !important;
+    width: 100% !important;
+    max-width: 100% !important;
+    height: auto !important;
+    min-height: 0 !important;
+    overflow: visible !important;
+  }
+
+  .tv2-topbar {
+    display: grid !important;
+    grid-template-columns:
+      minmax(0, 1fr)
+      auto !important;
+    grid-template-rows:
+      auto
+      auto !important;
+    gap: 8px !important;
+    margin-bottom: 9px;
+  }
+
+  .tv2-topbar > div:first-child {
+    min-width: 0;
+    flex-wrap: wrap;
+    gap: 6px !important;
+  }
+
+  .tv2-topbar > div:first-child strong {
+    font-size: 13px !important;
+  }
+
+  .tv2-topbar > div:first-child small {
+    padding: 3px 6px !important;
+    font-size: 8px !important;
+  }
+
+  .tv2-live-dot {
+    width: 7px !important;
+    height: 7px !important;
+    box-shadow:
+      0 0 0 3px rgba(34, 197, 94, 0.1),
+      0 0 10px rgba(34, 197, 94, 0.55) !important;
+  }
+
+  .tv2-exit {
+    grid-column: 2 !important;
+    grid-row: 1 !important;
+    align-self: center;
+    min-height: 38px !important;
+    padding: 7px 10px !important;
+    font-size: 11px !important;
+  }
+
+  .tv2-match-name {
+    grid-column: 1 / -1 !important;
+    grid-row: 2 !important;
+    margin: 1px 0 0 !important;
+    font-size: 15px !important;
+    line-height: 1.25 !important;
+    text-align: center !important;
+  }
+
+  .tv2-score-hero {
+    display: grid !important;
+    grid-template-columns: 1fr !important;
+    gap: 7px !important;
+    margin-bottom: 8px;
+    padding: 11px !important;
+    border-radius: 12px !important;
+    text-align: center !important;
+  }
+
+  .tv2-team-block,
+  .tv2-equation-block {
+    text-align: center !important;
+  }
+
+  .tv2-team-block small,
+  .tv2-equation-block small {
+    font-size: 9px !important;
+  }
+
+  .tv2-team-block strong {
+    margin-top: 2px !important;
+    font-size: 14px !important;
+  }
+
+  .tv2-team-block span {
+    margin-top: 2px !important;
+    font-size: 10px !important;
+  }
+
+  .tv2-score-block {
+    min-width: 0 !important;
+    width: 100% !important;
+  }
+
+  .tv2-score-block strong {
+    font-size: clamp(56px, 21vw, 76px) !important;
+    line-height: 0.9 !important;
+  }
+
+  .tv2-score-block span {
+    margin-top: 7px !important;
+    font-size: 14px !important;
+  }
+
+  .tv2-equation-block strong {
+    margin-top: 2px !important;
+    font-size: 15px !important;
+  }
+
+  .tv2-equation-block span {
+    margin-top: 2px !important;
+    font-size: 10px !important;
+  }
+
+  .tv2-main-grid {
+    display: block !important;
+    margin-bottom: 8px;
+  }
+
+  .tv2-left-column {
+    display: block !important;
+  }
+
+  .tv2-current-players {
+    display: grid !important;
+    grid-template-columns:
+      repeat(3, minmax(0, 1fr)) !important;
+    gap: 6px !important;
+    margin-bottom: 7px;
+  }
+
+  .tv2-player {
+    min-height: 72px !important;
+    padding: 8px !important;
+    border-radius: 10px !important;
+  }
+
+  .tv2-player small {
+    font-size: 7.5px !important;
+    line-height: 1.2 !important;
+  }
+
+  .tv2-player strong {
+    margin-top: 3px !important;
+    font-size: 13px !important;
+    line-height: 1.2 !important;
+    overflow-wrap: anywhere !important;
+  }
+
+  .tv2-player span {
+    margin-top: 3px !important;
+    font-size: 10px !important;
+    line-height: 1.25 !important;
+    overflow-wrap: anywhere !important;
+  }
+
+  .tv2-broadcast-grid {
+    display: grid !important;
+    grid-template-columns:
+      repeat(2, minmax(0, 1fr)) !important;
+    grid-template-rows: none !important;
+    gap: 6px !important;
+    margin-bottom: 7px;
+  }
+
+  .tv2-metric,
+  .tv2-pressure {
+    min-height: 112px !important;
+    justify-content: flex-start !important;
+    padding: 9px !important;
+    border-radius: 10px !important;
+  }
+
+  .tv2-metric small,
+  .tv2-pressure-head small {
+    font-size: 8px !important;
+    line-height: 1.25 !important;
+  }
+
+  .tv2-metric strong {
+    margin-top: 4px !important;
+    font-size: 14px !important;
+    line-height: 1.25 !important;
+  }
+
+  .tv2-metric span,
+  .tv2-pressure p {
+    margin-top: 4px !important;
+    font-size: 10px !important;
+    line-height: 1.4 !important;
+  }
+
+  .tv2-pressure-head {
+    align-items: flex-start !important;
+  }
+
+  .tv2-pressure-head strong {
+    font-size: 13px !important;
+  }
+
+  .tv2-pressure-track {
+    height: 7px !important;
+    margin-top: 8px !important;
+  }
+
+  .tv2-right-column {
+    display: grid !important;
+    grid-template-columns:
+      repeat(2, minmax(0, 1fr)) !important;
+    grid-template-rows: none !important;
+    gap: 6px !important;
+    margin-bottom: 7px;
+  }
+
+  .tv2-spotlight,
+  .tv2-phase {
+    min-height: 118px !important;
+    padding: 9px !important;
+    border-radius: 10px !important;
+  }
+
+  .tv2-spotlight > small,
+  .tv2-phase > small {
+    font-size: 8px !important;
+  }
+
+  .tv2-spotlight-avatar {
+    width: 42px !important;
+    height: 42px !important;
+    margin-top: 6px !important;
+    font-size: 18px !important;
+  }
+
+  .tv2-spotlight > strong,
+  .tv2-phase > strong {
+    margin-top: 5px !important;
+    font-size: 13px !important;
+    line-height: 1.25 !important;
+  }
+
+  .tv2-spotlight > span {
+    margin-top: 3px !important;
+    font-size: 9px !important;
+    line-height: 1.3 !important;
+  }
+
+  .tv2-phase > div {
+    grid-template-columns:
+      repeat(3, minmax(0, 1fr)) !important;
+    gap: 3px !important;
+    margin-top: 7px !important;
+  }
+
+  .tv2-phase > div span {
+    padding: 5px 2px !important;
+    font-size: 7px !important;
+    line-height: 1.2 !important;
+  }
+
+  .tv2-phase > div b {
+    font-size: 11px !important;
+  }
+
+  .tv2-ball-footer {
+    display: block !important;
+    margin-bottom: 14px;
+    padding: 9px !important;
+    border-radius: 10px !important;
+  }
+
+  .tv2-ball-label {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 8px;
+    margin-bottom: 7px;
+  }
+
+  .tv2-ball-label small {
+    font-size: 8px !important;
+  }
+
+  .tv2-ball-label strong {
+    margin: 0 !important;
+    font-size: 9px !important;
+  }
+
+  .tv2-ball-strip {
+    display: grid !important;
+    grid-template-columns:
+      repeat(6, minmax(0, 1fr)) !important;
+    gap: 6px !important;
+  }
+
+  .tv2-ball {
+    width: min(100%, 38px) !important;
+    max-width: 38px !important;
+    justify-self: center;
+    font-size: 10px !important;
+  }
+
+  /*
+   * Animations remain viewport overlays even though the mobile dashboard
+   * itself scrolls.
+   */
+  .tv2-event-overlay {
+    position: fixed !important;
+    inset: 0 !important;
+    z-index: 300000 !important;
+    padding: 20px !important;
+    text-align: center;
+  }
+
+  .tv2-event-overlay > span {
+    font-size: clamp(58px, 22vw, 88px) !important;
+  }
+
+  .tv2-event-overlay > strong {
+    margin-top: 14px !important;
+    font-size: clamp(38px, 13vw, 58px) !important;
+    line-height: 1 !important;
+  }
+
+  .tv2-event-overlay > p {
+    margin-top: 10px !important;
+    font-size: 16px !important;
+    line-height: 1.35 !important;
+  }
+}
+
+/* ---------- very narrow phones ---------- */
+
+@media (max-width: 430px) {
+  .tv2-current-players {
+    grid-template-columns:
+      repeat(2, minmax(0, 1fr)) !important;
+  }
+
+  .tv2-player.is-bowler {
+    grid-column: 1 / -1;
+    min-height: 64px !important;
+  }
+
+  .tv2-broadcast-grid {
+    grid-template-columns: 1fr !important;
+  }
+
+  .tv2-metric,
+  .tv2-pressure {
+    min-height: 92px !important;
+  }
+
+  .tv2-right-column {
+    grid-template-columns: 1fr !important;
+  }
+
+  .tv2-spotlight,
+  .tv2-phase {
+    min-height: 102px !important;
+  }
+
+  .tv2-spotlight {
+    display: grid !important;
+    grid-template-columns:
+      42px minmax(0, 1fr) !important;
+    grid-template-rows:
+      auto auto auto !important;
+    column-gap: 9px !important;
+    text-align: left !important;
+    align-items: center !important;
+    justify-items: stretch !important;
+  }
+
+  .tv2-spotlight > small {
+    grid-column: 1 / -1;
+  }
+
+  .tv2-spotlight-avatar {
+    grid-column: 1 !important;
+    grid-row: 2 / span 2 !important;
+    margin: 4px 0 0 !important;
+  }
+
+  .tv2-spotlight > strong {
+    grid-column: 2 !important;
+    grid-row: 2 !important;
+    margin-top: 4px !important;
+  }
+
+  .tv2-spotlight > span {
+    grid-column: 2 !important;
+    grid-row: 3 !important;
+  }
+}
