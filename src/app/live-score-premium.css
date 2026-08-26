@@ -6205,3 +6205,379 @@ body:has(.live-tv-mode) {
     display: block !important;
   }
 }
+
+
+/* =========================================================
+   TV MODE 2.0 — STRUCTURAL DESKTOP VISIBILITY HOTFIX
+   The legacy rule:
+     .live-tv-mode > *:not(.tv2-shell) { display:none!important; }
+   was hiding the new .tv2-desktop sibling completely.
+========================================================= */
+
+@media (min-width: 901px) {
+  .live-tv-mode > .tv2-desktop {
+    display: grid !important;
+  }
+
+  .live-tv-mode > .tv2-mobile {
+    display: none !important;
+  }
+}
+
+@media (max-width: 900px) {
+  .live-tv-mode > .tv2-desktop {
+    display: none !important;
+  }
+
+  .live-tv-mode > .tv2-mobile {
+    display: block !important;
+  }
+}
+
+
+/* =========================================================
+   CRIC4ALL — TV MODE 2.0 TRUE DESKTOP VIEWPORT FIX
+   FINAL DESKTOP/LAPTOP ONLY PASS.
+
+   Root cause addressed here:
+   1. Do NOT use 100vw / 100dvw for the fixed TV canvas.
+      Browser scrollbar/chrome width can make those units wider than the
+      actual visible content box.
+   2. Center the match title mathematically with left:50% / translateX(-50%),
+      independent of unequal left/right header content.
+   3. Force every desktop grid child to min-width:0 so nothing can widen
+      its parent and push the right edge off-screen.
+
+   Mobile <= 900px is intentionally untouched.
+========================================================= */
+
+@media (min-width: 901px) {
+  html,
+  body {
+    max-width: 100%;
+    overflow-x: hidden !important;
+  }
+
+  /*
+   * Use inset:0 and AUTO dimensions.
+   * This fills the actual visible browser content area exactly.
+   */
+  .live-tv-mode {
+    position: fixed !important;
+    inset: 0 !important;
+
+    width: auto !important;
+    min-width: 0 !important;
+    max-width: none !important;
+
+    height: auto !important;
+    min-height: 0 !important;
+    max-height: none !important;
+
+    margin: 0 !important;
+    padding: 0 !important;
+
+    overflow: hidden !important;
+  }
+
+  .live-tv-mode > .tv2-desktop {
+    position: fixed !important;
+    inset: 0 !important;
+
+    display: grid !important;
+
+    width: auto !important;
+    min-width: 0 !important;
+    max-width: none !important;
+
+    height: auto !important;
+    min-height: 0 !important;
+    max-height: none !important;
+
+    margin: 0 !important;
+    padding: 12px 16px !important;
+
+    overflow: hidden !important;
+
+    grid-template-rows:
+      42px
+      minmax(160px, 23vh)
+      minmax(68px, 9vh)
+      minmax(135px, 1fr)
+      minmax(78px, 10vh)
+      minmax(68px, 9vh) !important;
+
+    gap: 9px !important;
+  }
+
+  .tv2-desktop,
+  .tv2-desktop *,
+  .tv2-desktop *::before,
+  .tv2-desktop *::after {
+    box-sizing: border-box !important;
+  }
+
+  .tv2-desktop > *,
+  .tv2d-header > *,
+  .tv2d-score-row > *,
+  .tv2d-players > *,
+  .tv2d-intel > *,
+  .tv2d-secondary > *,
+  .tv2d-phase > *,
+  .tv2d-phase-stats > *,
+  .tv2d-balls > * {
+    min-width: 0 !important;
+    max-width: 100% !important;
+  }
+
+  /*
+   * Header no longer relies on unequal grid columns to "look" centered.
+   * The match title is pinned to the exact horizontal center of the screen.
+   */
+  .tv2d-header {
+    position: relative !important;
+    display: flex !important;
+    align-items: center !important;
+    justify-content: space-between !important;
+    gap: 12px !important;
+
+    width: 100% !important;
+    min-width: 0 !important;
+    max-width: 100% !important;
+
+    padding: 0 !important;
+  }
+
+  .tv2d-brand {
+    position: relative !important;
+    z-index: 2 !important;
+    flex: 0 1 auto !important;
+    min-width: 0 !important;
+    max-width: 42% !important;
+  }
+
+  .tv2d-match {
+    position: absolute !important;
+    left: 50% !important;
+    top: 50% !important;
+    transform: translate(-50%, -50%) !important;
+
+    width: min(42%, 620px) !important;
+    min-width: 0 !important;
+    max-width: 620px !important;
+
+    margin: 0 !important;
+    padding: 0 8px !important;
+
+    text-align: center !important;
+    white-space: normal !important;
+    overflow-wrap: anywhere !important;
+  }
+
+  .tv2d-exit {
+    position: relative !important;
+    z-index: 2 !important;
+    flex: 0 0 auto !important;
+    margin-left: auto !important;
+  }
+
+  /*
+   * Score row: exactly bounded to the available width.
+   */
+  .tv2d-score-row {
+    width: 100% !important;
+    min-width: 0 !important;
+    max-width: 100% !important;
+
+    grid-template-columns:
+      minmax(0, 1fr)
+      minmax(250px, 1.25fr)
+      minmax(0, 1fr) !important;
+
+    gap: clamp(12px, 1.5vw, 24px) !important;
+    padding: 13px 18px !important;
+
+    overflow: hidden !important;
+  }
+
+  .tv2d-score {
+    min-width: 0 !important;
+    width: 100% !important;
+  }
+
+  .tv2d-score strong {
+    font-size: clamp(66px, 7vw, 112px) !important;
+  }
+
+  /*
+   * Every primary information strip uses only percentages of the actual
+   * available container, never viewport units.
+   */
+  .tv2d-players,
+  .tv2d-intel,
+  .tv2d-secondary {
+    width: 100% !important;
+    min-width: 0 !important;
+    max-width: 100% !important;
+    overflow: hidden !important;
+  }
+
+  .tv2d-players {
+    grid-template-columns:
+      repeat(3, minmax(0, 1fr)) !important;
+    gap: 8px !important;
+  }
+
+  .tv2d-intel {
+    grid-template-columns:
+      repeat(4, minmax(0, 1fr)) !important;
+    gap: 8px !important;
+  }
+
+  .tv2d-intel article {
+    width: 100% !important;
+    min-width: 0 !important;
+    max-width: 100% !important;
+    padding: 12px 13px !important;
+    overflow: hidden !important;
+  }
+
+  .tv2d-intel small,
+  .tv2d-intel strong,
+  .tv2d-intel > article > span,
+  .tv2d-pressure > span {
+    max-width: 100% !important;
+    overflow-wrap: anywhere !important;
+  }
+
+  .tv2d-pressure-track {
+    width: 100% !important;
+    min-width: 0 !important;
+    max-width: 100% !important;
+  }
+
+  /*
+   * Exactly 50/50. The second card cannot exceed the visible right edge.
+   */
+  .tv2d-secondary {
+    grid-template-columns:
+      minmax(0, 1fr)
+      minmax(0, 1fr) !important;
+    gap: 8px !important;
+  }
+
+  .tv2d-spotlight,
+  .tv2d-phase {
+    width: 100% !important;
+    min-width: 0 !important;
+    max-width: 100% !important;
+
+    padding: 9px 12px !important;
+
+    overflow: hidden !important;
+  }
+
+  .tv2d-phase {
+    grid-template-columns:
+      minmax(130px, 0.7fr)
+      minmax(0, 1.5fr) !important;
+
+    gap: 10px !important;
+  }
+
+  .tv2d-phase-stats {
+    width: 100% !important;
+    min-width: 0 !important;
+    max-width: 100% !important;
+
+    grid-template-columns:
+      repeat(3, minmax(0, 1fr)) !important;
+
+    gap: 5px !important;
+
+    overflow: hidden !important;
+  }
+
+  .tv2d-phase-stats span {
+    width: 100% !important;
+    min-width: 0 !important;
+    max-width: 100% !important;
+
+    padding: 6px 4px !important;
+
+    overflow: hidden !important;
+    text-overflow: clip !important;
+  }
+
+  /*
+   * Bottom rail also respects only its actual parent width.
+   */
+  .tv2d-balls {
+    width: 100% !important;
+    min-width: 0 !important;
+    max-width: 100% !important;
+
+    grid-template-columns:
+      minmax(86px, 105px)
+      minmax(0, 1fr) !important;
+
+    gap: 10px !important;
+
+    padding: 8px 11px !important;
+
+    overflow: hidden !important;
+  }
+
+  .tv2d-balls .tv2-ball-strip {
+    width: 100% !important;
+    min-width: 0 !important;
+    max-width: 100% !important;
+
+    grid-template-columns:
+      repeat(12, minmax(0, 1fr)) !important;
+
+    gap: clamp(4px, .42vw, 7px) !important;
+
+    overflow: hidden !important;
+  }
+
+  .tv2d-balls .tv2-ball {
+    width: min(100%, 42px) !important;
+    max-width: 42px !important;
+    min-width: 0 !important;
+
+    justify-self: center !important;
+  }
+}
+
+/*
+ * Short laptop/browser heights use the same correct centered geometry,
+ * only with slightly tighter vertical allocation.
+ */
+@media (min-width: 901px) and (max-height: 760px) {
+  .live-tv-mode > .tv2-desktop {
+    padding: 9px 12px !important;
+    gap: 7px !important;
+
+    grid-template-rows:
+      36px
+      minmax(125px, 20vh)
+      58px
+      minmax(105px, 1fr)
+      65px
+      56px !important;
+  }
+
+  .tv2d-score strong {
+    font-size: clamp(54px, 5.8vw, 86px) !important;
+  }
+
+  .tv2d-intel article {
+    padding: 8px 10px !important;
+  }
+
+  .tv2d-spotlight,
+  .tv2d-phase {
+    padding: 6px 9px !important;
+  }
+}
