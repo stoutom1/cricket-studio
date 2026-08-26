@@ -6104,3 +6104,705 @@
     align-items: flex-start;
   }
 }
+
+
+/* =========================================================
+   CRIC4ALL — EXPLORE WORKFLOW MOBILE READABILITY FINAL PASS
+   MOBILE ONLY (<= 700px)
+
+   Applies across:
+   Overview, Match Preview, Matches, Standings, Stats, Leaders,
+   Records, Milestones, Team DNA, Share, Digest, Player Pulse,
+   Teams, Rivalries, Progress, Form, Streaks and Team of the Week.
+
+   Desktop/laptop styles are intentionally untouched.
+========================================================= */
+
+@media (max-width: 700px) {
+  .slp-page,
+  .slp-page *,
+  .slp-page *::before,
+  .slp-page *::after {
+    box-sizing: border-box;
+  }
+
+  .slp-page {
+    overflow-x: hidden;
+  }
+
+  .slp-shell,
+  .slp-content,
+  .slp-section,
+  .slp-overview,
+  .slp-overview-layout,
+  .slp-preview-shell,
+  .slp-rivalry-shell,
+  .slp-team-week-shell,
+  .slp-progress-center,
+  .slp-form-center,
+  .slp-achievement-center {
+    min-width: 0;
+    max-width: 100%;
+  }
+
+  /* ---------------------------------------------------------
+     Global mobile text baseline
+  --------------------------------------------------------- */
+
+  .slp-page p,
+  .slp-page li,
+  .slp-page td,
+  .slp-page th,
+  .slp-page label,
+  .slp-page button,
+  .slp-page input,
+  .slp-page select {
+    line-height: 1.42;
+  }
+
+  .slp-page p,
+  .slp-page li {
+    font-size: 12px !important;
+  }
+
+  .slp-page button,
+  .slp-page select,
+  .slp-page input {
+    font-size: 12px !important;
+  }
+
+  .slp-page small {
+    font-size: 10px !important;
+    line-height: 1.35 !important;
+  }
+
+  /* ---------------------------------------------------------
+     Hero / league identity / controls
+  --------------------------------------------------------- */
+
+  .slp-kicker,
+  .slp-public-label,
+  .slp-topline,
+  .slp-section-heading p,
+  .slp-block-heading small,
+  .slp-leader-kicker {
+    font-size: 10px !important;
+    line-height: 1.3 !important;
+    letter-spacing: .055em !important;
+  }
+
+  .slp-hero h1,
+  .slp-league-copy h1 {
+    font-size: clamp(25px, 7.4vw, 32px) !important;
+    line-height: 1.12 !important;
+    overflow-wrap: anywhere;
+  }
+
+  .slp-league-copy p,
+  .slp-hero p,
+  .slp-breadcrumb {
+    font-size: 12px !important;
+    line-height: 1.5 !important;
+  }
+
+  .slp-actions,
+  .slp-utility-bar {
+    gap: 8px !important;
+  }
+
+  .slp-actions button,
+  .slp-follow,
+  .slp-utility-bar button {
+    min-height: 42px !important;
+    font-size: 12px !important;
+  }
+
+  /* ---------------------------------------------------------
+     Filters / tabs / search
+  --------------------------------------------------------- */
+
+  .slp-filters,
+  .slp-preview-toolbar,
+  .slp-dna-toolbar,
+  .slp-records-toolbar,
+  .slp-milestones-tabs,
+  .slp-progress-toolbar,
+  .slp-form-toolbar,
+  .slp-pulse-toolbar,
+  .slp-rivalry-toolbar {
+    min-width: 0 !important;
+    gap: 8px !important;
+  }
+
+  .slp-search,
+  .slp-search-wrap,
+  .slp-pulse-player-search {
+    width: 100% !important;
+    min-width: 0 !important;
+  }
+
+  .slp-search input,
+  .slp-search-wrap input,
+  .slp-pulse-player-search input,
+  .slp-filters select,
+  .slp-preview-toolbar select,
+  .slp-dna-toolbar select,
+  .slp-records-toolbar select {
+    min-height: 43px !important;
+    font-size: 12px !important;
+  }
+
+  .slp-tabs,
+  .slp-segments,
+  .slp-milestones-tabs {
+    min-width: 0 !important;
+    overflow-x: auto !important;
+    overflow-y: hidden !important;
+    scrollbar-width: thin;
+    -webkit-overflow-scrolling: touch;
+  }
+
+  .slp-tabs button,
+  .slp-segments button,
+  .slp-milestones-tabs button {
+    flex: 0 0 auto !important;
+    min-height: 40px !important;
+    padding: 8px 11px !important;
+    font-size: 11px !important;
+    white-space: nowrap !important;
+  }
+
+  /* ---------------------------------------------------------
+     Section headings
+  --------------------------------------------------------- */
+
+  .slp-section-heading h2,
+  .slp-block-heading h2,
+  .slp-featured-heading h2,
+  .slp-preview-intelligence-head h2 {
+    font-size: 20px !important;
+    line-height: 1.22 !important;
+    overflow-wrap: anywhere;
+  }
+
+  .slp-section-heading span,
+  .slp-block-heading span {
+    font-size: 11px !important;
+    line-height: 1.45 !important;
+  }
+
+  /* ---------------------------------------------------------
+     Match list / overview / live cards
+  --------------------------------------------------------- */
+
+  .slp-match-date,
+  .slp-status,
+  .slp-live-card-status,
+  .slp-live-rail-head,
+  .slp-live-rail-tools {
+    font-size: 10px !important;
+  }
+
+  .slp-match-copy strong,
+  .slp-live-card-copy strong {
+    font-size: 14px !important;
+    line-height: 1.3 !important;
+  }
+
+  .slp-match-copy span,
+  .slp-match-copy small,
+  .slp-live-card-copy span,
+  .slp-live-card-copy small {
+    font-size: 11px !important;
+    line-height: 1.4 !important;
+  }
+
+  .slp-match-row,
+  .slp-live-card,
+  .slp-overview-block {
+    min-width: 0 !important;
+    height: auto !important;
+  }
+
+  /* ---------------------------------------------------------
+     Tables / standings / stats
+  --------------------------------------------------------- */
+
+  .slp-table-wrap {
+    width: 100% !important;
+    max-width: 100% !important;
+    overflow-x: auto !important;
+    -webkit-overflow-scrolling: touch;
+  }
+
+  .slp-table {
+    min-width: 610px;
+  }
+
+  .slp-table th {
+    font-size: 10px !important;
+    white-space: nowrap;
+  }
+
+  .slp-table td {
+    font-size: 11px !important;
+  }
+
+  .slp-table-team strong {
+    font-size: 12px !important;
+  }
+
+  .slp-table-team small {
+    font-size: 10px !important;
+  }
+
+  /* ---------------------------------------------------------
+     Leaders
+  --------------------------------------------------------- */
+
+  .slp-leader-hero,
+  .slp-leader-card,
+  .slp-leader-showcase {
+    min-width: 0 !important;
+    height: auto !important;
+  }
+
+  .slp-leader-hero-player,
+  .slp-leader-card-player {
+    font-size: 15px !important;
+    line-height: 1.25 !important;
+    overflow-wrap: anywhere;
+  }
+
+  .slp-leader-hero-value {
+    font-size: 29px !important;
+    line-height: 1 !important;
+  }
+
+  .slp-leader-card-value {
+    font-size: 21px !important;
+    line-height: 1.1 !important;
+  }
+
+  .slp-leader-hero-detail,
+  .slp-leader-footnote,
+  .slp-leader-card small,
+  .slp-leader-card span {
+    font-size: 11px !important;
+    line-height: 1.4 !important;
+  }
+
+  .slp-leader-card-grid {
+    grid-template-columns: 1fr !important;
+    gap: 9px !important;
+  }
+
+  /* ---------------------------------------------------------
+     Records
+  --------------------------------------------------------- */
+
+  .slp-record-grid,
+  .slp-record-hero-grid {
+    grid-template-columns: 1fr !important;
+    gap: 10px !important;
+  }
+
+  .slp-record-card-top,
+  .slp-record-holder,
+  .slp-record-match {
+    min-width: 0 !important;
+  }
+
+  .slp-record-card-top small,
+  .slp-record-rank,
+  .slp-record-match small {
+    font-size: 10px !important;
+  }
+
+  .slp-record-holder strong,
+  .slp-record-match strong {
+    font-size: 14px !important;
+    line-height: 1.3 !important;
+    white-space: normal !important;
+    overflow: visible !important;
+    text-overflow: clip !important;
+    overflow-wrap: anywhere !important;
+  }
+
+  .slp-record-value {
+    font-size: 27px !important;
+    line-height: 1 !important;
+  }
+
+  .slp-record-link {
+    min-height: 38px !important;
+    font-size: 11px !important;
+  }
+
+  .slp-records-note,
+  .slp-records-scope {
+    font-size: 11px !important;
+    line-height: 1.5 !important;
+  }
+
+  /* ---------------------------------------------------------
+     Milestones / achievements / progress
+  --------------------------------------------------------- */
+
+  .slp-milestone-achievements,
+  .slp-milestone-next-grid,
+  .slp-progress-grid,
+  .slp-achievement-grid {
+    grid-template-columns: 1fr !important;
+    gap: 9px !important;
+  }
+
+  .slp-milestone-player,
+  .slp-progress-card-head strong,
+  .slp-achievement-player,
+  .slp-achievement-headline {
+    font-size: 14px !important;
+    line-height: 1.3 !important;
+    overflow-wrap: anywhere;
+  }
+
+  .slp-milestone-total,
+  .slp-progress-current,
+  .slp-progress-next {
+    font-size: 19px !important;
+  }
+
+  .slp-milestone-match,
+  .slp-milestone-progress-head,
+  .slp-milestone-progress-target,
+  .slp-progress-metric,
+  .slp-progress-scope,
+  .slp-milestones-note,
+  .slp-milestones-scope,
+  .slp-achievement-badge {
+    font-size: 11px !important;
+    line-height: 1.4 !important;
+  }
+
+  /* ---------------------------------------------------------
+     Team DNA
+  --------------------------------------------------------- */
+
+  .slp-dna-grid {
+    grid-template-columns: 1fr !important;
+    gap: 10px !important;
+  }
+
+  .slp-dna-card {
+    min-width: 0 !important;
+    height: auto !important;
+  }
+
+  .slp-dna-card-head strong {
+    font-size: 16px !important;
+    line-height: 1.25 !important;
+    overflow-wrap: anywhere;
+  }
+
+  .slp-dna-win-rate {
+    font-size: 22px !important;
+  }
+
+  .slp-dna-metrics,
+  .slp-dna-situations {
+    gap: 7px !important;
+  }
+
+  .slp-dna-metrics small,
+  .slp-dna-situations small,
+  .slp-dna-evidence,
+  .slp-dna-traits,
+  .slp-dna-watch,
+  .slp-dna-note,
+  .slp-dna-scope,
+  .slp-dna-league-baseline {
+    font-size: 11px !important;
+    line-height: 1.4 !important;
+  }
+
+  /* ---------------------------------------------------------
+     Match Preview
+  --------------------------------------------------------- */
+
+  .slp-preview-intel-grid,
+  .slp-preview-context-grid,
+  .slp-preview-matchup,
+  .slp-preview-team-form,
+  .slp-preview-watchlist {
+    grid-template-columns: 1fr !important;
+    gap: 9px !important;
+  }
+
+  .slp-preview-team,
+  .slp-preview-intel-card,
+  .slp-preview-h2h,
+  .slp-preview-form,
+  .slp-preview-dna-mini {
+    min-width: 0 !important;
+    height: auto !important;
+  }
+
+  .slp-preview-team strong,
+  .slp-preview-h2h-names,
+  .slp-preview-intel-card strong {
+    font-size: 14px !important;
+    line-height: 1.3 !important;
+    overflow-wrap: anywhere;
+  }
+
+  .slp-preview-team span,
+  .slp-preview-intel-card span,
+  .slp-preview-intel-disclaimer,
+  .slp-preview-note,
+  .slp-preview-scope,
+  .slp-preview-watch,
+  .slp-preview-traits {
+    font-size: 11px !important;
+    line-height: 1.45 !important;
+  }
+
+  /* ---------------------------------------------------------
+     Player Pulse: rankings / form / streaks / Team of Week
+  --------------------------------------------------------- */
+
+  .slp-ranking-grid,
+  .slp-form-grid,
+  .slp-streak-grid,
+  .slp-team-week-grid {
+    grid-template-columns: 1fr !important;
+    gap: 9px !important;
+  }
+
+  .slp-ranking-card,
+  .slp-form-card,
+  .slp-streak-card,
+  .slp-team-week-player {
+    min-width: 0 !important;
+    height: auto !important;
+  }
+
+  .slp-ranking-player,
+  .slp-form-card-head strong,
+  .slp-team-week-player strong {
+    font-size: 14px !important;
+    line-height: 1.3 !important;
+    overflow-wrap: anywhere;
+  }
+
+  .slp-ranking-number,
+  .slp-form-count,
+  .slp-streak-count {
+    font-size: 20px !important;
+  }
+
+  .slp-ranking-points,
+  .slp-ranking-move,
+  .slp-form-summary,
+  .slp-form-balls,
+  .slp-streak-explainer,
+  .slp-team-week-stats,
+  .slp-team-week-no,
+  .slp-pulse-note {
+    font-size: 11px !important;
+    line-height: 1.4 !important;
+  }
+
+  /* ---------------------------------------------------------
+     Rivalries
+  --------------------------------------------------------- */
+
+  .slp-rivalry-player-grid,
+  .slp-rivalry-spotlights {
+    grid-template-columns: 1fr !important;
+    gap: 9px !important;
+  }
+
+  .slp-rivalry-score {
+    font-size: 23px !important;
+  }
+
+  .slp-rivalry-team,
+  .slp-rivalry-history-head,
+  .slp-rivalry-spotlight strong {
+    font-size: 14px !important;
+    line-height: 1.3 !important;
+  }
+
+  .slp-rivalry-history,
+  .slp-rivalry-results,
+  .slp-rivalry-note,
+  .slp-rivalry-scope {
+    font-size: 11px !important;
+    line-height: 1.45 !important;
+  }
+
+  /* ---------------------------------------------------------
+     Share Cards
+  --------------------------------------------------------- */
+
+  .slp-share-card-grid {
+    grid-template-columns: 1fr !important;
+    gap: 10px !important;
+  }
+
+  .slp-share-card {
+    min-width: 0 !important;
+    height: auto !important;
+  }
+
+  .slp-share-card-brand,
+  .slp-share-card-footer {
+    font-size: 10px !important;
+  }
+
+  .slp-share-card-player {
+    font-size: 15px !important;
+    line-height: 1.3 !important;
+    overflow-wrap: anywhere;
+  }
+
+  .slp-share-card-value {
+    font-size: 27px !important;
+    line-height: 1.05 !important;
+    overflow-wrap: anywhere;
+  }
+
+  .slp-share-card-body span,
+  .slp-share-note,
+  .slp-share-notice {
+    font-size: 11px !important;
+    line-height: 1.45 !important;
+  }
+
+  /* ---------------------------------------------------------
+     Weekly Digest
+  --------------------------------------------------------- */
+
+  .slp-digest-detail-grid,
+  .slp-digest-metrics,
+  .slp-digest-moments {
+    grid-template-columns: 1fr !important;
+    gap: 9px !important;
+  }
+
+  .slp-digest-hero,
+  .slp-digest-panel,
+  .slp-digest-metric,
+  .slp-digest-moment {
+    min-width: 0 !important;
+    height: auto !important;
+  }
+
+  .slp-digest-hero strong,
+  .slp-digest-panel-head strong,
+  .slp-digest-moment strong {
+    font-size: 15px !important;
+    line-height: 1.3 !important;
+    overflow-wrap: anywhere;
+  }
+
+  .slp-digest-metric strong {
+    font-size: 20px !important;
+  }
+
+  .slp-digest-preview,
+  .slp-digest-note,
+  .slp-digest-notice,
+  .slp-digest-results,
+  .slp-digest-moment span {
+    font-size: 11px !important;
+    line-height: 1.45 !important;
+  }
+
+  /* ---------------------------------------------------------
+     Teams
+  --------------------------------------------------------- */
+
+  .slp-team-list,
+  .slp-team-row {
+    min-width: 0 !important;
+  }
+
+  .slp-team-row {
+    height: auto !important;
+  }
+
+  .slp-team-row strong {
+    font-size: 14px !important;
+    line-height: 1.3 !important;
+    overflow-wrap: anywhere;
+  }
+
+  .slp-team-row span,
+  .slp-team-row small,
+  .slp-team-award {
+    font-size: 11px !important;
+    line-height: 1.4 !important;
+  }
+
+  /* ---------------------------------------------------------
+     Remove unwanted truncation across Explore mobile cards.
+  --------------------------------------------------------- */
+
+  .slp-page [class*="player"],
+  .slp-page [class*="holder"],
+  .slp-page [class*="match"],
+  .slp-page [class*="team"],
+  .slp-page [class*="headline"],
+  .slp-page [class*="detail"] {
+    max-width: 100%;
+  }
+
+  .slp-page strong,
+  .slp-page p,
+  .slp-page span,
+  .slp-page em {
+    text-overflow: clip;
+  }
+
+  .slp-record-holder strong,
+  .slp-record-match strong,
+  .slp-share-card-player,
+  .slp-ranking-player,
+  .slp-team-week-player strong,
+  .slp-achievement-player,
+  .slp-leader-card-player,
+  .slp-leader-hero-player,
+  .slp-dna-card-head strong {
+    white-space: normal !important;
+    overflow: visible !important;
+    text-overflow: clip !important;
+  }
+}
+
+@media (max-width: 420px) {
+  .slp-page {
+    font-size: 12px;
+  }
+
+  .slp-section-heading h2,
+  .slp-block-heading h2 {
+    font-size: 19px !important;
+  }
+
+  .slp-table {
+    min-width: 575px;
+  }
+
+  .slp-preview-intel-grid,
+  .slp-record-grid,
+  .slp-leader-card-grid,
+  .slp-dna-grid,
+  .slp-ranking-grid,
+  .slp-form-grid,
+  .slp-streak-grid,
+  .slp-share-card-grid,
+  .slp-digest-detail-grid {
+    grid-template-columns: 1fr !important;
+  }
+}

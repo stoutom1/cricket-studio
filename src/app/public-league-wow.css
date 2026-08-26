@@ -15081,3 +15081,187 @@ opacity:.75;
     flex-basis: 84vw;
   }
 }
+
+
+/* =========================================================
+   CRIC4ALL — EXPLORE DIRECTORY MOBILE READABILITY FINAL PASS
+   MOBILE ONLY.
+========================================================= */
+
+@media (max-width: 700px) {
+  .plw-page,
+  .plw-page *,
+  .plw-page *::before,
+  .plw-page *::after {
+    box-sizing: border-box;
+  }
+
+  .plw-page {
+    width: 100%;
+    max-width: 100%;
+    padding: 12px !important;
+    overflow-x: hidden;
+  }
+
+  .plw-shell,
+  .sep-page,
+  .sep-shell,
+  .sep-content,
+  .sep-league-list,
+  .sep-league-row {
+    min-width: 0 !important;
+    max-width: 100% !important;
+  }
+
+  /* Explore directory hero */
+  .sep-kicker,
+  .sep-section-heading p,
+  .sep-league-main small,
+  .sep-league-stat small {
+    font-size: 10px !important;
+    line-height: 1.3 !important;
+    letter-spacing: .055em !important;
+  }
+
+  .sep-hero h1,
+  .sep-section-heading h2 {
+    font-size: clamp(24px, 7vw, 30px) !important;
+    line-height: 1.15 !important;
+  }
+
+  .sep-hero p,
+  .sep-section-heading span,
+  .sep-footer-note {
+    font-size: 12px !important;
+    line-height: 1.5 !important;
+  }
+
+  .sep-search input {
+    min-height: 45px !important;
+    font-size: 13px !important;
+  }
+
+  .sep-result-count {
+    font-size: 11px !important;
+  }
+
+  /* Directory league rows */
+  .sep-league-row {
+    grid-template-columns:
+      34px
+      42px
+      minmax(0, 1fr) !important;
+    gap: 9px !important;
+    padding: 12px !important;
+    height: auto !important;
+  }
+
+  .sep-index {
+    font-size: 10px !important;
+  }
+
+  .sep-league-mark {
+    width: 42px !important;
+    height: 42px !important;
+    font-size: 13px !important;
+  }
+
+  .sep-league-main {
+    min-width: 0 !important;
+  }
+
+  .sep-league-main strong {
+    font-size: 15px !important;
+    line-height: 1.3 !important;
+    white-space: normal !important;
+    overflow: visible !important;
+    text-overflow: clip !important;
+    overflow-wrap: anywhere !important;
+  }
+
+  .sep-league-main em {
+    font-size: 11px !important;
+    line-height: 1.4 !important;
+    white-space: normal !important;
+    overflow: visible !important;
+    text-overflow: clip !important;
+  }
+
+  .sep-league-stat,
+  .sep-follow-state,
+  .sep-open-action {
+    grid-column: 3 !important;
+    justify-self: start !important;
+  }
+
+  .sep-league-stat {
+    display: inline-flex !important;
+    align-items: baseline !important;
+    gap: 5px !important;
+    margin-right: 10px;
+  }
+
+  .sep-league-stat strong {
+    font-size: 13px !important;
+  }
+
+  .sep-follow-state,
+  .sep-open-action {
+    font-size: 11px !important;
+  }
+
+  .sep-open-action {
+    min-height: 34px !important;
+  }
+
+  /* Existing public-league hero classes used around Explore */
+  .plw-breadcrumb {
+    font-size: 11px !important;
+  }
+
+  .plw-public-badge {
+    font-size: 11px !important;
+  }
+
+  .plw-eyebrow,
+  .plw-section-header p,
+  .plw-featured-heading p {
+    font-size: 10px !important;
+  }
+
+  .plw-league-identity h1 {
+    font-size: clamp(25px, 7.5vw, 32px) !important;
+    line-height: 1.12 !important;
+    overflow-wrap: anywhere;
+  }
+
+  .plw-description {
+    font-size: 12px !important;
+    line-height: 1.5 !important;
+  }
+
+  .plw-action {
+    min-height: 42px !important;
+    font-size: 12px !important;
+  }
+
+  /*
+   * Remove mobile ellipsis in Explore directory/public identity areas.
+   * Full names are more useful than truncated names on phone.
+   */
+  .plw-page h1,
+  .plw-page h2,
+  .plw-page h3,
+  .plw-page strong,
+  .sep-page h1,
+  .sep-page h2,
+  .sep-page h3,
+  .sep-page strong,
+  .sep-page em {
+    max-width: 100%;
+    white-space: normal !important;
+    overflow: visible !important;
+    text-overflow: clip !important;
+    overflow-wrap: anywhere;
+  }
+}
