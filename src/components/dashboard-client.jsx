@@ -18,6 +18,8 @@ import KitPostMatchPrompt from "@/components/kit/KitPostMatchPrompt";
 import LeagueResourcesShortcut from "@/components/resources/LeagueResourcesShortcut";
 import matchDayNavStyles from "./MatchDayDashboardNav.module.css";
 import playerCardStyles from "./DashboardPlayerCard.module.css";
+import personalCricketStyles from "./PersonalCricketDashboard.module.css";
+import PlayerAccountLinker from "@/components/PlayerAccountLinker";
 import { shareCric4All } from "@/lib/native-share";
 import { openCric4AllLink } from "@/lib/native-links";
 import {
@@ -565,6 +567,377 @@ function isRecentBallLegal(ball) {
 }
 
 
+
+function PersonalCricketDashboard({
+  data,
+  loading,
+  leagueName,
+  leagueId,
+  onLinkChanged,
+}) {
+  if (loading) {
+    return (
+      <div className={personalCricketStyles.loading}>
+        <span>🏏</span>
+        <div>
+          <strong>Building Your Cricket...</strong>
+          <small>Reading your latest completed-match performance.</small>
+        </div>
+      </div>
+    );
+  }
+
+  if (!data?.linked) {
+    return (
+      <div className={personalCricketStyles.unlinkedShell}>
+        <div className={personalCricketStyles.empty}>
+          <span>👤</span>
+          <div>
+            <strong>Your player profile is not linked yet</strong>
+            <p>
+              Your Cric4All account is active, but no player record in{" "}
+              <b>{leagueName || "this league"}</b> is linked to your account.
+              Choose your player profile below. Cric4All will never let you
+              claim a profile that is already linked to another account.
+            </p>
+          </div>
+        </div>
+
+        <PlayerAccountLinker
+          leagueId={leagueId}
+          linked={false}
+          onChanged={onLinkChanged}
+        />
+      </div>
+    );
+  }
+
+  const career = data.career || {};
+  const form = data.form || {};
+  const rankings = data.rankings || {};
+  const progress = data.progress || {};
+  const achievements = data.achievements || [];
+  const streaks = data.streaks || [];
+  const nextMatch = data.nextMatch || null;
+  const lastMatch = form.lastFive?.[0] || null;
+  const teamOfWeek = data.teamOfWeek || null;
+
+  const rankItems = [
+    ["Overall", rankings.overall],
+    ["Batting", rankings.batting],
+    ["Bowling", rankings.bowling],
+    ["Fielding", rankings.fielding],
+  ];
+
+  const movementText = (rank) => {
+    if (!rank) return "Not ranked";
+    if (rank.isNew) return "NEW";
+    if (Number(rank.movement || 0) > 0) {
+      return `↑${rank.movement}`;
+    }
+    if (Number(rank.movement || 0) < 0) {
+      return `↓${Math.abs(rank.movement)}`;
+    }
+    return "—";
+  };
+
+  return (
+    <div className={personalCricketStyles.shell}>
+      <section className={personalCricketStyles.hero}>
+        <div className={personalCricketStyles.identity}>
+          <span className={personalCricketStyles.avatar}>
+            {String(data.playerName || "?")
+              .trim()
+              .charAt(0)
+              .toUpperCase()}
+          </span>
+
+          <div>
+            <small>🎯 YOUR CRICKET</small>
+            <h3>{data.playerName}</h3>
+            <p>
+              {data.teamNames?.join(" / ") || "League player"} ·{" "}
+              {leagueName}
+            </p>
+          </div>
+        </div>
+
+        <div className={personalCricketStyles.heroBadges}>
+          {form.trend ? (
+            <span>{form.trend} form</span>
+          ) : null}
+          {teamOfWeek?.selected ? (
+            <span>⭐ Team of the Week</span>
+          ) : null}
+          {achievements.length ? (
+            <span>
+              🏅 {achievements.length} achievement
+              {achievements.length === 1 ? "" : "s"}
+            </span>
+          ) : null}
+        </div>
+      </section>
+
+      <section className={personalCricketStyles.careerGrid}>
+        {[
+          ["🏏", "Runs", career.runs ?? 0],
+          ["🎯", "Wickets", career.wickets ?? 0],
+          ["🧤", "Fielding", career.fielding ?? 0],
+          ["🎽", "Matches", career.matches ?? 0],
+        ].map(([icon, label, value]) => (
+          <article key={label}>
+            <span>{icon}</span>
+            <div>
+              <small>{label}</small>
+              <strong>{value}</strong>
+            </div>
+          </article>
+        ))}
+      </section>
+
+      <div className={personalCricketStyles.twoColumn}>
+        <section className={personalCricketStyles.panel}>
+          <div className={personalCricketStyles.panelHead}>
+            <div>
+              <small>🏆 LEAGUE POSITION</small>
+              <strong>Your rankings</strong>
+            </div>
+            <span>Latest completed matches</span>
+          </div>
+
+          <div className={personalCricketStyles.rankGrid}>
+            {rankItems.map(([label, rank]) => (
+              <article key={label}>
+                <small>{label}</small>
+                <strong>
+                  {rank?.rank ? `#${rank.rank}` : "—"}
+                </strong>
+                <span
+                  className={
+                    Number(rank?.movement || 0) > 0
+                      ? personalCricketStyles.up
+                      : Number(rank?.movement || 0) < 0
+                        ? personalCricketStyles.down
+                        : ""
+                  }
+                >
+                  {movementText(rank)}
+                </span>
+                {rank?.careerBestRank ? (
+                  <em>Best #{rank.careerBestRank}</em>
+                ) : null}
+              </article>
+            ))}
+          </div>
+        </section>
+
+        <section className={personalCricketStyles.panel}>
+          <div className={personalCricketStyles.panelHead}>
+            <div>
+              <small>📈 CURRENT FORM</small>
+              <strong>Last five appearances</strong>
+            </div>
+            <span>
+              Rating {Number(form.formScore || 0).toFixed(1)}
+            </span>
+          </div>
+
+          {form.lastFive?.length ? (
+            <div className={personalCricketStyles.formStrip}>
+              {form.lastFive.map((match, index) => (
+                <article key={`${match.matchId || index}-${index}`}>
+                  <strong>{match.runs || 0} runs</strong>
+                  {Number(match.wickets || 0) > 0 ? (
+                    <small>
+                      🎯 {match.wickets} wicket
+                      {match.wickets === 1 ? "" : "s"}
+                    </small>
+                  ) : null}
+                  {Number(match.fieldingTotal || 0) > 0 ? (
+                    <small>
+                      🧤 {match.fieldingTotal} fielding
+                    </small>
+                  ) : null}
+                </article>
+              ))}
+            </div>
+          ) : (
+            <p className={personalCricketStyles.muted}>
+              No recent qualifying performance yet.
+            </p>
+          )}
+
+          <div className={personalCricketStyles.formSummary}>
+            <span>
+              <small>Runs · last 5</small>
+              <strong>{form.lastFiveRuns || 0}</strong>
+            </span>
+            <span>
+              <small>Wickets · last 5</small>
+              <strong>{form.lastFiveWickets || 0}</strong>
+            </span>
+            <span>
+              <small>Trend</small>
+              <strong>{form.trend || "Building"}</strong>
+            </span>
+          </div>
+        </section>
+      </div>
+
+      <div className={personalCricketStyles.twoColumn}>
+        <section className={personalCricketStyles.panel}>
+          <div className={personalCricketStyles.panelHead}>
+            <div>
+              <small>🎯 NEXT LANDMARK</small>
+              <strong>
+                {progress.nearest
+                  ? `${progress.nearest.target} ${progress.nearest.label}`
+                  : "Landmark ladder complete"}
+              </strong>
+            </div>
+            {progress.nearest ? (
+              <span>
+                {progress.nearest.remaining} to go
+              </span>
+            ) : null}
+          </div>
+
+          {progress.nearest ? (
+            <>
+              <div className={personalCricketStyles.progressTrack}>
+                <span
+                  style={{
+                    width: `${Math.max(
+                      3,
+                      Number(progress.nearest.progress || 0)
+                    )}%`,
+                  }}
+                />
+              </div>
+              <p className={personalCricketStyles.muted}>
+                {progress.nearest.current} /{" "}
+                {progress.nearest.target}{" "}
+                {String(progress.nearest.label || "").toLowerCase()}
+              </p>
+            </>
+          ) : (
+            <p className={personalCricketStyles.muted}>
+              You have reached every currently configured landmark.
+            </p>
+          )}
+
+          {streaks.length ? (
+            <div className={personalCricketStyles.streakList}>
+              {streaks.slice(0, 3).map((streak) => (
+                <article key={streak.id}>
+                  <span>{streak.icon}</span>
+                  <div>
+                    <strong>{streak.type}</strong>
+                    <small>{streak.description}</small>
+                  </div>
+                  <em>
+                    {streak.current} current · best {streak.best}
+                  </em>
+                </article>
+              ))}
+            </div>
+          ) : null}
+        </section>
+
+        <section className={personalCricketStyles.panel}>
+          <div className={personalCricketStyles.panelHead}>
+            <div>
+              <small>📅 NEXT UP</small>
+              <strong>
+                {nextMatch
+                  ? `${nextMatch.teamAName} vs ${nextMatch.teamBName}`
+                  : "No scheduled match"}
+              </strong>
+            </div>
+            {nextMatch?.dateLabel ? (
+              <span>{nextMatch.dateLabel}</span>
+            ) : null}
+          </div>
+
+          {nextMatch ? (
+            <div className={personalCricketStyles.nextMatch}>
+              <span>🏟️</span>
+              <div>
+                <strong>
+                  {nextMatch.opponentName
+                    ? `vs ${nextMatch.opponentName}`
+                    : "Upcoming fixture"}
+                </strong>
+                <small>
+                  {nextMatch.venue || "Venue not entered"}
+                </small>
+              </div>
+            </div>
+          ) : (
+            <p className={personalCricketStyles.muted}>
+              Your linked team does not currently have a future scheduled match.
+            </p>
+          )}
+
+          <div className={personalCricketStyles.lastChange}>
+            <small>WHAT CHANGED IN YOUR LAST APPEARANCE?</small>
+            {lastMatch ? (
+              <p>
+                <b>{lastMatch.runs || 0} runs</b>
+                {Number(lastMatch.wickets || 0) > 0
+                  ? ` · ${lastMatch.wickets} wicket${lastMatch.wickets === 1 ? "" : "s"}`
+                  : ""}
+                {Number(lastMatch.fieldingTotal || 0) > 0
+                  ? ` · ${lastMatch.fieldingTotal} fielding contribution${lastMatch.fieldingTotal === 1 ? "" : "s"}`
+                  : ""}
+              </p>
+            ) : (
+              <p>No qualifying appearance recorded yet.</p>
+            )}
+          </div>
+        </section>
+      </div>
+
+      {achievements.length ? (
+        <section className={personalCricketStyles.panel}>
+          <div className={personalCricketStyles.panelHead}>
+            <div>
+              <small>🏅 TROPHY CABINET</small>
+              <strong>Your achievements</strong>
+            </div>
+            <span>{achievements.length} earned</span>
+          </div>
+
+          <div className={personalCricketStyles.achievementGrid}>
+            {achievements.map((badge) => (
+              <article
+                key={badge.id}
+                className={
+                  badge.tier === "elite"
+                    ? personalCricketStyles.elite
+                    : ""
+                }
+              >
+                <span>{badge.icon}</span>
+                <div>
+                  <strong>{badge.title}</strong>
+                  <small>{badge.description}</small>
+                </div>
+              </article>
+            ))}
+          </div>
+        </section>
+      ) : null}
+
+      <PlayerAccountLinker
+        leagueId={leagueId}
+        linked={true}
+        onChanged={onLinkChanged}
+      />
+    </div>
+  );
+}
+
 export default function DashboardClient() {
   const { data: session } = useSession();
   const router = useRouter();
@@ -850,6 +1223,8 @@ const [scoringSubTab, setScoringSubTab] = useState("ADVANCED");
 const [statsSubTab, setStatsSubTab] = useState("BATTING");
 const [dashboardLeadersTab, setDashboardLeadersTab] = useState("BATTING");
 const [leagueStats, setLeagueStats] = useState(null);
+const [myCricket, setMyCricket] = useState(null);
+const [myCricketLoading, setMyCricketLoading] = useState(false);
 const [awardsData, setAwardsData] = useState(null);
 const [awardsLoading, setAwardsLoading] = useState(false);
 const [awardsWeekOffset, setAwardsWeekOffset] = useState(0);
@@ -2492,6 +2867,9 @@ useEffect(() => {
 useEffect(() => {
   if (activeLeagueId) {
     loadLeagueStats(activeLeagueId);
+    loadMyCricket(activeLeagueId);
+  } else {
+    setMyCricket(null);
   }
 }, [activeLeagueId]);
 
@@ -2559,6 +2937,46 @@ async function handleCreateLeague() {
   setShowLeagueModal(false);
   setLeagueName("");
 }
+async function loadMyCricket(leagueId) {
+  const numericLeagueId = Number(leagueId);
+
+  if (!Number.isInteger(numericLeagueId) || numericLeagueId <= 0) {
+    setMyCricket(null);
+    return;
+  }
+
+  setMyCricketLoading(true);
+
+  try {
+    const response = await fetch(
+      `/api/leagues/${numericLeagueId}/my-cricket`,
+      {
+        cache: "no-store",
+      }
+    );
+
+    const payload = await response.json().catch(() => ({}));
+
+    if (!response.ok) {
+      throw new Error(
+        payload?.error || "Unable to load Your Cricket"
+      );
+    }
+
+    setMyCricket(payload);
+  } catch (err) {
+    console.error("Load Your Cricket failed:", err);
+    setMyCricket({
+      linked: false,
+      error:
+        err?.message ||
+        "Unable to load your personal cricket profile",
+    });
+  } finally {
+    setMyCricketLoading(false);
+  }
+}
+
 async function loadLeagueStats(
   leagueId = activeLeagueId,
   options = {}
@@ -27081,6 +27499,17 @@ onClick={() => {
       <div className="stats-subtabs">
         <button
           type="button"
+          className={statsSubTab === "MY_CRICKET" ? "active" : ""}
+          onClick={() => {
+            setStatsSubTab("MY_CRICKET");
+            loadMyCricket(activeLeagueId);
+          }}
+        >
+          🎯 Your Cricket
+        </button>
+
+        <button
+          type="button"
           className={statsSubTab === "BATTING" ? "active" : ""}
           onClick={() => setStatsSubTab("BATTING")}
         >
@@ -27152,6 +27581,23 @@ onClick={() => {
       </Card>
     ) : (
       <>
+{statsSubTab === "MY_CRICKET" && (
+        <PersonalCricketDashboard
+          data={myCricket}
+          loading={myCricketLoading}
+          leagueName={
+            leagues.find(
+              (league) =>
+                Number(league.id) === Number(activeLeagueId)
+            )?.name || ""
+          }
+          leagueId={activeLeagueId}
+          onLinkChanged={() =>
+            loadMyCricket(activeLeagueId)
+          }
+        />
+      )}
+
 {statsSubTab === "BATTING" && (
   <Card title="🏏 Batting Records">
     {!leagueStats?.batting?.length ? (

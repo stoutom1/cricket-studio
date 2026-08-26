@@ -46,6 +46,7 @@ model User {
   leagueResourceReactions      LeagueResourceReaction[]
   leagueResourceFavorites      LeagueResourceFavorite[]
   leagueResourceCollections    LeagueResourceCollection[]
+  playerProfiles               Player[]                         @relation("PlayerUserAccount")
 }
 
 model Team {
@@ -83,6 +84,8 @@ model Player {
   nonStrikerBalls             Ball[]              @relation("NonStriker")
   strikerBalls                Ball[]              @relation("Striker")
   team                        Team                @relation(fields: [teamId], references: [id], onDelete: Cascade)
+  userId                      String?
+  user                        User?               @relation("PlayerUserAccount", fields: [userId], references: [id], onDelete: SetNull)
   leagueBirthdays             LeagueBirthday[]
   whatsappNumber              String?
   whatsappOptIn               Boolean             @default(false)
@@ -100,6 +103,7 @@ model Player {
 
   @@unique([teamId, name])
   @@index([teamId])
+  @@index([userId])
 }
 
 model Match {

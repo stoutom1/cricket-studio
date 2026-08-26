@@ -1,0 +1,409 @@
+.shell,
+.closedBar {
+  min-width: 0;
+  border: 1px solid rgba(95, 137, 172, .17);
+  border-radius: 13px;
+  background:
+    linear-gradient(
+      155deg,
+      rgba(13, 36, 60, .95),
+      rgba(7, 22, 39, .98)
+    );
+}
+
+.shell {
+  padding: 14px;
+}
+
+.closedBar {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 12px;
+  padding: 11px 13px;
+}
+
+.closedBar > div {
+  min-width: 0;
+  display: flex;
+  align-items: center;
+  gap: 9px;
+}
+
+.closedBar p {
+  min-width: 0;
+  margin: 0;
+}
+
+.closedBar strong,
+.closedBar small {
+  display: block;
+}
+
+.closedBar strong {
+  color: #e9f6fd;
+  font-size: 10px;
+}
+
+.closedBar small {
+  margin-top: 2px;
+  color: #6f879d;
+  font-size: 8px;
+}
+
+.closedBar button,
+.close,
+.linkedList button,
+.adminLinks button {
+  flex: 0 0 auto;
+  min-height: 32px;
+  padding: 6px 9px;
+  border: 1px solid rgba(99, 143, 180, .26);
+  border-radius: 8px;
+  color: #cfe6f6;
+  background: rgba(17, 52, 80, .52);
+  font: inherit;
+  font-size: 8px;
+  font-weight: 850;
+  cursor: pointer;
+}
+
+.head {
+  display: flex;
+  align-items: flex-start;
+  justify-content: space-between;
+  gap: 12px;
+}
+
+.head > div {
+  min-width: 0;
+}
+
+.head small,
+.head strong,
+.head p {
+  display: block;
+}
+
+.head small,
+.adminHead small,
+.sectionTitle small {
+  color: #65bce4;
+  font-size: 7px;
+  font-weight: 950;
+  letter-spacing: .04em;
+  text-transform: uppercase;
+}
+
+.head strong {
+  margin-top: 2px;
+  color: #f0f9ff;
+  font-size: 13px;
+}
+
+.head p {
+  max-width: 700px;
+  margin: 4px 0 0;
+  color: #748ca2;
+  font-size: 8px;
+  line-height: 1.45;
+}
+
+.loading,
+.error,
+.success,
+.warning {
+  margin-top: 10px;
+  padding: 9px 10px;
+  border-radius: 9px;
+  font-size: 8px;
+  line-height: 1.45;
+}
+
+.loading {
+  color: #86abc6;
+  background: rgba(28, 77, 111, .12);
+}
+
+.error {
+  color: #ffb7b7;
+  border: 1px solid rgba(248, 113, 113, .2);
+  background: rgba(239, 68, 68, .08);
+}
+
+.success {
+  color: #a4eccd;
+  border: 1px solid rgba(52, 211, 153, .19);
+  background: rgba(16, 185, 129, .07);
+}
+
+.warning {
+  color: #e6c88d;
+  border: 1px solid rgba(245, 158, 11, .18);
+  background: rgba(245, 158, 11, .06);
+}
+
+.selfArea,
+.adminArea {
+  margin-top: 11px;
+  padding: 11px;
+  border: 1px solid rgba(94, 135, 169, .13);
+  border-radius: 10px;
+  background: rgba(7, 22, 39, .45);
+}
+
+.sectionTitle {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 9px;
+}
+
+.sectionTitle strong,
+.sectionTitle span {
+  display: block;
+}
+
+.sectionTitle strong {
+  margin-top: 2px;
+  color: #e9f4fb;
+  font-size: 10px;
+  overflow-wrap: anywhere;
+}
+
+.sectionTitle span {
+  margin-top: 2px;
+  color: #70889f;
+  font-size: 8px;
+}
+
+.sectionTitle em {
+  flex: 0 0 auto;
+  padding: 5px 8px;
+  border: 1px solid rgba(52, 211, 153, .18);
+  border-radius: 999px;
+  color: #a6e7cd;
+  background: rgba(16, 185, 129, .06);
+  font-size: 7px;
+  font-style: normal;
+  font-weight: 900;
+  text-transform: uppercase;
+}
+
+.sectionTitle em.needsLink {
+  border-color: rgba(245, 158, 11, .2);
+  color: #ebc783;
+  background: rgba(245, 158, 11, .06);
+}
+
+.claimArea {
+  display: grid;
+  gap: 8px;
+  margin-top: 9px;
+}
+
+.claimArea label,
+.adminForm label {
+  min-width: 0;
+  display: grid;
+  gap: 4px;
+}
+
+.claimArea label > span,
+.adminForm label > span {
+  color: #6f879e;
+  font-size: 7px;
+  font-weight: 900;
+  text-transform: uppercase;
+}
+
+.claimArea select,
+.adminForm select {
+  width: 100%;
+  min-width: 0;
+  min-height: 37px;
+  padding: 7px 9px;
+  border: 1px solid rgba(92, 139, 178, .27);
+  border-radius: 9px;
+  color: #e8f4fc;
+  background: #0a2136;
+  font: inherit;
+  font-size: 9px;
+}
+
+.selection,
+.linkedList article,
+.adminLinks article {
+  min-width: 0;
+  display: flex;
+  align-items: center;
+  gap: 9px;
+  padding: 9px;
+  border: 1px solid rgba(95, 135, 169, .11);
+  border-radius: 9px;
+  background: rgba(9, 29, 48, .58);
+}
+
+.selection p,
+.linkedList article > div,
+.adminLinks article > div {
+  min-width: 0;
+  flex: 1 1 auto;
+  margin: 0;
+}
+
+.selection strong,
+.selection small,
+.linkedList strong,
+.linkedList small,
+.adminLinks strong,
+.adminLinks small {
+  display: block;
+  overflow-wrap: anywhere;
+}
+
+.selection strong,
+.linkedList strong,
+.adminLinks strong {
+  color: #e5f1f9;
+  font-size: 9px;
+}
+
+.selection small,
+.linkedList small,
+.adminLinks small {
+  margin-top: 2px;
+  color: #6e869c;
+  font-size: 7px;
+}
+
+.avatar {
+  flex: 0 0 32px;
+  display: grid;
+  place-items: center;
+  width: 32px;
+  height: 32px;
+  border: 1px solid rgba(77, 157, 211, .22);
+  border-radius: 9px;
+  color: #e9f8ff;
+  background: rgba(14, 79, 120, .36);
+  font-size: 10px;
+  font-weight: 950;
+}
+
+.primary {
+  min-height: 37px;
+  padding: 8px 11px;
+  border: 1px solid rgba(54, 171, 225, .47);
+  border-radius: 9px;
+  color: #fff;
+  background: linear-gradient(145deg, #1670ad, #10456e);
+  font: inherit;
+  font-size: 9px;
+  font-weight: 900;
+  cursor: pointer;
+}
+
+.primary:disabled,
+.linkedList button:disabled,
+.adminLinks button:disabled {
+  cursor: wait;
+  opacity: .55;
+}
+
+.safety,
+.muted {
+  margin: 0;
+  color: #647d93;
+  font-size: 7px;
+  line-height: 1.45;
+}
+
+.linkedList,
+.adminLinks {
+  display: grid;
+  gap: 6px;
+  margin-top: 9px;
+}
+
+.adminArea {
+  border-color: rgba(139, 92, 246, .18);
+  background:
+    linear-gradient(
+      155deg,
+      rgba(41, 30, 71, .28),
+      rgba(7, 22, 39, .48)
+    );
+}
+
+.adminHead {
+  display: flex;
+  align-items: flex-start;
+  gap: 8px;
+}
+
+.adminHead > span {
+  flex: 0 0 auto;
+  font-size: 18px;
+}
+
+.adminHead strong,
+.adminHead p {
+  display: block;
+}
+
+.adminHead strong {
+  margin-top: 2px;
+  color: #eee8ff;
+  font-size: 11px;
+}
+
+.adminHead p {
+  margin: 3px 0 0;
+  color: #7f7997;
+  font-size: 8px;
+  line-height: 1.4;
+}
+
+.adminForm {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr) minmax(0, 1fr) auto;
+  align-items: end;
+  gap: 7px;
+  margin-top: 10px;
+}
+
+@media (max-width: 720px) {
+  .adminForm {
+    grid-template-columns: 1fr;
+  }
+
+  .adminForm .primary {
+    width: 100%;
+  }
+}
+
+@media (max-width: 520px) {
+  .head,
+  .closedBar {
+    align-items: stretch;
+    flex-direction: column;
+  }
+
+  .closedBar button,
+  .close {
+    width: 100%;
+  }
+
+  .linkedList article,
+  .adminLinks article {
+    align-items: flex-start;
+    flex-wrap: wrap;
+  }
+
+  .linkedList button,
+  .adminLinks button {
+    width: 100%;
+    margin-left: 41px;
+  }
+}

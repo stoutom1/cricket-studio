@@ -1,0 +1,572 @@
+.shell {
+  display: grid;
+  gap: 12px;
+  margin-top: 12px;
+}
+
+.hero,
+.panel {
+  min-width: 0;
+  border: 1px solid rgba(102, 143, 177, 0.18);
+  border-radius: 14px;
+  background:
+    linear-gradient(
+      155deg,
+      rgba(14, 37, 62, 0.94),
+      rgba(7, 22, 39, 0.98)
+    );
+}
+
+.hero {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 14px;
+  padding: 16px;
+}
+
+.identity {
+  min-width: 0;
+  display: flex;
+  align-items: center;
+  gap: 11px;
+}
+
+.avatar {
+  flex: 0 0 46px;
+  display: grid;
+  place-items: center;
+  width: 46px;
+  height: 46px;
+  border: 1px solid rgba(70, 170, 220, 0.28);
+  border-radius: 13px;
+  color: #effaff;
+  background: rgba(14, 91, 135, 0.42);
+  font-size: 18px;
+  font-weight: 950;
+}
+
+.identity > div {
+  min-width: 0;
+}
+
+.identity small,
+.identity h3,
+.identity p {
+  display: block;
+  margin: 0;
+}
+
+.identity small {
+  color: #63c9ed;
+  font-size: 8px;
+  font-weight: 950;
+  letter-spacing: .05em;
+}
+
+.identity h3 {
+  margin-top: 3px;
+  color: #fff;
+  font-size: 20px;
+  line-height: 1.15;
+  overflow-wrap: anywhere;
+}
+
+.identity p {
+  margin-top: 4px;
+  color: #758ea4;
+  font-size: 9px;
+  overflow-wrap: anywhere;
+}
+
+.heroBadges {
+  display: flex;
+  flex-wrap: wrap;
+  justify-content: flex-end;
+  gap: 6px;
+}
+
+.heroBadges span {
+  padding: 6px 8px;
+  border: 1px solid rgba(88, 161, 205, .18);
+  border-radius: 999px;
+  color: #9ed8ee;
+  background: rgba(21, 93, 133, .12);
+  font-size: 8px;
+  font-weight: 850;
+  white-space: nowrap;
+}
+
+.careerGrid {
+  display: grid;
+  grid-template-columns: repeat(4, minmax(0, 1fr));
+  gap: 8px;
+}
+
+.careerGrid article {
+  min-width: 0;
+  display: flex;
+  align-items: center;
+  gap: 9px;
+  padding: 12px;
+  border: 1px solid rgba(101, 141, 175, .16);
+  border-radius: 11px;
+  background: rgba(9, 28, 47, .86);
+}
+
+.careerGrid article > span {
+  flex: 0 0 auto;
+  font-size: 18px;
+}
+
+.careerGrid small,
+.careerGrid strong {
+  display: block;
+}
+
+.careerGrid small {
+  color: #6f879d;
+  font-size: 7px;
+  font-weight: 900;
+  text-transform: uppercase;
+}
+
+.careerGrid strong {
+  margin-top: 2px;
+  color: #f4f9fd;
+  font-size: 18px;
+}
+
+.twoColumn {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: 10px;
+}
+
+.panel {
+  padding: 13px;
+}
+
+.panelHead {
+  min-width: 0;
+  display: flex;
+  align-items: flex-start;
+  justify-content: space-between;
+  gap: 9px;
+  margin-bottom: 10px;
+}
+
+.panelHead > div {
+  min-width: 0;
+}
+
+.panelHead small,
+.panelHead strong {
+  display: block;
+}
+
+.panelHead small {
+  color: #70889e;
+  font-size: 7px;
+  font-weight: 900;
+  text-transform: uppercase;
+}
+
+.panelHead strong {
+  margin-top: 2px;
+  color: #edf7ff;
+  font-size: 11px;
+  overflow-wrap: anywhere;
+}
+
+.panelHead > span {
+  flex: 0 0 auto;
+  color: #78a9c8;
+  font-size: 8px;
+  text-align: right;
+}
+
+.rankGrid {
+  display: grid;
+  grid-template-columns: repeat(4, minmax(0, 1fr));
+  gap: 6px;
+}
+
+.rankGrid article {
+  min-width: 0;
+  padding: 9px;
+  border: 1px solid rgba(93, 133, 168, .13);
+  border-radius: 9px;
+  background: rgba(7, 22, 39, .5);
+}
+
+.rankGrid small,
+.rankGrid strong,
+.rankGrid span,
+.rankGrid em {
+  display: block;
+}
+
+.rankGrid small {
+  color: #687f95;
+  font-size: 7px;
+}
+
+.rankGrid strong {
+  margin-top: 3px;
+  color: #f2f8fc;
+  font-size: 18px;
+}
+
+.rankGrid span {
+  margin-top: 2px;
+  color: #758da3;
+  font-size: 8px;
+  font-weight: 900;
+}
+
+.rankGrid em {
+  margin-top: 2px;
+  color: #627a90;
+  font-size: 7px;
+  font-style: normal;
+}
+
+.up { color: #73d9ac !important; }
+.down { color: #f29b9b !important; }
+
+.formStrip {
+  display: grid;
+  grid-template-columns: repeat(5, minmax(0, 1fr));
+  gap: 5px;
+}
+
+.formStrip article {
+  min-width: 0;
+  padding: 8px;
+  border: 1px solid rgba(93, 133, 168, .12);
+  border-radius: 8px;
+  background: rgba(7, 22, 39, .48);
+}
+
+.formStrip strong,
+.formStrip small {
+  display: block;
+  overflow-wrap: anywhere;
+}
+
+.formStrip strong {
+  color: #eaf4fb;
+  font-size: 9px;
+}
+
+.formStrip small {
+  margin-top: 3px;
+  color: #6f879d;
+  font-size: 7px;
+}
+
+.formSummary {
+  display: grid;
+  grid-template-columns: repeat(3, minmax(0, 1fr));
+  gap: 6px;
+  margin-top: 7px;
+}
+
+.formSummary span {
+  min-width: 0;
+  padding: 7px;
+  border-radius: 8px;
+  background: rgba(16, 48, 76, .35);
+}
+
+.formSummary small,
+.formSummary strong {
+  display: block;
+}
+
+.formSummary small {
+  color: #698197;
+  font-size: 7px;
+}
+
+.formSummary strong {
+  margin-top: 2px;
+  color: #e9f5fd;
+  font-size: 10px;
+  overflow-wrap: anywhere;
+}
+
+.progressTrack {
+  height: 7px;
+  overflow: hidden;
+  border-radius: 999px;
+  background: rgba(74, 103, 129, .22);
+}
+
+.progressTrack span {
+  display: block;
+  height: 100%;
+  border-radius: inherit;
+  background: linear-gradient(90deg, #2563eb, #14b8a6);
+}
+
+.muted {
+  margin: 7px 0 0;
+  color: #6f879d;
+  font-size: 8px;
+  line-height: 1.45;
+}
+
+.streakList {
+  display: grid;
+  gap: 5px;
+  margin-top: 10px;
+}
+
+.streakList article {
+  min-width: 0;
+  display: grid;
+  grid-template-columns: auto minmax(0, 1fr) auto;
+  align-items: center;
+  gap: 7px;
+  padding: 7px;
+  border: 1px solid rgba(93, 133, 168, .11);
+  border-radius: 8px;
+  background: rgba(7, 22, 39, .42);
+}
+
+.streakList article > div {
+  min-width: 0;
+}
+
+.streakList strong,
+.streakList small {
+  display: block;
+  overflow-wrap: anywhere;
+}
+
+.streakList strong {
+  color: #dfeef8;
+  font-size: 8px;
+}
+
+.streakList small {
+  margin-top: 2px;
+  color: #667e94;
+  font-size: 7px;
+}
+
+.streakList em {
+  color: #79a8c7;
+  font-size: 7px;
+  font-style: normal;
+  text-align: right;
+}
+
+.nextMatch {
+  display: flex;
+  align-items: center;
+  gap: 9px;
+  padding: 10px;
+  border: 1px solid rgba(94, 135, 168, .13);
+  border-radius: 9px;
+  background: rgba(7, 22, 39, .48);
+}
+
+.nextMatch > span {
+  font-size: 19px;
+}
+
+.nextMatch strong,
+.nextMatch small {
+  display: block;
+}
+
+.nextMatch strong {
+  color: #eaf5fd;
+  font-size: 10px;
+}
+
+.nextMatch small {
+  margin-top: 2px;
+  color: #6c849a;
+  font-size: 8px;
+}
+
+.lastChange {
+  margin-top: 9px;
+  padding-top: 9px;
+  border-top: 1px solid rgba(94, 133, 166, .12);
+}
+
+.lastChange small {
+  color: #688097;
+  font-size: 7px;
+  font-weight: 900;
+}
+
+.lastChange p {
+  margin: 4px 0 0;
+  color: #8199ae;
+  font-size: 8px;
+  line-height: 1.4;
+}
+
+.lastChange b {
+  color: #e3f0f9;
+}
+
+.achievementGrid {
+  display: grid;
+  grid-template-columns: repeat(4, minmax(0, 1fr));
+  gap: 6px;
+}
+
+.achievementGrid article {
+  min-width: 0;
+  display: flex;
+  align-items: center;
+  gap: 7px;
+  padding: 9px;
+  border: 1px solid rgba(94, 134, 168, .12);
+  border-radius: 9px;
+  background: rgba(7, 22, 39, .46);
+}
+
+.achievementGrid article.elite {
+  border-color: rgba(245, 158, 11, .22);
+  background: rgba(245, 158, 11, .05);
+}
+
+.achievementGrid article > span {
+  flex: 0 0 auto;
+  font-size: 17px;
+}
+
+.achievementGrid article > div {
+  min-width: 0;
+}
+
+.achievementGrid strong,
+.achievementGrid small {
+  display: block;
+  overflow-wrap: anywhere;
+}
+
+.achievementGrid strong {
+  color: #e7f2fa;
+  font-size: 8px;
+}
+
+.achievementGrid small {
+  margin-top: 2px;
+  color: #687f95;
+  font-size: 7px;
+}
+
+.loading,
+.empty {
+  display: flex;
+  align-items: flex-start;
+  gap: 11px;
+  margin-top: 12px;
+  padding: 16px;
+  border: 1px solid rgba(94, 135, 169, .16);
+  border-radius: 12px;
+  background: rgba(8, 24, 41, .62);
+}
+
+.loading > span,
+.empty > span {
+  font-size: 22px;
+}
+
+.loading strong,
+.loading small,
+.empty strong,
+.empty p {
+  display: block;
+}
+
+.loading strong,
+.empty strong {
+  color: #eaf5fd;
+  font-size: 11px;
+}
+
+.loading small,
+.empty p {
+  margin: 3px 0 0;
+  color: #71899f;
+  font-size: 8px;
+  line-height: 1.45;
+}
+
+@media (max-width: 900px) {
+  .twoColumn {
+    grid-template-columns: 1fr;
+  }
+
+  .achievementGrid {
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+  }
+}
+
+@media (max-width: 640px) {
+  .hero {
+    display: block;
+    padding: 13px;
+  }
+
+  .heroBadges {
+    justify-content: flex-start;
+    margin-top: 10px;
+  }
+
+  .careerGrid {
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+  }
+
+  .rankGrid {
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+  }
+
+  .formStrip {
+    grid-template-columns: repeat(5, minmax(74px, 1fr));
+    overflow-x: auto;
+    padding-bottom: 3px;
+  }
+
+  .streakList article {
+    grid-template-columns: auto minmax(0, 1fr);
+  }
+
+  .streakList em {
+    grid-column: 2;
+    text-align: left;
+  }
+}
+
+@media (max-width: 430px) {
+  .achievementGrid {
+    grid-template-columns: 1fr;
+  }
+
+  .panelHead {
+    display: block;
+  }
+
+  .panelHead > span {
+    display: block;
+    margin-top: 4px;
+    text-align: left;
+  }
+}
+
+
+.unlinkedShell {
+  display: grid;
+  gap: 12px;
+  margin-top: 12px;
+}
