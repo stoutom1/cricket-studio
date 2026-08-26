@@ -6581,3 +6581,181 @@ body:has(.live-tv-mode) {
     padding: 6px 9px !important;
   }
 }
+
+
+/* =========================================================
+   CRIC4ALL — TV MODE 2.0 FINAL DESKTOP TYPOGRAPHY PASS
+   DESKTOP / LAPTOP ONLY (>= 901px)
+
+   Layout is intentionally unchanged.
+   This pass only increases TV-viewing readability.
+   Mobile <= 900px is untouched.
+========================================================= */
+
+@media (min-width: 901px) {
+  /* Header */
+  .tv2d-brand strong {
+    font-size: clamp(16px, 1.15vw, 22px) !important;
+  }
+
+  .tv2d-brand small {
+    font-size: clamp(9px, 0.66vw, 11px) !important;
+  }
+
+  .tv2d-match {
+    font-size: clamp(21px, 1.7vw, 31px) !important;
+    line-height: 1.15 !important;
+  }
+
+  .tv2d-exit {
+    font-size: clamp(11px, 0.82vw, 14px) !important;
+  }
+
+  /* Score hero secondary information */
+  .tv2d-team small,
+  .tv2d-equation small {
+    font-size: clamp(10px, 0.72vw, 12px) !important;
+  }
+
+  .tv2d-team strong,
+  .tv2d-equation strong {
+    font-size: clamp(21px, 1.68vw, 30px) !important;
+  }
+
+  .tv2d-team span,
+  .tv2d-equation span {
+    font-size: clamp(12px, 0.84vw, 15px) !important;
+    line-height: 1.35 !important;
+  }
+
+  /*
+   * Keep the giant score itself unchanged.
+   * Only make the overs label easier to see across a room.
+   */
+  .tv2d-score span {
+    font-size: clamp(16px, 1.22vw, 22px) !important;
+  }
+
+  /* Current players */
+  .tv2d-players small {
+    font-size: clamp(10px, 0.7vw, 12px) !important;
+  }
+
+  .tv2d-players strong {
+    margin-top: 4px !important;
+    font-size: clamp(18px, 1.28vw, 23px) !important;
+    line-height: 1.2 !important;
+  }
+
+  .tv2d-players span {
+    margin-top: 3px !important;
+    font-size: clamp(12px, 0.88vw, 16px) !important;
+  }
+
+  /* Four intelligence cards */
+  .tv2d-intel small {
+    font-size: clamp(10px, 0.72vw, 12px) !important;
+  }
+
+  .tv2d-intel strong {
+    margin-top: 6px !important;
+    font-size: clamp(19px, 1.35vw, 25px) !important;
+    line-height: 1.18 !important;
+  }
+
+  .tv2d-intel > article > span,
+  .tv2d-pressure > span {
+    margin-top: 6px !important;
+    font-size: clamp(12px, 0.88vw, 16px) !important;
+    line-height: 1.4 !important;
+  }
+
+  .tv2d-pressure > div:first-child strong {
+    font-size: clamp(17px, 1.18vw, 22px) !important;
+  }
+
+  .tv2d-pressure-track {
+    height: 10px !important;
+    margin-top: 11px !important;
+  }
+
+  /* Spotlight */
+  .tv2d-spotlight small,
+  .tv2d-phase small {
+    font-size: clamp(10px, 0.7vw, 12px) !important;
+  }
+
+  .tv2d-spotlight strong,
+  .tv2d-phase strong {
+    margin-top: 4px !important;
+    font-size: clamp(17px, 1.18vw, 22px) !important;
+    line-height: 1.2 !important;
+  }
+
+  .tv2d-spotlight span {
+    margin-top: 4px !important;
+    font-size: clamp(12px, 0.84vw, 15px) !important;
+    line-height: 1.35 !important;
+  }
+
+  .tv2d-avatar {
+    font-size: 22px !important;
+  }
+
+  /* Live Phase stats */
+  .tv2d-phase-stats span {
+    font-size: clamp(10px, 0.72vw, 12px) !important;
+    line-height: 1.25 !important;
+  }
+
+  .tv2d-phase-stats b {
+    font-size: clamp(16px, 1.05vw, 19px) !important;
+  }
+
+  /* Last 12 balls */
+  .tv2d-balls > div:first-child small {
+    font-size: 11px !important;
+  }
+
+  .tv2d-balls > div:first-child strong {
+    font-size: 12px !important;
+  }
+
+  .tv2d-balls .tv2-ball {
+    font-size: clamp(11px, 0.76vw, 13px) !important;
+    font-weight: 950 !important;
+  }
+}
+
+/*
+ * Short laptop windows keep the same larger typography, but cap a few
+ * values so the fixed TV layout never develops clipping.
+ */
+@media (min-width: 901px) and (max-height: 760px) {
+  .tv2d-match {
+    font-size: clamp(19px, 1.5vw, 27px) !important;
+  }
+
+  .tv2d-team strong,
+  .tv2d-equation strong {
+    font-size: clamp(18px, 1.45vw, 25px) !important;
+  }
+
+  .tv2d-players strong {
+    font-size: clamp(16px, 1.1vw, 20px) !important;
+  }
+
+  .tv2d-intel strong {
+    font-size: clamp(17px, 1.18vw, 22px) !important;
+  }
+
+  .tv2d-intel > article > span,
+  .tv2d-pressure > span {
+    font-size: clamp(10px, 0.76vw, 13px) !important;
+  }
+
+  .tv2d-spotlight strong,
+  .tv2d-phase strong {
+    font-size: clamp(15px, 1vw, 19px) !important;
+  }
+}
