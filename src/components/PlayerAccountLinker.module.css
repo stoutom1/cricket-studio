@@ -407,3 +407,83 @@
     margin-left: 41px;
   }
 }
+
+/* =========================================================
+   PLAYER ACCOUNT LINKER — MOBILE READABILITY ONLY
+========================================================= */
+@media (max-width: 640px) {
+  .shell {
+    padding: 14px;
+  }
+
+  .head small,
+  .adminHead small,
+  .sectionTitle small,
+  .claimArea label > span,
+  .adminForm label > span {
+    font-size: 10px;
+    line-height: 1.3;
+  }
+
+  .head strong,
+  .adminHead strong {
+    font-size: 14px;
+    line-height: 1.3;
+  }
+
+  .head p,
+  .adminHead p,
+  .loading,
+  .error,
+  .success,
+  .warning,
+  .safety,
+  .muted {
+    font-size: 11px;
+    line-height: 1.5;
+  }
+
+  .sectionTitle strong,
+  .selection strong,
+  .linkedList strong,
+  .adminLinks strong {
+    font-size: 12px;
+    line-height: 1.35;
+  }
+
+  .sectionTitle span,
+  .selection small,
+  .linkedList small,
+  .adminLinks small {
+    font-size: 10px;
+    line-height: 1.4;
+  }
+
+  .sectionTitle em {
+    font-size: 10px;
+  }
+
+  .claimArea select,
+  .adminForm select {
+    min-height: 44px;
+    font-size: 12px;
+  }
+
+  .primary,
+  .closedBar button,
+  .close,
+  .linkedList button,
+  .adminLinks button {
+    min-height: 42px;
+    font-size: 11px;
+  }
+
+  .closedBar strong {
+    font-size: 12px;
+  }
+
+  .closedBar small {
+    font-size: 10px;
+    line-height: 1.4;
+  }
+}
