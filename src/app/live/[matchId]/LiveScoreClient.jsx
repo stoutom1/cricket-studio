@@ -1638,6 +1638,220 @@ if (loadedMatchIsFinal && intervalId) {
     );
   }, [scoreboard]);
 
+  useEffect(() => {
+    function handleFullscreenChange() {
+      if (
+        tvMode &&
+        !document.fullscreenElement
+      ) {
+        setTvMode(false);
+      }
+    }
+
+    document.addEventListener(
+      "fullscreenchange",
+      handleFullscreenChange
+    );
+
+    return () => {
+      document.removeEventListener(
+        "fullscreenchange",
+        handleFullscreenChange
+      );
+    };
+  }, [tvMode]);
+
+  useEffect(() => {
+    if (!tvMode || !scoreboard) {
+      return;
+    }
+
+    const liveBalls =
+      scoreboard?.recentBalls || [];
+
+    /*
+     * /api/liveview returns recentBalls newest-first today. Keep a fallback
+     * that also works if a future API version returns oldest-first.
+     */
+    const newestBall =
+      liveBalls.length > 0
+        ? liveBalls.reduce((latest, ball) => {
+            if (!latest) {
+              return ball;
+            }
+
+            const latestId = Number(latest?.id);
+            const ballId = Number(ball?.id);
+
+            if (
+              Number.isFinite(latestId) &&
+              Number.isFinite(ballId)
+            ) {
+              return ballId > latestId
+                ? ball
+                : latest;
+            }
+
+            return latest;
+          }, null)
+        : null;
+
+    const currentStats = {
+      strikerId:
+        scoreboard?.currentState?.strikerId || null,
+      strikerName:
+        scoreboard?.currentState?.strikerName || "",
+      strikerRuns: Number(
+        scoreboard?.currentState?.strikerStats?.runs || 0
+      ),
+      bowlerId:
+        scoreboard?.currentState?.bowlerId || null,
+      bowlerName:
+        scoreboard?.currentState?.bowlerName || "",
+      bowlerWickets: Number(
+        scoreboard?.currentState?.bowlerStats?.wickets || 0
+      ),
+    };
+
+    const previous =
+      tvPreviousStatsRef.current;
+
+    let nextEvent = null;
+
+    if (
+      previous &&
+      previous.strikerId === currentStats.strikerId
+    ) {
+      const battingMarks = [50, 100, 150, 200];
+
+      const crossed = battingMarks.find(
+        (mark) =>
+          previous.strikerRuns < mark &&
+          currentStats.strikerRuns >= mark
+      );
+
+      if (crossed) {
+        nextEvent = {
+          key: `bat-${currentStats.strikerId}-${crossed}-${Date.now()}`,
+          type: "milestone",
+          icon: crossed >= 100 ? "💯" : "✨",
+          title: `${crossed} RUN MILESTONE`,
+          detail: `${currentStats.strikerName} reaches ${crossed}`,
+        };
+      }
+    }
+
+    if (
+      !nextEvent &&
+      previous &&
+      previous.bowlerId === currentStats.bowlerId
+    ) {
+      const bowlingMarks = [3, 5];
+
+      const crossed = bowlingMarks.find(
+        (mark) =>
+          previous.bowlerWickets < mark &&
+          currentStats.bowlerWickets >= mark
+      );
+
+      if (crossed) {
+        nextEvent = {
+          key: `bowl-${currentStats.bowlerId}-${crossed}-${Date.now()}`,
+          type: "milestone",
+          icon: crossed >= 5 ? "🔥" : "🎯",
+          title: `${crossed}-WICKET MILESTONE`,
+          detail: `${currentStats.bowlerName} reaches ${crossed} wickets`,
+        };
+      }
+    }
+
+    if (
+      !nextEvent &&
+      newestBall?.id &&
+      tvLastBallRef.current &&
+      String(newestBall.id) !==
+        String(tvLastBallRef.current)
+    ) {
+      const display = getBallDisplay(
+        newestBall.label
+      );
+
+      const newestBallText = String(
+        newestBall?.label || ""
+      ).toUpperCase();
+
+      const isWicketBall =
+        display.type === "wicket" ||
+        (
+          newestBallText.includes("W") &&
+          !newestBallText.includes("WD")
+        ) ||
+        newestBallText.includes("WICKET");
+
+      const isSixBall =
+        display.type === "six" ||
+        /(^|\s|\()6(\s|\)|$)/.test(
+          newestBallText
+        );
+
+      if (isWicketBall) {
+        nextEvent = {
+          key: `wicket-${newestBall.id}-${Date.now()}`,
+          type: "wicket",
+          icon: "☝️",
+          title: "WICKET!",
+          detail:
+            newestBall.label ||
+            "A wicket has fallen",
+        };
+      } else if (isSixBall) {
+        nextEvent = {
+          key: `six-${newestBall.id}-${Date.now()}`,
+          type: "boundary",
+          icon: "🚀",
+          title: "SIX!",
+          detail:
+            scoreboard?.currentState?.strikerName ||
+            "Maximum",
+        };
+      }
+    }
+
+    if (newestBall?.id) {
+      tvLastBallRef.current =
+        newestBall.id;
+    }
+
+    tvPreviousStatsRef.current =
+      currentStats;
+
+    if (nextEvent) {
+      setTvEvent(nextEvent);
+
+      if (tvEventTimerRef.current) {
+        window.clearTimeout(
+          tvEventTimerRef.current
+        );
+      }
+
+      tvEventTimerRef.current =
+        window.setTimeout(() => {
+          setTvEvent(null);
+        }, 4200);
+    }
+  }, [scoreboard, tvMode]);
+
+  useEffect(() => {
+    return () => {
+      if (tvEventTimerRef.current) {
+        window.clearTimeout(
+          tvEventTimerRef.current
+        );
+      }
+    };
+  }, []);
+
+
   if (error && !scoreboard) {
     return (
       <main className="live-page-shell live-score-final">
@@ -2033,176 +2247,6 @@ const liveStatusText =
       // Safe fallback: leaving TV state still restores normal live view.
     }
   }
-
-  useEffect(() => {
-    function handleFullscreenChange() {
-      if (
-        tvMode &&
-        !document.fullscreenElement
-      ) {
-        setTvMode(false);
-      }
-    }
-
-    document.addEventListener(
-      "fullscreenchange",
-      handleFullscreenChange
-    );
-
-    return () => {
-      document.removeEventListener(
-        "fullscreenchange",
-        handleFullscreenChange
-      );
-    };
-  }, [tvMode]);
-
-  useEffect(() => {
-    if (!tvMode || !scoreboard) {
-      return;
-    }
-
-    const newestBall =
-      scoreboard?.recentBalls?.[0] || null;
-
-    const currentStats = {
-      strikerId:
-        scoreboard?.currentState?.strikerId || null,
-      strikerName:
-        scoreboard?.currentState?.strikerName || "",
-      strikerRuns: Number(
-        scoreboard?.currentState?.strikerStats?.runs || 0
-      ),
-      bowlerId:
-        scoreboard?.currentState?.bowlerId || null,
-      bowlerName:
-        scoreboard?.currentState?.bowlerName || "",
-      bowlerWickets: Number(
-        scoreboard?.currentState?.bowlerStats?.wickets || 0
-      ),
-    };
-
-    const previous =
-      tvPreviousStatsRef.current;
-
-    let nextEvent = null;
-
-    if (
-      previous &&
-      previous.strikerId === currentStats.strikerId
-    ) {
-      const battingMarks = [50, 100, 150, 200];
-
-      const crossed = battingMarks.find(
-        (mark) =>
-          previous.strikerRuns < mark &&
-          currentStats.strikerRuns >= mark
-      );
-
-      if (crossed) {
-        nextEvent = {
-          key: `bat-${currentStats.strikerId}-${crossed}-${Date.now()}`,
-          type: "milestone",
-          icon: crossed >= 100 ? "💯" : "✨",
-          title: `${crossed} RUN MILESTONE`,
-          detail: `${currentStats.strikerName} reaches ${crossed}`,
-        };
-      }
-    }
-
-    if (
-      !nextEvent &&
-      previous &&
-      previous.bowlerId === currentStats.bowlerId
-    ) {
-      const bowlingMarks = [3, 5];
-
-      const crossed = bowlingMarks.find(
-        (mark) =>
-          previous.bowlerWickets < mark &&
-          currentStats.bowlerWickets >= mark
-      );
-
-      if (crossed) {
-        nextEvent = {
-          key: `bowl-${currentStats.bowlerId}-${crossed}-${Date.now()}`,
-          type: "milestone",
-          icon: crossed >= 5 ? "🔥" : "🎯",
-          title: `${crossed}-WICKET MILESTONE`,
-          detail: `${currentStats.bowlerName} reaches ${crossed} wickets`,
-        };
-      }
-    }
-
-    if (
-      !nextEvent &&
-      newestBall?.id &&
-      tvLastBallRef.current &&
-      String(newestBall.id) !==
-        String(tvLastBallRef.current)
-    ) {
-      const display = getBallDisplay(
-        newestBall.label
-      );
-
-      if (display.type === "wicket") {
-        nextEvent = {
-          key: `wicket-${newestBall.id}-${Date.now()}`,
-          type: "wicket",
-          icon: "☝️",
-          title: "WICKET!",
-          detail:
-            newestBall.label ||
-            "A wicket has fallen",
-        };
-      } else if (
-        display.type === "six"
-      ) {
-        nextEvent = {
-          key: `six-${newestBall.id}-${Date.now()}`,
-          type: "boundary",
-          icon: "🚀",
-          title: "SIX!",
-          detail:
-            scoreboard?.currentState?.strikerName ||
-            "Maximum",
-        };
-      }
-    }
-
-    if (newestBall?.id) {
-      tvLastBallRef.current =
-        newestBall.id;
-    }
-
-    tvPreviousStatsRef.current =
-      currentStats;
-
-    if (nextEvent) {
-      setTvEvent(nextEvent);
-
-      if (tvEventTimerRef.current) {
-        window.clearTimeout(
-          tvEventTimerRef.current
-        );
-      }
-
-      tvEventTimerRef.current =
-        window.setTimeout(() => {
-          setTvEvent(null);
-        }, 4200);
-    }
-  }, [scoreboard, tvMode]);
-
-  useEffect(() => {
-    return () => {
-      if (tvEventTimerRef.current) {
-        window.clearTimeout(
-          tvEventTimerRef.current
-        );
-      }
-    };
-  }, []);
 
   async function refreshNow() {
     try {
