@@ -6759,3 +6759,30 @@ body:has(.live-tv-mode) {
     font-size: clamp(15px, 1vw, 19px) !important;
   }
 }
+
+
+/* =========================================================
+   CRIC4ALL — TV MODE 2.0 ANIMATION VISIBILITY FIX
+   The event overlay is a direct child of .live-tv-mode.
+   An older legacy rule hides direct children that are not .tv2-shell.
+   Explicitly restore the animation overlay above BOTH desktop and mobile.
+========================================================= */
+
+.live-tv-mode > .tv2-event-overlay {
+  display: flex !important;
+  position: fixed !important;
+  inset: 0 !important;
+  z-index: 400000 !important;
+  width: auto !important;
+  height: auto !important;
+  max-width: none !important;
+  max-height: none !important;
+  pointer-events: none !important;
+}
+
+/* Keep the existing wicket / milestone / boundary animation treatments. */
+.live-tv-mode > .tv2-event-overlay.is-wicket,
+.live-tv-mode > .tv2-event-overlay.is-milestone,
+.live-tv-mode > .tv2-event-overlay.is-boundary {
+  display: flex !important;
+}
