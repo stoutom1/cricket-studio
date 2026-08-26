@@ -5697,631 +5697,511 @@ body:has(.live-tv-mode) {
 
 
 /* =========================================================
-   CRIC4ALL — TV MODE 2.0 DESKTOP FINAL COMPACTION
-   LAPTOP / DESKTOP ONLY.
-   Mobile rules below 901px are intentionally untouched.
-
-   Goal:
-   - compact the four intelligence panels
-   - remove unnecessary empty vertical space
-   - pull Spotlight / Live Phase upward
-   - guarantee Last 12 Balls remains visible
+   CRIC4ALL — TV MODE 2.0 STRUCTURAL DESKTOP FINAL
+   Separate desktop DOM namespace. This intentionally bypasses all older
+   .tv2-shell desktop layout rules while preserving mobile exactly as-is.
 ========================================================= */
 
-@media (min-width: 901px) {
-  /*
-   * Reserve deliberate space for each broadcast layer rather than letting
-   * the middle section stretch to consume every remaining pixel.
-   */
-  .tv2-shell {
-    grid-template-rows:
-      auto
-      clamp(126px, 17vh, 180px)
-      minmax(0, 1fr)
-      clamp(62px, 8vh, 82px) !important;
-  }
-
-  /*
-   * The middle region now behaves like two compact broadcast rows:
-   *   1. Current players + intelligence
-   *   2. Spotlight + Live Phase
-   *
-   * Any spare viewport height stays as breathing room instead of making
-   * individual cards hundreds of pixels tall.
-   */
-  .tv2-main-grid {
-    display: grid !important;
-    grid-template-columns: minmax(0, 1fr) !important;
-    grid-template-rows:
-      auto
-      auto !important;
-    align-content: start !important;
-    gap: 8px !important;
-    height: 100% !important;
-    min-height: 0 !important;
-    overflow: hidden !important;
-  }
-
-  .tv2-left-column {
-    display: grid !important;
-    grid-template-rows:
-      auto
-      auto !important;
-    align-content: start !important;
-    gap: 8px !important;
-    height: auto !important;
-    min-height: 0 !important;
-    overflow: visible !important;
-  }
-
-  .tv2-current-players {
-    min-height: 0 !important;
-  }
-
-  .tv2-player {
-    min-height: 58px !important;
-    height: auto !important;
-  }
-
-  /*
-   * This is the key visual correction:
-   * the four information cards are one compact horizontal strip.
-   */
-  .tv2-broadcast-grid {
-    display: grid !important;
-    grid-template-columns:
-      repeat(4, minmax(0, 1fr)) !important;
-    grid-template-rows:
-      minmax(118px, auto) !important;
-    align-items: stretch !important;
-    height: auto !important;
-    min-height: 118px !important;
-    max-height: 150px !important;
-    gap: 8px !important;
-  }
-
-  .tv2-metric,
-  .tv2-pressure {
-    height: auto !important;
-    min-height: 118px !important;
-    max-height: 150px !important;
-    justify-content: center !important;
-    padding: 12px 13px !important;
-  }
-
-  .tv2-metric small,
-  .tv2-pressure-head small {
-    font-size: clamp(8.5px, 0.63vw, 10.5px) !important;
-  }
-
-  .tv2-metric strong {
-    margin-top: 4px !important;
-    font-size: clamp(15px, 1.08vw, 19px) !important;
-  }
-
-  .tv2-metric span,
-  .tv2-pressure p {
-    margin-top: 5px !important;
-    font-size: clamp(9.5px, 0.72vw, 12.5px) !important;
-    line-height: 1.35 !important;
-  }
-
-  .tv2-pressure-head {
-    align-items: center !important;
-  }
-
-  .tv2-pressure-head strong {
-    font-size: clamp(14px, 1vw, 18px) !important;
-  }
-
-  .tv2-pressure-track {
-    height: 8px !important;
-    margin-top: 9px !important;
-  }
-
-  /*
-   * Spotlight + Live Phase remain a clean two-card broadcast row.
-   */
-  .tv2-right-column {
-    display: grid !important;
-    grid-template-columns:
-      minmax(0, 1fr)
-      minmax(0, 1fr) !important;
-    grid-template-rows:
-      minmax(76px, auto) !important;
-    gap: 8px !important;
-    width: 100% !important;
-    height: auto !important;
-    min-height: 76px !important;
-    max-height: 104px !important;
-    overflow: visible !important;
-  }
-
-  .tv2-spotlight,
-  .tv2-phase {
-    height: auto !important;
-    min-height: 76px !important;
-    max-height: 104px !important;
-    padding: 9px 12px !important;
-  }
-
-  .tv2-spotlight {
-    grid-template-columns:
-      46px minmax(0, 1fr) !important;
-  }
-
-  .tv2-spotlight-avatar {
-    width: 42px !important;
-    height: 42px !important;
-    font-size: 18px !important;
-  }
-
-  .tv2-spotlight > strong,
-  .tv2-phase > strong {
-    font-size: 14px !important;
-  }
-
-  .tv2-spotlight > span {
-    font-size: 9.5px !important;
-  }
-
-  .tv2-phase {
-    grid-template-columns:
-      minmax(150px, 0.8fr)
-      minmax(0, 1.5fr) !important;
-  }
-
-  .tv2-phase > div span {
-    padding: 6px 5px !important;
-    font-size: 8px !important;
-  }
-
-  .tv2-phase > div b {
-    font-size: 14px !important;
-  }
-
-  /*
-   * Keep the delivery rail fully visible and visually anchored to the
-   * bottom of the television display.
-   */
-  .tv2-ball-footer {
-    align-self: end !important;
-    width: 100% !important;
-    min-height: 62px !important;
-    max-height: 82px !important;
-    overflow: hidden !important;
-  }
-
-  .tv2-ball-strip {
-    grid-template-columns:
-      repeat(12, minmax(26px, 1fr)) !important;
-  }
-
-  .tv2-ball {
-    width: min(100%, 44px) !important;
-    max-width: 44px !important;
-  }
+.tv2-desktop {
+  display: none;
 }
 
-/*
- * Short laptop/browser windows need a slightly denser strip while retaining
- * the exact same hierarchy.
- */
-@media (min-width: 901px) and (max-height: 760px) {
-  .tv2-shell {
-    grid-template-rows:
-      34px
-      clamp(105px, 15.5vh, 125px)
-      minmax(0, 1fr)
-      56px !important;
-  }
-
-  .tv2-broadcast-grid {
-    grid-template-rows:
-      minmax(94px, auto) !important;
-    min-height: 94px !important;
-    max-height: 112px !important;
-  }
-
-  .tv2-metric,
-  .tv2-pressure {
-    min-height: 94px !important;
-    max-height: 112px !important;
-    padding: 8px 10px !important;
-  }
-
-  .tv2-right-column {
-    grid-template-rows:
-      minmax(62px, auto) !important;
-    min-height: 62px !important;
-    max-height: 78px !important;
-  }
-
-  .tv2-spotlight,
-  .tv2-phase {
-    min-height: 62px !important;
-    max-height: 78px !important;
-    padding: 6px 9px !important;
-  }
-
-  .tv2-spotlight-avatar {
-    width: 36px !important;
-    height: 36px !important;
-    font-size: 16px !important;
-  }
-
-  .tv2-ball-footer {
-    min-height: 54px !important;
-    max-height: 58px !important;
-  }
-}
-
-
-/* =========================================================
-   CRIC4ALL — TV MODE 2.0 LAPTOP FINAL LAYOUT
-   DESKTOP / LAPTOP ONLY (>= 901px)
-   Mobile is intentionally untouched.
-
-   This pass removes nested desktop width calculations entirely:
-   - one bounded 12-column main grid
-   - no right-side rail that can escape the viewport
-   - balanced vertical use of the screen
-   - Last 12 Balls always visible
-========================================================= */
-
 @media (min-width: 901px) {
-  .live-tv-mode,
-  .tv2-shell,
-  .tv2-shell * {
-    box-sizing: border-box !important;
+  .tv2-mobile {
+    display: none !important;
   }
 
-  .live-tv-mode {
-    inset: 0 !important;
-    width: 100vw !important;
-    max-width: 100vw !important;
-    height: 100vh !important;
-    max-height: 100vh !important;
-    overflow: hidden !important;
+  .tv2-desktop,
+  .tv2-desktop *,
+  .tv2-desktop *::before,
+  .tv2-desktop *::after {
+    box-sizing: border-box;
   }
 
-  .tv2-shell {
-    width: 100vw !important;
-    max-width: 100vw !important;
-    height: 100vh !important;
-    max-height: 100vh !important;
-    overflow: hidden !important;
-    padding: 12px 14px !important;
-    gap: 10px !important;
-
-    grid-template-rows:
-      38px
-      minmax(190px, 25vh)
-      minmax(0, 1fr)
-      minmax(74px, 9vh) !important;
-  }
-
-  .tv2-topbar,
-  .tv2-score-hero,
-  .tv2-main-grid,
-  .tv2-ball-footer {
-    width: 100% !important;
-    max-width: 100% !important;
-    min-width: 0 !important;
-  }
-
-  .tv2-topbar {
-    grid-template-columns:
-      minmax(190px, 0.9fr)
-      minmax(260px, 1.25fr)
-      minmax(110px, 0.55fr) !important;
-  }
-
-  .tv2-match-name {
-    min-width: 0 !important;
-    overflow-wrap: anywhere !important;
-  }
-
-  .tv2-score-hero {
-    height: 100% !important;
-    min-height: 0 !important;
-    grid-template-columns:
-      minmax(170px, 0.9fr)
-      minmax(280px, 1.35fr)
-      minmax(170px, 0.9fr) !important;
-    gap: 18px !important;
-    padding: 14px 18px !important;
-  }
-
-  .tv2-score-block {
-    width: 100% !important;
-    min-width: 0 !important;
-  }
-
-  .tv2-score-block strong {
-    font-size: clamp(62px, 7.4vw, 118px) !important;
-  }
-
-  /*
-   * MAIN FIX:
-   * left/right wrapper elements no longer participate in desktop sizing.
-   * Their children become direct children of one bounded 12-column grid.
-   */
-  .tv2-main-grid {
+  .tv2-desktop {
+    position: absolute;
+    inset: 0;
     display: grid !important;
-    grid-template-columns:
-      repeat(12, minmax(0, 1fr)) !important;
     grid-template-rows:
-      minmax(64px, 0.72fr)
-      minmax(145px, 1.9fr)
-      minmax(82px, 0.88fr) !important;
-    gap: 9px !important;
-    min-height: 0 !important;
-    height: 100% !important;
-    overflow: hidden !important;
-    align-content: stretch !important;
+      44px
+      minmax(170px, 23vh)
+      minmax(70px, 9vh)
+      minmax(145px, 1fr)
+      minmax(82px, 11vh)
+      minmax(72px, 9vh);
+    gap: 10px;
+    width: 100%;
+    height: 100%;
+    min-width: 0;
+    min-height: 0;
+    padding: 12px 14px;
+    overflow: hidden;
+    color: #eaf6ff;
+    background:
+      radial-gradient(circle at 12% 5%, rgba(14, 116, 144, 0.20), transparent 28%),
+      radial-gradient(circle at 88% 0%, rgba(29, 78, 216, 0.15), transparent 30%),
+      linear-gradient(145deg, #06101f 0%, #020817 100%);
+    font-variant-numeric: tabular-nums;
   }
 
-  .tv2-left-column,
-  .tv2-right-column {
-    display: contents !important;
+  .tv2d-header {
+    display: grid;
+    grid-template-columns:
+      minmax(210px, 0.9fr)
+      minmax(300px, 1.25fr)
+      minmax(130px, 0.55fr);
+    align-items: center;
+    gap: 12px;
+    min-width: 0;
   }
 
-  /* row 1 */
-  .tv2-current-players {
-    grid-column: 1 / -1 !important;
-    grid-row: 1 !important;
-    width: 100% !important;
-    min-width: 0 !important;
-    min-height: 0 !important;
-    height: 100% !important;
+  .tv2d-brand {
+    min-width: 0;
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    flex-wrap: wrap;
+  }
 
+  .tv2d-brand strong {
+    font-size: clamp(14px, 1.05vw, 20px);
+    letter-spacing: .07em;
+  }
+
+  .tv2d-brand small {
+    padding: 4px 7px;
+    border: 1px solid rgba(56, 189, 248, .24);
+    border-radius: 999px;
+    color: #7dd3fc;
+    font-size: clamp(8px, .58vw, 10px);
+    font-weight: 900;
+  }
+
+  .tv2d-match {
+    min-width: 0;
+    color: #f8fbff;
+    font-size: clamp(18px, 1.45vw, 27px);
+    font-weight: 950;
+    text-align: center;
+    overflow-wrap: anywhere;
+  }
+
+  .tv2d-match span {
+    margin: 0 .45em;
+    color: #698399;
+    font-size: .58em;
+    text-transform: uppercase;
+  }
+
+  .tv2d-exit {
+    justify-self: end;
+    min-height: 38px;
+    padding: 7px 11px;
+    border: 1px solid rgba(148, 163, 184, .24);
+    border-radius: 10px;
+    color: #dce9f4;
+    background: rgba(15, 31, 51, .76);
+    font: inherit;
+    font-size: clamp(10px, .72vw, 13px);
+    font-weight: 850;
+    cursor: pointer;
+  }
+
+  .tv2d-score-row {
+    min-width: 0;
+    display: grid;
+    grid-template-columns:
+      minmax(180px, 1fr)
+      minmax(310px, 1.35fr)
+      minmax(180px, 1fr);
+    align-items: center;
+    gap: 18px;
+    padding: 14px 20px;
+    border: 1px solid rgba(56, 189, 248, .17);
+    border-radius: 18px;
+    background:
+      radial-gradient(circle at 50% 12%, rgba(14, 165, 233, .10), transparent 42%),
+      rgba(6, 22, 39, .78);
+  }
+
+  .tv2d-team small,
+  .tv2d-equation small {
+    display: block;
+    color: #6b879e;
+    font-size: clamp(9px, .62vw, 11px);
+    font-weight: 950;
+    letter-spacing: .07em;
+  }
+
+  .tv2d-team strong,
+  .tv2d-equation strong {
+    display: block;
+    margin-top: 4px;
+    color: #edf8ff;
+    font-size: clamp(18px, 1.5vw, 27px);
+    line-height: 1.15;
+    overflow-wrap: anywhere;
+  }
+
+  .tv2d-team span,
+  .tv2d-equation span {
+    display: block;
+    margin-top: 4px;
+    color: #7892aa;
+    font-size: clamp(10px, .72vw, 13px);
+  }
+
+  .tv2d-score {
+    min-width: 0;
+    text-align: center;
+  }
+
+  .tv2d-score strong {
+    display: block;
+    color: #fff;
+    font-size: clamp(74px, 8vw, 130px);
+    font-weight: 950;
+    line-height: .84;
+    letter-spacing: -.055em;
+  }
+
+  .tv2d-score span {
+    display: block;
+    margin-top: 9px;
+    color: #82c7eb;
+    font-size: clamp(14px, 1.1vw, 20px);
+    font-weight: 900;
+    letter-spacing: .1em;
+  }
+
+  .tv2d-equation {
+    text-align: right;
+  }
+
+  .tv2d-players {
+    min-width: 0;
+    display: grid;
+    grid-template-columns: repeat(3, minmax(0, 1fr));
+    gap: 9px;
+  }
+
+  .tv2d-players article {
+    min-width: 0;
+    display: flex;
+    flex-direction: column;
+    justify-content: center;
+    padding: 10px 12px;
+    border: 1px solid rgba(96, 138, 171, .15);
+    border-radius: 11px;
+    background: rgba(7, 25, 43, .66);
+    overflow: hidden;
+  }
+
+  .tv2d-players article.is-striker {
+    border-color: rgba(34, 197, 94, .25);
+    background: linear-gradient(145deg, rgba(16, 84, 60, .16), rgba(7, 25, 43, .69));
+  }
+
+  .tv2d-players article.is-bowler {
+    border-color: rgba(56, 189, 248, .22);
+  }
+
+  .tv2d-players small,
+  .tv2d-players strong,
+  .tv2d-players span {
+    display: block;
+    overflow-wrap: anywhere;
+  }
+
+  .tv2d-players small {
+    color: #69859c;
+    font-size: clamp(8px, .58vw, 10px);
+    font-weight: 950;
+  }
+
+  .tv2d-players strong {
+    margin-top: 3px;
+    color: #eef8ff;
+    font-size: clamp(15px, 1.05vw, 19px);
+  }
+
+  .tv2d-players span {
+    margin-top: 2px;
+    color: #8ac2e1;
+    font-size: clamp(10px, .72vw, 13px);
+    font-weight: 800;
+  }
+
+  .tv2d-intel {
+    min-width: 0;
+    display: grid;
+    grid-template-columns: repeat(4, minmax(0, 1fr));
+    gap: 9px;
+  }
+
+  .tv2d-intel article {
+    min-width: 0;
+    display: flex;
+    flex-direction: column;
+    justify-content: center;
+    padding: 14px;
+    border: 1px solid rgba(96, 138, 171, .14);
+    border-radius: 12px;
+    background: rgba(7, 24, 41, .65);
+    overflow: hidden;
+  }
+
+  .tv2d-intel article.is-milestone {
+    border-color: rgba(245, 158, 11, .25);
+    background: linear-gradient(145deg, rgba(96, 62, 15, .13), rgba(7, 24, 41, .66));
+  }
+
+  .tv2d-intel small,
+  .tv2d-intel strong,
+  .tv2d-intel span {
+    display: block;
+    overflow-wrap: anywhere;
+  }
+
+  .tv2d-intel small {
+    color: #6d879e;
+    font-size: clamp(8.5px, .62vw, 10.5px);
+    font-weight: 950;
+  }
+
+  .tv2d-intel strong {
+    margin-top: 5px;
+    color: #eef8fd;
+    font-size: clamp(16px, 1.15vw, 21px);
+    line-height: 1.18;
+  }
+
+  .tv2d-intel > article > span {
+    margin-top: 5px;
+    color: #7890a7;
+    font-size: clamp(9.5px, .72vw, 12.5px);
+    line-height: 1.35;
+  }
+
+  .tv2d-pressure > div:first-child {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 10px;
+  }
+
+  .tv2d-pressure > div:first-child strong {
+    margin: 0;
+    font-size: clamp(14px, 1vw, 18px);
+  }
+
+  .tv2d-pressure-track {
+    height: 8px;
+    margin-top: 10px;
+    overflow: hidden;
+    border-radius: 999px;
+    background: rgba(91, 111, 130, .2);
+  }
+
+  .tv2d-pressure-track span {
+    display: block;
+    height: 100%;
+    border-radius: inherit;
+    background: linear-gradient(90deg, #22c55e, #eab308, #f97316, #ef4444);
+    transition: width .65s ease;
+  }
+
+  .tv2d-secondary {
+    min-width: 0;
+    display: grid;
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+    gap: 9px;
+  }
+
+  .tv2d-secondary article {
+    min-width: 0;
+    border: 1px solid rgba(96, 138, 171, .14);
+    border-radius: 12px;
+    background: rgba(7, 24, 41, .65);
+    overflow: hidden;
+  }
+
+  .tv2d-spotlight {
+    display: grid;
+    grid-template-columns: 52px minmax(0, 1fr);
+    align-items: center;
+    gap: 11px;
+    padding: 11px 14px;
+  }
+
+  .tv2d-avatar {
+    display: grid;
+    place-items: center;
+    width: 48px;
+    height: 48px;
+    border: 1px solid rgba(56, 189, 248, .28);
+    border-radius: 50%;
+    color: #f1fbff;
+    background: linear-gradient(145deg, rgba(14, 116, 144, .54), rgba(30, 64, 175, .45));
+    font-size: 20px;
+    font-weight: 950;
+  }
+
+  .tv2d-spotlight small,
+  .tv2d-spotlight strong,
+  .tv2d-spotlight span {
+    display: block;
+  }
+
+  .tv2d-spotlight small,
+  .tv2d-phase small {
+    color: #6d879e;
+    font-size: clamp(8.5px, .6vw, 10px);
+    font-weight: 950;
+  }
+
+  .tv2d-spotlight strong,
+  .tv2d-phase strong {
+    margin-top: 3px;
+    color: #eef8ff;
+    font-size: clamp(14px, 1vw, 18px);
+  }
+
+  .tv2d-spotlight span {
+    margin-top: 3px;
+    color: #7890a6;
+    font-size: clamp(9px, .68vw, 12px);
+  }
+
+  .tv2d-phase {
+    display: grid;
+    grid-template-columns: minmax(170px, .8fr) minmax(0, 1.45fr);
+    align-items: center;
+    gap: 12px;
+    padding: 11px 14px;
+  }
+
+  .tv2d-phase small,
+  .tv2d-phase strong {
+    display: block;
+  }
+
+  .tv2d-phase-stats {
+    min-width: 0;
+    display: grid;
+    grid-template-columns: repeat(3, minmax(0, 1fr));
+    gap: 6px;
+  }
+
+  .tv2d-phase-stats span {
+    min-width: 0;
+    padding: 7px 5px;
+    border-radius: 8px;
+    color: #6f879e;
+    background: rgba(13, 44, 69, .42);
+    font-size: clamp(8px, .58vw, 10px);
+  }
+
+  .tv2d-phase-stats b {
+    display: block;
+    margin-bottom: 2px;
+    color: #eaf6fd;
+    font-size: clamp(13px, .9vw, 16px);
+  }
+
+  .tv2d-balls {
+    min-width: 0;
+    display: grid;
+    grid-template-columns: 100px minmax(0, 1fr);
+    align-items: center;
+    gap: 12px;
+    padding: 9px 12px;
+    border: 1px solid rgba(96, 138, 171, .14);
+    border-radius: 12px;
+    background: rgba(7, 22, 39, .7);
+    overflow: hidden;
+  }
+
+  .tv2d-balls > div:first-child small,
+  .tv2d-balls > div:first-child strong {
+    display: block;
+  }
+
+  .tv2d-balls > div:first-child small {
+    color: #69839a;
+    font-size: 9px;
+    font-weight: 950;
+  }
+
+  .tv2d-balls > div:first-child strong {
+    margin-top: 2px;
+    color: #9eb5c7;
+    font-size: 10px;
+  }
+
+  .tv2d-balls .tv2-ball-strip {
     display: grid !important;
-    grid-template-columns:
-      repeat(3, minmax(0, 1fr)) !important;
-    gap: 9px !important;
-  }
-
-  .tv2-player {
-    width: 100% !important;
-    min-width: 0 !important;
-    min-height: 0 !important;
-    height: 100% !important;
-    padding: 9px 11px !important;
-    overflow: hidden !important;
-  }
-
-  .tv2-player strong,
-  .tv2-player span {
-    overflow-wrap: anywhere !important;
-  }
-
-  /* row 2 */
-  .tv2-broadcast-grid {
-    grid-column: 1 / -1 !important;
-    grid-row: 2 !important;
-
-    width: 100% !important;
-    min-width: 0 !important;
-    min-height: 0 !important;
-    max-height: none !important;
-    height: 100% !important;
-
-    display: grid !important;
-    grid-template-columns:
-      repeat(4, minmax(0, 1fr)) !important;
-    grid-template-rows:
-      minmax(0, 1fr) !important;
-    gap: 9px !important;
-  }
-
-  .tv2-metric,
-  .tv2-pressure {
-    width: 100% !important;
-    min-width: 0 !important;
-    min-height: 0 !important;
-    max-height: none !important;
-    height: 100% !important;
-    padding: 13px 14px !important;
-    justify-content: center !important;
-    overflow: hidden !important;
-  }
-
-  .tv2-metric small,
-  .tv2-pressure-head small {
-    font-size: clamp(9px, 0.68vw, 11px) !important;
-  }
-
-  .tv2-metric strong {
-    margin-top: 5px !important;
-    font-size: clamp(16px, 1.18vw, 21px) !important;
-    line-height: 1.18 !important;
-  }
-
-  .tv2-metric span,
-  .tv2-pressure p {
-    margin-top: 5px !important;
-    font-size: clamp(10px, 0.76vw, 13px) !important;
-    line-height: 1.35 !important;
-  }
-
-  .tv2-pressure-head strong {
-    font-size: clamp(15px, 1.08vw, 19px) !important;
-  }
-
-  .tv2-pressure-track {
-    height: 8px !important;
-    margin-top: 10px !important;
-  }
-
-  /* row 3 — exactly 6/6 columns. Nothing can clip off the right side. */
-  .tv2-spotlight {
-    grid-column: 1 / 7 !important;
-    grid-row: 3 !important;
-  }
-
-  .tv2-phase {
-    grid-column: 7 / -1 !important;
-    grid-row: 3 !important;
-  }
-
-  .tv2-spotlight,
-  .tv2-phase {
-    width: 100% !important;
-    min-width: 0 !important;
-    min-height: 0 !important;
-    max-height: none !important;
-    height: 100% !important;
-    padding: 10px 12px !important;
-    overflow: hidden !important;
-  }
-
-  .tv2-spotlight {
-    display: grid !important;
-    grid-template-columns:
-      44px minmax(0, 1fr) !important;
-    grid-template-rows:
-      auto auto auto !important;
-    column-gap: 10px !important;
-    align-items: center !important;
-    justify-items: stretch !important;
-    text-align: left !important;
-  }
-
-  .tv2-spotlight > small {
-    grid-column: 1 / -1 !important;
-    font-size: 9px !important;
-  }
-
-  .tv2-spotlight-avatar {
-    grid-column: 1 !important;
-    grid-row: 2 / span 2 !important;
-    width: 40px !important;
-    height: 40px !important;
-    margin: 2px 0 0 !important;
-    font-size: 17px !important;
-  }
-
-  .tv2-spotlight > strong {
-    grid-column: 2 !important;
-    grid-row: 2 !important;
-    margin: 2px 0 0 !important;
-    font-size: 14px !important;
-  }
-
-  .tv2-spotlight > span {
-    grid-column: 2 !important;
-    grid-row: 3 !important;
-    margin: 1px 0 0 !important;
-    font-size: 10px !important;
-  }
-
-  .tv2-phase {
-    display: grid !important;
-    grid-template-columns:
-      minmax(150px, 0.8fr)
-      minmax(0, 1.45fr) !important;
-    grid-template-rows:
-      auto auto !important;
-    column-gap: 12px !important;
-    align-items: center !important;
-    text-align: left !important;
-  }
-
-  .tv2-phase > small {
-    grid-column: 1 !important;
-    grid-row: 1 !important;
-    align-self: end !important;
-    font-size: 9px !important;
-  }
-
-  .tv2-phase > strong {
-    grid-column: 1 !important;
-    grid-row: 2 !important;
-    align-self: start !important;
-    margin-top: 2px !important;
-    font-size: 14px !important;
-  }
-
-  .tv2-phase > div {
-    grid-column: 2 !important;
-    grid-row: 1 / span 2 !important;
-    width: 100% !important;
-    min-width: 0 !important;
-    margin: 0 !important;
-  }
-
-  .tv2-phase > div span {
-    min-width: 0 !important;
-    padding: 7px 5px !important;
-    font-size: 9px !important;
-  }
-
-  .tv2-phase > div b {
-    font-size: 15px !important;
-  }
-
-  /* bottom rail */
-  .tv2-ball-footer {
-    height: 100% !important;
-    min-height: 0 !important;
-    max-height: none !important;
-    align-self: stretch !important;
-    overflow: hidden !important;
-  }
-
-  .tv2-ball-strip {
-    width: 100% !important;
-    min-width: 0 !important;
-    grid-template-columns:
-      repeat(12, minmax(24px, 1fr)) !important;
+    grid-template-columns: repeat(12, minmax(26px, 1fr)) !important;
     gap: 6px !important;
+    width: 100% !important;
+    min-width: 0 !important;
   }
 
-  .tv2-ball {
+  .tv2d-balls .tv2-ball {
     width: min(100%, 44px) !important;
     max-width: 44px !important;
     justify-self: center !important;
+    font-size: clamp(9px, .62vw, 11px) !important;
   }
 }
 
-/*
- * Short laptop windows: same architecture, just denser.
- */
 @media (min-width: 901px) and (max-height: 760px) {
-  .tv2-shell {
-    padding: 9px 12px !important;
-    gap: 7px !important;
+  .tv2-desktop {
     grid-template-rows:
-      34px
-      minmax(120px, 20vh)
-      minmax(0, 1fr)
-      58px !important;
+      36px
+      minmax(135px, 21vh)
+      58px
+      minmax(110px, 1fr)
+      68px
+      58px;
+    gap: 7px;
+    padding: 9px 12px;
   }
 
-  .tv2-score-block strong {
-    font-size: clamp(48px, 6vw, 82px) !important;
+  .tv2d-score strong {
+    font-size: clamp(58px, 6.2vw, 92px);
   }
 
-  .tv2-main-grid {
-    grid-template-rows:
-      minmax(54px, 0.65fr)
-      minmax(108px, 1.65fr)
-      minmax(66px, 0.75fr) !important;
-    gap: 7px !important;
+  .tv2d-intel article {
+    padding: 9px 11px;
   }
 
-  .tv2-player {
-    padding: 6px 9px !important;
+  .tv2d-secondary article {
+    min-height: 0;
   }
 
-  .tv2-metric,
-  .tv2-pressure {
-    padding: 9px 10px !important;
+  .tv2d-avatar {
+    width: 38px;
+    height: 38px;
+    font-size: 17px;
   }
 
-  .tv2-spotlight,
-  .tv2-phase {
-    padding: 7px 9px !important;
+  .tv2d-spotlight {
+    grid-template-columns: 42px minmax(0, 1fr);
+    padding: 7px 10px;
+  }
+
+  .tv2d-phase {
+    padding: 7px 10px;
+  }
+}
+
+@media (max-width: 900px) {
+  .tv2-desktop {
+    display: none !important;
+  }
+
+  .tv2-mobile {
+    display: block !important;
   }
 }

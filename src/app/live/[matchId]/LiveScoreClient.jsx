@@ -1158,188 +1158,220 @@ function SpectatorTvMode({
         ? `${strikerValue || "At the crease"} · striker`
         : bowlerValue || "Live player";
 
-  return (
-    <section
-      className="tv2-shell"
-      aria-label="Cric4All Spectator TV Mode"
-    >
-      <header className="tv2-topbar">
-        <div>
-          <span className="tv2-live-dot" />
-          <strong>CRIC4ALL LIVE</strong>
-          <small>TV MODE 2.0</small>
-        </div>
+  const scoreText = latestInnings
+    ? `${latestInnings.runs}/${latestInnings.wickets}`
+    : "—";
 
-        <div className="tv2-match-name">
-          {scoreboard?.match?.teamAName || "Team A"}
-          <span>vs</span>
-          {scoreboard?.match?.teamBName || "Team B"}
-        </div>
+  const oversText =
+    latestInnings?.oversDisplay || "0.0";
 
-        <button
-          type="button"
-          onClick={onExit}
-          className="tv2-exit"
-        >
-          ✕ Exit TV
-        </button>
-      </header>
+  const renderBallStrip = () => (
+    <div className="tv2-ball-strip">
+      {orderedBalls.length ? (
+        orderedBalls.map((ball, index) => {
+          const display = getBallDisplay(ball.label);
 
-      <div className="tv2-score-hero">
-        <div className="tv2-team-block">
-          <small>BATTING</small>
-          <strong>
-            {latestInnings?.teamName || "Current innings"}
-          </strong>
-          <span>{liveStatusText}</span>
-        </div>
-
-        <div className="tv2-score-block">
-          <strong>
-            {latestInnings
-              ? `${latestInnings.runs}/${latestInnings.wickets}`
-              : "—"}
-          </strong>
-          <span>
-            {latestInnings?.oversDisplay || "0.0"} OV
-          </span>
-        </div>
-
-        <div className="tv2-equation-block">
-          {scoreboard?.currentInnings === 2 &&
-          chaseRunsNeeded !== null ? (
-            <>
-              <small>CHASE</small>
-              <strong>
-                {chaseRunsNeeded} off {ballsLeft ?? "—"}
-              </strong>
-              <span>Required rate {requiredRate || "—"}</span>
-            </>
-          ) : (
-            <>
-              <small>CURRENT RATE</small>
-              <strong>{currentRate || "0.00"}</strong>
-              <span>
-                Target{" "}
-                {scoreboard?.summary?.target || "—"}
-              </span>
-            </>
-          )}
-        </div>
-      </div>
-
-      <div className="tv2-main-grid">
-        <div className="tv2-left-column">
-          <section className="tv2-current-players">
-            <article className="tv2-player is-striker">
-              <small>🏏 STRIKER</small>
-              <strong>
-                {currentState?.strikerName || "—"}
-              </strong>
-              <span>{strikerValue || "—"}</span>
-            </article>
-
-            <article className="tv2-player">
-              <small>🏃 NON-STRIKER</small>
-              <strong>
-                {currentState?.nonStrikerName || "—"}
-              </strong>
-              <span>{nonStrikerValue || "—"}</span>
-            </article>
-
-            <article className="tv2-player is-bowler">
-              <small>🎯 BOWLER</small>
-              <strong>
-                {currentState?.bowlerName || "—"}
-              </strong>
-              <span>{bowlerValue || "—"}</span>
-            </article>
-          </section>
-
-          <section className="tv2-broadcast-grid">
-            <TvMetric
-              label="🤝 Current partnership"
-              value={
-                partnership
-                  ? `${partnership.runs} runs`
-                  : "Building"
-              }
-              detail={
-                partnership
-                  ? `${partnership.batter1} & ${partnership.batter2} · ${partnership.balls} balls`
-                  : "Partnership data will appear after play develops"
-              }
-            />
-
-            <TvMetric
-              label="⚔ Batter vs bowler"
-              value={
-                matchup
-                  ? `${matchup.runs} off ${matchup.balls}`
-                  : "Building"
-              }
-              detail={
-                matchup
-                  ? `${matchup.batterName} vs ${matchup.bowlerName} · SR ${matchup.strikeRate}`
-                  : "Matchup data is building"
-              }
-            />
-
-            <TvMetric
-              label="✨ Milestone watch"
-              value={
-                milestone
-                  ? `${milestone.remaining} to go`
-                  : "No milestone imminent"
-              }
-              detail={
-                milestone
-                  ? `${milestone.playerName} → ${milestone.label}`
-                  : "Watching 50/100 scores and 3/5-wicket marks"
-              }
-              accent={Boolean(milestone)}
-            />
-
-            <article
-              className={`tv2-pressure is-${pressure.tone}`}
+          return (
+            <b
+              key={ball.id || index}
+              className={`tv2-ball is-${display.type}`}
             >
-              <div className="tv2-pressure-head">
-                <small>⚡ MATCH PRESSURE</small>
-                <strong>{pressure.label}</strong>
-              </div>
+              {display.text}
+            </b>
+          );
+        })
+      ) : (
+        <span className="tv2-no-balls">
+          Waiting for the first delivery
+        </span>
+      )}
+    </div>
+  );
 
-              <div className="tv2-pressure-track">
-                <span
-                  style={{
-                    width: `${pressure.score}%`,
-                  }}
-                />
-              </div>
+  return (
+    <>
+      {/* =========================================================
+          DESKTOP / LAPTOP TV MODE
+          Completely separate structure from mobile so desktop sizing
+          cannot be affected by the mobile stacked dashboard rules.
+      ========================================================= */}
+      <section
+        className="tv2-desktop"
+        aria-label="Cric4All Spectator TV Mode desktop"
+      >
+        <header className="tv2d-header">
+          <div className="tv2d-brand">
+            <span className="tv2-live-dot" />
+            <strong>CRIC4ALL LIVE</strong>
+            <small>TV MODE 2.0</small>
+          </div>
 
-              <p>{pressure.detail}</p>
-            </article>
-          </section>
-        </div>
+          <div className="tv2d-match">
+            {scoreboard?.match?.teamAName || "Team A"}
+            <span>vs</span>
+            {scoreboard?.match?.teamBName || "Team B"}
+          </div>
 
-        <aside className="tv2-right-column">
-          <section className="tv2-spotlight">
-            <small>🌟 PLAYER SPOTLIGHT</small>
-            <div className="tv2-spotlight-avatar">
+          <button
+            type="button"
+            className="tv2d-exit"
+            onClick={onExit}
+          >
+            ✕ Exit TV
+          </button>
+        </header>
+
+        <section className="tv2d-score-row">
+          <div className="tv2d-team">
+            <small>BATTING</small>
+            <strong>
+              {latestInnings?.teamName || "Current innings"}
+            </strong>
+            <span>{liveStatusText}</span>
+          </div>
+
+          <div className="tv2d-score">
+            <strong>{scoreText}</strong>
+            <span>{oversText} OV</span>
+          </div>
+
+          <div className="tv2d-equation">
+            {scoreboard?.currentInnings === 2 &&
+            chaseRunsNeeded !== null ? (
+              <>
+                <small>CHASE</small>
+                <strong>
+                  {chaseRunsNeeded} off {ballsLeft ?? "—"}
+                </strong>
+                <span>
+                  Required rate {requiredRate || "—"}
+                </span>
+              </>
+            ) : (
+              <>
+                <small>CURRENT RATE</small>
+                <strong>{currentRate || "0.00"}</strong>
+                <span>
+                  Target {scoreboard?.summary?.target || "—"}
+                </span>
+              </>
+            )}
+          </div>
+        </section>
+
+        <section className="tv2d-players">
+          <article className="is-striker">
+            <small>🏏 STRIKER</small>
+            <strong>
+              {currentState?.strikerName || "—"}
+            </strong>
+            <span>{strikerValue || "—"}</span>
+          </article>
+
+          <article>
+            <small>🏃 NON-STRIKER</small>
+            <strong>
+              {currentState?.nonStrikerName || "—"}
+            </strong>
+            <span>{nonStrikerValue || "—"}</span>
+          </article>
+
+          <article className="is-bowler">
+            <small>🎯 BOWLER</small>
+            <strong>
+              {currentState?.bowlerName || "—"}
+            </strong>
+            <span>{bowlerValue || "—"}</span>
+          </article>
+        </section>
+
+        <section className="tv2d-intel">
+          <article>
+            <small>🤝 CURRENT PARTNERSHIP</small>
+            <strong>
+              {partnership
+                ? `${partnership.runs} runs`
+                : "Building"}
+            </strong>
+            <span>
+              {partnership
+                ? `${partnership.batter1} & ${partnership.batter2} · ${partnership.balls} balls`
+                : "Partnership data will appear after play develops"}
+            </span>
+          </article>
+
+          <article>
+            <small>⚔ BATTER VS BOWLER</small>
+            <strong>
+              {matchup
+                ? `${matchup.runs} off ${matchup.balls}`
+                : "Building"}
+            </strong>
+            <span>
+              {matchup
+                ? `${matchup.batterName} vs ${matchup.bowlerName} · SR ${matchup.strikeRate}`
+                : "Matchup data is building"}
+            </span>
+          </article>
+
+          <article className={milestone ? "is-milestone" : ""}>
+            <small>✨ MILESTONE WATCH</small>
+            <strong>
+              {milestone
+                ? `${milestone.remaining} to go`
+                : "No milestone imminent"}
+            </strong>
+            <span>
+              {milestone
+                ? `${milestone.playerName} → ${milestone.label}`
+                : "Watching 50/100 scores and 3/5-wicket marks"}
+            </span>
+          </article>
+
+          <article className={`tv2d-pressure is-${pressure.tone}`}>
+            <div>
+              <small>⚡ MATCH PRESSURE</small>
+              <strong>{pressure.label}</strong>
+            </div>
+
+            <div className="tv2d-pressure-track">
+              <span
+                style={{
+                  width: `${pressure.score}%`,
+                }}
+              />
+            </div>
+
+            <span>{pressure.detail}</span>
+          </article>
+        </section>
+
+        <section className="tv2d-secondary">
+          <article className="tv2d-spotlight">
+            <div className="tv2d-avatar">
               {String(spotlightName)
                 .trim()
                 .charAt(0)
                 .toUpperCase()}
             </div>
-            <strong>{spotlightName}</strong>
-            <span>{spotlightDetail}</span>
-          </section>
 
-          <section className="tv2-phase">
-            <small>📡 LIVE PHASE</small>
-            <strong>
-              {broadcast?.phase?.label || "Match building"}
-            </strong>
             <div>
+              <small>🌟 PLAYER SPOTLIGHT</small>
+              <strong>{spotlightName}</strong>
+              <span>{spotlightDetail}</span>
+            </div>
+          </article>
+
+          <article className="tv2d-phase">
+            <div>
+              <small>📡 LIVE PHASE</small>
+              <strong>
+                {broadcast?.phase?.label ||
+                  "Match building"}
+              </strong>
+            </div>
+
+            <div className="tv2d-phase-stats">
               <span>
                 <b>{broadcast?.phase?.runs ?? 0}</b>
                 Runs
@@ -1353,37 +1385,224 @@ function SpectatorTvMode({
                 Boundaries
               </span>
             </div>
-          </section>
-        </aside>
-      </div>
+          </article>
+        </section>
 
-      <footer className="tv2-ball-footer">
-        <div className="tv2-ball-label">
-          <small>LAST 12 BALLS</small>
-          <strong>Latest →</strong>
+        <footer className="tv2d-balls">
+          <div>
+            <small>LAST 12 BALLS</small>
+            <strong>Latest →</strong>
+          </div>
+          {renderBallStrip()}
+        </footer>
+      </section>
+
+      {/* =========================================================
+          MOBILE / TABLET TV MODE
+          Existing stacked mobile structure is preserved.
+      ========================================================= */}
+      <section
+        className="tv2-shell tv2-mobile"
+        aria-label="Cric4All Spectator TV Mode mobile"
+      >
+        <header className="tv2-topbar">
+          <div>
+            <span className="tv2-live-dot" />
+            <strong>CRIC4ALL LIVE</strong>
+            <small>TV MODE 2.0</small>
+          </div>
+
+          <div className="tv2-match-name">
+            {scoreboard?.match?.teamAName || "Team A"}
+            <span>vs</span>
+            {scoreboard?.match?.teamBName || "Team B"}
+          </div>
+
+          <button
+            type="button"
+            onClick={onExit}
+            className="tv2-exit"
+          >
+            ✕ Exit TV
+          </button>
+        </header>
+
+        <div className="tv2-score-hero">
+          <div className="tv2-team-block">
+            <small>BATTING</small>
+            <strong>
+              {latestInnings?.teamName || "Current innings"}
+            </strong>
+            <span>{liveStatusText}</span>
+          </div>
+
+          <div className="tv2-score-block">
+            <strong>{scoreText}</strong>
+            <span>{oversText} OV</span>
+          </div>
+
+          <div className="tv2-equation-block">
+            {scoreboard?.currentInnings === 2 &&
+            chaseRunsNeeded !== null ? (
+              <>
+                <small>CHASE</small>
+                <strong>
+                  {chaseRunsNeeded} off {ballsLeft ?? "—"}
+                </strong>
+                <span>
+                  Required rate {requiredRate || "—"}
+                </span>
+              </>
+            ) : (
+              <>
+                <small>CURRENT RATE</small>
+                <strong>{currentRate || "0.00"}</strong>
+                <span>
+                  Target {scoreboard?.summary?.target || "—"}
+                </span>
+              </>
+            )}
+          </div>
         </div>
 
-        <div className="tv2-ball-strip">
-          {orderedBalls.length ? (
-            orderedBalls.map((ball, index) => {
-              const display = getBallDisplay(ball.label);
+        <div className="tv2-main-grid">
+          <div className="tv2-left-column">
+            <section className="tv2-current-players">
+              <article className="tv2-player is-striker">
+                <small>🏏 STRIKER</small>
+                <strong>
+                  {currentState?.strikerName || "—"}
+                </strong>
+                <span>{strikerValue || "—"}</span>
+              </article>
 
-              return (
-                <b
-                  key={ball.id || index}
-                  className={`tv2-ball is-${display.type}`}
-                >
-                  {display.text}
-                </b>
-              );
-            })
-          ) : (
-            <span className="tv2-no-balls">
-              Waiting for the first delivery
-            </span>
-          )}
+              <article className="tv2-player">
+                <small>🏃 NON-STRIKER</small>
+                <strong>
+                  {currentState?.nonStrikerName || "—"}
+                </strong>
+                <span>{nonStrikerValue || "—"}</span>
+              </article>
+
+              <article className="tv2-player is-bowler">
+                <small>🎯 BOWLER</small>
+                <strong>
+                  {currentState?.bowlerName || "—"}
+                </strong>
+                <span>{bowlerValue || "—"}</span>
+              </article>
+            </section>
+
+            <section className="tv2-broadcast-grid">
+              <TvMetric
+                label="🤝 Current partnership"
+                value={
+                  partnership
+                    ? `${partnership.runs} runs`
+                    : "Building"
+                }
+                detail={
+                  partnership
+                    ? `${partnership.batter1} & ${partnership.batter2} · ${partnership.balls} balls`
+                    : "Partnership data will appear after play develops"
+                }
+              />
+
+              <TvMetric
+                label="⚔ Batter vs bowler"
+                value={
+                  matchup
+                    ? `${matchup.runs} off ${matchup.balls}`
+                    : "Building"
+                }
+                detail={
+                  matchup
+                    ? `${matchup.batterName} vs ${matchup.bowlerName} · SR ${matchup.strikeRate}`
+                    : "Matchup data is building"
+                }
+              />
+
+              <TvMetric
+                label="✨ Milestone watch"
+                value={
+                  milestone
+                    ? `${milestone.remaining} to go`
+                    : "No milestone imminent"
+                }
+                detail={
+                  milestone
+                    ? `${milestone.playerName} → ${milestone.label}`
+                    : "Watching 50/100 scores and 3/5-wicket marks"
+                }
+                accent={Boolean(milestone)}
+              />
+
+              <article
+                className={`tv2-pressure is-${pressure.tone}`}
+              >
+                <div className="tv2-pressure-head">
+                  <small>⚡ MATCH PRESSURE</small>
+                  <strong>{pressure.label}</strong>
+                </div>
+
+                <div className="tv2-pressure-track">
+                  <span
+                    style={{
+                      width: `${pressure.score}%`,
+                    }}
+                  />
+                </div>
+
+                <p>{pressure.detail}</p>
+              </article>
+            </section>
+          </div>
+
+          <aside className="tv2-right-column">
+            <section className="tv2-spotlight">
+              <small>🌟 PLAYER SPOTLIGHT</small>
+              <div className="tv2-spotlight-avatar">
+                {String(spotlightName)
+                  .trim()
+                  .charAt(0)
+                  .toUpperCase()}
+              </div>
+              <strong>{spotlightName}</strong>
+              <span>{spotlightDetail}</span>
+            </section>
+
+            <section className="tv2-phase">
+              <small>📡 LIVE PHASE</small>
+              <strong>
+                {broadcast?.phase?.label ||
+                  "Match building"}
+              </strong>
+              <div>
+                <span>
+                  <b>{broadcast?.phase?.runs ?? 0}</b>
+                  Runs
+                </span>
+                <span>
+                  <b>{broadcast?.phase?.wickets ?? 0}</b>
+                  Wkts
+                </span>
+                <span>
+                  <b>{broadcast?.phase?.boundaries ?? 0}</b>
+                  Boundaries
+                </span>
+              </div>
+            </section>
+          </aside>
         </div>
-      </footer>
+
+        <footer className="tv2-ball-footer">
+          <div className="tv2-ball-label">
+            <small>LAST 12 BALLS</small>
+            <strong>Latest →</strong>
+          </div>
+          {renderBallStrip()}
+        </footer>
+      </section>
 
       {event ? (
         <div
@@ -1396,9 +1615,10 @@ function SpectatorTvMode({
           <p>{event.detail}</p>
         </div>
       ) : null}
-    </section>
+    </>
   );
 }
+
 
 export default function LiveScoreClient({
   matchId,
