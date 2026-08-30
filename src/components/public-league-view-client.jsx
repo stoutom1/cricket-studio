@@ -3,6 +3,7 @@
 import { useEffect, useMemo, useRef, useState } from "react";
 import "@/app/spectator-league-v2.css";
 import LeagueAlertControls from "@/components/league-alert-controls";
+import Cric4AllAd from "@/components/cric4all-ad";
 import { buildPointsTable as buildSharedPointsTable } from "@/lib/points-table";
 import { shouldExcludePlayerFromLeagueAnalytics } from "@/lib/player-analytics-exclusions";
 import {
@@ -442,6 +443,9 @@ function buildPublicStats(matches, league) {
 }
 
 export default function PublicLeagueViewClient({ league, numericLeagueId }) {
+  const isPublicLeague =
+    String(league?.visibility || "").toUpperCase() === "PUBLIC";
+
   const [activeTab, setActiveTab] = useState("overview");
   const [selectedYear, setSelectedYear] = useState("");
   const [selectedSeriesId, setSelectedSeriesId] = useState("");
@@ -1326,6 +1330,8 @@ return (
             </button>
           ))}
         </nav>
+
+        {isPublicLeague ? <Cric4AllAd placement="league" /> : null}
 
         <div className="slp-content">
           {activeTab === "overview" && (

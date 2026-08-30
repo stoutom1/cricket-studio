@@ -31,8 +31,19 @@ export const viewport = {
 };
 
 export default function RootLayout({ children }) {
+  const adsenseClient = String(
+    process.env.NEXT_PUBLIC_GOOGLE_ADSENSE_CLIENT || ""
+  ).trim();
+
+  const validAdSenseClient = /^ca-pub-\d+$/.test(adsenseClient);
+
   return (
     <html lang="en">
+      {validAdSenseClient ? (
+        <head>
+          <meta name="google-adsense-account" content={adsenseClient} />
+        </head>
+      ) : null}
       <body>
         <Providers>
           <NativeRuntimeBootstrap />

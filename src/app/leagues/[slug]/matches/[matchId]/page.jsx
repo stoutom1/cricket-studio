@@ -6,6 +6,7 @@ import Link from "next/link";
 import "@/app/public-league-wow.css";
 import SeoJsonLd from "@/components/seo-json-ld";
 import MatchShareButton from "@/components/match-share-button";
+import Cric4AllAd from "@/components/cric4all-ad";
 import {
   buildPublicMatchResult,
 } from "@/lib/public-match-result";
@@ -233,6 +234,11 @@ export default async function PublicMatchPage({ params }) {
 
   const status = match.status || "SCHEDULED";
   const statusClass = getStatusClass(status);
+  const isCompletedMatch = [
+    "COMPLETED",
+    "COMPLETED_LOCKED",
+    "COMPLETED_CORRECTED",
+  ].includes(normalizeStatus(status));
 
   const matchResultText =
     buildPublicMatchResult(
@@ -599,6 +605,10 @@ export default async function PublicMatchPage({ params }) {
             </p>
           </div>
         </section>
+
+        {isPublic && isCompletedMatch ? (
+          <Cric4AllAd placement="match" />
+        ) : null}
 
         {postMatchExperience ? (
           <section

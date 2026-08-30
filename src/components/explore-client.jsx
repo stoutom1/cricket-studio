@@ -3,6 +3,7 @@
 import { useMemo, useState } from "react";
 import Link from "next/link";
 import "@/app/public-league-wow.css";
+import Cric4AllAd from "@/components/cric4all-ad";
 
 function getInitials(name) {
   return (
@@ -124,6 +125,8 @@ export default function ExploreClient({ leagues }) {
             {filteredLeagues.length === 1 ? "league" : "leagues"}
           </span>
         </section>
+
+        <Cric4AllAd placement="explore" />
 
         <section className="sep-content">
           <div className="sep-section-heading">

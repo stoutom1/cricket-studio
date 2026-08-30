@@ -7,7 +7,7 @@ export default function PrivacyPage() {
         <h1>Privacy Policy</h1>
 
         <p className="privacy-updated">
-          Last Updated: <strong>July 2026</strong>
+          Last Updated: <strong>August 2026</strong>
         </p>
 
         <p className="privacy-intro">
@@ -59,6 +59,36 @@ export default function PrivacyPage() {
           <li>Improve application performance and reliability.</li>
           <li>Respond to customer support requests.</li>
         </ul>
+      </section>
+
+      <section className="privacy-card" id="advertising-and-cookies">
+        <h2>📢 Advertising & Cookies</h2>
+
+        <p>
+          Cric4All may display advertising on selected public web pages using
+          Google AdSense. We do not place web advertisements inside live
+          scoring controls, TV Mode, account authentication or league
+          administration workflows.
+        </p>
+
+        <p>
+          Google and its advertising partners may use cookies, device
+          identifiers or similar technologies to deliver, measure and improve
+          advertisements. Depending on your location and consent choices, ads
+          may be personalized or non-personalized.
+        </p>
+
+        <p>
+          You can learn more about how Google uses information from sites and
+          apps that use its services at{" "}
+          <a
+            href="https://policies.google.com/technologies/partner-sites"
+            target="_blank"
+            rel="noreferrer"
+          >
+            Google&apos;s partner sites policy
+          </a>.
+        </p>
       </section>
 
       <section className="privacy-card">
