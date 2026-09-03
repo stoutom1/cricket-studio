@@ -951,7 +951,7 @@ async function findDuePlayerInactivityReminders({
     .filter(Boolean);
 }
 
-async function getLinkedRegisteredSmsRecipients(
+async function getSurprisePlayerReminderRecipients(
   playerIds
 ) {
   const cleanPlayerIds =
@@ -975,15 +975,26 @@ async function getLinkedRegisteredSmsRecipients(
     return {
       linkedUserCount:
         0,
+      rosterContactCount:
+        0,
       recipients:
         [],
     };
   }
 
   /*
-   * The account-link migration introduced Player.userId. Keep this lookup
-   * defensive because older environments may briefly run this code before the
-   * migration has been deployed.
+   * Surprise Cricket League can contain the same real person on several teams
+   * with different Player.id values. playerIds therefore contains every Player
+   * record belonging to the normalized Surprise identity.
+   *
+   * Recipient priority:
+   *   1. Linked Cric4All User with registered SMS number + SMS opt-in.
+   *   2. If there is no usable linked-user recipient, use the player's roster
+   *      communication number (Player.whatsappNumber) when whatsappOptIn=true.
+   *
+   * Existing Cric4All birthday/kit workflows treat whatsappOptIn as the
+   * player's consent to Cric4All communications, including eligible SMS
+   * fallback. We preserve that same consent rule here.
    */
   const playerColumns =
     await prisma.$queryRawUnsafe(
@@ -995,126 +1006,288 @@ async function getLinkedRegisteredSmsRecipients(
         WHERE
           table_schema = 'public'
           AND table_name = 'Player'
-          AND column_name = 'userId'
+          AND column_name IN (
+            'userId',
+            'whatsappNumber',
+            'whatsappOptIn'
+          )
       `
     );
 
+  const availableColumns =
+    new Set(
+      (playerColumns || [])
+        .map(
+          (row) =>
+            String(
+              row?.column_name ||
+                ""
+            )
+        )
+    );
+
+  let users =
+    [];
+
   if (
-    !playerColumns?.length
+    availableColumns.has(
+      "userId"
+    )
+  ) {
+    /*
+     * cleanPlayerIds contains validated integers only, so embedding this list
+     * cannot introduce SQL text supplied by a user.
+     */
+    const linkedRows =
+      await prisma.$queryRawUnsafe(
+        `
+          SELECT DISTINCT
+            p."userId" AS "userId"
+          FROM
+            "Player" p
+          WHERE
+            p."id" IN (
+              ${cleanPlayerIds.join(",")}
+            )
+            AND p."userId" IS NOT NULL
+        `
+      );
+
+    const userIds =
+      [
+        ...new Set(
+          (linkedRows || [])
+            .map(
+              (row) =>
+                String(
+                  row?.userId ||
+                    ""
+                ).trim()
+            )
+            .filter(Boolean)
+        ),
+      ];
+
+    if (
+      userIds.length
+    ) {
+      users =
+        await prisma.user.findMany({
+          where: {
+            id: {
+              in:
+                userIds,
+            },
+          },
+          select: {
+            id:
+              true,
+            name:
+              true,
+            smsPhoneNumber:
+              true,
+            smsOptIn:
+              true,
+          },
+        });
+    }
+  }
+
+  const linkedRecipients =
+    users
+      .map(
+        (user) => {
+          const phone =
+            normalizeSmsPhoneNumber(
+              user.smsPhoneNumber
+            );
+
+          return {
+            recipientKey:
+              `user:${String(
+                user.id
+              )}`,
+            userId:
+              user.id,
+            userName:
+              user.name ||
+              null,
+            phone,
+            source:
+              "REGISTERED_USER",
+          };
+        }
+      )
+      .filter(
+        (user) =>
+          Boolean(
+            user.phone
+          ) &&
+          users.find(
+            (candidate) =>
+              String(
+                candidate.id
+              ) ===
+              String(
+                user.userId
+              )
+          )?.smsOptIn ===
+            true
+      );
+
+  /*
+   * Prefer the registered-account destination whenever one is available. This
+   * prevents the same real Surprise player from receiving the same reminder at
+   * both the account number and a duplicated roster number.
+   */
+  if (
+    linkedRecipients.length
+  ) {
+    const seenPhones =
+      new Set();
+
+    return {
+      linkedUserCount:
+        users.length,
+      rosterContactCount:
+        0,
+      recipients:
+        linkedRecipients.filter(
+          (recipient) => {
+            if (
+              seenPhones.has(
+                recipient.phone
+              )
+            ) {
+              return false;
+            }
+
+            seenPhones.add(
+              recipient.phone
+            );
+
+            return true;
+          }
+        ),
+    };
+  }
+
+  if (
+    !availableColumns.has(
+      "whatsappNumber"
+    ) ||
+    !availableColumns.has(
+      "whatsappOptIn"
+    )
   ) {
     return {
       linkedUserCount:
+        users.length,
+      rosterContactCount:
         0,
       recipients:
         [],
     };
   }
 
-  /*
-   * cleanPlayerIds contains validated integers only, so embedding this list
-   * cannot introduce SQL text supplied by a user.
-   */
-  const linkedRows =
+  const rosterRows =
     await prisma.$queryRawUnsafe(
       `
-        SELECT DISTINCT
-          p."userId" AS "userId"
+        SELECT
+          p."id",
+          p."name",
+          p."whatsappNumber",
+          p."whatsappOptIn"
         FROM
           "Player" p
         WHERE
           p."id" IN (
             ${cleanPlayerIds.join(",")}
           )
-          AND p."userId" IS NOT NULL
+        ORDER BY
+          p."id" ASC
       `
     );
 
-  const userIds =
-    [
-      ...new Set(
-        (linkedRows || [])
-          .map(
-            (row) =>
-              String(
-                row?.userId ||
-                  ""
-              ).trim()
-          )
-          .filter(Boolean)
-      ),
-    ];
+  /*
+   * The same Surprise player may have three (or more) Player rows. Collapse
+   * identical phone numbers so one person receives only one reminder.
+   */
+  const rosterRecipients =
+    [];
+  const seenRosterPhones =
+    new Set();
 
-  if (
-    !userIds.length
+  for (
+    const row
+    of rosterRows || []
   ) {
-    return {
-      linkedUserCount:
-        0,
-      recipients:
-        [],
-    };
-  }
+    if (
+      row?.whatsappOptIn !==
+      true
+    ) {
+      continue;
+    }
 
-  const users =
-    await prisma.user.findMany({
-      where: {
-        id: {
-          in:
-            userIds,
-        },
-      },
-      select: {
-        id:
-          true,
-        name:
-          true,
-        smsPhoneNumber:
-          true,
-        smsOptIn:
-          true,
-      },
-    });
-
-  const recipients =
-    users
-      .map(
-        (user) => ({
-          userId:
-            user.id,
-          userName:
-            user.name ||
-            null,
-          smsOptIn:
-            user.smsOptIn ===
-            true,
-          phone:
-            normalizeSmsPhoneNumber(
-              user.smsPhoneNumber
-            ),
-        })
-      )
-      .filter(
-        (user) =>
-          user.smsOptIn ===
-            true &&
-          Boolean(
-            user.phone
-          )
+    const phone =
+      normalizeSmsPhoneNumber(
+        row?.whatsappNumber
       );
+
+    if (
+      !phone ||
+      seenRosterPhones.has(
+        phone
+      )
+    ) {
+      continue;
+    }
+
+    seenRosterPhones.add(
+      phone
+    );
+
+    rosterRecipients.push({
+      recipientKey:
+        `roster-phone:${phone}`,
+      userId:
+        null,
+      userName:
+        row?.name ||
+        null,
+      phone,
+      source:
+        "PLAYER_ROSTER",
+    });
+  }
 
   return {
     linkedUserCount:
       users.length,
-    recipients,
+    rosterContactCount:
+      rosterRecipients.length,
+    recipients:
+      rosterRecipients,
   };
 }
-
 async function claimPlayerReminderEpisode({
   leagueId,
   player,
-  recipientUserId,
+  recipientKey,
+  recipientUserId = null,
   recipientPhone,
+  recipientSource,
 }) {
+  const normalizedRecipientKey =
+    String(
+      recipientKey ||
+        (
+          recipientUserId
+            ? `user:${recipientUserId}`
+            : `roster-phone:${recipientPhone}`
+        )
+    );
+
   const lockKey =
     [
       "player-inactivity-reminder",
@@ -1124,9 +1297,7 @@ async function claimPlayerReminderEpisode({
       player.identityKey,
       player.activityAnchorKey,
       player.reminderDays,
-      String(
-        recipientUserId
-      ),
+      normalizedRecipientKey,
     ].join(":");
 
   return prisma.$transaction(
@@ -1172,10 +1343,19 @@ async function claimPlayerReminderEpisode({
                 "afterData"->>'reminderDays',
                 ''
               ) = $7
-              AND COALESCE(
-                "afterData"->>'recipientUserId',
-                ''
-              ) = $8
+              AND (
+                COALESCE(
+                  "afterData"->>'recipientKey',
+                  ''
+                ) = $8
+                OR (
+                  $9 <> ''
+                  AND COALESCE(
+                    "afterData"->>'recipientUserId',
+                    ''
+                  ) = $9
+                )
+              )
             ORDER BY
               "createdAt" DESC,
               "id" DESC
@@ -1196,9 +1376,12 @@ async function claimPlayerReminderEpisode({
           String(
             player.reminderDays
           ),
-          String(
-            recipientUserId
-          )
+          normalizedRecipientKey,
+          recipientUserId
+            ? String(
+                recipientUserId
+              )
+            : ""
         );
 
       const latest =
@@ -1252,11 +1435,18 @@ async function claimPlayerReminderEpisode({
                 player.playerName,
               playerIds:
                 player.playerIds,
+              recipientKey:
+                normalizedRecipientKey,
               recipientUserId:
-                String(
-                  recipientUserId
-                ),
+                recipientUserId
+                  ? String(
+                      recipientUserId
+                    )
+                  : null,
               recipientPhone,
+              recipientSource:
+                recipientSource ||
+                null,
               reminderKind:
                 player.reminderKind,
               reminderWeeks:
@@ -1289,7 +1479,6 @@ async function claimPlayerReminderEpisode({
     }
   );
 }
-
 async function updatePlayerReminderLog(
   logId,
   {
@@ -1383,7 +1572,7 @@ export async function sendPlayerInactivityReminderSms({
     !phone
   ) {
     throw new Error(
-      "A valid registered recipient SMS phone number is required."
+      "A valid recipient phone number is required."
     );
   }
 
@@ -1430,6 +1619,10 @@ async function processSurpriseLeaguePlayerReminders({
         0,
       skippedNoSmsConsent:
         0,
+      sentViaRegisteredAccount:
+        0,
+      sentViaRosterContact:
+        0,
       sent:
         0,
       failed:
@@ -1460,24 +1653,30 @@ async function processSurpriseLeaguePlayerReminders({
     of duePlayers
   ) {
     const recipientState =
-      await getLinkedRegisteredSmsRecipients(
+      await getSurprisePlayerReminderRecipients(
         player.playerIds
       );
 
     if (
-      recipientState.linkedUserCount ===
-      0
-    ) {
-      summary.skippedNoLinkedAccount +=
-        1;
-      continue;
-    }
-
-    if (
       !recipientState.recipients.length
     ) {
-      summary.skippedNoSmsConsent +=
-        1;
+      /*
+       * Keep the old counters for API/UI compatibility, but an unregistered
+       * Surprise player is no longer skipped merely because there is no User
+       * link. They are skipped only when neither an opted-in registered SMS
+       * destination nor an opted-in roster communication number is available.
+       */
+      if (
+        recipientState.linkedUserCount ===
+        0
+      ) {
+        summary.skippedNoLinkedAccount +=
+          1;
+      } else {
+        summary.skippedNoSmsConsent +=
+          1;
+      }
+
       continue;
     }
 
@@ -1498,10 +1697,14 @@ async function processSurpriseLeaguePlayerReminders({
           leagueId:
             league.id,
           player,
+          recipientKey:
+            recipient.recipientKey,
           recipientUserId:
             recipient.userId,
           recipientPhone:
             recipient.phone,
+          recipientSource:
+            recipient.source,
         });
 
       if (
@@ -1545,6 +1748,17 @@ async function processSurpriseLeaguePlayerReminders({
         summary.sent +=
           1;
 
+        if (
+          recipient.source ===
+          "PLAYER_ROSTER"
+        ) {
+          summary.sentViaRosterContact +=
+            1;
+        } else {
+          summary.sentViaRegisteredAccount +=
+            1;
+        }
+
         console.log(
           "[PLAYER_INACTIVITY_REMINDER_SENT]",
           {
@@ -1554,10 +1768,10 @@ async function processSurpriseLeaguePlayerReminders({
               player.playerName,
             reminderKind:
               player.reminderKind,
-            reminderKind:
-              player.reminderKind,
             reminderWeeks:
               player.reminderWeeks,
+            recipientSource:
+              recipient.source,
             recipientUserId:
               recipient.userId,
           }
@@ -1592,8 +1806,12 @@ async function processSurpriseLeaguePlayerReminders({
               league.id,
             playerName:
               player.playerName,
+            reminderKind:
+              player.reminderKind,
             reminderWeeks:
               player.reminderWeeks,
+            recipientSource:
+              recipient.source,
             recipientUserId:
               recipient.userId,
             error:
@@ -1610,7 +1828,6 @@ async function processSurpriseLeaguePlayerReminders({
 
   return summary;
 }
-
 
 async function claimInactivityEpisode({
   leagueId,
