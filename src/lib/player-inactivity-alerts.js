@@ -27,24 +27,35 @@ export const PLAYER_INACTIVITY_PLAYER_REMINDER_DAYS =
 /*
  * Direct-to-player reminder windows. These are intentionally explicit so a
  * newly deployed reminder feature catches players who are already overdue for
- * a warning, without sending both warnings at once:
+ * a warning, without sending multiple stages at once:
  *
  *   42-48 whole days inactive -> 6-week reminder
  *   49-59 whole days inactive -> 7-week reminder
- *   60+ whole days inactive    -> existing 60-day workflow only
+ *   60+ whole days inactive    -> one-time final activity reminder
+ *
+ * The existing 60-day owner/admin inactivity alert continues independently.
  */
 const PLAYER_INACTIVITY_REMINDER_WINDOWS = [
   {
+    reminderKind: "SIX_WEEK",
     reminderWeeks: 6,
     reminderDays: 42,
     minElapsedDays: 42,
     maxElapsedDays: 48,
   },
   {
+    reminderKind: "SEVEN_WEEK",
     reminderWeeks: 7,
     reminderDays: 49,
     minElapsedDays: 49,
     maxElapsedDays: PLAYER_INACTIVITY_DAYS - 1,
+  },
+  {
+    reminderKind: "FINAL",
+    reminderWeeks: null,
+    reminderDays: PLAYER_INACTIVITY_DAYS,
+    minElapsedDays: PLAYER_INACTIVITY_DAYS,
+    maxElapsedDays: Number.POSITIVE_INFINITY,
   },
 ];
 
@@ -243,12 +254,37 @@ export function buildPlayerInactivityMessage({
 export function buildPlayerInactivityReminderMessage({
   playerName,
   reminderWeeks,
+  reminderKind = null,
 }) {
   const safeName =
     String(
       playerName || "Player"
     ).trim() ||
     "Player";
+
+  const normalizedKind =
+    String(
+      reminderKind || ""
+    )
+      .trim()
+      .toUpperCase();
+
+  if (
+    normalizedKind ===
+    "FINAL"
+  ) {
+    return [
+      "Cric4All Final Activity Reminder",
+      "",
+      `Hi ${safeName}, our records show that you have not recorded a match appearance in Surprise Cricket League for 60 days or more.`,
+      "",
+      "The league inactivity threshold has now been reached. Please join an upcoming game or contact the league administrators if you intend to remain active with the group.",
+      "",
+      "We look forward to seeing you back on the field.",
+      "- Cric4All",
+    ].join("
+");
+  }
 
   const weeks =
     Number(
@@ -261,7 +297,7 @@ export function buildPlayerInactivityReminderMessage({
     )
   ) {
     throw new Error(
-      "Player inactivity reminder must be for 6 or 7 weeks."
+      "Player inactivity reminder must be for 6 weeks, 7 weeks, or FINAL."
     );
   }
 
@@ -274,7 +310,8 @@ export function buildPlayerInactivityReminderMessage({
     "",
     "We look forward to seeing you back on the field.",
     "- Cric4All",
-  ].join("\n");
+  ].join("
+");
 }
 
 
@@ -861,8 +898,9 @@ async function findDuePlayerInactivityReminders({
    * into exactly one explicit reminder window. This is intentionally
    * retroactive for first deployment: somebody already at 55 days receives
    * the 7-week warning instead of being skipped, but never receives the old
-   * 6-week warning as well. At 60+ days the existing inactivity workflow owns
-   * the player and no direct reminder is selected here.
+   * 6-week warning as well. Somebody already at 60+ days receives the one-time
+   * final activity reminder. The existing owner/admin 60-day workflow remains
+   * independent and continues to run as before.
    */
   const earliestReminderDays =
     PLAYER_INACTIVITY_REMINDER_WINDOWS[0]
@@ -903,6 +941,8 @@ async function findDuePlayerInactivityReminders({
         return {
           ...player,
           elapsedDays,
+          reminderKind:
+            reminderWindow.reminderKind,
           reminderDays:
             reminderWindow.reminderDays,
           reminderWeeks:
@@ -1203,7 +1243,10 @@ async function claimPlayerReminderEpisode({
                   )
                 : null,
             description:
-              `${player.playerName} reached the ${player.reminderWeeks}-week Surprise Cricket League inactivity reminder threshold.`,
+              player.reminderKind ===
+                "FINAL"
+                ? `${player.playerName} reached the Surprise Cricket League 60-day final inactivity reminder threshold.`
+                : `${player.playerName} reached the ${player.reminderWeeks}-week Surprise Cricket League inactivity reminder threshold.`,
             afterData: {
               identityKey:
                 player.identityKey,
@@ -1216,6 +1259,8 @@ async function claimPlayerReminderEpisode({
                   recipientUserId
                 ),
               recipientPhone,
+              reminderKind:
+                player.reminderKind,
               reminderWeeks:
                 player.reminderWeeks,
               reminderDays:
@@ -1294,7 +1339,12 @@ async function updatePlayerReminderLog(
           : PLAYER_REMINDER_FAILED_ACTION,
       description:
         success
-          ? `${prior.playerName || "Player"} ${prior.reminderWeeks || ""}-week inactivity reminder SMS submitted to Twilio.`
+          ? (
+              prior.reminderKind ===
+                "FINAL"
+                ? `${prior.playerName || "Player"} final 60-day inactivity reminder SMS submitted to Twilio.`
+                : `${prior.playerName || "Player"} ${prior.reminderWeeks || ""}-week inactivity reminder SMS submitted to Twilio.`
+            )
           : `${prior.playerName || "Player"} inactivity reminder SMS failed.`,
       afterData: {
         ...prior,
@@ -1324,6 +1374,7 @@ export async function sendPlayerInactivityReminderSms({
   to,
   playerName,
   reminderWeeks,
+  reminderKind = null,
 }) {
   const phone =
     normalizeSmsPhoneNumber(
@@ -1342,6 +1393,7 @@ export async function sendPlayerInactivityReminderSms({
     buildPlayerInactivityReminderMessage({
       playerName,
       reminderWeeks,
+      reminderKind,
     });
 
   const message =
@@ -1471,6 +1523,8 @@ async function processSurpriseLeaguePlayerReminders({
               player.playerName,
             reminderWeeks:
               player.reminderWeeks,
+            reminderKind:
+              player.reminderKind,
           });
 
         await updatePlayerReminderLog(
@@ -1500,6 +1554,10 @@ async function processSurpriseLeaguePlayerReminders({
               league.id,
             playerName:
               player.playerName,
+            reminderKind:
+              player.reminderKind,
+            reminderKind:
+              player.reminderKind,
             reminderWeeks:
               player.reminderWeeks,
             recipientUserId:
@@ -2061,8 +2119,8 @@ export async function processPlayerInactivityAlerts({
 
     /*
      * Surprise Cricket League only:
-     * send the player's own 6-week / 7-week reminder before processing the
-     * existing 60-day owner/admin inactivity alert.
+     * send the player's own 6-week / 7-week / one-time 60-day final reminder
+     * while preserving the existing owner/admin inactivity alert.
      */
     const playerReminderSummary =
       await processSurpriseLeaguePlayerReminders({
