@@ -282,8 +282,7 @@ export function buildPlayerInactivityReminderMessage({
       "",
       "We look forward to seeing you back on the field.",
       "- Cric4All",
-    ].join("
-");
+    ].join("\n");
   }
 
   const weeks =
@@ -310,8 +309,7 @@ export function buildPlayerInactivityReminderMessage({
     "",
     "We look forward to seeing you back on the field.",
     "- Cric4All",
-  ].join("
-");
+  ].join("\n");
 }
 
 
