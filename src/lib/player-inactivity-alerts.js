@@ -24,6 +24,30 @@ export const PLAYER_INACTIVITY_PLAYER_REMINDER_DAYS =
     (weeks) => weeks * 7
   );
 
+/*
+ * Direct-to-player reminder windows. These are intentionally explicit so a
+ * newly deployed reminder feature catches players who are already overdue for
+ * a warning, without sending both warnings at once:
+ *
+ *   42-48 whole days inactive -> 6-week reminder
+ *   49-59 whole days inactive -> 7-week reminder
+ *   60+ whole days inactive    -> existing 60-day workflow only
+ */
+const PLAYER_INACTIVITY_REMINDER_WINDOWS = [
+  {
+    reminderWeeks: 6,
+    reminderDays: 42,
+    minElapsedDays: 42,
+    maxElapsedDays: 48,
+  },
+  {
+    reminderWeeks: 7,
+    reminderDays: 49,
+    minElapsedDays: 49,
+    maxElapsedDays: PLAYER_INACTIVITY_DAYS - 1,
+  },
+];
+
 const PLAYER_REMINDER_PENDING_ACTION =
   "PLAYER_INACTIVITY_REMINDER_PENDING";
 const PLAYER_REMINDER_SENT_ACTION =
@@ -833,23 +857,23 @@ async function findDuePlayerInactivityReminders({
   }
 
   /*
-   * Start from the 6-week threshold, then promote an overdue identity to the
-   * latest applicable reminder. This prevents a player from receiving both
-   * the 6-week and 7-week messages in the same cron run if a previous run was
-   * missed.
+   * Query from the earliest reminder threshold, then place every candidate
+   * into exactly one explicit reminder window. This is intentionally
+   * retroactive for first deployment: somebody already at 55 days receives
+   * the 7-week warning instead of being skipped, but never receives the old
+   * 6-week warning as well. At 60+ days the existing inactivity workflow owns
+   * the player and no direct reminder is selected here.
    */
-  const sixWeekDays =
-    PLAYER_INACTIVITY_PLAYER_REMINDER_DAYS[0];
-
-  const sevenWeekDays =
-    PLAYER_INACTIVITY_PLAYER_REMINDER_DAYS[1];
+  const earliestReminderDays =
+    PLAYER_INACTIVITY_REMINDER_WINDOWS[0]
+      .minElapsedDays;
 
   const candidates =
     await findInactivePlayerIdentities({
       league,
       now,
       inactivityDays:
-        sixWeekDays,
+        earliestReminderDays,
     });
 
   return candidates
@@ -861,24 +885,17 @@ async function findDuePlayerInactivityReminders({
             now
           );
 
-        if (
-          elapsedDays >=
-          PLAYER_INACTIVITY_DAYS
-        ) {
-          return null;
-        }
-
-        const reminderDays =
-          elapsedDays >=
-          sevenWeekDays
-            ? sevenWeekDays
-            : elapsedDays >=
-                sixWeekDays
-              ? sixWeekDays
-              : null;
+        const reminderWindow =
+          PLAYER_INACTIVITY_REMINDER_WINDOWS.find(
+            (window) =>
+              elapsedDays >=
+                window.minElapsedDays &&
+              elapsedDays <=
+                window.maxElapsedDays
+          );
 
         if (
-          !reminderDays
+          !reminderWindow
         ) {
           return null;
         }
@@ -886,12 +903,10 @@ async function findDuePlayerInactivityReminders({
         return {
           ...player,
           elapsedDays,
-          reminderDays,
+          reminderDays:
+            reminderWindow.reminderDays,
           reminderWeeks:
-            Math.round(
-              reminderDays /
-                7
-            ),
+            reminderWindow.reminderWeeks,
         };
       }
     )
