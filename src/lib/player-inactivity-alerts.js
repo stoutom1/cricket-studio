@@ -9,6 +9,28 @@ import {
 
 export const PLAYER_INACTIVITY_DAYS = 60;
 
+/*
+ * Surprise Cricket League only:
+ * send direct reminders to the player's registered Cric4All SMS number
+ * before the existing 60-day inactivity alert is reached.
+ */
+export const PLAYER_INACTIVITY_PLAYER_REMINDER_WEEKS = [
+  6,
+  7,
+];
+
+export const PLAYER_INACTIVITY_PLAYER_REMINDER_DAYS =
+  PLAYER_INACTIVITY_PLAYER_REMINDER_WEEKS.map(
+    (weeks) => weeks * 7
+  );
+
+const PLAYER_REMINDER_PENDING_ACTION =
+  "PLAYER_INACTIVITY_REMINDER_PENDING";
+const PLAYER_REMINDER_SENT_ACTION =
+  "PLAYER_INACTIVITY_REMINDER_SENT";
+const PLAYER_REMINDER_FAILED_ACTION =
+  "PLAYER_INACTIVITY_REMINDER_FAILED";
+
 const ELIGIBLE_MATCH_STATUSES = new Set([
   "COMPLETED",
   "COMPLETED_LOCKED",
@@ -189,6 +211,44 @@ export function buildPlayerInactivityMessage({
     `${safeName} has not recorded a qualifying match appearance in the last ${inactivityDays} days and is eligible to be removed from the group.`,
     "",
     "Please review the player before taking any action.",
+    "- Cric4All",
+  ].join("\n");
+}
+
+
+export function buildPlayerInactivityReminderMessage({
+  playerName,
+  reminderWeeks,
+}) {
+  const safeName =
+    String(
+      playerName || "Player"
+    ).trim() ||
+    "Player";
+
+  const weeks =
+    Number(
+      reminderWeeks
+    );
+
+  if (
+    !PLAYER_INACTIVITY_PLAYER_REMINDER_WEEKS.includes(
+      weeks
+    )
+  ) {
+    throw new Error(
+      "Player inactivity reminder must be for 6 or 7 weeks."
+    );
+  }
+
+  return [
+    "Cric4All Activity Reminder",
+    "",
+    `Hi ${safeName}, this is a friendly reminder that you have not recorded a match appearance in Surprise Cricket League for the last ${weeks} weeks.`,
+    "",
+    "Please consider joining an upcoming game before the 60-day inactivity threshold. Reaching 60 days may result in your profile being flagged for removal from the group under the league inactivity policy.",
+    "",
+    "We look forward to seeing you back on the field.",
     "- Cric4All",
   ].join("\n");
 }
@@ -716,6 +776,771 @@ export async function findInactivePlayerIdentities({
 }
 
 
+
+function getElapsedWholeDays(
+  from,
+  to
+) {
+  const start =
+    from instanceof Date
+      ? from
+      : new Date(from);
+
+  const end =
+    to instanceof Date
+      ? to
+      : new Date(to);
+
+  if (
+    Number.isNaN(
+      start.getTime()
+    ) ||
+    Number.isNaN(
+      end.getTime()
+    )
+  ) {
+    return 0;
+  }
+
+  return Math.max(
+    0,
+    Math.floor(
+      (
+        end.getTime() -
+        start.getTime()
+      ) /
+        (
+          24 *
+          60 *
+          60 *
+          1000
+        )
+    )
+  );
+}
+
+async function findDuePlayerInactivityReminders({
+  league,
+  now =
+    new Date(),
+}) {
+  if (
+    !isSurpriseLeague(
+      league
+    )
+  ) {
+    return [];
+  }
+
+  /*
+   * Start from the 6-week threshold, then promote an overdue identity to the
+   * latest applicable reminder. This prevents a player from receiving both
+   * the 6-week and 7-week messages in the same cron run if a previous run was
+   * missed.
+   */
+  const sixWeekDays =
+    PLAYER_INACTIVITY_PLAYER_REMINDER_DAYS[0];
+
+  const sevenWeekDays =
+    PLAYER_INACTIVITY_PLAYER_REMINDER_DAYS[1];
+
+  const candidates =
+    await findInactivePlayerIdentities({
+      league,
+      now,
+      inactivityDays:
+        sixWeekDays,
+    });
+
+  return candidates
+    .map(
+      (player) => {
+        const elapsedDays =
+          getElapsedWholeDays(
+            player.activityAnchorAt,
+            now
+          );
+
+        if (
+          elapsedDays >=
+          PLAYER_INACTIVITY_DAYS
+        ) {
+          return null;
+        }
+
+        const reminderDays =
+          elapsedDays >=
+          sevenWeekDays
+            ? sevenWeekDays
+            : elapsedDays >=
+                sixWeekDays
+              ? sixWeekDays
+              : null;
+
+        if (
+          !reminderDays
+        ) {
+          return null;
+        }
+
+        return {
+          ...player,
+          elapsedDays,
+          reminderDays,
+          reminderWeeks:
+            Math.round(
+              reminderDays /
+                7
+            ),
+        };
+      }
+    )
+    .filter(Boolean);
+}
+
+async function getLinkedRegisteredSmsRecipients(
+  playerIds
+) {
+  const cleanPlayerIds =
+    [
+      ...new Set(
+        (playerIds || [])
+          .map(Number)
+          .filter(
+            (id) =>
+              Number.isInteger(
+                id
+              ) &&
+              id > 0
+          )
+      ),
+    ];
+
+  if (
+    !cleanPlayerIds.length
+  ) {
+    return {
+      linkedUserCount:
+        0,
+      recipients:
+        [],
+    };
+  }
+
+  /*
+   * The account-link migration introduced Player.userId. Keep this lookup
+   * defensive because older environments may briefly run this code before the
+   * migration has been deployed.
+   */
+  const playerColumns =
+    await prisma.$queryRawUnsafe(
+      `
+        SELECT
+          "column_name"
+        FROM
+          information_schema.columns
+        WHERE
+          table_schema = 'public'
+          AND table_name = 'Player'
+          AND column_name = 'userId'
+      `
+    );
+
+  if (
+    !playerColumns?.length
+  ) {
+    return {
+      linkedUserCount:
+        0,
+      recipients:
+        [],
+    };
+  }
+
+  /*
+   * cleanPlayerIds contains validated integers only, so embedding this list
+   * cannot introduce SQL text supplied by a user.
+   */
+  const linkedRows =
+    await prisma.$queryRawUnsafe(
+      `
+        SELECT DISTINCT
+          p."userId" AS "userId"
+        FROM
+          "Player" p
+        WHERE
+          p."id" IN (
+            ${cleanPlayerIds.join(",")}
+          )
+          AND p."userId" IS NOT NULL
+      `
+    );
+
+  const userIds =
+    [
+      ...new Set(
+        (linkedRows || [])
+          .map(
+            (row) =>
+              String(
+                row?.userId ||
+                  ""
+              ).trim()
+          )
+          .filter(Boolean)
+      ),
+    ];
+
+  if (
+    !userIds.length
+  ) {
+    return {
+      linkedUserCount:
+        0,
+      recipients:
+        [],
+    };
+  }
+
+  const users =
+    await prisma.user.findMany({
+      where: {
+        id: {
+          in:
+            userIds,
+        },
+      },
+      select: {
+        id:
+          true,
+        name:
+          true,
+        smsPhoneNumber:
+          true,
+        smsOptIn:
+          true,
+      },
+    });
+
+  const recipients =
+    users
+      .map(
+        (user) => ({
+          userId:
+            user.id,
+          userName:
+            user.name ||
+            null,
+          smsOptIn:
+            user.smsOptIn ===
+            true,
+          phone:
+            normalizeSmsPhoneNumber(
+              user.smsPhoneNumber
+            ),
+        })
+      )
+      .filter(
+        (user) =>
+          user.smsOptIn ===
+            true &&
+          Boolean(
+            user.phone
+          )
+      );
+
+  return {
+    linkedUserCount:
+      users.length,
+    recipients,
+  };
+}
+
+async function claimPlayerReminderEpisode({
+  leagueId,
+  player,
+  recipientUserId,
+  recipientPhone,
+}) {
+  const lockKey =
+    [
+      "player-inactivity-reminder",
+      Number(
+        leagueId
+      ),
+      player.identityKey,
+      player.activityAnchorKey,
+      player.reminderDays,
+      String(
+        recipientUserId
+      ),
+    ].join(":");
+
+  return prisma.$transaction(
+    async (
+      tx
+    ) => {
+      await tx.$queryRawUnsafe(
+        `
+          SELECT
+            pg_advisory_xact_lock(
+              hashtext($1)
+            )::text
+              AS "lockResult"
+        `,
+        lockKey
+      );
+
+      const existing =
+        await tx.$queryRawUnsafe(
+          `
+            SELECT
+              "id",
+              "action",
+              "afterData",
+              "createdAt"
+            FROM "AuditLog"
+            WHERE
+              "leagueId" = $1
+              AND "action" IN (
+                $2,
+                $3,
+                $4
+              )
+              AND COALESCE(
+                "afterData"->>'identityKey',
+                ''
+              ) = $5
+              AND COALESCE(
+                "afterData"->>'activityAnchorKey',
+                ''
+              ) = $6
+              AND COALESCE(
+                "afterData"->>'reminderDays',
+                ''
+              ) = $7
+              AND COALESCE(
+                "afterData"->>'recipientUserId',
+                ''
+              ) = $8
+            ORDER BY
+              "createdAt" DESC,
+              "id" DESC
+            LIMIT 1
+          `,
+          Number(
+            leagueId
+          ),
+          PLAYER_REMINDER_PENDING_ACTION,
+          PLAYER_REMINDER_SENT_ACTION,
+          PLAYER_REMINDER_FAILED_ACTION,
+          String(
+            player.identityKey
+          ),
+          String(
+            player.activityAnchorKey
+          ),
+          String(
+            player.reminderDays
+          ),
+          String(
+            recipientUserId
+          )
+        );
+
+      const latest =
+        existing?.[0] ||
+        null;
+
+      if (
+        latest &&
+        [
+          PLAYER_REMINDER_PENDING_ACTION,
+          PLAYER_REMINDER_SENT_ACTION,
+        ].includes(
+          latest.action
+        )
+      ) {
+        return null;
+      }
+
+      const audit =
+        await tx.auditLog.create({
+          data: {
+            action:
+              PLAYER_REMINDER_PENDING_ACTION,
+            entityType:
+              "PLAYER",
+            entityId:
+              player.playerIds?.[0]
+                ? Number(
+                    player.playerIds[0]
+                  )
+                : null,
+            leagueId:
+              Number(
+                leagueId
+              ),
+            playerId:
+              player.playerIds?.[0]
+                ? Number(
+                    player.playerIds[0]
+                  )
+                : null,
+            description:
+              `${player.playerName} reached the ${player.reminderWeeks}-week Surprise Cricket League inactivity reminder threshold.`,
+            afterData: {
+              identityKey:
+                player.identityKey,
+              playerName:
+                player.playerName,
+              playerIds:
+                player.playerIds,
+              recipientUserId:
+                String(
+                  recipientUserId
+                ),
+              recipientPhone,
+              reminderWeeks:
+                player.reminderWeeks,
+              reminderDays:
+                player.reminderDays,
+              elapsedDays:
+                player.elapsedDays,
+              inactivityThresholdDays:
+                PLAYER_INACTIVITY_DAYS,
+              activityAnchorKey:
+                player.activityAnchorKey,
+              activityAnchorAt:
+                player.activityAnchorAt?.toISOString?.() ||
+                String(
+                  player.activityAnchorAt ||
+                    ""
+                ),
+              providerStatus:
+                "PENDING",
+            },
+          },
+          select: {
+            id:
+              true,
+          },
+        });
+
+      return audit.id;
+    }
+  );
+}
+
+async function updatePlayerReminderLog(
+  logId,
+  {
+    success,
+    providerMessageId =
+      null,
+    providerStatus =
+      null,
+    errorMessage =
+      null,
+  }
+) {
+  const current =
+    await prisma.auditLog.findUnique({
+      where: {
+        id:
+          Number(
+            logId
+          ),
+      },
+      select: {
+        afterData:
+          true,
+      },
+    });
+
+  const prior =
+    current?.afterData &&
+    typeof current.afterData ===
+      "object"
+      ? current.afterData
+      : {};
+
+  await prisma.auditLog.update({
+    where: {
+      id:
+        Number(
+          logId
+        ),
+    },
+    data: {
+      action:
+        success
+          ? PLAYER_REMINDER_SENT_ACTION
+          : PLAYER_REMINDER_FAILED_ACTION,
+      description:
+        success
+          ? `${prior.playerName || "Player"} ${prior.reminderWeeks || ""}-week inactivity reminder SMS submitted to Twilio.`
+          : `${prior.playerName || "Player"} inactivity reminder SMS failed.`,
+      afterData: {
+        ...prior,
+        providerMessageId,
+        providerStatus:
+          providerStatus ||
+          (
+            success
+              ? "SUBMITTED"
+              : "FAILED"
+          ),
+        errorMessage,
+        sentAt:
+          success
+            ? new Date().toISOString()
+            : null,
+        failedAt:
+          success
+            ? null
+            : new Date().toISOString(),
+      },
+    },
+  });
+}
+
+export async function sendPlayerInactivityReminderSms({
+  to,
+  playerName,
+  reminderWeeks,
+}) {
+  const phone =
+    normalizeSmsPhoneNumber(
+      to
+    );
+
+  if (
+    !phone
+  ) {
+    throw new Error(
+      "A valid registered recipient SMS phone number is required."
+    );
+  }
+
+  const body =
+    buildPlayerInactivityReminderMessage({
+      playerName,
+      reminderWeeks,
+    });
+
+  const message =
+    await getTwilioClient()
+      .messages.create({
+        from:
+          getSmsFromNumber(),
+        to:
+          phone,
+        body,
+      });
+
+  return {
+    messageSid:
+      message.sid,
+    status:
+      message.status,
+    to:
+      message.to,
+    body,
+  };
+}
+
+async function processSurpriseLeaguePlayerReminders({
+  league,
+  now,
+  dryRun,
+}) {
+  const summary =
+    {
+      candidates:
+        0,
+      alreadySent:
+        0,
+      skippedNoLinkedAccount:
+        0,
+      skippedNoSmsConsent:
+        0,
+      sent:
+        0,
+      failed:
+        0,
+      dryRun:
+        0,
+    };
+
+  if (
+    !isSurpriseLeague(
+      league
+    )
+  ) {
+    return summary;
+  }
+
+  const duePlayers =
+    await findDuePlayerInactivityReminders({
+      league,
+      now,
+    });
+
+  summary.candidates =
+    duePlayers.length;
+
+  for (
+    const player
+    of duePlayers
+  ) {
+    const recipientState =
+      await getLinkedRegisteredSmsRecipients(
+        player.playerIds
+      );
+
+    if (
+      recipientState.linkedUserCount ===
+      0
+    ) {
+      summary.skippedNoLinkedAccount +=
+        1;
+      continue;
+    }
+
+    if (
+      !recipientState.recipients.length
+    ) {
+      summary.skippedNoSmsConsent +=
+        1;
+      continue;
+    }
+
+    for (
+      const recipient
+      of recipientState.recipients
+    ) {
+      if (
+        dryRun
+      ) {
+        summary.dryRun +=
+          1;
+        continue;
+      }
+
+      const logId =
+        await claimPlayerReminderEpisode({
+          leagueId:
+            league.id,
+          player,
+          recipientUserId:
+            recipient.userId,
+          recipientPhone:
+            recipient.phone,
+        });
+
+      if (
+        !logId
+      ) {
+        summary.alreadySent +=
+          1;
+        continue;
+      }
+
+      try {
+        const result =
+          await sendPlayerInactivityReminderSms({
+            to:
+              recipient.phone,
+            playerName:
+              player.playerName,
+            reminderWeeks:
+              player.reminderWeeks,
+          });
+
+        await updatePlayerReminderLog(
+          logId,
+          {
+            success:
+              true,
+            providerMessageId:
+              result.messageSid,
+            providerStatus:
+              String(
+                result.status ||
+                  "ACCEPTED"
+              ).toUpperCase(),
+            errorMessage:
+              null,
+          }
+        );
+
+        summary.sent +=
+          1;
+
+        console.log(
+          "[PLAYER_INACTIVITY_REMINDER_SENT]",
+          {
+            leagueId:
+              league.id,
+            playerName:
+              player.playerName,
+            reminderWeeks:
+              player.reminderWeeks,
+            recipientUserId:
+              recipient.userId,
+          }
+        );
+      } catch (error) {
+        await updatePlayerReminderLog(
+          logId,
+          {
+            success:
+              false,
+            providerStatus:
+              "FAILED",
+            errorMessage:
+              String(
+                error instanceof Error
+                  ? error.message
+                  : error
+              ).slice(
+                0,
+                1000
+              ),
+          }
+        );
+
+        summary.failed +=
+          1;
+
+        console.error(
+          "[PLAYER_INACTIVITY_REMINDER_FAILED]",
+          {
+            leagueId:
+              league.id,
+            playerName:
+              player.playerName,
+            reminderWeeks:
+              player.reminderWeeks,
+            recipientUserId:
+              recipient.userId,
+            error:
+              error instanceof Error
+                ? error.message
+                : String(
+                    error
+                  ),
+          }
+        );
+      }
+    }
+  }
+
+  return summary;
+}
+
+
 async function claimInactivityEpisode({
   leagueId,
   player,
@@ -1097,6 +1922,22 @@ export async function processPlayerInactivityAlerts({
         0,
       dryRun:
         0,
+      playerReminders: {
+        candidates:
+          0,
+        alreadySent:
+          0,
+        skippedNoLinkedAccount:
+          0,
+        skippedNoSmsConsent:
+          0,
+        sent:
+          0,
+        failed:
+          0,
+        dryRun:
+          0,
+      },
     };
 
   for (
@@ -1201,6 +2042,31 @@ export async function processPlayerInactivityAlerts({
 
     if (!league) {
       continue;
+    }
+
+    /*
+     * Surprise Cricket League only:
+     * send the player's own 6-week / 7-week reminder before processing the
+     * existing 60-day owner/admin inactivity alert.
+     */
+    const playerReminderSummary =
+      await processSurpriseLeaguePlayerReminders({
+        league,
+        now,
+        dryRun,
+      });
+
+    for (
+      const key
+      of Object.keys(
+        summary.playerReminders
+      )
+    ) {
+      summary.playerReminders[key] +=
+        Number(
+          playerReminderSummary?.[key] ||
+            0
+        );
     }
 
     const inactive =
