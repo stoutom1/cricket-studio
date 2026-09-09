@@ -78332,3 +78332,77 @@ body:has(.milestone-celebration-overlay)
     font-size: 13px !important;
   }
 }
+
+/* ================================================================
+   Change Bowler popup — explicit previous-over protection
+   Applies to both desktop and mobile scorer mode.
+   ================================================================ */
+.bowler-last-over-warning {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+}
+
+.bowler-last-over-icon {
+  flex: 0 0 auto;
+  width: 34px;
+  height: 34px;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  border-radius: 10px;
+  background: rgba(245, 158, 11, 0.14);
+  font-size: 18px;
+}
+
+.bowler-last-over-warning > span:last-child {
+  min-width: 0;
+  display: grid;
+  gap: 2px;
+}
+
+.bowler-last-over-warning small {
+  font-size: 10px;
+  font-weight: 800;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+  opacity: 0.72;
+}
+
+.bowler-last-over-warning strong {
+  font-size: 14px;
+  line-height: 1.2;
+  overflow-wrap: anywhere;
+}
+
+.bowler-last-over-warning em {
+  font-size: 11px;
+  line-height: 1.35;
+  font-style: normal;
+  opacity: 0.82;
+}
+
+@media (max-width: 900px) {
+  .bowler-modal-mobile-fit .bowler-last-over-warning {
+    gap: 7px !important;
+  }
+
+  .bowler-modal-mobile-fit .bowler-last-over-icon {
+    width: 28px;
+    height: 28px;
+    border-radius: 8px;
+    font-size: 14px;
+  }
+
+  .bowler-modal-mobile-fit .bowler-last-over-warning small {
+    font-size: 8px !important;
+  }
+
+  .bowler-modal-mobile-fit .bowler-last-over-warning strong {
+    font-size: 11px !important;
+  }
+
+  .bowler-modal-mobile-fit .bowler-last-over-warning em {
+    font-size: 9px !important;
+  }
+}

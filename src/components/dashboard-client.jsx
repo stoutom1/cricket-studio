@@ -1509,6 +1509,7 @@ export default function DashboardClient() {
   const [showBowlerModal, setShowBowlerModal] = useState(false);
   const [pendingBallData, setPendingBallData] = useState(null);
   const [mustChangeBowler, setMustChangeBowler] = useState(false);
+  const [lastOverBowler, setLastOverBowler] = useState(null);
   const [teamForm, setTeamForm] = useState({leagueId: "", name: ""});
 const [playerForm, setPlayerForm] = useState({names: "",teamId: "",leagueId: ""});
 const [preferencesLoaded, setPreferencesLoaded] = useState(false);
@@ -8898,6 +8899,22 @@ async function applyQueuedBallLocally({ data, previewBoard, event }) {
   }
 
   if (localBall.legalDelivery && Number(localBall.ballInOver) === 6) {
+    const completedOverBowlerId = Number(
+      localBall.bowlerId || data.bowlerId || 0
+    );
+    const completedOverBowler =
+      bowlingTeam?.players?.find(
+        (player) => Number(player.id) === completedOverBowlerId
+      ) || null;
+
+    setLastOverBowler(
+      completedOverBowlerId
+        ? {
+            id: completedOverBowlerId,
+            name: completedOverBowler?.name || "Last over bowler",
+          }
+        : null
+    );
     setShowWicketModal(false);
     setWicketSubmissionInFlight(false);
     setPendingBallData(null);
@@ -10893,6 +10910,21 @@ if (scoreboard?.currentState && !showDeliverySetupModal) {
       ) === 6;
 
     if (wasLegalLastBallOfOver) {
+      const completedOverBowlerId = Number(data.bowlerId || 0);
+      const completedOverBowler =
+        bowlingTeam?.players?.find(
+          (player) => Number(player.id) === completedOverBowlerId
+        ) || null;
+
+      setLastOverBowler(
+        completedOverBowlerId
+          ? {
+              id: completedOverBowlerId,
+              name: completedOverBowler?.name || "Last over bowler",
+            }
+          : null
+      );
+
       /*
        * The delivery has already been saved and confirmed by the updated
        * scoreboard. Clear wicket state before opening Change Bowler so the
@@ -11035,7 +11067,30 @@ if (scoreboard?.currentState && !showDeliverySetupModal) {
       await refreshOfflinePendingCount(selectedMatchId);
     }
 
-    if (err.message?.includes("BOWLER_CONSECUTIVE_OVER")) {
+    if (
+      err.message?.includes("BOWLER_CONSECUTIVE_OVER") ||
+      String(err?.code || "").includes("BOWLER_CONSECUTIVE_OVER")
+    ) {
+      const blockedBowlerId = Number(
+        err?.data?.previousOverBowlerId || data.bowlerId || 0
+      );
+      const blockedBowlerName =
+        err?.data?.previousOverBowlerName ||
+        bowlingTeam?.players?.find(
+          (player) => Number(player.id) === blockedBowlerId
+        )?.name ||
+        "Last over bowler";
+
+      setLastOverBowler(
+        blockedBowlerId
+          ? { id: blockedBowlerId, name: blockedBowlerName }
+          : null
+      );
+      setMustChangeBowler(true);
+      setBallForm((previous) => ({
+        ...previous,
+        bowlerId: "",
+      }));
       setPendingBallData({
         matchId: Number(selectedMatchId),
         inningsNo: Number(data.inningsNo),
@@ -14453,6 +14508,24 @@ async function confirmBowlerChange() {
             newBowlerId
         );
 
+    if (
+      lastOverBowler?.id &&
+      Number(lastOverBowler.id) === newBowlerId
+    ) {
+      setBallForm((previous) => ({
+        ...previous,
+        bowlerId: "",
+      }));
+      setMustChangeBowler(true);
+      setShowBowlerModal(true);
+      setError("");
+      showToast(
+        "error",
+        `${lastOverBowler.name || "That bowler"} bowled the last over. Please select a different bowler.`
+      );
+      return;
+    }
+
     /*
      * OFFLINE SCORING:
      * ----------------
@@ -14589,6 +14662,8 @@ async function confirmBowlerChange() {
         false
       );
 
+      setLastOverBowler(null);
+
       setShowWicketModal(
         false
       );
@@ -14709,6 +14784,8 @@ async function confirmBowlerChange() {
       false
     );
 
+    setLastOverBowler(null);
+
     setShowWicketModal(
       false
     );
@@ -14789,6 +14866,8 @@ async function confirmBowlerChange() {
         false
       );
 
+      setLastOverBowler(null);
+
       setShowWicketModal(
         false
       );
@@ -14834,6 +14913,43 @@ async function confirmBowlerChange() {
         } selected for the next over · saved locally.`
       );
 
+      return;
+    }
+
+    if (
+      err.message?.includes("BOWLER_CONSECUTIVE_OVER") ||
+      String(err?.code || "").includes("BOWLER_CONSECUTIVE_OVER")
+    ) {
+      const attemptedBowlerId = Number(ballForm.bowlerId || 0);
+      const attemptedBowler =
+        bowlingTeam?.players?.find(
+          (player) => Number(player.id) === attemptedBowlerId
+        ) || null;
+      const blockedBowlerId = Number(
+        err?.data?.previousOverBowlerId || attemptedBowlerId || 0
+      );
+      const blockedBowlerName =
+        err?.data?.previousOverBowlerName ||
+        attemptedBowler?.name ||
+        lastOverBowler?.name ||
+        "Last over bowler";
+
+      setLastOverBowler(
+        blockedBowlerId
+          ? { id: blockedBowlerId, name: blockedBowlerName }
+          : lastOverBowler
+      );
+      setBallForm((previous) => ({
+        ...previous,
+        bowlerId: "",
+      }));
+      setMustChangeBowler(true);
+      setShowBowlerModal(true);
+      setError("");
+      showToast(
+        "error",
+        `${blockedBowlerName} bowled the last over. Please select a different bowler.`
+      );
       return;
     }
 
@@ -18013,11 +18129,14 @@ function closeScoringFormSheet() {
   setShowScoringFormSheet(false);
 }
 
+const blockedLastOverBowlerId =
+  lastOverBowler?.id || pendingBallData?.bowlerId || null;
+
 const availableBowlerOptions = (bowlingTeam?.players || [])
   .filter(
     (player) =>
       String(player.id) !==
-      String(pendingBallData?.bowlerId)
+      String(blockedLastOverBowlerId || "")
   )
   .filter((player) =>
     String(player.name || "")
@@ -31993,7 +32112,7 @@ onClick={() => {
             🏏 Change Bowler
           </h3>
 
-          <p>Select a different bowler for the next over</p>
+          <p>Choose the bowler for the next over</p>
         </div>
 
         {!mustChangeBowler && (
@@ -32128,8 +32247,15 @@ onClick={() => {
           </div>
         </div>
 
-      <div className="bowler-warning">
-        Same bowler cannot bowl consecutive overs.
+      <div className="bowler-warning bowler-last-over-warning">
+        <span className="bowler-last-over-icon" aria-hidden="true">⛔</span>
+        <span>
+          <small>Last over bowler</small>
+          <strong>
+            {lastOverBowler?.name || "The previous bowler"}
+          </strong>
+          <em>Cannot bowl consecutive overs. Select a different bowler below.</em>
+        </span>
       </div>
 
       {/* Only this area scrolls */}

@@ -421,10 +421,24 @@ if (isCountingWicket && dismissedThisBallId) {
     });
 
     if (previousOverBowler?.bowlerId === payload.bowlerId) {
+      const previousBowler = await prisma.player.findUnique({
+        where: {
+          id: Number(previousOverBowler.bowlerId),
+        },
+        select: {
+          id: true,
+          name: true,
+        },
+      });
+
       return NextResponse.json(
         {
           error: "BOWLER_CONSECUTIVE_OVER",
+          code: "BOWLER_CONSECUTIVE_OVER",
           message: "Bowler cannot bowl consecutive overs",
+          previousOverBowlerId: Number(previousOverBowler.bowlerId),
+          previousOverBowlerName:
+            previousBowler?.name || "Last over bowler",
         },
         { status: 400 }
       );

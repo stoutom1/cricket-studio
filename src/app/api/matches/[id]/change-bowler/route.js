@@ -19,6 +19,63 @@ export async function POST(request, { params }) {
     return NextResponse.json({ error: "Invalid bowler id" }, { status: 400 });
   }
 
+  /*
+   * Server-side guard for every Change Bowler entry point.
+   *
+   * The scorer UI normally opens this endpoint only at an over boundary, but
+   * Undo, scorer-form corrections, stale client state, or another client can
+   * otherwise attempt to put the previous-over bowler straight back into the
+   * next over. Keep the cricket rule authoritative on the server as well as
+   * in the popup UI.
+   */
+  const legalBallsCount = await prisma.ball.count({
+    where: {
+      matchId,
+      inningsNo,
+      legalDelivery: true,
+    },
+  });
+
+  const isNewOver = legalBallsCount > 0 && legalBallsCount % 6 === 0;
+
+  if (isNewOver) {
+    const previousOverBall = await prisma.ball.findFirst({
+      where: {
+        matchId,
+        inningsNo,
+        legalDelivery: true,
+      },
+      orderBy: [{ overNo: "desc" }, { ballInOver: "desc" }],
+      select: {
+        bowlerId: true,
+      },
+    });
+
+    if (Number(previousOverBall?.bowlerId) === bowlerId) {
+      const previousBowler = await prisma.player.findUnique({
+        where: {
+          id: bowlerId,
+        },
+        select: {
+          id: true,
+          name: true,
+        },
+      });
+
+      return NextResponse.json(
+        {
+          error: "BOWLER_CONSECUTIVE_OVER",
+          code: "BOWLER_CONSECUTIVE_OVER",
+          message: "Bowler cannot bowl consecutive overs",
+          previousOverBowlerId: bowlerId,
+          previousOverBowlerName:
+            previousBowler?.name || "Last over bowler",
+        },
+        { status: 400 }
+      );
+    }
+  }
+
   await prisma.matchState.upsert({
     where: { matchId },
     update: {
