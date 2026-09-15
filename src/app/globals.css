@@ -78512,3 +78512,77 @@ body:has(.milestone-celebration-overlay)
   .c4-article-actions a { text-align: center !important; }
   .c4-help-page { padding: 20px 14px 44px !important; }
 }
+
+
+/* AdSense Phase 2: expanded About/Help content readability */
+.help-guide-page {
+  width: min(100% - 32px, 820px);
+  margin-inline: auto;
+}
+
+.help-guide-page section {
+  scroll-margin-top: 88px;
+}
+
+.help-guide-page h2 {
+  margin-top: 22px;
+}
+
+.help-guide-page h3 {
+  margin-top: 18px;
+}
+
+.help-guide-page li {
+  margin: 5px 0;
+  line-height: 1.55;
+}
+
+.help-guide-page pre {
+  max-width: 100%;
+  overflow-x: auto;
+  white-space: pre-wrap;
+  overflow-wrap: anywhere;
+}
+
+.help-related-guides {
+  margin-top: 32px;
+  padding: 20px;
+  border: 1px solid rgba(148, 163, 184, 0.22);
+  border-radius: 16px;
+  background: rgba(15, 23, 42, 0.38);
+}
+
+.editorial-note {
+  margin-top: 28px;
+  padding: 14px 16px;
+  border-left: 3px solid rgba(56, 189, 248, 0.7);
+  background: rgba(15, 23, 42, 0.42);
+  border-radius: 0 12px 12px 0;
+}
+
+@media (max-width: 700px) {
+  .help-guide-page {
+    width: min(100% - 24px, 820px);
+  }
+
+  .help-guide-page h1 {
+    font-size: clamp(1.7rem, 8vw, 2.25rem);
+    line-height: 1.12;
+  }
+
+  .help-guide-page h2 {
+    font-size: 1.2rem;
+    line-height: 1.25;
+  }
+
+  .help-guide-page ol,
+  .help-guide-page ul,
+  .editorial-card ol,
+  .editorial-card ul {
+    padding-left: 1.3rem;
+  }
+
+  .help-related-guides {
+    padding: 16px;
+  }
+}
