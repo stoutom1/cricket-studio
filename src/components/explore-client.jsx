@@ -126,7 +126,19 @@ export default function ExploreClient({ leagues }) {
           </span>
         </section>
 
-        <Cric4AllAd placement="explore" />
+        <section className="c4-public-context" aria-label="About Cric4All public cricket">
+          <h2>Follow community cricket beyond the live score</h2>
+          <p>
+            Cric4All public leagues bring fixtures, completed matches, teams and
+            season information together in one spectator-friendly place. Open a
+            league to review its match history, standings and player performance
+            views without entering the private scoring or administration area.
+          </p>
+        </section>
+
+        {leagues.length > 0 && totalMatches >= 3 ? (
+          <Cric4AllAd placement="explore" />
+        ) : null}
 
         <section className="sep-content">
           <div className="sep-section-heading">

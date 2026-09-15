@@ -1331,7 +1331,7 @@ return (
           ))}
         </nav>
 
-        {isPublicLeague ? <Cric4AllAd placement="league" /> : null}
+        {isPublicLeague && (league?.teams?.length || 0) >= 2 && completedMatches.length >= 3 ? <Cric4AllAd placement="league" /> : null}
 
         <div className="slp-content">
           {activeTab === "overview" && (

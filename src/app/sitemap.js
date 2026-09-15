@@ -111,6 +111,20 @@ export default async function sitemap() {
       priority:
         0.8,
     },
+    ...[
+      ["/about", 0.7],
+      ["/help", 0.7],
+      ["/guides/cricket-scoring", 0.8],
+      ["/guides/league-management", 0.8],
+      ["/contact", 0.5],
+      ["/privacy", 0.4],
+      ["/terms", 0.4],
+    ].map(([path, priority]) => ({
+      url: absoluteCric4AllUrl(path),
+      lastModified: new Date(),
+      changeFrequency: "monthly",
+      priority,
+    })),
   ];
 
   for (

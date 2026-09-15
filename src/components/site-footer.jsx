@@ -6,6 +6,11 @@ export default function SiteFooter() {
       <div>© 2026 Cric4All is a cricket league management and live scoring platform operated by VSJ Serv LLC.</div>
 
       <div className="site-footer-links">
+        <Link href="/about">About</Link>
+        <Link href="/explore">Explore</Link>
+        <Link href="/guides/cricket-scoring">Scoring Guide</Link>
+        <Link href="/guides/league-management">League Guide</Link>
+        <Link href="/help">Help</Link>
         <Link href="/privacy">Privacy Policy</Link>
         <Link href="/terms">
   Terms & Conditions

@@ -1,9 +1,12 @@
 import Link from "next/link";
+import { absoluteCric4AllUrl } from "@/lib/seo";
+
+export const metadata = { title: "Cric4All Help | League & Match Scoring Guide", description: "Step-by-step help for creating leagues, teams, players, matches and using live scoring in Cric4All.", alternates: { canonical: absoluteCric4AllUrl("/help") } };
 
 export default function HelpPage() {
   return (
     <div className="page-container">
-      <h1>📖 Cricket Studio Help Guide</h1>
+      <h1>📖 Cric4All Help Guide</h1>
 
       <p>
         Follow these steps to manage leagues,
@@ -164,8 +167,7 @@ export default function HelpPage() {
         </ol>
 
         <p>
-          New users can register or create a new account and while being logged into the app, when they use the invite link they should be
-          to join the league and automatically join the league.
+          New users can create an account or sign in, then use a valid league invite link to join with the permissions assigned by the league.
         </p>
       </section>
 

@@ -606,7 +606,7 @@ export default async function PublicMatchPage({ params }) {
           </div>
         </section>
 
-        {isPublic && isCompletedMatch ? (
+        {isPublic && isCompletedMatch && (match.balls?.length || 0) >= 12 && postMatchExperience ? (
           <Cric4AllAd placement="match" />
         ) : null}
 
