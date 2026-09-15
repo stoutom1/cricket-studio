@@ -78411,3 +78411,104 @@ body:has(.milestone-celebration-overlay)
 /* AdSense content-quality phase: public editorial content */
 .c4-editorial-section{max-width:1120px;margin:34px auto 0;padding:30px 24px}.c4-eyebrow{margin:0 0 8px;font-size:.78rem;font-weight:800;letter-spacing:.12em;text-transform:uppercase;color:#2563eb}.c4-editorial-section h2,.c4-article h1,.c4-article h2{color:#0f172a}.c4-editorial-section h2{margin:0 0 12px;font-size:clamp(1.55rem,3vw,2.15rem)}.c4-lead{max-width:850px;font-size:1.05rem;line-height:1.75;color:#475569}.c4-feature-grid{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:16px;margin-top:24px}.c4-content-card{padding:22px;border:1px solid #e2e8f0;border-radius:18px;background:#fff;box-shadow:0 8px 24px rgba(15,23,42,.05)}.c4-content-card h3{margin:10px 0 8px;color:#0f172a}.c4-content-card p{margin:0;color:#475569;line-height:1.65}.c4-card-icon{font-size:1.45rem}.c4-soft-section{background:#f8fafc;border-radius:22px}.c4-two-column{display:grid;grid-template-columns:1fr 1fr;gap:34px}.c4-two-column p{color:#475569;line-height:1.7}.c4-text-link{display:inline-block;margin-top:8px;font-weight:800;color:#1d4ed8;text-decoration:none}.c4-resource-grid{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:14px;margin-top:20px}.c4-resource-grid a{display:flex;flex-direction:column;gap:6px;padding:20px;border:1px solid #e2e8f0;border-radius:16px;background:#fff;text-decoration:none}.c4-resource-grid strong{color:#0f172a}.c4-resource-grid span{color:#64748b;line-height:1.55}.c4-article-page{padding:28px 16px 48px}.c4-article{max-width:860px;margin:0 auto;padding:36px;border:1px solid #e2e8f0;border-radius:22px;background:#fff;box-shadow:0 12px 34px rgba(15,23,42,.06)}.c4-article h1{font-size:clamp(2rem,5vw,3rem);line-height:1.1;margin:0 0 20px}.c4-article h2{font-size:1.45rem;margin:32px 0 10px}.c4-article p{color:#475569;line-height:1.8;margin:0 0 16px}.c4-article-intro{font-size:1.1rem!important;color:#334155!important}.c4-article-actions{display:flex;flex-wrap:wrap;gap:10px;margin-top:32px;padding-top:22px;border-top:1px solid #e2e8f0}.c4-article-actions a{padding:10px 14px;border-radius:10px;background:#eff6ff;color:#1d4ed8;font-weight:800;text-decoration:none}.c4-public-context{margin:18px 0;padding:20px 22px;border:1px solid #e2e8f0;border-radius:16px;background:#f8fafc}.c4-public-context h2{margin:0 0 8px;font-size:1.15rem;color:#0f172a}.c4-public-context p{margin:0;color:#475569;line-height:1.65}.site-footer-links{flex-wrap:wrap}
 @media(max-width:800px){.c4-feature-grid,.c4-two-column,.c4-resource-grid{grid-template-columns:1fr}.c4-editorial-section{padding:24px 14px}.c4-article{padding:24px 18px}.c4-article-page{padding:18px 8px 36px}}
+
+/* =========================================================
+   ADSENSE CONTENT PHASE 2 — RESPONSIVE ALIGNMENT CORRECTION
+   Keeps the existing Cric4All dark visual system and prevents
+   editorial sections from becoming flex siblings/skinny columns.
+========================================================= */
+.c4-content-home {
+  display: block !important;
+  min-height: calc(100dvh - 72px) !important;
+  padding: clamp(24px, 4vw, 52px) 18px 64px !important;
+  overflow-x: hidden !important;
+}
+.c4-content-home > section {
+  width: min(1180px, 100%) !important;
+  margin-left: auto !important;
+  margin-right: auto !important;
+  box-sizing: border-box !important;
+}
+.c4-content-home .home-hero-lite { margin-top: 0 !important; }
+.c4-home-note { margin-top: 12px !important; font-size: 13px !important; opacity: .78; }
+.c4-editorial-section {
+  max-width: 1180px !important;
+  margin-top: 28px !important;
+  padding: clamp(24px, 3vw, 34px) !important;
+  border: 1px solid rgba(96,165,250,.16) !important;
+  border-radius: 22px !important;
+  background: rgba(10,21,40,.72) !important;
+  color: #dbe7f5 !important;
+}
+.c4-editorial-section h2, .c4-content-card h3 { color: #f8fafc !important; }
+.c4-editorial-section h2 { font-size: clamp(1.45rem, 2.4vw, 2rem) !important; line-height: 1.18 !important; }
+.c4-eyebrow { color: #7dd3fc !important; }
+.c4-lead, .c4-two-column p, .c4-content-card p { color: #c8d5e5 !important; }
+.c4-lead { max-width: 880px !important; }
+.c4-feature-grid {
+  display: grid !important;
+  grid-template-columns: repeat(3, minmax(0,1fr)) !important;
+  gap: 16px !important;
+}
+.c4-content-card {
+  min-width: 0 !important;
+  padding: 20px !important;
+  border-color: rgba(148,163,184,.18) !important;
+  background: rgba(15,23,42,.82) !important;
+  box-shadow: none !important;
+}
+.c4-content-card h3, .c4-content-card p { overflow-wrap: normal !important; word-break: normal !important; }
+.c4-soft-section { background: rgba(15,23,42,.66) !important; }
+.c4-two-column { grid-template-columns: repeat(2,minmax(0,1fr)) !important; gap: 32px !important; }
+.c4-two-column > div { min-width: 0 !important; }
+.c4-text-link { color: #7dd3fc !important; }
+.c4-resource-grid { grid-template-columns: repeat(2,minmax(0,1fr)) !important; gap: 14px !important; }
+.c4-resource-grid a {
+  min-width: 0 !important;
+  border-color: rgba(148,163,184,.18) !important;
+  background: rgba(15,23,42,.82) !important;
+}
+.c4-resource-grid strong { color: #f8fafc !important; }
+.c4-resource-grid span { color: #b9c8db !important; }
+
+.c4-article-page { padding: clamp(22px,4vw,48px) 16px 56px !important; }
+.c4-article {
+  max-width: 900px !important;
+  padding: clamp(24px,4vw,42px) !important;
+  border-color: rgba(148,163,184,.22) !important;
+  background: rgba(10,16,27,.94) !important;
+  color: #dbe7f5 !important;
+  box-shadow: 0 18px 48px rgba(0,0,0,.18) !important;
+}
+.c4-article h1, .c4-article h2 { color: #f8fafc !important; overflow-wrap: normal !important; word-break: normal !important; }
+.c4-article h1 { font-size: clamp(2rem,4.4vw,3rem) !important; }
+.c4-article p, .c4-article-intro { color: #c8d5e5 !important; }
+.c4-article-list { color: #c8d5e5 !important; line-height: 1.75 !important; padding-left: 1.35rem !important; }
+.c4-article-list li + li { margin-top: 5px !important; }
+.c4-article-actions { border-top-color: rgba(148,163,184,.2) !important; }
+.c4-article-actions a { background: rgba(37,99,235,.16) !important; color: #93c5fd !important; border: 1px solid rgba(96,165,250,.22) !important; }
+.c4-version-note { margin-top: 24px !important; font-size: .82rem !important; color: #7f91a8 !important; }
+
+.c4-help-page { max-width: 900px !important; margin: 0 auto !important; padding: clamp(24px,4vw,48px) 20px 56px !important; }
+.c4-help-page section { max-width: 100% !important; }
+.c4-help-page h1 { font-size: clamp(1.8rem,4vw,2.5rem) !important; line-height: 1.15 !important; }
+.c4-help-page h2 { font-size: clamp(1.25rem,2.5vw,1.55rem) !important; }
+.c4-help-page p, .c4-help-page li { line-height: 1.65 !important; }
+.c4-help-page pre { max-width: 100% !important; overflow-x: auto !important; white-space: pre-wrap !important; }
+
+@media (max-width: 900px) {
+  .c4-feature-grid { grid-template-columns: repeat(2,minmax(0,1fr)) !important; }
+}
+@media (max-width: 700px) {
+  .c4-content-home { padding: 14px 10px 42px !important; }
+  .c4-editorial-section { margin-top: 16px !important; padding: 20px 16px !important; border-radius: 18px !important; }
+  .c4-feature-grid, .c4-two-column, .c4-resource-grid { grid-template-columns: 1fr !important; }
+  .c4-feature-grid { gap: 10px !important; }
+  .c4-content-card { padding: 17px !important; }
+  .c4-article-page { padding: 14px 9px 40px !important; }
+  .c4-article { padding: 22px 17px !important; border-radius: 18px !important; }
+  .c4-article h1 { font-size: clamp(1.8rem,8vw,2.35rem) !important; }
+  .c4-article-actions { display: grid !important; grid-template-columns: 1fr !important; }
+  .c4-article-actions a { text-align: center !important; }
+  .c4-help-page { padding: 20px 14px 44px !important; }
+}

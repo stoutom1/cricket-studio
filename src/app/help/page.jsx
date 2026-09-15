@@ -1,11 +1,15 @@
 import Link from "next/link";
 import { absoluteCric4AllUrl } from "@/lib/seo";
 
-export const metadata = { title: "Cric4All Help | League & Match Scoring Guide", description: "Step-by-step help for creating leagues, teams, players, matches and using live scoring in Cric4All.", alternates: { canonical: absoluteCric4AllUrl("/help") } };
+export const metadata = {
+  title: "Cric4All Help Guide | Leagues, Teams, Matches & Scoring",
+  description: "Step-by-step Cric4All help for creating leagues and teams, adding players, creating matches, live scoring, permissions, invites and statistics.",
+  alternates: { canonical: absoluteCric4AllUrl("/help") },
+};
 
 export default function HelpPage() {
   return (
-    <div className="page-container">
+    <main className="page-container c4-help-page">
       <h1>📖 Cric4All Help Guide</h1>
 
       <p>
@@ -167,7 +171,7 @@ export default function HelpPage() {
         </ol>
 
         <p>
-          New users can create an account or sign in, then use a valid league invite link to join with the permissions assigned by the league.
+          New users can register or sign in to Cric4All. When they open a valid invite link while signed in, they can accept the invitation and join the league with the permissions provided by that invite.
         </p>
       </section>
 
@@ -226,6 +230,6 @@ Manage Permissions`}
       <Link href="/dashboard">
         ← Back to Dashboard
       </Link>
-    </div>
+    </main>
   );
 }
