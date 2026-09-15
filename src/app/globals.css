@@ -78586,3 +78586,62 @@ body:has(.milestone-celebration-overlay)
     padding: 16px;
   }
 }
+
+
+/* Final Help mobile polish: readable workflow + clean section badges */
+.help-number-badge {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  min-width: 1.7rem;
+  height: 1.7rem;
+  padding: 0 0.38rem;
+  margin-right: 0.45rem;
+  border-radius: 0.45rem;
+  background: #2563eb;
+  color: #ffffff;
+  font-size: 0.82rem;
+  font-weight: 800;
+  line-height: 1;
+  vertical-align: 0.12em;
+}
+
+.help-guide-page .help-workflow {
+  display: block;
+  width: 100%;
+  box-sizing: border-box;
+  margin: 12px 0 0;
+  padding: 18px 20px;
+  border: 1px solid rgba(148, 163, 184, 0.24);
+  border-radius: 14px;
+  background: #0f172a !important;
+  color: #e5edf8 !important;
+  font: 600 0.9rem/1.75 ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas,
+    "Liberation Mono", "Courier New", monospace;
+  white-space: pre-wrap;
+  overflow-wrap: anywhere;
+  word-break: normal;
+  overflow-x: hidden;
+  -webkit-text-fill-color: #e5edf8;
+}
+
+@media (max-width: 700px) {
+  .help-number-badge {
+    min-width: 1.55rem;
+    height: 1.55rem;
+    padding-inline: 0.32rem;
+    margin-right: 0.38rem;
+    border-radius: 0.4rem;
+    font-size: 0.76rem;
+  }
+
+  .help-guide-page .help-workflow {
+    padding: 15px 16px;
+    border-radius: 12px;
+    background: #0f172a !important;
+    color: #f1f5f9 !important;
+    font-size: 0.78rem;
+    line-height: 1.7;
+    -webkit-text-fill-color: #f1f5f9;
+  }
+}

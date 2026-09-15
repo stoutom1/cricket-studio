@@ -191,7 +191,7 @@ export default function HelpPage() {
       <hr />
 
       <section>
-        <h2>🔟 Kit Tracking and Match Responsibility</h2>
+        <h2><span className="help-number-badge">10</span> Kit Tracking and Match Responsibility</h2>
         <p>
           Kit Tracking helps a league record who is responsible for shared
           cricket kit and coordinate responsibility around upcoming matches.
@@ -207,7 +207,7 @@ export default function HelpPage() {
       <hr />
 
       <section>
-        <h2>1️⃣1️⃣ Player Inactivity</h2>
+        <h2><span className="help-number-badge">11</span> Player Inactivity</h2>
         <p>
           Player Inactivity tools help authorized league administrators review
           players who have not recorded qualifying match activity for the
@@ -228,7 +228,7 @@ export default function HelpPage() {
       <hr />
 
       <section>
-        <h2>1️⃣2️⃣ Notifications and Communications</h2>
+        <h2><span className="help-number-badge">12</span> Notifications and Communications</h2>
         <p>
           Cric4All includes communication workflows used by features such as
           birthdays, kit responsibility and player-activity reminders.
@@ -244,7 +244,7 @@ export default function HelpPage() {
       <hr />
 
       <section>
-        <h2>1️⃣3️⃣ Public Sharing, Explore and TV Mode</h2>
+        <h2><span className="help-number-badge">13</span> Public Sharing, Explore and TV Mode</h2>
         <p>
           Public experiences are designed for spectators and are kept separate
           from private scorer and administrator controls.
@@ -261,7 +261,7 @@ export default function HelpPage() {
       <hr />
 
       <section>
-        <h2>1️⃣4️⃣ League Resources</h2>
+        <h2><span className="help-number-badge">14</span> League Resources</h2>
         <p>
           The Resources area can be used to keep useful league information and
           material accessible alongside the competition's operational tools.
@@ -272,7 +272,7 @@ export default function HelpPage() {
       <hr />
 
       <section>
-        <h2>1️⃣5️⃣ Super Admin Features</h2>
+        <h2><span className="help-number-badge">15</span> Super Admin Features</h2>
         <ul>
           <li>System-level league, team and match oversight</li>
           <li>Administrative/system settings available to Super Admin</li>
@@ -283,8 +283,8 @@ export default function HelpPage() {
       <hr />
 
       <section>
-        <h2>1️⃣6️⃣ Typical Cric4All Workflow</h2>
-        <pre>
+        <h2><span className="help-number-badge">16</span> Typical Cric4All Workflow</h2>
+        <pre className="help-workflow">
 {`Create League
    ↓
 Create Teams and Players
