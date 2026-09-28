@@ -6806,3 +6806,132 @@
     grid-template-columns: 1fr !important;
   }
 }
+
+
+/* =========================================================
+   Statistics & Awards > Rankings
+   Compact leaderboard layout. Intentionally uses dedicated
+   class names so Player Pulse ranking styles cannot collide.
+========================================================= */
+.slp-stats-ranking-grid {
+  display: grid;
+  grid-template-columns: repeat(3, minmax(0, 1fr));
+  gap: 12px;
+  margin-top: 16px;
+  align-items: start;
+}
+
+.slp-stats-ranking-card {
+  min-width: 0;
+  overflow: hidden;
+  border: 1px solid rgba(83, 144, 214, 0.28);
+  border-radius: 14px;
+  background: rgba(8, 30, 58, 0.72);
+  padding: 12px;
+}
+
+.slp-stats-ranking-card h3 {
+  margin: 0 0 8px;
+  color: #f5faff;
+  font-size: 14px;
+  line-height: 1.25;
+}
+
+.slp-stats-ranking-list {
+  display: grid;
+  gap: 4px;
+}
+
+.slp-stats-ranking-row {
+  display: grid;
+  grid-template-columns: 22px minmax(0, 1fr) auto;
+  gap: 8px;
+  align-items: center;
+  min-width: 0;
+  min-height: 46px;
+  padding: 6px 8px;
+  border: 1px solid rgba(255, 255, 255, 0.055);
+  border-radius: 9px;
+  background: rgba(5, 22, 43, 0.48);
+}
+
+.slp-stats-ranking-no {
+  align-self: start;
+  padding-top: 2px;
+  color: #dcecff;
+  font-size: 11px;
+  font-weight: 800;
+}
+
+.slp-stats-ranking-person {
+  min-width: 0;
+}
+
+.slp-stats-ranking-person strong {
+  display: block;
+  min-width: 0;
+  overflow: visible;
+  color: #ffffff;
+  font-size: 12px;
+  font-weight: 850;
+  line-height: 1.2;
+  white-space: normal;
+  overflow-wrap: break-word;
+  text-overflow: clip;
+}
+
+.slp-stats-ranking-person small {
+  display: block;
+  min-width: 0;
+  margin-top: 3px;
+  overflow: hidden;
+  color: #83b8e8;
+  font-size: 9px;
+  line-height: 1.2;
+  white-space: nowrap;
+  text-overflow: ellipsis;
+}
+
+.slp-stats-ranking-row > b {
+  justify-self: end;
+  color: #73f0c0;
+  font-size: 11px;
+  font-weight: 900;
+  line-height: 1.15;
+  white-space: nowrap;
+}
+
+@media (max-width: 980px) {
+  .slp-stats-ranking-grid {
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+  }
+}
+
+@media (max-width: 700px) {
+  .slp-stats-ranking-grid {
+    grid-template-columns: 1fr;
+    gap: 9px;
+  }
+
+  .slp-stats-ranking-card {
+    padding: 10px;
+  }
+
+  .slp-stats-ranking-row {
+    grid-template-columns: 20px minmax(0, 1fr) auto;
+    min-height: 42px;
+    padding: 5px 7px;
+  }
+
+  .slp-stats-ranking-person strong {
+    font-size: 13px;
+  }
+
+  .slp-stats-ranking-person small {
+    font-size: 10px;
+  }
+
+  .slp-stats-ranking-row > b {
+    font-size: 11px;
+  }
+}

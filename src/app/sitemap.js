@@ -65,10 +65,16 @@ export default async function sitemap() {
         matches: {
           select: {
             id: true,
+            status: true,
             createdAt: true,
             scheduledAt: true,
             endedAt: true,
             lockedAt: true,
+            _count: {
+              select: {
+                balls: true,
+              },
+            },
           },
         },
       },
@@ -114,8 +120,15 @@ export default async function sitemap() {
     ...[
       ["/about", 0.7],
       ["/help", 0.7],
+      ["/guides", 0.9],
       ["/guides/cricket-scoring", 0.8],
       ["/guides/league-management", 0.8],
+      ["/guides/cricket-extras", 0.8],
+      ["/guides/net-run-rate", 0.8],
+      ["/guides/rain-dls", 0.8],
+      ["/guides/super-over", 0.8],
+      ["/guides/cricket-statistics", 0.8],
+      ["/guides/match-day", 0.8],
       ["/contact", 0.5],
       ["/privacy", 0.4],
       ["/terms", 0.4],
@@ -157,66 +170,32 @@ export default async function sitemap() {
         0.9,
     });
 
-    for (
-      const team of
-      league.teams
-    ) {
-      entries.push({
-        url:
-          absoluteCric4AllUrl(
-            `/leagues/${league.slug}/teams/${team.id}`
-          ),
-        lastModified:
-          leagueLastModified,
-        changeFrequency:
-          "weekly",
-        priority:
-          0.7,
-      });
+    /*
+     * Keep thin roster/profile URLs out of the sitemap. They remain accessible
+     * from public league navigation, but the sitemap focuses Google on pages
+     * with substantial public content.
+     */
+    const indexableMatches = league.matches.filter((match) => {
+      const status = String(match.status || "").toUpperCase();
+      return (
+        ["COMPLETED", "COMPLETED_LOCKED", "COMPLETED_CORRECTED"].includes(status) &&
+        Number(match._count?.balls || 0) >= 12
+      );
+    });
 
-      for (
-        const player of
-        team.players
-      ) {
-        entries.push({
-          url:
-            absoluteCric4AllUrl(
-              `/leagues/${league.slug}/players/${player.id}`
-            ),
-          lastModified:
-            leagueLastModified,
-          changeFrequency:
-            "weekly",
-          priority:
-            0.65,
-        });
-      }
-    }
-
-    for (
-      const match of
-      league.matches
-    ) {
+    for (const match of indexableMatches) {
       entries.push({
-        url:
-          absoluteCric4AllUrl(
-            `/leagues/${league.slug}/matches/${match.id}`
-          ),
-        lastModified:
-          latestDate([
-            match.createdAt,
-            match.scheduledAt,
-            match.endedAt,
-            match.lockedAt,
-          ]),
-        changeFrequency:
-          match.endedAt
-            ? "monthly"
-            : "hourly",
-        priority:
-          match.endedAt
-            ? 0.7
-            : 0.85,
+        url: absoluteCric4AllUrl(
+          `/leagues/${league.slug}/matches/${match.id}`
+        ),
+        lastModified: latestDate([
+          match.createdAt,
+          match.scheduledAt,
+          match.endedAt,
+          match.lockedAt,
+        ]),
+        changeFrequency: "monthly",
+        priority: 0.7,
       });
     }
   }

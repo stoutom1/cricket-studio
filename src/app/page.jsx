@@ -69,6 +69,7 @@ export default function HomePage() {
       <section className="c4-editorial-section">
         <p className="c4-eyebrow">Learn Cric4All</p><h2>Useful cricket resources</h2>
         <div className="c4-resource-grid">
+          <Link href="/guides"><strong>Cricket knowledge hub</strong><span>Browse practical guides for scoring, NRR, DLS, Super Overs, statistics and match day.</span></Link>
           <Link href="/guides/cricket-scoring"><strong>Cricket scoring guide</strong><span>Understand runs, extras, wickets, overs and the scorer workflow.</span></Link>
           <Link href="/guides/league-management"><strong>League management guide</strong><span>Plan teams, fixtures, roles, public pages and season records.</span></Link>
           <Link href="/help"><strong>Cric4All help</strong><span>Step-by-step guidance for creating leagues, teams and matches.</span></Link>

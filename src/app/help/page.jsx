@@ -309,6 +309,7 @@ Continue Season Management`}
 
       <section className="help-related-guides">
         <h2>Related public guides</h2>
+        <p><Link href="/guides">Browse the complete Cricket Knowledge Hub →</Link></p>
         <p>
           <Link href="/guides/cricket-scoring">Read the cricket scoring guide →</Link>
         </p>

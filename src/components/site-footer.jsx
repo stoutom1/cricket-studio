@@ -8,6 +8,7 @@ export default function SiteFooter() {
       <div className="site-footer-links">
         <Link href="/about">About</Link>
         <Link href="/explore">Explore</Link>
+        <Link href="/guides">Cricket Guides</Link>
         <Link href="/guides/cricket-scoring">Scoring Guide</Link>
         <Link href="/guides/league-management">League Guide</Link>
         <Link href="/help">Help</Link>

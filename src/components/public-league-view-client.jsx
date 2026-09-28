@@ -4873,18 +4873,24 @@ function PublicRankings({ rankings }) {
   ];
 
   return (
-    <div className="slp-ranking-grid">
+    <div className="slp-stats-ranking-grid">
       {groups.map(([title, rows, value]) => (
-        <article className="slp-ranking-card" key={title}>
+        <article className="slp-stats-ranking-card" key={title}>
           <h3>{title}</h3>
-          {(rows || []).slice(0, 5).map((row, index) => (
-            <div className="slp-ranking-row" key={`${title}-${row.playerId}-${index}`}>
-              <span>{index + 1}</span>
-              <strong>{row.playerName}</strong>
-              <small>{row.teamName || "—"}</small>
-              <b>{value(row)}</b>
-            </div>
-          ))}
+          <div className="slp-stats-ranking-list">
+            {(rows || []).slice(0, 5).map((row, index) => (
+              <div className="slp-stats-ranking-row" key={`${title}-${row.playerId}-${index}`}>
+                <span className="slp-stats-ranking-no">{index + 1}</span>
+                <div className="slp-stats-ranking-person">
+                  <strong title={row.playerName || "Unknown player"}>
+                    {row.playerName || "Unknown player"}
+                  </strong>
+                  <small title={row.teamName || ""}>{row.teamName || "—"}</small>
+                </div>
+                <b>{value(row)}</b>
+              </div>
+            ))}
+          </div>
         </article>
       ))}
     </div>

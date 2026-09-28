@@ -78645,3 +78645,89 @@ body:has(.milestone-celebration-overlay)
     -webkit-text-fill-color: #f1f5f9;
   }
 }
+
+
+/* =========================================================
+   PHASE 3 — CRICKET KNOWLEDGE HUB
+   Public editorial content only. Does not affect scoring UI.
+========================================================= */
+.c4-guides-hub {
+  width: min(100%, 1120px);
+  margin: 0 auto;
+}
+
+.c4-guides-hub > h1 {
+  max-width: 850px;
+}
+
+.c4-guide-grid {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: 16px;
+  margin-top: 28px;
+}
+
+.c4-guide-card {
+  display: flex;
+  flex-direction: column;
+  min-width: 0;
+  min-height: 180px;
+  padding: 22px;
+  border: 1px solid rgba(148, 163, 184, 0.22);
+  border-radius: 18px;
+  background: rgba(15, 23, 42, 0.52);
+  color: inherit;
+  text-decoration: none;
+}
+
+.c4-guide-card:hover {
+  border-color: rgba(96, 165, 250, 0.55);
+  transform: translateY(-1px);
+}
+
+.c4-guide-card h2 {
+  margin: 0 0 10px;
+  font-size: 1.15rem;
+  line-height: 1.25;
+}
+
+.c4-guide-card p {
+  margin: 0;
+  line-height: 1.65;
+  color: #cbd5e1;
+}
+
+.c4-guide-card span {
+  margin-top: auto;
+  padding-top: 18px;
+  color: #7dd3fc;
+  font-weight: 800;
+}
+
+.c4-guide-disclaimer {
+  margin-top: 28px;
+  padding: 14px 16px;
+  border-left: 3px solid rgba(125, 211, 252, 0.7);
+  border-radius: 0 12px 12px 0;
+  background: rgba(15, 23, 42, 0.42);
+  color: #cbd5e1;
+  line-height: 1.6;
+}
+
+@media (max-width: 700px) {
+  .c4-guide-grid {
+    grid-template-columns: 1fr;
+    gap: 12px;
+    margin-top: 20px;
+  }
+
+  .c4-guide-card {
+    min-height: 0;
+    padding: 18px;
+    border-radius: 15px;
+  }
+
+  .c4-guide-card h2 {
+    font-size: 1.05rem;
+  }
+}
