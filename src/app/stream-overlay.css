@@ -1,0 +1,332 @@
+.stream-overlay-root {
+  position: fixed;
+  inset: 0;
+  z-index: 10;
+  box-sizing: border-box;
+  display: flex;
+  flex-direction: column;
+  justify-content: flex-end;
+  width: 100vw;
+  height: 100vh;
+  padding: 34px 42px;
+  overflow: hidden;
+  background: transparent;
+  color: #ffffff;
+  font-family:
+    Inter,
+    ui-sans-serif,
+    system-ui,
+    -apple-system,
+    BlinkMacSystemFont,
+    "Segoe UI",
+    sans-serif;
+  pointer-events: none;
+}
+
+.stream-overlay-scorebar,
+.stream-overlay-details,
+.stream-overlay-status {
+  box-sizing: border-box;
+  border: 1px solid rgba(125, 211, 252, 0.28);
+  background:
+    linear-gradient(
+      135deg,
+      rgba(3, 15, 31, 0.96),
+      rgba(8, 25, 48, 0.91)
+    );
+  box-shadow:
+    0 12px 35px rgba(0, 0, 0, 0.28);
+}
+
+.stream-overlay-scorebar {
+  display: grid;
+  grid-template-columns:
+    auto minmax(0, 1fr) auto;
+  align-items: center;
+  gap: 22px;
+  min-height: 86px;
+  padding: 13px 18px;
+  border-radius: 17px 17px 0 0;
+}
+
+.stream-overlay-brand {
+  display: flex;
+  align-items: center;
+  gap: 7px;
+  white-space: nowrap;
+}
+
+.stream-overlay-brand span {
+  font-size: 22px;
+}
+
+.stream-overlay-brand strong {
+  color: #f8fafc;
+  font-size: 18px;
+  font-weight: 950;
+  letter-spacing: 0.04em;
+}
+
+.stream-overlay-brand em {
+  padding: 4px 6px;
+  border-radius: 6px;
+  background: #dc2626;
+  color: #ffffff;
+  font-size: 8px;
+  font-style: normal;
+  font-weight: 950;
+  letter-spacing: 0.08em;
+}
+
+.stream-overlay-teams {
+  min-width: 0;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 12px;
+  color: #dbeafe;
+  font-size: 19px;
+  font-weight: 900;
+  text-align: center;
+}
+
+.stream-overlay-teams span {
+  min-width: 0;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.stream-overlay-teams b {
+  color: #67e8f9;
+  font-size: 12px;
+  font-weight: 900;
+}
+
+.stream-overlay-main-score {
+  display: flex;
+  align-items: baseline;
+  gap: 9px;
+  white-space: nowrap;
+}
+
+.stream-overlay-main-score strong {
+  color: #ffffff;
+  font-size: 31px;
+  font-weight: 950;
+  line-height: 1;
+}
+
+.stream-overlay-main-score span {
+  color: #9fc0df;
+  font-size: 12px;
+  font-weight: 850;
+}
+
+.stream-overlay-details {
+  display: grid;
+  grid-template-columns:
+    minmax(0, 1.05fr)
+    minmax(0, 1.05fr)
+    minmax(0, 1.05fr)
+    minmax(220px, 0.9fr);
+  gap: 0;
+  border-top: 0;
+  border-radius: 0;
+}
+
+.stream-overlay-details article,
+.stream-overlay-balls {
+  min-width: 0;
+  min-height: 70px;
+  padding: 11px 15px;
+  border-right: 1px solid rgba(125, 211, 252, 0.14);
+}
+
+.stream-overlay-details small,
+.stream-overlay-balls small {
+  display: block;
+  margin-bottom: 5px;
+  color: #7ea0c3;
+  font-size: 9px;
+  font-weight: 950;
+  letter-spacing: 0.09em;
+}
+
+.stream-overlay-details article strong {
+  display: block;
+  overflow: hidden;
+  color: #f8fafc;
+  font-size: 15px;
+  font-weight: 900;
+  line-height: 1.3;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.stream-overlay-balls {
+  border-right: 0;
+}
+
+.stream-overlay-balls > div {
+  display: flex;
+  align-items: center;
+  gap: 5px;
+  min-height: 26px;
+}
+
+.stream-overlay-balls b {
+  display: grid;
+  place-items: center;
+  min-width: 25px;
+  height: 25px;
+  padding: 0 5px;
+  box-sizing: border-box;
+  border-radius: 7px;
+  background: rgba(30, 64, 175, 0.45);
+  color: #dbeafe;
+  font-size: 10px;
+  font-weight: 950;
+}
+
+.stream-overlay-balls b.is-four {
+  background: rgba(8, 145, 178, 0.72);
+  color: #cffafe;
+}
+
+.stream-overlay-balls b.is-six {
+  background: rgba(37, 99, 235, 0.8);
+  color: #dbeafe;
+}
+
+.stream-overlay-balls b.is-wicket {
+  background: rgba(190, 24, 93, 0.78);
+  color: #fce7f3;
+}
+
+.stream-overlay-balls b.is-extra {
+  background: rgba(71, 85, 105, 0.78);
+}
+
+.stream-overlay-balls span {
+  color: #7891ad;
+  font-size: 10px;
+  font-weight: 800;
+}
+
+.stream-overlay-status {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 15px;
+  min-height: 32px;
+  padding: 6px 13px;
+  border-top: 0;
+  border-radius: 0 0 17px 17px;
+  background: rgba(2, 10, 22, 0.93);
+  color: #8fa8c2;
+  font-size: 9px;
+  font-weight: 850;
+}
+
+.stream-overlay-status span:first-child {
+  color: #a5f3fc;
+}
+
+.stream-overlay-error {
+  position: absolute;
+  top: 22px;
+  left: 50%;
+  transform: translateX(-50%);
+  max-width: 70%;
+  padding: 8px 12px;
+  border-radius: 8px;
+  background: rgba(127, 29, 29, 0.9);
+  color: #fee2e2;
+  font-size: 11px;
+  font-weight: 800;
+}
+
+@media (max-width: 1100px) {
+  .stream-overlay-root {
+    padding: 22px;
+  }
+
+  .stream-overlay-scorebar {
+    gap: 12px;
+  }
+
+  .stream-overlay-teams {
+    font-size: 15px;
+  }
+
+  .stream-overlay-main-score strong {
+    font-size: 26px;
+  }
+
+  .stream-overlay-details {
+    grid-template-columns:
+      repeat(3, minmax(0, 1fr));
+  }
+
+  .stream-overlay-balls {
+    grid-column: 1 / -1;
+    border-top: 1px solid rgba(125, 211, 252, 0.14);
+    border-right: 0;
+  }
+}
+
+@media (max-width: 720px) {
+  .stream-overlay-root {
+    padding: 12px;
+  }
+
+  .stream-overlay-scorebar {
+    grid-template-columns: 1fr auto;
+    align-items: center;
+    min-height: 66px;
+    padding: 9px 11px;
+  }
+
+  .stream-overlay-brand {
+    grid-column: 1 / -1;
+  }
+
+  .stream-overlay-brand strong {
+    font-size: 13px;
+  }
+
+  .stream-overlay-teams {
+    justify-content: flex-start;
+    font-size: 12px;
+  }
+
+  .stream-overlay-main-score {
+    justify-content: flex-end;
+  }
+
+  .stream-overlay-main-score strong {
+    font-size: 22px;
+  }
+
+  .stream-overlay-details {
+    grid-template-columns:
+      repeat(2, minmax(0, 1fr));
+  }
+
+  .stream-overlay-details article {
+    border-bottom: 1px solid rgba(125, 211, 252, 0.12);
+  }
+
+  .stream-overlay-details article:nth-child(2) {
+    border-right: 0;
+  }
+
+  .stream-overlay-details article:nth-child(3) {
+    border-bottom: 0;
+  }
+
+  .stream-overlay-balls {
+    grid-column: 1 / -1;
+  }
+}

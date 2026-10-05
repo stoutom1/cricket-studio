@@ -5,6 +5,7 @@ import { buildMatchInsights } from "@/lib/match-insights";
 import "@/app/live-score-premium.css";
 import "@/app/live-responsive-scorecard.css";
 import { trackGrowthEvent } from "@/components/growth-tracker";
+import LiveStreamStudio from "@/components/live-stream-studio";
 
 const FINAL_MATCH_STATUSES = new Set([
   "ABANDONED",
@@ -1645,6 +1646,8 @@ export default function LiveScoreClient({
 
   const [tvMode, setTvMode] =
     useState(false);
+  const [showStreamStudio, setShowStreamStudio] =
+    useState(false);
   const [tvEvent, setTvEvent] =
     useState(null);
 
@@ -2568,6 +2571,25 @@ const liveStatusText =
 
           <span className="live-inline-action-label">
             Share
+          </span>
+        </button>
+
+        <button
+          type="button"
+          onClick={() => setShowStreamStudio(true)}
+          className="live-inline-action live-inline-action-stream"
+          aria-label="Open live streaming setup"
+          title="Live stream this match to YouTube or another RTMP platform"
+        >
+          <span
+            className="live-inline-action-icon"
+            aria-hidden="true"
+          >
+            🎥
+          </span>
+
+          <span className="live-inline-action-label">
+            Stream
           </span>
         </button>
 
@@ -3890,6 +3912,15 @@ const liveStatusText =
           }
         }
       `}</style>
+
+      {showStreamStudio && !isMatchFinished ? (
+        <LiveStreamStudio
+          matchId={matchId}
+          teamAName={scoreboard?.match?.teamAName}
+          teamBName={scoreboard?.match?.teamBName}
+          onClose={() => setShowStreamStudio(false)}
+        />
+      ) : null}
 
       {error ? (
         <p className="live-inline-error">
