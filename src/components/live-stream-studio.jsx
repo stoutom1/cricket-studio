@@ -3,37 +3,47 @@
 import { useEffect, useMemo, useState } from "react";
 import "./LiveStreamStudio.css";
 
-const YOUTUBE_STUDIO_URL =
-  "https://studio.youtube.com/";
-
-const OBS_DOWNLOAD_URL =
-  "https://obsproject.com/download";
+const YOUTUBE_STUDIO_URL = "https://studio.youtube.com/";
+const OBS_DOWNLOAD_URL = "https://obsproject.com/download";
 
 function copyText(value, successMessage, setStatus) {
-  if (!value) {
-    return;
-  }
+  if (!value) return;
 
-  if (
-    navigator?.clipboard?.writeText
-  ) {
+  if (navigator?.clipboard?.writeText) {
     navigator.clipboard
       .writeText(value)
       .then(() => {
         setStatus(successMessage);
-        window.setTimeout(
-          () => setStatus(""),
-          2200
-        );
+        window.setTimeout(() => setStatus(""), 2200);
       })
       .catch(() => {
         setStatus("Copy failed. Select and copy the value manually.");
       });
-
     return;
   }
 
   setStatus("Copy is unavailable in this browser.");
+}
+
+async function shareOverlay(value, setStatus) {
+  if (!value) return;
+
+  if (navigator?.share) {
+    try {
+      await navigator.share({
+        title: "Cric4All Live Score Overlay",
+        text: "Cric4All live scoreboard overlay",
+        url: value,
+      });
+      setStatus("Overlay link shared!");
+      window.setTimeout(() => setStatus(""), 2200);
+      return;
+    } catch (error) {
+      if (error?.name === "AbortError") return;
+    }
+  }
+
+  copyText(value, "Overlay URL copied!", setStatus);
 }
 
 export default function LiveStreamStudio({
@@ -42,18 +52,12 @@ export default function LiveStreamStudio({
   teamBName,
   onClose,
 }) {
-  const [platform, setPlatform] =
-    useState("youtube");
-  const [status, setStatus] =
-    useState("");
+  const [platform, setPlatform] = useState("youtube");
+  const [status, setStatus] = useState("");
+  const [isMobileView, setIsMobileView] = useState(false);
 
   const overlayUrl = useMemo(() => {
-    if (
-      typeof window === "undefined" ||
-      !matchId
-    ) {
-      return "";
-    }
+    if (typeof window === "undefined" || !matchId) return "";
 
     return `${window.location.origin}/stream/${encodeURIComponent(
       String(matchId)
@@ -62,33 +66,37 @@ export default function LiveStreamStudio({
 
   useEffect(() => {
     function handleKeyDown(event) {
-      if (event.key === "Escape") {
-        onClose?.();
-      }
+      if (event.key === "Escape") onClose?.();
     }
 
-    document.addEventListener(
-      "keydown",
-      handleKeyDown
-    );
+    document.addEventListener("keydown", handleKeyDown);
 
     return () => {
-      document.removeEventListener(
-        "keydown",
-        handleKeyDown
-      );
+      document.removeEventListener("keydown", handleKeyDown);
     };
   }, [onClose]);
 
   useEffect(() => {
-    const previousOverflow =
-      document.body.style.overflow;
-
+    const previousOverflow = document.body.style.overflow;
     document.body.style.overflow = "hidden";
 
     return () => {
-      document.body.style.overflow =
-        previousOverflow;
+      document.body.style.overflow = previousOverflow;
+    };
+  }, []);
+
+  useEffect(() => {
+    const mediaQuery = window.matchMedia(
+      "(max-width: 760px), (pointer: coarse)"
+    );
+
+    const update = () => setIsMobileView(mediaQuery.matches);
+    update();
+
+    mediaQuery.addEventListener?.("change", update);
+
+    return () => {
+      mediaQuery.removeEventListener?.("change", update);
     };
   }, []);
 
@@ -98,14 +106,12 @@ export default function LiveStreamStudio({
 
   return (
     <div
-      className="live-stream-modal-backdrop"
+      className={`live-stream-modal-backdrop ${
+        isMobileView ? "is-mobile-stream-view" : ""
+      }`}
       role="presentation"
       onMouseDown={(event) => {
-        if (
-          event.target === event.currentTarget
-        ) {
-          onClose?.();
-        }
+        if (event.target === event.currentTarget) onClose?.();
       }}
     >
       <section
@@ -123,9 +129,9 @@ export default function LiveStreamStudio({
               Stream {title}
             </h2>
             <p>
-              Send your camera feed to YouTube or
-              another RTMP/RTMPS platform and keep
-              the live Cric4All scoreboard on top.
+              {isMobileView
+                ? "Set up your phone as the camera, then send the video to YouTube or another RTMP/RTMPS platform."
+                : "Send your camera feed to YouTube or another RTMP/RTMPS platform and keep the live Cric4All scoreboard on top."}
             </p>
           </div>
 
@@ -140,17 +146,48 @@ export default function LiveStreamStudio({
         </header>
 
         <div className="live-stream-modal-body">
+          {isMobileView ? (
+            <section className="live-stream-mobile-hero">
+              <div className="live-stream-mobile-hero-copy">
+                <span>📱 MOBILE STREAM SETUP</span>
+                <strong>
+                  Your phone can be the match camera.
+                </strong>
+                <p>
+                  Cric4All provides the live scoreboard overlay.
+                  A mobile streaming/encoder app sends your camera
+                  video to YouTube or another RTMP platform.
+                </p>
+              </div>
+
+              <div className="live-stream-mobile-actions">
+                <a
+                  href={YOUTUBE_STUDIO_URL}
+                  target="_blank"
+                  rel="noreferrer"
+                  className="live-stream-mobile-primary"
+                >
+                  Open YouTube Studio ↗
+                </a>
+
+                <button
+                  type="button"
+                  className="live-stream-mobile-secondary"
+                  onClick={() =>
+                    shareOverlay(overlayUrl, setStatus)
+                  }
+                >
+                  Share overlay
+                </button>
+              </div>
+            </section>
+          ) : null}
+
           <div className="live-stream-platform-row">
             <button
               type="button"
-              className={
-                platform === "youtube"
-                  ? "is-active"
-                  : ""
-              }
-              onClick={() =>
-                setPlatform("youtube")
-              }
+              className={platform === "youtube" ? "is-active" : ""}
+              onClick={() => setPlatform("youtube")}
             >
               <strong>YouTube Live</strong>
               <span>Recommended setup</span>
@@ -158,14 +195,8 @@ export default function LiveStreamStudio({
 
             <button
               type="button"
-              className={
-                platform === "other"
-                  ? "is-active"
-                  : ""
-              }
-              onClick={() =>
-                setPlatform("other")
-              }
+              className={platform === "other" ? "is-active" : ""}
+              onClick={() => setPlatform("other")}
             >
               <strong>Other RTMP/RTMPS</strong>
               <span>Facebook, Twitch, custom</span>
@@ -175,32 +206,72 @@ export default function LiveStreamStudio({
           <div className="live-stream-security-note">
             <span aria-hidden="true">🔐</span>
             <p>
-              <strong>Cric4All never asks for your
-              stream key.</strong>{" "}
-              Keep the stream key inside OBS or your
-              encoder. Cric4All only supplies the live
-              scoreboard overlay URL.
+              <strong>Cric4All never asks for your stream key.</strong>{" "}
+              Keep the stream key inside your streaming app or encoder.
+              Cric4All only supplies the live scoreboard overlay URL.
             </p>
           </div>
 
+          {isMobileView ? (
+            <section className="live-stream-phone-flow">
+              <div className="live-stream-phone-flow-heading">
+                <span>PHONE → LIVE</span>
+                <strong>Mobile workflow</strong>
+              </div>
+
+              <div className="live-stream-phone-steps">
+                <article>
+                  <b>1</b>
+                  <div>
+                    <strong>Choose a mobile streaming app</strong>
+                    <p>
+                      Use a mobile encoder that supports RTMP/RTMPS.
+                      Your phone camera and microphone become the
+                      broadcast source.
+                    </p>
+                  </div>
+                </article>
+
+                <article>
+                  <b>2</b>
+                  <div>
+                    <strong>Connect it to your platform</strong>
+                    <p>
+                      Select YouTube or Custom RTMP in the app and
+                      enter the server URL and stream key supplied by
+                      your streaming platform.
+                    </p>
+                  </div>
+                </article>
+
+                <article>
+                  <b>3</b>
+                  <div>
+                    <strong>Use the Cric4All overlay</strong>
+                    <p>
+                      If your mobile encoder supports a web/browser
+                      overlay, add the URL below. Otherwise the phone
+                      can still stream the camera feed without the
+                      scoreboard embedded in the video.
+                    </p>
+                  </div>
+                </article>
+              </div>
+            </section>
+          ) : null}
+
           <div className="live-stream-step-grid">
             <article className="live-stream-step">
-              <span className="live-stream-step-number">
-                1
-              </span>
-
+              <span className="live-stream-step-number">1</span>
               <div>
-                <h3>
-                  Create your live stream
-                </h3>
+                <h3>Create your live stream</h3>
 
                 {platform === "youtube" ? (
                   <>
                     <p>
                       In YouTube Studio, choose
-                      <strong> Create → Go Live</strong>,
-                      then use the Stream tab to create
-                      or schedule the event.
+                      <strong> Create → Go Live</strong>, then use the
+                      Stream tab to create or schedule the event.
                     </p>
 
                     <a
@@ -214,56 +285,60 @@ export default function LiveStreamStudio({
                   </>
                 ) : (
                   <p>
-                    Create a live event on your chosen
-                    RTMP/RTMPS platform and keep its
-                    server URL and stream key ready
-                    for your encoder.
+                    Create a live event on your chosen RTMP/RTMPS
+                    platform and keep its server URL and stream key
+                    ready for your encoder.
                   </p>
                 )}
               </div>
             </article>
 
             <article className="live-stream-step">
-              <span className="live-stream-step-number">
-                2
-              </span>
+              <span className="live-stream-step-number">2</span>
 
               <div>
                 <h3>
-                  Install an encoder
+                  {isMobileView
+                    ? "Use your phone camera"
+                    : "Install an encoder"}
                 </h3>
 
-                <p>
-                  OBS Studio is free and supports
-                  cameras, capture cards, microphones
-                  and browser overlays.
-                </p>
+                {isMobileView ? (
+                  <p>
+                    Open your preferred mobile RTMP/RTMPS encoder,
+                    allow camera and microphone access, and choose
+                    the rear camera for the match.
+                  </p>
+                ) : (
+                  <>
+                    <p>
+                      OBS Studio is free and supports cameras, capture
+                      cards, microphones and browser overlays.
+                    </p>
 
-                <a
-                  href={OBS_DOWNLOAD_URL}
-                  target="_blank"
-                  rel="noreferrer"
-                  className="live-stream-secondary-link"
-                >
-                  Download OBS Studio ↗
-                </a>
+                    <a
+                      href={OBS_DOWNLOAD_URL}
+                      target="_blank"
+                      rel="noreferrer"
+                      className="live-stream-secondary-link"
+                    >
+                      Download OBS Studio ↗
+                    </a>
+                  </>
+                )}
               </div>
             </article>
 
-            <article className="live-stream-step">
-              <span className="live-stream-step-number">
-                3
-              </span>
+            <article className="live-stream-step live-stream-overlay-step">
+              <span className="live-stream-step-number">3</span>
 
               <div>
-                <h3>
-                  Add the Cric4All overlay
-                </h3>
+                <h3>Add the Cric4All overlay</h3>
 
                 <p>
-                  In OBS, add a <strong>Browser
-                  Source</strong> and paste this URL.
-                  Set it to 1920 × 1080.
+                  {isMobileView
+                    ? "Copy or share this URL into a mobile encoder that supports browser/web overlays."
+                    : "In OBS, add a Browser Source and paste this URL. Set it to 1920 × 1080."}
                 </p>
 
                 <div className="live-stream-copy-row">
@@ -271,9 +346,7 @@ export default function LiveStreamStudio({
                     value={overlayUrl}
                     readOnly
                     aria-label="Cric4All stream overlay URL"
-                    onFocus={(event) =>
-                      event.currentTarget.select()
-                    }
+                    onFocus={(event) => event.currentTarget.select()}
                   />
 
                   <button
@@ -297,81 +370,78 @@ export default function LiveStreamStudio({
                     rel="noreferrer"
                     className="live-stream-text-link"
                     onClick={(event) => {
-                      if (!overlayUrl) {
-                        event.preventDefault();
-                      }
+                      if (!overlayUrl) event.preventDefault();
                     }}
                   >
                     Test overlay ↗
                   </a>
+
+                  {isMobileView ? (
+                    <button
+                      type="button"
+                      className="live-stream-share-link"
+                      onClick={() =>
+                        shareOverlay(overlayUrl, setStatus)
+                      }
+                    >
+                      Share overlay ↗
+                    </button>
+                  ) : null}
                 </div>
               </div>
             </article>
 
             <article className="live-stream-step">
-              <span className="live-stream-step-number">
-                4
-              </span>
+              <span className="live-stream-step-number">4</span>
 
               <div>
                 <h3>
-                  Add your camera/video
+                  {isMobileView
+                    ? "Frame the match"
+                    : "Add your camera/video"}
                 </h3>
 
                 <p>
-                  Add your phone camera through a
-                  capture device, webcam, camera,
-                  or another video source in OBS.
-                  Put the Cric4All Browser Source
-                  above the camera source.
+                  {isMobileView
+                    ? "Use a stable tripod or mount, check the camera framing, and confirm that your microphone is picking up match audio."
+                    : "Add your phone camera through a capture device, webcam, camera, or another video source in OBS. Put the Cric4All Browser Source above the camera source."}
                 </p>
               </div>
             </article>
 
             <article className="live-stream-step">
-              <span className="live-stream-step-number">
-                5
-              </span>
+              <span className="live-stream-step-number">5</span>
 
               <div>
-                <h3>
-                  Connect the encoder
-                </h3>
+                <h3>Connect the encoder</h3>
 
                 {platform === "youtube" ? (
                   <p>
-                    In OBS, select YouTube or enter the
-                    Stream URL shown by YouTube, then
-                    enter your YouTube Stream Key.
-                    Cric4All does not store either value.
+                    In your encoder, select YouTube or enter the Stream
+                    URL shown by YouTube, then enter your YouTube Stream
+                    Key. Cric4All does not store either value.
                   </p>
                 ) : (
                   <p>
-                    In OBS, select your platform or
-                    Custom Streaming Server and enter
-                    that platform's RTMP/RTMPS server
-                    URL and stream key.
+                    Select your platform or Custom Streaming Server and
+                    enter that platform's RTMP/RTMPS server URL and
+                    stream key.
                   </p>
                 )}
               </div>
             </article>
 
             <article className="live-stream-step">
-              <span className="live-stream-step-number">
-                6
-              </span>
+              <span className="live-stream-step-number">6</span>
 
               <div>
-                <h3>
-                  Preview, then go live
-                </h3>
+                <h3>Preview, then go live</h3>
 
                 <p>
-                  Start the encoder, confirm the camera
-                  and scoreboard look correct, then
-                  start the live event on your platform.
-                  Cric4All will continue updating the
-                  overlay from the live score.
+                  Start the encoder, confirm the camera and scoreboard
+                  look correct, then start the live event on your
+                  platform. Cric4All will continue updating the overlay
+                  from the live score.
                 </p>
               </div>
             </article>
@@ -379,35 +449,30 @@ export default function LiveStreamStudio({
 
           <div className="live-stream-overlay-preview">
             <div>
-              <span>
-                LIVE SCORE OVERLAY
-              </span>
+              <span>LIVE SCORE OVERLAY</span>
               <strong>
-                Auto-updates while the Cric4All match
-                is being scored
+                Auto-updates while the Cric4All match is being scored
               </strong>
             </div>
 
             <div className="live-stream-overlay-badges">
               <b>1920 × 1080</b>
-              <b>Transparent</b>
+              <b>Live data</b>
               <b>Browser Source</b>
             </div>
           </div>
 
           <div className="live-stream-note">
-            <strong>Important:</strong>{" "}
-            Cric4All supplies the scoreboard graphics
-            and live match data. Your camera/video
-            feed is sent directly from your encoder to
-            YouTube or the other streaming platform.
+            <strong>Mobile note:</strong>{" "}
+            iPhone and Android browsers do not provide a direct,
+            reliable browser-to-YouTube RTMP publishing path. The
+            phone therefore acts as the camera through a mobile
+            streaming/encoder app. Cric4All remains responsible for
+            the live scoreboard and overlay data.
           </div>
 
           {status ? (
-            <div
-              className="live-stream-status"
-              role="status"
-            >
+            <div className="live-stream-status" role="status">
               {status}
             </div>
           ) : null}

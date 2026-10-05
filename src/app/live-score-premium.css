@@ -6786,3 +6786,20 @@ body:has(.live-tv-mode) {
 .live-tv-mode > .tv2-event-overlay.is-boundary {
   display: flex !important;
 }
+
+
+/* =========================================================
+   CRIC4ALL LIVE STREAM — MOBILE ACTION EMPHASIS
+   The existing Stream action remains available on desktop and
+   mobile; this only improves discoverability on small screens.
+   ========================================================= */
+@media (max-width: 760px) {
+  .live-score-final .live-inline-action-stream {
+    border-color: rgba(34, 211, 238, 0.32);
+    background: rgba(8, 145, 178, 0.12);
+  }
+
+  .live-score-final .live-inline-action-stream .live-inline-action-icon {
+    filter: drop-shadow(0 0 5px rgba(34, 211, 238, 0.22));
+  }
+}
