@@ -189,12 +189,12 @@ function MobileBattingCards({ rows = [] }) {
 
             <div className="mobile-stat-grid batting-stat-grid">
               <MobileStatValue
-                label="Runs"
+                label="R"
                 value={batter.runs}
                 className="is-primary"
               />
               <MobileStatValue
-                label="Balls"
+                label="B"
                 value={batter.balls}
               />
               <MobileStatValue
@@ -206,15 +206,15 @@ function MobileBattingCards({ rows = [] }) {
                 value={batter.sixes}
               />
               <MobileStatValue
-                label="Strike rate"
+                label="Strike Rate"
                 value={batter.strikeRate}
               />
+              <MobileStatValue
+                label="Dismissal"
+                value={dismissal}
+                className="is-dismissal"
+              />
             </div>
-
-            <footer>
-              <span>Dismissal</span>
-              <strong>{dismissal}</strong>
-            </footer>
           </article>
         );
       }}
