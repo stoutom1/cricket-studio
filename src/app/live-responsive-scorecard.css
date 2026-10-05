@@ -1,0 +1,304 @@
+/*
+ * Cric4All — Responsive Scorecard 2.0
+ *
+ * Mobile uses the SAME scorecard table structure as laptop/desktop.
+ * The old mobile stat-card components remain in the DOM for safe rollback,
+ * but are hidden here so there is only one visible scorecard presentation.
+ *
+ * Goals:
+ * - No page-level horizontal overflow.
+ * - No separate mobile scorecard design.
+ * - Preserve Player / R / B / 4s / 6s / SR / Dismissal on phones.
+ * - Allow long names and dismissals to wrap instead of being truncated.
+ * - Keep numeric columns compact and readable.
+ * - Preserve the existing laptop/desktop design unchanged.
+ */
+
+@media (max-width: 700px) {
+  /* ---------------------------------------------------------
+     One visible scorecard format on mobile
+  --------------------------------------------------------- */
+  .live-score-final .mobile-scorecard-list,
+  .live-score-final .mobile-scorecard-group {
+    display: none !important;
+  }
+
+  .live-score-final .live-table-shell {
+    display: block !important;
+    width: 100% !important;
+    max-width: 100% !important;
+    min-width: 0 !important;
+    overflow: hidden !important;
+    border: 1px solid var(--lf-line) !important;
+    border-radius: 10px !important;
+    background: #071421 !important;
+  }
+
+  .live-score-final .live-table-wrap {
+    width: 100% !important;
+    max-width: 100% !important;
+    min-width: 0 !important;
+    overflow-x: hidden !important;
+    overflow-y: visible !important;
+  }
+
+  .live-score-final .table-scroll-hint {
+    display: none !important;
+  }
+
+  /* Restore a real HTML table rather than the previous mobile card/grid mode. */
+  .live-score-final .live-pro-table {
+    display: table !important;
+    width: 100% !important;
+    min-width: 0 !important;
+    max-width: 100% !important;
+    table-layout: fixed !important;
+    border-collapse: collapse !important;
+  }
+
+  .live-score-final .live-pro-table thead {
+    display: table-header-group !important;
+  }
+
+  .live-score-final .live-pro-table tbody {
+    display: table-row-group !important;
+  }
+
+  .live-score-final .live-pro-table tr {
+    display: table-row !important;
+    width: auto !important;
+    overflow: visible !important;
+    border: 0 !important;
+    border-radius: 0 !important;
+    background: transparent !important;
+    box-shadow: none !important;
+  }
+
+  .live-score-final .live-pro-table th,
+  .live-score-final .live-pro-table td {
+    display: table-cell !important;
+    box-sizing: border-box !important;
+    min-width: 0 !important;
+    max-width: none !important;
+    height: auto !important;
+    padding: 8px 4px !important;
+    border-bottom: 1px solid var(--lf-line-soft) !important;
+    vertical-align: middle !important;
+    font-size: clamp(10px, 2.7vw, 12px) !important;
+    line-height: 1.25 !important;
+    text-align: center !important;
+    white-space: normal !important;
+    overflow-wrap: anywhere !important;
+    word-break: normal !important;
+  }
+
+  .live-score-final .live-pro-table th {
+    height: auto !important;
+    padding: 8px 3px !important;
+    color: #86aad3 !important;
+    background: #0c1a2d !important;
+    font-size: clamp(8px, 2.25vw, 10px) !important;
+    line-height: 1.15 !important;
+    letter-spacing: 0.035em !important;
+    white-space: normal !important;
+  }
+
+  .live-score-final .live-pro-table td:first-child,
+  .live-score-final .live-pro-table th:first-child {
+    position: sticky !important;
+    left: 0 !important;
+    z-index: 3 !important;
+    text-align: left !important;
+  }
+
+  .live-score-final .live-pro-table th:first-child {
+    background: #0c1a2d !important;
+  }
+
+  .live-score-final .live-pro-table td:first-child {
+    background: #071421 !important;
+  }
+
+  .live-score-final .live-pro-table .name-cell,
+  .live-score-final .live-pro-table td:first-child {
+    overflow: visible !important;
+    text-overflow: clip !important;
+    white-space: normal !important;
+    overflow-wrap: anywhere !important;
+    word-break: normal !important;
+    color: #f0f5fa !important;
+    font-weight: 850 !important;
+  }
+
+  .live-score-final .live-pro-table tbody tr:last-child td {
+    border-bottom: 0 !important;
+  }
+
+  /* Keep highlighted rows consistent with the desktop scorecard. */
+  .live-score-final .highlight-top-batter td,
+  .live-score-final .highlight-best-bowler td {
+    background: rgba(51, 143, 243, 0.09) !important;
+  }
+
+  .live-score-final .highlight-top-batter td:first-child,
+  .live-score-final .highlight-best-bowler td:first-child {
+    background: #102742 !important;
+    box-shadow: inset 3px 0 0 var(--lf-cyan) !important;
+  }
+
+  /* Badges live inside a narrow dismissal cell on phones. */
+  .live-score-final .live-pro-table .score-badge {
+    max-width: 100% !important;
+    min-height: 0 !important;
+    height: auto !important;
+    padding: 3px 5px !important;
+    font-size: clamp(8px, 2.2vw, 10px) !important;
+    line-height: 1.15 !important;
+    white-space: normal !important;
+    overflow-wrap: anywhere !important;
+  }
+
+  /* ---------------------------------------------------------
+     Batting: Player / R / B / 4s / 6s / SR / Dismissal
+     The wide text columns receive most of the phone width.
+  --------------------------------------------------------- */
+  .live-score-final .table-type-batting th:nth-child(1),
+  .live-score-final .table-type-batting td:nth-child(1) {
+    width: 24% !important;
+  }
+
+  .live-score-final .table-type-batting th:nth-child(2),
+  .live-score-final .table-type-batting td:nth-child(2),
+  .live-score-final .table-type-batting th:nth-child(3),
+  .live-score-final .table-type-batting td:nth-child(3),
+  .live-score-final .table-type-batting th:nth-child(4),
+  .live-score-final .table-type-batting td:nth-child(4),
+  .live-score-final .table-type-batting th:nth-child(5),
+  .live-score-final .table-type-batting td:nth-child(5) {
+    width: 7% !important;
+  }
+
+  .live-score-final .table-type-batting th:nth-child(6),
+  .live-score-final .table-type-batting td:nth-child(6) {
+    width: 10% !important;
+  }
+
+  .live-score-final .table-type-batting th:nth-child(7),
+  .live-score-final .table-type-batting td:nth-child(7) {
+    width: 38% !important;
+    text-align: left !important;
+  }
+
+  .live-score-final .table-type-batting td:nth-child(2),
+  .live-score-final .table-type-batting td:nth-child(3),
+  .live-score-final .table-type-batting td:nth-child(4),
+  .live-score-final .table-type-batting td:nth-child(5),
+  .live-score-final .table-type-batting td:nth-child(6),
+  .live-score-final .table-type-bowling td:nth-child(n+2),
+  .live-score-final .table-type-partnerships td:nth-child(2),
+  .live-score-final .table-type-partnerships td:nth-child(3),
+  .live-score-final .table-type-wickets td:nth-child(1),
+  .live-score-final .table-type-wickets td:nth-child(2),
+  .live-score-final .table-type-wickets td:nth-child(4) {
+    white-space: nowrap !important;
+    overflow-wrap: normal !important;
+  }
+
+  /* ---------------------------------------------------------
+     Bowling: Bowler / Overs / Runs / Wickets / Dots / Economy
+  --------------------------------------------------------- */
+  .live-score-final .table-type-bowling th:nth-child(1),
+  .live-score-final .table-type-bowling td:nth-child(1) {
+    width: 30% !important;
+  }
+
+  .live-score-final .table-type-bowling th:nth-child(n+2),
+  .live-score-final .table-type-bowling td:nth-child(n+2) {
+    width: 14% !important;
+  }
+
+  /* ---------------------------------------------------------
+     Partnerships: Batters / Runs / Balls / Status
+  --------------------------------------------------------- */
+  .live-score-final .table-type-partnerships th:nth-child(1),
+  .live-score-final .table-type-partnerships td:nth-child(1) {
+    width: 38% !important;
+  }
+
+  .live-score-final .table-type-partnerships th:nth-child(2),
+  .live-score-final .table-type-partnerships td:nth-child(2),
+  .live-score-final .table-type-partnerships th:nth-child(3),
+  .live-score-final .table-type-partnerships td:nth-child(3) {
+    width: 17% !important;
+  }
+
+  .live-score-final .table-type-partnerships th:nth-child(4),
+  .live-score-final .table-type-partnerships td:nth-child(4) {
+    width: 28% !important;
+    text-align: left !important;
+  }
+
+  /* ---------------------------------------------------------
+     Fall of wickets: Wicket / Score / Player / Over
+  --------------------------------------------------------- */
+  .live-score-final .table-type-wickets th:nth-child(1),
+  .live-score-final .table-type-wickets td:nth-child(1) {
+    width: 14% !important;
+  }
+
+  .live-score-final .table-type-wickets th:nth-child(2),
+  .live-score-final .table-type-wickets td:nth-child(2) {
+    width: 18% !important;
+  }
+
+  .live-score-final .table-type-wickets th:nth-child(3),
+  .live-score-final .table-type-wickets td:nth-child(3) {
+    width: 48% !important;
+    text-align: left !important;
+  }
+
+  .live-score-final .table-type-wickets th:nth-child(4),
+  .live-score-final .table-type-wickets td:nth-child(4) {
+    width: 20% !important;
+  }
+
+}
+
+/* Give the same scorecard a little more breathing room on larger phones. */
+@media (min-width: 480px) and (max-width: 700px) {
+  .live-score-final .live-pro-table th,
+  .live-score-final .live-pro-table td {
+    padding: 9px 6px !important;
+    font-size: 11px !important;
+  }
+
+  .live-score-final .live-pro-table th {
+    font-size: 9px !important;
+  }
+
+  .live-score-final .table-type-batting td:first-child {
+    font-size: 12px !important;
+  }
+}
+
+/* Very narrow phones: keep the table intact without allowing page overflow. */
+@media (max-width: 359px) {
+  .live-score-final .live-pro-table th,
+  .live-score-final .live-pro-table td {
+    padding: 7px 3px !important;
+    font-size: 9.5px !important;
+  }
+
+  .live-score-final .live-pro-table th {
+    font-size: 7.8px !important;
+  }
+
+  .live-score-final .table-type-batting td:first-child {
+    font-size: 10px !important;
+  }
+
+  .live-score-final .live-pro-table .score-badge {
+    padding: 2px 3px !important;
+    font-size: 8px !important;
+  }
+}

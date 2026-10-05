@@ -3,6 +3,7 @@
 import {useEffect,useMemo,useRef,useState,} from "react";
 import { buildMatchInsights } from "@/lib/match-insights";
 import "@/app/live-score-premium.css";
+import "@/app/live-responsive-scorecard.css";
 import { trackGrowthEvent } from "@/components/growth-tracker";
 
 const FINAL_MATCH_STATUSES = new Set([
