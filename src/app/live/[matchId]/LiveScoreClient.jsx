@@ -184,7 +184,10 @@ function MobileBattingCards({ rows = [] }) {
           >
             <header>
               <span>Batting</span>
-              <strong>{batter.playerName}</strong>
+              <strong>
+                {batter.playerName}
+                {dismissal ? ` - ${dismissal}` : ""}
+              </strong>
             </header>
 
             <div className="mobile-stat-grid batting-stat-grid">
@@ -208,11 +211,6 @@ function MobileBattingCards({ rows = [] }) {
               <MobileStatValue
                 label="Strike Rate"
                 value={batter.strikeRate}
-              />
-              <MobileStatValue
-                label="Dismissal"
-                value={dismissal}
-                className="is-dismissal"
               />
             </div>
           </article>

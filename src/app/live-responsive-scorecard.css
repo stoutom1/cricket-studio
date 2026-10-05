@@ -4,8 +4,8 @@
  * Mobile uses the native scorecard cards already rendered by LiveScoreClient.
  * Each player is presented as:
  *
- *   Player name
- *   R | B | 4s | 6s | Strike Rate | Dismissal
+ *   Player name - dismissal
+ *   R | B | 4s | 6s | Strike Rate
  *   value row
  *
  * Desktop/laptop remains on the existing table presentation.
@@ -64,8 +64,8 @@
     display: block !important;
     margin: 0 !important;
     color: #f4f8fc !important;
-    font-size: 16px !important;
-    line-height: 1.2 !important;
+    font-size: 15px !important;
+    line-height: 1.25 !important;
     font-weight: 850 !important;
     white-space: normal !important;
     overflow-wrap: anywhere !important;
@@ -73,10 +73,12 @@
   }
 
   /* ---------------------------------------------------------
-     Batting: one compact header/value row.
+     Batting: player/dismissal on the first line, then one compact
+     five-column statistics row.
 
-     R | B | 4s | 6s | Strike Rate | Dismissal
-     0 | 3 |  0 |  0 |    0.00     | b Samrat
+     John Felix - b Samrat
+     R | B | 4s | 6s | Strike Rate
+     0 | 3 |  0 |  0 |    0.00
   --------------------------------------------------------- */
   .live-score-final .mobile-scorecard-card .mobile-stat-grid {
     display: grid !important;
@@ -88,12 +90,11 @@
 
   .live-score-final .mobile-scorecard-card .batting-stat-grid {
     grid-template-columns:
-      minmax(30px, 0.65fr)
-      minmax(30px, 0.65fr)
-      minmax(30px, 0.65fr)
-      minmax(30px, 0.65fr)
-      minmax(62px, 1.15fr)
-      minmax(92px, 1.85fr) !important;
+      minmax(0, 0.82fr)
+      minmax(0, 0.82fr)
+      minmax(0, 0.82fr)
+      minmax(0, 0.82fr)
+      minmax(82px, 1.7fr) !important;
   }
 
   .live-score-final .mobile-scorecard-card .mobile-stat-value {
@@ -152,25 +153,6 @@
     font-size: 15px !important;
   }
 
-  /* Dismissal is intentionally left-aligned because it is the only
-     text-heavy field in the batting row. */
-  .live-score-final .mobile-scorecard-card .mobile-stat-value.is-dismissal {
-    align-items: flex-start !important;
-    padding-left: 7px !important;
-    padding-right: 7px !important;
-    background: #0a192b !important;
-  }
-
-  .live-score-final .mobile-scorecard-card .mobile-stat-value.is-dismissal span,
-  .live-score-final .mobile-scorecard-card .mobile-stat-value.is-dismissal strong {
-    text-align: left !important;
-  }
-
-  .live-score-final .mobile-scorecard-card .mobile-stat-value.is-dismissal strong {
-    font-size: 12px !important;
-    line-height: 1.15 !important;
-  }
-
   /* ---------------------------------------------------------
      Bowling: same philosophy, with five fields.
      Bowler name above, then:
@@ -217,7 +199,7 @@
   }
 
   .live-score-final .mobile-scorecard-card > header strong {
-    font-size: 17px !important;
+    font-size: 16px !important;
   }
 
   .live-score-final .mobile-scorecard-card .mobile-stat-value {
@@ -248,12 +230,11 @@
 
   .live-score-final .mobile-scorecard-card .batting-stat-grid {
     grid-template-columns:
-      minmax(27px, 0.62fr)
-      minmax(27px, 0.62fr)
-      minmax(27px, 0.62fr)
-      minmax(27px, 0.62fr)
-      minmax(58px, 1.1fr)
-      minmax(82px, 1.75fr) !important;
+      minmax(0, 0.78fr)
+      minmax(0, 0.78fr)
+      minmax(0, 0.78fr)
+      minmax(0, 0.78fr)
+      minmax(72px, 1.55fr) !important;
   }
 
   .live-score-final .mobile-scorecard-card .mobile-stat-value {
@@ -273,12 +254,4 @@
     font-size: 14px !important;
   }
 
-  .live-score-final .mobile-scorecard-card .mobile-stat-value.is-dismissal {
-    padding-left: 5px !important;
-    padding-right: 5px !important;
-  }
-
-  .live-score-final .mobile-scorecard-card .mobile-stat-value.is-dismissal strong {
-    font-size: 11px !important;
-  }
 }
