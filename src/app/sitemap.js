@@ -171,15 +171,16 @@ export default async function sitemap() {
     });
 
     /*
-     * Keep thin roster/profile URLs out of the sitemap. They remain accessible
-     * from public league navigation, but the sitemap focuses Google on pages
-     * with substantial public content.
+     * Keep thin roster/profile URLs out of the sitemap. Completed match pages are
+     * included only when they have a more substantial ball-by-ball record. This
+     * is a conservative discovery threshold, not a guarantee of search quality;
+     * pages should still be reviewed for unique, useful public information.
      */
     const indexableMatches = league.matches.filter((match) => {
       const status = String(match.status || "").toUpperCase();
       return (
         ["COMPLETED", "COMPLETED_LOCKED", "COMPLETED_CORRECTED"].includes(status) &&
-        Number(match._count?.balls || 0) >= 12
+        Number(match._count?.balls || 0) >= 30
       );
     });
 

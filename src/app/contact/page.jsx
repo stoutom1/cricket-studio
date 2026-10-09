@@ -1,3 +1,12 @@
+import { absoluteCric4AllUrl } from "@/lib/seo";
+
+export const metadata = {
+  title: "Contact Cric4All Support | Cricket Scoring & League Help",
+  description: "Contact Cric4All for help with account access, live scoring, league setup, match corrections, and technical support.",
+  alternates: { canonical: absoluteCric4AllUrl("/contact") },
+  robots: { index: true, follow: true },
+};
+
 export default function ContactPage() {
   return (
     <main className="contact-page">

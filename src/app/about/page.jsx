@@ -1,9 +1,12 @@
+import { absoluteCric4AllUrl } from "@/lib/seo";
+
 export const metadata = {
   title: "About Cric4All | Community Cricket Scoring & League Management",
   description:
     "Learn how Cric4All supports community cricket with live scoring, league management, player statistics, communications, kit tracking, birthdays, inactivity alerts and public spectator experiences.",
   alternates: {
-    canonical: "/about",
+    canonical: absoluteCric4AllUrl("/about"),
+    robots: { index: true, follow: true },
   },
 };
 
