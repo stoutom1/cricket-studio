@@ -1167,3 +1167,65 @@
     min-width: 76px !important;
   }
 }
+
+
+/* Mobile-only league directory: compact, readable cards without narrow text columns. */
+@media (max-width: 700px) {
+  .sep-page .sep-league-list { min-width: 0 !important; }
+  .sep-page .sep-league-row {
+    display: grid !important;
+    grid-template-columns: repeat(3, minmax(0, 1fr)) !important;
+    column-gap: 10px !important;
+    row-gap: 12px !important;
+    padding: 18px 14px !important;
+    height: auto !important;
+    min-width: 0 !important;
+    align-items: center !important;
+  }
+  .sep-page .sep-league-row .sep-index { display: none !important; }
+  .sep-page .sep-league-row .sep-league-mark {
+    grid-column: 1 !important; grid-row: 1 !important;
+    justify-self: start !important;
+    width: 48px !important; height: 48px !important;
+    font-size: 14px !important;
+  }
+  .sep-page .sep-league-row .sep-league-main {
+    grid-column: 2 / 4 !important; grid-row: 1 !important;
+    min-width: 0 !important; width: 100% !important;
+  }
+  .sep-page .sep-league-row .sep-league-main strong {
+    display: block !important; font-size: 17px !important;
+    line-height: 1.35 !important; white-space: normal !important;
+    overflow: visible !important; text-overflow: clip !important;
+    overflow-wrap: break-word !important; word-break: normal !important;
+  }
+  .sep-page .sep-league-row .sep-league-main em {
+    white-space: normal !important; overflow: visible !important;
+    text-overflow: clip !important; overflow-wrap: break-word !important;
+  }
+  .sep-page .sep-league-row .sep-league-stat {
+    display: flex !important; flex-direction: column !important;
+    grid-row: 2 !important; grid-column: auto !important;
+    justify-self: stretch !important; align-items: center !important;
+    text-align: center !important; margin: 0 !important;
+    padding: 10px 4px !important; min-width: 0 !important;
+    border-radius: 10px; background: rgba(255,255,255,.035);
+  }
+  .sep-page .sep-league-row .sep-league-stat small {
+    font-size: 10px !important; letter-spacing: .04em !important;
+  }
+  .sep-page .sep-league-row .sep-league-stat strong {
+    font-size: 17px !important; margin-top: 3px !important;
+  }
+  .sep-page .sep-league-row .sep-follow-state {
+    grid-column: 1 / -1 !important; grid-row: 3 !important;
+    justify-self: start !important; margin: 0 !important;
+  }
+  .sep-page .sep-league-row .sep-open-action {
+    grid-column: 1 / -1 !important; grid-row: 4 !important;
+    justify-self: stretch !important; display: flex !important;
+    align-items: center !important; justify-content: center !important;
+    min-height: 44px !important; margin: 0 !important;
+    font-size: 13px !important;
+  }
+}
