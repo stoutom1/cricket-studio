@@ -4817,6 +4817,32 @@ function StatsTable({ type, rows }) {
   );
 }
 
+function MobileMetric({ label, value, featured = false }) {
+  return <div className={`slp-mobile-metric${featured ? " slp-mobile-metric--featured" : ""}`}>
+    <span>{label}</span><strong>{value ?? "—"}</strong>
+  </div>;
+}
+
+function MobileStatsCards({ type, rows }) {
+  const metricsFor = (row) => {
+    if (type === "batting") return [["Matches",row.matches ?? 0],["Innings",row.battingInnings ?? 0],["Runs",row.runs ?? 0],["Highest",row.highestScore ?? 0],["Average",row.average ?? "0.00"],["Strike rate",row.strikeRate ?? "0.00"],["Fours",row.fours ?? 0],["Sixes",row.sixes ?? 0]];
+    if (type === "bowling") return [["Matches",row.matches ?? 0],["Overs",row.bowlingOvers ?? row.overs ?? "0.0"],["Runs",row.bowlingRuns ?? row.runs ?? 0],["Wickets",row.wickets ?? 0],["Best",row.bestBowling ?? "—"],["Average",row.bowlingAverage ?? "0.00"],["Strike rate",row.bowlingStrikeRate ?? "0.00"],["Economy",row.economy ?? "0.00"],["Dot balls",row.dots ?? 0]];
+    if (type === "fielding") return [["Matches",row.matches ?? 0],["Catches",row.catches ?? 0],["Run outs",row.runOuts ?? 0],["Stumpings",row.stumpings ?? 0],["Assists",row.assists ?? 0],["Total",row.fieldingTotal ?? 0]];
+    if (type === "captaincy") return [["Played",row.played ?? 0],["Won",row.won ?? 0],["Lost",row.lost ?? 0],["Win rate",`${row.played ? ((Number(row.won || 0) / Number(row.played)) * 100).toFixed(1) : "0.0"}%`]];
+    return [["Catches",row.catches ?? 0],["Stumpings",row.stumpings ?? 0],["Run outs",row.runOuts ?? 0],["Total",Number(row.catches || 0) + Number(row.stumpings || 0) + Number(row.runOuts || 0)]];
+  };
+  return <div className="slp-mobile-stats-cards">
+    {rows.map((row, index) => {
+      const name = row.playerName || row.name || "Unknown player";
+      const metrics = metricsFor(row);
+      return <article className="slp-mobile-stats-card" key={`${row.playerId || name}-${index}`}>
+        <div className="slp-mobile-stats-person"><span className="slp-mobile-stats-rank">#{index + 1}</span><span className="slp-avatar">{getInitials(name)}</span><div><strong>{name}</strong><small>{row.teamName || "—"}</small></div></div>
+        <div className="slp-mobile-metrics">{metrics.map(([label,value], i) => <MobileMetric key={label} label={label} value={value} featured={i === 2 && type === "batting" || i === 3 && type === "bowling" || label === "Total" || label === "Win rate"} />)}</div>
+      </article>;
+    })}
+  </div>;
+}
+
 function DashboardStatsTable({ type, rows = [] }) {
   if (!rows.length) {
     return <EmptyState title="No statistics yet" message="No qualifying completed-match statistics are available." />;
@@ -4831,7 +4857,9 @@ function DashboardStatsTable({ type, rows = [] }) {
   }[type] || ["#", "Player"];
 
   return (
-    <div className="slp-table-wrap">
+    <>
+    <MobileStatsCards type={type} rows={rows} />
+    <div className="slp-table-wrap slp-stats-desktop-table">
       <table className="slp-table">
         <thead><tr>{headers.map((header) => <th key={header}>{header}</th>)}</tr></thead>
         <tbody>
@@ -4854,6 +4882,7 @@ function DashboardStatsTable({ type, rows = [] }) {
         </tbody>
       </table>
     </div>
+    </>
   );
 }
 

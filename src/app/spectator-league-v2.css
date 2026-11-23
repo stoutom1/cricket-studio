@@ -6935,3 +6935,35 @@
     font-size: 11px;
   }
 }
+
+/* Public Explore: mobile-first readability, desktop untouched. */
+.slp-mobile-stats-cards { display: none; }
+@media (max-width: 700px) {
+  .slp-stats-desktop-table { display: none !important; }
+  .slp-mobile-stats-cards { display: grid; gap: 14px; min-width: 0; }
+  .slp-mobile-stats-card { min-width: 0; padding: 17px 15px; border: 1px solid rgba(115,163,209,.24); border-radius: 17px; background: linear-gradient(145deg,rgba(21,45,72,.9),rgba(8,22,40,.98)); box-shadow: 0 8px 24px rgba(0,0,0,.12); }
+  .slp-mobile-stats-person { display: flex; align-items: center; gap: 10px; min-width: 0; padding-bottom: 14px; border-bottom: 1px solid rgba(135,165,197,.18); }
+  .slp-mobile-stats-rank { flex: 0 0 auto; color: #81bcff; font-size: 12px; font-weight: 800; }
+  .slp-mobile-stats-person > .slp-avatar { flex: 0 0 auto; }
+  .slp-mobile-stats-person > div { min-width: 0; flex: 1; }
+  .slp-mobile-stats-person strong { display: block; color: #f1f7ff; font-size: 16px; line-height: 1.35; overflow-wrap: anywhere; }
+  .slp-mobile-stats-person small { display: block; margin-top: 4px; color: #9eb3cc; font-size: 13px; line-height: 1.45; overflow-wrap: anywhere; }
+  .slp-mobile-metrics { display: grid; grid-template-columns: repeat(2,minmax(0,1fr)); gap: 9px; margin-top: 13px; }
+  .slp-mobile-metric { min-width: 0; border-radius: 10px; padding: 10px 11px; background: rgba(4,17,32,.65); border: 1px solid rgba(105,142,181,.13); }
+  .slp-mobile-metric > span { display: block; font-size: 11px; font-weight: 700; letter-spacing: .035em; color: #91a8c2; }
+  .slp-mobile-metric > strong { display: block; margin-top: 5px; font-size: 17px; line-height: 1.25; color: #f1f7ff; overflow-wrap: anywhere; font-variant-numeric: tabular-nums; }
+  .slp-mobile-metric--featured { background: rgba(32,100,171,.19); border-color: rgba(82,160,246,.35); }
+  .slp-mobile-metric--featured > strong { color: #a7d6ff; }
+  .slp-section-heading { min-width: 0; }
+  .slp-section-heading h1 { font-size: clamp(25px,7vw,33px); line-height: 1.15; overflow-wrap: anywhere; }
+  .slp-section-heading > span { font-size: 14px; line-height: 1.6; }
+  .slp-section > .slp-segments { display: flex; flex-wrap: nowrap; overflow-x: auto; gap: 9px; padding: 4px 1px 12px; scrollbar-width: thin; scroll-snap-type: x proximity; -webkit-overflow-scrolling: touch; }
+  .slp-section > .slp-segments button { flex: 0 0 auto; min-height: 46px; padding: 10px 13px; font-size: 14px; white-space: nowrap; scroll-snap-align: start; }
+  .slp-section > .slp-segments b { font-size: 11px; }
+  .slp-section .slp-table-wrap:not(.slp-stats-desktop-table) { max-width: 100%; overflow-x: auto; -webkit-overflow-scrolling: touch; }
+  .slp-section .slp-table-wrap:not(.slp-stats-desktop-table) .slp-table { min-width: 620px; table-layout: auto; }
+  .slp-section .slp-table-wrap:not(.slp-stats-desktop-table) .slp-table th, .slp-section .slp-table-wrap:not(.slp-stats-desktop-table) .slp-table td { white-space: nowrap; font-size: 13px; padding: 12px; }
+  .slp-section .slp-table-wrap:not(.slp-stats-desktop-table) .slp-table-team strong { white-space: normal; min-width: 120px; overflow-wrap: anywhere; }
+  .slp-stats-ranking-grid, .slp-awards-grid, .slp-leader-card-grid { min-width: 0; }
+  .slp-stats-ranking-card, .slp-award-card, .slp-leader-card, .slp-leader-hero { min-width: 0; overflow-wrap: anywhere; }
+}
