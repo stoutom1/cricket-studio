@@ -50,6 +50,15 @@ export default function HomePage() {
         </div>
       </section>
 
+      <section className="c4-support-home" aria-labelledby="support-cric4all-heading">
+        <div>
+          <p className="c4-eyebrow">Community supported</p>
+          <h2 id="support-cric4all-heading">Help keep Cric4All growing</h2>
+          <p>Enjoying the scoring, scorecards and public league features? Voluntary contributions help cover hosting, maintenance and continued development. No contribution is required to use Cric4All.</p>
+        </div>
+        <Link href="/support" className="c4-support-home-link">♡ Support Us →</Link>
+      </section>
+
       <section className="c4-editorial-section" aria-labelledby="why-cric4all">
         <p className="c4-eyebrow">Built around real community cricket</p>
         <h2 id="why-cric4all">More than a scoreboard</h2>

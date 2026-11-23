@@ -597,6 +597,14 @@ export default function AuthNav() {
           >
             Contact
           </Link>
+
+          <Link
+            href="/support"
+            className="nav-link nav-support"
+            aria-label="Support Us — contribute to Cric4All development"
+          >
+            ♡ Support Us
+          </Link>
         </div>
 
         <div className="auth-nav-resume-slot">

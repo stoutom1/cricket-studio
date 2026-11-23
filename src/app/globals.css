@@ -78731,3 +78731,55 @@ body:has(.milestone-celebration-overlay)
     font-size: 1.05rem;
   }
 }
+
+/* Support Us: public navigation and homepage, without disrupting mobile Account placement. */
+.auth-nav .nav-support {
+  color: #dbeafe;
+  background: rgba(37, 99, 235, .15);
+  border-color: rgba(96, 165, 250, .32);
+}
+.auth-nav .nav-support:hover,
+.auth-nav .nav-support:focus-visible {
+  background: rgba(37, 99, 235, .28);
+  border-color: rgba(147, 197, 253, .65);
+}
+.c4-support-home {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 24px;
+  padding: clamp(22px, 4vw, 40px);
+  margin: 24px 0;
+  border-radius: 20px;
+  border: 1px solid rgba(96, 165, 250, .28);
+  background: linear-gradient(120deg, rgba(30, 58, 138, .22), rgba(15, 23, 42, .7));
+}
+.c4-support-home h2 { margin: 6px 0 10px; }
+.c4-support-home p { max-width: 740px; line-height: 1.65; }
+.c4-support-home-link {
+  flex-shrink: 0;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  padding: 14px 22px;
+  border-radius: 12px;
+  background: #2563eb;
+  color: white;
+  font-weight: 800;
+  text-decoration: none;
+  min-height: 46px;
+}
+.c4-support-home-link:hover { background: #1d4ed8; }
+@media (max-width: 640px) {
+  nav.auth-nav.auth-nav-compact .auth-nav-center > .nav-support {
+    grid-column: 1 / -1 !important;
+    grid-row: 2 !important;
+    min-height: 44px !important;
+    width: 100% !important;
+  }
+  nav.auth-nav.auth-nav-compact .auth-nav-resume-slot {
+    grid-row: 3 !important;
+  }
+  .c4-support-home { flex-direction: column; align-items: stretch; gap: 12px; padding: 20px; }
+  .c4-support-home-link { width: 100%; }
+}
