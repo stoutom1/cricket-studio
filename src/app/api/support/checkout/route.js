@@ -25,7 +25,6 @@ export async function POST(request) {
     }
     const params = new URLSearchParams({
       mode: "payment",
-      "payment_method_types[0]": "card",
       "line_items[0][price_data][currency]": "usd",
       "line_items[0][price_data][unit_amount]": String(cents),
       "line_items[0][price_data][product_data][name]": "Voluntary support for Cric4All",
