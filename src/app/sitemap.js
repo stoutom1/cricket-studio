@@ -119,6 +119,7 @@ export default async function sitemap() {
     },
     ...[
       ["/about", 0.7],
+      ["/support", 0.6],
       ["/help", 0.7],
       ["/guides", 0.9],
       ["/guides/cricket-scoring", 0.8],
