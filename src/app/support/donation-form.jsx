@@ -8,7 +8,6 @@ export default function DonationForm() {
   const [busy, setBusy] = useState(false);
   const [paymentMethod, setPaymentMethod] = useState("card");
   const [coverFees, setCoverFees] = useState(false);
-  const [receiptEmail, setReceiptEmail] = useState("");
   const [status, setStatus] = useState("loading");
   const [error, setError] = useState("");
 
@@ -34,7 +33,7 @@ export default function DonationForm() {
     try {
       const response = await fetch("/api/support/checkout", {
         method: "POST", headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ amount: dollars, paymentMethod, coverFees, receiptEmail: receiptEmail.trim() }),
+        body: JSON.stringify({ amount: dollars, paymentMethod, coverFees }),
       });
       const data = await response.json();
       if (!response.ok || !data.url) {
@@ -60,7 +59,6 @@ export default function DonationForm() {
       <button type="button" className={custom ? "selected" : ""} aria-pressed={custom} onClick={() => { setCustom(true); setAmount(""); setError(""); }}>Other amount</button>
     </div>
     {custom && <label className="donate-custom">Custom amount (USD)<input inputMode="decimal" type="number" min="3" step="0.01" required value={amount} onChange={(event) => setAmount(event.target.value)} placeholder="e.g. 15.00" /></label>}
-    <label className="donate-email">Email for your payment receipt <span>(optional)</span><input type="email" autoComplete="email" maxLength={254} value={receiptEmail} onChange={(event) => setReceiptEmail(event.target.value)} placeholder="you@example.com" /><small>Leave blank to contribute without providing an email to Cric4All. If you enter an email, we will use it only for your receipt and payment-related messages.</small></label>
     <fieldset className="donate-payment-method"><legend>Payment method</legend>
       <label><input type="radio" name="paymentMethod" value="card" checked={paymentMethod === "card"} onChange={() => { setPaymentMethod("card"); setError(""); }} /> Credit or debit card</label>
       <label><input type="radio" name="paymentMethod" value="ach" checked={paymentMethod === "ach"} onChange={() => { setPaymentMethod("ach"); setError(""); }} /> US bank account (ACH)</label>
