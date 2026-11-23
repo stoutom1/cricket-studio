@@ -20,8 +20,8 @@ export async function POST(request) {
       return NextResponse.json({ error: "Invalid contribution amount." }, { status: 400 });
     }
     const cents = Math.round(amount * 100);
-    if (cents < 300 || cents > 50000 || Math.abs(cents / 100 - amount) > 0.000001) {
-      return NextResponse.json({ error: "Amount must be between $3 and $500 with up to two decimal places." }, { status: 400 });
+    if (cents < 300 || !Number.isSafeInteger(cents) || Math.abs(cents / 100 - amount) > 0.000001) {
+      return NextResponse.json({ error: "Amount must be at least $3 with up to two decimal places. Stripe may enforce transaction limits." }, { status: 400 });
     }
     const params = new URLSearchParams({
       mode: "payment",

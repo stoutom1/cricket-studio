@@ -23,8 +23,8 @@ export default function DonationForm() {
     setError("");
     if (status !== "ready") return;
     const dollars = Number(amount);
-    if (!amount || !Number.isFinite(dollars) || dollars < 3 || dollars > 500 || Math.abs(Math.round(dollars * 100) / 100 - dollars) > 0.000001) {
-      setError("Enter an amount between $3 and $500, with no more than two decimal places.");
+    if (!amount || !Number.isFinite(dollars) || dollars < 3 || !Number.isSafeInteger(Math.round(dollars * 100)) || Math.abs(Math.round(dollars * 100) / 100 - dollars) > 0.000001) {
+      setError("Enter an amount of at least $3, with no more than two decimal places. Stripe may apply transaction limits.");
       return;
     }
     setBusy(true);
@@ -50,7 +50,7 @@ export default function DonationForm() {
       {AMOUNTS.map((value) => <button type="button" key={value} className={!custom && amount === String(value) ? "selected" : ""} aria-pressed={!custom && amount === String(value)} onClick={() => { setAmount(String(value)); setCustom(false); setError(""); }}>${value}</button>)}
       <button type="button" className={custom ? "selected" : ""} aria-pressed={custom} onClick={() => { setCustom(true); setAmount(""); setError(""); }}>Other amount</button>
     </div>
-    {custom && <label className="donate-custom">Custom amount (USD)<input inputMode="decimal" type="number" min="3" max="500" step="0.01" required value={amount} onChange={(event) => setAmount(event.target.value)} placeholder="e.g. 15.00" /></label>}
+    {custom && <label className="donate-custom">Custom amount (USD)<input inputMode="decimal" type="number" min="3" step="0.01" required value={amount} onChange={(event) => setAmount(event.target.value)} placeholder="e.g. 15.00" /></label>}
     {status === "loading" && <p className="donate-status" role="status">Checking secure payment availability…</p>}
     {status === "unavailable" && <div className="donate-notice" role="status"><strong>Contributions are temporarily unavailable</strong><span>Secure payments are being set up. Please check back soon. You can still explore Cric4All in the meantime.</span></div>}
     {status === "unknown" && <div className="donate-notice" role="status"><strong>Unable to confirm payment availability</strong><span>Please refresh the page later. No payment has been initiated.</span></div>}
