@@ -6,7 +6,7 @@ export const dynamic = "force-dynamic";
 export async function POST(request) {
   try {
     const key = process.env.STRIPE_SECRET_KEY;
-    if (!key || !/^sk_(test|live)_/.test(key)) {
+    if (typeof key !== "string" || !/^(?:sk|rk)_(?:test|live)_[A-Za-z0-9]+$/.test(key.trim())) {
       return NextResponse.json({ error: "Contributions are not configured yet. Please check back soon." }, { status: 503 });
     }
     const origin = new URL(request.url).origin;
@@ -35,7 +35,7 @@ export async function POST(request) {
       "metadata[purpose]": "Cric4All development and operations support",
     });
     const stripe = await fetch("https://api.stripe.com/v1/checkout/sessions", {
-      method: "POST", headers: { Authorization: `Bearer ${key}`, "Content-Type": "application/x-www-form-urlencoded" },
+      method: "POST", headers: { Authorization: `Bearer ${key.trim()}`, "Content-Type": "application/x-www-form-urlencoded" },
       body: params.toString(), cache: "no-store",
     });
     const data = await stripe.json();
