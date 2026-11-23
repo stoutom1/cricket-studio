@@ -13,6 +13,7 @@ export default function GuidesPage() {
     <h1>Practical cricket guides for scorers, players and league organizers</h1>
     <p className="c4-article-intro">These guides explain the cricket concepts that sit behind Cric4All's scoring and league workflows. They are written for community cricket: clear enough for a new scorer, but detailed enough to be useful when a match creates an unusual situation.</p>
     <div className="c4-guide-grid">
+          <Link className="c4-guide-card" href="/guides/cricket-calculators"><h2>Free Cricket Calculators</h2><p>Interactive run rate, batting strike rate, bowling economy and NRR tools with examples.</p><span>Use calculators →</span></Link>
           <Link className="c4-guide-card" href="/guides/cricket-scoring"><h2>Cricket Scoring Guide</h2><p>Runs, extras, wickets, legal deliveries and scorer checks.</p><span>Read guide →</span></Link>
           <Link className="c4-guide-card" href="/guides/league-management"><h2>League Management Guide</h2><p>Teams, fixtures, roles, public pages and season administration.</p><span>Read guide →</span></Link>
           <Link className="c4-guide-card" href="/guides/net-run-rate"><h2>Net Run Rate Explained</h2><p>How net run rate works in cricket.</p><span>Read guide →</span></Link>

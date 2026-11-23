@@ -122,6 +122,7 @@ export default async function sitemap() {
       ["/help", 0.7],
       ["/guides", 0.9],
       ["/guides/cricket-scoring", 0.8],
+      ["/guides/cricket-calculators", 0.9],
       ["/guides/league-management", 0.8],
       ["/guides/cricket-extras", 0.8],
       ["/guides/net-run-rate", 0.8],
