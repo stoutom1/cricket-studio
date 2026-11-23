@@ -27,6 +27,10 @@ export async function POST(request) {
     if (cents < 300 || !Number.isSafeInteger(cents) || Math.abs(cents / 100 - amount) > 0.000001) {
       return NextResponse.json({ error: "Amount must be at least $3 with up to two decimal places. Stripe may enforce transaction limits." }, { status: 400 });
     }
+    const receiptEmail = typeof body?.receiptEmail === "string" ? body.receiptEmail.trim() : "";
+    if (receiptEmail && (receiptEmail.length > 254 || !/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(receiptEmail))) {
+      return NextResponse.json({ error: "Enter a valid receipt email or leave it blank." }, { status: 400 });
+    }
     const method = body?.paymentMethod;
     const coverFees = body?.coverFees === true;
     if (method !== "card" && method !== "ach") {
@@ -55,6 +59,12 @@ export async function POST(request) {
       "metadata[payment_method_choice]": method,
       "metadata[cover_fees]": String(coverFees),
     });
+    // Only attach an email when the supporter has voluntarily provided one.
+    // Stripe may still collect an email during Checkout for its own payment flows.
+    if (receiptEmail) {
+      params.set("customer_email", receiptEmail);
+      params.set("metadata[receipt_email_opt_in]", "true");
+    }
     // Current Stripe API uses allowed_payment_method_types, not the retired
     // payment_method_types parameter. ACH must be enabled in Stripe Dashboard.
     params.set("allowed_payment_method_types[0]", method === "ach" ? "us_bank_account" : "card");

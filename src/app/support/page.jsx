@@ -21,7 +21,7 @@ export default function SupportPage() {
           <h2>Make a voluntary contribution</h2>
           <p>Choose an amount in USD. You will be redirected to Stripe for secure payment. You do not need a Cric4All account.</p>
           <DonationForm />
-          <p className="donate-small">Payments are processed by Stripe. Cric4All does not collect or store your card or bank account details.</p>
+          <p className="donate-small">Payments are processed by Stripe. Cric4All does not collect or store your card or bank account details. Receipt email is optional. Cric4All is operated by VSJ Serv LLC, a for-profit company. Payments are not represented as tax-deductible charitable donations.</p>
         </div>
         <div className="donate-panel donate-explainer">
           <h2>What your support helps fund</h2>
